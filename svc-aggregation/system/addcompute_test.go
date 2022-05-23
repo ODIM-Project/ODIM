@@ -183,6 +183,13 @@ func mockContactClientForDuplicate(url, method, token string, odataID string, bo
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 
+	} else if url == host+"/ODIM/v1/LicenseService/Licenses/" {
+		body := `{"@odata.id":"","@odata.type":"","Name":"","Members":[{"@odata.id":"/redfish/v1/LicenseService/Licenses/1.1"}],"Members@odata.count":1}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+
 	} else if url == host+"/ODIM/v1/Status" {
 		body := `{"Version": "1.0.0","EventMessageBus":{"EmbQueue":[{"EmbQueueName":"GRF"}]}}`
 		if host == "https://100.0.0.3:9091" {

@@ -181,6 +181,12 @@ func Router() *iris.Application {
 		GetCompositionReservationsRPC: rpc.GetCompositionReservations,
 	}
 
+	licenses := handle.LicenseRPCs{
+		GetLicenseServiceRPC:    rpc.GetLicenseService,
+		GetLicenseCollectionRPC: rpc.GetLicenseCollection,
+		GetLicenseResourceRPC:   rpc.GetLicenseResource,
+	}
+
 	registryFile := handle.Registry{
 		Auth: srv.IsAuthorized,
 	}
@@ -331,6 +337,8 @@ func Router() *iris.Application {
 	task.Any("/", handle.TsMethodNotAllowed)
 	task.Any("/Tasks", handle.TsMethodNotAllowed)
 	task.Any("/Tasks/{TaskID}", handle.TsMethodNotAllowed)
+	task.Any("/Tasks/{TaskID}/SubTasks", handle.TsMethodNotAllowed)
+	task.Any("/Tasks/{TaskID}/SubTasks/{subTaskID}", handle.TsMethodNotAllowed)
 
 	systems := v1.Party("/Systems", middleware.SessionDelMiddleware)
 	systems.SetRegisterRule(iris.RouteSkip)
@@ -669,6 +677,12 @@ func Router() *iris.Application {
 	telemetryService.Get("/MetricReports/{id}", telemetry.GetMetricReport)
 	telemetryService.Get("/Triggers/{id}", telemetry.GetTrigger)
 	telemetryService.Patch("/Triggers/{id}", telemetry.UpdateTrigger)
+
+	licenseService := v1.Party("/LicenseService", middleware.SessionDelMiddleware)
+	licenseService.SetRegisterRule(iris.RouteSkip)
+	licenseService.Get("/", licenses.GetLicenseService)
+	licenseService.Get("/Licenses", licenses.GetLicenseCollection)
+	licenseService.Get("/Licenses/{id}", licenses.GetLicenseResource)
 
 	// composition service
 	compositionService := v1.Party("/CompositionService", middleware.SessionDelMiddleware)

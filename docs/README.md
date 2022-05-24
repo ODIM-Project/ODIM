@@ -438,7 +438,7 @@ The `nwPreferences` parameter in the Resource Aggregator for ODIM deployment con
   -H "Content-Type:application/json" \
   -d \
   '{
-    "HostName":"192.168.256.256",
+    "HostName":"17.5.7.8",
     "UserName":"admin",
     "Password":"HP1nvent",
     "Links":{
@@ -8652,13 +8652,13 @@ curl -i GET \
       "EbgpAsNumberUpperAddress":65100
    },
    "IPv4":{ 
-      "IPv4FabricLinkLowerAddress":"192.168.256.258",
-      "IPv4FabricLinkUpperAddress":"192.168.256.268",
+      "IPv4FabricLinkLowerAddress":"17.5.7.8",
+      "IPv4FabricLinkUpperAddress":"17.5.7.18",
       "IPv4GatewayAddress":"",
       "IPv4HostLowerAddress":"",
       "IPv4HostUpperAddress":"",
-      "IPv4LoopbackLowerAddress":"192.168.256.278",
-      "IPv4LoopbackUpperAddress":"192.168.256.288",
+      "IPv4LoopbackLowerAddress":"17.5.7.28",
+      "IPv4LoopbackUpperAddress":"17.5.7.38",
       "NativeVlan":0,
       "VlanIdentifierLowerAddress":0,
       "VlanIdentifierUpperAddress":0
@@ -8944,10 +8944,10 @@ curl -i POST \
    },
    "BgpEvpn":{
       "GatewayIPAddressList":[
-         "192.168.256.288/24",
-         "192.168.256.289/24"  
+         "17.5.7.8/24",
+         "17.5.7.9/24"  
       ],
-      "AnycastGatewayIPAddress":"192.168.256.287"
+      "AnycastGatewayIPAddress":"17.5.7.10"
    }
 }
 '
@@ -8971,10 +8971,10 @@ curl -i POST \
    },
    "BgpEvpn":{
       "GatewayIPAddressList":[
-         "192.168.256.288/24",
-         "192.168.256.289/24"
+         "17.5.7.8/24",
+         "17.5.7.9/24" 
       ],
-      "AnycastGatewayIPAddress":"192.168.256.287"
+      "AnycastGatewayIPAddress":"17.5.7.10"
    }
 }
 ```
@@ -9010,11 +9010,11 @@ Date:Thu, 14 May 2020 16:18:54 GMT
   "@odata.id": "/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf",
   "@odata.type": "#AddressPool.v1_2_0.AddressPool",
   "BgpEvpn": {
-    "AnycastGatewayIPAddress": "192.168.256.287",
+    "AnycastGatewayIPAddress": "17.5.7.10",
     "AnycastGatewayMACAddress": "",
     "GatewayIPAddressList": [
-      "192.168.256.288/24",
-      "192.168.256.289/24"
+      "17.5.7.8/24",
+      "17.5.7.9/24" 
     ],
     "RouteDistinguisherList": "",
     "RouteTargetList": [
@@ -9089,12 +9089,12 @@ curl -i POST \
         "Upper": 3002
     },
     "IbgpAddressRange": {
-              "Lower": "192.168.256.288",
-              "Upper": "192.168.256.293"
+              "Lower": "17.5.7.8",
+              "Upper": "17.5.7.14"
     },
     "EbgpAddressRange": {
-              "Lower": "192.168.260.288",
-              "Upper": "192.168.260.295"
+              "Lower": "17.5.7.15",
+              "Upper": "17.5.7.20"
     }
   },
   "Ebgp": {
@@ -9106,7 +9106,7 @@ curl -i POST \
   "BgpEvpn": {
     "RouteDistinguisherList": ["65002:102"],  
     "RouteTargetList": ["65002:102", "65002:102"],
-    "GatewayIPAddressList": ["192.168.261.290/31", "192.168.261.291/31"]
+    "GatewayIPAddressList": ["17.5.7.21/31", "17.5.7.22/31"]
   }
 }'
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'
@@ -9126,12 +9126,12 @@ curl -i POST \
         "Upper": 3002
     },
     "IbgpAddressRange": {
-              "Lower": "192.168.256.288",
-              "Upper": "192.168.256.293"
+              "Lower": "17.5.7.8",
+              "Upper": "17.5.7.14"
     },
     "EbgpAddressRange": {
-             "Lower": "192.168.260.288",
-              "Upper": "192.168.260.295"
+             "Lower": "17.5.7.15",
+             "Upper": "17.5.7.20"
     }
   },
   "Ebgp": {
@@ -9143,7 +9143,7 @@ curl -i POST \
   "BgpEvpn": {
     "RouteDistinguisherList": ["65002:102"],  
     "RouteTargetList": ["65002:102", "65002:102"],
-    "GatewayIPAddressList": ["192.168.261.290/31", "192.168.261.291/31"]
+    "GatewayIPAddressList": ["17.5.7.21/31", "17.5.7.22/31"]
   }
 }
 
@@ -9193,8 +9193,8 @@ Date:Thu, 14 May 2020 16:18:58 GMT
       "AnycastGatewayIPAddress":"",
       "AnycastGatewayMACAddress":"",
       "GatewayIPAddressList":[
-         "192.168.261.290/31",
-         "192.168.261.291/31"
+         "17.5.7.8/31",
+         "17.5.7.9/31"
       ],
       "RouteDistinguisherList":[
          "65002:102"
@@ -9213,16 +9213,16 @@ Date:Thu, 14 May 2020 16:18:58 GMT
    },
    "IPv4":{
       "EbgpAddressRange":{
-         "Lower":"192.168.261.280",
-         "Upper":"192.168.261.285"
+         "Lower": "17.5.7.15",
+         "Upper": "17.5.7.20"
       },
       "FabricLinkAddressRange":{
          "Lower":"",
          "Upper":""
       },
       "IbgpAddressRange":{
-         "Lower":"192.168.261.290",
-         "Upper":"192.168.261.295"
+         "Lower": "17.5.7.8",
+         "Upper": "17.5.7.14"
       },
       "LoopbackAddressRange":{
          "Lower":"",
@@ -12090,11 +12090,11 @@ Audit logs has information on each API and is stored in the api.log file in odim
 
 **Samples**
 
-- <110> 2009-11-10T23:00:00Z 192.168.260.290 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
+- <110> 2009-11-10T23:00:00Z 17.5.7.8 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
 
-- <110> 2022-01-17T13:57:48Z 192.168.260.290 [account@1 user="admin" roleID="Administrator"][request@1 method="POST" resource="/redfish/v1/AggregationService/AggregationSources" requestBody="{"HostName":"192.168.260.280","Links":{"ConnectionMethod":{"@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/337ea3cb-3acc-49e2-b33f-3f5ce2a5ada4"}},"Password":"null","UserName":"admin"}"][response@1 responseCode=202] Operation successful
+- <110> 2022-01-17T13:57:48Z 17.5.7.9 [account@1 user="admin" roleID="Administrator"][request@1 method="POST" resource="/redfish/v1/AggregationService/AggregationSources" requestBody="{"HostName":"17.5.7.15","Links":{"ConnectionMethod":{"@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/337ea3cb-3acc-49e2-b33f-3f5ce2a5ada4"}},"Password":"null","UserName":"admin"}"][response@1 responseCode=202] Operation successful
 
-- <107> 2009-11-10T23:00:00Z 192.168.260.290 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
+- <107> 2009-11-10T23:00:00Z 17.5.7.9 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
 
   <blockquote> Note: <110> and <107> are priority values. </107> is the audit information log and <107> is the audit error log. </blockquote>
 

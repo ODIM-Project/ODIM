@@ -31,6 +31,11 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 )
 
+var (
+	//ServicesUpdateTaskFunc ...
+	ServicesUpdateTaskFunc = services.UpdateTask
+)
+
 //Device struct to define the response from plugin for UUID
 type Device struct {
 	ServerIP   string `json:"ServerIP"`
@@ -127,11 +132,11 @@ func TaskData(taskData common.TaskData) error {
 		ResponseBody:  respBody,
 	}
 
-	err := services.UpdateTask(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	err := ServicesUpdateTaskFunc(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
-		services.UpdateTask(taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+		ServicesUpdateTaskFunc(taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 		if taskData.PercentComplete == 0 {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}

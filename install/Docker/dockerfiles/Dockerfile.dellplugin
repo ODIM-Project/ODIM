@@ -13,6 +13,8 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
+COPY install/Docker/dockerfiles/run/dellplugin.sh .
+RUN ./dellplugin.sh
 
 FROM ubuntu:20.04
 

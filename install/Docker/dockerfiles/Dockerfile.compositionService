@@ -14,7 +14,11 @@
 
 FROM odim:3.0 as build-stage
 
+
 FROM cs:1.0 as build-stage-cs
+COPY install/Docker/dockerfiles/run/compositionservice.sh .
+RUN ./compositionservice.sh
+
 
 FROM ubuntu:20.04
 

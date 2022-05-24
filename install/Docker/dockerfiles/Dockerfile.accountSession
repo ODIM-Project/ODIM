@@ -14,7 +14,7 @@
 
 FROM odim:3.0 as build-stage
 COPY install/Docker/dockerfiles/run/accountSession.sh .
-RUN ./accountSession.sh.
+RUN ./accountSession.sh
 
 
 FROM ubuntu:20.04

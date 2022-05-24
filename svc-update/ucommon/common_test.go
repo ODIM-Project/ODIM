@@ -17,15 +17,17 @@ package ucommon
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"testing"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"net/http"
-	"testing"
 )
 
 func mockGetTarget(id string) (*umodel.Target, *errors.Error) {
@@ -39,6 +41,16 @@ func mockGetTarget(id string) (*umodel.Target, *errors.Error) {
 }
 
 func mockGetPluginData(id string) (umodel.Plugin, *errors.Error) {
+	var plugin umodel.Plugin
+	plugin.IP = "ip"
+	plugin.Port = "port"
+	plugin.Username = "plugin"
+	plugin.Password = []byte("password")
+	plugin.PluginType = "Redfish"
+	plugin.PreferredAuthType = "XAuthToken"
+	return plugin, nil
+}
+func mockGetPluginBasicData(id string) (umodel.Plugin, *errors.Error) {
 	var plugin umodel.Plugin
 	plugin.IP = "ip"
 	plugin.Port = "port"
@@ -72,6 +84,9 @@ func mockInterface() *CommonInterface {
 
 func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
+}
+func mockDevicePassword(password []byte) ([]byte, error) {
+	return password, &errors.Error{}
 }
 
 func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
@@ -140,4 +155,74 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 	}
 	_, err := i.GetResourceInfoFromDevice(req)
 	assert.Nil(t, err, "There should be an error")
+	i.GetPluginData = mockGetPluginBasicData
+	req = ResourceInfoRequest{
+		URL:            "/redfish/v1/UpdateService/FirmwareInventory/uuid.1",
+		UUID:           "uuid",
+		SystemID:       "1",
+		ContactClient:  mockContactClient,
+		DevicePassword: stubDevicePassword,
+	}
+	_, err = i.GetResourceInfoFromDevice(req)
+	assert.Nil(t, err, "There should be an error")
+
+	req = ResourceInfoRequest{
+		URL:            "/redfish/v1/UpdateService/FirmwareInventory/uuid.1",
+		UUID:           "uuid",
+		SystemID:       "1",
+		ContactClient:  mockContactClient,
+		DevicePassword: mockDevicePassword,
+	}
+	_, err = i.GetResourceInfoFromDevice(req)
+	assert.NotNil(t, err, "There should be an error")
+
+}
+
+func TestContactPlugin(t *testing.T) {
+	config.SetUpMockConfig(t)
+
+	CallPluginFunc = func(req PluginContactRequest) (*http.Response, error) {
+		return &http.Response{Status: "Save", StatusCode: 204, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
+	}
+
+	_, _, _, err := ContactPlugin(PluginContactRequest{}, "Dumyy")
+	assert.NotNil(t, err, "There should be error")
+	CallPluginFunc = func(req PluginContactRequest) (*http.Response, error) {
+		return &http.Response{Status: "Save", StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
+	}
+	_, _, _, err = ContactPlugin(PluginContactRequest{}, "Dumyy")
+	assert.Nil(t, err, "There should be no error")
+	CallPluginFunc = func(req PluginContactRequest) (*http.Response, error) {
+		return &http.Response{Status: "Save", StatusCode: 202, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
+	}
+
+	_, _, _, err = ContactPlugin(PluginContactRequest{}, "Dumyy")
+	assert.NotNil(t, err, "There should be error")
+	CallPluginFunc = func(req PluginContactRequest) (*http.Response, error) {
+		return &http.Response{Status: "Save", StatusCode: 401, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
+	}
+	_, _, _, err = ContactPlugin(PluginContactRequest{}, "Dumyy")
+	assert.NotNil(t, err, "There should be error")
+	IOUtilReadAllFunc = func(r io.Reader) ([]byte, error) {
+		return nil, &errors.Error{}
+	}
+	CallPluginFunc = func(req PluginContactRequest) (*http.Response, error) {
+		return &http.Response{Status: "Save", StatusCode: 401, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
+	}
+
+	_, _, _, err = ContactPlugin(PluginContactRequest{}, "Dumyy")
+	assert.NotNil(t, err, "There should be error")
+	CallPluginFunc = func(req PluginContactRequest) (*http.Response, error) {
+		return &http.Response{Status: "Save", StatusCode: 401, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, &errors.Error{}
+	}
+	_, _, _, err = ContactPlugin(PluginContactRequest{}, "Dumyy")
+	assert.NotNil(t, err, "There should be error")
+}
+
+func Test_callPlugin(t *testing.T) {
+	config.SetUpMockConfig(t)
+	_, err := callPlugin(PluginContactRequest{ContactClient: mockContactClient})
+	assert.NotNil(t, err, "There should be an error ")
+	_, err = callPlugin(PluginContactRequest{ContactClient: mockContactClient, Plugin: umodel.Plugin{PreferredAuthType: "BasicAuth"}})
+	assert.NotNil(t, err, "There should be an error ")
 }

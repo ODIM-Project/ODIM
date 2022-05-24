@@ -33,6 +33,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	//GetAllKeysFromTableFunc ...
+	GetAllKeysFromTableFunc = umodel.GetAllKeysFromTable
+)
+
 // StartUpdate function handler for on start update process
 func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
@@ -41,7 +46,7 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
 	// Read all the requests from database
-	targetList, err := umodel.GetAllKeysFromTable("SimpleUpdate", common.OnDisk)
+	targetList, err := GetAllKeysFromTableFunc("SimpleUpdate", common.OnDisk)
 	if err != nil {
 		errMsg := "Unable to read SimpleUpdate requests from database: " + err.Error()
 		log.Warn(errMsg)
@@ -195,7 +200,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	contactRequest.ContactClient = e.External.ContactClient
 	contactRequest.Plugin = plugin
 
-	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+	if StringsEqualFoldFunc(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
 		contactRequest.DeviceInfo = map[string]interface{}{
@@ -228,7 +233,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	_, _, getResponse, contactErr := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
 	if contactErr != nil {
 		subTaskChannel <- getResponse.StatusCode
-		errMsg := err.Error()
+		errMsg := contactErr.Error()
 		log.Info(errMsg)
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 		return

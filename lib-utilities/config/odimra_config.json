@@ -117,7 +117,8 @@
 	   "Fabrics",
 	   "Managers",
 	   "UpdateService",
-	   "TelemetryService"
+	   "TelemetryService",
+	   "Licenses"
 	],
 	"SupportedPluginTypes": [
 	   "Compute",

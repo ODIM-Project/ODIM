@@ -1,4 +1,4 @@
 odimra:
   namespace:
   groupID:
-  redisImageTag: "2.0"
+  redisImageTag: "2.1"

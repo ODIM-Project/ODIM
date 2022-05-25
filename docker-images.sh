@@ -24,13 +24,14 @@ declare -A images_list=(\
 		["fabrics"]="3.0" \
 		["kafka"]="2.0" \
 		["managers"]="3.0" \
-		["redis"]="2.0" \
+		["redis"]="2.1" \
 		["systems"]="3.0" \
 		["task"]="3.0" \
 		["telemetry"]="2.0"\
 		["update"]="3.0" \
 		["zookeeper"]="2.0" \
 		["composition-service"]="1.0" \
+		["licenses"]="1.0" \
 		)
 
 eval_cmd_exec()

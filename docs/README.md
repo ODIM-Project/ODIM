@@ -12017,7 +12017,7 @@ curl -i GET \
 
 # Audit logs
 
-Audit logs provides information on each API and is stored in the `api.log` file in `odimra` logs.  Each log consists of a priority value, date and time of the log, hostname from which the APIs are sent, user account and role details, API request method and resource, response body, response code, and the message.
+Audit logs provide information on each API and is stored in the `api.log` file in `odimra` logs.  Each log consists of a priority value, date and time of the log, hostname from which the APIs are sent, user account and role details, API request method and resource, response body, response code, and the message.
 
 **Samples**
 
@@ -12031,7 +12031,7 @@ Audit logs provides information on each API and is stored in the `api.log` file 
 
 # Security logs
 
-Security logs provides information on the successful and failed user authentication and authorization attempts. The logs are stored in `api.log` and `account_session.log` file in `odimra` logs. Each log consists of a priority value, date and time of the log, user account and role details, and the message.
+Security logs provide information on the successful and failed user authentication and authorization attempts. The logs are stored in `api.log` and `account_session.log` file in `odimra` logs. Each log consists of a priority value, date and time of the log, user account and role details, and the message.
 
 **Samples**
 

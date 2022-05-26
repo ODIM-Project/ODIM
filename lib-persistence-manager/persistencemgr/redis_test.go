@@ -37,6 +37,7 @@ type sample struct {
 }
 
 func TestConnection(t *testing.T) {
+	config.SetUpMockConfig(t)
 	persistConfig, err := GetMockDBConfig()
 	if err != nil {
 		t.Fatal("Error while initializing config:", err)
@@ -49,7 +50,7 @@ func TestConnection(t *testing.T) {
 }
 func TestCreate(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +69,7 @@ func TestCreate(t *testing.T) {
 
 func TestCreate_invalidData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -87,7 +88,7 @@ func TestCreate_invalidData(t *testing.T) {
 
 func TestCreate_existingData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB coonection:", err)
 	}
@@ -114,7 +115,7 @@ func TestCreate_existingData(t *testing.T) {
 
 func TestRead(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -144,7 +145,7 @@ func TestRead(t *testing.T) {
 
 func TestRead_nonExistingData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -160,7 +161,7 @@ func TestRead_nonExistingData(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -196,7 +197,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestUpdate_invalidData(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -219,7 +220,7 @@ func TestUpdate_invalidData(t *testing.T) {
 
 func TestUpdate_nonExistingData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -235,7 +236,7 @@ func TestUpdate_nonExistingData(t *testing.T) {
 
 func TestGetall(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -282,7 +283,7 @@ func TestGetall(t *testing.T) {
 }
 
 func TestGetall_nonExistingtable(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -295,7 +296,7 @@ func TestGetall_nonExistingtable(t *testing.T) {
 	}
 }
 func TestDelete(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -313,7 +314,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDelete_nonExistingKey(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -325,7 +326,7 @@ func TestDelete_nonExistingKey(t *testing.T) {
 }
 
 func TestCleanUpDB(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -375,7 +376,7 @@ func TestFilterSearch(t *testing.T) {
 */
 func TestGetAllMatchingDetails(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -419,7 +420,7 @@ func TestGetAllMatchingDetails(t *testing.T) {
 }
 
 func TestGetAllMatchingDetails_nonExistingtable(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -431,7 +432,7 @@ func TestGetAllMatchingDetails_nonExistingtable(t *testing.T) {
 
 func TestTransaction(t *testing.T) {
 	const threadCount = 10
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -495,7 +496,7 @@ func TestTransaction(t *testing.T) {
 
 func TestGetResourceDetails(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -525,7 +526,7 @@ func TestGetResourceDetails(t *testing.T) {
 
 func TestGetResourceDetails_nonExistingData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -541,7 +542,7 @@ func TestGetResourceDetails_nonExistingData(t *testing.T) {
 
 func TestAddResourceData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -560,7 +561,7 @@ func TestAddResourceData(t *testing.T) {
 
 func TestAddResourceData_invalidData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -578,7 +579,7 @@ func TestAddResourceData_invalidData(t *testing.T) {
 }
 
 func TestPing(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -589,7 +590,7 @@ func TestPing(t *testing.T) {
 
 func TestIndexCreate(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -619,7 +620,7 @@ func TestIndexCreate(t *testing.T) {
 }
 func TestCreateIndex_invalidData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -638,7 +639,7 @@ func TestCreateIndex_invalidData(t *testing.T) {
 
 func TestGet(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -678,7 +679,7 @@ func TestGet(t *testing.T) {
 
 func TestGetTaskList(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -701,7 +702,7 @@ func TestGetTaskList(t *testing.T) {
 }
 func TestGetRange(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -723,7 +724,7 @@ func TestGetRange(t *testing.T) {
 
 }
 func TestGetStorageList(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -775,7 +776,7 @@ func TestGetStorageList(t *testing.T) {
 }
 
 func TestCreateEvtSubscriptions(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -793,7 +794,7 @@ func TestCreateEvtSubscriptions(t *testing.T) {
 
 func TestCreateEvtSubscriptions_existingData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB coonection:", err)
 	}
@@ -815,7 +816,7 @@ func TestCreateEvtSubscriptions_existingData(t *testing.T) {
 }
 
 func TestGetEvtSubscriptions(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -853,7 +854,7 @@ func TestGetEvtSubscriptions(t *testing.T) {
 }
 
 func TestDeleteEvtSubscriptions(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -870,7 +871,7 @@ func TestDeleteEvtSubscriptions(t *testing.T) {
 }
 
 func TestDeleteEvtSubscriptions_nonexisting_data(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -884,7 +885,7 @@ func TestDeleteEvtSubscriptions_nonexisting_data(t *testing.T) {
 }
 
 func TestUpdateEvtSubscriptions(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -904,7 +905,7 @@ func TestUpdateEvtSubscriptions(t *testing.T) {
 }
 
 func TestCreateDeviceSubscription(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -923,7 +924,7 @@ func TestCreateDeviceSubscription(t *testing.T) {
 }
 
 func TestCreateDeviceSubscription_existingData(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -945,7 +946,7 @@ func TestCreateDeviceSubscription_existingData(t *testing.T) {
 }
 
 func TestGetDeviceSubscription(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -985,7 +986,7 @@ func TestGetDeviceSubscription(t *testing.T) {
 }
 
 func TestDeleteDeviceSubscription(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1002,7 +1003,7 @@ func TestDeleteDeviceSubscription(t *testing.T) {
 }
 
 func TestDeleteDeviceSubscriptions_nonexisting_data(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1013,7 +1014,7 @@ func TestDeleteDeviceSubscriptions_nonexisting_data(t *testing.T) {
 }
 
 func TestUpdateDeviceSubscriptions(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1273,7 +1274,7 @@ func TestGetDBConnection_HAEnabled(t *testing.T) {
 
 func TestIncr(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -1304,7 +1305,7 @@ func TestIncr(t *testing.T) {
 
 func TestDecr(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -1343,7 +1344,7 @@ func TestDecr(t *testing.T) {
 
 func TestSetExpire(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1362,7 +1363,7 @@ func TestSetExpire(t *testing.T) {
 
 func TestSetExpire_invalidData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -1381,7 +1382,7 @@ func TestSetExpire_invalidData(t *testing.T) {
 
 func TestSetExpire_existingData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB coonection:", err)
 	}
@@ -1407,7 +1408,7 @@ func TestSetExpire_existingData(t *testing.T) {
 }
 
 func TestTTL(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}

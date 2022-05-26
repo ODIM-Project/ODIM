@@ -14,12 +14,17 @@
 package update
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"reflect"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestStartUpdate(t *testing.T) {
@@ -57,4 +62,96 @@ func TestStartUpdate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestExternalInterface_startRequest(t *testing.T) {
+	config.SetUpMockConfig(t)
+	e := mockGetExternalInterface()
+	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid.1/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
+	subTaskChannel := make(chan int32, 8)
+
+	e.startRequest("uuid", "someID", string(request3), subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	StringsEqualFoldFunc = func(s, t string) bool {
+		return true
+	}
+	e.External.ContactPlugin = mockContactPluginError
+	e.startRequest("uuid", "someID", string(request3), subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	StringsEqualFoldFunc = func(s, t string) bool {
+		return false
+	}
+
+	e.External.ContactPlugin = mockContactPlugin
+	e.External.CreateChildTask = mockCreateChildTaskError
+	e.startRequest("uuid", "someID", string(request3), subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	e.External.GetTarget = mockGetTargetError
+	e.External.CreateChildTask = mockCreateChildTask
+	e.startRequest("uuid", "someID", string(request3), subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	e.External.GetTarget = mockGetTarget
+	e.External.DevicePassword = stubDevicePasswordError
+	e.startRequest("uuid", "someID", string(request3), subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	e.External.GetPluginData = mockGetPluginDataError
+	e.External.DevicePassword = stubDevicePassword
+	e.startRequest("uuid", "someID", string(request3), subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	e.External.GetPluginData = mockGetPluginData
+	e.External.UpdateTask = mockUpdateErrorTask
+	e.startRequest("uuid", "someID", string(request3), subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	e.External.ContactPlugin = mockContactPluginError
+	e.External.UpdateTask = mockUpdateTask
+	e.startRequest("uuid", "someID", string(request3), subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	for i := 0; i < 8; i++ {
+		select {
+		case statusCode := <-subTaskChannel:
+			fmt.Println(statusCode)
+		}
+	}
+
+}
+
+func TestExternalInterface_StartUpdate(t *testing.T) {
+	e := mockGetExternalInterface()
+	req := &updateproto.UpdateRequest{
+		SessionToken: "validToken",
+	}
+	GetAllKeysFromTableFunc = func(table string, dbtype common.DbType) ([]string, error) {
+		return nil, errors.New("")
+	}
+	e.StartUpdate("uuid", "dummySessionName", req)
+	GetAllKeysFromTableFunc = func(table string, dbtype common.DbType) ([]string, error) {
+		return []string{}, nil
+	}
+	e.StartUpdate("uuid", "dummySessionName", req)
+
+	GetAllKeysFromTableFunc = func(table string, dbtype common.DbType) ([]string, error) {
+		return []string{"/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1"}, nil
+	}
+	e.DB.GetResource = mockGetResource
+	e.StartUpdate("uuid", "dummySessionName", req)
+
+	GetAllKeysFromTableFunc = func(table string, dbtype common.DbType) ([]string, error) {
+		return []string{"dummy"}, nil
+	}
+	e.DB.GetResource = mockGetResource
+	e.StartUpdate("uuid", "dummySessionName", req)
+
+	GetAllKeysFromTableFunc = func(table string, dbtype common.DbType) ([]string, error) {
+		return []string{"dummy", "dummy", "dummy"}, nil
+	}
+	e.DB.GetResource = mockGetResource
+	e.StartUpdate("uuid", "dummySessionName", req)
 }

@@ -16,6 +16,7 @@ package rpc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
@@ -23,12 +24,12 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-
-	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
+	"github.com/stretchr/testify/assert"
 )
 
 func mockResourceData(body []byte, table, key string) error {
@@ -242,5 +243,115 @@ func TestChassis_GetResourceInfo(t *testing.T) {
 				t.Errorf("ChassisRPC.GetChassisInfo() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestChassisRPC_UpdateChassis(t *testing.T) {
+	var ctx context.Context
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	reqData := []byte(`\"@odata.id\":\"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1\"`)
+	err := mockResourceData(reqData, "chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
+	if err != nil {
+		t.Fatalf("Error in creating mock resource data :%v", err)
+	}
+	cha := new(ChassisRPC)
+	cha.IsAuthorizedRPC = mockIsAuthorized
+	cha.UpdateHandler = chassis.NewUpdateHandler(
+		func(name string) (plugin.Client, *errors.Error) {
+			return nil, errors.PackError(errors.DBKeyNotFound, "urp os not registered")
+		})
+
+	req := chassisproto.UpdateChassisRequest{
+		URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+		SessionToken: "validToken",
+	}
+	_, err = cha.UpdateChassis(ctx, &req)
+	assert.Nil(t, err, "There should be no error")
+
+}
+
+func TestChassisRPC_DeleteChassis(t *testing.T) {
+	var ctx context.Context
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	reqData := []byte(`\"@odata.id\":\"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1\"`)
+	err := mockResourceData(reqData, "chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
+	if err != nil {
+		t.Fatalf("Error in creating mock resource data :%v", err)
+	}
+	cha := new(ChassisRPC)
+	cha.IsAuthorizedRPC = mockIsAuthorized
+	cha.DeleteHandler = chassis.NewDeleteHandler(
+		func(name string) (plugin.Client, *errors.Error) {
+			return nil, errors.PackError(errors.DBKeyNotFound, "urp os not registered")
+		}, smodel.Find)
+
+	req := chassisproto.DeleteChassisRequest{
+		URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+		SessionToken: "validToken",
+	}
+	_, err = cha.DeleteChassis(ctx, &req)
+	assert.Nil(t, err, "There should be no error")
+
+}
+
+func TestChassisRPC_CreateChassis(t *testing.T) {
+	var ctx context.Context
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	reqData := []byte(`\"@odata.id\":\"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1\"`)
+
+	cha := new(ChassisRPC)
+	cha.IsAuthorizedRPC = mockIsAuthorized
+	cha.CreateHandler = chassis.NewCreateHandler(
+		func(name string) (plugin.Client, *errors.Error) {
+			return nil, errors.PackError(errors.DBKeyNotFound, "urp os not registered")
+		})
+
+	req := chassisproto.CreateChassisRequest{
+		RequestBody:  reqData,
+		SessionToken: "validToken",
+	}
+	_, err := cha.CreateChassis(ctx, &req)
+	assert.Nil(t, err, "There should be no error")
+
+}
+
+func Test_jsonMarshal(t *testing.T) {
+	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
+		return nil, &errors.Error{}
+	}
+	generateResponse("dummy")
+	jsonMarshal("dummy")
+	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
+		return json.Marshal(v)
 	}
 }

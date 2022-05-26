@@ -24,6 +24,9 @@ data:
     KAFKAKeyFile  = "/etc/odimra_certs/odimra_kafka_client.key"
     KAFKACAFile   = "/etc/odimra_certs/rootCA.crt"
     [RedisStreams]
+    RedisCertFile = "/etc/odimra_certs/odimra_server.crt"
+    RedisKeyFile  = "/etc/odimra_certs/odimra_server.key"
+    RedisCAFile   = "/etc/odimra_certs/rootCA.crt"
     {{ if eq .Values.odimra.haDeploymentEnabled false }}
     RedisServerAddress = "redis-inmemory"
     RedisServerPort = "6379"

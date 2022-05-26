@@ -70,7 +70,6 @@ func createMockRole(roleID string, privileges []string, oemPrivileges []string) 
 	return nil
 }
 
-
 func TestRole_CreateRole1(t *testing.T) {
 	type args struct {
 		ctx context.Context

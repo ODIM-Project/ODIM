@@ -34,4 +34,7 @@ KAFKACAFile         = ""
 RedisServerAddress =""
 RedisServerPort =""
 SentinalAddress =""
+RedisCertFile = ""
+RedisKeyFile  = ""
+RedisCAFile   = ""
 

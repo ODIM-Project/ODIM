@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -49,6 +50,7 @@ func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) r
 }
 
 func TestChassisRPC_GetChassisResource(t *testing.T) {
+	config.SetUpMockConfig(t)
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)

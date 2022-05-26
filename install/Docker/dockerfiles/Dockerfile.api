@@ -13,7 +13,7 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/run/api.sh .
+COPY install/Docker/dockerfiles/build/api.sh .
 RUN ./api.sh
 
 FROM ubuntu:20.04

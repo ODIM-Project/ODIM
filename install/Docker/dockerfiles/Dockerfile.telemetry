@@ -13,7 +13,7 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/run/telemetry.sh .
+COPY install/Docker/dockerfiles/build/telemetry.sh .
 RUN ./telemetry.sh
 
 FROM ubuntu:20.04

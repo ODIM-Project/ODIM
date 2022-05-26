@@ -13,7 +13,7 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/run/events.sh .
+COPY install/Docker/dockerfiles/build/events.sh .
 RUN ./events.sh
 
 FROM ubuntu:20.04

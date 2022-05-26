@@ -13,7 +13,7 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/run/aggregation.sh .
+COPY install/Docker/dockerfiles/build/aggregation.sh .
 RUN ./aggregation.sh
 
 

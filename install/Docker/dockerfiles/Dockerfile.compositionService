@@ -16,7 +16,7 @@ FROM odim:3.0 as build-stage
 
 
 FROM cs:1.0 as build-stage-cs
-COPY install/Docker/dockerfiles/run/compositionservice.sh .
+COPY install/Docker/dockerfiles/build/compositionservice.sh .
 RUN ./compositionservice.sh
 
 

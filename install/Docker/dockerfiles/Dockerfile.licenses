@@ -13,7 +13,7 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/run/licenses.sh .
+COPY install/Docker/dockerfiles/build/licenses.sh .
 RUN ./licenses.sh
 
 FROM ubuntu:20.04

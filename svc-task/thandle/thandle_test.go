@@ -17,17 +17,19 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"net/http"
+	"reflect"
+	"testing"
+	"time"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"golang.org/x/crypto/sha3"
-	"net/http"
-	"reflect"
-	"testing"
-	"time"
 )
 
 const errorCollectingData string = "error while trying to collect data: "
@@ -863,6 +865,7 @@ func TestTasksRPC_CreateTask(t *testing.T) {
 	}
 }
 func TestTasksRPC_OverWriteCompletedTaskUtil(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {

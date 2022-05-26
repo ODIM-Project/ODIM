@@ -31,6 +31,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	JsonMarshalFunc = json.Marshal
+)
+
 // NewChassisRPC returns an instance of ChassisRPC
 func NewChassisRPC(
 	authWrapper func(sessionToken string, privileges, oemPrivileges []string) response.RPC,
@@ -173,7 +177,7 @@ func jsonMarshal(input interface{}) []byte {
 	if bytes, alreadyBytes := input.([]byte); alreadyBytes {
 		return bytes
 	}
-	bytes, err := json.Marshal(input)
+	bytes, err := JsonMarshalFunc(input)
 	if err != nil {
 		log.Println("error in unmarshalling response object from util-libs", err.Error())
 	}
@@ -184,7 +188,7 @@ func generateResponse(input interface{}) []byte {
 	if bytes, alreadyBytes := input.([]byte); alreadyBytes {
 		return bytes
 	}
-	bytes, err := json.Marshal(input)
+	bytes, err := JsonMarshalFunc(input)
 	if err != nil {
 		log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}

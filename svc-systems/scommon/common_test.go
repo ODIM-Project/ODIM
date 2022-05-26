@@ -16,14 +16,17 @@ package scommon
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"testing"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"net/http"
-	"testing"
 )
 
 func mockTarget() error {
@@ -184,6 +187,20 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 	req.URL = "/redfish/v1/Systems/uuid1.1/EthernetInterfaces"
 	_, err = GetResourceInfoFromDevice(req, true)
 	assert.Nil(t, err, "There should be no error getting data")
+	IOReadAll = func(r io.Reader) ([]byte, error) {
+		return nil, fmt.Errorf("")
+	}
+	_, err = GetResourceInfoFromDevice(req, true)
+	assert.NotNil(t, err, "There should be error")
+
+	IOReadAll = func(r io.Reader) ([]byte, error) {
+		return ioutil.ReadAll(r)
+	}
+	JsonUnMashalFunc = func(data []byte, v interface{}) error {
+		return errors.New("")
+	}
+	_, err = GetResourceInfoFromDevice(req, true)
+	assert.NotNil(t, err, "There should be error")
 }
 
 func TestGetResourceInfoFromDeviceWithInvalidPluginSession(t *testing.T) {
@@ -337,4 +354,134 @@ func TestContactPlugin(t *testing.T) {
 	contactRequest.GetPluginStatus = mockPluginStatus
 	_, _, _, err = ContactPlugin(contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
+}
+
+func TestGetPluginStatus(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	password := getEncryptedKey(t, []byte("$2a$10$OgSUYvuYdI/7dLL5KkYNp.RCXISefftdj.MjbBTr6vWyNwAvht6ci"))
+	plugin := smodel.Plugin{
+		IP:                "localhost",
+		Port:              "9093",
+		Username:          "admin",
+		Password:          password,
+		ID:                "ILO",
+		PreferredAuthType: "BasicAuth",
+	}
+	status := GetPluginStatus(plugin)
+	assert.True(t, true, "Retrive current status of plugin", status)
+}
+
+func Test_checkRetrievalInfo(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	type args struct {
+		oid string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Check for old id",
+			args: args{
+				"Thermal",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := checkRetrievalInfo(tt.args.oid); got != tt.want {
+				t.Errorf("checkRetrievalInfo() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getResourceName(t *testing.T) {
+	type args struct {
+		oDataID    string
+		memberFlag bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Set member flag",
+			args: args{
+				oDataID:    "/ODIM/v1/Sessions",
+				memberFlag: false,
+			},
+			want: "v1",
+		},
+		{
+			name: "Set member flag",
+			args: args{
+				oDataID:    "/ODIM/v1/Sessions",
+				memberFlag: true,
+			},
+			want: "SessionsCollection",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getResourceName(tt.args.oDataID, tt.args.memberFlag); got != tt.want {
+				t.Errorf("getResourceName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_keyFormation(t *testing.T) {
+	type args struct {
+		oid        string
+		systemID   string
+		DeviceUUID string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Valid input",
+			args: args{
+				oid:        "/ODIM/v1/Sessions/",
+				systemID:   "/ODIM/v1/Sessions",
+				DeviceUUID: "/ODIM/v1/Sessions",
+			},
+			want: "/ODIM/v1/Sessions",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := keyFormation(tt.args.oid, tt.args.systemID, tt.args.DeviceUUID); got != tt.want {
+				t.Errorf("keyFormation() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

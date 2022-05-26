@@ -22,10 +22,14 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
 
@@ -202,10 +206,11 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 		req *systemsproto.ComputerSystemResetRequest
 	}
 	tests := []struct {
-		name string
-		p    *PluginContact
-		args args
-		want response.RPC
+		name          string
+		p             *PluginContact
+		args          args
+		JsonUnMarshal func(data []byte, v interface{}) error
+		want          response.RPC
 	}{
 		{
 			name: "invalid uuid",
@@ -215,6 +220,9 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 					SystemID:    "24b243cf-f1e3-5318-92d9-2d6737d6b0b.1",
 					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 				},
+			},
+			JsonUnMarshal: func(data []byte, v interface{}) error {
+				return json.Unmarshal(data, v)
 			},
 			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 24b243cf-f1e3-5318-92d9-2d6737d6b0b found", []interface{}{"ComputerSystem", "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b.1"}, nil),
 		}, {
@@ -226,6 +234,9 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 				},
 			},
+			JsonUnMarshal: func(data []byte, v interface{}) error {
+				return json.Unmarshal(data, v)
+			},
 			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", "24b243cf-f1e3-5318-92d9-2d6737d6b0b"}, nil),
 		},
 		{
@@ -236,6 +247,9 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 					SystemID:    "7a2c6100-67da-5fd6-ab82-6870d29c727.1",
 					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 				},
+			},
+			JsonUnMarshal: func(data []byte, v interface{}) error {
+				return json.Unmarshal(data, v)
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusInternalServerError,
@@ -253,6 +267,9 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 				},
 			},
+			JsonUnMarshal: func(data []byte, v interface{}) error {
+				return json.Unmarshal(data, v)
+			},
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
@@ -267,4 +284,72 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			}
 		})
 	}
+	req := systemsproto.ComputerSystemResetRequest{
+		SystemID:    "24b243cf-f1e3-5318-92d9-2d6737d6b0b.1",
+		RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
+	}
+	JsonUnMarshal = func(data []byte, v interface{}) error {
+		return &errors.Error{}
+	}
+	resp := pluginContact.ComputerSystemReset(&req)
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
+	req = systemsproto.ComputerSystemResetRequest{
+		SystemID:    "24b243cf-f1e3-5318-92d9-2d6737d6b0b.1",
+		RequestBody: []byte(`{"resetType": "ForceRestart"}`),
+	}
+	JsonUnMarshal = func(data []byte, v interface{}) error {
+		return nil
+	}
+	resp = pluginContact.ComputerSystemReset(&req)
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status code should be StatusBadRequest")
+
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return "", &errors.Error{}
+	}
+	resp = pluginContact.ComputerSystemReset(&req)
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
+
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return "", nil
+	}
+	// Invalid PreferredAuthType
+	StringsEqualFold = func(s, t string) bool {
+		return true
+	}
+	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+		err = &errors.Error{}
+		return
+	}
+	req = systemsproto.ComputerSystemResetRequest{
+		SystemID:    "7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
+		RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
+	}
+	resp = pluginContact.ComputerSystemReset(&req)
+	assert.NotNil(t, resp, "Response Should have error")
+
+	//Invalid ContactPlugin
+	StringsEqualFold = func(s, t string) bool {
+		return false
+	}
+	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+		err = &errors.Error{}
+		return
+	}
+	resp = pluginContact.ComputerSystemReset(&req)
+	assert.NotNil(t, resp, "Response Should have error")
+
+	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) ([]byte, string, scommon.ResponseStatus, error) {
+		return scommon.ContactPlugin(req, errorMessage)
+	}
+	// Invalid Json
+	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+		return &errors.Error{}
+	}
+	resp = pluginContact.ComputerSystemReset(&req)
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
+
+	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+		return json.Unmarshal(data, v)
+	}
+
 }

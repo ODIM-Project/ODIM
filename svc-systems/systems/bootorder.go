@@ -18,9 +18,10 @@ package systems
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
@@ -64,7 +65,7 @@ func (p *PluginContact) SetDefaultBootOrder(systemID string) response.RPC {
 	contactRequest.ContactClient = p.ContactClient
 	contactRequest.Plugin = plugin
 
-	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+	if StringsEqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
 		contactRequest.DeviceInfo = map[string]interface{}{
@@ -72,7 +73,7 @@ func (p *PluginContact) SetDefaultBootOrder(systemID string) response.RPC {
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := scommon.ContactPlugin(contactRequest, "error while creating session with the plugin: ")
+		_, token, getResponse, err := ContactPluginFunc(contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -92,7 +93,7 @@ func (p *PluginContact) SetDefaultBootOrder(systemID string) response.RPC {
 	contactRequest.OID = "/ODIM/v1/Systems/" + requestData[1] + "/Actions/ComputerSystem.SetDefaultBootOrder"
 	contactRequest.HTTPMethodType = http.MethodPost
 
-	body, _, getResponse, err := scommon.ContactPlugin(contactRequest, "error while setting the default bootorder of  the computer system: ")
+	body, _, getResponse, err := ContactPluginFunc(contactRequest, "error while setting the default bootorder of  the computer system: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
@@ -100,7 +101,7 @@ func (p *PluginContact) SetDefaultBootOrder(systemID string) response.RPC {
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	err = json.Unmarshal(body, &resp.Body)
+	err = JsonUnMarshalFunc(body, &resp.Body)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
@@ -126,7 +127,7 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	var biosSetting BiosSetting
 
 	// parsing the biosSetting
-	err := json.Unmarshal(req.RequestBody, &biosSetting)
+	err := JsonUnMarshalFunc(req.RequestBody, &biosSetting)
 	if err != nil {
 		errMsg := "unable to parse the BiosSetting request" + err.Error()
 		log.Error(errMsg)
@@ -134,7 +135,7 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, biosSetting)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, biosSetting)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
 		log.Error(errMsg)
@@ -163,7 +164,7 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	contactRequest.ContactClient = p.ContactClient
 	contactRequest.Plugin = plugin
 
-	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+	if StringsEqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
 		contactRequest.DeviceInfo = map[string]interface{}{
@@ -171,7 +172,7 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := scommon.ContactPlugin(contactRequest, "error while creating session with the plugin: ")
+		_, token, getResponse, err := ContactPluginFunc(contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -190,7 +191,7 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s/Bios/Settings", requestData[1])
 
-	body, _, getResponse, err := scommon.ContactPlugin(contactRequest, "error while changing  bios settings: ")
+	body, _, getResponse, err := ContactPluginFunc(contactRequest, "error while changing  bios settings: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
@@ -199,7 +200,7 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	err = json.Unmarshal(body, &resp.Body)
+	err = JsonUnMarshalFunc(body, &resp.Body)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
@@ -224,7 +225,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	var bootOrderSettings BootOrderSettings
 
 	// parsing the bootOrderSettings
-	err := json.Unmarshal(req.RequestBody, &bootOrderSettings)
+	err := JsonUnMarshalFunc(req.RequestBody, &bootOrderSettings)
 	if err != nil {
 		if ute, ok := err.(*json.UnmarshalTypeError); ok {
 			errMsg := fmt.Sprintf("UnmarshalTypeError: Expected field type %v but got %v \n", ute.Type, ute.Value)
@@ -241,7 +242,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, bootOrderSettings)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, bootOrderSettings)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
 		log.Error(errMsg)
@@ -275,7 +276,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	contactRequest.ContactClient = p.ContactClient
 	contactRequest.Plugin = plugin
 
-	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+	if StringsEqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
 		contactRequest.DeviceInfo = map[string]interface{}{
@@ -283,7 +284,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := scommon.ContactPlugin(contactRequest, "error while creating session with the plugin: ")
+		_, token, getResponse, err := ContactPluginFunc(contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -303,7 +304,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s", requestData[1])
 
-	body, _, getResponse, err := scommon.ContactPlugin(contactRequest, "error while changing boot order settings: ")
+	body, _, getResponse, err := ContactPluginFunc(contactRequest, "error while changing boot order settings: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)

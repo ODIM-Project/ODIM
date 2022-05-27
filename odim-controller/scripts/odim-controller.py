@@ -237,7 +237,7 @@ def perform_checks(skip_opt_param_check=False):
 	else:
 		KUBERNETES_IMAGE_PATH =  CONTROLLER_CONF_DATA['kubernetesImagePath']
 		if not os.path.exists(KUBERNETES_IMAGE_PATH):
-                        logger.warning("%s does not exist, required images will be downloaded!!!", KUBERNETES_IMAGE_PATH)
+						logger.warning("%s does not exist, required images will be downloaded!!!", KUBERNETES_IMAGE_PATH)
         
 	if 'odimraImagePath' not in CONTROLLER_CONF_DATA or \
                 CONTROLLER_CONF_DATA['odimraImagePath'] == None or \
@@ -681,9 +681,9 @@ def copy_k8_images(host_file,nodes_list):
 		k8s_image_deploy_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root --extra-vars "host={nodes}" k8_copy_image.yaml'.format(host_conf_file=host_file, nodes=nodes_list)
 		ret = exec(k8s_image_deploy_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
 		if ret != 0:
-		    logger.critical("k8s image deployment failed")
-		    os.chdir(cur_dir)
-		    exit(1)
+			logger.critical("k8s image deployment failed")
+			os.chdir(cur_dir)
+			exit(1)
 		os.remove(helm_config_file)
 		os.chdir(KUBESPRAY_SRC_PATH)
 
@@ -702,9 +702,9 @@ def deploy_k8s():
 	nodes_list = ""
 	for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
 		if CONTROLLER_CONF_DATA['nwPreference']=='dualStack':
-                        if attrs['ipv6']=="":
-                                logger.critical("ipV6 address is not provided in configuarion")
-                                exit(1)
+							if attrs['ipv6']=="":
+								logger.critical("ipV6 address is not provided in configuarion")
+								exit(1)
 		node_ip_list += "%s,%s,%s " %(node, attrs['ip'], attrs['ip'])
 		nodes_list += '{hostname},'.format(hostname=node)
 	nodes_list = nodes_list.rstrip(',')
@@ -746,13 +746,13 @@ def deploy_k8s():
 			exit(1)
 		if CONTROLLER_CONF_DATA['nwPreference']=='dualStack':
 		# load existing hosts.yaml created for the deployment_id
-		    load_k8s_host_conf()
+			load_k8s_host_conf()
 		#update the ipv6 address in hosts.yaml
-		    for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
-			    K8S_INVENTORY_DATA['all']['hosts'][node].update({"ipv6":attrs['ipv6']})
-		    SafeDumper.add_representer(type(None),lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:null', ''))
-		    with open(K8S_INVENTORY_FILE, 'w') as f:
-			    yaml.safe_dump(K8S_INVENTORY_DATA, f, default_flow_style=False)
+			for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
+				K8S_INVENTORY_DATA['all']['hosts'][node].update({"ipv6":attrs['ipv6']})
+			SafeDumper.add_representer(type(None),lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:null', ''))
+			with open(K8S_INVENTORY_FILE, 'w') as f:
+				yaml.safe_dump(K8S_INVENTORY_DATA, f, default_flow_style=False)
 
 	os.chdir(cur_dir)
 	logger.info("Completed k8s cluster deployment")
@@ -801,13 +801,13 @@ def load_odimra_certs(isUpgrade):
 	CONTROLLER_CONF_DATA['odimra']['odimraServerCert'] = read_file(os.path.join(cert_dir, 'odimra_server.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraServerKey'] = read_file(os.path.join(cert_dir, 'odimra_server.key'))
 	if CONTROLLER_CONF_DATA['odimra']['messageBusType'] == 'RedisStreams':
-                logger.info("RedisStreams is selected as messageBusType")
+				logger.info("RedisStreams is selected as messageBusType")
 	else:
-                CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientCert'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.crt'))
+				CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientCert'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.crt'))
 	if CONTROLLER_CONF_DATA['odimra']['messageBusType'] == "RedisStreams":
-                logger.info("RedisStreams is selected as messageBusType")
+				logger.info("RedisStreams is selected as messageBusType")
 	else:
-                CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientKey'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.key'))
+				CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientKey'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.key'))
 	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerCert'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerKey'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.key'))
 
@@ -1190,9 +1190,9 @@ def upgrade_config_map(config_map_name):
 		if data == "all":
 			odiraConfigHelmChartData= GROUP_VAR_DATA["odim_pv_pvc_secrets_helmcharts"]
 			for helm_chart_name  in odiraConfigHelmChartData:
-                                if 'pv-pvc' in helm_chart_name:
-                                        continue
-                                update_helm_charts(helm_chart_name)
+								if 'pv-pvc' in helm_chart_name:
+										continue
+								update_helm_charts(helm_chart_name)
 
 			odimHelmChartData= GROUP_VAR_DATA["odim_svc_helmcharts"]
 			for helm_chart_name  in odimHelmChartData:
@@ -1200,7 +1200,7 @@ def upgrade_config_map(config_map_name):
 
 			thirdPartyHelmCharts=GROUP_VAR_DATA["odim_third_party_helmcharts"]
 			for helm_chart_name  in thirdPartyHelmCharts:
-                                update_helm_charts(helm_chart_name)
+								update_helm_charts(helm_chart_name)
 
 			deploy_plugin('all')
 
@@ -1590,6 +1590,39 @@ def deploy_plugin(plugin_name):
 	# load existing hosts.yaml created for the deployment_id
 	load_k8s_host_conf()
 
+	# Validation for mandatory parameters in config file
+	pluginPackagePath = CONTROLLER_CONF_DATA['odimPluginPath'] + "/" + plugin_name
+	with open(pluginPackagePath + "/" + plugin_name + "-config.yaml", "r") as stream:
+			try:
+				pluginConf=yaml.safe_load(stream)
+				if pluginConf[plugin_name]['logPath'] == None or \
+					pluginConf[plugin_name]['username'] == None or \
+					pluginConf[plugin_name]['password'] == None:
+					logger.critical("mandatory parameter missing in Config file")
+					exit(1)
+				if plugin_name == "iloplugin":
+					if pluginConf[plugin_name]['iloPluginRootServiceUUID'] == None:
+						logger.critical("iloPluginRootServiceUUID parameter missing in Config file")
+						exit(1)
+				if plugin_name == "grfplugin":
+					if pluginConf[plugin_name]['rootServiceUUID'] == None:
+						logger.critical("rootServiceUUID parameter missing in Config file")
+						exit(1)
+				if plugin_name == "urplugin":
+					if pluginConf[plugin_name]['urPluginRootServiceUUID'] == None:
+						logger.critical("urPluginRootServiceUUID parameter missing in Config file")
+						exit(1)
+				if plugin_name == "dellplugin":
+					if pluginConf[plugin_name]['dellPluginRootServiceUUID'] == None:
+						logger.critical("dellPluginRootServiceUUID parameter missing in Config file")
+						exit(1)
+				if plugin_name == "lenovoplugin":
+					if pluginConf[plugin_name]['lenovoPluginRootServiceUUID'] == None:
+						logger.critical("lenovoPluginRootServiceUUID parameter missing in Config file")
+						exit(1)
+			except yaml.YAMLError as exc:
+				logger.error(exc)
+				exit(1)
 	plugin_list = []
 	if plugin_name != 'all':
 		pluginPackagePath = CONTROLLER_CONF_DATA['odimPluginPath'] + "/" + plugin_name
@@ -1655,7 +1688,7 @@ def remove_plugin(plugin_name):
 	cur_dir = os.getcwd()
 	host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
 	pluginPackagePath = CONTROLLER_CONF_DATA['odimPluginPath'] + "/" + plugin_name
-	
+
 	if not(path.isdir(pluginPackagePath)):
 		logger.info("%s was not deployed via odim controller", plugin_name)
 		os.chdir(cur_dir)

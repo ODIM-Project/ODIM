@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20210901061202-f84c396a018e
-	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20210622112605-b6361e8ba368
+	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20220426104855-9b203a83173f
 	github.com/kataras/iris/v12 v12.2.0-alpha9
 	github.com/sirupsen/logrus v1.8.1
 )

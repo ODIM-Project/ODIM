@@ -2,9 +2,10 @@ package rpc
 
 import (
 	"context"
-	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
 	"reflect"
 	"testing"
+
+	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
 )
 
 func TestAuth_IsAuthorized(t *testing.T) {

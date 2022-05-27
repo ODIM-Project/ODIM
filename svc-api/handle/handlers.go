@@ -110,6 +110,9 @@ func getService(microServices []string, uuid string) models.ServiceRoot {
 		case "CompositionService":
 			serviceRoot.CompositionService = &models.Service{OdataID: servicePath}
 
+		case "Licenses":
+			serviceRoot.Licenses = &models.Service{OdataID: servicePath}
+
 		}
 	}
 
@@ -759,6 +762,23 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "MetricReport.v1_4_2"},
 				},
 			},
+			models.Reference{URI: "https://redfish.dmtf.org/schemas/v1/LicenseCollection_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "LicenseCollection"},
+				},
+			},
+			models.Reference{URI: "https://redfish.dmtf.org/schemas/v1/LicenseService_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "LicenseService"},
+					models.Include{Namespace: "LicenseService.v1_0_0"},
+				},
+			},
+			models.Reference{URI: "https://redfish.dmtf.org/schemas/v1/License_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "License"},
+					models.Include{Namespace: "License.v1_0_0"},
+				},
+			},
 		},
 	}
 
@@ -1144,6 +1164,28 @@ func CompositionServiceMethodNotAllowed(ctx iris.Context) {
 }
 
 
+// LicenseMethodNotAllowed holds builds reponse for the unallowed http operation on License URLs and returns 405 error.
+func LicenseMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
+	url := ctx.Request().URL
+	path := url.Path
+	LicenseId := ctx.Params().Get("id")
+
+	// Extend switch case, when each path, requires different handling
+	switch path {
+	case "/redfish/v1/LicenseService/Licenses":
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	case "/redfish/v1/LicenseService":
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	case "/redfish/v1/LicenseService/Licenses" + LicenseId:
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	default:
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	}
+
+	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}
 // ManagersMethodNotAllowed holds builds reponse for the unallowed http operation on Managers URLs and returns 405 error.
 func ManagersMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
@@ -1172,6 +1214,14 @@ func ManagersMethodNotAllowed(ctx iris.Context) {
 
 // TsMethodNotAllowed holds builds reponse for the unallowed http operation on Task Service URLs and returns 405 error.
 func TsMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}
+
+// UpdateServiceMethodNotAllowed holds builds reponse for the unallowed http operation on Update Service URLs and returns 405 error.
+func UpdateServiceMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)

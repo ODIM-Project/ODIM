@@ -842,17 +842,17 @@ It is recommended to have a regular backup of the updated deployment configurati
    nodePasswordFilePath: <Absolute path of the file containing encrypted node password>
    nodes:
      knode1:
-       ip: 10.18.24.100
+       ip: 17.5.7.8
        ipv6: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
        username: user
        priority: 100
      knode2:
-       ip: 10.18.24.101
+       ip: 17.5.7.9
        ipv6: 2001:0db8:85a3:0000:0000:8a2e:0371:7335
        username: user
        priority: 99
      knode3:
-       ip: 10.18.24.102
+       ip: 17.5.7.10
        ipv6: 2001:0db8:85a3:0000:0000:8a2e:0371:7336
        username: user
        priority: 98
@@ -913,7 +913,7 @@ It is recommended to have a regular backup of the updated deployment configurati
      
      nginxLogPath: /var/log/nginx
      virtualRouterID: 100
-     virtualIP: 10.18.24.103
+     virtualIP: 17.5.7.11
      virtualIPv6:2001:0db8:85a3:0000:0000:8a2e:0373:7337
      
      rootCACert:
@@ -1206,12 +1206,12 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     Run the following command and copy the output:
 
     ```
-    echo -n '<HPE ODIMRA password>' |openssl pkeyutl -encrypt -inkey <odimCertsPath>/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
+    echo -n '<ODIMRA password>' |openssl pkeyutl -encrypt -inkey <odimCertsPath>/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
     ```
 
     In this command, replace:
 
-    -  <HPE ODIMRA password> with the password of Resource Aggregator for ODIM \(default administrator account password\).
+    -  <ODIMRA password> with the password of Resource Aggregator for ODIM \(default administrator account password\).
     -  <odimCertsPath> with the path you specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
 
     Example output:
@@ -1390,7 +1390,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
      dellPluginRootServiceUUID: 7a38b735-8b9f-48a0-b3e7-e5a180567d37
      username: admin
      password: sTfTyTZFvNj5zU5Tt0TfyDYU-ye3_ZqTMnMIj-LAeXaa8vCnBqq8Ga7zV6ZdfqQCdSAzmaO5AJxccD99UHLVlQ==
-     lbHost: 10.24.1.232
+     lbHost: 17.5.7.8
      lbPort: 30084
      logPath: /var/log/dellplugin_logs
     
@@ -1544,7 +1544,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
      lenovoPluginRootServiceUUID: 7a38b735-8b9f-48a0-b3e7-e5a180567d37
      username: admin
      password: sTfTyTZFvNj5zU5Tt0TfyDYU-ye3_ZqTMnMIj-LAeXaa8vCnBqq8Ga7zV6ZdfqQCdSAzmaO5AJxccD99UHLVlQ==
-     lbHost: 10.24.1.232
+     lbHost: 17.5.7.9
      lbPort: 30089
      logPath: /var/log/lenovoplugin_logs
    ```
@@ -2216,7 +2216,7 @@ Rolling back the deployment of Resource Aggregator for ODIM to a particular revi
     history --dep <deployment_name>
     ```
 
-    Replace <deployment\_name\> with the name of the deployment for which you want to list the revision history. To know all the supported deployment names, see [HPE Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
+    Replace <deployment\_name\> with the name of the deployment for which you want to list the revision history. To know all the supported deployment names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
 
     You will receive a list of revisions along with the revision numbers.
 
@@ -2408,7 +2408,7 @@ You can also refer the following links for exploring Wiki page and slack channel
     ```
     export http_proxy=<your_HTTP_proxy_address>
     export https_proxy=<your_HTTP_proxy_address>
-    no_proxy="127.0.0.1,localhost,localhost.localdomain,10.96.0.0/12,<Deployment_Node_IP_address>,\
+    no_proxy="127.0.0.1,localhost,localhost.localdomain,17.5.7.9/12,<Deployment_Node_IP_address>,\
     <Comma-separated-list-of-Ip-addresses-of-all-cluster-nodes>"
     ```
 
@@ -2420,7 +2420,7 @@ You can also refer the following links for exploring Wiki page and slack channel
     ```
    export http_proxy=<your_HTTP_proxy_address>
    export https_proxy=<your_HTTP_proxy_address>
-   no_proxy="127.0.0.1,localhost,localhost.localdomain,10.96.0.0/12,<Deployment_Node_IP_address>,<Cluster_Node1_IP>,\
+   no_proxy="127.0.0.1,localhost,localhost.localdomain,17.5.7.10/12,<Deployment_Node_IP_address>,<Cluster_Node1_IP>,\
    <Cluster_Node1_IP>,<Cluster_Node2_IP>,<Cluster_Node3_IP>"
     ```
 
@@ -2692,16 +2692,16 @@ The following table lists all the configuration parameters required by odim-cont
 |nwPreference|Default value is `ipv4`. If you specify `dualStack` for this parameter, the resource aggregator API service can be reached via both IPv4 and IPv6 addresses.|
 |odimControllerSrcPath|The absolute path of the downloaded odim-controller source code - `/home/<username\>/ODIM/odim-controller`.|
 |odimVaultKeyFilePath|The absolute path of the file containing the encrypted crypto key of the odim-vault tool - `/home/<username\>/ODIM/odim-controller/scripts/odimVaultKeyFile`<br>|
-|odimCertsPath|The absolute path of the directory where certificates required by the services of Resource Aggregator for ODIM are present. If you leave it empty, it gets updated to a default path during deployment \(when odim-controller generates certificates required by the services of Resource Aggregator for ODIM\).<br>Default path of generated certificates is: `/home/<username>/ODIM/odim-controller/scripts/certs/<deploymentID\>`<br>To generate and use your own CA certificates, see [Using your own CA certificates and keys](#using-your-own-ca-certificates-and-keys). Provide the path where you have stored your own CA certificates as the value for odimCertsPath.<br>|
+|odimCertsPath|The absolute path of the directory where certificates required by the services of Resource Aggregator for ODIM are present. If you leave it empty, it gets updated to a default path during deployment \(when odim-controller generates certificates required by the services of Resource Aggregator for ODIM\).<br>Default path of generated certificates is: `/home/<username>/ODIM/odim-controller/scripts/certs/<deploymentID\>`<br>To generate and use your own CA certificates, see [Using your own CA certificates and keys](#using-your-own-ca-certificates-and-keys). Provide the path where you have stored your own CA certificates as the value for odimCertsPath.|
 |kubernetesImagePath|Absolute path of the Kubernetes core images - `/home/<username>/ODIM/kubernetes_images`.<br><blockquote>NOTE: If it is left empty, the Kubernetes images will be downloaded from the Internet.<br></blockquote>|
-|odimraImagePath|Absolute path of the images of Resource Aggregator for ODIM - `/home/<username>/ODIM/odimra_images`<br>|
+|odimraImagePath|Absolute path of the images of Resource Aggregator for ODIM - `/home/<username>/ODIM/odimra_images`|
 |odimPluginPath|Absolute path of the plugins directory - `/home/<username>/plugins`<br><br />NOTE: This parameter must not be empty. Specify a valid value for `odimPluginPath`, else specify its value as `""` (empty double quotation marks).|
 |odimra:|List of configurations required for deploying the services of Resource Aggregator for ODIM and third-party services.|
 |groupID|Used for creating the odimra group. Default value is 2021. You can optionally change it to a different value.<br><blockquote>NOTE: Ensure that the group id is not already in use on any of the nodes.<br></blockquote>|
 |userID|User ID to be used for creating the odimra user. Default value is 2021. You can change it to a different value.<br> <blockquote>NOTE: Ensure that the group id is not already in use on any of the nodes.<br></blockquote>|
 |namespace|Namespace to be used for creating the service pods of Resource Aggregator for ODIM. Default value is "odim". You can optionally change it to a different value.<br>|
 |fqdn|Name of the server associated with the services of Resource Aggregator for ODIM. This name is used for communication among the services of Resource Aggregator for ODIM.<br>Example: "odim.example.com".|
-|rootServiceUUID|RootServiceUUID to be used by the resource aggregator and the plugin services. To generate an UUID, run the following command:<br> `uuidgen` <br> Copy the output and paste it as the value for rootServiceUUID.<br>|
+|rootServiceUUID|RootServiceUUID to be used by the resource aggregator and the plugin services. To generate an UUID, run the following command:<br> `uuidgen` <br> Copy the output and paste it as the value for rootServiceUUID.|
 |haDeploymentEnabled|Default value is `True`. It deploys third-party services as a three-instance cluster.<br />NOTE: For three-node cluster deployments, always set it to `True`.|
 |connectionMethodConf|Parameters of type array required to configure the supported connection methods. <br><blockquote>NOTE: To deploy a plugin after deploying the resource aggregator services, add its connection method information in the array and update the file using odim-controller `--upgrade` option.<br></blockquote>|
 |kafkaNodePort|The port to be used for accessing the Kafka services from external services. Default port is 30092. You can optionally change it.<br><blockquote>NOTE: Ensure that the port is in the range of 30000 to 32767.<br></blockquote>|
@@ -2780,7 +2780,8 @@ To run curl commands on a different server, perform the following steps to provi
    ```
 
 <blockquote> NOTE: 
-- To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file available in this path: `/etc/ssl/certs/ca-certificates.crt`. You can access the base URL using a REST client. To access it using a REST client, add the rootCA.crt file of HPE Resource Aggregator for ODIM to the browser where the REST client is launched.</blockquote>
+- To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file available in this path: `/etc/ssl/certs/ca-certificates.crt`. You can access the base URL using a REST client. To access it using a REST client, add the rootCA.crt file of Resource Aggregator for ODIM to the browser where the REST client is launched.</blockquote>
+
 
 
 ## Plugin configuration parameters
@@ -3174,65 +3175,67 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the GRF plugin: grfplugin, grfplugin-events. <br />Add these values to the existing comma-separated list.<br> |
     | odimPluginPath               | The path of the directory where the GRF Helm package, the `grfplugin` image, and the modified `grfplugin-config.yaml` are copied. |
     
-
-Example:
+    Example:
+    
+    ```
     odimPluginPath: /home/bruce/plugins
-    odimra:
-      groupID: 2021
-      userID: 2021
-      namespace: odim
-      fqdn:
-      rootServiceUUID:
-      haDeploymentEnabled: True
-      connectionMethodConf:
-      - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
-      odimraKafkaClientCertFQDNSan: grfplugin,grfplugin-events
-      odimraServerCertFQDNSan: grfplugin,grfplugin-events
-
+        odimra:
+          groupID: 2021
+          userID: 2021
+          namespace: odim
+          fqdn:
+          rootServiceUUID:
+          haDeploymentEnabled: True
+          connectionMethodConf:
+          - ConnectionMethodType: Redfish
+            ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+          odimraKafkaClientCertFQDNSan: grfplugin,grfplugin-events
+          odimraServerCertFQDNSan: grfplugin,grfplugin-events
+    ```
+    
 13. Move odimra_kafka_client.key, odimra_kafka_client.crt, odimra_server.key and odimra_server.crt stored in odimCertsPath to a different folder.
 
-     <blockquote>NOTE: odimCertsPath is the absolute path of the directory where certificates required by the services of Resource Aggregator for ODIM are present. Refer to the "Odim-controller configuration parameters" section in this document for more information on odimCertsPath. </blockquote>
+      <blockquote>NOTE: odimCertsPath is the absolute path of the directory where certificates required by the services of Resource Aggregator for ODIM are present. Refer to the "Odim-controller configuration parameters" section in this document for more information on odimCertsPath. </blockquote>
 
 14. Update odimra-secrets:
 
-      ```
-    python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-secret
-      ```
+       ```
+     python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-secret
+       ```
 
 15. Run the following command: 
 
-      ```
-     python3 odim-controller.py --config \ 
-     /home/${USER}/ODIM/odim-controller/scripts\
-     /kube_deploy_nodes.yaml --upgrade odimra-config
-      ```
+       ```
+      python3 odim-controller.py --config \ 
+      /home/${USER}/ODIM/odim-controller/scripts\
+      /kube_deploy_nodes.yaml --upgrade odimra-config
+       ```
 
 16. Run the following command to install the GRF plugin: 
-     ```
-     python3 odim-controller.py --config \
-     /home/${USER}/ODIM/odim-controller/scripts\
-     /kube_deploy_nodes.yaml --add plugin --plugin grfplugin
-     ```
+      ```
+      python3 odim-controller.py --config \
+      /home/${USER}/ODIM/odim-controller/scripts\
+      /kube_deploy_nodes.yaml --add plugin --plugin grfplugin
+      ```
 
 17. Run the following command on the cluster nodes to verify the GRF plugin pod is up and running: 
 
-      ```
-     kubectl get pods -n odim
-      ```
+       ```
+      kubectl get pods -n odim
+       ```
 
-     Example output showing the GRF plugin pod details:
+      Example output showing the GRF plugin pod details:
 
-      ```
-     NAME READY STATUS RESTARTS AGE
-     grfplugin-5fc4b6788-2xx97 1/1 Running 0 4d22h
-      ```
+       ```
+      NAME READY STATUS RESTARTS AGE
+      grfplugin-5fc4b6788-2xx97 1/1 Running 0 4d22h
+       ```
 
 18. Navigate to `~/ODIM/odim-controller/scripts`.
 
-      ```
-     cd ~/ODIM/odim-controller/scripts
-      ```
+       ```
+      cd ~/ODIM/odim-controller/scripts
+       ```
 
 19. [Add the GRF plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework). 
 
@@ -3495,7 +3498,7 @@ Example:
 
 
 3. Perform the following steps on the deployment node: 
-    1. Remove the existing worker node. To know how to remove a node, see step 1 in [Scaling down the resources and services of HPE Resource Aggregator for ODIM](#). 
+    1. Remove the existing worker node. To know how to remove a node, see step 1 in [Scaling down the resources and services of Resource Aggregator for ODIM](#Scaling-down-the-resources-and-services-of-Resource-Aggregator-for-ODIM). 
     2. Edit `$\{K8S\_INVENTORY\_FILE\}` to add the removed worker node as a new controller node with required details under the following sections. 
 
         - etcd

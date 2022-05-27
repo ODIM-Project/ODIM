@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -40,6 +41,7 @@ func createSession(token, id string, privileges map[string]bool, createdTime, la
 }
 
 func TestAuth(t *testing.T) {
+	config.SetUpMockConfig(t)
 	Lock.Lock()
 	common.SetUpMockConfig()
 	Lock.Unlock()

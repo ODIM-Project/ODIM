@@ -24,9 +24,12 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/stretchr/testify/assert"
 
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
+	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
 
@@ -208,6 +211,39 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 			}
 		})
 	}
+
+	StringsEqualFold = func(s, t string) bool {
+		return true
+	}
+	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+		err = &errors.Error{}
+		return
+	}
+	resp := pluginContact.SetDefaultBootOrder("7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
+	assert.NotNil(t, resp, "Response should have error")
+
+	StringsEqualFold = func(s, t string) bool {
+		return false
+	}
+	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+		err = &errors.Error{}
+		return
+	}
+	resp = pluginContact.SetDefaultBootOrder("7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
+	assert.NotNil(t, resp, "Response should have error")
+	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+		return scommon.ContactPlugin(req, errorMessage)
+	}
+	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+		return &errors.Error{}
+	}
+	resp = pluginContact.SetDefaultBootOrder("7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
+
+	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+		return json.Unmarshal(data, v)
+	}
+
 }
 
 func TestPluginContact_ChangeBiosSettings(t *testing.T) {
@@ -378,6 +414,67 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			}
 		})
 	}
+	// Invalid JSON
+	req := systemsproto.BiosSettingsRequest{
+		SystemID:     "7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
+		RequestBody:  request,
+		SessionToken: "token",
+	}
+	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+		return &errors.Error{}
+	}
+	res := pluginContact.ChangeBiosSettings(&req)
+	assert.Equal(t, http.StatusInternalServerError, int(res.StatusCode), "status should be StatusInternalServerError")
+
+	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+		return json.Unmarshal(data, v)
+	}
+	req = systemsproto.BiosSettingsRequest{
+		SystemID:     "7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
+		RequestBody:  []byte(`{"attributes": {"bootMode": "mode"}}`),
+		SessionToken: "token",
+	}
+	res = pluginContact.ChangeBiosSettings(&req)
+	assert.Equal(t, http.StatusBadRequest, int(res.StatusCode), "status should be StatusBadRequest")
+
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return "", &errors.Error{}
+	}
+	req = systemsproto.BiosSettingsRequest{
+		SystemID:     "7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
+		RequestBody:  request,
+		SessionToken: "token",
+	}
+	res = pluginContact.ChangeBiosSettings(&req)
+	assert.Equal(t, http.StatusInternalServerError, int(res.StatusCode), "status should be StatusInternalServerError")
+
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
+	}
+	StringsEqualFold = func(s, t string) bool {
+		return true
+	}
+	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+		err = &errors.Error{}
+		return
+	}
+	res = pluginContact.ChangeBiosSettings(&req)
+	assert.NotNil(t, res, "Response should have error")
+
+	StringsEqualFold = func(s, t string) bool {
+		return false
+	}
+	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+		err = &errors.Error{}
+		return
+	}
+	res = pluginContact.ChangeBiosSettings(&req)
+	assert.NotNil(t, res, "Response should have error")
+
+	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+		return scommon.ContactPlugin(req, errorMessage)
+	}
+
 }
 
 // this client is for plugin login returns an error
@@ -579,4 +676,68 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 			}
 		})
 	}
+
+	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+		return &errors.Error{}
+	}
+	req := systemsproto.BootOrderSettingsRequest{
+		SystemID:     "7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
+		RequestBody:  request,
+		SessionToken: "token",
+	}
+	resp := pluginContact.ChangeBootOrderSettings(&req)
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status code should be StatusBadRequest")
+
+	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+		return json.Unmarshal(data, v)
+	}
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return "error", nil
+	}
+	req = systemsproto.BootOrderSettingsRequest{
+		SystemID:     "7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
+		RequestBody:  []byte(`{"attributes": {"bootMode": "mode"}}`),
+		SessionToken: "token",
+	}
+	resp = pluginContact.ChangeBootOrderSettings(&req)
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status code should be StatusBadRequest")
+
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return "", &errors.Error{}
+	}
+	req = systemsproto.BootOrderSettingsRequest{
+		SystemID:     "7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
+		RequestBody:  request,
+		SessionToken: "token",
+	}
+	resp = pluginContact.ChangeBootOrderSettings(&req)
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
+	}
+
+	// Invalid PreferredAuthType
+	StringsEqualFold = func(s, t string) bool {
+		return true
+	}
+	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 scommon.ResponseStatus, err error) {
+		err = &errors.Error{}
+		return
+	}
+	resp = pluginContact.ChangeBootOrderSettings(&req)
+	assert.NotNil(t, resp, "Response should have error")
+	StringsEqualFold = func(s, t string) bool {
+		return false
+	}
+	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 scommon.ResponseStatus, err error) {
+		err = &errors.Error{}
+		return
+	}
+	resp = pluginContact.ChangeBootOrderSettings(&req)
+	assert.NotNil(t, resp, "Response should have error")
+
+	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 scommon.ResponseStatus, err error) {
+		return scommon.ContactPlugin(req, errorMessage)
+	}
+
 }

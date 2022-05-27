@@ -18,16 +18,22 @@ package scommon
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
+)
+
+var (
+	IOReadAll        = ioutil.ReadAll
+	JsonUnMashalFunc = json.Unmarshal
 )
 
 // Schema is used to define the allowed values for search/filter
@@ -131,7 +137,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 	}
 
 	var resourceData map[string]interface{}
-	err = json.Unmarshal(body, &resourceData)
+	err = JsonUnMashalFunc(body, &resourceData)
 	if err != nil {
 		return "", err
 	}
@@ -218,7 +224,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		}
 	}
 	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := IOReadAll(response.Body)
 	if err != nil {
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError

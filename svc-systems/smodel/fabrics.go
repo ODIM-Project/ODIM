@@ -15,7 +15,6 @@
 package smodel
 
 import (
-	"encoding/json"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -26,9 +25,13 @@ type Fabric struct {
 	PluginID string
 }
 
+var (
+	GetPluginDataFunc = GetPluginData
+)
+
 // GetFabricManagers fetches all the fabrics details from DB
 func GetFabricManagers() ([]Plugin, error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
@@ -44,11 +47,11 @@ func GetFabricManagers() ([]Plugin, error) {
 			log.Warn("while trying to read DB contents for " + key + " in Fabric table, got " + err.Error())
 			continue
 		}
-		if errs := json.Unmarshal([]byte(fabricData), &fabric); errs != nil {
+		if errs := JSONUnmarshalFunc([]byte(fabricData), &fabric); errs != nil {
 			log.Warn("while trying to unmarshal DB contents for " + key + " in Fabric table, got " + err.Error())
 			continue
 		}
-		manager, err := GetPluginData(fabric.PluginID)
+		manager, err := GetPluginDataFunc(fabric.PluginID)
 		if err != nil {
 			log.Warn("while trying to collect DB contents for " + fabric.PluginID + " in Plugin table, got " + err.Error())
 			continue

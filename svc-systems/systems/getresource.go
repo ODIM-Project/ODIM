@@ -20,8 +20,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"regexp"
 	"strconv"
@@ -38,6 +39,14 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
+)
+
+var (
+	GetSystemResetInfoFunc        = smodel.GetSystemResetInfo
+	GetResourceInfoFromDeviceFunc = scommon.GetResourceInfoFromDevice
+	GetAllKeysFromTableFunc       = smodel.GetAllKeysFromTable
+	GetDeviceLoadInfoFunc         = getDeviceLoadInfo
+	GetStringFunc                 = smodel.GetString
 )
 
 func setRegexFlag(val string) bool {
@@ -241,7 +250,7 @@ func GetMembers(allowed map[string]map[string]bool, expression []string, resp re
 //getAllSystemIDs will fetch all the document ID's present in the DB
 func getAllSystemIDs(resp response.RPC) ([]dmtf.Link, response.RPC, error) {
 	var mems []dmtf.Link
-	systemKeys, err := smodel.GetAllKeysFromTable("ComputerSystem")
+	systemKeys, err := GetAllKeysFromTableFunc("ComputerSystem")
 	if err != nil {
 		log.Error("error getting all keys of systemcollection table : " + err.Error())
 		errorMessage := err.Error()
@@ -555,7 +564,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 	var respData string
 	var saveRequired bool
 	// Getting the reset flag details for the requested URL
-	deviceLoadFlag := getDeviceLoadInfo(req.URL, req.RequestParam)
+	deviceLoadFlag := GetDeviceLoadInfoFunc(req.URL, req.RequestParam)
 	// deviceLoadFlag is true means flag is set for requested URL or the SystemID URL, load from device
 	// deviceLoadFlag is false indicates flag is not set, load from DB
 	if deviceLoadFlag {
@@ -629,7 +638,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 func getDeviceLoadInfo(URL, systemID string) bool {
 	systemURL := "/redfish/v1/Systems/" + systemID
 	var resetFlag bool
-	if _, err := smodel.GetSystemResetInfo(URL); err == nil {
+	if _, err := GetSystemResetInfoFunc(URL); err == nil {
 		resetFlag = true
 	} else if _, err := smodel.GetSystemResetInfo(systemURL); err == nil {
 		resetFlag = true
@@ -674,6 +683,7 @@ func rediscoverStorageInventory(systemID, systemURL string) {
 // GetSystemsCollection is to fetch all the Systems uri's and retruns with created collection
 // of systems data from odimra
 func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
+
 	allowed := make(map[string]map[string]bool)
 	allowed["searchKeys"] = make(map[string]bool)
 	allowed["conditionKeys"] = make(map[string]bool)
@@ -698,7 +708,8 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 		}
 		return resp
 	}
-	systemKeys, err := smodel.GetAllKeysFromTable("ComputerSystem")
+
+	systemKeys, err := GetAllKeysFromTableFunc("ComputerSystem")
 	if err != nil {
 		log.Error("error getting all keys of systemcollection table : " + err.Error())
 		errorMessage := err.Error()
@@ -746,7 +757,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 	var data string
 	var err *errors.Error
 	// check the whether SystemResetInfo available in db. If it is available, then get the data from device
-	_, err = smodel.GetSystemResetInfo(req.URL)
+	_, err = GetSystemResetInfoFunc(req.URL)
 	if err == nil {
 		var getDeviceInfoRequest = scommon.ResourceInfoRequest{
 			URL:             req.URL,
@@ -758,7 +769,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 			ResourceName:    "ComputerSystem",
 		}
 		var err error
-		if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true); err != nil {
+		if data, err = GetResourceInfoFromDeviceFunc(getDeviceInfoRequest, true); err != nil {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 		}
 	} else {
@@ -788,12 +799,12 @@ func getStringData(key, match, expr string, regexFlag bool) ([]string, error) {
 		return smodel.GetString(key, match, regexFlag)
 	}
 	// get all data
-	allKeys, err := smodel.GetString(key, "", regexFlag)
+	allKeys, err := GetStringFunc(key, "", regexFlag)
 	if err != nil {
 		return []string{}, err
 	}
 	// get matching data
-	matchedKeys, err := smodel.GetString(key, match, regexFlag)
+	matchedKeys, err := GetStringFunc(key, match, regexFlag)
 	if err != nil {
 		return []string{}, err
 	}

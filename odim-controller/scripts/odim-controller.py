@@ -1591,6 +1591,7 @@ def deploy_plugin(plugin_name):
 	load_k8s_host_conf()
 
 	# Validation for mandatory parameters in config file
+	uid = "ServiceUUID"
 	pluginPackagePath = CONTROLLER_CONF_DATA['odimPluginPath'] + "/" + plugin_name
 	with open(pluginPackagePath + "/" + plugin_name + "-config.yaml", "r") as stream:
 			try:
@@ -1601,24 +1602,24 @@ def deploy_plugin(plugin_name):
 					logger.critical("mandatory parameter missing in Config file")
 					exit(1)
 				if plugin_name == "iloplugin":
-					if pluginConf[plugin_name]['iloPluginRootServiceUUID'] == None:
-						logger.critical("iloPluginRootServiceUUID parameter missing in Config file")
+					if pluginConf[plugin_name]['iloPluginRoot' + uid] == None:
+						logger.critical("ServiceUUID parameter missing in Config file")
 						exit(1)
 				if plugin_name == "grfplugin":
-					if pluginConf[plugin_name]['rootServiceUUID'] == None:
-						logger.critical("rootServiceUUID parameter missing in Config file")
+					if pluginConf[plugin_name]['root' + uid] == None:
+						logger.critical("ServiceUUID parameter missing in Config file")
 						exit(1)
 				if plugin_name == "urplugin":
-					if pluginConf[plugin_name]['urPluginRootServiceUUID'] == None:
-						logger.critical("urPluginRootServiceUUID parameter missing in Config file")
+					if pluginConf[plugin_name]['urPluginRoot' + uid] == None:
+						logger.critical("ServiceUUID parameter missing in Config file")
 						exit(1)
 				if plugin_name == "dellplugin":
-					if pluginConf[plugin_name]['dellPluginRootServiceUUID'] == None:
-						logger.critical("dellPluginRootServiceUUID parameter missing in Config file")
+					if pluginConf[plugin_name]['dellPluginRoot' + uid] == None:
+						logger.critical("ServiceUUID parameter missing in Config file")
 						exit(1)
 				if plugin_name == "lenovoplugin":
-					if pluginConf[plugin_name]['lenovoPluginRootServiceUUID'] == None:
-						logger.critical("lenovoPluginRootServiceUUID parameter missing in Config file")
+					if pluginConf[plugin_name]['lenovoPluginRoot' + uid] == None:
+						logger.critical("ServiceUUID parameter missing in Config file")
 						exit(1)
 			except yaml.YAMLError as exc:
 				logger.error(exc)

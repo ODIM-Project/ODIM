@@ -14,12 +14,12 @@
 # under the License.
 LIST=("svc-task")
 echo $LIST
-cd $i
+cd $LIST
 go build -i .
 if [ $? -eq 0 ]; then
-    echo Successfully build $i service
+    echo Successfully build $LIST service
 else
-    echo Failed to build $i service
+    echo Failed to build $LIST service
 fi
 cd ../
 

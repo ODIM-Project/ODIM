@@ -3661,7 +3661,7 @@ These checks run in parallel and take approximately 9 minutes to complete.
 1. build_unittest.yml
    - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in the link: https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md
    - Installs Go 1.17.2 package
-   - Installs and configures Redis 5.0.8 with two instances running on ports 6379 and 6380
+   - Installs and configures Redis 6.2.6 with two instances running on ports 6379 and 6380
    - Checks out the PR code into the Go module directory
    - Builds/compiles the code
    - Runs the unit tests

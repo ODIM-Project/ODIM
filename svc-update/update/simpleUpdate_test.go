@@ -14,14 +14,18 @@
 package update
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/stretchr/testify/assert"
 )
 
 type args struct {
@@ -39,12 +43,19 @@ func mockCreateChildTask(sessionID, taskID string) (string, error) {
 		return "someSubTaskID", nil
 	}
 }
+func mockCreateChildTaskError(sessionID, taskID string) (string, error) {
+	return "", errors.New("")
+}
 
 func mockUpdateTask(task common.TaskData) error {
 	if task.TaskID == "invalid" {
 		return fmt.Errorf("task with this ID not found")
 	}
 	return nil
+}
+func mockUpdateErrorTask(task common.TaskData) error {
+	return fmt.Errorf("Cancelling")
+
 }
 
 func TestSimpleUpdate(t *testing.T) {
@@ -107,6 +118,58 @@ func TestSimpleUpdate(t *testing.T) {
 				StatusCode: http.StatusInternalServerError,
 			},
 		},
+		{
+			name: "Invalid JSON ",
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &updateproto.UpdateRequest{
+					SessionToken: "validToken",
+					RequestBody:  []byte(`invalidJson`),
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusInternalServerError,
+			},
+		},
+		{
+			name: "Target 0",
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &updateproto.UpdateRequest{
+					SessionToken: "validToken",
+					RequestBody:  []byte(`{"Targets":[]}`),
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "Invalid filed name",
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &updateproto.UpdateRequest{
+					SessionToken: "validToken",
+					RequestBody:  []byte(`{"imageURI":"abc","Targets":["/redfish/v1/Systems/uuid.1/target1"],"@redfish.OperationApplyTime": "OnStartUpdateRequest"}`),
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "Invalid target",
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &updateproto.UpdateRequest{
+					SessionToken: "validToken",
+					RequestBody:  []byte(`{"Targets":["dummy"]}`),
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotFound,
+			},
+		},
 	}
 	e := mockGetExternalInterface()
 	for _, tt := range tests {
@@ -115,5 +178,85 @@ func TestSimpleUpdate(t *testing.T) {
 				t.Errorf("SimpleUpdate() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+func Test_SimpleUpdate(t *testing.T) {
+	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid.1/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
+	e := mockGetExternalInterface()
+	req := &updateproto.UpdateRequest{
+		SessionToken: "validToken",
+		RequestBody:  request3,
+	}
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return "", errors.New("")
+	}
+	e.SimpleUpdate("invalid", "dummy", req)
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
+	}
+	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
+		return nil, errors.New("")
+	}
+	e.SimpleUpdate("valid", "validId", req)
+
+	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
+		return json.Marshal(v)
+	}
+}
+
+func TestExternalInterface_sendRequestPreferedAuthType(t *testing.T) {
+	config.SetUpMockConfig(t)
+	e := mockGetExternalInterface()
+	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid.1/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
+	subTaskChannel := make(chan int32, 7)
+
+	e.External.ContactPlugin = mockContactPluginError
+	StringsEqualFoldFunc = func(s, t string) bool {
+		return true
+	}
+	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	StringsEqualFoldFunc = func(s, t string) bool {
+		return false
+	}
+
+	e.External.GetTarget = mockGetTargetError
+	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	e.External.GetTarget = mockGetTarget
+	e.External.GenericSave = stubGenericSaveError
+	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	e.External.GenericSave = stubGenericSave
+	e.External.DevicePassword = stubDevicePasswordError
+	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	e.External.DevicePassword = stubDevicePassword
+	e.External.ContactPlugin = mockContactPluginError
+
+	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	e.External.GetPluginData = mockGetPluginDataError
+	e.External.ContactPlugin = mockContactPlugin
+
+	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	e.External.GetPluginData = mockGetPluginData
+	e.External.UpdateTask = mockUpdateErrorTask
+
+	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	assert.True(t, true, "There should not be error")
+
+	for i := 0; i < 7; i++ {
+		select {
+		case statusCode := <-subTaskChannel:
+			fmt.Println(statusCode)
+		}
 	}
 }

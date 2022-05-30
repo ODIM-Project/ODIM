@@ -190,7 +190,7 @@ The following table lists the software components and their versions that are co
 |etcd|1.16|
 |Java JRE|11|
 |Kafka|2.5.0|
-|Redis|6.2.5|
+|Redis|6.2.6|
 |Ubuntu LTS|20.04|
 |ZooKeeper|3.5.7|
 |Docker|20.10.11|

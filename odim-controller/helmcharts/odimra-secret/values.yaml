@@ -9,3 +9,4 @@ odimra:
   odimraKafkaClientKey:
   odimraEtcdServerCert:
   odimraEtcdServerKey:
+  redisPassword:

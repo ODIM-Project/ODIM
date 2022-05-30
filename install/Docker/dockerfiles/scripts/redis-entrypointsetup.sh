@@ -50,7 +50,11 @@ function launchsentinel() {
 
   while true; do
     echo "Trying to connect to Sentinel Service"
-    master=$(redis-cli -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
+    if [[ -n ${REDIS_DEFAULT_PASSWORD} ]]; then
+      master=$(redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
+    else
+      master=$(redis-cli -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
+    fi
     if [[ -n ${master} ]]; then
       echo "Connected to Sentinel Service and retrieved Redis Master IP as ${master}"
       master="${master//\"}"
@@ -115,7 +119,11 @@ function launchslave() {
 
   while true; do
     echo "Trying to retrieve the Master IP again, in case of failover master ip would have changed."
-    master=$(redis-cli -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
+    if [[ -n ${REDIS_DEFAULT_PASSWORD} ]]; then
+      master=$(redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
+    else
+      master=$(redis-cli -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
+    fi
     if [[ -n ${master} ]]; then
       master="${master//\"}"
     else
@@ -155,7 +163,11 @@ function launchredis() {
   while true; do
     # I will check if sentinel is up or not by connecting to it.
     echo "Trying to connect to sentinel, to retireve master's ip"
-    master=$(redis-cli -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
+    if [[ -n ${REDIS_DEFAULT_PASSWORD} ]]; then
+      master=$(redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
+    else
+      master=$(redis-cli -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
+    fi
     # Is this instance marked as MASTER, it will matter only when the cluster is starting up for first time.
     if [[ "${MASTER}" == "true" ]]; then
       echo "MASTER is set to true"

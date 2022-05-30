@@ -255,6 +255,7 @@ func getPool(host, port string) (*redis.Pool, error) {
 			c, err := redis.Dial(protocol, host+":"+port,
 				redis.DialUseTLS(true),
 				redis.DialTLSConfig(tlsConfig),
+				redis.DialPassword(string(config.Data.DBConf.RedisPassword)),
 			)
 			return c, err
 		},

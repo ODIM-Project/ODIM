@@ -41,6 +41,9 @@ spec:
             - key: odimra_rsaprivate
               path: odimra_rsa.private
               mode: 0444
+            - key: redis_password
+              path: redis_password
+              mode: 0444
             {{- if eq .Values.odimra.messageBusType "Kafka" }}
             - key: odimra_kafka_clientcrt
               path: odimra_kafka_client.crt
@@ -80,7 +83,7 @@ spec:
         - name: REDIS_HA_REDIS_SERVICE_PORT
           value: "6379"
         - name: REDIS_DEFAULT_PASSWORD 
-          value: ""
+          value: {{ .Values.odimra.redisPassword }}
         - name: ALLOW_EMPTY_PASSWORD
           value: "yes"
         - name: REDIS_HA_SENTINEL_SERVICE_PORT

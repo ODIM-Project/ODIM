@@ -74,6 +74,8 @@ type DBConf struct {
 	OnDiskSentinelPort   string `json:"OnDiskSentinelPort"`
 	InMemoryPrimarySet   string `json:"InMemoryPrimarySet"`
 	OnDiskPrimarySet     string `json:"OnDiskPrimarySet"`
+	RedisPasswordPath    string `json:"RedisPasswordPath"`
+	RedisPassword        []byte
 }
 
 // MessageBusConf holds all message bus configurations
@@ -292,6 +294,10 @@ func checkDBConf() error {
 		if err := checkDBHAConf(); err != nil {
 			return err
 		}
+	}
+	var err error
+	if Data.DBConf.RedisPassword, err = ioutil.ReadFile(Data.DBConf.RedisPasswordPath); err != nil {
+		return fmt.Errorf("error: value check failed for RedisPasswordPath:%s with %v", Data.DBConf.RedisPasswordPath, err)
 	}
 	return nil
 }

@@ -198,18 +198,18 @@
   * [Single Trigger](#single-trigger)
   * [Updating a trigger](#updating-a-trigger)
 - [License Service](#license-service)
-- [Audit Logging](#audit-logging)
-- [Security logging](#security-logging)
+- [Audit logs](#audit-logs)
+- [Security logs](#security-logs)
 
 # Introduction 
 
-Resource Aggregator for Open Distributed Infrastructure Management (ODIMRA) is a modular, open framework for simplified management and orchestration of distributed physical infrastructure. It provides a unified management platform for converging multivendor hardware equipment. By exposing a standards-based programming interface, it enables easy and secure management of wide range of multivendor IT infrastructure distributed across multiple data centers.
+Resource Aggregator for Open Distributed Infrastructure Management (ODIM) is a modular, open framework for simplified management and orchestration of distributed physical infrastructure. It provides a unified management platform for converging multivendor hardware equipment. By exposing a standards-based programming interface, it enables easy and secure management of wide range of multivendor IT infrastructure distributed across multiple data centers.
 
-ODIMRA framework comprises the following two components.
+Resource Aggregator for ODIM framework comprises the following two components.
 
 - The resource aggregation function (the resource aggregator)
 
-  The resource aggregation function is the single point of contact between the northbound clients and the southbound infrastructure. Its primary function is to build and maintain a central resource inventory. It exposes Redfish-compliant APIs to allow northbound infrastructure management systems to:
+  The resource aggregator is the single point of contact between the northbound clients and the southbound infrastructure. The primary function of the resource aggregator is to build and maintain a central resource inventory. It exposes Redfish-compliant APIs to allow northbound infrastructure management systems to:
 
     - Get a unified view of the southbound compute, local storage, and Ethernet switch fabrics available in the resource inventory
     - Gather crucial configuration information about southbound resources
@@ -219,23 +219,18 @@ ODIMRA framework comprises the following two components.
 - One or more plugins
 
   The plugins abstract, translate, and expose southbound resource information to the resource aggregator through RESTful APIs. Resource Aggregator for ODIM supports:
-
-
-  - Generic Redfish (GRF) plugin for ODIM: Plugin that can be used for any Redfish-compliant device
-  - Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks
-  - Integration of additional third-party plugins: Dell, Lenovo and Cisco ACI plugins
+    - Generic Redfish (GRF) plugin for ODIM: Plugin that can be used for any Redfish-compliant device
+    - Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks
+    - Integration of additional third-party plugins: Dell, Lenovo and Cisco ACI plugins
 
 This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.14.0](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.14.0.pdf) and are fully Redfish-compliant.
 
-Redfish® is an open industry standard specification, API, and schema. It specifies a RESTful interface and uses JSON and OData. The Redfish standards are designed to deliver simple and secure environment for managing multivendor, converged, and hybrid IT infrastructure.
+Redfish® is an open industry standard specification, API, and schema. Redfish specifies a RESTful interface and uses JSON and OData. The Redfish standards are designed to deliver simple and secure environment for managing multivendor, converged, and hybrid IT infrastructure.
 
 
 ##  Resource Aggregator for ODIM logical architecture
 
-Resource Aggregator for ODIM framework adopts a layered architecture and has many functional layers.
-
-
-The following figure shows these functional layers of Resource Aggregator for ODIM deployed in a data center.
+Resource Aggregator for ODIM framework adopts a layered architecture and has many functional layers. The architecture diagram shows these functional layers of Resource Aggregator for ODIM deployed in a data center.
 
 ![ODIM_architecture](images/arch.png)
 
@@ -247,40 +242,37 @@ The API layer sends user requests to the plugins through the aggregation, the ev
 
 **Services layer**
 
-The services layer is where all the services are hosted. This layer implements service logic for all use cases through an extensible domain model (Redfish Data Model). All resource information is stored in this data model and is used to service the API requests coming from the API layer. Any responses from the plugin layer might update the domain model. It maintains the state for event subscriptions, credentials, and tasks.
+This layer hosts all the services. The layer implements service logic for all use cases through an extensible domain model (Redfish Data Model). All resource information is stored in this data model and is used to service the API requests coming from the API layer. Any responses from the plugin layer might update the domain model. It maintains the state for event subscriptions, credentials, and tasks.
 
 
 ![Redfish_data_model](images/redfish_data_model.png)
 
 **Event message bus layer**
 
-
-This layer hosts a message broker which acts as a communication channel between the plugin layer and the upper layers. It supports common messaging architecture to forward events received from the plugin layer to the upper layers. During the run-time, Resource Aggregator for ODIM uses either Kafka or the Redis stream service as the event message bus. 
-The services and the event message bus layers host Redis data store.
+This layer hosts a message broker which acts as a communication channel between the plugin layer and the upper layers. The layer supports common messaging architecture to forward events received from the plugin layer to the upper layers. During the runtime, Resource Aggregator for ODIM uses either Kafka or the RedisStreams service as the event message bus.  The services and the event message bus layers host Redis data store.
 
 **Plugin layer**
 
-
-This layer connects the actual managed resources to the aggregator layers and is de-coupled from the upper layers. A plugin abstracts vendor-specific access protocols to a common interface which the aggregator layers use to communicate with the resources. It uses REST-based communication to interact with the other layers. It collects events to be exposed to fault management systems and uses the event message bus to publish events. 
-The plugin layer allows developers to create plugins on any tool set of their choice without enforcing any strict language binding. To know how to develop plugins, refer to [Resource Aggregator for Open Distributed Infrastructure Management Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
+Plugins abstract vendor-specific access protocols to a common interface which the aggregator layers use to communicate with the resources. The plugin layer connects the actual managed resources to the aggregator layers and is decoupled from the upper layers. The layer uses REST-based communication to interact with the other layers. It collects events to be exposed to fault management systems and uses the event message bus to publish events. 
+The plugin layer allows developers to create plugins on the tool set of their choice without enforcing any strict language binding. To know how to develop plugins, see [Resource Aggregator for Open Distributed Infrastructure Management Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
 
 
 # API usage and access guidelines
 
-To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS-capable client, such as a web browser with a REST Client plugin extension, or a Desktop REST Client application, or curl (a popular, free command-line utility). You can also easily write simple REST clients for RESTful APIs using modern scripting languages.
+To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS-capable client, such as a web browser with a REST Client plugin extension, or a Desktop REST Client application, or curl (a popular, free command-line utility). You can also write simple REST clients for RESTful APIs using modern scripting languages.
 
 <blockquote>
 Tip: It is good to use a tool, such as curl or any Desktop REST Client application initially to perform requests. Later,
 you will want to write your own scripting code to perform requests.
 </blockquote>
-This guide contains sample request and response payloads. For information on response payload parameters, refer to [Redfish® Scalable Platforms API (Redfish) schema 2021.2](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2021.2.pdf).
+This guide contains sample request and response payloads. For information on response payload parameters, see [Redfish® Scalable Platforms API (Redfish) schema 2021.2](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2021.2.pdf).
 
 > **IMPORTANT:**
 The response codes and the JSON request and response parameters provided in this guide may vary for systems depending on the vendor, model, and firmware versions.
 
 ## **HTTP headers**
 
-Include the following HTTP headers:
+HTTP headers include the following:
 
 - `Content-Type:application/json` for all RESTful API operations that include a request body in JSON
     format.
@@ -288,23 +280,23 @@ Include the following HTTP headers:
 
 ## **Base URL**
 
-Use the following URL in all HTTP requests that you send to the resource aggregator:
+Use the following base URL in all HTTP requests that you send to the resource aggregator:
 
 `https://{odimra_host}:{port}/`
 
 - {odimra_host} is the fully qualified domain name (FQDN) used for generating certificates while deploying the resource aggregator.
 
-	>**NOTE:** Ensure that FQDN is provided in the `/etc/hosts` file or in the DNS server.
+	>**NOTE:** Ensure FQDN is provided in the `/etc/hosts` file or in the DNS server.
 
 
-- {port} is the port where the services of the resource aggregator are running. The default port is 45000. If you have changed the default port in the `/etc/odimra_config/odimra_config.json` file, use that as the port.
+- {port} is the port where the services of the resource aggregator are running. The default port is 45000. If you have changed the default port in the `/etc/odimra_config/odimra_config.json` file, use that as the port in the base URL.
 >**NOTE**: To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where the resource aggregator is installed. To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
 
 ## Curl command
 
-The examples shown in this guide use curl to make HTTP requests.
+Examples shown in this document use curl to make HTTP requests.
 
-[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. The resource aggregator for ODIM supports HTTPS.
+[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. Resource Aggregator for ODIM supports HTTPS.
 
 ## Curl command options
 
@@ -315,7 +307,7 @@ The examples shown in this guide use curl to make HTTP requests.
 - `-i` returns HTTP response headers.
 - `-v` fetches verbose.
 
-For a complete list of curl flags, see information provided at [https://curl.haxx.se](https://curl.haxx.se).
+For a complete list of curl flags, see [https://curl.haxx.se](https://curl.haxx.se).
 
 
 >**IMPORTANT:** If you have set proxy configuration, set no_proxy using the following command before running a curl command.<br>
@@ -325,20 +317,20 @@ For a complete list of curl flags, see information provided at [https://curl.hax
 
 ## **Including HTTP certificate**
 
-Without CA certificate, curl fails to verify that HTTP connections are secure and curl commands may fail with the SSL certificate problem. Provide the root CA certificate to curl for secure SSL communication.
+Without CA certificate, curl fails to verify that HTTP connections are secure and the curl commands might fail with the SSL certificate problem. Provide the root CA certificate to curl for secure SSL communication.
 
 
 1. If you are running curl commands on the server where the resource aggregator is deployed, provide the `rootCA.crt` file as shown in the curl command:
    ```
    curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
    ```
-    {path} is where you have generated certificates during the deployment of the resource aggregator.
+    {path} is where you have generated certificates during the Resource Aggregator for ODIM deployment.
 
 2. If you are running curl commands on a different server, perform the following steps to provide the rootCA.crt file.
     1. Navigate to `~/ODIM/build/cert_generator/certificates` on the server where the resource aggregator is deployed.
     2. Copy the `rootCA.crt` file.
     3. Log in to your server and paste the `rootCA.crt` file in a folder.
-    4. Open the `/etc/hosts` file to edit.
+    4. Open the `/etc/hosts` file to edit it.
     5. Scroll to the end of the file, add the following line, and save:
        `{odim_server_ipv4_address} {FQDN}`
     6. Check if curl is working using the curl command:
@@ -350,9 +342,9 @@ Without CA certificate, curl fails to verify that HTTP connections are secure an
 
 ## HTTP request methods
 
-Following are the Redfish-defined HTTP methods that you can use to implement various actions:
+You can use the listed Redfish-defined HTTP methods to implement various actions:
 
-| HTTP Request Methods          | Description                                                  |
+| HTTP Request Method           | Description                                                  |
 | ----------------------------- | ------------------------------------------------------------ |
 | `GET` \[Read Requests\]       | Use this method to request a representation of a specified resource \(single resource or collection\). |
 | `PATCH` \[Update\]            | Use this method to apply partial modifications to a resource. |
@@ -362,18 +354,18 @@ Following are the Redfish-defined HTTP methods that you can use to implement var
 
 ## Responses 
 
-Resource Aggregator for ODIM supports the following responses:
+Resource Aggregator for ODIM supports the listed responses:
 
-| Responses                     | Description                                                  |
-| ----------------------------- | ------------------------------------------------------------ |
-| Metadata responses            | Describes the resources and types exposed by the service to generic clients. |
-| Resource responses            | Response in JSON format for an individual resource.          |
-| Resource collection responses | Response in JSON format for a collection of resources.       |
-| Error responses               | If there is an HTTP error, a high-level JSON response is provided with additional information. |
+| Response                     | Description                                                  |
+| ---------------------------- | ------------------------------------------------------------ |
+| Metadata response            | Describes the resources and types exposed by the service to generic clients |
+| Resource response            | Response in JSON format for an individual resource           |
+| Resource collection response | Response in JSON format for a collection of resources        |
+| Error response               | If there is an HTTP error, a high-level JSON response is provided with additional information |
 
 ## Common response headers
 
-Here's the list of headers that are common across responses.
+The listed parameters are common across the response headers, and are omitted from the samples in this document. 
 
 ```
 "Connection": "keep-alive",
@@ -387,38 +379,31 @@ Here's the list of headers that are common across responses.
 
 ## Status codes
 
-Following are the HTTP status codes with their descriptions:
+The HTTP status codes include the success codes and the error codes and their respective descriptions for all referenced API operations.
 
 | Success code<br> | Description                                                  |
 | ---------------- | ------------------------------------------------------------ |
-| 200 OK           | Successful completion of the request with representation in the body. |
-| 201 Created      | A new resource is successfully created with the `Location` header set to well-defined URI for the newly created resource. The response body may include the representation of the newly created resource. |
+| 200 OK           | The request completes successfully with the representation in the body. |
+| 201 Created      | A new resource is successfully created with the `Location` header set to well-defined URI for the newly created resource. The response body might include the representation of the newly created resource. |
 | 202 Accepted     | The request has been accepted for processing but not processed. The `Location` header is set to URI of a task monitor that can be queried later for the status of the operation. |
-| 204 No Content   | The request succeeded, but no content is being returned in the body of the response. |
+| 204 No Content   | The request succeeds, but no content is returned in the response body. |
 
 | Error code<br>            | Description                                                  |
 | ------------------------- | ------------------------------------------------------------ |
 | 301 Moved Permanently     | The requested resource resides in a different URI given by the `Location` headers. |
 | 400 Bad Request           | The request could not be performed due to missing or invalid information. An extended error message is returned in the response body. |
-| 401 Unauthorized          | Missing or invalid authentication credentials included with a request. |
-| 403 Forbidden             | The server recognizes the credentials to be not having the necessary authorization to perform the operation. |
-| 404 Not Found             | The request specified the URI of a nonexisting resource.     |
-| 405 Method Not Allowed    | When the HTTP verb specified in the request \(GET, PATCH, DELETE, and so on\) is not supported for a particular request URI. The response includes `Allow` header that lists the supported methods. |
+| 401 Unauthorized          | Missing or invalid authentication credentials with a request. |
+| 403 Forbidden             | The server recognizes that the credentials do not have the necessary authorization to perform the operation. |
+| 404 Not Found             | The request specified the URI of a non-existing resource.    |
+| 405 Method Not Allowed    | The HTTP method specified in the request \(GET, PATCH, DELETE, and so on\) is not supported for a particular request URI. The response includes `Allow` header that lists the supported methods. |
 | 409 Conflict              | A creation or an update cannot be completed because it would conflict with the current state of the resources supported by the platform. |
-| 500 Internal Server Error | When the server encounters an unexpected condition that prevents it from fulfilling the request. |
-| 501 Not Implemented       | When the server has not implemented the method for the resource. |
-| 503 Service Unavailable   | When the server is unable to service the request due to temporary overloading or maintenance. |
-
-
->**NOTE:**
->This guide provides success codes (200, 201, 202, 204) for all referenced API operations. For failed operations, refer to the error codes listed in this section.
-
-
+| 500 Internal Server Error | The server encounters an unexpected condition that prevents it from fulfilling the request. |
+| 501 Not Implemented       | The server has not implemented the method for the resource.  |
+| 503 Service Unavailable   | The server is unable to service the request due to temporary overloading or maintenance. |
 
 # IPv6 support
 
-The `nwPreferences` parameter in the Resource Aggregator for ODIM deployment configuration file
-(`kube_deploy_nodes.yaml`) is set to `ipv4` as the default value. This means the Resource Aggregator for ODIM API service requests can be sent only via IPv4 addresses. To send the API service requests via both the IPv4 and the IPv6 addresses, set the parameter value to `dualStack`.
+The default value for `nwPreferences` parameter in the Resource Aggregator for ODIM deployment configuration file (`kube_deploy_nodes.yaml`) is `ipv4`. This implies, the Resource Aggregator for ODIM API service requests can be sent only via IPv4 addresses. To send the API service requests using both the IPv4 and the IPv6 addresses, set the parameter value to `dualStack`.
 
 ### Sample APIs with IPv6 address
 
@@ -458,21 +443,20 @@ The `nwPreferences` parameter in the Resource Aggregator for ODIM deployment con
   'https://[fc00:1024:2401::112]:{port}/redfish/v1/AggregationService/ConnectionMethods/'
   ```
 
-  
 
 # Support for URL Encoding
 
-The URL encoding mechanism translates the characters in the URLs to a representation that are universally accepted by all web browsers and servers. 
+The URL encoding mechanism translates the characters in the URLs to a representation that are universally accepted by all web browsers and servers. Resource Aggregator for ODIM supports all standard encoded characters for all the API URLs. When Resource Aggregator for ODIM gets an encoded URL path, the non-ASCII characters in the URL are internally translated and sent to the web browsers. 
 
-Resource Aggregator for ODIM supports all standard URL encoded characters for all the APIs. When Resource Aggregator for ODIM gets an encoded URL path, the non-ASCII characters in its path are internally translated and sent to the web browsers. In other words, if you replace a character in a URL with its standard encoding notation, Resource Aggregator for ODIM accepts the encoded notation, decodes it to the actual character acceptable by the web browser and sends responses.
+Replace a character in a URL with its standard encoding notation. Resource Aggregator for ODIM accepts the encoded notation, decodes it to the actual character acceptable by the web browsers and sends an accurate response.
 
-**Example**: In the URL`/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1`, if you replace the  `/` character with %2F and send the request, Resource Aggregator for ODIM accepts the URL, decodes the encoded notation internally and sends an accurate response.
+**For example**: In the URL`/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1`, if you replace the  `/` character with its encoded notation %2F and send the request, Resource Aggregator for ODIM accepts and decodes the encoded notation internally and sends a response.
 
-<blockquote>Tip: You can visit https://www.w3schools.com/tags/ref_urlencode.ASP or browse the Internet to view the standard ASCII Encoding Reference of the URL characters.</blockquote>
+> **Tip**: You can visit https://www.w3schools.com/tags/ref_urlencode.ASP or browse the Internet to view the standard ASCII Encoding Reference of the URL characters.
 
 # List of supported APIs
 
-Resource Aggregator for ODIM supports the following Redfish APIs:
+Resource Aggregator for ODIM supports the listed Redfish APIs:
 
 |Redfish Service Root||
 |-------|--------------------|
@@ -638,10 +622,9 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/registries/\{registryFileId\}|`GET`|
 
 
->**NOTE:**
-`ComputerSystemId` is the unique identifier of a system specified by Resource Aggregator for ODIM.
-It is represented as `<UUID.n>` in Resource Aggregator for ODIM. `<UUID.n>` is the
-universally unique identifier of a system. Example: *ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1*.
+>**NOTE:** `ComputerSystemId` is the unique identifier of a system specified by Resource Aggregator for ODIM. It is represented as `<UUID.n>` in Resource Aggregator for ODIM. `<UUID.n>` is the
+universally unique identifier of a system. 
+**Example**: *ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1*.
 
 
 ## Viewing the list of supported Redfish services
@@ -735,9 +718,9 @@ Date":Fri,15 May 2020 13:55:53 GMT+5m 11s
 
 # Rate Limits
 
-Shared services need to protect themselves from excessive use—whether intended or unintended—to maintain service availability. Rate limiting is used to control the rate of requests being sent or received in a network, which prevents the frequency of an operation from exceeding specific limits.
+Shared services need to protect themselves from being excessively used—whether intended or unintended—to maintain service availability. Rate limits are used to control the rate of requests being sent or received in a network, which prevents the frequency of an operation from exceeding specific limits.
 
-In Resource Aggregator for ODIM, you can specify time (in milliseconds) to limit resources from being sent for the same requests multiple times. These resources include the log service entries that take more retrieval time from the BMC servers. You can limit the number of API requests being sent per session. Additionally, you can limit the number of sessions per user. 
+In Resource Aggregator for ODIM, you can specify time (in milliseconds) to limit multiple resource requests. These resources include the log service entries that take more retrieval time from the Baseboard Management Controller (BMC) servers. You can limit the number of concurrent API requests being sent per session. Additionally, you can limit the number of active sessions per user. 
 
 Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLimitPerUser` in the `kube_deploy_nodes.yaml` deployment configuration file as required [optional]. By default, the values of these parameters are empty, meaning there's no limit on these numbers, unless specified.
 
@@ -780,7 +763,7 @@ Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLi
   Retry-After: 1
   ```
 
-  <blockquote> NOTE: The value for 'Retry-After' property is in seconds.</blockquote>
+  > **NOTE:** The value for 'Retry-After' property is in seconds.
 
 - **`requestLimitPerSession`**: Specify the number of concurrent API requests that can be sent per session. If you specify 15 as the value for this parameter, 15 API requests are processed with successful status code and the remaining concurrent requests triggered from your session return the `503` error code.
 
@@ -804,7 +787,7 @@ Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLi
   }
   ```
 
-- **`sessionLimitPerUser`**: Specify the number of active sessions a user can have. If you specify 10 as the value for this parameter, you can create 10 sessions for a particular user and you get `201` status code. Beyond this, the `503` error code is returned.
+- **`sessionLimitPerUser`**: Specify the number of active sessions a user can have. If you specify 10 as the value for this parameter, 10 sessions can be created for a particular user, which return the `201` status code. Beyond this, the `503` error code is returned.
 
   > **Sample response body**
 
@@ -839,17 +822,17 @@ Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLi
 |Resource|URI|Description|
 |--------|---|-----------|
 |The Redfish service root|`GET` `/redfish` |The URI for the Redfish service root. It returns the version of Redfish services.|
-|List of Redfish services|`GET``/redfish/v1` |It returns a list of available services.|
-|$metadata|`GET``/redfish/v1/$metadata` |The Redfish metadata document.|
-|OData|`GET``/redfish/v1/odata` |The Redfish OData service document.|
-| The `Sessions` resource<br> |`POST``/redfish/v1/SessionService/Sessions` |Creates a Redfish login session.|
+|List of Redfish services|`GET` `/redfish/v1` |It returns a list of available services.|
+|$metadata|`GET` `/redfish/v1/$metadata` |The Redfish metadata document.|
+|OData|`GET` `/redfish/v1/odata` |The Redfish OData service document.|
+| The `Sessions` resource<br> |`POST` `/redfish/v1/SessionService/Sessions` |Creates a Redfish login session.|
 
 To authenticate requests with the Redfish services, implement any one of the following authentication methods:
 
 
 -   **HTTP BASIC authentication \(BasicAuth\)** 
 
-     To implement HTTP BASIC authentication:
+    To implement HTTP BASIC authentication:
 
      1. Generate a base64 encoded string of `{valid_username_of_odim_userAccount}:{valid_password_of_odim_userAccount}` using the following command:
 
@@ -867,36 +850,34 @@ To authenticate requests with the Redfish services, implement any one of the fol
          'https://{odimra_host}:{port}/redfish/v1/AccountService'
          ```
 
+-   **Redfish session login authentication (XAuthToken)** 
 
-
--   **Redfish session login authentication \(XAuthToken\)** 
-
-      To implement Redfish session login authentication, create a Redfish login [session](#sessions) and obtain an authentication token through session management interface.
+    1. To implement Redfish session login authentication, create a Redfish login [session](#sessions) and obtain an authentication token through session management interface.
+       Every session that is created has an authentication token called `X-AUTH-TOKEN` associated with it. An `X-AUTH-TOKEN` is returned in the response header from session creation.
     
-      Every session that is created has an authentication token called `X-AUTH-TOKEN` associated with it. An `X-AUTH-TOKEN` is returned in the response header from session creation.
+    2. To authenticate subsequent requests, provide the token in the `X-AUTH-TOKEN` request header.
     
-      To authenticate subsequent requests, provide this token in the `X-AUTH-TOKEN` request header.
-    ```
-    curl -i --cacert {path}/rootCA.crt GET \
-    -H "X-Auth-Token:{X-Auth-Token}" \
-     'https://{odimra_host}:{port}/redfish/v1/AccountService'
-    ```
+       ```
+       curl -i --cacert {path}/rootCA.crt GET \
+       -H "X-Auth-Token:{X-Auth-Token}" \
+        'https://{odimra_host}:{port}/redfish/v1/AccountService'
+       ```
 
-      An `X-AUTH-TOKEN` is valid and a session is open only for 30 minutes, unless you continue to send requests to a Redfish service using this token. An idle session is automatically terminated after the time-out interval.
+       An `X-AUTH-TOKEN` is valid and a session is open only for 30 minutes, unless you continue to send requests to a Redfish service using this token. An idle session is automatically terminated after the time-out interval.
 
 ## Role-based authorization
 
-In Resource Aggregator for ODIM, the roles and privileges control which users have what access to resources. If you perform an HTTP operation on a resource without necessary privileges, you will receive an HTTP `403 Forbidden` error.
+In Resource Aggregator for ODIM, the roles and privileges control users' access to specific resources. If you perform an HTTP operation on a resource without the required privileges, you receive an HTTP `403 Forbidden` error.
 
-**Roles**
+### **Roles**
 
-A role represents a set of operations that a user is allowed to perform. It is determined by a defined set of privileges. You can assign a role to a user at the time of user account creation.
+Role represents a set of operations that a user is allowed to perform. It is determined by a defined set of privileges. You can assign a role to a user at the time of user account creation.
 
-With Resource Aggregator for ODIM, there are two kinds of defined roles:
+With Resource Aggregator for ODIM, there are two types of defined roles:
 
 -   **Redfish predefined roles** 
 
-    Redfish predefined roles come with a predefined set of privileges. These predefined privileges cannot be removed or modified. You may assign additional OEM \(custom\) privileges. Following are the Redfish predefined roles that are available in Resource Aggregator for ODIM by default:
+    Redfish predefined roles have predefined set of privileges. These privileges cannot be removed or modified. You may assign additional OEM \(custom\) privileges. Following are the default Redfish predefined roles that are available in Resource Aggregator for ODIM:
 
     -   `Administrator` 
 
@@ -907,67 +888,53 @@ With Resource Aggregator for ODIM, there are two kinds of defined roles:
 -   **User-defined roles** 
 
     User-defined roles are the custom roles that you can create and assign to a user. The privileges of a user-defined role are configurable—you can choose a privilege or a set of privileges to assign to this role at the time of role creation.
+    
+    >  **NOTE**: Before you assign a user-defined role to a user at the time of user account creation, ensure the role is created.
 
-<blockquote>
-NOTE:
--   Redfish predefined roles cannot be modified.
+### **Privileges**
 
--   Before assigning a user-defined role to a user at the time of user account creation, ensure that it is created first.
-</blockquote>
-
-**Privileges**
-
-A privilege is a permission to perform an operation or a set of operations within a defined management domain.
+Privilege is a permission to perform an operation or a set of operations within a defined management domain.
 
 The following Redfish-specified privileges can be assigned to any user in Resource Aggregator for ODIM:
 
--    `ConfigureComponents` :
- Users with this privilege can configure components managed by the Redfish services in Resource   Aggregator for ODIM.
-This privilege is required to create, update, and delete a resource or a collection of resources exposed by Redfish APIs using HTTP `POST, PATCH, DELETE` operations.
+-    `ConfigureComponents`: Users with this privilege can configure components managed by the Redfish services in Resource Aggregator for ODIM. This privilege is required to create, update, and delete a resource or a collection of resources exposed by Redfish APIs using HTTP `POST`, `PATCH`, and `DELETE` operations.
 
- -    `ConfigureManager` :
- Users with this privilege can configure manager resources.
+ -    `ConfigureManager`: Users with this privilege can configure manager resources.
 
- -    `ConfigureComponents` :
- Users with this privilege can configure components managed by the services.
+ -    `ConfigureComponents`: Users with this privilege can configure components managed by the services.
 
- -    `ConfigureSelf` :
- Users with this privilege can change the password for their account.
+ -    `ConfigureSelf`: Users with this privilege can change the password for their account.
 
- -    `ConfigureUsers` :
- Users with this privilege can configure users and their accounts. This privilege is assigned to an `Administrator`.
-This privilege is required to create, update, and delete user accounts using HTTP `POST, PATCH, DELETE` operations.
+ -    `ConfigureUsers`: Users with this privilege can configure users and their accounts. This privilege is assigned to an `Administrator`. This privilege is required to create, update, and delete user accounts using HTTP `POST`, `PATCH`, and `DELETE` operations.
 
- -    `Login` :
- Users with this privilege can log in to the service and read the resources.
+ -    `Login`: Users with this privilege can log in to the service and read the resources.
 This privilege is required to view any resource or a collection of resources exposed by Redfish APIs using HTTP `GET` operation.
 
-**Mapping of privileges to roles in Resource Aggregator for ODIM**
+#### **Mapping of privileges to roles**
 
 |Roles|Assigned privileges|
 |-----|-------------------|
-|Administrator \(Redfish predefined\)|    `Login` <br>   `ConfigureManager` <br>   `ConfigureUsers` <br>    `ConfigureComponents` <br>   `ConfigureSelf` <br>|
-|Operator \(Redfish predefined\)|    `Login` <br>   `ConfigureComponents` <br>   `ConfigureSelf` <br>|
-|ReadOnly \(Redfish predefined\)|    `Login` <br>   `ConfigureSelf` <br>|
+|Administrator \(Redfish predefined\)| `Login` <br>   `ConfigureManager` <br>   `ConfigureUsers` <br>    `ConfigureComponents` <br>   `ConfigureSelf` <br> |
+|Operator (Redfish predefined)| `Login` <br>   `ConfigureComponents` <br>   `ConfigureSelf` <br> |
+|ReadOnly \(Redfish predefined\)| `Login` <br>   `ConfigureSelf` <br> |
 
 
->**NOTE:**
-Resource Aggregator for ODIM has a default user account that has all the privileges of an administrator role.
+>**NOTE:** Resource Aggregator for ODIM has a default user account that has all the privileges of an administrator role.
 
 
 # Sessions
 
-A session represents a window of user's login with a Redfish service and contains details about the user and the user activity. You can run multiple sessions simultaneously.
+A session represents a window of a user's login with a Redfish service. Sessions contain details on the user and the user activities. You can run multiple sessions simultaneously.
 
 Resource Aggregator for ODIM offers Redfish `SessionService` interface for creating and managing sessions. It exposes APIs to achieve the following:
 
--   Fetching the `SessionService` root.
+-   Fetch the `SessionService` root
 
--   Creating a session.
+-   Create a session
 
--   Listing active sessions.
+-   List active sessions
 
--   Deleting a session.
+-   Delete a session
 
 
 **Supported APIs**
@@ -978,8 +945,7 @@ Resource Aggregator for ODIM offers Redfish `SessionService` interface for creat
 |/redfish/v1/SessionService/Sessions|POST, GET|`Login`|
 |redfish/v1/SessionService/Sessions/\{sessionId\}|GET, DELETE|`Login`, `ConfigureManager`, `ConfigureSelf` |
 
->**NOTE:**
-Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
+>**NOTE:** Before accessing these endpoints, ensure you have the required privileges. If you access these endpoints without the required privileges, an HTTP `403 Forbidden` error is displayed.
 
 
 
@@ -1030,8 +996,8 @@ curl -i GET \
 |---------|---------------|
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/SessionService/Sessions` |
-|**Description** |This operation creates a session to implement authentication. Creating a session allows you to create an `X-AUTH-TOKEN` which is then used to authenticate with other services.<br>**NOTE:**<br>It is a good practice to note down the following:<br><ul><li>The session authentication token returned in the `X-AUTH-TOKEN` header.</li><li>The session Id returned in the `Location` header and the JSON response body.</li></ul><br> You will need the session authentication token to authenticate subsequent requests to the Redfish services and the session Id to log out later.|
-|**Returns** |<ul><li> An `X-AUTH-TOKEN` header containing session authentication token.</li><li>`Location` header that contains a link to the newly created session instance.</li><li>The session Id and a message in the JSON response body saying that the session is created.</li></ul> |
+|**Description** |This operation creates a session to implement authentication. Creating a session allows you to create an `X-AUTH-TOKEN` which is then used to authenticate with other services.<br>**NOTE:** It is a good practice to note down the following:<br><ul><li>The session authentication token returned in the `X-AUTH-TOKEN` header.</li><li>The session Id returned in the `Location` header and the JSON response body.</li></ul><br>You need the session authentication token to authenticate subsequent requests to the Redfish services and the session id to log out later.|
+|**Returns** |<ul><li> An `X-AUTH-TOKEN` header containing session authentication token.</li><li>`Location` header that contains a link to the newly created session instance.</li><li>The session id and a message in the JSON response body saying that the session is created.</li></ul> |
 |**Response Code** |`201 Created` |
 |**Authentication** |No|
 
@@ -1067,10 +1033,8 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|UserName|String \(required\)|Username of the user account for this session. For the first time, use the username of the default administrator account \(admin\). Later, when you create other user accounts, you can use the credentials of those accounts to create a session.<br>**NOTE:**<br> This user must have `Login` privilege.|
-|Password|String \(required\)<br> |Password of the user account for this session. For the first time, use the password of the default administrator account. Later, when you create other user accounts, you can use the credentials of those accounts to create a session.<br> |
-
-
+|UserName|String \(required\)|Username of the user account for the session. For the first time, use the username of the default administrator account \(admin\). Subsequently, when you create other user accounts, you can use the credentials of these accounts to create a session.<br>**NOTE:** This user must have `Login` privilege.|
+|Password|String \(required\)<br> |Password of the user account for the session. For the first time, use the password of the default administrator account. Subsequently, when you create other user accounts, you can use the credentials of these accounts to create a session. |
 
 >**Sample response header**
 
@@ -1099,16 +1063,14 @@ Date:Fri,15 May 2020 14:08:55 GMT+5m 11s
 ```
 
 
-
-
 ## Listing sessions
 
 |||
 |---------|---------------|
 |**Method** | `GET` |
 |**URI** |`/redfish/v1/SessionService/Sessions` |
-|**Description** |This operation lists user sessions.<br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can see a list of all user sessions.<br> Users with `ConfigureSelf` privilege can see only the sessions created by them.|
-|**Returns** |Links to user sessions.|
+|**Description** |This operation lists user sessions.<br>**NOTE:** Only a user with `ConfigureUsers` privilege can see a list of all user sessions.<br> Users with `ConfigureSelf` privilege can see the sessions created only by them.|
+|**Returns** |Links to user sessions|
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -1130,8 +1092,8 @@ curl -i GET \
 |---------|---------------|
 |**Method** | `GET` |
 |**URI** |`/redfish/v1/SessionService/Sessions/{sessionId}` |
-|**Description** |This operation retrieves information about a specific user session.<br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can view information about any user session.<br><br> Users with `ConfigureSelf` privilege can view information about only the sessions created by them.<br>|
-|**Returns** |JSON schema representing this session.|
+|**Description** |This operation retrieves information about a specific user session.<br>**NOTE:** Only a user with `ConfigureUsers` privilege can view information about any user session.<br><br> Users with `ConfigureSelf` privilege can view information about the sessions created only by them.|
+|**Returns** |JSON schema representing this session|
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -1166,7 +1128,7 @@ curl -i GET \
 |---------|---------------|
 |**Method** | `DELETE` |
 |**URI** |`/redfish/v1/SessionService/Sessions/{sessionId}` |
-|**Description** |This operation terminates a specific Redfish session when the user logs out.<br>**NOTE:**<br> Users having the `ConfigureSelf` and `ConfigureComponents` privileges are allowed to delete only those sessions that they created.<br><br> Only a user with all the Redfish-defined privileges \(Redfish-defined `Administrator` role\) is authorized to delete any user session.<br> |
+|**Description** |This operation terminates a specific Redfish session when the user logs out.<br>**NOTE:**<br> Users having the `ConfigureSelf` and `ConfigureComponents` privileges can delete only those sessions they created.<br><br> Only a user with all the Redfish-defined privileges \(Redfish-defined `Administrator` role\) is authorized to delete any user session. |
 |**Response Code** |`204 No Content` |
 |**Authentication** |Yes|
 
@@ -1179,8 +1141,6 @@ curl -i -X DELETE \
               'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions/{sessionId}'
 
 ```
-
-
 
 
 
@@ -1198,8 +1158,7 @@ Resource Aggregator for ODIM allows you to create and manage user roles through 
 |/redfish/v1/AccountService/Roles/\{RoleId\}|GET, PATCH, DELETE|`Login`, `ConfigureManager` |
 
 
->**NOTE:**
-Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
+>**NOTE:** Before accessing these endpoints, ensure you have the required privileges. If you access these endpoints without the required privileges, an HTTP `403 Forbidden` error is displayed.
 
 
 ## Viewing the account service root
@@ -1266,8 +1225,8 @@ Date:Fri,15 May 2020 14:32:09 GMT+5m 12s
 |---------|---------------|
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/AccountService/Roles` |
-|**Description** |This operation creates a role other than Redfish predefined roles. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can perform this operation.|
-|**Returns** |JSON schema representing the newly created role.|
+|**Description** |This operation creates a role other than Redfish predefined roles. <br>**NOTE:** Only a user with `ConfigureUsers` privilege can perform this operation.|
+|**Returns** |JSON schema representing the newly created role|
 |**Response code** |`201 Created` |
 |**Authentication** |Yes|
 
@@ -1292,8 +1251,6 @@ curl -i POST \
 
 ```
 
-
-
 >**Sample request body**
 
 ```
@@ -1312,9 +1269,9 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Id|String \(required, read-only\)<br> |Name for this role. <br>**NOTE:**<br> Id cannot be modified later.|
-|AssignedPrivileges|Array \(string \(enum\)\) \(required\)<br> |The Redfish privileges that this role includes. Possible values are:<br>  `ConfigureManager` <br>   `ConfigureSelf` <br>   `ConfigureUsers` <br>   `Login` <br>   `ConfigureComponents` <br>|
-|OemPrivileges|Array \(string\) \(required\)<br> |The OEM privileges that this role includes. If you do not want to specify any OEM privileges, use `null` or `[]` as value.|
+|Id|String \(required, read-only\)<br> |Name for this role. <br>**NOTE:** Id cannot be modified later.|
+|AssignedPrivileges|Array \(string \(enum\)\) \(required\)<br> |The Redfish privileges this role includes. Possible values are:<br>  `ConfigureManager` <br>   `ConfigureSelf` <br>   `ConfigureUsers` <br>   `Login` <br>   `ConfigureComponents` <br>|
+|OemPrivileges|Array \(string\) \(required\)<br> |The OEM privileges this role includes. If you do not want to specify any OEM privileges, use `null` or `[]` as value.|
 
 
 >**Sample response body**
@@ -1388,12 +1345,6 @@ curl -i GET \
 }
 ```
 
-
-
-
-
-
-
 ## Viewing information about a role
 
 
@@ -1402,7 +1353,7 @@ curl -i GET \
 |**Method** | `GET` |
 |**URI** |`/redfish/v1/AccountService/Roles/{RoleId}` |
 |**Description** |This operation fetches information about a specific user role. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can perform this operation.|
-|**Returns** |JSON schema representing this role. The schema has the details such as - Id, name, description, assigned privileges, OEM privileges.|
+|**Returns** |JSON schema representing this role. The schema has the details such as id, name, description, assigned privileges, and OEM privileges.|
 |**Response Code** | `200 OK` |
 |**Authentication** |Yes|
 
@@ -1413,8 +1364,6 @@ curl -i GET \
 curl -i GET \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles/{RoleId}'
-
-
 ```
 
  >**Sample response body**
@@ -1435,18 +1384,14 @@ curl -i GET \
 }
 ```
 
-
-
-
-
 ## Updating a role
 
 |||
 |---------|---------------|
 |**Method** | `PATCH` |
 |**URI** |`/redfish/v1/AccountService/Roles/{RoleId}` |
-|**Description** |This operation updates privileges of a specific user role - assigned privileges \(Redfish predefined\) and OEM privileges. Id of a role cannot be modified.<br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can perform this operation.|
-|**Returns** |JSON schema representing the updated role.|
+|**Description** |This operation updates privileges of a specific user role - assigned privileges \(Redfish predefined\) and OEM privileges. The id of a role cannot be modified.<br>**NOTE:** Only a user with `ConfigureUsers` privilege can perform this operation.|
+|**Returns** |JSON schema representing the updated role|
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
 
@@ -1495,15 +1440,13 @@ curl -i GET \
 ```
 
 
-
-
 ## Deleting a role
 
 |||
 |---------|---------------|
 |**Method** | `DELETE` |
 |**URI** |`/redfish/v1/AccountService/Roles/{RoleId}` |
-|**Description** |This operation deletes a specific user role. If you attempt to delete a role that is already assigned to a user account, you will receive an HTTP `403 Forbidden` error.<br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can perform this operation.|
+|**Description** |This operation deletes a specific user role. If you attempt to delete a role that is already assigned to a user account, an HTTP `403 Forbidden` error is displayed.<br />**NOTE:** Only a user with `ConfigureUsers` privilege can perform this operation.|
 |**Response Code** |`204 No Content` |
 |**Authentication** |Yes|
 
@@ -1513,10 +1456,7 @@ curl -i GET \
 curl -i -X DELETE \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles/{RoleId}'
-
 ```
-
-
 
 
 
@@ -1524,15 +1464,13 @@ curl -i -X DELETE \
 
 Resource Aggregator for ODIM allows users to have accounts to configure their actions and restrictions.
 
-Resource Aggregator for ODIM has an administrator user account by default.
-
-Create other user accounts by defining a username, a password, and a role for each account. The username and the password are used to authenticate with the Redfish services \(using `BasicAuth` or `XAuthToken`\).
+Resource Aggregator for ODIM has an administrator user account by default. Create other user accounts by defining a username, a password, and a role for each account. The username and the password are used to authenticate with the Redfish services \(using `BasicAuth` or `XAuthToken`\).
 
 Resource Aggregator for ODIM exposes Redfish `AccountsService` APIs to create and manage user accounts. Use these endpoints to perform the following operations:
 
--   Creating, modifying, and deleting account details.
+-   Create, modify, and delete account details
 
--   Fetching account details.
+-   Fetch account details
 
 
 **Supported APIs**:
@@ -1543,12 +1481,7 @@ Resource Aggregator for ODIM exposes Redfish `AccountsService` APIs to create an
 |/redfish/v1/AccountService/Accounts/\{accountId\}|GET, DELETE, PATCH|`Login`, `ConfigureUsers`, `ConfigureSelf` |
 
 
->**NOTE:**
-Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
-
-
-
-
+>**NOTE:** Before accessing these endpoints, ensure you have the required privileges. If you access these endpoints without the required privileges, an HTTP `403 Forbidden` error is displayed.
 
 ## Creating a user account
 
@@ -1571,8 +1504,6 @@ curl -i POST \
 '{"Username":"{username}","Password":"{password}","RoleId":"{roleId}"}
 ' \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts'
-
-
 ```
 
 
@@ -1592,8 +1523,8 @@ curl -i POST \
 |Parameter|Type|Description|
 |---------|----|-----------|
 |Username|String \(required\)<br> |User name for the user account.|
-|Password|String \(required\)<br> |Password for the user account. Before creating a password, see "Password Requirements" .|
-|RoleId|String \(required\)<br> |The role for this account. To know more about roles, see [User roles and privileges](#role-based-authorization). Ensure that the `roleId` you want to assign to this user account exists. To check the existing roles, see [Listing Roles](#listing-roles). If you attempt to assign an unavailable role, you will receive an HTTP `400 Bad Request` error.|
+|Password|String \(required\)<br> |Password for the user account. Before creating a password, see the *Password Requirements* section.|
+|RoleId|String \(required\)<br> |Role for this account. To know more about roles, see *[User roles and privileges](#role-based-authorization)*. Ensure the `roleId` you want to assign to this user account exists. To check the existing roles, see *[Listing Roles](#listing-roles)*. If you attempt to assign an unavailable role, an HTTP `400 Bad Request` error is displayed.|
 
 ### Password requirements
 
@@ -12084,29 +12015,29 @@ curl -i GET \
 
 
 
-# Audit Logging
+# Audit logs
 
-Audit logs has information on each API and is stored in the api.log file in odimra logs.  Each log consists of a priority value followed by the date and time of the log, hostname from which the APIs were sent, user account and role details, API request method and resource, response body, response code and the message.
+Audit logs provide information on each API and is stored in the `api.log` file in `odimra` logs.  Each log consists of a priority value, date and time of the log, hostname from which the APIs are sent, user account and role details, API request method and resource, response body, response code, and the message.
 
 **Samples**
 
-- <110> 2009-11-10T23:00:00Z 192.168.260.290 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
+- <110> 2009-11-10T23:00:00Z 192.168.260.290 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation successful
 
 - <110> 2022-01-17T13:57:48Z 192.168.260.290 [account@1 user="admin" roleID="Administrator"][request@1 method="POST" resource="/redfish/v1/AggregationService/AggregationSources" requestBody="{"HostName":"192.168.260.280","Links":{"ConnectionMethod":{"@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/337ea3cb-3acc-49e2-b33f-3f5ce2a5ada4"}},"Password":"null","UserName":"admin"}"][response@1 responseCode=202] Operation successful
 
 - <107> 2009-11-10T23:00:00Z 192.168.260.290 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
 
-  <blockquote> Note: <110> and <107> are priority values. </107> is the audit information log and <107> is the audit error log. </blockquote>
+  <blockquote> Note: <110> and <107> are priority values. <110> is the audit information log and <107> is the audit error log. </blockquote>
 
-# Security Logging
+# Security logs
 
-Security logging gives information on the successful and failed user authentication and authorization attempts. The logs are stored in api.log and account_session.log file in odimra logs.
+Security logs provide information on the successful and failed user authentication and authorization attempts. The logs are stored in `api.log` and `account_session.log` file in `odimra` logs. Each log consists of a priority value, date and time of the log, user account and role details, and the message.
 
 **Samples**
 
 - <86> 2022-01-28T04:44:09Z [account@1 user="admin" roleID="Administrator"] Authentication/Authorization successful for session token 388281e8-4a45-45e5-862b-6b1ccfd6e6a3
 
-- <84> 2022-01-28T04:43:39Z [account@1 user="admin1" roleID="null"] Authentication failed , Invalid username or password
+- <84> 2022-01-28T04:43:39Z [account@1 user="admin1" roleID="null"] Authentication failed, Invalid username or password
 
   <blockquote> Note: <86> and <84> are priority values. <86> is security information log and <84> is the warning log.</blockquote>
 

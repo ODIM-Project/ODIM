@@ -465,7 +465,7 @@ The following table lists the software components and their versions that are co
     | kafka                 | 1.0         | kafka.tar                    |
     | zookeeper             | 1.0         | zookeeper.tar                |
     | etcd                  | 1.16        | etcd.tar                     |
-    | redis                 | 2.0         | redis.tar                    |
+    | redis                 | 2.1         | redis.tar                    |
     | stakater/reloader     | v0.0.76     | stakater_reloader.tar        |
     | busybox               | 1.33        | busybox.tar                  |
     | dellplugin            | 2.0         | dellplugin.tar               |

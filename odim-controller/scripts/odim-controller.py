@@ -1596,31 +1596,19 @@ def deploy_plugin(plugin_name):
 	with open(pluginPackagePath + "/" + plugin_name + "-config.yaml", "r") as stream:
 			try:
 				pluginConf=yaml.safe_load(stream)
+				serviceUid = {key:val for key, val in pluginConf[plugin_name].items() if key.endswith(uid)}
 				if pluginConf[plugin_name]['logPath'] == None or \
 					pluginConf[plugin_name]['username'] == None or \
 					pluginConf[plugin_name]['password'] == None:
 					logger.critical("mandatory parameter missing in Config file")
 					exit(1)
-				if plugin_name == "iloplugin":
-					if pluginConf[plugin_name]['iloPluginRoot' + uid] == None:
+				if len(serviceUid) != 0:
+					if pluginConf[plugin_name][list(serviceUid.keys())[0]] == None:
 						logger.critical("ServiceUUID parameter missing in Config file")
 						exit(1)
-				if plugin_name == "grfplugin":
-					if pluginConf[plugin_name]['root' + uid] == None:
-						logger.critical("ServiceUUID parameter missing in Config file")
-						exit(1)
-				if plugin_name == "urplugin":
-					if pluginConf[plugin_name]['urPluginRoot' + uid] == None:
-						logger.critical("ServiceUUID parameter missing in Config file")
-						exit(1)
-				if plugin_name == "dellplugin":
-					if pluginConf[plugin_name]['dellPluginRoot' + uid] == None:
-						logger.critical("ServiceUUID parameter missing in Config file")
-						exit(1)
-				if plugin_name == "lenovoplugin":
-					if pluginConf[plugin_name]['lenovoPluginRoot' + uid] == None:
-						logger.critical("ServiceUUID parameter missing in Config file")
-						exit(1)
+				else:
+					logger.critical("ServiceUUID parameter missing in Config file")
+					exit(1)
 			except yaml.YAMLError as exc:
 				logger.error(exc)
 				exit(1)

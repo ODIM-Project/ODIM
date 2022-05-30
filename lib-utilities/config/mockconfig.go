@@ -242,6 +242,7 @@ func SetUpMockConfig(t *testing.T) error {
 		OnDiskPort:     "6380",
 		MaxIdleConns:   10,
 		MaxActiveConns: 120,
+		RedisPassword:  []byte("redis_password"),
 	}
 	Data.MessageBusConf = &MessageBusConf{
 		MessageBusType:  "Kafka",

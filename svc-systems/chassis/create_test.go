@@ -55,13 +55,6 @@ func TestNewCreateHandler(t *testing.T) {
 	create.createPluginClient = func(name string) (plugin.Client, *errors.Error) {
 		return &plugin.ClientMock{}, nil
 	}
-	// create := NewCreateHandler(plugin.NewClientFactory(&config.URLTranslation{NorthBoundURL: map[string]string{
-	// 	"ODIM": "redfish",
-	// },
-	// 	SouthBoundURL: map[string]string{
-	// 		"redfish": "ODIM",
-	// 	}}))
-
 	// Empty Request Body
 	req := chassisproto.CreateChassisRequest{}
 	response := create.Handle(&req)

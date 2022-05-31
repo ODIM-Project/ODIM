@@ -331,6 +331,8 @@ func Router() *iris.Application {
 	task.Any("/", handle.TsMethodNotAllowed)
 	task.Any("/Tasks", handle.TsMethodNotAllowed)
 	task.Any("/Tasks/{TaskID}", handle.TsMethodNotAllowed)
+	task.Any("/Tasks/{TaskID}/SubTasks", handle.TsMethodNotAllowed)
+	task.Any("/Tasks/{TaskID}/SubTasks/{subTaskID}", handle.TsMethodNotAllowed)
 
 	systems := v1.Party("/Systems", middleware.SessionDelMiddleware)
 	systems.SetRegisterRule(iris.RouteSkip)

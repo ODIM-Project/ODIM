@@ -115,7 +115,7 @@ func MockContactClient(url, method, token string, odataID string, body interface
 			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
 		}
 		return r, nil
-	} else if url == "https://10.10.10.23:4321/ODIM/v1/Sessions" || url == "https://odim_mock.com:4321/ODIM/v1/Sessions" {
+	} else if url == "https://odim.test.com:4321/ODIM/v1/Sessions" || url == "https://odim_mock.com:4321/ODIM/v1/Sessions" {
 		body := `{"MessageId": "` + response.Success + `"}`
 
 		r := &http.Response{
@@ -263,7 +263,7 @@ func MockGetPluginData(pluginID string) (*evmodel.Plugin, *errors.Error) {
 		}
 	case "CFM":
 		plugin = &evmodel.Plugin{
-			IP:                "10.10.1.6",
+			IP:                "odim.test.com",
 			Port:              "4321",
 			Password:          password,
 			Username:          "admin",
@@ -310,7 +310,7 @@ func MockGetSingleSystem(id string) (string, error) {
 		}
 	case "11081de0-4859-984c-c35a-6c50732d72da":
 		systemData = SavedSystems{
-			ManagerAddress: "10.10.1.3",
+			ManagerAddress: "odim.com",
 			Password:       []byte("Password"),
 			UserName:       "admin",
 			DeviceUUID:     "11081de0-4859-984c-c35a-6c50732d72da",
@@ -318,7 +318,7 @@ func MockGetSingleSystem(id string) (string, error) {
 		}
 	case "d72dade0-c35a-984c-4859-1108132d72da":
 		systemData = SavedSystems{
-			ManagerAddress: "10.10.1.4",
+			ManagerAddress: "odim.local.com",
 			Password:       []byte("Password"),
 			UserName:       "admin",
 			DeviceUUID:     "d72dade0-c35a-984c-4859-1108132d72da",
@@ -369,9 +369,9 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 			{
 				UserName:             "admin",
 				SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d7",
-				Destination:          "https://10.10.10.15:9090/events",
+				Destination:          "https://odim.local.com:9090/events",
 				Name:                 "Subscription",
-				Location:             "https://10.10.10.2/EventService/Subscriptions/1",
+				Location:             "https://odim.mock.com/EventService/Subscriptions/1",
 				Context:              "context",
 				EventTypes:           []string{"Alert", "ResourceAdded"},
 				MessageIds:           []string{"IndicatorChanged"},
@@ -381,37 +381,37 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				SubordinateResources: true,
 			},
 		}
-	case "11081de0-4859-984c-c35a-6c50732d72da", "/redfish/v1/Systems", "https://10.10.10.15:9090/events", "*":
+	case "11081de0-4859-984c-c35a-6c50732d72da", "/redfish/v1/Systems", "https://odim.local.com:9090/events", "*":
 		subarr = []evmodel.Subscription{
 			{
 				UserName:             "admin",
 				SubscriptionID:       "11081de0-4859-984c-c35a-6c50732d72da",
-				Destination:          "https://10.10.10.15:9090/events",
+				Destination:          "https://odim.local.com:9090/events",
 				Name:                 "Subscription",
-				Location:             "https://10.10.10.2/EventService/Subscriptions/1",
+				Location:             "https://odim.mock.com/EventService/Subscriptions/1",
 				Context:              "context",
 				EventTypes:           []string{"Alert", "StatusChange"},
 				MessageIds:           []string{"IndicatorChanged", "StateChanged"},
 				ResourceTypes:        []string{"ComputerSystem"},
 				OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
-				Hosts:                []string{"odim-mock.com", "10.10.1.3"},
+				Hosts:                []string{"odim-mock.com", "odim.local.com"},
 				SubordinateResources: true,
 			},
 		}
-	case "71de0110-c35a-4859-984c-072d6c5a32d8", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1", "[^0-9]10.10.1.3[^0-9]":
+	case "71de0110-c35a-4859-984c-072d6c5a32d8", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1", "[^0-9]odim-mock.com[^0-9]":
 		subarr = []evmodel.Subscription{
 			{
 				UserName:             "admin",
 				SubscriptionID:       "71de0110-c35a-4859-984c-072d6c5a32d8",
-				Destination:          "https://10.10.10.16:9090/events",
+				Destination:          "https://odim.local.com:9090/events",
 				Name:                 "Subscription",
-				Location:             "https://10.10.10.3/EventService/Subscriptions/1",
+				Location:             "https://odim.local.com/EventService/Subscriptions/1",
 				Context:              "context",
 				EventTypes:           []string{"Alert", "ResourceAdded"},
 				MessageIds:           []string{},
 				ResourceTypes:        []string{},
 				OriginResources:      []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
-				Hosts:                []string{"10.10.1.3"},
+				Hosts:                []string{"odim-mock.com"},
 				SubordinateResources: false,
 			},
 		}
@@ -419,7 +419,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 		subarr = []evmodel.Subscription{
 			{
 				SubscriptionID:       "71de0110-c35a-4859-984c-072d6c5a32d9",
-				Destination:          "https://10.10.10.16:9090/events",
+				Destination:          "https://odim.local.com:9090/events",
 				Name:                 "Subscription",
 				Location:             "/ODIM/v1/Subscriptions/12345",
 				Context:              "context",
@@ -427,7 +427,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				MessageIds:           []string{},
 				ResourceTypes:        []string{},
 				OriginResources:      []string{"/redfish/v1/Fabrics/123456"},
-				Hosts:                []string{"10.10.1.6"},
+				Hosts:                []string{"odim.mock.com"},
 				SubordinateResources: true,
 			},
 		}
@@ -435,7 +435,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 		subarr = []evmodel.Subscription{
 			{
 				SubscriptionID:       "5a321010-c35a-4859-984c-072d6c",
-				Destination:          "https://10.10.10.16:9090/events",
+				Destination:          "https://odim.local.com:9090/events",
 				Name:                 "Subscription",
 				Location:             "/ODIM/v1/Subscriptions/123",
 				Context:              "context",
@@ -443,7 +443,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				MessageIds:           []string{},
 				ResourceTypes:        []string{},
 				OriginResources:      []string{"/redfish/v1/Fabrics/123"},
-				Hosts:                []string{"10.10.1.5"},
+				Hosts:                []string{"odim.mock.com"},
 				SubordinateResources: true,
 			},
 		}
@@ -472,9 +472,9 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 			{
 				UserName:             "admin",
 				SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d8",
-				Destination:          "https://10.10.10.9:9090/events",
+				Destination:          "https://odim.local.com:9090/events",
 				Name:                 "Subscription",
-				Location:             "https://10.10.10.2/EventService/Subscriptions/1",
+				Location:             "https://odim.local.com/EventService/Subscriptions/1",
 				Context:              "context",
 				EventTypes:           []string{"Alert"},
 				MessageIds:           []string{"IndicatorChanged"},
@@ -495,26 +495,26 @@ func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, err
 	var deviceSub *evmodel.DeviceSubscription
 	if strings.Contains(hostIP, "odim-mock.com") || hostIP == "*" {
 		deviceSub = &evmodel.DeviceSubscription{
-			Location:        "https://10.10.10.2/EventService/Subscriptions/1",
+			Location:        "https://odim-mock.com/EventService/Subscriptions/1",
 			EventHostIP:     "odim-mock.com",
 			OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 		}
-	} else if strings.Contains(hostIP, "10.10.1.3") {
+	} else if strings.Contains(hostIP, "odim-mock.com") {
 		deviceSub = &evmodel.DeviceSubscription{
-			Location:        "https://10.10.10.3/EventService/Subscriptions/1",
-			EventHostIP:     "10.10.1.3",
+			Location:        "https://odim-mock.com/EventService/Subscriptions/1",
+			EventHostIP:     "odim-mock.com",
 			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
 		}
-	} else if strings.Contains(hostIP, "10.10.1.6") {
+	} else if strings.Contains(hostIP, "odim-mock.com") {
 		deviceSub = &evmodel.DeviceSubscription{
 			Location:        "/ODIM/v1/Subscriptions/12345",
-			EventHostIP:     "10.10.1.6",
+			EventHostIP:     "odim-mock.com",
 			OriginResources: []string{"/redfish/v1/Fabrics/123456"},
 		}
-	} else if strings.Contains(hostIP, "10.10.1.5") {
+	} else if strings.Contains(hostIP, "odim.com") {
 		deviceSub = &evmodel.DeviceSubscription{
 			Location:        "/ODIM/v1/Subscriptions/123",
-			EventHostIP:     "10.10.1.5",
+			EventHostIP:     "odim.com",
 			OriginResources: []string{"/redfish/v1/Fabrics/123"},
 		}
 	} else if strings.Contains(hostIP, "localhost") {
@@ -523,10 +523,10 @@ func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, err
 			EventHostIP:     "localhost",
 			OriginResources: []string{""},
 		}
-	} else if strings.Contains(hostIP, "10.10.1.9") {
+	} else if strings.Contains(hostIP, "odim.test.com") {
 		deviceSub = &evmodel.DeviceSubscription{
 			Location:        "https://10.10.10.9/EventService/Subscriptions/1",
-			EventHostIP:     "10.10.1.9",
+			EventHostIP:     "odim.test.com",
 			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72ea.1"},
 		}
 	} else if hostIP == "*/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1" {

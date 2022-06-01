@@ -132,30 +132,6 @@ func TestGetStorageResources(t *testing.T) {
 	assert.NotNil(t, resp, "There should be no error ")
 }
 
-func TestGetPluginStatusRecord(t *testing.T) {
-	type args struct {
-		plugin string
-	}
-	tests := []struct {
-		name  string
-		args  args
-		want  int
-		want1 bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := GetPluginStatusRecord(tt.args.plugin)
-			if got != tt.want {
-				t.Errorf("GetPluginStatusRecord() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("GetPluginStatusRecord() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
 func stubDevicePassword(password []byte) ([]byte, error) {
 	if bytes.Compare(password, []byte("passwordWithInvalidEncryption")) == 0 {
 		return []byte{}, fmt.Errorf("password decryption failed")

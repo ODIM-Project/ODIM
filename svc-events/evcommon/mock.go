@@ -115,7 +115,7 @@ func MockContactClient(url, method, token string, odataID string, body interface
 			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
 		}
 		return r, nil
-	} else if url == "https://odim_mock.com:4321/ODIM/v1/Sessions" || url == "https://odim_mock.com:4321/ODIM/v1/Sessions" {
+	} else if url == "https://10.10.10.23:4321/ODIM/v1/Sessions" || url == "https://odim_mock.com:4321/ODIM/v1/Sessions" {
 		body := `{"MessageId": "` + response.Success + `"}`
 
 		r := &http.Response{
@@ -126,7 +126,7 @@ func MockContactClient(url, method, token string, odataID string, body interface
 			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
 		}
 		return r, nil
-	} else if url == "https://odim_mock.com:4321/ODIM/v1/Subscriptions" {
+	} else if url == "https://odim.com:4321/ODIM/v1/Subscriptions" {
 		body := `{"MessageId": "` + response.Failure + `"}`
 		return &http.Response{
 			StatusCode: http.StatusUnauthorized,
@@ -189,7 +189,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 	switch uuid {
 	case "6d4a0a66-7efa-578e-83cf-44dc68d2874e":
 		target = &evmodel.Target{
-			ManagerAddress: "100.100.100.100",
+			ManagerAddress: "odim-mock.com",
 			Password:       encryptedData,
 			UserName:       "admin",
 			DeviceUUID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
@@ -197,7 +197,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 		}
 	case "11081de0-4859-984c-c35a-6c50732d72da":
 		target = &evmodel.Target{
-			ManagerAddress: "10.10.1.3",
+			ManagerAddress: "odim-mock.com",
 			Password:       encryptedData,
 			UserName:       "admin",
 			DeviceUUID:     "11081de0-4859-984c-c35a-6c50732d72da",
@@ -205,7 +205,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 		}
 	case "d72dade0-c35a-984c-4859-1108132d72da":
 		target = &evmodel.Target{
-			ManagerAddress: "10.10.1.4",
+			ManagerAddress: "odim-mock.com",
 			Password:       encryptedData,
 			UserName:       "admin",
 			DeviceUUID:     "d72dade0-c35a-984c-4859-1108132d72da",
@@ -213,7 +213,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 		}
 	case "110813e0-4859-984c-984c-d72da32d72da":
 		target = &evmodel.Target{
-			ManagerAddress: "10.10.1.5",
+			ManagerAddress: "odim-mock.com",
 			Password:       encryptedData,
 			UserName:       "admin",
 			DeviceUUID:     "110813e0-4859-984c-984c-d72da32d72da",
@@ -302,7 +302,7 @@ func MockGetSingleSystem(id string) (string, error) {
 	switch id {
 	case "6d4a0a66-7efa-578e-83cf-44dc68d2874e":
 		systemData = SavedSystems{
-			ManagerAddress: "100.100.100.100",
+			ManagerAddress: "odim-mock.com",
 			Password:       []byte("Password"),
 			UserName:       "admin",
 			DeviceUUID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
@@ -364,7 +364,7 @@ func MockGetFabricData(fabricID string) (evmodel.Fabric, error) {
 func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 	var subarr []evmodel.Subscription
 	switch searchKey {
-	case "81de0110-c35a-4859-984c-072d6c5a32d7", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "[^0-9]100.100.100.100[^0-9]":
+	case "81de0110-c35a-4859-984c-072d6c5a32d7", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "[^0-9]odim-mock.com[^0-9]":
 		subarr = []evmodel.Subscription{
 			{
 				UserName:             "admin",
@@ -377,7 +377,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				MessageIds:           []string{"IndicatorChanged"},
 				ResourceTypes:        []string{"ComputerSystem"},
 				OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-				Hosts:                []string{"100.100.100.100"},
+				Hosts:                []string{"odim-mock.com"},
 				SubordinateResources: true,
 			},
 		}
@@ -394,7 +394,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				MessageIds:           []string{"IndicatorChanged", "StateChanged"},
 				ResourceTypes:        []string{"ComputerSystem"},
 				OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
-				Hosts:                []string{"100.100.100.100", "10.10.1.3"},
+				Hosts:                []string{"odim-mock.com", "10.10.1.3"},
 				SubordinateResources: true,
 			},
 		}
@@ -480,7 +480,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				MessageIds:           []string{"IndicatorChanged"},
 				ResourceTypes:        []string{"ComputerSystem"},
 				OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-				Hosts:                []string{"100.100.100.100"},
+				Hosts:                []string{"odim-mock.com"},
 				SubordinateResources: true,
 			},
 		}
@@ -493,10 +493,10 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 // MockGetDeviceSubscriptions is for mocking up of get device subscription
 func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, error) {
 	var deviceSub *evmodel.DeviceSubscription
-	if strings.Contains(hostIP, "100.100.100.100") || hostIP == "*" {
+	if strings.Contains(hostIP, "odim-mock.com") || hostIP == "*" {
 		deviceSub = &evmodel.DeviceSubscription{
 			Location:        "https://10.10.10.2/EventService/Subscriptions/1",
-			EventHostIP:     "100.100.100.100",
+			EventHostIP:     "odim-mock.com",
 			OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 		}
 	} else if strings.Contains(hostIP, "10.10.1.3") {
@@ -531,8 +531,8 @@ func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, err
 		}
 	} else if hostIP == "*/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1" {
 		deviceSub = &evmodel.DeviceSubscription{
-			Location:        "https://100.100.100.100/ODIM/v1/Subscriptions/1",
-			EventHostIP:     "100.100.100.100",
+			Location:        "https://odim-mock.com/ODIM/v1/Subscriptions/1",
+			EventHostIP:     "odim-mock.com",
 			OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 		}
 	} else {

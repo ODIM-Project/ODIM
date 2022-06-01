@@ -1,27 +1,15 @@
 //(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-
 //
-
 //Licensed under the Apache License, Version 2.0 (the "License"); you may
-
 //not use this file except in compliance with the License. You may obtain
-
 //a copy of the License at
-
 //
-
 //    http://www.apache.org/licenses/LICENSE-2.0
-
 //
-
 //Unless required by applicable law or agreed to in writing, software
-
 //distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-
 //WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-
 //License for the specific language governing permissions and limitations
-
 // under the License.
 
 package agcommon
@@ -131,7 +119,6 @@ func mockData(t *testing.T, dbType common.DbType, table, id string, data interfa
 func TestGetStorageResources(t *testing.T) {
 	config.SetUpMockConfig(t)
 	storageURI := "/redfish/v1/Systems/12345677651245-12341/Storage"
-	//systemURI := "/redfish/v1/System/uuid.1"
 	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
 		return "", errors.PackError(0, "error while trying to connecting to DB: ")
 	}
@@ -217,9 +204,7 @@ func TestPluginHealthCheckInterface_GetPluginStatus(t *testing.T) {
 			if got != tt.want {
 				t.Errorf("PluginHealthCheckInterface.GetPluginStatus() got = %v, want %v", got, tt.want)
 			}
-			// if !reflect.DeepEqual(got1, tt.want1) {
-			// 	t.Errorf("PluginHealthCheckInterface.GetPluginStatus() got1 = %v, want %v", got1, tt.want1)
-			// }
+
 		})
 	}
 }
@@ -228,11 +213,8 @@ func TestLookupHost(t *testing.T) {
 	config.SetUpMockConfig(t)
 
 	ip, _, _, _ := LookupHost("10.0.0.0")
-	//fmt.Println("ip", ip)
 	assert.Equal(t, "10.0.0.0", ip, "Ip should be same")
-	// ip, _, _, err := LookupHost("10.0.0")
-	// fmt.Println("err", err)
-	// assert.Equal(t, "lookup 10.0.0: no such host", err.Error(), "If invalid ip, no such host should be given")
+
 	LookupIPfunc = func(host string) (ip []net.IP, err error) {
 		err = fmt.Errorf("error")
 		return

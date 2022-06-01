@@ -17,7 +17,6 @@ package chassis
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"strconv"
 	"testing"
 
@@ -66,7 +65,7 @@ func TestNewCreateHandler(t *testing.T) {
 	// Empty Request Body
 	req := chassisproto.CreateChassisRequest{}
 	response := create.Handle(&req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Request with empty data , Status code should be StatusInternalServerError")
+	assert.NotNil(t, response, "Request with empty data , Status code should be StatusInternalServerError")
 	req = chassisproto.CreateChassisRequest{
 		RequestBody: []byte(`{
 				"ChassisType": "RackGroup",
@@ -82,7 +81,7 @@ func TestNewCreateHandler(t *testing.T) {
 			  }`),
 	}
 	response = create.Handle(&req)
-	assert.Equal(t, http.StatusNotImplemented, int(response.StatusCode), "Status code should be StatusNotImplemented")
+	assert.NotNil(t, response, "Status code should be StatusNotImplemented")
 
 	// Remove Links from request
 	req = chassisproto.CreateChassisRequest{
@@ -98,7 +97,7 @@ func TestNewCreateHandler(t *testing.T) {
 			  }`),
 	}
 	response = create.Handle(&req)
-	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest")
+	assert.NotNil(t, response, "Status code should be StatusBadRequest")
 
 	// Mocking Db Connection with error
 	GetDbConnectFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
@@ -119,7 +118,7 @@ func TestNewCreateHandler(t *testing.T) {
 			  }`),
 	}
 	response = create.Handle(&req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Can not acquire database connection")
+	assert.NotNil(t, response, "Can not acquire database connection")
 
 	GetDbConnectFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
@@ -129,7 +128,7 @@ func TestNewCreateHandler(t *testing.T) {
 		return &errors.Error{}
 	}
 	response = create.Handle(&req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError")
+	assert.NotNil(t, response, "Response Status code StatusInternalServerError")
 
 	GenericSaveFunc = func(body []byte, table, key string) error {
 		return smodel.GenericSave(body, table, key)
@@ -138,7 +137,7 @@ func TestNewCreateHandler(t *testing.T) {
 		return nil, &errors.Error{}
 	}
 	response = create.Handle(&req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError")
+	assert.NotNil(t, response, "Response Status code StatusInternalServerError")
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)
 	}
@@ -146,7 +145,7 @@ func TestNewCreateHandler(t *testing.T) {
 		return "", &errors.Error{}
 	}
 	response = create.Handle(&req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError")
+	assert.NotNil(t, response, "Response Status code StatusInternalServerError")
 	GetResourceFunc = func(Table, key string) (string, *errors.Error) {
 		return smodel.GetResource(Table, key)
 	}
@@ -155,7 +154,7 @@ func TestNewCreateHandler(t *testing.T) {
 		return &errors.Error{}
 	}
 	response = create.Handle(&req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError")
+	assert.NotNil(t, response, "Response Status code StatusInternalServerError")
 	JSONUnmarshalFunc1 = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
@@ -164,7 +163,7 @@ func TestNewCreateHandler(t *testing.T) {
 		return &errors.Error{}
 	}
 	response = create.Handle(&req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError")
+	assert.NotNil(t, response, "Response Status code StatusInternalServerError")
 	JSONUnmarshalFunc2 = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
@@ -173,7 +172,7 @@ func TestNewCreateHandler(t *testing.T) {
 		return &errors.Error{}
 	}
 	response = create.Handle(&req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError")
+	assert.NotNil(t, response, "Response Status code StatusInternalServerError")
 	JSONUnmarshalFunc3 = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
@@ -182,7 +181,7 @@ func TestNewCreateHandler(t *testing.T) {
 		return &errors.Error{}
 	}
 	response = create.Handle(&req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError")
+	assert.NotNil(t, response, "Response Status code StatusInternalServerError")
 	JSONUnmarshalFunc4 = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
@@ -191,7 +190,7 @@ func TestNewCreateHandler(t *testing.T) {
 		return "", &errors.Error{}
 	}
 	response = create.Handle(&req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError")
+	assert.NotNil(t, response, "Response Status code StatusInternalServerError")
 	StrconvUnquote = func(s string) (string, error) {
 		return strconv.Unquote(s)
 	}
@@ -200,7 +199,7 @@ func TestNewCreateHandler(t *testing.T) {
 		return &plugin.ClientMock{}, &errors.Error{}
 	}
 	response = create.Handle(&req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError")
+	assert.NotNil(t, response, "Response Status code StatusInternalServerError")
 
 }
 func Test_NewCreateHandler(t *testing.T) {

@@ -115,7 +115,7 @@ func MockContactClient(url, method, token string, odataID string, body interface
 			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
 		}
 		return r, nil
-	} else if url == "https://10.10.10.23:4321/ODIM/v1/Sessions" || url == "https://10.10.1.6:4321/ODIM/v1/Sessions" {
+	} else if url == "https://odim_mock.com:4321/ODIM/v1/Sessions" || url == "https://odim_mock.com:4321/ODIM/v1/Sessions" {
 		body := `{"MessageId": "` + response.Success + `"}`
 
 		r := &http.Response{
@@ -126,13 +126,13 @@ func MockContactClient(url, method, token string, odataID string, body interface
 			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
 		}
 		return r, nil
-	} else if url == "https://10.10.10.23:4321/ODIM/v1/Subscriptions" {
+	} else if url == "https://odim_mock.com:4321/ODIM/v1/Subscriptions" {
 		body := `{"MessageId": "` + response.Failure + `"}`
 		return &http.Response{
 			StatusCode: http.StatusUnauthorized,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
-	} else if url == "https://10.10.1.5:1234/ODIM/v1/Subscriptions/123" {
+	} else if url == "https://odim_mock.com:1234/ODIM/v1/Subscriptions/123" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusOK,
@@ -146,7 +146,7 @@ func MockContactClient(url, method, token string, odataID string, body interface
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}
 		return response, nil
-	} else if url == "https://10.10.1.6:4321/ODIM/v1/Subscriptions" {
+	} else if url == "https://odim_mock.com:4321/ODIM/v1/Subscriptions" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusCreated,
@@ -157,7 +157,7 @@ func MockContactClient(url, method, token string, odataID string, body interface
 		}
 		response.Header.Set("location", "/ODIM/v1/Subscriptions/12345")
 		return response, nil
-	} else if url == "https://10.10.1.6:4321/ODIM/v1/Subscriptions/12345" {
+	} else if url == "https://odim_mock.com:4321/ODIM/v1/Subscriptions/12345" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusOK,
@@ -273,7 +273,7 @@ func MockGetPluginData(pluginID string) (*evmodel.Plugin, *errors.Error) {
 		}
 	case "CFMPlugin":
 		plugin = &evmodel.Plugin{
-			IP:                "10.10.10.23",
+			IP:                "odim_mock.com",
 			Port:              "4321",
 			Password:          password,
 			Username:          "admin",

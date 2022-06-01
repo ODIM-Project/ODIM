@@ -221,9 +221,7 @@ func TestLookupHost(t *testing.T) {
 	}
 	ip, _, _, err := LookupHost("10.0.0")
 	assert.NotNil(t, err, "There should be an error")
-
 	LookupIPfunc = func(host string) (ip []net.IP, err error) {
-		// ip=append(ip, net.ParseIP("192.100.10.4"))
 		return
 	}
 	ip, _, _, err = LookupHost("10.0.0.1")

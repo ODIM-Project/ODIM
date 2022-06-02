@@ -51,7 +51,7 @@ func TestPublishEventsToDestiantion(t *testing.T) {
 		},
 	}
 
-	ip := []string{"100.100.100.100", "100.100.100.100", "10.10.1.3", "10.10.1.3"}
+	ip := []string{"odim.mock.com", "odim.mock.com", "odim.mock.com", "odim.mock.com"}
 	pc := getMockMethods()
 	for i, v := range messages {
 		var event common.Events
@@ -95,7 +95,7 @@ func TestPublishEventsWithEmptyOriginOfCondition(t *testing.T) {
 	}
 
 	var event common.Events
-	event.IP = "100.100.100.100"
+	event.IP = "odim.mock.com"
 	msg, err := json.Marshal(message)
 	if err != nil {
 		t.Errorf("expected err is nil but got : %v", err)

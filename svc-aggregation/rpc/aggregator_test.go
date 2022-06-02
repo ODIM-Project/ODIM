@@ -239,6 +239,7 @@ func TestAggregator_SetDefaultBootOrder(t *testing.T) {
 }
 
 func TestAggregator_RediscoverSystemInventory(t *testing.T) {
+	config.SetUpMockConfig(t)
 	type args struct {
 		ctx context.Context
 		req *aggregatorproto.RediscoverSystemInventoryRequest

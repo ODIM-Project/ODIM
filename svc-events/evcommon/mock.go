@@ -36,7 +36,7 @@ func stubDevicePassword(password []byte) ([]byte, error) {
 func stubEMBConsume(topic string) {
 
 }
-Domain_name:= "odim-mock.com"
+var Domain_name = "odim-mock.com"
 // MockIsAuthorized is for mocking up of authorization
 func MockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
 	if sessionToken != "validToken" && sessionToken != "token" {
@@ -398,7 +398,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				SubordinateResources: true,
 			},
 		}
-	case "71de0110-c35a-4859-984c-072d6c5a32d8", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1", "[^0-9]odim-mock.com[^0-9]":
+	case "71de0110-c35a-4859-984c-072d6c5a32d8", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1", "[^0-9]odim-test.com[^0-9]":
 		subarr = []evmodel.Subscription{
 			{
 				UserName:             "admin",

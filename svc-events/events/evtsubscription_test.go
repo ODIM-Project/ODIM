@@ -347,7 +347,7 @@ func TestFabricEventSubscription(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://10.10.10.24:8070/Destination1",
+		"Destination":          "https://odim.mock.com:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -392,7 +392,7 @@ func TestFabricEventSubscription(t *testing.T) {
 	SubscriptionReq["OriginResources"] = []evmodel.OdataIDLink{
 		{OdataID: "/redfish/v1/Fabrics/48591de0-4859-1108-c35a-6c50110872da"},
 	}
-	SubscriptionReq["Destination"] = "https://10.10.10.24:8070/Destination4"
+	SubscriptionReq["Destination"] = "https://odim.mock.com:8070/Destination4"
 	postBody, _ = json.Marshal(&SubscriptionReq)
 	req2 := &eventsproto.EventSubRequest{
 		SessionToken: "token",

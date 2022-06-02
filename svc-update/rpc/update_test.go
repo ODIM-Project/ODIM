@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -325,6 +326,7 @@ func TestUpdater_SimepleUpdate(t *testing.T) {
 }
 
 func TestUpdater_StartUpdate(t *testing.T) {
+	config.SetUpMockConfig(t)
 	update := new(Updater)
 	update.connector = mockGetExternalInterface()
 	type args struct {

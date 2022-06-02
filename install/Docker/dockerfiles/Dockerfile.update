@@ -13,6 +13,8 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
+COPY install/Docker/dockerfiles/build/update.sh .
+RUN ./update.sh
 
 FROM ubuntu:20.04
 

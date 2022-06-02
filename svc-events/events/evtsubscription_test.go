@@ -63,7 +63,7 @@ func TestCreateEventSubscription(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// try to subscrie with already subscribed destinations
-	SubscriptionReq["Destination"] = "https://10.10.10.15:9090/events"
+	SubscriptionReq["Destination"] = "https://odim.local.com:9090/events"
 
 	postBody, _ = json.Marshal(&SubscriptionReq)
 
@@ -458,6 +458,6 @@ func TestCheckCollectionSubscription(t *testing.T) {
 	protocol := "Redfish"
 	p.checkCollectionSubscription(originResources, protocol)
 	devSub, _ := p.GetDeviceSubscriptions("*" + originResources)
-	assert.Equal(t, "https://100.100.100.100/ODIM/v1/Subscriptions/1", devSub.Location, "Location should be https://100.100.100.100/ODIM/v1/Subscriptions/12")
+	assert.Equal(t, "https://odim.mock.com/ODIM/v1/Subscriptions/1", devSub.Location, "Location should be https://100.100.100.100/ODIM/v1/Subscriptions/12")
 	assert.Equal(t, "100.100.100.100", devSub.EventHostIP, "EventHostIP should be 100.100.100.100")
 }

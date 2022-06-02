@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-api/models"
 	iris "github.com/kataras/iris/v12"
@@ -284,6 +285,7 @@ func authMock(token string, b []string, c []string) response.RPC {
 }
 
 func TestGetRegistryFileCollection(t *testing.T) {
+	config.SetUpMockConfig(t)
 	err := common.SetUpMockConfig()
 	if err != nil {
 		t.Fatalf("fatal: error while trying to collect mock db config: %v", err)

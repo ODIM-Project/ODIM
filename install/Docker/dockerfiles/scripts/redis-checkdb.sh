@@ -18,11 +18,11 @@
 sleep 3
 if [[ -n ${REDIS_DEFAULT_PASSWORD} ]]; then
 echo "Checking if default entries already present"
-redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h ${master} -p ${REDIS_HA_REDIS_SERVICE_PORT} <<HERE
+redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h ${master} -p ${REDIS_HA_REDIS_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} <<HERE
 exists "role:Administrator"
 HERE
 else
-redis-cli -h ${master} -p ${REDIS_HA_REDIS_SERVICE_PORT} <<HERE
+redis-cli -h ${master} -p ${REDIS_HA_REDIS_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} <<HERE
 exists "role:Administrator"
 HERE
 fi

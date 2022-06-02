@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -29,7 +30,7 @@ import (
 )
 
 func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
-	if sessionToken != "validToken" {
+	if sessionToken == "invalidToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
 	}
 	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
@@ -53,8 +54,11 @@ func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, erro
 func mockGetExternalInterface() *update.ExternalInterface {
 	return &update.ExternalInterface{
 		External: update.External{
-			Auth:          mockIsAuthorized,
-			ContactClient: mockContactClient,
+			Auth:               mockIsAuthorized,
+			ContactClient:      mockContactClient,
+			GetSessionUserName: mockGetSessionUserNamefunc,
+			CreateTask:         mockCreateTaskfunc,
+			UpdateTask:         mockUpdateTask,
 		},
 		DB: update.DB{
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
@@ -191,7 +195,7 @@ func TestGetFirmwareInventorywithInValidtoken(t *testing.T) {
 	update.connector = mockGetExternalInterface()
 	req := &updateproto.UpdateRequest{
 		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
-		SessionToken: "InvalidToken",
+		SessionToken: "invalidToken",
 	}
 	resp, _ := update.GetFirmwareInventory(ctx, req)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status code should be StatusOK.")
@@ -217,7 +221,7 @@ func TestGetSoftwareInventorywithInValidtoken(t *testing.T) {
 	update.connector = mockGetExternalInterface()
 	req := &updateproto.UpdateRequest{
 		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
-		SessionToken: "InvalidToken",
+		SessionToken: "invalidToken",
 	}
 	resp, _ := update.GetSoftwareInventory(ctx, req)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status code should be StatusOK.")
@@ -234,4 +238,161 @@ func TestGetSoftwareInventorywithValidtoken(t *testing.T) {
 	resp, err := update.GetSoftwareInventory(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
+}
+func mockGetSessionUserNamefunc(sessionToken string) (string, error) {
+	if sessionToken == "invalidSessionName" {
+		return "", fmt.Errorf("Invalid Error ")
+	}
+	return sessionToken, nil
+}
+func mockUpdateTask(common.TaskData) error {
+	return &errors.Error{}
+}
+func mockCreateTaskfunc(sessionToken string) (string, error) {
+	if sessionToken == "invalidTask" {
+		return "", &errors.Error{}
+	}
+	return sessionToken, nil
+}
+func TestUpdater_SimepleUpdate(t *testing.T) {
+	update := new(Updater)
+	update.connector = mockGetExternalInterface()
+	type args struct {
+		ctx context.Context
+		req *updateproto.UpdateRequest
+	}
+	tests := []struct {
+		name    string
+		a       *Updater
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "positive SimepleUpdate",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{SessionToken: "validToken"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "auth fail",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{SessionToken: "invalidToken"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid session",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{SessionToken: "invalidSessionName"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid session",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{SessionToken: "validSessionName"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid task",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{SessionToken: "invalidTask"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Valid task",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{SessionToken: "validTask"},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := tt.a.SimepleUpdate(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
+				t.Errorf("Update.SimepleUpdate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestUpdater_StartUpdate(t *testing.T) {
+	config.SetUpMockConfig(t)
+	update := new(Updater)
+	update.connector = mockGetExternalInterface()
+	type args struct {
+		ctx context.Context
+		req *updateproto.UpdateRequest
+	}
+	tests := []struct {
+		name    string
+		a       *Updater
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "positive SimepleUpdate",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{SessionToken: "validToken"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "auth fail",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{SessionToken: "invalidToken"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid session",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{SessionToken: "invalidSessionName"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid session",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{SessionToken: "validSessionName"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid task",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{SessionToken: "invalidTask"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Valid task",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{SessionToken: "validTask"},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := tt.a.StartUpdate(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
+				t.Errorf("Update.StartUpdate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
 }

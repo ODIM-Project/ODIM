@@ -16,12 +16,15 @@
 package asmodel
 
 import (
-	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
+
+	"github.com/stretchr/testify/assert"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
@@ -37,6 +40,7 @@ func mockData(dbType common.DbType, table, id string, data interface{}) {
 }
 
 func TestCreate(t *testing.T) {
+	config.SetUpMockConfig(t)
 	common.SetUpMockConfig()
 	defer func() {
 		common.TruncateDB(common.OnDisk)

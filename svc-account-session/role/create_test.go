@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -56,6 +57,7 @@ func mockPrivilegeRegistry() error {
 }
 
 func TestCreate(t *testing.T) {
+	config.SetUpMockConfig(t)
 	common.SetUpMockConfig()
 	defer truncateDB(t)
 	commonResponse := response.Response{

@@ -157,7 +157,7 @@ func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method s
 
 // collectChassisCollection contacts the plugin and collect the chassis response
 func collectChassisCollection(f *fabricFactory, pluginRequest *pluginContactRequest) ([]dmtf.Link, error) {
-	body, _, statusCode, _, err := contactPlugin(pluginRequest)
+	body, _, statusCode, _, err := ContactPluginFunc(pluginRequest)
 	if statusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
 		body, _, statusCode, _, err = retryFabricsOperation(f, pluginRequest)
 	}

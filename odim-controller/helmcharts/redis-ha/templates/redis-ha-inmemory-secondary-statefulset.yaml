@@ -5,6 +5,8 @@ metadata:
   namespace: {{ .Values.odimra.namespace }}
   labels:
     app: redis-ha-inmemory
+  annotations:
+    secret.reloader.stakater.com/reload: "odimra-secret"
 spec:
   replicas: {{ .Values.odimra.redisSecondayReplicaCount }}
   serviceName: redis-ha-inmemory-headless
@@ -22,7 +24,33 @@ spec:
         - name: redis-data
           persistentVolumeClaim:
             claimName: redis-ha-inmemory-data-claim
-
+        - name: odimra-secret
+          secret:
+            secretName: odimra-secret
+            items:
+            - key: rootCAcrt
+              path: rootCA.crt
+              mode: 0444
+            - key: odimra_servercrt
+              path: odimra_server.crt
+              mode: 0444
+            - key: odimra_serverkey
+              path: odimra_server.key
+              mode: 0444
+            - key: odimra_rsapublic
+              path: odimra_rsa.public
+              mode: 0444
+            - key: odimra_rsaprivate
+              path: odimra_rsa.private
+              mode: 0444
+            {{- if eq .Values.odimra.messageBusType "Kafka" }}
+            - key: odimra_kafka_clientcrt
+              path: odimra_kafka_client.crt
+              mode: 0444
+            - key: odimra_kafka_clientkey
+              path: odimra_kafka_client.key
+              mode: 0444
+            {{- end }}
       restartPolicy: Always
       affinity:
         nodeAffinity:
@@ -53,12 +81,22 @@ spec:
           - mountPath: "/redis-data"
             name: redis-data
             readOnly: false
+          - name: odimra-secret
+            mountPath: /etc/odimra_certs
 
         env:
         - name: MASTER
           value: "false"
+        - name: MASTER_HOST_NAME
+          value: "redis-ha-inmemory-primary-0.redis-ha-inmemory-headless.odim.svc.cluster.local"
         - name: REDIS_ONDISK_DB 
           value: "false"
+        - name: TLS_CERT_FILE
+          value: "/etc/odimra_certs/odimra_server.crt"
+        - name: TLS_KEY_FILE
+          value: "/etc/odimra_certs/odimra_server.key"
+        - name: TLS_CA_CERT_FILE
+          value: "/etc/odimra_certs/rootCA.crt"
         - name: REDIS_HA_REDIS_SERVICE_HOST 
           value: "redis-ha-inmemory.{{ .Values.odimra.namespace }}.svc.cluster.local"
         - name: REDIS_HA_REDIS_SERVICE_PORT
@@ -78,9 +116,21 @@ spec:
         ports:
         - containerPort: 26379 
 
+        volumeMounts:
+          - name: odimra-secret
+            mountPath: /etc/odimra_certs
+
         env:
         - name: SENTINEL
           value: "true"
+        - name: MASTER_HOST_NAME
+          value: "redis-ha-inmemory-primary-0.redis-ha-inmemory-headless.odim.svc.cluster.local"
+        - name: TLS_CERT_FILE
+          value: "/etc/odimra_certs/odimra_server.crt"
+        - name: TLS_KEY_FILE
+          value: "/etc/odimra_certs/odimra_server.key"
+        - name: TLS_CA_CERT_FILE
+          value: "/etc/odimra_certs/rootCA.crt"
         - name: REDIS_HA_REDIS_SERVICE_HOST 
           value: "redis-ha-inmemory.{{ .Values.odimra.namespace }}.svc.cluster.local"
         - name: REDIS_HA_REDIS_SERVICE_PORT

@@ -18,11 +18,12 @@ package ucommon
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -189,14 +190,19 @@ func getResourceName(oDataID string, memberFlag bool) string {
 	return str[len(str)-2]
 }
 
+var (
+	CallPluginFunc    = callPlugin
+	IOUtilReadAllFunc = ioutil.ReadAll
+)
+
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
 func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
 	var resp ResponseStatus
 	var err error
-	pluginResponse, err := callPlugin(req)
+	pluginResponse, err := CallPluginFunc(req)
 	if err != nil {
 		if getPluginStatus(req.Plugin) {
-			pluginResponse, err = callPlugin(req)
+			pluginResponse, err = CallPluginFunc(req)
 		}
 		if err != nil {
 			errorMessage = errorMessage + err.Error()
@@ -207,7 +213,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		}
 	}
 	defer pluginResponse.Body.Close()
-	body, err := ioutil.ReadAll(pluginResponse.Body)
+	body, err := IOUtilReadAllFunc(pluginResponse.Body)
 	if err != nil {
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError

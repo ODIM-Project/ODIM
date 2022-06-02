@@ -36,6 +36,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	JsonMarshalFunc           = json.Marshal
+	DecryptWithPrivateKeyFunc = common.DecryptWithPrivateKey
+	JsonUnmarshalFunc         = json.Unmarshal
+	FindAllFunc               = smodel.FindAll
+	IoutilReadAllFunc         = ioutil.ReadAll
+)
+
 // ClientFactory ...
 type ClientFactory func(name string) (Client, *errors.Error)
 
@@ -123,7 +131,7 @@ type collectCollectionMembers struct {
 func (c *collectCollectionMembers) Collect(r response.RPC) error {
 	if is2xx(int(r.StatusCode)) {
 		collection := new(sresponse.Collection)
-		err := json.Unmarshal(r.Body.([]byte), collection)
+		err := JsonUnmarshalFunc(r.Body.([]byte), collection)
 		if err != nil {
 			return err
 		}
@@ -137,7 +145,7 @@ func (c *collectCollectionMembers) Collect(r response.RPC) error {
 }
 
 func (c *collectCollectionMembers) GetResult() response.RPC {
-	collectionAsBytes, err := json.Marshal(c.collection)
+	collectionAsBytes, err := JsonMarshalFunc(c.collection)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("Unexpected error: %v", err), nil, nil)
 	}
@@ -278,8 +286,7 @@ func (c *client) extractResp(httpResponse *http.Response, err error) response.RP
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
-
-	body, err := ioutil.ReadAll(httpResponse.Body)
+	body, err := IoutilReadAllFunc(httpResponse.Body)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("Cannot read response body: %v", err), nil, nil)
 	}
@@ -352,18 +359,18 @@ func (u *uriTranslator) toNorthbound(data string) string {
 }
 
 func findAllPlugins(key string) (res []*smodel.Plugin, err error) {
-	pluginsAsBytesSlice, err := smodel.FindAll("Plugin", key)
+	pluginsAsBytesSlice, err := FindAllFunc("Plugin", key)
 	if err != nil {
 		return
 	}
 
 	for _, bytes := range pluginsAsBytesSlice {
 		plugin := new(smodel.Plugin)
-		err = json.Unmarshal(bytes, plugin)
+		err = JsonUnmarshalFunc(bytes, plugin)
 		if err != nil {
 			return nil, err
 		}
-		decryptedPass, err := common.DecryptWithPrivateKey(plugin.Password)
+		decryptedPass, err := DecryptWithPrivateKeyFunc(plugin.Password)
 		if err != nil {
 			return nil, errors.PackError(
 				errors.DecryptionFailed,
@@ -378,7 +385,7 @@ func findAllPlugins(key string) (res []*smodel.Plugin, err error) {
 }
 
 func convertToString(data interface{}) string {
-	byteData, err := json.Marshal(data)
+	byteData, err := JsonMarshalFunc(data)
 	if err != nil {
 		log.Error("converting interface to string type failed: " + err.Error())
 		return ""

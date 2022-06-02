@@ -47,6 +47,12 @@ func mockGetResource(table, key string, dbType common.DbType) (string, *errors.E
 	}
 	return "body", nil
 }
+func mockGetResourceError(table, key string, dbType common.DbType) (string, *errors.Error) {
+	if (key == "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") || (key == "/redfish/v1/UpdateService/SoftwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") {
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	}
+	return "body", &errors.Error{}
+}
 
 func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
 	return []string{"/redfish/v1/UpdateService/FirmwareInentory/uuid.1"}, nil
@@ -60,6 +66,10 @@ func mockGetTarget(id string) (*umodel.Target, *errors.Error) {
 	target.ManagerAddress = "ip"
 	return &target, nil
 }
+func mockGetTargetError(id string) (*umodel.Target, *errors.Error) {
+	var target umodel.Target
+	return &target, &errors.Error{}
+}
 
 func mockGetPluginData(id string) (umodel.Plugin, *errors.Error) {
 	var plugin umodel.Plugin
@@ -71,6 +81,10 @@ func mockGetPluginData(id string) (umodel.Plugin, *errors.Error) {
 	plugin.PreferredAuthType = "basic"
 	return plugin, nil
 }
+func mockGetPluginDataError(id string) (umodel.Plugin, *errors.Error) {
+	var plugin umodel.Plugin
+	return plugin, &errors.Error{}
+}
 
 func mockContactPlugin(req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, ucommon.ResponseStatus, error) {
 	var responseStatus ucommon.ResponseStatus
@@ -78,12 +92,24 @@ func mockContactPlugin(req ucommon.PluginContactRequest, errorMessage string) ([
 	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, nil
 }
 
+func mockContactPluginError(req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, ucommon.ResponseStatus, error) {
+	var responseStatus ucommon.ResponseStatus
+
+	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, &errors.Error{}
+}
+
 func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
+}
+func stubDevicePasswordError(password []byte) ([]byte, error) {
+	return nil, &errors.Error{}
 }
 
 func stubGenericSave(reqBody []byte, table string, uuid string) error {
 	return nil
+}
+func stubGenericSaveError(reqBody []byte, table string, uuid string) error {
+	return &errors.Error{}
 }
 
 func mockGetExternalInterface() *ExternalInterface {
@@ -241,6 +267,11 @@ func TestFirmwareInventory(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
+	req.URL = "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1"
+	response = e.GetFirmwareInventory(req)
+
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+
 }
 
 func TestGetFirmwareInventoryInvalidID(t *testing.T) {
@@ -261,6 +292,10 @@ func TestSoftwareInventory(t *testing.T) {
 	e := mockGetExternalInterface()
 	response := e.GetSoftwareInventory(req)
 
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+
+	req.URL = "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1"
+	response = e.GetSoftwareInventory(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
 }

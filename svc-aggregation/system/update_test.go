@@ -37,6 +37,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -222,6 +223,7 @@ func testUpdateContactClient(url, method, token string, odataID string, body int
 }
 
 func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
+	config.SetUpMockConfig(t)
 	mockPluginData(t, "ILO_v1.0.0")
 	mockPluginData(t, "GRF_v1.0.0")
 

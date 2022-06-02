@@ -58,6 +58,11 @@ func (c *ClientMock) Delete(uri string) response.RPC {
 
 // Patch mocks response of Patch APIs
 func (c *ClientMock) Patch(uri string, body *json.RawMessage) response.RPC {
+	if uri == "/redfish/v1/Managers/3ccb5c71-0e00-4d14-93bb-8d125c030f27" {
+		return response.RPC{
+			StatusCode: http.StatusOK,
+		}
+	}
 	// TODO: Implement this
 	return response.RPC{
 		StatusCode: http.StatusNotImplemented,

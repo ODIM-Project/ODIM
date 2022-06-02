@@ -12,7 +12,7 @@
 #License for the specific language governing permissions and limitations
 # under the License.
 
-FROM golang:1.17.2
+FROM golang:1.17.2 as odim_pkgs
 
 WORKDIR /ODIM/
 
@@ -30,22 +30,21 @@ RUN git clone https://github.com/google/protobuf.git && \
     rm -r protobuf
 # Get the source from GitHub
 
-# Install protoc-gen-go-grpc
-RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-# Install protoc-gen-go
-RUN go install github.com/golang/protobuf/protoc-gen-go@v1.3.2
+# Install protoc-gen-go-grpc and protoc-gen-go
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest && \
+    go install github.com/golang/protobuf/protoc-gen-go@v1.3.2
 
 COPY svc-account-session /ODIM/svc-account-session
 COPY svc-aggregation /ODIM/svc-aggregation
 COPY svc-api /ODIM/svc-api
 COPY svc-events /ODIM/svc-events
 COPY svc-fabrics /ODIM/svc-fabrics
+COPY svc-licenses /ODIM/svc-licenses
 COPY svc-telemetry /ODIM/svc-telemetry
 COPY svc-managers /ODIM/svc-managers
 COPY svc-systems /ODIM/svc-systems
 COPY svc-task /ODIM/svc-task
 COPY svc-update /ODIM/svc-update
-COPY svc-licenses /ODIM/svc-licenses
 COPY plugin-redfish /ODIM/plugin-redfish
 COPY plugin-dell /ODIM/plugin-dell
 COPY plugin-unmanaged-racks /ODIM/plugin-unmanaged-racks
@@ -57,6 +56,7 @@ COPY lib-rest-client /ODIM/lib-rest-client/
 COPY lib-utilities /ODIM/lib-utilities/
 COPY install/Docker/dockerfiles/scripts/add-hosts  /ODIM/add-hosts/
 
-COPY install/Docker/dockerfiles/scripts/build_odim.sh .
-RUN ./build_odim.sh
+COPY install/Docker/dockerfiles/scripts/fetch_odim_pkgs.sh .
+RUN ./fetch_odim_pkgs.sh
 
+RUN cd /ODIM/add-hosts/; go build -i .

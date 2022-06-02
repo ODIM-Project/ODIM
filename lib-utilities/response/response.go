@@ -83,6 +83,8 @@ const (
 	RateLimitExceeded = "RateLimitExceeded"
 	// SessionLimitExceeded Indicates that a session establishment has been requested but the operation failed due to the number of simultaneous sessions exceeding the limit of the implementation.
 	SessionLimitExceeded = BaseVersion + "SessionLimitExceeded"
+	// InvalidURL defines the status message at the time of URL Not Found
+	InvalidURI = BaseVersion + "InvalidURI"
 )
 
 // Response holds the generic response from odimra

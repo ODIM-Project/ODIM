@@ -339,6 +339,15 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Severity:   "Critical",
 					Resolution: "Reduce the number of other sessions before trying to establish the session or increase the limit of simultaneous sessions, if supported.",
 				})
+		case InvalidURI:
+			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
+				Msg{
+					OdataType:  ErrorMessageOdataType,
+					MessageID:  errArg.StatusMessage,
+					Message:    fmt.Sprintf("The URI %v was not found.", errArg.MessageArgs[0]),
+					Severity:   "Critical",
+					Resolution: "Provide a valid URI and resubmit the request.",
+				})
 		}
 	}
 	return e

@@ -31,7 +31,8 @@ data:
       },
     	"DBConf": {
                 "Protocol": "tcp",
-                "RedisPasswordPath": "/etc/odimra_certs/redis_password",
+                "RedisInMemoryPasswordFilePath": "/etc/odimra_certs/redis_inmemory_password",
+								"RedisOnDiskPasswordFilePath": "/etc/odimra_certs/redis_ondisk_password",
                 {{ if eq .Values.odimra.haDeploymentEnabled false }}
                 "InMemoryHost": "redis-inmemory",
                 "OnDiskHost": "redis-ondisk",

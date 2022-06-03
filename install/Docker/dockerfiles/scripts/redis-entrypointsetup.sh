@@ -27,13 +27,14 @@
 #  This method launches redis instance which assumes it self as master
 function launchmaster() {
   echo "Starting Redis instance as Master.."
-  if [[ -n ${REDIS_DEFAULT_PASSWORD} ]]; then
-    echo "while true; do   sleep 2;   export master=\$(hostname -i | cut -d ' ' -f 1);   echo \"Master IP is Me : \${master}\";   echo \"Setting STARTUP_MASTER_IP in redis\";   redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h \${master} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} set STARTUP_MASTER_IP \${master};   if [ \$? == \"0\" ]; then     echo \"Successfully set STARTUP_MASTER_IP\"; if [ \${REDIS_ONDISK_DB} == \"true\" ]; then     bash \/createschema.sh; fi;   break;   fi;   echo \"Connecting to master \${master} failed.  Waiting...\";   sleep 5; done" > insert_master_ip_and_default_entries.sh
-  else
-    echo "while true; do   sleep 2;   export master=\$(hostname -i | cut -d ' ' -f 1);   echo \"Master IP is Me : \${master}\";   echo \"Setting STARTUP_MASTER_IP in redis\";   redis-cli -h \${master} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} set STARTUP_MASTER_IP \${master};   if [ \$? == \"0\" ]; then     echo \"Successfully set STARTUP_MASTER_IP\"; if [ \${REDIS_ONDISK_DB} == \"true\" ]; then     bash \/createschema.sh; fi;   break;   fi;   echo \"Connecting to master \${master} failed.  Waiting...\";   sleep 5; done" > insert_master_ip_and_default_entries.sh
-  fi
+  echo "ciper data"
+  cat cipher
+  echo "cipher data end"
+  redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256)
+  ech "master: ${redis_password}"
+  echo "while true; do   sleep 2;   export master=\$(hostname -i | cut -d ' ' -f 1);   echo \"Master IP is Me : \${master}\";   echo \"Setting STARTUP_MASTER_IP in redis\";   redis-cli -a ${redis_password} -h \${master} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} set STARTUP_MASTER_IP \${master};   if [ \$? == \"0\" ]; then     echo \"Successfully set STARTUP_MASTER_IP\"; if [ \${REDIS_ONDISK_DB} == \"true\" ]; then     bash \/createschema.sh; fi;   break;   fi;   echo \"Connecting to master \${master} failed.  Waiting...\";   sleep 5; done" > insert_master_ip_and_default_entries.sh
   bash insert_master_ip_and_default_entries.sh &
-  sed -i "s/REDIS_DEFAULT_PASSWORD/${REDIS_DEFAULT_PASSWORD}/" /redis-master/redis.conf
+  sed -i "s/REDIS_DEFAULT_PASSWORD/${redis_password}/" /redis-master/redis.conf
 
   hostname=$(hostname -f)
   sed -i "s/%replica-announce-ip%/${hostname}/" /redis-master/redis.conf
@@ -117,13 +118,17 @@ function launchsentinel() {
 function launchslave() {
   echo "Starting Redis instance as Slave , Master IP $1"
 
+  echo "ciper data slave"
+  cat cipher
+  echo "cipher data end"
+
+  redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256)
+  echo "slave: ${redis_password}"
+
   while true; do
     echo "Trying to retrieve the Master IP again, in case of failover master ip would have changed."
-    if [[ -n ${REDIS_DEFAULT_PASSWORD} ]]; then
-      master=$(redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
-    else
-      master=$(redis-cli -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
-    fi
+    master=$(redis-cli -a ${redis_password} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
+
     if [[ -n ${master} ]]; then
       master="${master//\"}"
     else
@@ -131,11 +136,7 @@ function launchslave() {
       sleep 60
       continue
     fi
-    if [[ -n ${REDIS_DEFAULT_PASSWORD} ]]; then
-      redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h ${master} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} INFO
-    else
-      redis-cli -h ${master} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} INFO
-    fi
+    redis-cli -a ${redis_password} -h ${master} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} INFO
     if [[ "$?" == "0" ]]; then
       break
     fi
@@ -146,7 +147,7 @@ function launchslave() {
   hostname=$(hostname -f)
   sed -i "s/%master-ip%/${master}/" /redis-slave/redis.conf
   sed -i "s/%master-port%/${REDIS_HA_REDIS_SERVICE_PORT}/" /redis-slave/redis.conf
-  sed -i "s/REDIS_DEFAULT_PASSWORD/${REDIS_DEFAULT_PASSWORD}/" /redis-slave/redis.conf
+  sed -i "s/REDIS_DEFAULT_PASSWORD/${redis_password}/" /redis-slave/redis.conf
   sed -i "s/%replica-announce-ip%/${hostname}/" /redis-slave/redis.conf
   sed -i "s/%replicaof%/${master}/" /redis-slave/redis.conf
 
@@ -159,15 +160,14 @@ function launchredis() {
   echo "Launching Redis instance"
 
   hostname=$(hostname -f)
+  echo "${REDIS_DEFAULT_PASSWORD}" | base64 --decode > cipher
+  redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256)
+  echo "$redis_password"
   # Loop till I am able to launch slave or master
   while true; do
     # I will check if sentinel is up or not by connecting to it.
     echo "Trying to connect to sentinel, to retireve master's ip"
-    if [[ -n ${REDIS_DEFAULT_PASSWORD} ]]; then
-      master=$(redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
-    else
-      master=$(redis-cli -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
-    fi
+      master=$(redis-cli -a ${redis_password} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
     # Is this instance marked as MASTER, it will matter only when the cluster is starting up for first time.
     if [[ "${MASTER}" == "true" ]]; then
       echo "MASTER is set to true"

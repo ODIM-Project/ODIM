@@ -18,6 +18,12 @@ import argparse, yaml, logging, traceback
 import os, sys, subprocess, grp, time
 import glob, shutil, copy, getpass, socket
 
+import base64
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
+
 from yaml import SafeDumper
 from Crypto.PublicKey import RSA
 from os import path
@@ -823,9 +829,38 @@ def load_odimra_certs(isUpgrade):
 	with open(CONTROLLER_CONF_FILE, 'w') as f:
 		yaml.safe_dump(CONTROLLER_CONF_DATA, f, default_flow_style=False)
 
+def load_redis_passwords(cur_dir):
+	logger.info("FilePath----------------------------" + CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'])
+	redis_inmemory_pwd = get_password_from_vault(cur_dir, CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'])
+	redis_ondisk_pwd = get_password_from_vault(cur_dir, CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'])
+	logger.info("-------------------------------------------------------------------")
+	logger.info("inmemory password" + redis_inmemory_pwd)
+	logger.info("ondisk password" + redis_ondisk_pwd)
+	logger.info("-------------------------------------------------------------------")
+	CONTROLLER_CONF_DATA['odimra']['redisInMemoryPassword'] = rsa_oaep_ecryption(redis_inmemory_pwd)
+	CONTROLLER_CONF_DATA['odimra']['redisOnDiskPassword'] = rsa_oaep_ecryption(redis_ondisk_pwd)
+
+def rsa_oaep_ecryption(password):
+	cert_dir = CONTROLLER_CONF_DATA['odimCertsPath']
+	PRIVATE_KEY = read_file(os.path.join(cert_dir, 'odimra_rsa.private'))
+	private_key_bytes = PRIVATE_KEY.encode("utf-8")
+	private_key: RSAPrivateKey = load_pem_private_key(private_key_bytes, None)
+
+	public_key = private_key.public_key()
+	password_bytes = bytes(password, "utf-8")
+	ciphertext = public_key.encrypt(
+            password_bytes,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
+        )
+	return base64.b64encode(ciphertext).decode("utf-8")
+
 # perform pre-requisites required for
 # deploying ODIM-RA services
-def perform_odimra_deploy_prereqs():
+def perform_odimra_deploy_prereqs(cur_dir):
 	if 'odimCertsPath' not in CONTROLLER_CONF_DATA or \
 	CONTROLLER_CONF_DATA['odimCertsPath'] == None or \
 	CONTROLLER_CONF_DATA['odimCertsPath'] == "":
@@ -844,7 +879,7 @@ def perform_odimra_deploy_prereqs():
 		if not os.path.isdir(CONTROLLER_CONF_DATA['odimCertsPath']):
 			logger.critical("ODIM-RA certificates path does not exist")
 			exit(1)
-
+	load_redis_passwords(cur_dir)
 	load_odimra_certs(False)
 
 # perform pre-requisites for HA deployment
@@ -904,7 +939,7 @@ def operation_odimra(operation):
 		if operation == "install":
 			helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/pre-install/files/helmcharts/helm_config_values.yaml')
 			odimra_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/odimra-copy-image/files/odimra_config_values.yaml')
-			perform_odimra_deploy_prereqs()
+			perform_odimra_deploy_prereqs(cur_dir)
 		elif operation == "uninstall":
 			helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/post-uninstall/files/odim_controller_config.yaml')
 			odimra_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/odimra-delete-image/files/odimra_config_values.yaml')
@@ -1126,6 +1161,32 @@ def load_password_from_vault(cur_dir):
 		exit(1)
 
 	ANSIBLE_BECOME_PASS = std_out.rstrip('\n')
+
+
+def get_password_from_vault(cur_dir, password_file_path):
+	logger.info("password_file_path" + password_file_path)
+	decrypt_cmd = '{vault_bin} -key {key_file} -decrypt {data_file}'.format(vault_bin=ODIMRA_VAULT_BIN,
+			key_file=ODIMRA_VAULT_KEY_FILE, data_file=password_file_path)
+
+	execHdlr = subprocess.Popen(decrypt_cmd,
+			stdin=subprocess.PIPE,
+			stdout=subprocess.PIPE,
+			stderr=subprocess.STDOUT,
+			shell=True,
+			universal_newlines=True)
+
+	try:
+		std_out, std_err = execHdlr.communicate()
+	except TimeoutExpired:
+		execHdlr.kill()
+
+	if execHdlr.returncode != 0 or std_out == "":
+		print(std_out.strip())
+		logger.critical("failed to read the password from "+ password_file_path)
+		os.chdir(cur_dir)
+		exit(1)
+
+	return std_out.rstrip('\n')
 
 # check_extract_kubespray_src is used for invoking
 # a script, after checking and if not exists, to extract

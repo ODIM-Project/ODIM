@@ -48,7 +48,7 @@ func GetMockDBConfig() (*Config, *errors.Error) {
 		OnDiskPrimarySet:      "redisSentinel",
 		MaxIdleConns:          config.DefaultDBMaxIdleConns,
 		MaxActiveConns:        config.DefaultDBMaxActiveConns,
-		RedisInMemoryPassword: []byte("redis_passowrd"),
+		RedisInMemoryPassword: []byte("redis_password"),
 	}
 	config := &Config{
 		Port:     config.Data.DBConf.InMemoryPort,

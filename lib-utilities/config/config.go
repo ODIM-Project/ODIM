@@ -304,11 +304,15 @@ func checkDBConf() error {
 		}
 	}
 	var err error
-	if Data.DBConf.RedisInMemoryPassword, err = decryptRSA_OAEPEncryptedPasswords(Data.DBConf.RedisInMemoryPasswordFilePath); err != nil {
-		return fmt.Errorf("error: while decrypting password from the passwordFilePath:%s with %v", Data.DBConf.RedisInMemoryPasswordFilePath, err)
+	if Data.DBConf.RedisInMemoryPasswordFilePath != "" && Data.KeyCertConf.RSAPrivateKeyPath != "" {
+		if Data.DBConf.RedisInMemoryPassword, err = decryptRSA_OAEPEncryptedPasswords(Data.DBConf.RedisInMemoryPasswordFilePath); err != nil {
+			return fmt.Errorf("error: while decrypting password from the passwordFilePath:%s with %v", Data.DBConf.RedisInMemoryPasswordFilePath, err)
+		}
 	}
-	if Data.DBConf.RedisOnDiskPassword, err = decryptRSA_OAEPEncryptedPasswords(Data.DBConf.RedisOnDiskPasswordFilePath); err != nil {
-		return fmt.Errorf("error: while decrypting password from the passwordFilePath:%s with %v", Data.DBConf.RedisOnDiskPasswordFilePath, err)
+	if Data.DBConf.RedisOnDiskPasswordFilePath != "" && Data.KeyCertConf.RSAPrivateKeyPath != "" {
+		if Data.DBConf.RedisOnDiskPassword, err = decryptRSA_OAEPEncryptedPasswords(Data.DBConf.RedisOnDiskPasswordFilePath); err != nil {
+			return fmt.Errorf("error: while decrypting password from the passwordFilePath:%s with %v", Data.DBConf.RedisOnDiskPasswordFilePath, err)
+		}
 	}
 	return nil
 }

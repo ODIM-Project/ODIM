@@ -83,6 +83,23 @@ func testLicenseResource(req licenseproto.GetLicenseResourceRequest) (*licensepr
 	return response, nil
 }
 
+func testInstallLicenseService(req licenseproto.InstallLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
+	var response = &licenseproto.GetLicenseResponse{}
+	if req.SessionToken == "ValidToken" {
+		response = &licenseproto.GetLicenseResponse{
+			StatusCode: 204,
+		}
+	} else if req.SessionToken == "InvalidToken" {
+		response = &licenseproto.GetLicenseResponse{
+			StatusCode:    401,
+			StatusMessage: "Unauthorized", Body: []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "token" {
+		return &licenseproto.GetLicenseResponse{}, errors.New("Unable to RPC Call")
+	}
+	return response, nil
+}
+
 func TestGetLicenseService(t *testing.T) {
 	header["Allow"] = []string{"GET"}
 	defer delete(header, "Allow")
@@ -104,7 +121,7 @@ func TestGetLicenseService(t *testing.T) {
 }
 
 func TestGetLicenseCollection(t *testing.T) {
-	header["Allow"] = []string{"GET"}
+	header["Allow"] = []string{"GET, POST"}
 	defer delete(header, "Allow")
 	var a LicenseRPCs
 	a.GetLicenseCollectionRPC = testLicenseCollection
@@ -141,4 +158,31 @@ func TestGetLicenseResource(t *testing.T) {
 	test.GET(
 		"/redfish/v1/LicenseService/Licenses/1",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
+}
+
+func TestInstallLicenseService(t *testing.T) {
+	var a LicenseRPCs
+	a.InstallLicenseServiceRPC = testInstallLicenseService
+	testApp := iris.New()
+	redfishRoutes := testApp.Party("/redfish/v1/LicenseService")
+	redfishRoutes.Post("/Licenses", a.InstallLicenseService)
+	test := httptest.New(t, testApp)
+	test.POST(
+		"/redfish/v1/LicenseService/Licenses",
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(map[string]interface{}{
+		"AuthorizedDevices": "/redfish/v1/Managers/{id}",
+		"LicenseString":     "MzMzSzItOFFMVjQtWThSM0ctTEpRUVgtN0JLNk0=",
+	}).Expect().Status(http.StatusNoContent).Headers().Equal(header)
+	test.POST(
+		"/redfish/v1/LicenseService/Licenses",
+	).WithHeader("X-Auth-Token", "").WithJSON(map[string]interface{}{
+		"AuthorizedDevices": "/redfish/v1/Managers/{id}",
+		"LicenseString":     "MzMzSzItOFFMVjQtWThSM0ctTEpRUVgtN0JLNk0=",
+	}).Expect().Status(http.StatusUnauthorized)
+	test.POST(
+		"/redfish/v1/LicenseService/Licenses",
+	).WithHeader("X-Auth-Token", "token").WithJSON(map[string]interface{}{
+		"AuthorizedDevices": "/redfish/v1/Managers/{id}",
+		"LicenseString":     "MzMzSzItOFFMVjQtWThSM0ctTEpRUVgtN0JLNk0=",
+	}).Expect().Status(http.StatusInternalServerError)
 }

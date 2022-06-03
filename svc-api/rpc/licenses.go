@@ -66,3 +66,19 @@ func GetLicenseResource(req licenseproto.GetLicenseResourceRequest) (*licensepro
 	}
 	return resp, nil
 }
+
+// InstallLicenseService will do the rpc call to install License
+func InstallLicenseService(req licenseproto.InstallLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
+	conn, err := services.ODIMService.Client(services.Licenses)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	licenseService := licenseproto.NewLicensesClient(conn)
+	resp, err := licenseService.InstallLicenseService(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}

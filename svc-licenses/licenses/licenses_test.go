@@ -92,3 +92,102 @@ func TestGetLicenseResource(t *testing.T) {
 	assert.Equal(t, int(response.StatusCode), http.StatusOK, "Status code should be StatusOK.")
 	assert.Equal(t, licenseResourceResponse, license, "Valid License resource response is expected")
 }
+
+func TestInstallLicenseService(t *testing.T) {
+	req := &licenseproto.InstallLicenseRequest{
+		RequestBody: []byte(`{
+			"LicenseString": "333K2-8QLV4-Y8R3G-LJQQX-7BK6M",
+			"Links": {
+				"AuthorizedDevices": [{
+					"@odata.id": "/redfish/v1/Systems/uuid.1"
+				}]
+			}
+		}`)}
+	e := mockGetExternalInterface()
+	response := e.InstallLicenseService(req)
+
+	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
+}
+
+func TestInstallLicenseService_InvalidRequest(t *testing.T) {
+	req := &licenseproto.InstallLicenseRequest{}
+	e := mockGetExternalInterface()
+	response := e.InstallLicenseService(req)
+
+	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+}
+
+func TestInstallLicenseService_EmptyLinks(t *testing.T) {
+	req := &licenseproto.InstallLicenseRequest{
+		RequestBody: []byte(`{
+			"LicenseString": "XYZ"
+		}`)}
+	e := mockGetExternalInterface()
+	response := e.InstallLicenseService(req)
+
+	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+}
+
+func TestInstallLicenseService_InvalidManager(t *testing.T) {
+	req := &licenseproto.InstallLicenseRequest{
+		RequestBody: []byte(`{
+			"LicenseString": "XYZ",
+			"Links": {
+				"AuthorizedDevices": [{
+					"@odata.id": "/redfish/v1/Systems/uuid.1.1"
+				}]
+			}
+		}`)}
+	e := mockGetExternalInterface()
+	response := e.InstallLicenseService(req)
+
+	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
+}
+
+func TestInstallLicenseService_InvalidAuthorizedDevices(t *testing.T) {
+	req := &licenseproto.InstallLicenseRequest{
+		RequestBody: []byte(`{
+			"LicenseString": "XYZ",
+			"Links": {
+				"AuthorizedDevices": [{
+					"@odata.id": "/redfish/v1/invalid/uuid.1"
+				}]
+			}
+		}`)}
+	e := mockGetExternalInterface()
+	response := e.InstallLicenseService(req)
+
+	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+}
+
+func TestInstallLicenseService_ManagerURL(t *testing.T) {
+	req := &licenseproto.InstallLicenseRequest{
+		RequestBody: []byte(`{
+			"LicenseString": "XYZ",
+			"Links": {
+				"AuthorizedDevices": [{
+					"@odata.id": "/redfish/v1/Managers/uuid.1"
+				}]
+			}
+		}`)}
+	e := mockGetExternalInterface()
+	response := e.InstallLicenseService(req)
+
+	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
+}
+
+func TestInstallLicenseService_qqq(t *testing.T) {
+	req := &licenseproto.InstallLicenseRequest{
+		RequestBody: []byte(`{
+			"LicenseString": "333K2-8QLV4-Y8R3G-LJQQX-7BK6M",
+			"Links": {
+				"AuthorizedDevices": [{
+					"@odata.id": "/redfish/v1/Systems/uuid.1"
+				}]
+			}
+		}`)}
+	e := mockGetExternalInterface()
+	response := e.InstallLicenseService(req)
+
+	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
+}

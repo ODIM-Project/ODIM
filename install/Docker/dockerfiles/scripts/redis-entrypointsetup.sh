@@ -27,11 +27,7 @@
 #  This method launches redis instance which assumes it self as master
 function launchmaster() {
   echo "Starting Redis instance as Master.."
-  echo "ciper data"
-  cat cipher
-  echo "cipher data end"
   redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256)
-  ech "master: ${redis_password}"
   echo "while true; do   sleep 2;   export master=\$(hostname -i | cut -d ' ' -f 1);   echo \"Master IP is Me : \${master}\";   echo \"Setting STARTUP_MASTER_IP in redis\";   redis-cli -a ${redis_password} -h \${master} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} set STARTUP_MASTER_IP \${master};   if [ \$? == \"0\" ]; then     echo \"Successfully set STARTUP_MASTER_IP\"; if [ \${REDIS_ONDISK_DB} == \"true\" ]; then     bash \/createschema.sh; fi;   break;   fi;   echo \"Connecting to master \${master} failed.  Waiting...\";   sleep 5; done" > insert_master_ip_and_default_entries.sh
   bash insert_master_ip_and_default_entries.sh &
   sed -i "s/REDIS_DEFAULT_PASSWORD/${redis_password}/" /redis-master/redis.conf
@@ -118,10 +114,6 @@ function launchsentinel() {
 function launchslave() {
   echo "Starting Redis instance as Slave , Master IP $1"
 
-  echo "ciper data slave"
-  cat cipher
-  echo "cipher data end"
-
   redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256)
   echo "slave: ${redis_password}"
 
@@ -160,9 +152,9 @@ function launchredis() {
   echo "Launching Redis instance"
 
   hostname=$(hostname -f)
-  echo "${REDIS_DEFAULT_PASSWORD}" | base64 --decode > cipher
+  echo -n "${REDIS_DEFAULT_PASSWORD}" | base64 --decode > cipher
   redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256)
-  echo "$redis_password"
+  
   # Loop till I am able to launch slave or master
   while true; do
     # I will check if sentinel is up or not by connecting to it.

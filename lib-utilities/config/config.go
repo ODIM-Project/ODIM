@@ -319,8 +319,6 @@ func decryptRSA_OAEPEncryptedPasswords(passwordFilePath string) ([]byte, error) 
 		return nil, fmt.Errorf("value check failed for RSAPrivateKeyPath:%s with %v", Data.KeyCertConf.RSAPrivateKeyPath, err)
 	}
 
-	log.Info("privateKeyStr :", privateKeyStr)
-
 	block, _ := pem.Decode(privateKeyStr)
 	if block == nil {
 		return nil, fmt.Errorf("failed to parse PEM block containing the public key for the RSAPrivateKeyPath:%s",
@@ -337,8 +335,6 @@ func decryptRSA_OAEPEncryptedPasswords(passwordFilePath string) ([]byte, error) 
 	if err != nil {
 		return nil, fmt.Errorf("value check failed for passwordFilePath:%s with %v", passwordFilePath, err)
 	}
-
-	log.Info("cipherText :", cipherText)
 
 	ct, err := base64.StdEncoding.DecodeString(string(cipherText))
 	if err != nil {

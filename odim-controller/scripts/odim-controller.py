@@ -830,13 +830,8 @@ def load_odimra_certs(isUpgrade):
 		yaml.safe_dump(CONTROLLER_CONF_DATA, f, default_flow_style=False)
 
 def load_redis_passwords(cur_dir):
-	logger.info("FilePath----------------------------" + CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'])
 	redis_inmemory_pwd = get_password_from_vault(cur_dir, CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'])
 	redis_ondisk_pwd = get_password_from_vault(cur_dir, CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'])
-	logger.info("-------------------------------------------------------------------")
-	logger.info("inmemory password" + redis_inmemory_pwd)
-	logger.info("ondisk password" + redis_ondisk_pwd)
-	logger.info("-------------------------------------------------------------------")
 	CONTROLLER_CONF_DATA['odimra']['redisInMemoryPassword'] = rsa_oaep_ecryption(redis_inmemory_pwd)
 	CONTROLLER_CONF_DATA['odimra']['redisOnDiskPassword'] = rsa_oaep_ecryption(redis_ondisk_pwd)
 
@@ -1164,7 +1159,6 @@ def load_password_from_vault(cur_dir):
 
 
 def get_password_from_vault(cur_dir, password_file_path):
-	logger.info("password_file_path" + password_file_path)
 	decrypt_cmd = '{vault_bin} -key {key_file} -decrypt {data_file}'.format(vault_bin=ODIMRA_VAULT_BIN,
 			key_file=ODIMRA_VAULT_KEY_FILE, data_file=password_file_path)
 

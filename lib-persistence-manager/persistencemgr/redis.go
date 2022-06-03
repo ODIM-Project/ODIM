@@ -242,7 +242,6 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 //getPool is used is utility function to get the Connection Pool from DB.
 func getPool(host, port, password string) (*redis.Pool, error) {
 	protocol := config.Data.DBConf.Protocol
-	log.Info("Password :", password)
 	tlsConfig, err := getTLSConfig()
 	if err != nil {
 		return nil, err
@@ -260,7 +259,6 @@ func getPool(host, port, password string) (*redis.Pool, error) {
 				redis.DialTLSConfig(tlsConfig),
 				redis.DialPassword(password),
 			)
-			log.Info("Error while dialing:", err)
 			return c, err
 		},
 		/*TestOnBorrow is an optional application supplied function to
@@ -275,7 +273,6 @@ func getPool(host, port, password string) (*redis.Pool, error) {
 				return nil
 			}
 			_, err := c.Do("PING")
-			log.Info("Error while pinging:", err)
 			return err
 		},
 	}

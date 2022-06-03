@@ -39,14 +39,15 @@ func SetUpMockConfig() error {
 	}
 	config.Data.RegistryStorePath = basePath + "/lib-utilities/etc/"
 	config.Data.DBConf = &config.DBConf{
-		InMemoryPort:   "6379",
-		OnDiskPort:     "6380",
-		Protocol:       "tcp",
-		OnDiskHost:     localhost,
-		InMemoryHost:   localhost,
-		MaxIdleConns:   10,
-		MaxActiveConns: 120,
-		RedisPassword:  []byte("redis_password"),
+		InMemoryPort:          "6379",
+		OnDiskPort:            "6380",
+		Protocol:              "tcp",
+		OnDiskHost:            localhost,
+		InMemoryHost:          localhost,
+		MaxIdleConns:          10,
+		MaxActiveConns:        120,
+		RedisInMemoryPassword: []byte("redis_password"),
+		RedisOnDiskPassword:   []byte("redis_password"),
 	}
 	config.Data.AuthConf = &config.AuthConf{
 		SessionTimeOutInMins:            30,

@@ -41,10 +41,10 @@ spec:
             - key: odimra_rsaprivate
               path: odimra_rsa.private
               mode: 0444
-            - key: redisInMemoryPassword
+            - key: redis_inmemory_password
               path: redis_inmemory_password
               mode: 0444
-            - key: redisOnDiskPassword
+            - key: redis_ondisk_password
               path: redis_ondisk_password
               mode: 0444
             {{- if eq .Values.odimra.messageBusType "Kafka" }}

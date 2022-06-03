@@ -55,7 +55,7 @@ func getDBConnection() *redis.Client {
 		dbConn = redis.NewClient(&redis.Options{
 			Addr:      fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort),
 			TLSConfig: tlsConfig,
-			Password:  string(config.Data.DBConf.RedisPassword),
+			Password:  string(config.Data.DBConf.RedisInMemoryPassword),
 			DB:        0, // use default DB
 		})
 	}

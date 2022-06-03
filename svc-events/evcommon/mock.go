@@ -191,7 +191,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 	switch uuid {
 	case "6d4a0a66-7efa-578e-83cf-44dc68d2874e":
 		target = &evmodel.Target{
-			ManagerAddress: localhost,
+			ManagerAddress: "localhost",
 			Password:       encryptedData,
 			UserName:       "admin",
 			DeviceUUID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
@@ -373,7 +373,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d7",
 				Destination:          "https://odim.local.com:9090/events",
 				Name:                 "Subscription",
-				Location:             "https://odim.mock.com/EventService/Subscriptions/1",
+				Location:             "https://localhost/EventService/Subscriptions/1",
 				Context:              "context",
 				EventTypes:           []string{"Alert", "ResourceAdded"},
 				MessageIds:           []string{"IndicatorChanged"},

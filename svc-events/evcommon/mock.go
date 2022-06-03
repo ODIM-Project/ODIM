@@ -366,7 +366,7 @@ func MockGetFabricData(fabricID string) (evmodel.Fabric, error) {
 func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 	var subarr []evmodel.Subscription
 	switch searchKey {
-	case "81de0110-c35a-4859-984c-072d6c5a32d7", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "[^0-9]odim.mock.com[^0-9]":
+	case "81de0110-c35a-4859-984c-072d6c5a32d7", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "[^0-9]localhost[^0-9]":
 		subarr = []evmodel.Subscription{
 			{
 				UserName:             "admin",

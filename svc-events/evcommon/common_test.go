@@ -391,10 +391,10 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 		PreferredAuthType: "BasicAuth",
 		PluginType:        "RF-GENERIC",
 	})
-	searchKey := GetSearchKey("100.100.100.100", evmodel.DeviceSubscriptionIndex)
+	searchKey := GetSearchKey("odim.mock.com", evmodel.DeviceSubscriptionIndex)
 	deviceSubscription, err := st.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	assert.Equal(t, "https://10.10.10.2/EventService/Subscriptions/1", deviceSubscription.Location, "should be same")
+	assert.Equal(t, "https://odim.mock.com/EventService/Subscriptions/1", deviceSubscription.Location, "should be same")
 }

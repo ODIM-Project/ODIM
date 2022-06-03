@@ -102,6 +102,7 @@ jobs:
         pip3 install jmespath==0.9.5
         pip3 install ruamel.yaml==0.16.10
         pip3 install pyyaml==5.3.1
+        pip3 install cryptography==3.4.8
         echo
         
         echo "[$(date)] -- INFO  -- installed python version"

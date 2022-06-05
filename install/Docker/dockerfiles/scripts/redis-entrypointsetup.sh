@@ -45,23 +45,20 @@ function launchsentinel() {
   sleep_for_rand_int=$(awk -v min=2 -v max=7 'BEGIN{srand(); print int(min+rand()*(max-min+1))}')
   sleep ${sleep_for_rand_int}
 
+  echo -n "${REDIS_DEFAULT_PASSWORD}" | base64 --decode > cipher
+  redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256)
+
   while true; do
     echo "Trying to connect to Sentinel Service"
-    if [[ -n ${REDIS_DEFAULT_PASSWORD} ]]; then
-      master=$(redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
-    else
-      master=$(redis-cli -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
-    fi
+    master=$(redis-cli -a ${redis_password} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
+
     if [[ -n ${master} ]]; then
       echo "Connected to Sentinel Service and retrieved Redis Master IP as ${master}"
       master="${master//\"}"
     else
       echo "Unable to connect to Sentinel Service, probably because I am first Sentinel to start. I will try to find STARTUP_MASTER_IP from the redis service"
-      if [[ -n ${REDIS_DEFAULT_PASSWORD} ]]; then
-        master=$(redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h ${REDIS_HA_REDIS_SERVICE_HOST} -p ${REDIS_HA_REDIS_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} get STARTUP_MASTER_IP)
-      else
-        master=$(redis-cli -h ${REDIS_HA_REDIS_SERVICE_HOST} -p ${REDIS_HA_REDIS_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} get STARTUP_MASTER_IP)
-      fi
+      master=$(redis-cli -a ${redis_password} -h ${REDIS_HA_REDIS_SERVICE_HOST} -p ${REDIS_HA_REDIS_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} get STARTUP_MASTER_IP)
+
       if [[ -n ${master} ]]; then
         echo "Retrieved Redis Master IP as ${master}"
       else
@@ -70,12 +67,8 @@ function launchsentinel() {
         continue
       fi
     fi
-      if [[ -n ${REDIS_DEFAULT_PASSWORD} ]]; then
-        redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h ${master} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} INFO
-      else
-        redis-cli -h ${master} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} INFO
-      fi
 
+    redis-cli -a ${redis_password} -h ${master} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} INFO
     if [[ "$?" == "0" ]]; then
       break
     fi
@@ -92,6 +85,8 @@ function launchsentinel() {
   echo "sentinel announce-ip ${hostname}" >> ${sentinel_conf}
   echo "sentinel announce-port ${REDIS_HA_SENTINEL_SERVICE_PORT}" >> ${sentinel_conf}
   echo "sentinel monitor ${REDIS_MASTER_SET} ${MASTER_HOST_NAME} ${REDIS_HA_REDIS_SERVICE_PORT} ${SENTINEL_QUORUM}" >> ${sentinel_conf}
+  echo "sentinel auth-pass ${REDIS_MASTER_SET} ${redis_password}" >> ${sentinel_conf}
+  echo "requirepass ${redis_password}" >> ${sentinel_conf}
   echo "sentinel down-after-milliseconds ${REDIS_MASTER_SET} ${DOWN_AFTER_MILLISECONDS}" >> ${sentinel_conf}
   echo "sentinel failover-timeout ${REDIS_MASTER_SET} ${FAILOVER_TIMEOUT}" >> ${sentinel_conf}
   echo "sentinel parallel-syncs ${REDIS_MASTER_SET} ${PARALLEL_SYNCS}" >> ${sentinel_conf}
@@ -103,9 +98,6 @@ function launchsentinel() {
   echo "tls-cert-file /etc/odimra_certs/odimra_server.crt" >> ${sentinel_conf}
   echo "tls-key-file /etc/odimra_certs/odimra_server.key" >> ${sentinel_conf}
   echo "tls-ca-cert-file /etc/odimra_certs/rootCA.crt" >> ${sentinel_conf}
-  if [[ -n ${REDIS_DEFAULT_PASSWORD} ]]; then
-    echo "sentinel auth-pass ${REDIS_MASTER_SET} ${REDIS_DEFAULT_PASSWORD}" >> ${sentinel_conf}
-  fi
 
   redis-sentinel ${sentinel_conf} --protected-mode no
 }

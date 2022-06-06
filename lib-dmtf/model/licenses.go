@@ -81,10 +81,10 @@ type LicenseService struct {
 }
 
 type LicenseInstallRequest struct {
-	LicenseString string             `json:"LicenseString,omitempty"`
-	Links         *AuthorizedDevices `json:"Links,omitempty"`
+	LicenseString string             `json:"LicenseString"`
+	Links         *AuthorizedDevices `json:"Links"`
 }
 
 type AuthorizedDevices struct {
-	Link []*Link `json:"AuthorizedDevices,omitempty"`
+	Link []*Link `json:"AuthorizedDevices"`
 }

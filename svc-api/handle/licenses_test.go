@@ -171,18 +171,18 @@ func TestInstallLicenseService(t *testing.T) {
 		"/redfish/v1/LicenseService/Licenses",
 	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(map[string]interface{}{
 		"AuthorizedDevices": "/redfish/v1/Managers/{id}",
-		"LicenseString":     "MzMzSzItOFFMVjQtWThSM0ctTEpRUVgtN0JLNk0=",
+		"LicenseString":     "XYZ",
 	}).Expect().Status(http.StatusNoContent).Headers().Equal(header)
 	test.POST(
 		"/redfish/v1/LicenseService/Licenses",
 	).WithHeader("X-Auth-Token", "").WithJSON(map[string]interface{}{
 		"AuthorizedDevices": "/redfish/v1/Managers/{id}",
-		"LicenseString":     "MzMzSzItOFFMVjQtWThSM0ctTEpRUVgtN0JLNk0=",
+		"LicenseString":     "XYZ",
 	}).Expect().Status(http.StatusUnauthorized)
 	test.POST(
 		"/redfish/v1/LicenseService/Licenses",
 	).WithHeader("X-Auth-Token", "token").WithJSON(map[string]interface{}{
 		"AuthorizedDevices": "/redfish/v1/Managers/{id}",
-		"LicenseString":     "MzMzSzItOFFMVjQtWThSM0ctTEpRUVgtN0JLNk0=",
+		"LicenseString":     "XYZ",
 	}).Expect().Status(http.StatusInternalServerError)
 }

@@ -126,7 +126,7 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 		return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, nil)
 	}
 
-	if installreq.Links == nil {
+	if installreq.Links == nil || len(installreq.Links.Link) == 0 || installreq.LicenseString == "" {
 		errMsg := "Invalid request, AuthorizedDevices links missing"
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, nil)
@@ -137,7 +137,8 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 	linksMap := make(map[string]bool)
 	for _, serverIDs := range installreq.Links.Link {
 		serverURI = serverIDs.Oid
-		if strings.Contains(serverURI, "Systems") {
+		switch {
+		case strings.Contains(serverURI, "Systems"):
 			managerLink, err = e.getManagerURL(serverURI)
 			if err != nil {
 				errMsg := "Unable to get System resource"
@@ -147,14 +148,15 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 			for _, link := range managerLink {
 				linksMap[link] = true
 			}
-		} else if strings.Contains(serverURI, "Managers") {
+		case strings.Contains(serverURI, "Managers"):
 			linksMap[serverURI] = true
-		} else {
+		default:
 			errMsg := "Invalid AuthorizedDevices links"
 			log.Error(errMsg)
 			return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, nil)
 		}
 	}
+	log.Info("Map with manager Links: ", linksMap)
 
 	for serverURI := range linksMap {
 		uuid, managerID, err := lcommon.GetIDsFromURI(serverURI)
@@ -186,6 +188,7 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 			log.Error(errMsg)
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, nil)
 		}
+		log.Info("Plugin info: ", plugin)
 
 		encodedKey := base64.StdEncoding.EncodeToString([]byte(installreq.LicenseString))
 		managerURI := "/redfish/v1/Managers/" + managerID
@@ -227,6 +230,7 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 			log.Error(errMsg)
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil)
 		}
+		log.Info("Install license response: ", getResponse)
 	}
 
 	resp.StatusCode = http.StatusNoContent

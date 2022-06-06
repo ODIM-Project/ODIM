@@ -869,8 +869,8 @@ def rsa_oaep_ecryption(password):
 	ciphertext = public_key.encrypt(
             password_bytes,
             padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
+                mgf=padding.MGF1(algorithm=hashes.SHA512()),
+                algorithm=hashes.SHA512(),
                 label=None
             )
         )

@@ -18,7 +18,7 @@ package config
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
+	"crypto/sha512"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
@@ -346,7 +346,7 @@ func decryptRSA_OAEPEncryptedPasswords(passwordFilePath string) ([]byte, error) 
 	}
 
 	rng := rand.Reader
-	password, err := rsa.DecryptOAEP(sha256.New(), rng, privateKey, ct, nil)
+	password, err := rsa.DecryptOAEP(sha512.New(), rng, privateKey, ct, nil)
 	if err != nil {
 		return nil, fmt.Errorf("password decryption failed for the passwordFilePath:%s with %v", passwordFilePath, err)
 	}

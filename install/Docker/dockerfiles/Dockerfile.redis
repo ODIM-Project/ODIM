@@ -24,7 +24,7 @@ RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then \
     && useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/odimra -r -g odimra odimra
 
 RUN apt-get -y update
-RUN apt-get -y install build-essential libssl-dev openssl bash sed
+RUN apt-get -y install openssl bash sed
 RUN mkdir /redis-master /redis-slave
 
 COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/redis-master.conf /redis-master/redis.conf

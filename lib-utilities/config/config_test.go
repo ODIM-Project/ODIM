@@ -135,7 +135,7 @@ func TestSetConfiguration(t *testing.T) {
                 "OnDiskPort": "6380",
                 "MaxIdleConns": 10,
                 "MaxActiveConns": 120,
-				"RedisInMemoryPasswordFilePath": "/tmp/redis_inmemory_password",
+                "RedisInMemoryPasswordFilePath": "/tmp/redis_inmemory_password",
                 "RedisOnDiskPasswordFilePath": "/tmp/redis_ondisk_password"
         },
        	"MessageBusConf": {

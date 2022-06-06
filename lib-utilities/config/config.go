@@ -305,19 +305,19 @@ func checkDBConf() error {
 	}
 	var err error
 	if Data.DBConf.RedisInMemoryPasswordFilePath != "" && Data.KeyCertConf.RSAPrivateKeyPath != "" {
-		if Data.DBConf.RedisInMemoryPassword, err = decryptRSA_OAEPEncryptedPasswords(Data.DBConf.RedisInMemoryPasswordFilePath); err != nil {
+		if Data.DBConf.RedisInMemoryPassword, err = decryptRSAOAEPEncryptedPasswords(Data.DBConf.RedisInMemoryPasswordFilePath); err != nil {
 			return fmt.Errorf("error: while decrypting password from the passwordFilePath:%s with %v", Data.DBConf.RedisInMemoryPasswordFilePath, err)
 		}
 	}
 	if Data.DBConf.RedisOnDiskPasswordFilePath != "" && Data.KeyCertConf.RSAPrivateKeyPath != "" {
-		if Data.DBConf.RedisOnDiskPassword, err = decryptRSA_OAEPEncryptedPasswords(Data.DBConf.RedisOnDiskPasswordFilePath); err != nil {
+		if Data.DBConf.RedisOnDiskPassword, err = decryptRSAOAEPEncryptedPasswords(Data.DBConf.RedisOnDiskPasswordFilePath); err != nil {
 			return fmt.Errorf("error: while decrypting password from the passwordFilePath:%s with %v", Data.DBConf.RedisOnDiskPasswordFilePath, err)
 		}
 	}
 	return nil
 }
 
-func decryptRSA_OAEPEncryptedPasswords(passwordFilePath string) ([]byte, error) {
+func decryptRSAOAEPEncryptedPasswords(passwordFilePath string) ([]byte, error) {
 	privateKeyStr, err := ioutil.ReadFile(Data.KeyCertConf.RSAPrivateKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("value check failed for RSAPrivateKeyPath:%s with %v", Data.KeyCertConf.RSAPrivateKeyPath, err)

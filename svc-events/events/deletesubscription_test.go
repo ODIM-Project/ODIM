@@ -205,7 +205,7 @@ func TestDeleteFabricsSubscription(t *testing.T) {
 	}
 	// positive test case with basic auth type
 	plugin := &evmodel.Plugin{
-		IP:                "10.10.1.5",
+		IP:                "odim.domain.com",
 		Port:              "1234",
 		Password:          password,
 		Username:          "admin",

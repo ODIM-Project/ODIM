@@ -40,7 +40,7 @@ func TestCreateEventSubscription(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://odim.mock.com:8070/Destination1",
+		"Destination":          "https://localhost:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -63,7 +63,7 @@ func TestCreateEventSubscription(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// try to subscrie with already subscribed destinations
-	SubscriptionReq["Destination"] = "https://odim.local.com:9090/events"
+	SubscriptionReq["Destination"] = "https://odim.tt.com:9090/events"
 
 	postBody, _ = json.Marshal(&SubscriptionReq)
 
@@ -121,7 +121,7 @@ func TestCreateEventSubscriptionwithHostName(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://odim.mock.com:8070/Destination1",
+		"Destination":          "https://10.10.10.24:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -154,7 +154,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://odim.mock.com:8070/Destination1",
+		"Destination":          "https://10.10.10.24:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -205,7 +205,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 	}
 	resp = p.CreateEventSubscription(taskID, sessionUserName, req2)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
-	SubscriptionReq["Destination"] = "https://odim.mock.com:8070/Destination1"
+	SubscriptionReq["Destination"] = "https://10.10.10.24:8070/Destination1"
 
 	// if Protocol is empty
 	SubscriptionReq["Protocol"] = ""
@@ -305,7 +305,7 @@ func TestCreateDefaultEventSubscription(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://localhost:8070/Destination1",
+		"Destination":          "https://odim.test24.com:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -347,7 +347,7 @@ func TestFabricEventSubscription(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://odim.mock.com:8070/Destination1",
+		"Destination":          "https://odim.test24.com:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -375,7 +375,7 @@ func TestFabricEventSubscription(t *testing.T) {
 	SubscriptionReq["OriginResources"] = []evmodel.OdataIDLink{
 		{OdataID: "/redfish/v1/Fabrics/11081de0-4859-984c-c35a-6c50732d72da"},
 	}
-	SubscriptionReq["Destination"] = "https://odim.mock.com:8070/Destination2"
+	SubscriptionReq["Destination"] = "https://10.10.10.24:8070/Destination2"
 	postBody, _ = json.Marshal(&SubscriptionReq)
 	req1 := &eventsproto.EventSubRequest{
 		SessionToken: "token",
@@ -392,7 +392,7 @@ func TestFabricEventSubscription(t *testing.T) {
 	SubscriptionReq["OriginResources"] = []evmodel.OdataIDLink{
 		{OdataID: "/redfish/v1/Fabrics/48591de0-4859-1108-c35a-6c50110872da"},
 	}
-	SubscriptionReq["Destination"] = "https://odim.mock.com:8070/Destination4"
+	SubscriptionReq["Destination"] = "https://10.10.10.24:8070/Destination4"
 	postBody, _ = json.Marshal(&SubscriptionReq)
 	req2 := &eventsproto.EventSubRequest{
 		SessionToken: "token",
@@ -458,6 +458,6 @@ func TestCheckCollectionSubscription(t *testing.T) {
 	protocol := "Redfish"
 	p.checkCollectionSubscription(originResources, protocol)
 	devSub, _ := p.GetDeviceSubscriptions("*" + originResources)
-	assert.Equal(t, "https://odim.mock.com/ODIM/v1/Subscriptions/1", devSub.Location, "Location should be https://100.100.100.100/ODIM/v1/Subscriptions/12")
-	assert.Equal(t, "odim.mock.com", devSub.EventHostIP, "EventHostIP should be odim.mock.com")
+	assert.Equal(t, "https://100.100.100.100/ODIM/v1/Subscriptions/1", devSub.Location, "Location should be https://100.100.100.100/ODIM/v1/Subscriptions/12")
+	assert.Equal(t, "100.100.100.100", devSub.EventHostIP, "EventHostIP should be 100.100.100.100")
 }

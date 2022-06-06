@@ -202,6 +202,7 @@ jobs:
         echo
         cd ${ODIM_SOURCE_PATH}/
         time ./build_images.sh
+        echo "$(docker images)"
         
         cd ${ODIM_CONTROLLER_PATH}/scripts/
         python3 odim-controller.py --deploy odimra --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml
@@ -246,7 +247,7 @@ jobs:
         helm package ${ODIM_CONTROLLER_PATH}/helmcharts/urplugin/urplugin -d ${ODIM_PLUGIN_PATH}/urplugin
         cp urplugin-config.yaml ${ODIM_PLUGIN_PATH}/urplugin
         
-        docker save urplugin -o ${ODIM_PLUGIN_PATH}/urplugin/urplugin.tar
+        docker save urplugin:3.0 -o ${ODIM_PLUGIN_PATH}/urplugin/urplugin.tar
         cat urplugin-config.yaml
         
         cd ${ODIM_CONTROLLER_PATH}/scripts

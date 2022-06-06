@@ -219,7 +219,7 @@ func TestDeleteFabricsSubscription(t *testing.T) {
 
 	// Negative test cases
 	// if subscription id is not present
-	plugin.IP = "localhost"
+	plugin.IP = "10.10.10.10"
 	resp, err = pc.DeleteFabricsSubscription("", plugin)
 	assert.NotNil(t, err, "error should not be nil")
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusNotFound")

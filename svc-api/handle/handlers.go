@@ -1134,6 +1134,25 @@ func SystemsMethodNotAllowed(ctx iris.Context) {
 	return
 }
 
+// SystemsMethodInvalidURI holds builds reponse for the invalid url operation on Systems URLs and returns 404 error.
+func SystemsMethodInvalidURI(ctx iris.Context) {
+	defer ctx.Next()
+	url := ctx.Request().URL
+	ctx.StatusCode(http.StatusNotFound)
+	errArgs := &errResponse.Args{
+		Code: errResponse.GeneralError,
+		ErrorArgs: []errResponse.ErrArgs{
+			errResponse.ErrArgs{
+				StatusMessage: errResponse.InvalidURI,
+				MessageArgs:   []interface{}{url},
+			},
+		},
+	}
+	common.SetResponseHeader(ctx, nil)
+	ctx.JSON(errArgs.CreateGenericErrorResponse())
+	return
+}
+
 // CompositionServiceMethodNotAllowed holds builds reponse for the unallowed http operation on Systems URLs and returns 405 error.
 func CompositionServiceMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
@@ -1163,7 +1182,6 @@ func CompositionServiceMethodNotAllowed(ctx iris.Context) {
 	return
 }
 
-
 // LicenseMethodNotAllowed holds builds reponse for the unallowed http operation on License URLs and returns 405 error.
 func LicenseMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
@@ -1186,6 +1204,7 @@ func LicenseMethodNotAllowed(ctx iris.Context) {
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
 }
+
 // ManagersMethodNotAllowed holds builds reponse for the unallowed http operation on Managers URLs and returns 405 error.
 func ManagersMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()

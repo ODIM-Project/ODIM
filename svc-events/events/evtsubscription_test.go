@@ -40,7 +40,7 @@ func TestCreateEventSubscription(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://localhost:8070/Destination1",
+		"Destination":          "https://odim.test24.com:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -121,7 +121,7 @@ func TestCreateEventSubscriptionwithHostName(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://10.10.10.24:8070/Destination1",
+		"Destination":          "https://odim.test24.com:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -154,7 +154,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://10.10.10.24:8070/Destination1",
+		"Destination":          "https://odim.test24.com:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -205,7 +205,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 	}
 	resp = p.CreateEventSubscription(taskID, sessionUserName, req2)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
-	SubscriptionReq["Destination"] = "https://10.10.10.24:8070/Destination1"
+	SubscriptionReq["Destination"] = "https://odim.test24.com:8070/Destination1"
 
 	// if Protocol is empty
 	SubscriptionReq["Protocol"] = ""

@@ -30,6 +30,7 @@ import (
 )
 
 var domain_ip = "odim.domain.com"
+var destination_ip = "odim.destination.com"
 
 func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
@@ -383,7 +384,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				SubordinateResources: true,
 			},
 		}
-	case "11081de0-4859-984c-c35a-6c50732d72da", "/redfish/v1/Systems", "https://odim.tt.com:9090/events", "*":
+	case "11081de0-4859-984c-c35a-6c50732d72da", "/redfish/v1/Systems", "https://odim.destination.com:9090/events", "*":
 		subarr = []evmodel.Subscription{
 			{
 				UserName:             "admin",

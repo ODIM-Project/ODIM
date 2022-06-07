@@ -63,7 +63,7 @@ func TestCreateEventSubscription(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// try to subscrie with already subscribed destinations
-	SubscriptionReq["Destination"] = "https://odim.tt.com:9090/events"
+	SubscriptionReq["Destination"] = "https://odim.destination.com:9090/events"
 
 	postBody, _ = json.Marshal(&SubscriptionReq)
 

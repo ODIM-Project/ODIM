@@ -54,8 +54,8 @@ jobs:
         export VM_IP=$(hostname -I | awk '{print $1}')
         export host_name=$(hostname)
         export FQDN="odim.controller.com"
-        export 10.10.1.5 odim.domain.com
-        export 10.10.10.15 odim.tt.com
+        export odim.domain.com="10.10.1.5"
+        export 10.10.10.15 odim.destination.com
         export 100.100.100.100 odim.100.com
         export SSHPASS=${PASSWD}
         export ODIMRA_USER_ID=2021
@@ -448,6 +448,7 @@ jobs:
         echo "==========================================================="
         
         export FQDN="odim.controller.com"
+        export odim.domain.com="10.10.1.5"
             
         run=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"UserName": "admin","Password": "Od!m12$4"}' 'https://'$FQDN':30080/redfish/v1/SessionService/Sessions' | head -1 | awk '{print $2}')
       

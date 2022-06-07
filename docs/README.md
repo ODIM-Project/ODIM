@@ -11879,7 +11879,7 @@ curl -i -X PATCH \
 
 # License Service
 
-Resource Aggregator for ODIM offers `LicenseService` APIs to view and install the BMC server license on multiple systems.
+Resource Aggregator for ODIM offers `LicenseService` APIs to view and install licenses on multiple BMC servers.
 
 **Supported APIs**
 

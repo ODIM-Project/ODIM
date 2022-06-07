@@ -450,12 +450,15 @@ jobs:
         echo "==========================================================="
         
         export FQDN="odim.controller.com"
-        
+        export 10.10.1.5 odim.domain.com
         export DestinationDomain="odim.domain.com"
         export DestinationIP="10.10.1.5"
-
-
-            
+        
+        echo "[$(date)] -- INFO  -- add FQDN to /etc/hosts"
+        cat << EOF | sudo tee -a /etc/hosts
+        $VM_IP $FQDN $host_name 
+        $DestinationIP $DestinationDomain
+        EOF
         run=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"UserName": "admin","Password": "Od!m12$4"}' 'https://'$FQDN':30080/redfish/v1/SessionService/Sessions' | head -1 | awk '{print $2}')
       
         echo $run  

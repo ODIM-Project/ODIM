@@ -14,7 +14,6 @@ jobs:
     - uses: actions/checkout@v2
     - name: configure pre-req for odimra deployment
       run: |
-        set -x
         echo "[$(date)] -- INFO  -- Start pre req conguration"
         echo
         
@@ -203,7 +202,6 @@ jobs:
         echo
         cd ${ODIM_SOURCE_PATH}/
         time ./build_images.sh
-        echo "$(docker images)"
         
         cd ${ODIM_CONTROLLER_PATH}/scripts/
         python3 odim-controller.py --deploy odimra --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml
@@ -248,10 +246,7 @@ jobs:
         helm package ${ODIM_CONTROLLER_PATH}/helmcharts/urplugin/urplugin -d ${ODIM_PLUGIN_PATH}/urplugin
         cp urplugin-config.yaml ${ODIM_PLUGIN_PATH}/urplugin
         
-        echo "$(docker images)"
-        echo "$(docker inspect urplugin:3.0)"
-        docker save urplugin:3.0 -o ${ODIM_PLUGIN_PATH}/urplugin/urplugin.tar
-        echo "Docker save command executed successfully"
+        docker save urplugin -o ${ODIM_PLUGIN_PATH}/urplugin/urplugin.tar
         cat urplugin-config.yaml
         
         cd ${ODIM_CONTROLLER_PATH}/scripts

@@ -195,12 +195,14 @@ jobs:
         sudo sed -i 's/# tls-cert-file redis.crt/tls-cert-file \/etc\/redis\/redis.crt/' /etc/redis/6379.conf
         sudo sed -i 's/# tls-key-file redis.key/tls-key-file \/etc\/redis\/redis.key/' /etc/redis/6379.conf
         sudo sed -i 's/# tls-ca-cert-file ca.crt/tls-ca-cert-file \/etc\/redis\/ca.crt/' /etc/redis/6379.conf
+        sudo sed -i 's/# requirepass foobared/requirepass redis_password/' /etc/redis/6379.conf
 
         sudo sed -i '0,/port 6380/ s/port 6380/port 0/' /etc/redis/6380.conf
         sudo sed -i 's/# tls-port 6379/tls-port 6380/' /etc/redis/6380.conf
         sudo sed -i 's/# tls-cert-file redis.crt/tls-cert-file \/etc\/redis\/redis.crt/' /etc/redis/6380.conf
         sudo sed -i 's/# tls-key-file redis.key/tls-key-file \/etc\/redis\/redis.key/' /etc/redis/6380.conf
         sudo sed -i 's/# tls-ca-cert-file ca.crt/tls-ca-cert-file \/etc\/redis\/ca.crt/' /etc/redis/6380.conf
+        sudo sed -i 's/# requirepass foobared/requirepass redis_password/' /etc/redis/6380.conf
 
         sudo /etc/init.d/redis_6379 restart
         sleep 10s

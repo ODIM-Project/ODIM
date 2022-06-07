@@ -61,7 +61,7 @@ jobs:
         export ODIMRA_GROUP_ID=2021
         
         echo
-        ping -c 3 odim.odima.com
+        ping -c 3 odim.domain.com
 
 
         echo "[$(date)] -- INFO  -- add FQDN to /etc/hosts"

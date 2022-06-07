@@ -69,8 +69,7 @@ jobs:
         EOF
         echo
         
-        ping -c 3 10.10.1.5
-
+       
         echo "[$(date)] -- INFO  -- configure golang"   
         sudo rm -rf /usr/bin/go
         wget -q https://dl.google.com/go/go1.17.2.linux-amd64.tar.gz -P /var/tmp

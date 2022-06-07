@@ -688,7 +688,6 @@ func Router() *iris.Application {
 	licenseService.Any("/", handle.LicenseMethodNotAllowed)
 	licenseService.Any("/Licenses", handle.LicenseMethodNotAllowed)
 	licenseService.Any("/Licenses/{id}", handle.LicenseMethodNotAllowed)
-	licenseService.Any("/Licenses", handle.LicenseMethodNotAllowed)
 
 	// composition service
 	compositionService := v1.Party("/CompositionService", middleware.SessionDelMiddleware)

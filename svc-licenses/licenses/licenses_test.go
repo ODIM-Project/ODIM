@@ -96,7 +96,7 @@ func TestGetLicenseResource(t *testing.T) {
 func TestInstallLicenseService(t *testing.T) {
 	req := &licenseproto.InstallLicenseRequest{
 		RequestBody: []byte(`{
-			"LicenseString": "333K2-8QLV4-Y8R3G-LJQQX-7BK6M",
+			"LicenseString": "XYZ",
 			"Links": {
 				"AuthorizedDevices": [{
 					"@odata.id": "/redfish/v1/Systems/uuid.1"
@@ -175,4 +175,3 @@ func TestInstallLicenseService_ManagerURL(t *testing.T) {
 
 	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
 }
-

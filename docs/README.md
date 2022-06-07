@@ -11879,15 +11879,15 @@ curl -i -X PATCH \
 
 # License Service
 
-Resource Aggregator for ODIM offers `LicenseService` APIs to view the BMC server licenses.
+Resource Aggregator for ODIM offers `LicenseService` APIs to view and install the BMC server license on multiple systems.
 
 **Supported APIs**
 
-| API URI                                         | Operation Applicable | Required privileges |
-| ----------------------------------------------- | -------------------- | ------------------- |
-| /redfish/v1/LicenseService                      | GET                  | `Login`             |
-| /redfish/v1/LicenseService/Licenses/            | GET                  | `Login`             |
-| /redfish/v1/LicenseService/Licenses/{LicenseID} | GET                  | `Login`             |
+| API URI                                         | Operation Applicable | Required privileges      |
+| ----------------------------------------------- | -------------------- | ------------------------ |
+| /redfish/v1/LicenseService                      | GET                  | `Login`                  |
+| /redfish/v1/LicenseService/Licenses/            | GET, POST            | `Login`, `ConfigureSelf` |
+| /redfish/v1/LicenseService/Licenses/{LicenseID} | GET                  | `Login`                  |
 
 
 >**NOTE:**
@@ -12014,6 +12014,59 @@ curl -i GET \
 ```
 
 
+
+## Installing Single License
+
+|                    |                                                       |
+| ------------------ | ----------------------------------------------------- |
+| **Method**         | `POST`                                                |
+| **URI**            | `/redfish/v1/LicenseService/Licenses`                 |
+| **Description**    | This endpoint installs a license on multiple systems. |
+| **Returns**        | License string installed on the authorized system(s). |
+| **Response Code**  | `204 No Content`                                      |
+| **Authentication** | Yes                                                   |
+
+>**curl command**
+
+```
+curl -i -X POST \
+  -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+  -H "Content-Type:application/json" \
+  -d \
+'{
+  "LicenseString": "333K2-8QLV4-Y8R3G-LJQQX-7BK6M",
+  "Links": {
+  "AuthorizedDevices": [{
+"@odata.id": "/redfish/v1/Systems/78869dd2-d2e2-4a49-854f-d495f873f199.1"
+     }
+  ]
+ }
+}
+' \
+'https://{odim_host}:{port}/redfish/v1/LicenseService/Licenses'
+
+```
+
+
+>**Sample request body**
+
+```
+{
+  "LicenseString": "333K2-8QLV4-Y8R3G-LJQQX-7BK6M",
+  "Links": {
+  "AuthorizedDevices": [{
+  "@odata.id": "/redfish/v1/Systems/78869dd2-d2e2-4a49-854f-d495f873f199.1"
+   }
+  ]
+ }
+}
+```
+
+**Request parameter**
+
+| Parameter     | Type   | Description                              |
+| ------------- | ------ | ---------------------------------------- |
+| LicenseString | string | The Base64-encoded string of the license |
 
 # Audit logs
 

@@ -408,7 +408,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				SubscriptionID:       "71de0110-c35a-4859-984c-072d6c5a32d8",
 				Destination:          "https://localhost:9090/events",
 				Name:                 "Subscription",
-				Location:             "https://10.10.1.3/EventService/Subscriptions/1",
+				Location:             "https://10.10.10.3/EventService/Subscriptions/1",
 				Context:              "context",
 				EventTypes:           []string{"Alert", "ResourceAdded"},
 				MessageIds:           []string{},
@@ -504,7 +504,7 @@ func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, err
 		}
 	} else if strings.Contains(hostIP, "10.10.1.3") {
 		deviceSub = &evmodel.DeviceSubscription{
-			Location:        "https://10.10.1.3/EventService/Subscriptions/1",
+			Location:        "https://10.10.10.3/EventService/Subscriptions/1",
 			EventHostIP:     "10.10.1.3",
 			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
 		}

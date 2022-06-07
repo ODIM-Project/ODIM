@@ -54,9 +54,10 @@ jobs:
         export VM_IP=$(hostname -I | awk '{print $1}')
         export host_name=$(hostname)
         export FQDN="odim.controller.com"
-        export 10.10.1.5="odim.domain.com"
-        export 10.10.10.15="odim.destination.com"
-        export 100.100.100.100="odim.100.com"
+        export DestinationDomain="odim.domain.com"
+        export DestinationIP="10.10.1.5"
+      #  export 10.10.10.15="odim.destination.com"
+      #  export 100.100.100.100="odim.100.com"
         export SSHPASS=${PASSWD}
         export ODIMRA_USER_ID=2021
         export ODIMRA_GROUP_ID=2021
@@ -65,9 +66,10 @@ jobs:
         echo "[$(date)] -- INFO  -- add FQDN to /etc/hosts"
         cat << EOF | sudo tee -a /etc/hosts
         $VM_IP $FQDN $host_name 
-        $VM_IP $10.10.1.5 $host_name
-        $VM_IP $10.10.10.15 $host_name  
-        $VM_IP $100.100.100.100 $host_name
+        $DestinationIP $DestinationDomain
+
+     #   $VM_IP $10.10.10.15 $host_name  
+     #   $VM_IP $100.100.100.100 $host_name
         EOF
         echo
 

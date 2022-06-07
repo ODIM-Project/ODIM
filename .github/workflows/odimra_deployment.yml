@@ -68,6 +68,7 @@ jobs:
         $DestinationIP $DestinationDomain
         EOF
         echo
+        
         ping -c 3 10.10.1.5
 
         echo "[$(date)] -- INFO  -- configure golang"   

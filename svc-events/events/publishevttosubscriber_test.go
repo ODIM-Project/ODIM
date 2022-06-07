@@ -51,7 +51,7 @@ func TestPublishEventsToDestiantion(t *testing.T) {
 		},
 	}
 
-	ip := []string{"100.100.100.100", "100.100.100.100", "odim.testip.com", "odim.testip.com"}
+	ip := []string{"100.100.100.100", "100.100.100.100", "10.10.1.3", "10.10.1.3"}
 	pc := getMockMethods()
 	for i, v := range messages {
 		var event common.Events
@@ -141,7 +141,7 @@ func TestPublishEventsToDestiantionWithMultipleEvents(t *testing.T) {
 		},
 	}
 
-	ip := []string{"100.100.100.100", "100.100.100.100", "odim.testip.com", "odim.testip.com"}
+	ip := []string{"100.100.100.100", "100.100.100.100", "10.10.1.3", "10.10.1.3"}
 	pc := getMockMethods()
 	for i, v := range messages {
 		var event common.Events

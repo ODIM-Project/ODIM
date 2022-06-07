@@ -54,7 +54,7 @@ jobs:
         export VM_IP=$(hostname -I | awk '{print $1}')
         export host_name=$(hostname)
         export FQDN="odim.controller.com"
-        export 10.10.1.5="odim.domain.com"
+        export odim.domain.com="10.10.1.5"
         export 10.10.10.15="odim.tt.com"
         export 100.100.100.100="odim.100.com"
         export SSHPASS=${PASSWD}

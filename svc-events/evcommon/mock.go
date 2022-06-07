@@ -389,7 +389,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 			{
 				UserName:             "admin",
 				SubscriptionID:       "11081de0-4859-984c-c35a-6c50732d72da",
-				Destination:          "https://odim.tt.com:9090/events",
+				Destination:          "https://odim.destination.com:9090/events",
 				Name:                 "Subscription",
 				Location:             "https://odim.2.com/EventService/Subscriptions/1",
 				Context:              "context",

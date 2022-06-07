@@ -209,3 +209,16 @@ func GenericSave(body []byte, table string, key string) error {
 	}
 	return nil
 }
+
+func GetIDsFromURI(uri string) (string, string, error) {
+	lastChar := uri[len(uri)-1:]
+	if lastChar == "/" {
+		uri = uri[:len(uri)-1]
+	}
+	uriParts := strings.Split(uri, "/")
+	ids := strings.SplitN(uriParts[len(uriParts)-1], ".", 2)
+	if len(ids) != 2 {
+		return "", "", fmt.Errorf("error: no id is found in %v", uri)
+	}
+	return ids[0], ids[1], nil
+}

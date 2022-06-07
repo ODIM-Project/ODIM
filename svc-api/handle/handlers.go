@@ -1187,16 +1187,11 @@ func LicenseMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
 	url := ctx.Request().URL
 	path := url.Path
-	LicenseId := ctx.Params().Get("id")
 
 	// Extend switch case, when each path, requires different handling
 	switch path {
 	case "/redfish/v1/LicenseService/Licenses":
-		ctx.ResponseWriter().Header().Set("Allow", "GET")
-	case "/redfish/v1/LicenseService":
-		ctx.ResponseWriter().Header().Set("Allow", "GET")
-	case "/redfish/v1/LicenseService/Licenses" + LicenseId:
-		ctx.ResponseWriter().Header().Set("Allow", "GET")
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	default:
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}

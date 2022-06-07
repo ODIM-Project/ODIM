@@ -57,7 +57,6 @@ jobs:
         export DestinationDomain="odim.domain.com"
         export DestinationIP="10.10.1.5"
       #  export 10.10.10.15="odim.destination.com"
-      #  export 100.100.100.100="odim.100.com"
         export SSHPASS=${PASSWD}
         export ODIMRA_USER_ID=2021
         export ODIMRA_GROUP_ID=2021

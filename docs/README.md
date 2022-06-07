@@ -573,7 +573,7 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |LicenseService||
 |-------|--------------------|
 |/redfish/v1/LicenseService|`GET`|
-|/redfish/v1/LicenseService/Licenses/|`GET`|
+|/redfish/v1/LicenseService/Licenses/|`GET`,`POST`|
 |/redfish/v1/LicenseService/Licenses/{LicenseId}|`GET`|
 
 |Fabrics||
@@ -12015,16 +12015,16 @@ curl -i GET \
 
 
 
-## Installing Single License
+## Installing a license
 
-|                    |                                                       |
-| ------------------ | ----------------------------------------------------- |
-| **Method**         | `POST`                                                |
-| **URI**            | `/redfish/v1/LicenseService/Licenses`                 |
-| **Description**    | This endpoint installs a license on multiple systems. |
-| **Returns**        | License string installed on the authorized system(s). |
-| **Response Code**  | `204 No Content`                                      |
-| **Authentication** | Yes                                                   |
+|                    |                                                           |
+| ------------------ | --------------------------------------------------------- |
+| **Method**         | `POST`                                                    |
+| **URI**            | `/redfish/v1/LicenseService/Licenses`                     |
+| **Description**    | This endpoint installs a license on the BMC servers.      |
+| **Returns**        | License string installed on the authorized BMC server(s). |
+| **Response Code**  | `204 No Content`                                          |
+| **Authentication** | Yes                                                       |
 
 >**curl command**
 
@@ -12066,7 +12066,9 @@ curl -i -X POST \
 
 | Parameter     | Type   | Description                              |
 | ------------- | ------ | ---------------------------------------- |
-| LicenseString | string | The Base64-encoded string of the license |
+| LicenseString | string | The base64-encoded string of the license |
+
+
 
 # Audit logs
 

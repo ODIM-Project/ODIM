@@ -64,7 +64,7 @@ jobs:
         
         echo "[$(date)] -- INFO  -- add FQDN to /etc/hosts"
         cat << EOF | sudo tee -a /etc/hosts
-        $VM_IP $FQDN $host_name $10.10.1.5 $10.10.10.15 $100.100.100.100
+        $VM_IP $FQDN $host_name $odim.domain.com $10.10.10.15 $100.100.100.100
         EOF
         echo
 

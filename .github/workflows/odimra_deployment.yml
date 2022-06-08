@@ -53,8 +53,6 @@ jobs:
         export VM_IP=$(hostname -I | awk '{print $1}')
         export host_name=$(hostname)
         export FQDN="odim.controller.com"
-        export DestinationDomain="odim.domain.com"
-        export DestinationIP="127.0.0.1"
         
         export SSHPASS=${PASSWD}
         export ODIMRA_USER_ID=2021
@@ -66,7 +64,6 @@ jobs:
         EOF
         echo
        
-        echo '127.0.0.1 odim.domain.com odim' | sudo tee -a /etc/hosts
         echo '127.0.0.1 odim.100.com' | sudo tee -a /etc/hosts
         echo '127.0.0.1 odim.test24.com' | sudo tee -a /etc/hosts
         echo '127.0.0.1 odim.destination.com' sudo tee -a /etc/hosts

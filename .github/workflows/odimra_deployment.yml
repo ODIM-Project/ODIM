@@ -48,23 +48,30 @@ jobs:
         chmod 700 ~/.ssh
         chmod 600 ~/.ssh/authorized_keys
         echo
-        
         echo "[$(date)] -- INFO  -- set cur_path, VM_IP, host_name, FQDN, SSHPASS env variables"
         export cur_path=$(pwd)
         export VM_IP=$(hostname -I | awk '{print $1}')
         export host_name=$(hostname)
         export FQDN="odim.controller.com"
+        
         export SSHPASS=${PASSWD}
         export ODIMRA_USER_ID=2021
         export ODIMRA_GROUP_ID=2021
-        echo
-        
         echo "[$(date)] -- INFO  -- add FQDN to /etc/hosts"
         cat << EOF | sudo tee -a /etc/hosts
-        $VM_IP $FQDN $host_name
+        $VM_IP $FQDN $host_name 
+        $DestinationIP $DestinationDomain odim
         EOF
         echo
+       
+        echo '127.0.0.1 odim.100.com' | sudo tee -a /etc/hosts
+        echo '127.0.0.1 odim.test24.com' | sudo tee -a /etc/hosts
+        echo '127.0.0.1 odim.destination.com' sudo tee -a /etc/hosts
+        echo '127.0.0.1 odim.test1.com' sudo tee -a /etc/hosts
+        echo '127.0.0.1 odim.ip.com' sudo tee -a /etc/hosts
 
+
+    
         echo "[$(date)] -- INFO  -- configure golang"   
         sudo rm -rf /usr/bin/go
         wget -q https://dl.google.com/go/go1.17.2.linux-amd64.tar.gz -P /var/tmp
@@ -445,7 +452,7 @@ jobs:
         echo "==========================================================="
         
         export FQDN="odim.controller.com"
-            
+       
         run=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"UserName": "admin","Password": "Od!m12$4"}' 'https://'$FQDN':30080/redfish/v1/SessionService/Sessions' | head -1 | awk '{print $2}')
       
         echo $run  

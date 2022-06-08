@@ -29,6 +29,9 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 )
 
+var domain_ip = "odim.controller.com"
+var destination_ip = "odim.destination.com"
+
 func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
 }
@@ -132,7 +135,7 @@ func MockContactClient(url, method, token string, odataID string, body interface
 			StatusCode: http.StatusUnauthorized,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
-	} else if url == "https://10.10.1.5:1234/ODIM/v1/Subscriptions/123" {
+	} else if url == "https://odim.controller.com:1234/ODIM/v1/Subscriptions/123" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusOK,
@@ -205,7 +208,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 		}
 	case "d72dade0-c35a-984c-4859-1108132d72da":
 		target = &evmodel.Target{
-			ManagerAddress: "10.10.1.4",
+			ManagerAddress: "odim.test1.com",
 			Password:       encryptedData,
 			UserName:       "admin",
 			DeviceUUID:     "d72dade0-c35a-984c-4859-1108132d72da",
@@ -213,7 +216,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 		}
 	case "110813e0-4859-984c-984c-d72da32d72da":
 		target = &evmodel.Target{
-			ManagerAddress: "10.10.1.5",
+			ManagerAddress: domain_ip,
 			Password:       encryptedData,
 			UserName:       "admin",
 			DeviceUUID:     "110813e0-4859-984c-984c-d72da32d72da",
@@ -318,7 +321,7 @@ func MockGetSingleSystem(id string) (string, error) {
 		}
 	case "d72dade0-c35a-984c-4859-1108132d72da":
 		systemData = SavedSystems{
-			ManagerAddress: "10.10.1.4",
+			ManagerAddress: "odim.system.com",
 			Password:       []byte("Password"),
 			UserName:       "admin",
 			DeviceUUID:     "d72dade0-c35a-984c-4859-1108132d72da",
@@ -369,9 +372,9 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 			{
 				UserName:             "admin",
 				SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d7",
-				Destination:          "https://10.10.10.15:9090/events",
+				Destination:          "https://odim.destination.com:9090/events",
 				Name:                 "Subscription",
-				Location:             "https://10.10.10.2/EventService/Subscriptions/1",
+				Location:             "https://odim.2.com/EventService/Subscriptions/1",
 				Context:              "context",
 				EventTypes:           []string{"Alert", "ResourceAdded"},
 				MessageIds:           []string{"IndicatorChanged"},
@@ -381,14 +384,14 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				SubordinateResources: true,
 			},
 		}
-	case "11081de0-4859-984c-c35a-6c50732d72da", "/redfish/v1/Systems", "https://10.10.10.15:9090/events", "*":
+	case "11081de0-4859-984c-c35a-6c50732d72da", "/redfish/v1/Systems", "https://odim.destination.com:9090/events", "*":
 		subarr = []evmodel.Subscription{
 			{
 				UserName:             "admin",
 				SubscriptionID:       "11081de0-4859-984c-c35a-6c50732d72da",
-				Destination:          "https://10.10.10.15:9090/events",
+				Destination:          "https://odim.destination.com:9090/events",
 				Name:                 "Subscription",
-				Location:             "https://10.10.10.2/EventService/Subscriptions/1",
+				Location:             "https://odim.2.com/EventService/Subscriptions/1",
 				Context:              "context",
 				EventTypes:           []string{"Alert", "StatusChange"},
 				MessageIds:           []string{"IndicatorChanged", "StateChanged"},
@@ -403,7 +406,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 			{
 				UserName:             "admin",
 				SubscriptionID:       "71de0110-c35a-4859-984c-072d6c5a32d8",
-				Destination:          "https://10.10.10.16:9090/events",
+				Destination:          "https://localhost:9090/events",
 				Name:                 "Subscription",
 				Location:             "https://10.10.10.3/EventService/Subscriptions/1",
 				Context:              "context",
@@ -419,7 +422,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 		subarr = []evmodel.Subscription{
 			{
 				SubscriptionID:       "71de0110-c35a-4859-984c-072d6c5a32d9",
-				Destination:          "https://10.10.10.16:9090/events",
+				Destination:          "https://localhost:9090/events",
 				Name:                 "Subscription",
 				Location:             "/ODIM/v1/Subscriptions/12345",
 				Context:              "context",
@@ -427,7 +430,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				MessageIds:           []string{},
 				ResourceTypes:        []string{},
 				OriginResources:      []string{"/redfish/v1/Fabrics/123456"},
-				Hosts:                []string{"10.10.1.6"},
+				Hosts:                []string{"localhost"},
 				SubordinateResources: true,
 			},
 		}
@@ -435,7 +438,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 		subarr = []evmodel.Subscription{
 			{
 				SubscriptionID:       "5a321010-c35a-4859-984c-072d6c",
-				Destination:          "https://10.10.10.16:9090/events",
+				Destination:          "https://localhost:9090/events",
 				Name:                 "Subscription",
 				Location:             "/ODIM/v1/Subscriptions/123",
 				Context:              "context",
@@ -443,7 +446,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				MessageIds:           []string{},
 				ResourceTypes:        []string{},
 				OriginResources:      []string{"/redfish/v1/Fabrics/123"},
-				Hosts:                []string{"10.10.1.5"},
+				Hosts:                []string{domain_ip},
 				SubordinateResources: true,
 			},
 		}
@@ -472,9 +475,9 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 			{
 				UserName:             "admin",
 				SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d8",
-				Destination:          "https://10.10.10.9:9090/events",
+				Destination:          "https://odim.t.com:9090/events",
 				Name:                 "Subscription",
-				Location:             "https://10.10.10.2/EventService/Subscriptions/1",
+				Location:             "https://odim.2.com/EventService/Subscriptions/1",
 				Context:              "context",
 				EventTypes:           []string{"Alert"},
 				MessageIds:           []string{"IndicatorChanged"},
@@ -495,7 +498,7 @@ func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, err
 	var deviceSub *evmodel.DeviceSubscription
 	if strings.Contains(hostIP, "100.100.100.100") || hostIP == "*" {
 		deviceSub = &evmodel.DeviceSubscription{
-			Location:        "https://10.10.10.2/EventService/Subscriptions/1",
+			Location:        "https://odim.2.com/EventService/Subscriptions/1",
 			EventHostIP:     "100.100.100.100",
 			OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 		}
@@ -505,16 +508,16 @@ func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, err
 			EventHostIP:     "10.10.1.3",
 			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
 		}
-	} else if strings.Contains(hostIP, "10.10.1.6") {
+	} else if strings.Contains(hostIP, "odim.ip.com") {
 		deviceSub = &evmodel.DeviceSubscription{
 			Location:        "/ODIM/v1/Subscriptions/12345",
-			EventHostIP:     "10.10.1.6",
+			EventHostIP:     "odim.ip.com",
 			OriginResources: []string{"/redfish/v1/Fabrics/123456"},
 		}
-	} else if strings.Contains(hostIP, "10.10.1.5") {
+	} else if strings.Contains(hostIP, domain_ip) {
 		deviceSub = &evmodel.DeviceSubscription{
 			Location:        "/ODIM/v1/Subscriptions/123",
-			EventHostIP:     "10.10.1.5",
+			EventHostIP:     domain_ip,
 			OriginResources: []string{"/redfish/v1/Fabrics/123"},
 		}
 	} else if strings.Contains(hostIP, "localhost") {
@@ -523,10 +526,10 @@ func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, err
 			EventHostIP:     "localhost",
 			OriginResources: []string{""},
 		}
-	} else if strings.Contains(hostIP, "10.10.1.9") {
+	} else if strings.Contains(hostIP, "odim.t.com") {
 		deviceSub = &evmodel.DeviceSubscription{
-			Location:        "https://10.10.10.9/EventService/Subscriptions/1",
-			EventHostIP:     "10.10.1.9",
+			Location:        "https://odim.t.com/EventService/Subscriptions/1",
+			EventHostIP:     "odim.t.com",
 			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72ea.1"},
 		}
 	} else if hostIP == "*/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1" {

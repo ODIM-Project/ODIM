@@ -245,3 +245,42 @@ func TestUpdate_GetLicenseResource(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdate_InstallLicenseService(t *testing.T) {
+	license := new(Licenses)
+	license.connector = mockGetExternalInterface()
+	type args struct {
+		ctx context.Context
+		req *licenseproto.InstallLicenseRequest
+	}
+	tests := []struct {
+		name    string
+		a       *Licenses
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "positive InstallLicenseService",
+			a:    license,
+			args: args{
+				req: &licenseproto.InstallLicenseRequest{SessionToken: "validToken"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "auth fail",
+			a:    license,
+			args: args{
+				req: &licenseproto.InstallLicenseRequest{SessionToken: "invalidToken"},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := tt.a.InstallLicenseService(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
+				t.Errorf("License.InstallLicenseService() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

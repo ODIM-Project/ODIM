@@ -15,6 +15,7 @@
 package licenses
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -24,7 +25,15 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	licenseproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/licenses"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	lcommon "github.com/ODIM-Project/ODIM/svc-licenses/lcommon"
+	"github.com/ODIM-Project/ODIM/svc-licenses/model"
+
 	log "github.com/sirupsen/logrus"
+)
+
+var (
+	JsonUnMarshalFunc = json.Unmarshal
+	JsonMarshalFunc   = json.Marshal
 )
 
 // GetLicenseService to get license service details
@@ -102,4 +111,149 @@ func (e *ExternalInterface) GetLicenseResource(req *licenseproto.GetLicenseResou
 	resp.Body = licenseResp
 	resp.StatusCode = http.StatusOK
 	return resp
+}
+
+// InstallLicenseService to install license
+func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicenseRequest) response.RPC {
+	var resp response.RPC
+	var contactRequest model.PluginContactRequest
+	var installreq dmtf.LicenseInstallRequest
+
+	genErr := JsonUnMarshalFunc(req.RequestBody, &installreq)
+	if genErr != nil {
+		errMsg := "Unable to unmarshal the install license request" + genErr.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, nil)
+	}
+
+	if installreq.Links == nil || len(installreq.Links.Link) == 0 || installreq.LicenseString == "" {
+		errMsg := "Invalid request, AuthorizedDevices links missing"
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, nil)
+	}
+	var serverURI string
+	var err error
+	var managerLink []string
+	linksMap := make(map[string]bool)
+	for _, serverIDs := range installreq.Links.Link {
+		serverURI = serverIDs.Oid
+		switch {
+		case strings.Contains(serverURI, "Systems"):
+			managerLink, err = e.getManagerURL(serverURI)
+			if err != nil {
+				errMsg := "Unable to get System resource"
+				log.Error(errMsg)
+				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+			}
+			for _, link := range managerLink {
+				linksMap[link] = true
+			}
+		case strings.Contains(serverURI, "Managers"):
+			linksMap[serverURI] = true
+		default:
+			errMsg := "Invalid AuthorizedDevices links"
+			log.Error(errMsg)
+			return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, nil)
+		}
+	}
+	log.Info("Map with manager Links: ", linksMap)
+
+	for serverURI := range linksMap {
+		uuid, managerID, err := lcommon.GetIDsFromURI(serverURI)
+		if err != nil {
+			errMsg := "error while trying to get system ID from " + serverURI + ": " + err.Error()
+			log.Error(errMsg)
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"SystemID", serverURI}, nil)
+		}
+		// Get target device Credentials from using device UUID
+		target, targetErr := e.External.GetTarget(uuid)
+		if targetErr != nil {
+			errMsg := targetErr.Error()
+			log.Error(errMsg)
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"target", uuid}, nil)
+		}
+
+		decryptedPasswordByte, err := e.External.DevicePassword(target.Password)
+		if err != nil {
+			errMsg := "error while trying to decrypt device password: " + err.Error()
+			log.Error(errMsg)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		}
+		target.Password = decryptedPasswordByte
+
+		// Get the Plugin info
+		plugin, errs := e.External.GetPluginData(target.PluginID)
+		if errs != nil {
+			errMsg := "error while getting plugin data: " + errs.Error()
+			log.Error(errMsg)
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, nil)
+		}
+		log.Info("Plugin info: ", plugin)
+
+		encodedKey := base64.StdEncoding.EncodeToString([]byte(installreq.LicenseString))
+		managerURI := "/redfish/v1/Managers/" + managerID
+		reqPostBody := map[string]interface{}{"LicenseString": encodedKey, "AuthorizedDevices": managerURI}
+		reqBody, _ := json.Marshal(reqPostBody)
+
+		contactRequest.Plugin = *plugin
+		contactRequest.ContactClient = e.External.ContactClient
+		contactRequest.Plugin.ID = target.PluginID
+		contactRequest.HTTPMethodType = http.MethodPost
+
+		if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+			contactRequest.DeviceInfo = map[string]interface{}{
+				"UserName": plugin.Username,
+				"Password": string(plugin.Password),
+			}
+			contactRequest.OID = "/ODIM/v1/Sessions"
+			_, token, getResponse, err := lcommon.ContactPlugin(contactRequest, "error while logging in to plugin: ")
+			if err != nil {
+				errMsg := err.Error()
+				log.Error(errMsg)
+				return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil)
+			}
+			contactRequest.Token = token
+		} else {
+			contactRequest.LoginCredentials = map[string]string{
+				"UserName": plugin.Username,
+				"Password": string(plugin.Password),
+			}
+
+		}
+		target.PostBody = []byte(reqBody)
+		contactRequest.DeviceInfo = target
+		contactRequest.OID = "/ODIM/v1/LicenseService/Licenses"
+		contactRequest.PostBody = reqBody
+		_, _, getResponse, err := e.External.ContactPlugin(contactRequest, "error while installing license: ")
+		if err != nil {
+			errMsg := err.Error()
+			log.Error(errMsg)
+			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil)
+		}
+		log.Info("Install license response: ", getResponse)
+	}
+
+	resp.StatusCode = http.StatusNoContent
+	return resp
+}
+
+func (e *ExternalInterface) getManagerURL(systemURI string) ([]string, error) {
+	var resource map[string]interface{}
+	var managerLink string
+	var links []string
+	respData, err := e.DB.GetResource("ComputerSystem", systemURI, persistencemgr.InMemory)
+	if err != nil {
+		return nil, err
+	}
+	jerr := JsonUnMarshalFunc([]byte(respData), &resource)
+	if jerr != nil {
+		return nil, jerr
+	}
+	members := resource["Links"].(map[string]interface{})["ManagedBy"]
+	for _, member := range members.([]interface{}) {
+		managerLink = member.(map[string]interface{})["@odata.id"].(string)
+	}
+	links = append(links, managerLink)
+
+	return links, nil
 }

@@ -114,6 +114,21 @@ func mockGetResource(table, key string, dbtype persistencemgr.DbType) (string, *
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	} else if key == "/redfish/v1/LicenseService/Licenses/uuid.1.1" {
 		return string(`{"@odata.id":"/redfish/v1/LicenseService/Licenses/1.1","@odata.type":"#HpeiLOLicense.v2_3_0.HpeiLOLicense","Id":"1","Name":"iLO License","LicenseType":"Perpetual"}`), nil
+	} else if key == "/redfish/v1/Systems/uuid.1" {
+		return string(`{"Id": "uuid.1",
+		"IndicatorLED": "Off",
+		"Links":{
+		"Chassis":[
+		{
+		"@odata.id": "/redfish/v1/Chassis/uuid.1"
+		}
+		],
+		"ManagedBy":[
+		{
+		"@odata.id": "/redfish/v1/Managers/uuid.1"
+		}
+		]
+		}}`), nil
 	}
 	return "body", nil
 }

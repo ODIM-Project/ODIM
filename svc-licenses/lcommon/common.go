@@ -46,7 +46,7 @@ func GetAllKeysFromTable(table string, dbtype persistencemgr.DbType) ([]string, 
 }
 
 //GetResource fetches a resource from database using table and key
-func GetResource(Table, key string, dbtype persistencemgr.DbType) (string, *errors.Error) {
+func GetResource(Table, key string, dbtype persistencemgr.DbType) (interface{}, *errors.Error) {
 	conn, err := persistencemgr.GetDBConnection(dbtype)
 	if err != nil {
 		return "", err
@@ -55,7 +55,7 @@ func GetResource(Table, key string, dbtype persistencemgr.DbType) (string, *erro
 	if err != nil {
 		return "", errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
 	}
-	var resource string
+	var resource interface{}
 	if errs := json.Unmarshal([]byte(resourceData), &resource); errs != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
 	}

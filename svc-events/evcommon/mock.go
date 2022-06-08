@@ -29,7 +29,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 )
 
-var domain_ip = "odim.domain.com"
+var domain_ip = "odim.controller.com"
 var destination_ip = "odim.destination.com"
 
 func stubDevicePassword(password []byte) ([]byte, error) {
@@ -135,7 +135,7 @@ func MockContactClient(url, method, token string, odataID string, body interface
 			StatusCode: http.StatusUnauthorized,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
-	} else if url == "https://odim.domain.com:1234/ODIM/v1/Subscriptions/123" {
+	} else if url == "https://odim.controller.com:1234/ODIM/v1/Subscriptions/123" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusOK,

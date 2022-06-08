@@ -48,8 +48,6 @@ jobs:
         chmod 700 ~/.ssh
         chmod 600 ~/.ssh/authorized_keys
         echo
-      
-
         echo "[$(date)] -- INFO  -- set cur_path, VM_IP, host_name, FQDN, SSHPASS env variables"
         export cur_path=$(pwd)
         export VM_IP=$(hostname -I | awk '{print $1}')
@@ -454,9 +452,6 @@ jobs:
         
         export FQDN="odim.controller.com"
        
-        export DestinationDomain="odim.domain.com"
-        export DestinationIP="10.10.1.5"
-        
         run=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"UserName": "admin","Password": "Od!m12$4"}' 'https://'$FQDN':30080/redfish/v1/SessionService/Sessions' | head -1 | awk '{print $2}')
       
         echo $run  

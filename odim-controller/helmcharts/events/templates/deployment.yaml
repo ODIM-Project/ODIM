@@ -78,7 +78,8 @@ spec:
           persistentVolumeClaim:
             claimName: odimra-log-claim
       securityContext:
-        fsGroup: {{ .Values.odimra.groupID }}
+        fsGroup: 2201
+        runAsUser: 2201
       containers:
         - name: events
           env:
@@ -96,7 +97,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          image: events:{{ .Values.odimra.eventImageTag }}
+          image: 10.24.1.61:5000/odim/events:{{ .Values.odimra.eventImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45103

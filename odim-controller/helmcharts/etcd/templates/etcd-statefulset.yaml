@@ -26,10 +26,11 @@ spec:
       hostname: etcd
       subdomain: etcd
       securityContext:
-        fsGroup: {{ .Values.odimra.groupID }}
+        fsGroup: 2201
+        runAsUser: 2201
       containers:
         - name: etcd
-          image: etcd:{{ .Values.odimra.etcdImageTag }}
+          image: 10.24.1.61:5000/odim/etcd:{{ .Values.odimra.etcdImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - name: etcd-server

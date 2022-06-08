@@ -57,10 +57,10 @@ spec:
             {{- end }}
       restartPolicy: Always
       securityContext:
-        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: 2201
       containers:
       - name: redis
-        image: redis:{{ .Values.odimra.redisImageTag }}
+        image: image-registry.openshift-image-registry.svc:5000/odim/redis:{{ .Values.odimra.redisImageTag }}
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 6379

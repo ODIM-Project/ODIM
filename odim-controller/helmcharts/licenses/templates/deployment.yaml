@@ -96,7 +96,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          image: licenses:{{ .Values.odimra.licensesImageTag }}
+          image: 10.24.1.61:5000/odim/licenses:{{ .Values.odimra.licensesImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45113

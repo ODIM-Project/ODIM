@@ -78,12 +78,11 @@ spec:
           persistentVolumeClaim:
             claimName: odimra-log-claim
       securityContext:
-        fsGroup: {{ .Values.odimra.groupID }}
+        fsGroup: 2201
+        runAsUser: 2201
       serviceAccountName: odimra
       containers:
         - name: aggregation
-          securityContext:
-            privileged: true
           env:
             - name: GET_HOSTS_FROM
               value: dns
@@ -99,7 +98,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          image: aggregation:{{ .Values.odimra.aggregationImageTag }}
+          image: 10.24.1.61:5000/odim/aggregation:{{ .Values.odimra.aggregationImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45102

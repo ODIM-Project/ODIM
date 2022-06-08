@@ -20,10 +20,11 @@ spec:
       hostname: zookeeper
       subdomain: zookeeper
       securityContext:
-        fsGroup: {{ .Values.odimra.groupID }}
+        fsGroup: 2201
+        runAsUser: 2201
       containers:
         - name: zookeeper
-          image: zookeeper:{{ .Values.odimra.zookeeperImageTag }}
+          image: image-registry.openshift-image-registry.svc:5000/odim/zookeeper:{{ .Values.odimra.zookeeperImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 2281

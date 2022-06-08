@@ -20,10 +20,11 @@ spec:
       hostname: kafka
       subdomain: kafka
       securityContext:
-        fsGroup: {{ .Values.odimra.groupID }}
+        fsGroup: 2201
+        runAsUser: 2201
       containers:
         - name: kafka
-          image: kafka:{{ .Values.odimra.kafkaImageTag }}
+          image: 10.24.1.61:5000/odim/kafka:{{ .Values.odimra.kafkaImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9092

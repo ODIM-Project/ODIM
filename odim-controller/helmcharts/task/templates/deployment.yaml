@@ -78,7 +78,8 @@ spec:
           persistentVolumeClaim:
             claimName: odimra-log-claim
       securityContext:
-        fsGroup: {{ .Values.odimra.groupID }}
+        fsGroup: 2201
+        runAsUser: 2201
       containers:
         - name: task
           env:
@@ -88,6 +89,7 @@ spec:
               value: {{ .Values.odimra.haDeploymentEnabled | quote }}
             - name: ODIM_NAMESPACE
               value: {{ .Values.odimra.namespace | quote }}
+<<<<<<< HEAD
             - name: HOST_NAME
               valueFrom:
                 fieldRef:
@@ -97,6 +99,9 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
           image: task:{{ .Values.odimra.taskImageTag }}
+=======
+          image: image-registry.openshift-image-registry.svc:5000/odim/task:{{ .Values.odimra.taskImageTag }}
+>>>>>>> 8ba4723d (adding changes to related rhocp deployment)
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45105

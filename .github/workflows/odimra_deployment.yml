@@ -48,14 +48,15 @@ jobs:
         chmod 700 ~/.ssh
         chmod 600 ~/.ssh/authorized_keys
         echo
-        
+      
+
         echo "[$(date)] -- INFO  -- set cur_path, VM_IP, host_name, FQDN, SSHPASS env variables"
         export cur_path=$(pwd)
         export VM_IP=$(hostname -I | awk '{print $1}')
         export host_name=$(hostname)
         export FQDN="odim.controller.com"
         export DestinationDomain="odim.domain.com"
-        export DestinationIP="10.10.1.5"
+        export DestinationIP="127.0.0.1"
         
         export SSHPASS=${PASSWD}
         export ODIMRA_USER_ID=2021
@@ -68,9 +69,9 @@ jobs:
         echo
        
         echo $DestinationIP $DestinationDomain | sudo tee -a /etc/hosts  
-        echo '100.100.100.100 odim.100.com' | sudo tee -a /etc/hosts
-        echo '10.10.10.24 odim.test24.com' | sudo tee -a /etc/hosts
-        echo '10.10.10.15 odim.destination.com' sudo tee -a /etc/hosts
+        echo '127.0.0.1 odim.100.com' | sudo tee -a /etc/hosts
+        echo '127.0.0.1 odim.test24.com' | sudo tee -a /etc/hosts
+        echo '127.0.0.1 odim.destination.com' sudo tee -a /etc/hosts
     
         echo "[$(date)] -- INFO  -- configure golang"   
         sudo rm -rf /usr/bin/go

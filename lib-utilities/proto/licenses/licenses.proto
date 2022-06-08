@@ -18,6 +18,7 @@ service Licenses{
 rpc GetLicenseService(GetLicenseServiceRequest) returns (GetLicenseResponse){}
 rpc GetLicenseCollection(GetLicenseRequest) returns (GetLicenseResponse){}
 rpc GetLicenseResource(GetLicenseResourceRequest) returns (GetLicenseResponse){}
+rpc InstallLicenseService(InstallLicenseRequest) returns (GetLicenseResponse){}
 }
 
 message GetLicenseServiceRequest {
@@ -44,4 +45,10 @@ message GetLicenseResponse {
     string statusMessage = 2;
     map<string,string> header=3;
     bytes body = 4;
+}
+
+message InstallLicenseRequest {
+    string SessionToken = 1;
+    bytes RequestBody = 2;
+    string URL=3;
 }

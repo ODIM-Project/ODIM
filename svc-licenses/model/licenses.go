@@ -18,14 +18,15 @@ import "net/http"
 
 // PluginContactRequest ...
 type PluginContactRequest struct {
-	Token          string
-	OID            string
-	DeviceInfo     interface{}
-	BasicAuth      map[string]string
-	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	PostBody       interface{}
-	Plugin         Plugin
-	HTTPMethodType string
+	Token            string
+	OID              string
+	DeviceInfo       interface{}
+	BasicAuth        map[string]string
+	ContactClient    func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	PostBody         interface{}
+	Plugin           Plugin
+	HTTPMethodType   string
+	LoginCredentials map[string]string
 }
 
 // ResponseStatus ...

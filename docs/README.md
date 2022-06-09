@@ -871,7 +871,7 @@ To authenticate requests with the Redfish services, implement any one of the fol
 
 ## Role-based authorization
 
-In Resource Aggregator for ODIM, the roles and privileges control users' access to specific resources. If you perform an HTTP operation on a resource without the required privileges, you receive an HTTP `403 Forbidden` error.
+In Resource Aggregator for ODIM, the roles and privileges control users' access to specific resources. If you perform an HTTP operation on a resource without the required privileges, you encounter an HTTP `403 Forbidden` error.
 
 ### **Roles**
 
@@ -948,10 +948,6 @@ Resource Aggregator for ODIM offers Redfish `SessionService` interface for creat
 |/redfish/v1/SessionService|GET|`Login` |
 |/redfish/v1/SessionService/Sessions|POST, GET|`Login`|
 |redfish/v1/SessionService/Sessions/\{sessionId\}|GET, DELETE|`Login`, `ConfigureManager`, `ConfigureSelf` |
-
->**NOTE:** Before accessing these endpoints, ensure you have the required privileges. If you access these endpoints without the required privileges, an HTTP `403 Forbidden` error is displayed.
-
-
 
 ## Viewing the session service root
 
@@ -1160,9 +1156,6 @@ Resource Aggregator for ODIM allows you to create and manage user roles through 
 |/redfish/v1/AccountService|GET|`Login` |
 |/redfish/v1/AccountService/Roles|GET, POST|`Login`, `ConfigureManager` |
 |/redfish/v1/AccountService/Roles/\{RoleId\}|GET, PATCH, DELETE|`Login`, `ConfigureManager` |
-
-
->**NOTE:** Before accessing these endpoints, ensure you have the required privileges. If you access these endpoints without the required privileges, an HTTP `403 Forbidden` error is displayed.
 
 
 ## Viewing the account service root
@@ -1484,9 +1477,6 @@ Resource Aggregator for ODIM exposes Redfish `AccountsService` APIs to create an
 |/redfish/v1/AccountService/Accounts|POST, GET|`Login`, `ConfigureUsers` |
 |/redfish/v1/AccountService/Accounts/\{accountId\}|GET, DELETE, PATCH|`Login`, `ConfigureUsers`, `ConfigureSelf` |
 
-
->**NOTE:** Before accessing these endpoints, ensure you have the required privileges. If you access these endpoints without the required privileges, an HTTP `403 Forbidden` error is displayed.
-
 ## Creating a user account
 
 |||
@@ -1773,11 +1763,6 @@ All aggregation actions are performed as [tasks](#tasks) in Resource Aggregator 
 |/redfish/v1/AggregationService/ConnectionMethods|GET|`Login`|
 |/redfish/v1/AggregationService/ConnectionMethods/\{connectionmethodsId\}|GET|`Login`|
 
->**Note:**
-Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
-
-
-
 
 ## Viewing the aggregation service root
 |||
@@ -2007,21 +1992,13 @@ Examples:
 **Usage information**
 
 Perform HTTP POST on the mentioned URI with a request body specifying a connection method to use for adding the plugin. To know about connection methods, see [Connection methods](#connection-methods).
-				
+
 A Redfish task will be created and you will receive a link to the [task monitor](#viewing-a-task-monitor) associated with it.
 To know the progress of this operation, perform HTTP `GET` on the task monitor returned in the response header (until the task is complete).
-		
 
 After the plugin is successfully added as an aggregation source, it will also be available as a manager resource at:
 
-`/redfish/v1/Managers`.
-
- 
-
-
-**NOTE:**
-
-Only a user with `ConfigureComponents` privilege can add a plugin. If you perform this operation without necessary privileges, you will receive an HTTP `403 Forbidden` error.
+`/redfish/v1/Managers`
 
 
 >**curl command**
@@ -2247,11 +2224,6 @@ After the server is successfully added as an aggregation source, it will also be
 To view the list of links to computer system resources, perform HTTP `GET` on `/redfish/v1/Systems/`. Each link contains `ComputerSystemId` of a specific BMC. For more information, see [Collection of computer systems](#collection-of-computer-systems).
 
  `ComputerSystemId` is unique information about the BMC specified by Resource Aggregator for ODIM. It is represented as `<UUID:n>`, where `UUID` is the aggregation source Id of the BMC. Save it as it is required to perform subsequent actions such as `delete, reset`, and `setdefaultbootorder` on this BMC.
-
-
-**NOTE:**
-
-Only a user with `ConfigureComponents` privilege can add a server. If you perform this operation without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
 
 >**curl command**
@@ -2563,11 +2535,6 @@ To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in 
 You can perform reset on a group of servers by specifying multiple target URIs in the request.
 
 
-**NOTE:**
-
-Only a user with `ConfigureComponents` privilege can reset servers. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
-
-
 >**curl command**
 
 ```
@@ -2714,11 +2681,6 @@ To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in 
 You can perform `setDefaultBootOrder` action on a group of servers by specifying multiple server URIs in the request.
 
 
-**NOTE:**
-
-Only a user with `ConfigureComponents` privilege can change the boot order of one or more servers to default settings. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
-
-
 >**curl command**
 
 ```
@@ -2847,11 +2809,6 @@ Content-Length:491 bytes
 **Usage information**
 
 To know the progress of this action, perform `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
-
-
-**NOTE:**
-
-Only a user with `ConfigureComponents` privilege can delete a server. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
 
 >**curl command**
@@ -3172,11 +3129,6 @@ To know the progress of this action, perform HTTP `GET` on the [task monitor](#v
 To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body \(HTTP 202 status\)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of the reset operation \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in "Sample response body \(subtask\)".
 
 
-**NOTE:**
-
-Only a user with `ConfigureComponents` privilege can reset servers. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
-
-
 >**curl command**
 
 ```
@@ -3297,11 +3249,6 @@ Content-Length:491 bytes
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body \(HTTP 202 status\)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of `SetDefaultBootOrder` action \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in "Sample response body \(subtask\)".
-
-
-**NOTE:**
-
-Only a user with `ConfigureComponents` privilege can change the boot order of one or more servers to default settings. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
 
 >**curl command**
@@ -3514,16 +3461,6 @@ To discover crucial configuration information about a resource, including chassi
 |/redfish/v1/Managers/\{managerId\}/HostInterfaces|GET|`Login` |
 |/redfish/v1/Managers/\{managerId\}/LogServices|GET|`Login` |
 |/redfish/v1/Managers/\{managerId\}/NetworkProtocol|GET|`Login` |
-
-
->**NOTE:**
-To view system, chassis, and manager resources, ensure that you have a minimum privilege of `Login`. If you do not have the necessary privileges, you will receive an HTTP `403 Forbidden` error.
-
-
-
-
-
-
 
 ##  Collection of computer systems
 
@@ -7048,9 +6985,6 @@ Resource Aggregator for ODIM exposes Redfish `VirtualMedia` APIs to connect the 
 | /redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.InsertMedia | POST                 | `ConfigureComponents` |
 | /redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.EjectMedia | POST                 | `ConfigureComponents` |
 
->**NOTE:**
->Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
-
 ### Viewing the VirtualMedia collection
 
 | **Method**         | `GET`                                                        |
@@ -7235,10 +7169,6 @@ Resource Aggregator for ODIM exposes `RemoteAccountService` APIs to manage BMC a
 | /redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts/{AccountId} | GET, PATCH, DELETE   | `Login`, `ConfigureComponents` |
 | /redfish/v1/Managers/{ManagerId}/RemoteAccountService/Roles  | GET                  | `Login`                        |
 | /redfish/v1/Managers/{ManagerId}/RemoteAccountService/Roles/{roleid} | GET                  | `Login`                        |
-
-<blockquote> NOTE: Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error. </blockquote>
-
-
 
 ### Viewing the remote account service root
 
@@ -7660,13 +7590,6 @@ The `UpdateService` schema describes the update service and the properties for t
 |/redfish/v1/UpdateService/SoftwareInventory/\{inventoryId\}|GET|`Login` |
 |/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate|POST|`ConfigureComponents` |
 |/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate|POST|`ConfigureComponents` |
-
-<blockquote>
-NOTE:
-
-Before accessing these endpoints, ensure that the user account has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
-
-</blockquote>
 
 ## Viewing the update service root
 
@@ -9804,12 +9727,6 @@ An example of a task is resetting an aggregate of servers. Resetting all the ser
 |/taskmon/\{taskId\}|GET|`Login` |
 
 
->**NOTE:**
-To view the tasks and the task monitor, ensure that the user has `Login` privilege at the minimum. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
-
-
-
-
 ##  Viewing the task service root
 
 |||
@@ -10071,7 +9988,7 @@ Content-Length:491 bytes
 |-----------|----------|
 |**Method** | `DELETE` |
 |**URI** |`/redfish/v1/TaskService/Tasks/{TaskID}` |
-|**Description** |This operation deletes a specific task. Deleting a running task aborts the operation being carried out.<br>**NOTE:**<br> Only a user having `ConfigureComponents` privilege is authorized to delete a task. If you do not have the necessary privileges, you will receive an HTTP `403 Forbidden` error.|
+|**Description** |This operation deletes a specific task. Deleting a running task aborts the operation being carried out.|
 |**Returns** |JSON schema representing the deleted task.|
 |**Response code** |`204 No Content` |
 |**Authentication** |Yes|
@@ -10106,9 +10023,6 @@ Use these APIs to subscribe a northbound client to southbound events by creating
 |/redfish/v1/EventService/Subscriptions|GET, POST|`Login`, `ConfigureManager`, `ConfigureComponents` |
 |/redfish/v1/EventService/Actions/EventService.SubmitTestEvent|POST|`ConfigureManager` |
 |/redfish/v1/EventService/Subscriptions/\{subscriptionId\}|GET, DELETE|`Login`, `ConfigureManager`, `ConfigureSelf` |
-
->**Note:**
-Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
 
 ## Viewing the event service root
@@ -10273,10 +10187,6 @@ Date:Fri,15 May 2020 10:10:15 GMT+5m 11s
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body \(HTTP 202 status\)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of this operation \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask.
-
-
->**NOTE:**
-Only a user with `ConfigureComponents` privilege is authorized to create event subscriptions. If you perform this action without necessary privileges, you will receive an HTTP`403 Forbidden` error.
 
 
 >**curl command**
@@ -10949,7 +10859,7 @@ curl -i GET \
 |-----------|-----------|
 |**Method** | `DELETE` |
 |**URI** |`/redfish/v1/EventService/Subscriptions/{subscriptionId}` |
-|**Description** |To unsubscribe from an event, delete the corresponding subscription entry. Perform `DELETE` on this URI to remove an event subscription entry.<br>**NOTE:**<br> Only a user with `ConfigureComponents` privilege is authorized to delete event subscriptions. If you perform this action without necessary privileges, you will receive an HTTP`403 Forbidden` error.|
+|**Description** |To unsubscribe from an event, delete the corresponding subscription entry. Perform `DELETE` on this URI to remove an event subscription entry.|
 |**Returns** |A message in the JSON response body saying that the subscription is removed.|
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
@@ -11008,12 +10918,6 @@ The arguments are the substitution variables for the message. The `MessageId` is
 |/redfish/v1/Registries|GET|`Login` |
 |/redfish/v1/Registries/\{registryId\}|GET|`Login` |
 |/redfish/v1/registries/\{registryFileId\}|GET|`Login` |
-
-
->**NOTE:**
-To access Redfish message registries, ensure that you have a minimum privilege of `Login`. If you do not have the necessary privileges, you will receive an HTTP `403 Forbidden` error.
-
-
 
 ##  Viewing a collection of registries
 
@@ -11296,9 +11200,6 @@ Resource Aggregator for ODIM exposes the Redfish `TelemetryService` APIs to:
 | /redfish/v1/TelemetryService/MetricReports/{MetricReportID}  | GET                  | `Login`                 |
 | /redfish/v1/TelemetryService/Triggers                        | GET                  | `Login`                 |
 | /redfish/v1/TelemetryService/Triggers/{TriggerID}            | GET, PATCH           | `Login`,`ConfigureSelf` |
-
->**NOTE:**
->Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
 ## Viewing the telemetry service root
 
@@ -11892,12 +11793,6 @@ Resource Aggregator for ODIM offers `LicenseService` APIs to view the BMC server
 | /redfish/v1/LicenseService                      | GET                  | `Login`             |
 | /redfish/v1/LicenseService/Licenses/            | GET                  | `Login`             |
 | /redfish/v1/LicenseService/Licenses/{LicenseID} | GET                  | `Login`             |
-
-
->**NOTE:**
->To access Redfish message registries, ensure that you have a minimum privilege of `Login`. If you do not have the necessary privileges, you will receive an HTTP `403 Forbidden` error.
-
-
 
 ## Viewing the license service root
 

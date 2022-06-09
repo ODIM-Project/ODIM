@@ -1,7 +1,7 @@
 
 # Table of contents
 
-- [Introduction](#introduction)
+- [Resource Aggregator for Open Distributed Infrastructure Management](#resource-aggregator-for-open-distributed-infrastructure-management)
   * [Resource Aggregator for ODIM logical architecture](#resource-aggregator-for-odim-logical-architecture)
 - [API usage and access guidelines](#api-usage-and-access-guidelines)
   - [HTTP headers](#http-headers)
@@ -201,9 +201,9 @@
 - [Audit logs](#audit-logs)
 - [Security logs](#security-logs)
 
-# Introduction 
+# Resource Aggregator for Open Distributed Infrastructure Management
 
-Resource Aggregator for Open Distributed Infrastructure Management (ODIM) is a modular, open framework for simplified management and orchestration of distributed physical infrastructure. It provides a unified management platform for converging multivendor hardware equipment. By exposing a standards-based programming interface, it enables easy and secure management of wide range of multivendor IT infrastructure distributed across multiple data centers.
+Resource Aggregator for Open Distributed Infrastructure Management (Resource Aggregator for ODIM) is a modular, open framework for simplified management and orchestration of distributed physical infrastructure. It provides a unified management platform for converging multivendor hardware equipment. By exposing a standards-based programming interface, it enables easy and secure management of a wide range of multivendor IT infrastructure distributed across multiple data centers.
 
 Resource Aggregator for ODIM framework comprises the following two components.
 
@@ -223,9 +223,9 @@ Resource Aggregator for ODIM framework comprises the following two components.
     - Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks
     - Integration of additional third-party plugins: Dell, Lenovo and Cisco ACI plugins
 
-This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.14.0](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.14.0.pdf) and are fully Redfish-compliant.
+This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.14.0](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.14.0.pdf) and are Redfish-compliant.
 
-Redfish® is an open industry standard specification, API, and schema. Redfish specifies a RESTful interface and uses JSON and OData. The Redfish standards are designed to deliver simple and secure environment for managing multivendor, converged, and hybrid IT infrastructure.
+The Redfish® standard is a suite of specifications that deliver an industry standard protocol providing a RESTful interface for the simple and secure management of servers, storage, networking, multivendor, converged and hybrid IT infrastructure. Redfish uses JSON and OData.
 
 
 ##  Resource Aggregator for ODIM logical architecture
@@ -236,8 +236,7 @@ Resource Aggregator for ODIM framework adopts a layered architecture and has man
 
 **API layer**
 
-
-This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The northbound clients communicate with this layer through a REST-based protocol that is fully compliant with DMTF's Redfish® specifications (Schema 2021.2 and Specification 1.14.0).
+This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The northbound clients communicate with this layer through a REST-based protocol that is compliant with DMTF's Redfish® specifications (Schema 2021.2 and Specification 1.14.0).
 The API layer sends user requests to the plugins through the aggregation, the event, and the fabric services.
 
 **Services layer**
@@ -254,94 +253,97 @@ This layer hosts a message broker which acts as a communication channel between 
 **Plugin layer**
 
 Plugins abstract vendor-specific access protocols to a common interface which the aggregator layers use to communicate with the resources. The plugin layer connects the actual managed resources to the aggregator layers and is decoupled from the upper layers. The layer uses REST-based communication to interact with the other layers. It collects events to be exposed to fault management systems and uses the event message bus to publish events. 
-The plugin layer allows developers to create plugins on the tool set of their choice without enforcing any strict language binding. To know how to develop plugins, see [Resource Aggregator for Open Distributed Infrastructure Management Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
+The plugin layer allows developers to create plugins on the tool set of their choice without enforcing any strict language binding. To know how to develop plugins, see *[Resource Aggregator for Open Distributed Infrastructure Management Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md)*.
 
 
 # API usage and access guidelines
 
+> **PREREQUISITE**: Ensure that you have the required privileges to access all the services to avoid encountering the HTTP `403 Forbidden` error.
+
 To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS-capable client, such as a web browser with a REST Client plugin extension, or a Desktop REST Client application, or curl (a popular, free command-line utility). 
 
-> **PREREQUISITE**: Ensure that you have the required privileges to access all the endpoints to avoid encountering the HTTP `403 Forbidden` error.
-
-It is good to use a tool, such as curl or any Desktop REST Client application initially to perform RESTful API requests. Later, you can write simple REST clients using modern scripting languages to perform the requests.
+> **Tip**: Initially, it is good to use a tool such as curl or any Desktop REST Client application to test the RESTful API requests. Later, you can write simple REST clients using modern scripting languages to perform the requests.
 
 This guide contains sample request and response payloads. For information on response payload parameters, see [Redfish® Scalable Platforms API (Redfish) schema 2021.2](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2021.2.pdf).
 
 > **IMPORTANT:** The response codes, JSON request and response parameters provided in this guide might vary for systems depending on the vendor, model, and firmware versions.
 
+> **NOTE:** `ComputerSystemId` is the unique identifier of a system specified by Resource Aggregator for ODIM. It is represented as `<UUID.n>` in Resource Aggregator for ODIM. `<UUID.n>` is the universally unique identifier of a system. 
+> **Example**: *ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1*.
+
 ## **HTTP headers**
 
 HTTP headers include the following:
 
-- `Content-Type:application/json` for all RESTful API operations that include a request body in JSON
-    format.
-- Authentication header (BasicAuth or XAuthToken) for all RESTful API operations except for HTTP GET on the Redfish service root and HTTP POST on sessions.
+- `"Content-type":"application/json; charset=utf-8"` for all RESTful API operations that include a request body in JSON format.
+- Authentication header (`BasicAuth` or `XAuthToken`) for all RESTful API operations except the HTTP `GET` operation on the Redfish service root and the HTTP `POST` operation on sessions.
 
 ## **Base URL**
 
-Use the following base URL in all HTTP requests that you send to the resource aggregator:
+Use the following base URL in all your HTTP requests:
 
 `https://{odimra_host}:{port}/`
 
 - {odimra_host} is the fully qualified domain name (FQDN) used for generating certificates while deploying the resource aggregator.
 
-	>**NOTE:** Ensure FQDN is provided in the `/etc/hosts` file or in the DNS server.
+	>**NOTE:** Ensure that FQDN is provided in the `/etc/hosts` file or in the DNS server.
 
 
 - {port} is the port where the services of the resource aggregator are running. The default port is 45000. If you have changed the default port in the `/etc/odimra_config/odimra_config.json` file, use that as the port in the base URL.
 >**NOTE**: To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where the resource aggregator is installed. To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
 
-## Curl command
+## curl
 
-Examples shown in this document use curl to make HTTP requests.
+[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. Resource Aggregator for ODIM supports HTTPS protocol. Examples in this document use curl commands to make HTTP requests.
 
-[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. Resource Aggregator for ODIM supports HTTPS.
+>**IMPORTANT:** If you have set proxy configuration, set `no_proxy` using the following command before you run a curl command.<br>
+>
+>```
+>export no_proxy="127.0.0.1,localhost,{odimra_host}"
+>```
 
-## Curl command options
+## curl command options
 
 - `--cacert` <file_path> includes a specified X.509 root certificate.
 - `-H` passes on custom headers.
-- `-X` specifies a custom request method. Use -X for HTTP PATCH, PUT, DELETE operations.
-- `-d` posts data to a URI. Use -d for all HTTP operations that include a request body.
+- `-X` specifies a custom request method. Use `-X` for HTTP `PATCH`, `PUT`, and `DELETE` operations.
+- `-d` posts data to a URI. Use `-d` for all HTTP operations that include a request body.
 - `-i` returns HTTP response headers.
 - `-v` fetches verbose.
 
 For a complete list of curl flags, see [https://curl.haxx.se](https://curl.haxx.se).
 
+## Including HTTP certificate
 
->**IMPORTANT:** If you have set proxy configuration, set no_proxy using the following command before running a curl command.<br>
-    ```
-    export no_proxy="127.0.0.1,localhost,{odimra_host}"
-     ```
+Without CA certificate, curl fails to verify that HTTP connections are secure and the curl commands might fail with the SSL certificate problem. Provide the root CA certificate in curl for secure SSL communication.
 
-## **Including HTTP certificate**
+- To run curl commands on the server on which you deployed Resource Aggregator for ODIM, provide the `rootCA.crt` file by running the following command:
 
-Without CA certificate, curl fails to verify that HTTP connections are secure and the curl commands might fail with the SSL certificate problem. Provide the root CA certificate to curl for secure SSL communication.
+  ```
+  curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
+  ```
 
+   {path} is where you have generated certificates during the Resource Aggregator for ODIM deployment.
 
-1. If you are running curl commands on the server where the resource aggregator is deployed, provide the `rootCA.crt` file as shown in the curl command:
-   ```
-   curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
-   ```
-    {path} is where you have generated certificates during the Resource Aggregator for ODIM deployment.
+- To run curl commands on a different server, perform the following steps to provide the rootCA.crt file.
 
-2. If you are running curl commands on a different server, perform the following steps to provide the rootCA.crt file.
-    1. Navigate to `~/ODIM/build/cert_generator/certificates` on the server where the resource aggregator is deployed.
-    2. Copy the `rootCA.crt` file.
-    3. Log in to your server and paste the `rootCA.crt` file in a folder.
-    4. Open the `/etc/hosts` file to edit it.
-    5. Scroll to the end of the file, add the following line, and save:
-       `{odim_server_ipv4_address} {FQDN}`
-    6. Check if curl is working using the curl command:
-        ```
-        curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
-        ```
+   1. Navigate to `~/ODIM/build/cert_generator/certificates` on the server where you have deployed Resource Aggregator for ODIM.
 
->**NOTE:** To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file located in this path:<br> `/etc/ssl/certs/ca-certificates.crt`.
+   2. Copy the `rootCA.crt` file.
+   3. Log in to your server and paste the `rootCA.crt` file in a folder.
+   4. Open the `/etc/hosts` file to edit it.
+   5. Scroll to the end of the file, add the following line, and save:
+      `{odim_server_ipv4_address} {FQDN}`
+   6. Check if curl is working by running the curl command:
+       ```
+       curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
+       ```
+
+   >**NOTE:** To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file located in this path:<br> `/etc/ssl/certs/ca-certificates.crt`.
 
 ## HTTP request methods
 
-You can use the listed Redfish-defined HTTP methods to implement various actions:
+Use the listed Redfish-defined HTTP methods to implement various actions.
 
 | HTTP Request Method           | Description                                                  |
 | ----------------------------- | ------------------------------------------------------------ |
@@ -360,11 +362,11 @@ Resource Aggregator for ODIM supports the listed responses:
 | Metadata response            | Describes the resources and types exposed by the service to generic clients |
 | Resource response            | Response in JSON format for an individual resource           |
 | Resource collection response | Response in JSON format for a collection of resources        |
-| Error response               | If there is an HTTP error, a high-level JSON response is provided with additional information |
+| Error response               | If there is an HTTP error, a JSON response is returned with additional information |
 
-## Common response headers
+## Common response header properties
 
-The listed parameters are common across the response headers, and are omitted from the samples in this document. 
+The listed properties are common across all response headers, and are omitted from the samples in this document. 
 
 ```
 "Connection": "keep-alive",
@@ -378,7 +380,7 @@ The listed parameters are common across the response headers, and are omitted fr
 
 ## Status codes
 
-The HTTP status codes include the success codes and the error codes and their respective descriptions for all referenced API operations.
+The HTTP status codes include the success codes and the error codes and their respective descriptions for all API operations.
 
 | Success code<br> | Description                                                  |
 | ---------------- | ------------------------------------------------------------ |
@@ -390,31 +392,33 @@ The HTTP status codes include the success codes and the error codes and their re
 | Error code<br>            | Description                                                  |
 | ------------------------- | ------------------------------------------------------------ |
 | 301 Moved Permanently     | The requested resource resides in a different URI given by the `Location` headers. |
-| 400 Bad Request           | The request could not be performed due to missing or invalid information. An extended error message is returned in the response body. |
-| 401 Unauthorized          | Missing or invalid authentication credentials with a request. |
+| 400 Bad Request           | The request cannot be performed due to missing or invalid information. An extended error message is returned in the response body. |
+| 401 Unauthorized          | The request has missing or invalid authentication credentials. |
 | 403 Forbidden             | The server recognizes that the credentials do not have the necessary authorization to perform the operation. |
-| 404 Not Found             | The request specified the URI of a non-existing resource.    |
-| 405 Method Not Allowed    | The HTTP method specified in the request \(GET, PATCH, DELETE, and so on\) is not supported for a particular request URI. The response includes `Allow` header that lists the supported methods. |
-| 409 Conflict              | A creation or an update cannot be completed because it would conflict with the current state of the resources supported by the platform. |
+| 404 Not Found             | The request specifies the URI of a non-existing resource.    |
+| 405 Method Not Allowed    | The HTTP method specified in the request is not supported for a particular request URI. The response includes `Allow` header that lists the supported methods. |
+| 409 Conflict              | A resource creation or an update is incomplete because it conflicts with the current state of the resources supported by the platform. |
 | 500 Internal Server Error | The server encounters an unexpected condition that prevents it from fulfilling the request. |
 | 501 Not Implemented       | The server has not implemented the method for the resource.  |
 | 503 Service Unavailable   | The server is unable to service the request due to temporary overloading or maintenance. |
 
 # IPv6 support
 
-The default value for `nwPreferences` parameter in the Resource Aggregator for ODIM deployment configuration file (`kube_deploy_nodes.yaml`) is `ipv4`. This implies, the Resource Aggregator for ODIM API service requests can be sent only via IPv4 addresses. To send the API service requests using both the IPv4 and the IPv6 addresses, set the parameter value to `dualStack`.
+Resource Aggregator for ODIM supports IPv6 address to send API service requests. 
+
+The default value for `nwPreferences` parameter in the Resource Aggregator for ODIM deployment configuration file (`kube_deploy_nodes.yaml`) is `ipv4`. To send the requests using the IPv6 addresses, set the `nwPreferences` parameter value to `dualStack`. This allows you to send requests using both the IPv4 and IPv6 addresses. 
 
 ### Sample APIs with IPv6 address
 
-- Curl command to view a collection of systems
+- curl command to view a collection of systems
 
   ```
   curl -i GET \
   -H "X-Auth-Token:{X-Auth-Token}" \
-  'https://[fc00:1024:2401::112]:{port}/redfish/v1/Systems'
+  'https://{IPv6 address}:{port}/redfish/v1/Systems'
   ```
 
-- Curl command to add a server
+- curl command to add a server
 
   ```
   curl -i -X POST \
@@ -422,16 +426,16 @@ The default value for `nwPreferences` parameter in the Resource Aggregator for O
   -H "Content-Type:application/json" \
   -d \
   '{
-    "HostName":"17.5.7.8",
+    "HostName":"xxx.xxx.xxx.xxx",
     "UserName":"admin",
-    "Password":"HP1nvent",
+    "Password":"<your_password>",
     "Links":{
        "ConnectionMethod":{
        "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/e9fec4a3-a9f7-4d4e-b65f-8d9316e7f0d9"
     }
    }
   }' \
-  'https://[fc00:1024:2401::112]:{port}/redfish/v1/AggregationService/AggregationSources'
+  'https://{IPv6 address}:{port}/redfish/v1/AggregationService/AggregationSources'
   ```
 
 - curl command to view the connection method
@@ -439,13 +443,15 @@ The default value for `nwPreferences` parameter in the Resource Aggregator for O
   ```
   curl -i -X GET \
   -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
-  'https://[fc00:1024:2401::112]:{port}/redfish/v1/AggregationService/ConnectionMethods/'
+  'https://{IPv6 address}:{port}/redfish/v1/AggregationService/ConnectionMethods/'
   ```
 
 
 # Support for URL Encoding
 
-The URL encoding mechanism translates the characters in the URLs to a representation that are universally accepted by all web browsers and servers. Resource Aggregator for ODIM supports all standard encoded characters for all the API URLs. When Resource Aggregator for ODIM gets an encoded URL path, the non-ASCII characters in the URL are internally translated and sent to the web browsers. 
+The URL encoding mechanism translates the characters in the URLs to a representation that are universally accepted by all web browsers and servers. 
+
+Resource Aggregator for ODIM supports all standard encoded characters for all the API URLs. When Resource Aggregator for ODIM gets an encoded URL path, the non-ASCII characters in the URL are internally translated and sent to the web browsers. 
 
 Replace a character in a URL with its standard encoding notation. Resource Aggregator for ODIM accepts the encoded notation, decodes it to the actual character acceptable by the web browsers and sends an accurate response.
 
@@ -621,11 +627,6 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/registries/\{registryFileId\}|`GET`|
 
 
->**NOTE:** `ComputerSystemId` is the unique identifier of a system specified by Resource Aggregator for ODIM. It is represented as `<UUID.n>` in Resource Aggregator for ODIM. `<UUID.n>` is the
-universally unique identifier of a system. 
-**Example**: *ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1*.
-
-
 ## Viewing the list of supported Redfish services
 
 |||
@@ -633,7 +634,7 @@ universally unique identifier of a system.
 |**Method** |`GET` |
 |**URI** |`/redfish/v1` |
 |**Description** |This is the URI for the Redfish service root. Perform `GET` on this URI to fetch a list of available Redfish services.|
-|**Returns** |All the available services in the service root.|
+|**Returns** |All available services in the service root.|
 |**Response Code** |`200 OK` |
 |**Authentication** |No|
 
@@ -651,7 +652,7 @@ curl -i GET 'https://{odimra_host}:{port}/redfish/v1'
 ```
 Allow:GET
 Link:</redfish/v1/SchemaStore/en/ServiceRoot.json/>; rel=describedby
-Date":Fri,15 May 2020 13:55:53 GMT+5m 11s
+Date":Fri,15 May 2022 13:55:53 GMT+5m 11s
 ```
 
 >**Sample response body**
@@ -713,20 +714,18 @@ Date":Fri,15 May 2020 13:55:53 GMT+5m 11s
 }
 ```
 
-
-
 # Rate limits
 
-Protect the shared services from excessive use to maintain service availability. Rate limits are used to control the rate of requests being sent or received in a network that prevents the frequency of an operation from exceeding specific limits.
+It is important to protect the shared services from excessive use to maintain service availability. Rate limits are used to control the rate of requests being sent or received in a network to prevent the frequency of an operation from exceeding specific limits.
 
-In Resource Aggregator for ODIM, you can specify rate limits [optional] for the following:
+Resource Aggregator for ODIM supports the following rate limits:
 
 - Specify time (in milliseconds) to limit multiple resource requests. 
   These resources include the log service entries that take more retrieval time from the Baseboard Management Controller (BMC) servers.
 - Limit the number of concurrent API requests being sent per session.
 - Limit the number of active sessions per user.
 
-Specify the values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLimitPerUser` in the `kube_deploy_nodes.yaml` deployment configuration file as required. By default, the values of these parameters are blank, meaning there's no limit on these numbers, unless specified.
+Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLimitPerUser` in the `kube_deploy_nodes.yaml` deployment configuration file [optional]. By default, the values for these parameters are blank, meaning there is no limit on these numbers, unless specified.
 
 > **Samples**
 
@@ -769,7 +768,7 @@ Specify the values for `resourceRateLimit`, `requestLimitPerSession`, and `sessi
 
   > **NOTE:** The value for 'Retry-After' property is in seconds.
 
-- **`requestLimitPerSession`**: Specify the number of concurrent API requests that can be sent per session. If you specify 15 as the value for this parameter, 15 API requests are processed with `200` status code and the remaining concurrent requests triggered from your session return the `503` error code.
+- **`requestLimitPerSession`**: Specify the number of concurrent API requests that can be sent per session. If you specify `15` as the value for this parameter, 15 API requests are processed with `200` status code and the remaining concurrent requests triggered from your session return the `503` error code.
 
   > **Sample response body**
 
@@ -791,7 +790,7 @@ Specify the values for `resourceRateLimit`, `requestLimitPerSession`, and `sessi
   }
   ```
 
-- **`sessionLimitPerUser`**: Specify the number of active sessions a user can have. If you specify 10 as the value for this parameter, 10 sessions can be created for a particular user, which return the `201` status code. Beyond this, the `503` error code is returned.
+- **`sessionLimitPerUser`**: Specify the number of active sessions a user can have. If you specify `10` as the value for this parameter, 10 sessions can be created for a particular user, which return the `201` status code. Beyond this, the `503` error code is returned.
 
   > **Sample response body**
 

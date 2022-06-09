@@ -16,9 +16,10 @@
 package persistencemgr
 
 import (
-	"github.com/gomodule/redigo/redis"
 	"sync"
 	"time"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 // Config is the configuration for db which is set by the wrapper package.
@@ -33,6 +34,7 @@ type Config struct {
 	Host         string
 	SentinelPort string
 	MasterSet    string
+	Password     string
 }
 
 // ConnPool is the established connection

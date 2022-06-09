@@ -259,16 +259,15 @@ The plugin layer allows developers to create plugins on the tool set of their ch
 
 # API usage and access guidelines
 
-To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS-capable client, such as a web browser with a REST Client plugin extension, or a Desktop REST Client application, or curl (a popular, free command-line utility). You can also write simple REST clients for RESTful APIs using modern scripting languages.
+To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS-capable client, such as a web browser with a REST Client plugin extension, or a Desktop REST Client application, or curl (a popular, free command-line utility). 
 
-<blockquote>
-Tip: It is good to use a tool, such as curl or any Desktop REST Client application initially to perform requests. Later,
-you will want to write your own scripting code to perform requests.
-</blockquote>
+> **PREREQUISITE**: Ensure that you have the required privileges to access all the endpoints to avoid encountering the HTTP `403 Forbidden` error.
+
+It is good to use a tool, such as curl or any Desktop REST Client application initially to perform RESTful API requests. Later, you can write simple REST clients using modern scripting languages to perform the requests.
+
 This guide contains sample request and response payloads. For information on response payload parameters, see [Redfish® Scalable Platforms API (Redfish) schema 2021.2](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2021.2.pdf).
 
-> **IMPORTANT:**
-The response codes and the JSON request and response parameters provided in this guide may vary for systems depending on the vendor, model, and firmware versions.
+> **IMPORTANT:** The response codes, JSON request and response parameters provided in this guide might vary for systems depending on the vendor, model, and firmware versions.
 
 ## **HTTP headers**
 
@@ -716,13 +715,18 @@ Date":Fri,15 May 2020 13:55:53 GMT+5m 11s
 
 
 
-# Rate Limits
+# Rate limits
 
-Shared services need to protect themselves from being excessively used—whether intended or unintended—to maintain service availability. Rate limits are used to control the rate of requests being sent or received in a network, which prevents the frequency of an operation from exceeding specific limits.
+Protect the shared services from excessive use to maintain service availability. Rate limits are used to control the rate of requests being sent or received in a network that prevents the frequency of an operation from exceeding specific limits.
 
-In Resource Aggregator for ODIM, you can specify time (in milliseconds) to limit multiple resource requests. These resources include the log service entries that take more retrieval time from the Baseboard Management Controller (BMC) servers. You can limit the number of concurrent API requests being sent per session. Additionally, you can limit the number of active sessions per user. 
+In Resource Aggregator for ODIM, you can specify rate limits [optional] for the following:
 
-Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLimitPerUser` in the `kube_deploy_nodes.yaml` deployment configuration file as required [optional]. By default, the values of these parameters are empty, meaning there's no limit on these numbers, unless specified.
+- Specify time (in milliseconds) to limit multiple resource requests. 
+  These resources include the log service entries that take more retrieval time from the Baseboard Management Controller (BMC) servers.
+- Limit the number of concurrent API requests being sent per session.
+- Limit the number of active sessions per user.
+
+Specify the values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLimitPerUser` in the `kube_deploy_nodes.yaml` deployment configuration file as required. By default, the values of these parameters are blank, meaning there's no limit on these numbers, unless specified.
 
 > **Samples**
 
@@ -735,7 +739,7 @@ Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLi
   - /redfish/v1/Managers/{id}/LogServices/IEL/Entries:7000
   ```
 
-  In case of multiple requests for these resources, the `503` error code is returned for the specified time (in milliseconds). The response header for this request consists of a property `Retry-after` which gives time in seconds. After this time, requests are processed with the `200` status code.
+  In case of multiple requests for resources, the `503` error code is returned for the specified time (in milliseconds). The response header for this request consists of a property `Retry-after`, which displays time in seconds. After this time, requests are processed with the `200` status code.
 
   > **Sample response body**
 
@@ -765,7 +769,7 @@ Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLi
 
   > **NOTE:** The value for 'Retry-After' property is in seconds.
 
-- **`requestLimitPerSession`**: Specify the number of concurrent API requests that can be sent per session. If you specify 15 as the value for this parameter, 15 API requests are processed with successful status code and the remaining concurrent requests triggered from your session return the `503` error code.
+- **`requestLimitPerSession`**: Specify the number of concurrent API requests that can be sent per session. If you specify 15 as the value for this parameter, 15 API requests are processed with `200` status code and the remaining concurrent requests triggered from your session return the `503` error code.
 
   > **Sample response body**
 

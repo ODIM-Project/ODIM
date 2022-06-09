@@ -29,9 +29,9 @@ docker_dep_pkgs:
   - gnupg-agent
   - software-properties-common
 docker_pkgs:
-  - docker-ce=5:20.10.11~3-0~ubuntu-bionic
-  - docker-ce-cli=5:20.10.11~3-0~ubuntu-bionic
-  - containerd.io
+  - docker-ce=5:20.10.12~3-0~ubuntu-focal
+  - docker-ce-cli=5:20.10.12~3-0~ubuntu-focal
+  - containerd.io=1.4.12-1
 docker_pkgs_wo_version:
   - docker-ce
   - docker-ce-cli

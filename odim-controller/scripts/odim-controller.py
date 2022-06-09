@@ -18,6 +18,12 @@ import argparse, yaml, logging, traceback
 import os, sys, subprocess, grp, time
 import glob, shutil, copy, getpass, socket
 
+import base64
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
+
 from yaml import SafeDumper
 from Crypto.PublicKey import RSA
 from os import path
@@ -44,6 +50,8 @@ K8S_INVENTORY_DATA = None
 K8S_INVENTORY_FILE = ""
 ODIMRA_VAULT_KEY_FILE = ""
 ANSIBLE_SUDO_PW_FILE = ""
+REDIS_INMEMORY_PW_FILE = ""
+REDIS_ONDISK_PW_FILE = ""
 ANSIBLE_BECOME_PASS = ""
 DEPLOYMENT_ID = ""
 ODIMRA_SRC_PATH = ""
@@ -160,6 +168,7 @@ def perform_checks(skip_opt_param_check=False):
 	global CONTROLLER_BASE_PATH, ANSIBLE_SUDO_PW_FILE, DEPLOYMENT_SRC_DIR, ODIMRA_SRC_PATH
 	global ODIMRA_VAULT_BIN, ODIMRA_VAULT_KEY_FILE
 	global KUBERNETES_IMAGE_PATH, ODIMRA_IMAGE_PATH
+	global REDIS_INMEMORY_PW_FILE, REDIS_ONDISK_PW_FILE
 
 	if 'deploymentID' not in CONTROLLER_CONF_DATA or CONTROLLER_CONF_DATA['deploymentID'] == None or CONTROLLER_CONF_DATA['deploymentID'] == "":
 		logger.critical("deployment ID not configured, exiting!!!")
@@ -225,6 +234,26 @@ def perform_checks(skip_opt_param_check=False):
 		ANSIBLE_SUDO_PW_FILE = CONTROLLER_CONF_DATA['nodePasswordFilePath']
 		if not os.path.exists(ANSIBLE_SUDO_PW_FILE):
 			logger.critical("%s does not exist, exiting!!!", ANSIBLE_SUDO_PW_FILE)
+
+	if 'redisInMemoryPasswordFilePath' not in CONTROLLER_CONF_DATA or \
+	CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] == "":
+		REDIS_INMEMORY_PW_FILE = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s_cluster-' + DEPLOYMENT_ID, '.redis_in_memory_pw.dat')
+		if not os.path.exists(REDIS_INMEMORY_PW_FILE):
+			store_redis_password_in_vault(REDIS_INMEMORY_PW_FILE, "in_memory")
+	else:
+		REDIS_INMEMORY_PW_FILE = CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath']
+		if not os.path.exists(REDIS_INMEMORY_PW_FILE):
+			logger.critical("%s does not exist, exiting!!!", REDIS_INMEMORY_PW_FILE)
+
+	if 'redisOnDiskPasswordFilePath' not in CONTROLLER_CONF_DATA or \
+	CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == "":
+		REDIS_ONDISK_PW_FILE = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s_cluster-' + DEPLOYMENT_ID, '.redis_on_disk_pw.dat')
+		if not os.path.exists(REDIS_ONDISK_PW_FILE):
+			store_redis_password_in_vault(REDIS_ONDISK_PW_FILE, "on_disk")
+	else:
+		REDIS_ONDISK_PW_FILE = CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath']
+		if not os.path.exists(REDIS_ONDISK_PW_FILE):
+			logger.critical("%s does not exist, exiting!!!", REDIS_ONDISK_PW_FILE)
 
 	cert_dir = os.path.join(CONTROLLER_SRC_PATH, 'certs')
 	if not os.path.exists(cert_dir):
@@ -800,6 +829,7 @@ def load_odimra_certs(isUpgrade):
 	CONTROLLER_CONF_DATA['odimra']['rootCACert'] = read_file(os.path.join(cert_dir, 'rootCA.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraServerCert'] = read_file(os.path.join(cert_dir, 'odimra_server.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraServerKey'] = read_file(os.path.join(cert_dir, 'odimra_server.key'))
+	CONTROLLER_CONF_DATA['odimra']['redisPassword'] = read_file(os.path.join(cert_dir, 'redis_password'))
 	if CONTROLLER_CONF_DATA['odimra']['messageBusType'] == 'RedisStreams':
 				logger.info("RedisStreams is selected as messageBusType")
 	else:
@@ -822,9 +852,33 @@ def load_odimra_certs(isUpgrade):
 	with open(CONTROLLER_CONF_FILE, 'w') as f:
 		yaml.safe_dump(CONTROLLER_CONF_DATA, f, default_flow_style=False)
 
+def load_redis_passwords(cur_dir):
+	redis_inmemory_pwd = get_password_from_vault(cur_dir, REDIS_INMEMORY_PW_FILE)
+	redis_ondisk_pwd = get_password_from_vault(cur_dir, REDIS_ONDISK_PW_FILE)
+	CONTROLLER_CONF_DATA['odimra']['redisInMemoryPassword'] = rsa_oaep_ecryption(redis_inmemory_pwd)
+	CONTROLLER_CONF_DATA['odimra']['redisOnDiskPassword'] = rsa_oaep_ecryption(redis_ondisk_pwd)
+
+def rsa_oaep_ecryption(password):
+	cert_dir = CONTROLLER_CONF_DATA['odimCertsPath']
+	PRIVATE_KEY = read_file(os.path.join(cert_dir, 'odimra_rsa.private'))
+	private_key_bytes = PRIVATE_KEY.encode("utf-8")
+	private_key: RSAPrivateKey = load_pem_private_key(private_key_bytes, None)
+
+	public_key = private_key.public_key()
+	password_bytes = bytes(password, "utf-8")
+	ciphertext = public_key.encrypt(
+            password_bytes,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA512()),
+                algorithm=hashes.SHA512(),
+                label=None
+            )
+        )
+	return base64.b64encode(ciphertext).decode("utf-8")
+
 # perform pre-requisites required for
 # deploying ODIM-RA services
-def perform_odimra_deploy_prereqs():
+def perform_odimra_deploy_prereqs(cur_dir):
 	if 'odimCertsPath' not in CONTROLLER_CONF_DATA or \
 	CONTROLLER_CONF_DATA['odimCertsPath'] == None or \
 	CONTROLLER_CONF_DATA['odimCertsPath'] == "":
@@ -843,7 +897,7 @@ def perform_odimra_deploy_prereqs():
 		if not os.path.isdir(CONTROLLER_CONF_DATA['odimCertsPath']):
 			logger.critical("ODIM-RA certificates path does not exist")
 			exit(1)
-
+	load_redis_passwords(cur_dir)
 	load_odimra_certs(False)
 
 # perform pre-requisites for HA deployment
@@ -903,7 +957,7 @@ def operation_odimra(operation):
 		if operation == "install":
 			helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/pre-install/files/helmcharts/helm_config_values.yaml')
 			odimra_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/odimra-copy-image/files/odimra_config_values.yaml')
-			perform_odimra_deploy_prereqs()
+			perform_odimra_deploy_prereqs(cur_dir)
 		elif operation == "uninstall":
 			helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/post-uninstall/files/odim_controller_config.yaml')
 			odimra_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/odimra-delete-image/files/odimra_config_values.yaml')
@@ -1098,6 +1152,25 @@ def store_password_in_vault():
 
 	ANSIBLE_BECOME_PASS = first_pw
 
+def store_redis_password_in_vault(REDIS_PW_FILE_PATH, redis_db_name):
+	print("\nProvide password of the redis " + redis_db_name + " db")
+	pw_from_prompt = lambda: (getpass.getpass('Enter Password: '), getpass.getpass('Confirm Password: '))
+	first_pw, second_pw = pw_from_prompt()
+	if first_pw != second_pw:
+		logger.critical("Passwords provided do not match")
+		exit(1)
+
+	fd = open(REDIS_PW_FILE_PATH, "wb")
+	fd.write(first_pw.encode('utf-8'))
+	fd.close()
+
+	encrypt_cmd = '{vault_bin} -key {key_file} -encrypt {data_file}'.format(vault_bin=ODIMRA_VAULT_BIN,
+			key_file=ODIMRA_VAULT_KEY_FILE, data_file=REDIS_PW_FILE_PATH)
+	ret = exec(encrypt_cmd, {})
+	if ret != 0:
+		logger.critical("storing node password failed")
+		exit(1)
+
 # load_password_from_vault loads the sudo password of nodes
 # of present cluster securely stored usign ansible vault
 def load_password_from_vault(cur_dir):
@@ -1125,6 +1198,31 @@ def load_password_from_vault(cur_dir):
 		exit(1)
 
 	ANSIBLE_BECOME_PASS = std_out.rstrip('\n')
+
+
+def get_password_from_vault(cur_dir, password_file_path):
+	decrypt_cmd = '{vault_bin} -key {key_file} -decrypt {data_file}'.format(vault_bin=ODIMRA_VAULT_BIN,
+			key_file=ODIMRA_VAULT_KEY_FILE, data_file=password_file_path)
+
+	execHdlr = subprocess.Popen(decrypt_cmd,
+			stdin=subprocess.PIPE,
+			stdout=subprocess.PIPE,
+			stderr=subprocess.STDOUT,
+			shell=True,
+			universal_newlines=True)
+
+	try:
+		std_out, std_err = execHdlr.communicate()
+	except TimeoutExpired:
+		execHdlr.kill()
+
+	if execHdlr.returncode != 0 or std_out == "":
+		print(std_out.strip())
+		logger.critical("failed to read the password from "+ password_file_path)
+		os.chdir(cur_dir)
+		exit(1)
+
+	return std_out.rstrip('\n')
 
 # check_extract_kubespray_src is used for invoking
 # a script, after checking and if not exists, to extract

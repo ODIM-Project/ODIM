@@ -25,6 +25,66 @@ import (
 const (
 	sampleFileContent = "A sample file for UT"
 	sampleFileName    = "file_for_ut.test"
+	rsaPrivateKey     = `-----BEGIN RSA PRIVATE KEY-----
+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
+-----END RSA PRIVATE KEY-----`
+	redisPassword = "F2n0YuRgavd/tYeanHI94cJR5r/C+FUaGQJBetQOxed1pLXxnWKAMmVLjs+jCBGq" +
+		"C66YfEZ+DK5ZIg9QmuQGEoahwSVWC+Pa8hNrqIDgBYXP4cyyEAE0XE0j8amyf049aqhxxTYXfzov5Km4t/" +
+		"Tzqru3CJ2CcUGzRmq1WfbfuMqx+tAZGw4UY1SW9IDoHwXaqsKld9uwiYq6lBqJpYzNGcCgrVyHwQg" +
+		"hTrYlypQocsDdVY7/bFzg3amIHdStmzF+mvpNolhtkgrXeq1ov7stepdgpzOF39Fe5DDO+OG53wyR" +
+		"4OMBAZ2NjX5LLQkhNEUpAA7GM8ajtOuJGecO506St2ASatcojJqRDHbIzNhzAxY3wtB0bx1S5TS1jl" +
+		"kW1VTFXqFNjnKd3j7Q/YZXJY5a+zX/PhIZLnCp+yWY2/qU7s4BZjex8jNRikFTRzhqDGfKP1hFar8" +
+		"qLr2D0FSRrDK4NtViUMUv5PaWygHtRk8e0fSnNhTSGv5kzr/fwEE4S/ayo5+9pqjgjr4iu+d6oRSq" +
+		"2dQVQIfdm25Lqfw8RnmeveVVKuQk7xT/T0pcKmwfYuN0R4UjJ44BiBXgI9e/pgVTHzOrzHfLT5ekk1" +
+		"eSx/fIuTMe38lxCD+L6mfhi4zsI/IkaQsjgvR70n5RlpsT8ndNLBtmfNS4NB3Ls2Cbp0AFyTY="
 )
 
 var cwdDir, _ = os.Getwd()
@@ -37,11 +97,17 @@ func createFile(t *testing.T, fName, fContent string) {
 
 func TestSetConfiguration(t *testing.T) {
 	var (
-		sampleConfigFile = filepath.Join(cwdDir, "sample.json")
-		sampleTestFile   = "/tmp/testFile.dat"
+		sampleConfigFile              = filepath.Join(cwdDir, "sample.json")
+		sampleTestFile                = "/tmp/testFile.dat"
+		sampleRSAPrivateKeyFile       = "/tmp/rsa.private"
+		RedisInMemoryPasswordFilePath = "/tmp/redis_inmemory_password"
+		RedisOnDiskPasswordFilePath   = "/tmp/redis_ondisk_password"
 	)
 
 	createFile(t, sampleTestFile, sampleFileContent)
+	createFile(t, sampleRSAPrivateKeyFile, rsaPrivateKey)
+	createFile(t, RedisInMemoryPasswordFilePath, redisPassword)
+	createFile(t, RedisOnDiskPasswordFilePath, redisPassword)
 
 	var sampleConfig = `{
         "RootServiceUUID": "a9762fb2-b9dd-4ce8-818a-af6833ba19f6",
@@ -53,7 +119,7 @@ func TestSetConfiguration(t *testing.T) {
                 "RPCPrivateKeyPath": "/tmp/testFile.dat",
                 "RPCCertificatePath": "/tmp/testFile.dat",
                 "RSAPublicKeyPath": "/tmp/testFile.dat",
-                "RSAPrivateKeyPath": "/tmp/testFile.dat"
+                "RSAPrivateKeyPath": "/tmp/rsa.private"
         },
         "APIGatewayConf": {
                 "Host": "localhost",
@@ -68,7 +134,9 @@ func TestSetConfiguration(t *testing.T) {
                 "OnDiskHost": "localhost",
                 "OnDiskPort": "6380",
                 "MaxIdleConns": 10,
-                "MaxActiveConns": 120
+                "MaxActiveConns": 120,
+                "RedisInMemoryPasswordFilePath": "/tmp/redis_inmemory_password",
+                "RedisOnDiskPasswordFilePath": "/tmp/redis_ondisk_password"
         },
        	"MessageBusConf": {
       			"MessageBusConfigFilePath": "/tmp/testFile.dat",
@@ -205,6 +273,9 @@ func TestSetConfiguration(t *testing.T) {
 	os.Remove(sampleConfigFile)
 	os.Remove(sampleConfigFile)
 	os.Remove(sampleTestFile)
+	os.Remove(sampleRSAPrivateKeyFile)
+	os.Remove(RedisInMemoryPasswordFilePath)
+	os.Remove(RedisOnDiskPasswordFilePath)
 }
 
 func TestValidateConfigurationGroup1(t *testing.T) {

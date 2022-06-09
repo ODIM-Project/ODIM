@@ -29,6 +29,7 @@ jobs:
         echo
         
         export PASSWD=password
+        export REDIS_PASSWORD=redis_password
         echo "runner:${PASSWD}" > pass
         sudo chpasswd < pass
         
@@ -48,23 +49,30 @@ jobs:
         chmod 700 ~/.ssh
         chmod 600 ~/.ssh/authorized_keys
         echo
-        
         echo "[$(date)] -- INFO  -- set cur_path, VM_IP, host_name, FQDN, SSHPASS env variables"
         export cur_path=$(pwd)
         export VM_IP=$(hostname -I | awk '{print $1}')
         export host_name=$(hostname)
         export FQDN="odim.controller.com"
+        
         export SSHPASS=${PASSWD}
         export ODIMRA_USER_ID=2021
         export ODIMRA_GROUP_ID=2021
-        echo
-        
         echo "[$(date)] -- INFO  -- add FQDN to /etc/hosts"
         cat << EOF | sudo tee -a /etc/hosts
-        $VM_IP $FQDN $host_name
+        $VM_IP $FQDN $host_name 
+        $DestinationIP $DestinationDomain odim
         EOF
         echo
+       
+        echo '127.0.0.1 odim.100.com' | sudo tee -a /etc/hosts
+        echo '127.0.0.1 odim.test24.com' | sudo tee -a /etc/hosts
+        echo '127.0.0.1 odim.destination.com' sudo tee -a /etc/hosts
+        echo '127.0.0.1 odim.test1.com' sudo tee -a /etc/hosts
+        echo '127.0.0.1 odim.ip.com' sudo tee -a /etc/hosts
 
+
+    
         echo "[$(date)] -- INFO  -- configure golang"   
         sudo rm -rf /usr/bin/go
         wget -q https://dl.google.com/go/go1.17.2.linux-amd64.tar.gz -P /var/tmp
@@ -102,6 +110,7 @@ jobs:
         pip3 install jmespath==0.9.5
         pip3 install ruamel.yaml==0.16.10
         pip3 install pyyaml==5.3.1
+        pip3 install cryptography==3.4.8
         echo
         
         echo "[$(date)] -- INFO  -- installed python version"
@@ -114,6 +123,9 @@ jobs:
         cp kube_deploy_nodes.yaml.tmpl kube_deploy_nodes.yaml
         echo ${PASSWD} > node_pass
         echo ${PASSWD} > vault_pass
+        echo ${REDIS_PASSWORD} > redis_inmemory_pass
+        echo ${REDIS_PASSWORD} > redis_ondisk_pass
+
         ls -ltra
         echo
         
@@ -127,13 +139,16 @@ jobs:
         echo "[$(date)] -- INFO  -- encrypt passwords"
         ./odim-vault -encode ${ODIM_CONTROLLER_PATH}/scripts/vault_pass
         ./odim-vault -key ${ODIM_CONTROLLER_PATH}/scripts/vault_pass -encrypt ${ODIM_CONTROLLER_PATH}/scripts/node_pass
-        echo
+        ./odim-vault -key ${ODIM_CONTROLLER_PATH}/scripts/vault_pass -encrypt ${ODIM_CONTROLLER_PATH}/scripts/redis_inmemory_pass
+        ./odim-vault -key ${ODIM_CONTROLLER_PATH}/scripts/vault_pass -encrypt ${ODIM_CONTROLLER_PATH}/scripts/redis_ondisk_pass
         
         mkdir -p ${cur_path}/k8s_images ${cur_path}/odim_images ${cur_path}/odim_plugins
 
         export rootServiceUUID=$(uuidgen)
         export NODE_PASS_FILEPATH=${ODIM_CONTROLLER_PATH}/scripts/node_pass
         export VAULTKEY_FILEPATH=${ODIM_CONTROLLER_PATH}/scripts/vault_pass
+        export REDIS_INMEMORY_FILEPATH=${ODIM_CONTROLLER_PATH}/scripts/redis_inmemory_pass
+        export REDIS_ONDISK_FILEPATH=${ODIM_CONTROLLER_PATH}/scripts/redis_ondisk_pass        
         export K8S_IMAGE_PATH=${cur_path}/k8s_images
         export ODIM_IMAGE_PATH=${cur_path}/odim_images
         export ODIM_PLUGIN_PATH=${cur_path}/odim_plugins
@@ -141,6 +156,8 @@ jobs:
         sed -i "/Node[23]_/d; /kubernetesImagePath:/d; /odimraImagePath:/d; s#.*deploymentID.*#deploymentID: OneNodeDeployment#; \
         s#.*httpProxy.*#httpProxy: \"\"#; s#.*httpsProxy.*#httpsProxy: \"\"#; s#.*noProxy.*#noProxy: \"\"#; \
         s#.*nodePasswordFilePath.*#nodePasswordFilePath: ${NODE_PASS_FILEPATH}#; \
+        s#.*redisInMemoryPasswordFilePath.*#redisInMemoryPasswordFilePath: ${REDIS_INMEMORY_FILEPATH}#; \
+        s#.*redisOnDiskPasswordFilePath.*#redisOnDiskPasswordFilePath: ${REDIS_ONDISK_FILEPATH}#; \
         s#.*odimControllerSrcPath.*#odimControllerSrcPath: ${ODIM_CONTROLLER_PATH}#; \
         s#.*odimVaultKeyFilePath.*#odimVaultKeyFilePath: ${VAULTKEY_FILEPATH}#; \
         s#.*odimCertsPath.*#odimCertsPath: \"\"#; s#.*odimPluginPath.*#odimPluginPath: ${ODIM_PLUGIN_PATH}#; \
@@ -445,7 +462,7 @@ jobs:
         echo "==========================================================="
         
         export FQDN="odim.controller.com"
-            
+       
         run=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"UserName": "admin","Password": "Od!m12$4"}' 'https://'$FQDN':30080/redfish/v1/SessionService/Sessions' | head -1 | awk '{print $2}')
       
         echo $run  

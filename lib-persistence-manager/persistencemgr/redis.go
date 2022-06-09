@@ -153,7 +153,7 @@ func (p *ConnPool) setWritePool(config *Config) error {
 		return fmt.Errorf("unable to retrieve master ip from sentinel master election")
 	}
 	log.Info("new write pool master IP found: " + currentMasterIP)
-	writePool, _ := getPool(currentMasterIP, currentMasterPort)
+	writePool, _ := getPool(currentMasterIP, currentMasterPort, config.Password)
 	if writePool == nil {
 		return fmt.Errorf("write pool creation failed")
 	}
@@ -182,6 +182,7 @@ func getInMemoryDBConfig() *Config {
 		Host:         config.Data.DBConf.InMemoryHost,
 		SentinelPort: config.Data.DBConf.InMemorySentinelPort,
 		MasterSet:    config.Data.DBConf.InMemoryPrimarySet,
+		Password:     string(config.Data.DBConf.RedisInMemoryPassword),
 	}
 }
 
@@ -192,6 +193,7 @@ func getOnDiskDBConfig() *Config {
 		Host:         config.Data.DBConf.OnDiskHost,
 		SentinelPort: config.Data.DBConf.OnDiskSentinelPort,
 		MasterSet:    config.Data.DBConf.OnDiskPrimarySet,
+		Password:     string(config.Data.DBConf.RedisOnDiskPassword),
 	}
 }
 
@@ -238,7 +240,7 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 }
 
 //getPool is used is utility function to get the Connection Pool from DB.
-func getPool(host, port string) (*redis.Pool, error) {
+func getPool(host, port, password string) (*redis.Pool, error) {
 	protocol := config.Data.DBConf.Protocol
 	tlsConfig, err := getTLSConfig()
 	if err != nil {
@@ -255,6 +257,7 @@ func getPool(host, port string) (*redis.Pool, error) {
 			c, err := redis.Dial(protocol, host+":"+port,
 				redis.DialUseTLS(true),
 				redis.DialTLSConfig(tlsConfig),
+				redis.DialPassword(password),
 			)
 			return c, err
 		},
@@ -304,7 +307,7 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 		masterIP, masterPort = GetCurrentMasterHostPort(c)
 	}
 
-	connPools.ReadPool, err = getPool(c.Host, c.Port)
+	connPools.ReadPool, err = getPool(c.Host, c.Port, c.Password)
 	//Check if any connection error occured
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
@@ -313,7 +316,7 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 		}
 		return nil, errors.PackError(errors.UndefinedErrorType, err)
 	}
-	connPools.WritePool, err = getPool(masterIP, masterPort)
+	connPools.WritePool, err = getPool(masterIP, masterPort, c.Password)
 	//Check if any connection error occured
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {

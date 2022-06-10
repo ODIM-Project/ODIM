@@ -22,23 +22,23 @@
   * [Authentication methods for Redfish APIs](#authentication-methods-for-redfish-apis)
   * [Role-based authorization](#role-based-authorization)
 - [Sessions](#sessions)
-  * [Viewing the session service root](#viewing-the-session-service-root)
+  * [Viewing the SessionService root](#viewing-the-sessionservice-root)
   * [Creating a session](#creating-a-session)
-  * [Listing sessions](#listing-sessions)
-  * [Viewing information about a single session](#viewing-information-about-a-single-session)
+  * [Viewing a list of sessions](#viewing-a-list-of-sessions)
+  * [Viewing information about a session](#viewing-information-about-a-session)
   * [Deleting a session](#deleting-a-session)
 - [User roles and privileges](#user-roles-and-privileges)
-  * [Viewing the account service root](#viewing-the-account-service-root)
+  * [Viewing the AccountService root](#viewing-the-accountservice-root)
   * [Creating a role](#creating-a-role)
-  * [Listing roles](#listing-roles)
+  * [Viewing a list of roles](#viewing-a-list-of-roles)
   * [Viewing information about a role](#viewing-information-about-a-role)
   * [Updating a role](#updating-a-role)
   * [Deleting a role](#deleting-a-role)
 - [User accounts](#user-accounts)
   * [Creating a user account](#creating-a-user-account)
     + [Password requirements](#password-requirements)
-  * [Listing user accounts](#listing-user-accounts)
-  * [Viewing the account details](#viewing-the-account-details)
+  * [Viewing a list of user accounts](#viewing-a-list-of-user-accounts)
+  * [Viewing information about an account](#viewing-information-about-an-account)
   * [Updating a user account](#updating-a-user-account)
   * [Deleting a user account](#deleting-a-user-account)
 - [Resource aggregation and management](#resource-aggregation-and-management)
@@ -186,7 +186,7 @@
   * [Viewing a collection of registries](#viewing-a-collection-of-registries)
   * [Viewing a single registry](#viewing-a-single-registry)
   * [Viewing a file in a registry](#viewing-a-file-in-a-registry)
-- [Redfish Telemetry](#redfish-telemetry-service)
+- [Redfish Telemetry](#redfish-telemetry)
   * [Viewing the telemetry service root](#viewing-the-telemetry-service-root)
   * [Collection of metric definitions](#collection-of-metric-definitions)
   * [Single metric definition](#single-metric-definition)
@@ -198,6 +198,9 @@
   * [Single Trigger](#single-trigger)
   * [Updating a trigger](#updating-a-trigger)
 - [License Service](#license-service)
+  - [Viewing the LicenseService root](#viewing-the-licenseservice-root)
+  - [Viewing the license collection](#viewing-the-license-collection)
+  - [Viewing information about a license](#viewing-information-about-a-license)
 - [Audit logs](#audit-logs)
 - [Security logs](#security-logs)
 
@@ -219,9 +222,9 @@ Resource Aggregator for ODIM framework comprises the following two components.
 - One or more plugins
 
   The plugins abstract, translate, and expose southbound resource information to the resource aggregator through RESTful APIs. Resource Aggregator for ODIM supports:
-    - Generic Redfish (GRF) plugin for ODIM: Plugin that can be used for any Redfish-compliant device
-    - Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks
-    - Integration of additional third-party plugins: Dell, Lenovo and Cisco ACI plugins
+    - Generic Redfish (GRF) plugin for ODIM—Plugin that can be used for any Redfish-compliant device
+    - Plugin for unmanaged racks (URP)—Plugin that acts as a resource manager for unmanaged racks
+    - Integration of additional third-party plugins—Dell, Lenovo and Cisco ACI plugins
 
 This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.14.0](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.14.0.pdf) and are Redfish-compliant.
 
@@ -267,9 +270,6 @@ To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS
 This guide contains sample request and response payloads. For information on response payload parameters, see [Redfish® Scalable Platforms API (Redfish) schema 2021.2](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2021.2.pdf).
 
 > **IMPORTANT:** The response codes, JSON request and response parameters provided in this guide might vary for systems depending on the vendor, model, and firmware versions.
-
-> **NOTE:** `ComputerSystemId` is the unique identifier of a system specified by Resource Aggregator for ODIM. It is represented as `<UUID.n>` in Resource Aggregator for ODIM. `<UUID.n>` is the universally unique identifier of a system. 
-> **Example**: *ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1*.
 
 ## **HTTP headers**
 
@@ -820,7 +820,7 @@ Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLi
 
 ##  Authentication methods for Redfish APIs
 
- To keep HTTP connections secure, Resource Aggregator for ODIM verifies credentials of HTTP requests. If you perform an unauthenticated HTTP operation on resources except for the following, you will receive an HTTP `401 unauthorized` error.
+To keep the HTTP connections secure, Resource Aggregator for ODIM verifies credentials of HTTP requests. If you perform an unauthenticated HTTP operation on resources except the listed ones, you get an HTTP `401 unauthorized` error.
 
 |Resource|URI|Description|
 |--------|---|-----------|
@@ -830,14 +830,14 @@ Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLi
 |OData|`GET` `/redfish/v1/odata` |The Redfish OData service document.|
 | The `Sessions` resource<br> |`POST` `/redfish/v1/SessionService/Sessions` |Creates a Redfish login session.|
 
-To authenticate requests with the Redfish services, implement any one of the following authentication methods:
+To authenticate requests with Redfish services, implement one of the following authentication methods:
 
 
 -   **HTTP BASIC authentication \(BasicAuth\)** 
 
     To implement HTTP BASIC authentication:
 
-     1. Generate a base64 encoded string of `{valid_username_of_odim_userAccount}:{valid_password_of_odim_userAccount}` using the following command:
+     1. Generate a `base64` encoded string of `{valid_username_of_odim_userAccount}:{valid_password_of_odim_userAccount}` using the following command:
 
          ```
         echo -n '{username}:{password}' | base64 -w0
@@ -856,7 +856,7 @@ To authenticate requests with the Redfish services, implement any one of the fol
 -   **Redfish session login authentication (XAuthToken)** 
 
     1. To implement Redfish session login authentication, create a Redfish login [session](#sessions) and obtain an authentication token through session management interface.
-       Every session that is created has an authentication token called `X-AUTH-TOKEN` associated with it. An `X-AUTH-TOKEN` is returned in the response header from session creation.
+       Every session created has an authentication token called `X-AUTH-TOKEN` that is returned in the response header.
     
     2. To authenticate subsequent requests, provide the token in the `X-AUTH-TOKEN` request header.
     
@@ -866,7 +866,7 @@ To authenticate requests with the Redfish services, implement any one of the fol
         'https://{odimra_host}:{port}/redfish/v1/AccountService'
        ```
 
-       An `X-AUTH-TOKEN` is valid and a session is open only for 30 minutes, unless you continue to send requests to a Redfish service using this token. An idle session is automatically terminated after the time-out interval.
+       An `X-AUTH-TOKEN` is valid and the session is available for only 30 minutes, unless you continue to send requests to a Redfish service using this token. An idle session is automatically terminated after the time-out interval.
 
 ## Role-based authorization
 
@@ -874,13 +874,13 @@ In Resource Aggregator for ODIM, the roles and privileges control users' access 
 
 ### **Roles**
 
-Role represents a set of operations that a user is allowed to perform. It is determined by a defined set of privileges. You can assign a role to a user at the time of user account creation.
+Role represents a set of operations that a user is allowed to perform with a defined set of privileges. You can assign a role to a user while creating the user account.
 
 With Resource Aggregator for ODIM, there are two types of defined roles:
 
 -   **Redfish predefined roles** 
 
-    Redfish predefined roles have predefined set of privileges. These privileges cannot be removed or modified. You may assign additional OEM \(custom\) privileges. Following are the default Redfish predefined roles that are available in Resource Aggregator for ODIM:
+    Redfish predefined roles have predefined set of privileges. These privileges cannot be removed or modified. You may assign additional OEM \(custom\) privileges. The following are the default Redfish predefined roles that are available in Resource Aggregator for ODIM:
 
     -   `Administrator` 
 
@@ -890,36 +890,36 @@ With Resource Aggregator for ODIM, there are two types of defined roles:
 
 -   **User-defined roles** 
 
-    User-defined roles are the custom roles that you can create and assign to a user. The privileges of a user-defined role are configurable—you can choose a privilege or a set of privileges to assign to this role at the time of role creation.
+    > **PREREQUISITE**: Ensure that a user role is created before assigning it to a user account.
     
-    >  **NOTE**: Before you assign a user-defined role to a user at the time of user account creation, ensure the role is created.
+    User-defined roles are the custom roles that you can create and assign to a user. The privileges of a user-defined role are configurable. You can select a privilege or a set of privileges to assign to this role while creating the user account.
 
 ### **Privileges**
 
 Privilege is a permission to perform an operation or a set of operations within a defined management domain.
 
-The following Redfish-specified privileges can be assigned to any user in Resource Aggregator for ODIM:
+The following Redfish-specified privileges can be assigned to the users in Resource Aggregator for ODIM:
 
--    `ConfigureComponents`: Users with this privilege can configure components managed by the Redfish services in Resource Aggregator for ODIM. This privilege is required to create, update, and delete a resource or a collection of resources exposed by Redfish APIs using HTTP `POST`, `PATCH`, and `DELETE` operations.
+-    `ConfigureComponents`—Users with this privilege can configure components managed by the Redfish services in Resource Aggregator for ODIM. This privilege is required to create, update, and delete a resource or a collection of resources exposed by Redfish APIs using HTTP `POST`, `PATCH`, and `DELETE` operations.
 
- -    `ConfigureManager`: Users with this privilege can configure manager resources.
+ -    `ConfigureManager`—Users with this privilege can configure manager resources.
 
- -    `ConfigureComponents`: Users with this privilege can configure components managed by the services.
+ -    `ConfigureComponents`—Users with this privilege can configure components managed by the services.
 
- -    `ConfigureSelf`: Users with this privilege can change the password for their account.
+ -    `ConfigureSelf`—Users with this privilege can change the password for their account.
 
- -    `ConfigureUsers`: Users with this privilege can configure users and their accounts. This privilege is assigned to an `Administrator`. This privilege is required to create, update, and delete user accounts using HTTP `POST`, `PATCH`, and `DELETE` operations.
+ -    `ConfigureUsers`—Users with this privilege can configure users and their accounts. This privilege is assigned to an `Administrator`. This privilege is required to create, update, and delete user accounts using HTTP `POST`, `PATCH`, and `DELETE` operations.
 
- -    `Login`: Users with this privilege can log in to the service and read the resources.
+ -    `Login`—Users with this privilege can log in to the service and read the resources.
 This privilege is required to view any resource or a collection of resources exposed by Redfish APIs using HTTP `GET` operation.
 
 #### **Mapping of privileges to roles**
 
 |Roles|Assigned privileges|
 |-----|-------------------|
-|Administrator \(Redfish predefined\)| `Login` <br>   `ConfigureManager` <br>   `ConfigureUsers` <br>    `ConfigureComponents` <br>   `ConfigureSelf` <br> |
-|Operator (Redfish predefined)| `Login` <br>   `ConfigureComponents` <br>   `ConfigureSelf` <br> |
-|ReadOnly \(Redfish predefined\)| `Login` <br>   `ConfigureSelf` <br> |
+|Administrator \(Redfish predefined\)| `Login` <br>`ConfigureManager` <br>`ConfigureUsers` <br>`ConfigureComponents` <br>`ConfigureSelf` <br> |
+|Operator (Redfish predefined)| `Login` <br>`ConfigureComponents` <br>`ConfigureSelf` <br> |
+|ReadOnly \(Redfish predefined\)| `Login` <br>`ConfigureSelf` <br> |
 
 
 >**NOTE:** Resource Aggregator for ODIM has a default user account that has all the privileges of an administrator role.
@@ -927,35 +927,27 @@ This privilege is required to view any resource or a collection of resources exp
 
 # Sessions
 
-A session represents a window of a user's login with a Redfish service. Sessions contain details on the user and the user activities. You can run multiple sessions simultaneously.
+A session represents a window of a user login with a Redfish service. Sessions contain details on the user and the user activities. You can run multiple sessions simultaneously.
 
-Resource Aggregator for ODIM offers Redfish `SessionService` interface for creating and managing sessions. It exposes APIs to achieve the following:
-
--   Fetch the `SessionService` root
-
--   Create a session
-
--   List active sessions
-
--   Delete a session
+Resource Aggregator for ODIM allows you to view, create, and manage user sessions through Redfish APIs.
 
 
 **Supported APIs**
 
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
-|/redfish/v1/SessionService|GET|`Login` |
-|/redfish/v1/SessionService/Sessions|POST, GET|`Login`|
-|redfish/v1/SessionService/Sessions/\{sessionId\}|GET, DELETE|`Login`, `ConfigureManager`, `ConfigureSelf` |
+|/redfish/v1/SessionService|`GET`|`Login` |
+|/redfish/v1/SessionService/Sessions|`POST`, `GET`|`Login`|
+|redfish/v1/SessionService/Sessions/\{sessionId\}|`GET`, `DELETE`|`Login`, `ConfigureManager`, `ConfigureSelf` |
 
-## Viewing the session service root
+## Viewing the SessionService root
 
 |||
 |---------|---------------|
 |**Method** | `GET` |
 |**URI** |`/redfish/v1/SessionService` |
 |**Description** |This endpoint retrieves JSON schema representing the Redfish `SessionService` root.|
-|**Returns** |The properties for the Redfish `SessionService` itself and links to the actual list of sessions.|
+|**Returns** |The properties for the Redfish `SessionService` and the links to the actual list of sessions.|
 |**Response Code** |`200 OK` |
 |**Authentication** |No|
 
@@ -995,12 +987,10 @@ curl -i GET \
 |---------|---------------|
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/SessionService/Sessions` |
-|**Description** |This operation creates a session to implement authentication. Creating a session allows you to create an `X-AUTH-TOKEN` which is then used to authenticate with other services.<br>**NOTE:** It is a good practice to note down the following:<br><ul><li>The session authentication token returned in the `X-AUTH-TOKEN` header.</li><li>The session Id returned in the `Location` header and the JSON response body.</li></ul><br>You need the session authentication token to authenticate subsequent requests to the Redfish services and the session id to log out later.|
-|**Returns** |<ul><li> An `X-AUTH-TOKEN` header containing session authentication token.</li><li>`Location` header that contains a link to the newly created session instance.</li><li>The session id and a message in the JSON response body saying that the session is created.</li></ul> |
+|**Description** |This operation creates a session to implement authentication. Creating a session allows you to create an `X-AUTH-TOKEN` which is then used to authenticate with other services.<br>**NOTE:** It is a good practice to note the following:<br><ul><li>The session authentication token returned in the `X-AUTH-TOKEN` header.</li><li>The session id returned in the `Location` header and the JSON response body.</li></ul><br>You need the session authentication token to authenticate to subsequent requests to the Redfish services and the session id to log out later.|
+|**Returns** |<ul><li> An `X-AUTH-TOKEN` header containing session authentication token.</li><li>`Location` header that contains a link to the newly created session instance.</li><li>The session id and a message in the JSON response body denoting a session creation.</li></ul> |
 |**Response Code** |`201 Created` |
 |**Authentication** |No|
-
-
 
 >**curl command**
 
@@ -1026,14 +1016,12 @@ curl -i POST \
 }
 ```
 
-
-
-**Request parameters**
+> **Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|UserName|String \(required\)|Username of the user account for the session. For the first time, use the username of the default administrator account \(admin\). Subsequently, when you create other user accounts, you can use the credentials of these accounts to create a session.<br>**NOTE:** This user must have `Login` privilege.|
-|Password|String \(required\)<br> |Password of the user account for the session. For the first time, use the password of the default administrator account. Subsequently, when you create other user accounts, you can use the credentials of these accounts to create a session. |
+|UserName|String \(required\)|Username of the user account for the session. For the first time, use the username of the default administrator account \(admin\). Subsequently, when you create other user accounts, use the credentials of these accounts to create a session.<br>**NOTE:** This user must have `Login` privilege.|
+|Password|String \(required\)<br> |Password of the user account for the session. For the first time, use the password of the default administrator account. Subsequently, when you create other user accounts, use the credentials of these accounts to create a session. |
 
 >**Sample response header**
 
@@ -1062,14 +1050,14 @@ Date:Fri,15 May 2020 14:08:55 GMT+5m 11s
 ```
 
 
-## Listing sessions
+## Viewing a list of sessions
 
 |||
 |---------|---------------|
 |**Method** | `GET` |
 |**URI** |`/redfish/v1/SessionService/Sessions` |
-|**Description** |This operation lists user sessions.<br>**NOTE:** Only a user with `ConfigureUsers` privilege can see a list of all user sessions.<br> Users with `ConfigureSelf` privilege can see the sessions created only by them.|
-|**Returns** |Links to user sessions|
+|**Description** |This operation lists user sessions.<br>**NOTE:** Only a user with `ConfigureUsers` privilege can view a list of all user sessions.<br> Users with `ConfigureSelf` privilege can view the sessions created only by them.|
+|**Returns** |Links to the list of user sessions|
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -1083,16 +1071,14 @@ curl -i GET \
 
 ```
 
-
-
-## Viewing information about a single session
+## Viewing information about a session
 
 |||
 |---------|---------------|
 |**Method** | `GET` |
 |**URI** |`/redfish/v1/SessionService/Sessions/{sessionId}` |
 |**Description** |This operation retrieves information about a specific user session.<br>**NOTE:** Only a user with `ConfigureUsers` privilege can view information about any user session.<br><br> Users with `ConfigureSelf` privilege can view information about the sessions created only by them.|
-|**Returns** |JSON schema representing this session|
+|**Returns** |JSON schema representing the session|
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -1119,8 +1105,6 @@ curl -i GET \
 }
 ```
 
-
-
 ## Deleting a session
 
 |||
@@ -1138,7 +1122,6 @@ curl -i GET \
 curl -i -X DELETE \
                -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
               'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions/{sessionId}'
-
 ```
 
 
@@ -1146,18 +1129,18 @@ curl -i -X DELETE \
 
 #  User roles and privileges
 
-Resource Aggregator for ODIM allows you to create and manage user roles through Redfish APIs.
+Resource Aggregator for ODIM allows you to view, create, and manage user roles through Redfish APIs.
 
 **Supported APIs**:
 
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
-|/redfish/v1/AccountService|GET|`Login` |
-|/redfish/v1/AccountService/Roles|GET, POST|`Login`, `ConfigureManager` |
-|/redfish/v1/AccountService/Roles/\{RoleId\}|GET, PATCH, DELETE|`Login`, `ConfigureManager` |
+|/redfish/v1/AccountService|`GET`|`Login` |
+|/redfish/v1/AccountService/Roles|`GET`, `POST`|`Login`, `ConfigureManager` |
+|/redfish/v1/AccountService/Roles/\{roleId\}|`GET`, `PATCH`, `DELETE`|`Login`, `ConfigureManager` |
 
 
-## Viewing the account service root
+## Viewing the AccountService root
 
 |||
 |---------|---------------|
@@ -1213,8 +1196,6 @@ Date:Fri,15 May 2020 14:32:09 GMT+5m 12s
 }
 ```
 
-
-
 ## Creating a role
 
 |||
@@ -1222,7 +1203,7 @@ Date:Fri,15 May 2020 14:32:09 GMT+5m 12s
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/AccountService/Roles` |
 |**Description** |This operation creates a role other than Redfish predefined roles. <br>**NOTE:** Only a user with `ConfigureUsers` privilege can perform this operation.|
-|**Returns** |JSON schema representing the newly created role|
+|**Returns** |JSON schema representing the new role|
 |**Response code** |`201 Created` |
 |**Authentication** |Yes|
 
@@ -1261,13 +1242,13 @@ curl -i POST \
 }
 ```
 
-**Request parameters**
+> **Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Id|String \(required, read-only\)<br> |Name for this role. <br>**NOTE:** Id cannot be modified later.|
-|AssignedPrivileges|Array \(string \(enum\)\) \(required\)<br> |The Redfish privileges this role includes. Possible values are:<br>  `ConfigureManager` <br>   `ConfigureSelf` <br>   `ConfigureUsers` <br>   `Login` <br>   `ConfigureComponents` <br>|
-|OemPrivileges|Array \(string\) \(required\)<br> |The OEM privileges this role includes. If you do not want to specify any OEM privileges, use `null` or `[]` as value.|
+|RoleId|String \(required, read-only\)<br> |Name for this role. <br>**NOTE:** Id cannot be modified later.|
+|AssignedPrivileges|Array \(string \(enum\)\) \(required\)<br> |The Redfish privileges for this role. Possible values are:<br>  `ConfigureManager` <br>   `ConfigureSelf` <br>   `ConfigureUsers` <br>   `Login` <br>   `ConfigureComponents` <br>|
+|OemPrivileges|Array \(string\) \(required\)<br> |The OEM privileges for this role. If you do not want to specify any OEM privileges, use `null` or `[]` as the value.|
 
 
 >**Sample response body**
@@ -1291,7 +1272,7 @@ curl -i POST \
 }
 ```
 
-## Listing roles
+## Viewing a list of roles
 
 |||
 |---------|---------------|
@@ -1386,8 +1367,8 @@ curl -i GET \
 |---------|---------------|
 |**Method** | `PATCH` |
 |**URI** |`/redfish/v1/AccountService/Roles/{RoleId}` |
-|**Description** |This operation updates privileges of a specific user role - assigned privileges \(Redfish predefined\) and OEM privileges. The id of a role cannot be modified.<br>**NOTE:** Only a user with `ConfigureUsers` privilege can perform this operation.|
-|**Returns** |JSON schema representing the updated role|
+|**Description** |This operation updates privileges of a specific user role - assigned privileges \(Redfish predefined\) and OEM privileges. The id of a role cannot be updated.<br>**NOTE:** Only a user with `ConfigureUsers` privilege can perform this operation.|
+|**Returns** |JSON schema representing the updated role and privileges|
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
 
@@ -1462,19 +1443,15 @@ Resource Aggregator for ODIM allows users to have accounts to configure their ac
 
 Resource Aggregator for ODIM has an administrator user account by default. Create other user accounts by defining a username, a password, and a role for each account. The username and the password are used to authenticate with the Redfish services \(using `BasicAuth` or `XAuthToken`\).
 
-Resource Aggregator for ODIM exposes Redfish `AccountsService` APIs to create and manage user accounts. Use these endpoints to perform the following operations:
-
--   Create, modify, and delete account details
-
--   Fetch account details
+Resource Aggregator for ODIM exposes Redfish `AccountsService` APIs to view, create and manage user accounts. 
 
 
 **Supported APIs**:
 
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
-|/redfish/v1/AccountService/Accounts|POST, GET|`Login`, `ConfigureUsers` |
-|/redfish/v1/AccountService/Accounts/\{accountId\}|GET, DELETE, PATCH|`Login`, `ConfigureUsers`, `ConfigureSelf` |
+|/redfish/v1/AccountService/Accounts|`POST`, `GET`|`Login`, `ConfigureUsers` |
+|/redfish/v1/AccountService/Accounts/\{accountId\}|`GET`, `DELETE`, `PATCH`|`Login`, `ConfigureUsers`, `ConfigureSelf` |
 
 ## Creating a user account
 
@@ -1482,8 +1459,8 @@ Resource Aggregator for ODIM exposes Redfish `AccountsService` APIs to create an
 |-------|--------------------|
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/AccountService/Accounts` |
-|**Description** |This operation creates a user account. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can create other user account.|
-|**Returns** |<ul><li>`Location` header that contains a link to the newly created account.</li><li>JSON schema representing the newly created account.</li></ul> |
+|**Description** |This operation creates a user account. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can create other user accounts.|
+|**Returns** |<ul><li>`Location` header that contains a link to the new account</li><li>JSON schema representing the new account</li></ul> |
 |**Response Code** |`201 Created` |
 |**Authentication** |Yes|
 
@@ -1499,8 +1476,6 @@ curl -i POST \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts'
 ```
 
-
-
 >**Sample request body**
 
 ```
@@ -1511,12 +1486,12 @@ curl -i POST \
 }
 ```
 
-**Request parameters**
+> **Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
 |Username|String \(required\)<br> |User name for the user account.|
-|Password|String \(required\)<br> |Password for the user account. Before creating a password, see the *Password Requirements* section.|
+|Password|String \(required\)<br> |Password for the user account. Before creating a password, see the *[Password Requirements](#password-requirements)* section.|
 |RoleId|String \(required\)<br> |Role for this account. To know more about roles, see *[User roles and privileges](#role-based-authorization)*. Ensure the `roleId` you want to assign to this user account exists. To check the existing roles, see *[Listing Roles](#listing-roles)*. If you attempt to assign an unavailable role, an HTTP `400 Bad Request` error is displayed.|
 
 ### Password requirements
@@ -1562,7 +1537,7 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 }
 ```
 
-##  Listing user accounts
+##  Viewing a list of user accounts
 
 |||
 |---------|---------------|
@@ -1583,18 +1558,14 @@ curl -i GET \
 
 ```
 
-
-
-
-
-##  Viewing the account details
+##  Viewing information about an account
 
 |||
 |---------|---------------|
 |**Method** | `GET` |
 |**URI** |`/redfish/v1/AccountService/Accounts/{accountId}` |
 |**Description** |This operation fetches information about a specific user account. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can view information about a user account.|
-|**Returns** |JSON schema representing this user account.|
+|**Returns** |JSON schema representing the user account.|
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -1631,16 +1602,14 @@ curl -i GET \
 }
 ```
 
-
-
 ## Updating a user account
 
 |||
 |---------|---------------|
 |**Method** | `PATCH` |
 |**URI** |`/redfish/v1/AccountService/Accounts/{accountId}` |
-|**Description** |This operation updates user account details \(`username`, `password`, and `RoleId`\). To modify account details, add them in the request payload \(as shown in the sample request body\) and perform `PATCH` on the mentioned URI. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can modify other user accounts. Users with `ConfigureSelf` privilege can modify only their own accounts.|
-|**Returns** |<ul><li>`Location` header that contains a link to the updated account.</li><li>JSON schema representing the modified account.</li></ul>|
+|**Description** |This operation updates user account details \(`username`, `password`, and `RoleId`\). **NOTE:** Only a user with `ConfigureUsers` privilege can modify other user accounts. Users with `ConfigureSelf` privilege can modify only their own accounts.|
+|**Returns** |<ul><li>`Location` header that contains a link to the updated account</li><li>JSON schema representing the modified account</li></ul>|
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -1720,10 +1689,7 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 curl  -i -X DELETE \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts/{accountId}'
-
 ```
-
-
 
 
 
@@ -1739,8 +1705,6 @@ The resource aggregator allows you to add southbound infrastructure to its datab
 -   Changing the boot path of one or more resources to default settings.
 
 -   Removing a resource from the inventory which is no longer managed.
-
-
 
 All aggregation actions are performed as [tasks](#tasks) in Resource Aggregator for ODIM. The actions performed on a group of resources \(resetting or changing the boot order to default settings\) are carried out as a set of subtasks.
 
@@ -3462,6 +3426,9 @@ To discover crucial configuration information about a resource, including chassi
 |/redfish/v1/Managers/\{managerId\}/NetworkProtocol|GET|`Login` |
 
 ##  Collection of computer systems
+
+Each computer system has a `ComputerSystemId`, a unique identifier of a system specified by Resource Aggregator for ODIM. It is represented as `<UUID.n>` in Resource Aggregator for ODIM. `<UUID.n>` is the universally unique identifier o f a system. 
+**Example**: *ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1*.
 
 |||
 |---------|-------|
@@ -11174,7 +11141,7 @@ curl -i GET \
 
 
 
-# Redfish Telemetry Service
+# Redfish Telemetry
 
 Telemetry refers to the metrics obtained from remote systems for analysis and monitoring. 
 The Redfish Telemetry model is designed to obtain characteristics of metrics, send specific metric reports periodically and specify triggers against metrics.
@@ -11793,7 +11760,7 @@ Resource Aggregator for ODIM offers `LicenseService` APIs to view the BMC server
 | /redfish/v1/LicenseService/Licenses/            | GET                  | `Login`             |
 | /redfish/v1/LicenseService/Licenses/{LicenseID} | GET                  | `Login`             |
 
-## Viewing the license service root
+## Viewing the LicenseService root
 
 |                    |                                                              |
 | ------------------ | ------------------------------------------------------------ |
@@ -11873,7 +11840,7 @@ curl -i GET \
 
 
 
-## Viewing single license
+## Viewing information about a license
 
 |                                 |                                                              |
 | ------------------------------- | ------------------------------------------------------------ |
@@ -11917,7 +11884,7 @@ curl -i GET \
 
 Audit logs provide information on each API and is stored in the `api.log` file in `odimra` logs.  Each log consists of a priority value, date and time of the log, hostname from which the APIs are sent, user account and role details, API request method and resource, response body, response code, and the message.
 
-**Samples**
+**Sample logs**
 
 - <110> 2009-11-10T23:00:00Z 17.5.7.8 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
 
@@ -11927,11 +11894,13 @@ Audit logs provide information on each API and is stored in the `api.log` file i
 
   <blockquote> Note: <110> and <107> are priority values. <110> is the audit information log and <107> is the audit error log. </blockquote>
 
+
+
 # Security logs
 
 Security logs provide information on the successful and failed user authentication and authorization attempts. The logs are stored in `api.log` and `account_session.log` file in `odimra` logs. Each log consists of a priority value, date and time of the log, user account and role details, and the message.
 
-**Samples**
+**Sample logs**
 
 - <86> 2022-01-28T04:44:09Z [account@1 user="admin" roleID="Administrator"] Authentication/Authorization successful for session token 388281e8-4a45-45e5-862b-6b1ccfd6e6a3
 

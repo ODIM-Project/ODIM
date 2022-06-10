@@ -917,9 +917,9 @@ This privilege is required to view any resource or a collection of resources exp
 
 |Roles|Assigned privileges|
 |-----|-------------------|
-|Administrator \(Redfish predefined\)| `Login` <br>`ConfigureManager` <br>`ConfigureUsers` <br>`ConfigureComponents` <br>`ConfigureSelf` <br> |
+|Administrator (Redfish predefined)| `Login` <br>`ConfigureManager` <br>`ConfigureUsers` <br>`ConfigureComponents` <br>`ConfigureSelf` <br> |
 |Operator (Redfish predefined)| `Login` <br>`ConfigureComponents` <br>`ConfigureSelf` <br> |
-|ReadOnly \(Redfish predefined\)| `Login` <br>`ConfigureSelf` <br> |
+|ReadOnly (Redfish predefined)| `Login` <br>`ConfigureSelf` <br> |
 
 
 >**NOTE:** Resource Aggregator for ODIM has a default user account that has all the privileges of an administrator role.

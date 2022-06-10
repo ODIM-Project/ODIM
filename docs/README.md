@@ -1071,6 +1071,26 @@ curl -i GET \
 
 ```
 
+>**Sample response body**
+
+```
+{
+   "@odata.type":"#SessionCollection.SessionCollection",
+   "@odata.id":"/redfish/v1/SessionService/Sessions",
+   "@odata.context":"/redfish/v1/$metadata#SessionCollection.SessionCollection",
+   "Name":"Session Service",
+   "Members@odata.count":3,
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/SessionService/Sessions/947d9c57-1e0e-4816-9830-c4a2f97d8991",
+         "@odata.id":"/redfish/v1/SessionService/Sessions/547d4c57-1e0c-2816-3830-c4a2f97d1981",
+         "@odata.id":"/redfish/v1/SessionService/Sessions/747c3c57-1w2e-4656-9550-c4a2f97d8938"
+         
+      }
+   ]
+}
+```
+
 ## Viewing information about a session
 
 |||

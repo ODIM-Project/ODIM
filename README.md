@@ -1092,7 +1092,7 @@ It is recommended to have a regular backup of the updated deployment configurati
           	   "Oem":{
           	
           	   },
-          	   "RedfishVersion":"1.11.1",
+          	   "RedfishVersion":"1.15.1",
           	   "UUID":"0554d6ff-a7e7-4c94-80bd-da19125f95e5"
           	}
     ```

@@ -842,18 +842,18 @@ It is recommended to have a regular backup of the updated deployment configurati
    nodePasswordFilePath: <Absolute path of the file containing encrypted node password>
    nodes:
      knode1:
-       ip: 17.5.7.8
-       ipv6: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+       ip: <IPv4_address of knode1>
+       ipv6: <IPv6_address of knode1>
        username: user
        priority: 100
      knode2:
-       ip: 17.5.7.9
-       ipv6: 2001:0db8:85a3:0000:0000:8a2e:0371:7335
+       ip: <IPv4 address of knode2>
+       ipv6: <IPv6 address of knode2>
        username: user
        priority: 99
      knode3:
-       ip: 17.5.7.10
-       ipv6: 2001:0db8:85a3:0000:0000:8a2e:0371:7336
+       ip: <IPv4_address of knode3>
+       ipv6: <IPv6_address of knode3>
        username: user
        priority: 98
    nwPreference: ipv4
@@ -913,8 +913,8 @@ It is recommended to have a regular backup of the updated deployment configurati
      
      nginxLogPath: /var/log/nginx
      virtualRouterID: 100
-     virtualIP: 17.5.7.11
-     virtualIPv6:2001:0db8:85a3:0000:0000:8a2e:0373:7337
+     virtualIP: <virtual IPv4 address>
+     virtualIPv6:<virtual IPv6 address>
      
      rootCACert:
      odimraServerCert:
@@ -1390,10 +1390,9 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
      dellPluginRootServiceUUID: 7a38b735-8b9f-48a0-b3e7-e5a180567d37
      username: admin
      password: sTfTyTZFvNj5zU5Tt0TfyDYU-ye3_ZqTMnMIj-LAeXaa8vCnBqq8Ga7zV6ZdfqQCdSAzmaO5AJxccD99UHLVlQ==
-     lbHost: 17.5.7.8
+     lbHost: xxx.xxx.xxx.xxx
      lbPort: 30084
      logPath: /var/log/dellplugin_logs
-    
     ```
     
 5. Update the following parameters in the plugin configuration file: 
@@ -1544,7 +1543,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
      lenovoPluginRootServiceUUID: 7a38b735-8b9f-48a0-b3e7-e5a180567d37
      username: admin
      password: sTfTyTZFvNj5zU5Tt0TfyDYU-ye3_ZqTMnMIj-LAeXaa8vCnBqq8Ga7zV6ZdfqQCdSAzmaO5AJxccD99UHLVlQ==
-     lbHost: 17.5.7.9
+     lbHost: xxx.xxx.xxx.xxx
      lbPort: 30089
      logPath: /var/log/lenovoplugin_logs
    ```
@@ -2408,7 +2407,7 @@ You can also refer the following links for exploring Wiki page and slack channel
     ```
     export http_proxy=<your_HTTP_proxy_address>
     export https_proxy=<your_HTTP_proxy_address>
-    no_proxy="127.0.0.1,localhost,localhost.localdomain,17.5.7.9/12,<Deployment_Node_IP_address>,\
+    no_proxy="127.0.0.1,localhost,localhost.localdomain,xxx.xxx.xxx.9/12,<Deployment_Node_IP_address>,\
     <Comma-separated-list-of-Ip-addresses-of-all-cluster-nodes>"
     ```
 
@@ -2420,7 +2419,7 @@ You can also refer the following links for exploring Wiki page and slack channel
     ```
    export http_proxy=<your_HTTP_proxy_address>
    export https_proxy=<your_HTTP_proxy_address>
-   no_proxy="127.0.0.1,localhost,localhost.localdomain,17.5.7.10/12,<Deployment_Node_IP_address>,<Cluster_Node1_IP>,\
+   no_proxy="127.0.0.1,localhost,localhost.localdomain,xxx.xxx.xxx.10/12,<Deployment_Node_IP_address>,<Cluster_Node1_IP>,\
    <Cluster_Node1_IP>,<Cluster_Node2_IP>,<Cluster_Node3_IP>"
     ```
 

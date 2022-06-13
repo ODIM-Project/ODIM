@@ -18,7 +18,8 @@ keepalived_pkgs:
 nginx_pkgs:
 # - check for the latest version of nginx in cache using
 # `sudo apt-cache madison nginx`
-  - nginx=1.18.0-0ubuntu1.3
+  - nginx=1.22.0-1~focal
+  
 
 # Below packages should not altered/updated by user
 # unless otherwise asked/suggested to do so

@@ -573,7 +573,7 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |LicenseService||
 |-------|--------------------|
 |/redfish/v1/LicenseService|`GET`|
-|/redfish/v1/LicenseService/Licenses/|`GET`|
+|/redfish/v1/LicenseService/Licenses/|`GET`,`POST`|
 |/redfish/v1/LicenseService/Licenses/{LicenseId}|`GET`|
 
 |Fabrics||
@@ -11879,21 +11879,15 @@ curl -i -X PATCH \
 
 # License Service
 
-Resource Aggregator for ODIM offers `LicenseService` APIs to view the BMC server licenses.
+Resource Aggregator for ODIM offers `LicenseService` APIs to view and install licenses on multiple BMC servers.
 
 **Supported APIs**
 
-| API URI                                         | Operation Applicable | Required privileges |
-| ----------------------------------------------- | -------------------- | ------------------- |
-| /redfish/v1/LicenseService                      | GET                  | `Login`             |
-| /redfish/v1/LicenseService/Licenses/            | GET                  | `Login`             |
-| /redfish/v1/LicenseService/Licenses/{LicenseID} | GET                  | `Login`             |
-
-
->**NOTE:**
->To access Redfish message registries, ensure that you have a minimum privilege of `Login`. If you do not have the necessary privileges, you will receive an HTTP `403 Forbidden` error.
-
-
+| API URI                                         | Supported operations | Required privileges         |
+| ----------------------------------------------- | -------------------- | --------------------------- |
+| /redfish/v1/LicenseService                      | `GET`                | `Login`                     |
+| /redfish/v1/LicenseService/Licenses/            | `GET`, `POST`        | `Login`, `ConfigureManager` |
+| /redfish/v1/LicenseService/Licenses/{LicenseID} | `GET`                | `Login`                     |
 
 ## Viewing the license service root
 
@@ -11912,7 +11906,6 @@ Resource Aggregator for ODIM offers `LicenseService` APIs to view the BMC server
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/LicenseService'
-
 ```
 
 
@@ -11932,8 +11925,6 @@ curl -i GET \
    "ServiceEnabled":true
 }
 ```
-
-
 
 ## Viewing the license collection
 
@@ -12012,6 +12003,61 @@ curl -i GET \
    "ExpirationDate":"24Nov2022"
 }
 ```
+
+
+
+## Installing a license
+
+|                    |                                                      |
+| ------------------ | ---------------------------------------------------- |
+| **Method**         | `POST`                                               |
+| **URI**            | `/redfish/v1/LicenseService/Licenses`                |
+| **Description**    | This endpoint installs a license on the BMC servers. |
+| **Returns**        | No content                                           |
+| **Response Code**  | `204 No Content`                                     |
+| **Authentication** | Yes                                                  |
+
+>**curl command**
+
+```
+curl -i -X POST \
+  -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+  -H "Content-Type:application/json" \
+  -d \
+'{
+  "LicenseString": "xxxxx-xxxxx-xxxxx-xxxxx-xxxxx",
+  "Links": {
+  "AuthorizedDevices": [{
+"@odata.id": "/redfish/v1/Systems/78869dd2-d2e2-4a49-854f-d495f873f199.1"
+     }
+  ]
+ }
+}
+' \
+'https://{odim_host}:{port}/redfish/v1/LicenseService/Licenses'
+
+```
+
+
+>**Sample request body**
+
+```
+{
+  "LicenseString": "xxxxx-xxxxx-xxxxx-xxxxx-xxxxx",
+  "Links": {
+  "AuthorizedDevices": [{
+  "@odata.id": "/redfish/v1/Systems/78869dd2-d2e2-4a49-854f-d495f873f199.1"
+   }
+  ]
+ }
+}
+```
+
+**Request parameter**
+
+| Parameter     | Type   | Description                              |
+| ------------- | ------ | ---------------------------------------- |
+| LicenseString | string | The base64-encoded string of the license |
 
 
 

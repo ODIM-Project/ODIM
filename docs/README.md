@@ -708,7 +708,7 @@ Date":Fri,15 May 2020 13:55:53 GMT+5m 11s
    "Oem":{
 
    },
-   "RedfishVersion": "1.14.0",
+   "RedfishVersion": "1.15.1",
    "UUID": "a64fc187-e0e9-4f68-82a8-67a616b84b1d"
 }
 ```
@@ -8205,7 +8205,7 @@ curl -i GET \
    ],
    "Members@odata.count":1,
    "Name":"Fabric Collection",
-   "RedfishVersion":"1.14.0",
+   "RedfishVersion":"1.15.1",
    "@odata.type":"#FabricCollection.FabricCollection"
 }
 ```
@@ -8534,7 +8534,7 @@ curl -i GET \
 	],
 	"Members@odata.count": 12,
 	"Name": "AddressPool Collection",
-	"RedfishVersion": "1.14.0",
+	"RedfishVersion": "1.15.1",
 	"@odata.type": "#AddressPoolCollection.AddressPoolCollection"
 }
 	

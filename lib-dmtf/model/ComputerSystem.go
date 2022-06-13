@@ -87,6 +87,13 @@ type ComputerSystem struct {
 	USBControllers          *Link               `json:"USBControllers,omitempty"`
 	VirtualMedia            *Link               `json:"VirtualMedia,omitempty"`
 	VirtualMediaConfig      *VirtualMediaConfig `json:"VirtualMediaConfig,omitempty"`
+	LastBootTimeSeconds     int                 `json:"LastBootTimeSeconds,omitempty"`
+	ManufacturingMode       bool                `json:"ManufacturingMode,omitempty"`
+	Composition             *Composition        `json:"Composition,omitempty"`
+}
+
+type Composition struct {
+	UseCases string `json:"UseCases,omitempty"`
 }
 
 // VirtualMediaConfig redfish structure
@@ -385,6 +392,7 @@ type Memory struct {
 	Measurements                            []*Link                 `json:"Measurements,omitempty"`
 	Model                                   string                  `json:"Model,omitempty"`
 	SparePartNumber                         string                  `json:"SparePartNumber,omitempty"`
+	Batteries                               []*Link                 `json:"Batteries,omitempty"`
 }
 
 // OperatingSpeedRangeMHz redfish structure
@@ -599,61 +607,62 @@ URIs:
 
 */
 type Processors struct {
-	Oid                     string                  `json:"@odata.id"`
-	Ocontext                string                  `json:"@odata.context,omitempty"`
-	Oetag                   string                  `json:"@odata.etag,omitempty"`
-	Otype                   string                  `json:"@odata.type"`
-	Description             string                  `json:"description,omitempty"`
-	ID                      string                  `json:"Id"`
-	Name                    string                  `json:"Name"`
-	Oem                     Oem                     `json:"Oem,omitempty"`
-	AccelerationFunctions   AccelerationFunctions   `json:"AccelerationFunctions,omitempty"`
-	Assembly                Assembly                `json:"Assembly,omitempty"`
-	FPGA                    FPGA                    `json:"FPGA,omitempty"`
-	InstructionSet          string                  `json:"InstructionSet,omitempty"` //enum
-	Links                   Links                   `json:"Links,omitempty"`
-	Location                Location                `json:"Location,omitempty"`
-	Manufacturer            string                  `json:"Manufacturer,omitempty"`
-	MaxSpeedMHz             int                     `json:"MaxSpeedMHz,omitempty"`
-	MaxTDPWatts             int                     `json:"MaxTDPWatts,omitempty"`
-	Metrics                 Metrics                 `json:"Metrics,omitempty"`
-	Model                   string                  `json:"Model,omitempty"`
-	ProcessorArchitecture   string                  `json:"ProcessorArchitecture,omitempty"` //enum
-	ProcessorID             ProcessorID             `json:"ProcessorId,omitempty"`
-	ProcessorMemory         []ProcessorMemory       `json:"ProcessorMemory,omitempty"`
-	ProcessorType           string                  `json:"ProcessorType,omitempty"` //enum
-	Socket                  string                  `json:"Socket,omitempty"`
-	Status                  Status                  `json:"Status,omitempty"`
-	SubProcessors           SubProcessors           `json:"SubProcessors,omitempty"`
-	TDPWatts                int                     `json:"TDPWatts,omitempty"`
-	TotalCores              int                     `json:"TotalCores,omitempty"`
-	TotalEnabledCores       int                     `json:"TotalEnabledCores,omitempty"`
-	TotalThreads            int                     `json:"TotalThreads,omitempty"`
-	UUID                    string                  `json:"UUID,omitempty"`
-	OperatingSpeedRangeMHz  *OperatingSpeedRangeMHz `json:"OperatingSpeedRangeMHz,omitempty"`
-	Ports                   *Link                   `json:"Ports,omitempty"`
-	Actions                 *OemActions             `json:"Actions,omitempty"`
-	BaseSpeedMHz            int                     `json:"BaseSpeedMHz,omitempty"`
-	BaseSpeedPriorityState  string                  `json:"BaseSpeedPriorityState,omitempty"`
-	Certificates            Certificates            `json:"Certificates,omitempty"`
-	Enabled                 bool                    `json:"Enabled,omitempty"`
-	EnvironmentMetrics      *Link                   `json:"EnvironmentMetrics,omitempty"`
-	FirmwareVersion         string                  `json:"FirmwareVersion,omitempty"`
-	HighSpeedCoreIDs        []int                   `json:"HighSpeedCoreIDs,omitempty"`
-	LocationIndicatorActive bool                    `json:"LocationIndicatorActive,omitempty"`
-	Measurements            []*Link                 `json:"Measurements,omitempty"`
-	MemorySummary           *MemorySummaryDetails   `json:"MemorySummary,omitempty"`
-	MinSpeedMHz             int                     `json:"MinSpeedMHz,omitempty"`
-	OperatingConfigs        *Link                   `json:"OperatingConfigs,omitempty"`
-	OperatingSpeedMHz       int                     `json:"OperatingSpeedMHz,omitempty"`
-	PartNumber              string                  `json:"PartNumber,omitempty"`
-	SerialNumber            string                  `json:"SerialNumber,omitempty"`
-	SparePartNumber         string                  `json:"SparePartNumber,omitempty"`
-	SpeedLimitMHz           int                     `json:"SpeedLimitMHz,omitempty"`
-	SpeedLocked             bool                    `json:"SpeedLocked,omitempty"`
-	SystemInterface         SystemInterface         `json:"SystemInterface,omitempty"`
-	TurboState              string                  `json:"TurboState,omitempty"`
-	Version                 string                  `json:"Version,omitempty"`
+	Oid                        string                      `json:"@odata.id"`
+	Ocontext                   string                      `json:"@odata.context,omitempty"`
+	Oetag                      string                      `json:"@odata.etag,omitempty"`
+	Otype                      string                      `json:"@odata.type"`
+	Description                string                      `json:"description,omitempty"`
+	ID                         string                      `json:"Id"`
+	Name                       string                      `json:"Name"`
+	Oem                        Oem                         `json:"Oem,omitempty"`
+	AccelerationFunctions      AccelerationFunctions       `json:"AccelerationFunctions,omitempty"`
+	Assembly                   Assembly                    `json:"Assembly,omitempty"`
+	FPGA                       FPGA                        `json:"FPGA,omitempty"`
+	InstructionSet             string                      `json:"InstructionSet,omitempty"` //enum
+	Links                      Links                       `json:"Links,omitempty"`
+	Location                   Location                    `json:"Location,omitempty"`
+	Manufacturer               string                      `json:"Manufacturer,omitempty"`
+	MaxSpeedMHz                int                         `json:"MaxSpeedMHz,omitempty"`
+	MaxTDPWatts                int                         `json:"MaxTDPWatts,omitempty"`
+	Metrics                    Metrics                     `json:"Metrics,omitempty"`
+	Model                      string                      `json:"Model,omitempty"`
+	ProcessorArchitecture      string                      `json:"ProcessorArchitecture,omitempty"` //enum
+	ProcessorID                ProcessorID                 `json:"ProcessorId,omitempty"`
+	ProcessorMemory            []ProcessorMemory           `json:"ProcessorMemory,omitempty"`
+	ProcessorType              string                      `json:"ProcessorType,omitempty"` //enum
+	Socket                     string                      `json:"Socket,omitempty"`
+	Status                     Status                      `json:"Status,omitempty"`
+	SubProcessors              SubProcessors               `json:"SubProcessors,omitempty"`
+	TDPWatts                   int                         `json:"TDPWatts,omitempty"`
+	TotalCores                 int                         `json:"TotalCores,omitempty"`
+	TotalEnabledCores          int                         `json:"TotalEnabledCores,omitempty"`
+	TotalThreads               int                         `json:"TotalThreads,omitempty"`
+	UUID                       string                      `json:"UUID,omitempty"`
+	OperatingSpeedRangeMHz     *OperatingSpeedRangeMHz     `json:"OperatingSpeedRangeMHz,omitempty"`
+	Ports                      *Link                       `json:"Ports,omitempty"`
+	Actions                    *OemActions                 `json:"Actions,omitempty"`
+	BaseSpeedMHz               int                         `json:"BaseSpeedMHz,omitempty"`
+	BaseSpeedPriorityState     string                      `json:"BaseSpeedPriorityState,omitempty"`
+	Certificates               Certificates                `json:"Certificates,omitempty"`
+	Enabled                    bool                        `json:"Enabled,omitempty"`
+	EnvironmentMetrics         *Link                       `json:"EnvironmentMetrics,omitempty"`
+	FirmwareVersion            string                      `json:"FirmwareVersion,omitempty"`
+	HighSpeedCoreIDs           []int                       `json:"HighSpeedCoreIDs,omitempty"`
+	LocationIndicatorActive    bool                        `json:"LocationIndicatorActive,omitempty"`
+	Measurements               []*Link                     `json:"Measurements,omitempty"`
+	MemorySummary              *MemorySummaryDetails       `json:"MemorySummary,omitempty"`
+	MinSpeedMHz                int                         `json:"MinSpeedMHz,omitempty"`
+	OperatingConfigs           *Link                       `json:"OperatingConfigs,omitempty"`
+	OperatingSpeedMHz          int                         `json:"OperatingSpeedMHz,omitempty"`
+	PartNumber                 string                      `json:"PartNumber,omitempty"`
+	SerialNumber               string                      `json:"SerialNumber,omitempty"`
+	SparePartNumber            string                      `json:"SparePartNumber,omitempty"`
+	SpeedLimitMHz              int                         `json:"SpeedLimitMHz,omitempty"`
+	SpeedLocked                bool                        `json:"SpeedLocked,omitempty"`
+	SystemInterface            SystemInterface             `json:"SystemInterface,omitempty"`
+	TurboState                 string                      `json:"TurboState,omitempty"`
+	Version                    string                      `json:"Version,omitempty"`
+	AdditionalFirmwareVersions *AdditionalFirmwareVersions `json:"AdditionalFirmwareVersions,omitempty"`
 }
 
 // SystemInterface redfish structure

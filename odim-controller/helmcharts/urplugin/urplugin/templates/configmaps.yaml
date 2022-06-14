@@ -20,6 +20,7 @@ data:
     PKICertificatePath: /etc/urplugin_certs/odimra_server.crt
     RSAPrivateKeyPath: /etc/urplugin_certs/odimra_rsa.private
     RSAPublicKeyPath: /etc/urplugin_certs/odimra_rsa.public
+    RedisOnDiskPasswordFilePath: /etc/urplugin_certs/redis_ondisk_password
     {{ if eq .Values.odimra.haDeploymentEnabled false }}
     RedisAddress: redis-ondisk:6379
     {{ else }}

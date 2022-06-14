@@ -225,7 +225,8 @@ Resource Aggregator for ODIM framework comprises the following two components.
     - Plugin for unmanaged racks (URP)—Plugin that acts as a resource manager for unmanaged racks
     - Integration of additional third-party plugins—Dell, Lenovo and Cisco ACI plugins
 
-This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.14.0](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.14.0.pdf) and are Redfish-compliant.
+
+This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.15.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.15.1.pdf) and are Redfish-compliant.
 
 The Redfish® standard is a suite of specifications that deliver an industry standard protocol providing a RESTful interface for the simple and secure management of servers, storage, networking, multivendor, converged and hybrid IT infrastructure. Redfish uses JSON and OData.
 
@@ -238,7 +239,7 @@ Resource Aggregator for ODIM framework adopts a layered architecture and has man
 
 **API layer**
 
-This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The northbound clients communicate with this layer through a REST-based protocol that is compliant with DMTF's Redfish® specifications (Schema 2021.2 and Specification 1.14.0).
+This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The northbound clients communicate with this layer through a REST-based protocol that is compliant with DMTF's Redfish® specifications (Schema 2022.1 and Specification 1.15.1).
 The API layer sends user requests to the plugins through the aggregation, the event, and the fabric services.
 
 **Services layer**
@@ -266,7 +267,12 @@ To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS
 
 > **Tip**: Initially, it is good to use a tool such as curl or any Desktop REST Client application to test the RESTful API requests. Later, you can write simple REST clients using modern scripting languages to perform the requests.
 
-This guide contains sample request and response payloads. For information on response payload parameters, see [Redfish® Scalable Platforms API (Redfish) schema 2021.2](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2021.2.pdf).
+This guide contains sample request and response payloads. For information on response payload parameters, see [Redfish® Scalable Platforms API (Redfish) schema 2022.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2022.1.pdf).
+
+<blockquote>
+Tip: It is good to use a tool, such as curl or any Desktop REST Client application initially to perform requests. Later,
+you will want to write your own scripting code to perform requests.
+</blockquote>
 
 > **IMPORTANT:** The response codes, JSON request and response parameters provided in this guide might vary for systems depending on the vendor, model, and firmware versions.
 
@@ -577,7 +583,7 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |LicenseService||
 |-------|--------------------|
 |/redfish/v1/LicenseService|`GET`|
-|/redfish/v1/LicenseService/Licenses/|`GET`|
+|/redfish/v1/LicenseService/Licenses/|`GET`,`POST`|
 |/redfish/v1/LicenseService/Licenses/{LicenseId}|`GET`|
 
 |Fabrics||
@@ -708,7 +714,7 @@ Date":Fri,15 May 2022 13:55:53 GMT+5m 11s
    "Oem":{
 
    },
-   "RedfishVersion": "1.14.0",
+   "RedfishVersion": "1.15.1",
    "UUID": "a64fc187-e0e9-4f68-82a8-67a616b84b1d"
 }
 ```
@@ -1010,8 +1016,8 @@ curl -i POST \
 
 ```
 {
-"UserName": "abc",
-"Password": "abc123"
+"UserName": "{username}",
+"Password": "{password}"
 }
 ```
 
@@ -1067,7 +1073,6 @@ Date:Fri,15 May 2020 14:08:55 GMT+5m 11s
 curl -i GET \
                -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
               'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions'
-
 ```
 
 >**Sample response body**
@@ -1245,8 +1250,6 @@ curl -i POST \
    "OemPrivileges":null 
 }' \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles'
-
-
 ```
 
 >**Sample request body**
@@ -1501,9 +1504,9 @@ curl -i POST \
 
 ```
 { 
-   "Username":"monitor32",
-   "Password":"Abc1vent2020!",
-   "RoleId":"CLIENT11"
+   "Username":"{username}",
+   "Password":"{password}",
+   "RoleId":"{roleId}"
 }
 ```
 
@@ -1575,8 +1578,6 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts'
-
-
 ```
 
 ##  Viewing information about an account
@@ -1643,7 +1644,7 @@ curl -i -X PATCH \
    -d \
 '{ 
    "Password":{new_password}",
-   "RoleId":"CLIENT11"
+   "RoleId":"{roleId}"
 }
 ' \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts/{accountId}'
@@ -1655,8 +1656,8 @@ curl -i -X PATCH \
 
 ```
 { 
-   "Password":"Testing)9-_?{}",
-   "RoleId":"CLIENT11"
+   "Password":"{new_password}",
+   "RoleId":"{roleId}"
 }
 ```
 
@@ -1681,7 +1682,7 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
    "MessageId":"Base.1.11.0.AccountModified",
    "Severity":"OK",
    "UserName":"monitor32",
-   "RoleId":"CLIENT11",
+   "RoleId":"{roleId}",
    "AccountTypes":[
       "Redfish"
    ],
@@ -2232,7 +2233,7 @@ curl -i -X POST \
 
 ```
 {
-   "HostName":"17.5.7.8",
+   "HostName":"{IPv4_address}",
    "UserName":"admin",
    "Password":"{BMC_password}",
    "Links":{
@@ -2247,7 +2248,7 @@ curl -i -X POST \
 
 ```
 {
-   "HostName":"fc00:1024:2400::154",
+   "HostName":"{IPv6_address}",
    "UserName":"admin",
    "Password":"{BMC_password}",
    "Links":{
@@ -2311,7 +2312,7 @@ location:/redfish/v1/AggregationService/AggregationSources/0102a4b5-03db-40be-ad
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"26562c7b-060b-4fd8-977e-94b1a535f3fb",
    "Name":"Aggregation Source",
-   "HostName":"17.5.7.8",
+   "HostName":"{IPv4_address}",
    "UserName":"admin",
     "Links":{
       "ConnectionMethod": {
@@ -2330,7 +2331,7 @@ location:/redfish/v1/AggregationService/AggregationSources/0102a4b5-03db-40be-ad
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"26562c7b-060b-4fd8-977e-94b1a535f3fb",
    "Name":"Aggregation Source",
-   "HostName":"fc00:1024:2400::154",
+   "HostName":"{IPv6_address}",
    "UserName":"admin",
     "Links":{
       "ConnectionMethod": {
@@ -2411,7 +2412,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c",
    "Name":"Aggregation Source",
-   "HostName":"10.24.0.4",
+   "HostName":"{IPv4_address}",
    "UserName":"admin",
    "Links":{
       "ConnectionMethod": {
@@ -2441,9 +2442,11 @@ curl -i PATCH \
    -d \
 '{
 
-  "HostName": "10.24.0.6",
-  "UserName": "admin",
-  "Password": "admin1234"
+
+  "HostName": "{IPv4_address}",
+  "UserName": "{username}",
+  "Password": "{password}"
+
 
 }' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources/{AggregationSourceId}'
@@ -2454,9 +2457,9 @@ curl -i PATCH \
 
 ```
 {
-  "HostName": "10.24.0.4",
-  "UserName": "admin",
-  "Password": "admin1234"
+  "HostName": "{IPv4_address}",
+  "UserName": "{username}",
+  "Password": "{password}"
 }
 ```
 
@@ -2469,8 +2472,9 @@ curl -i PATCH \
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c.1",
    "Name":"Aggregation Source",
-   "HostName":"10.24.0.4",
-   "UserName":"admin",
+
+   "HostName":"{IPv4_address}",
+   "UserName":"{username}",
    "Links":{
       "ConnectionMethod": {
          "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/a172e66c-b4a8-437c-981b-1c07ddfeacab"
@@ -7088,8 +7092,8 @@ curl -i POST \
  -H "X-Auth-Token:{X-Auth-Token}" \
  -d \
 '{
-  "UserName":"User1",
-  "Password":"Pwd@12345",
+  "UserName":"{username}",
+  "Password":"{password}",
   "RoleId":"Administrator"
 }' \
 'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts
@@ -7099,8 +7103,8 @@ curl -i POST \
 
 ```
 {
-  "UserName":"User1",
-  "Password":"Pwd@12345",
+  "UserName":"{username}",
+  "Password":"{password}",
   "RoleId":"Administrator"
 }
 ```
@@ -7116,8 +7120,8 @@ curl -i POST \
    "Id":"13",
    "Name":"User Account",
    "Description":"iLO User Account",
-   "UserName":"User1",
-   "RoleId":"Administrator",
+   "UserName":"{username}",
+   "RoleId":"{roleId}",
    "Links":{
       "Role":{
          "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Roles/Administrator"
@@ -7145,8 +7149,8 @@ curl -i PATCH \
  -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  -d \
 '{
-  "Password":"Pwd@12345",
-  "RoleId":"Administrator"
+  "Password":"{password}",
+  "RoleId":"{roleId}"
 }' \
 'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts/{AccountID}
 ```
@@ -7156,8 +7160,8 @@ curl -i PATCH \
 
 ```
 {
-"RoleId":"Operator",
-"Password": "Pwd@12345"
+"RoleId":"{roleId}",
+"Password": "{password}"
 }
 ```
 
@@ -7172,8 +7176,8 @@ curl -i PATCH \
    "Id":"16",
    "Name":"User Account",
    "Description":"BMC User Account",
-   "UserName":"admin",
-   "RoleId":"Administrator",
+   "UserName":"{username}",
+   "RoleId":"{roleId}",
    "Links":{
       "Role":{
          "@odata.id":"/redfish/v1/Managers/{ManagerID}/RemoteAccountService/Roles/Administrator"
@@ -7295,7 +7299,7 @@ curl -i GET \
       "ConfigureComponents"
    ],
    "IsPredefined":true,
-   "RoleId":"Administrator"
+   "RoleId":"{roleId}"
 }
 ```
 
@@ -7589,11 +7593,11 @@ curl -i POST \
    -d \
 '{
 "ImageURI": "<URI_of_the_firmware_image>",
-"Password": "<password>",
+"Password": "{password}",
 "Targets": ["/redfish/v1/Systems/{ComputerSystemId}"],
 "@Redfish.OperationApplyTime": "OnStartUpdateRequest"
 "TransferProtocol": "",
-"Username": "<username>"
+"Username": "{username}"
 }' \
  'https://{odim_host}:{port}/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate'
 
@@ -7837,7 +7841,7 @@ curl -i GET \
    ],
    "Members@odata.count":1,
    "Name":"Fabric Collection",
-   "RedfishVersion":"1.14.0",
+   "RedfishVersion":"1.15.1",
    "@odata.type":"#FabricCollection.FabricCollection"
 }
 ```
@@ -8146,7 +8150,7 @@ curl -i GET \
 	],
 	"Members@odata.count": 12,
 	"Name": "AddressPool Collection",
-	"RedfishVersion": "1.14.0",
+	"RedfishVersion": "1.15.1",
 	"@odata.type": "#AddressPoolCollection.AddressPoolCollection"
 }
 	
@@ -8192,13 +8196,13 @@ curl -i GET \
       "EbgpAsNumberUpperAddress":65100
    },
    "IPv4":{ 
-      "IPv4FabricLinkLowerAddress":"17.5.7.8",
-      "IPv4FabricLinkUpperAddress":"17.5.7.18",
+      "IPv4FabricLinkLowerAddress":"xxx.xxx.xxx.8",
+      "IPv4FabricLinkUpperAddress":"xxx.xxx.xxx.18",
       "IPv4GatewayAddress":"",
       "IPv4HostLowerAddress":"",
       "IPv4HostUpperAddress":"",
-      "IPv4LoopbackLowerAddress":"17.5.7.28",
-      "IPv4LoopbackUpperAddress":"17.5.7.38",
+      "IPv4LoopbackLowerAddress":"xxx.xxx.xxx.28",
+      "IPv4LoopbackUpperAddress":"xxx.xxx.xxx.38",
       "NativeVlan":0,
       "VlanIdentifierLowerAddress":0,
       "VlanIdentifierUpperAddress":0
@@ -8468,10 +8472,10 @@ curl -i POST \
    },
    "BgpEvpn":{
       "GatewayIPAddressList":[
-         "17.5.7.8/24",
-         "17.5.7.9/24"  
+         "xxx.xxx.xxx.8/24",
+         "xxx.xxx.xxx.9/24"  
       ],
-      "AnycastGatewayIPAddress":"17.5.7.10"
+      "AnycastGatewayIPAddress":"xxx.xxx.xxx.10"
    }
 }
 '
@@ -8493,10 +8497,10 @@ curl -i POST \
    },
    "BgpEvpn":{
       "GatewayIPAddressList":[
-         "17.5.7.8/24",
-         "17.5.7.9/24" 
+         "xxx.xxx.xxx.8/24",
+         "xxx.xxx.xxx.9/24" 
       ],
-      "AnycastGatewayIPAddress":"17.5.7.10"
+      "AnycastGatewayIPAddress":"xxx.xxx.xxx.10"
    }
 }
 ```
@@ -8531,11 +8535,11 @@ Date:Thu, 14 May 2020 16:18:54 GMT
   "@odata.id": "/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf",
   "@odata.type": "#AddressPool.v1_2_0.AddressPool",
   "BgpEvpn": {
-    "AnycastGatewayIPAddress": "17.5.7.10",
+    "AnycastGatewayIPAddress": "xxx.xxx.xxx.10",
     "AnycastGatewayMACAddress": "",
     "GatewayIPAddressList": [
-      "17.5.7.8/24",
-      "17.5.7.9/24" 
+      "xxx.xxx.xxx.8/24",
+      "xxx.xxx.xxx.9/24" 
     ],
     "RouteDistinguisherList": "",
     "RouteTargetList": [
@@ -8608,12 +8612,12 @@ curl -i POST \
         "Upper": 3002
     },
     "IbgpAddressRange": {
-              "Lower": "17.5.7.8",
-              "Upper": "17.5.7.14"
+              "Lower": "xxx.xxx.xxx.8",
+              "Upper": "xxx.xxx.xxx.14"
     },
     "EbgpAddressRange": {
-              "Lower": "17.5.7.15",
-              "Upper": "17.5.7.20"
+              "Lower": "xxx.xxx.xxx.15",
+              "Upper": "xxx.xxx.xxx.20"
     }
   },
   "Ebgp": {
@@ -8625,7 +8629,7 @@ curl -i POST \
   "BgpEvpn": {
     "RouteDistinguisherList": ["65002:102"],  
     "RouteTargetList": ["65002:102", "65002:102"],
-    "GatewayIPAddressList": ["17.5.7.21/31", "17.5.7.22/31"]
+    "GatewayIPAddressList": ["xxx.xxx.xxx.21/31", "xxx.xxx.xxx.22/31"]
   }
 }'
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'
@@ -8643,12 +8647,12 @@ curl -i POST \
         "Upper": 3002
     },
     "IbgpAddressRange": {
-              "Lower": "17.5.7.8",
-              "Upper": "17.5.7.14"
+              "Lower": "xxx.xxx.xxx.8",
+              "Upper": "xxx.xxx.xxx.14"
     },
     "EbgpAddressRange": {
-             "Lower": "17.5.7.15",
-             "Upper": "17.5.7.20"
+             "Lower": "xxx.xxx.xxx.15",
+             "Upper": "xxx.xxx.xxx.20"
     }
   },
   "Ebgp": {
@@ -8660,7 +8664,7 @@ curl -i POST \
   "BgpEvpn": {
     "RouteDistinguisherList": ["65002:102"],  
     "RouteTargetList": ["65002:102", "65002:102"],
-    "GatewayIPAddressList": ["17.5.7.21/31", "17.5.7.22/31"]
+    "GatewayIPAddressList": ["xxx.xxx.xxx.21/31", "xxx.xxx.xxx.22/31"]
   }
 }
 
@@ -8710,8 +8714,8 @@ Date:Thu, 14 May 2020 16:18:58 GMT
       "AnycastGatewayIPAddress":"",
       "AnycastGatewayMACAddress":"",
       "GatewayIPAddressList":[
-         "17.5.7.8/31",
-         "17.5.7.9/31"
+         "xxx.xxx.xxx.8/31",
+         "xxx.xxx.xxx.9/31"
       ],
       "RouteDistinguisherList":[
          "65002:102"
@@ -8730,16 +8734,16 @@ Date:Thu, 14 May 2020 16:18:58 GMT
    },
    "IPv4":{
       "EbgpAddressRange":{
-         "Lower": "17.5.7.15",
-         "Upper": "17.5.7.20"
+         "Lower": "xxx.xxx.xxx.15",
+         "Upper": "xxx.xxx.xxx.20"
       },
       "FabricLinkAddressRange":{
          "Lower":"",
          "Upper":""
       },
       "IbgpAddressRange":{
-         "Lower": "17.5.7.8",
-         "Upper": "17.5.7.14"
+         "Lower": "xxx.xxx.xxx.8",
+         "Upper": "xxx.xxx.xxx.14"
       },
       "LoopbackAddressRange":{
          "Lower":"",
@@ -11380,17 +11384,17 @@ curl -i -X PATCH \
 
 # License Service
 
-Resource Aggregator for ODIM offers `LicenseService` APIs to view the BMC server licenses.
+Resource Aggregator for ODIM offers `LicenseService` APIs to view and install licenses on multiple BMC servers.
 
 **Supported APIs**
 
-| API URI                                         | Supported operations | Required privileges |
-| ----------------------------------------------- | -------------------- | ------------------- |
-| /redfish/v1/LicenseService                      | `GET`                | `Login`             |
-| /redfish/v1/LicenseService/Licenses/            | `GET`                | `Login`             |
-| /redfish/v1/LicenseService/Licenses/{LicenseID} | `GET`                | `Login`             |
+| API URI                                         | Supported operations | Required privileges         |
+| ----------------------------------------------- | -------------------- | --------------------------- |
+| /redfish/v1/LicenseService                      | `GET`                | `Login`                     |
+| /redfish/v1/LicenseService/Licenses/            | `GET`, `POST`        | `Login`, `ConfigureManager` |
+| /redfish/v1/LicenseService/Licenses/{LicenseID} | `GET`                | `Login`                     |
 
-## Viewing the LicenseService root
+## Viewing the license service root
 
 |                    |                                                              |
 | ------------------ | ------------------------------------------------------------ |
@@ -11407,7 +11411,6 @@ Resource Aggregator for ODIM offers `LicenseService` APIs to view the BMC server
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/LicenseService'
-
 ```
 
 
@@ -11506,17 +11509,72 @@ curl -i GET \
 
 
 
+## Installing a license
+
+|                    |                                                      |
+| ------------------ | ---------------------------------------------------- |
+| **Method**         | `POST`                                               |
+| **URI**            | `/redfish/v1/LicenseService/Licenses`                |
+| **Description**    | This endpoint installs a license on the BMC servers. |
+| **Returns**        | No content                                           |
+| **Response Code**  | `204 No Content`                                     |
+| **Authentication** | Yes                                                  |
+
+>**curl command**
+
+```
+curl -i -X POST \
+  -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+  -H "Content-Type:application/json" \
+  -d \
+'{
+  "LicenseString": "xxxxx-xxxxx-xxxxx-xxxxx-xxxxx",
+  "Links": {
+  "AuthorizedDevices": [{
+"@odata.id": "/redfish/v1/Systems/78869dd2-d2e2-4a49-854f-d495f873f199.1"
+     }
+  ]
+ }
+}
+' \
+'https://{odim_host}:{port}/redfish/v1/LicenseService/Licenses'
+
+```
+
+
+>**Sample request body**
+
+```
+{
+  "LicenseString": "xxxxx-xxxxx-xxxxx-xxxxx-xxxxx",
+  "Links": {
+  "AuthorizedDevices": [{
+  "@odata.id": "/redfish/v1/Systems/78869dd2-d2e2-4a49-854f-d495f873f199.1"
+   }
+  ]
+ }
+}
+```
+
+**Request parameter**
+
+| Parameter     | Type   | Description                              |
+| ------------- | ------ | ---------------------------------------- |
+| LicenseString | string | The base64-encoded string of the license |
+
+
+
 # Audit logs
 
 Audit logs provide information on each API and is stored in the `api.log` file in `odimra` logs.  Each log consists of a priority value, date and time of the log, hostname from which the APIs are sent, user account and role details, API request method and resource, response body, response code, and the message.
 
 **Sample logs**
 
-- <110> 2009-11-10T23:00:00Z 17.5.7.8 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
+- <110> 2009-11-10T23:00:00Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
 
-- <110> 2022-01-17T13:57:48Z 17.5.7.9 [account@1 user="admin" roleID="Administrator"][request@1 method="POST" resource="/redfish/v1/AggregationService/AggregationSources" requestBody="{"HostName":"17.5.7.15","Links":{"ConnectionMethod":{"@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/337ea3cb-3acc-49e2-b33f-3f5ce2a5ada4"}},"Password":"null","UserName":"admin"}"][response@1 responseCode=202] Operation successful
+- <110> 2022-01-17T13:57:48Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="POST" resource="/redfish/v1/AggregationService/AggregationSources" requestBody="{"HostName":"xxx.xxx.xxx.xxx","Links":{"ConnectionMethod":{"@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/337ea3cb-3acc-49e2-b33f-3f5ce2a5ada4"}},"Password":"null","UserName":"admin"}"][response@1 responseCode=202] Operation successful
 
-- <107> 2009-11-10T23:00:00Z 17.5.7.9 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
+- <107> 2009-11-10T23:00:00Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
 
   <blockquote> Note: <110> and <107> are priority values. <110> is the audit information log and <107> is the audit error log. </blockquote>
 

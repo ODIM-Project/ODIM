@@ -1021,8 +1021,8 @@ curl -i POST \
 
 ```
 {
-"UserName": "abc",
-"Password": "abc123"
+"UserName": "{username}",
+"Password": "{password}"
 }
 ```
 
@@ -1080,7 +1080,6 @@ Date:Fri,15 May 2020 14:08:55 GMT+5m 11s
 curl -i GET \
                -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
               'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions'
-
 ```
 
 
@@ -1246,8 +1245,6 @@ curl -i POST \
    "OemPrivileges":null 
 }' \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles'
-
-
 ```
 
 >**Sample request body**
@@ -1511,9 +1508,9 @@ curl -i POST \
 
 ```
 { 
-   "Username":"monitor32",
-   "Password":"Abc1vent2020!",
-   "RoleId":"CLIENT11"
+   "Username":"{username}",
+   "Password":"{password}",
+   "RoleId":"{roleId}"
 }
 ```
 
@@ -1585,8 +1582,6 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts'
-
-
 ```
 
 
@@ -1659,7 +1654,7 @@ curl -i -X PATCH \
    -d \
 '{ 
    "Password":{new_password}",
-   "RoleId":"CLIENT11"
+   "RoleId":"{roleId}"
 }
 ' \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts/{accountId}'
@@ -1671,8 +1666,8 @@ curl -i -X PATCH \
 
 ```
 { 
-   "Password":"Testing)9-_?{}",
-   "RoleId":"CLIENT11"
+   "Password":"{new_password}",
+   "RoleId":"{roleId}"
 }
 ```
 
@@ -1697,7 +1692,7 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
    "MessageId":"Base.1.11.0.AccountModified",
    "Severity":"OK",
    "UserName":"monitor32",
-   "RoleId":"CLIENT11",
+   "RoleId":"{roleId}",
    "AccountTypes":[
       "Redfish"
    ],
@@ -2491,8 +2486,8 @@ curl -i PATCH \
 '{
 
   "HostName": "10.24.0.6",
-  "UserName": "admin",
-  "Password": "admin1234"
+  "UserName": "{username}",
+  "Password": "{password}"
 
 }' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources/{AggregationSourceId}'
@@ -2506,8 +2501,8 @@ curl -i PATCH \
 {
 
   "HostName": "10.24.0.4",
-  "UserName": "admin",
-  "Password": "admin1234"
+  "UserName": "{username}",
+  "Password": "{password}"
 
 }
 ```
@@ -2522,7 +2517,7 @@ curl -i PATCH \
    "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c.1",
    "Name":"Aggregation Source",
    "HostName":"10.24.0.4",
-   "UserName":"admin",
+   "UserName":"{username}",
    "Links":{
       "ConnectionMethod": {
          "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/a172e66c-b4a8-437c-981b-1c07ddfeacab"
@@ -2530,10 +2525,6 @@ curl -i PATCH \
    } 
 }
 ```
-
-
-
-
 
 
 
@@ -7416,8 +7407,8 @@ curl -i POST \
  -H "X-Auth-Token:{X-Auth-Token}" \
  -d \
 '{
-  "UserName":"User1",
-  "Password":"Pwd@12345",
+  "UserName":"{username}",
+  "Password":"{password}",
   "RoleId":"Administrator"
 }' \
 'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts
@@ -7427,8 +7418,8 @@ curl -i POST \
 
 ```
 {
-  "UserName":"User1",
-  "Password":"Pwd@12345",
+  "UserName":"{username}",
+  "Password":"{password}",
   "RoleId":"Administrator"
 }
 ```
@@ -7444,8 +7435,8 @@ curl -i POST \
    "Id":"13",
    "Name":"User Account",
    "Description":"iLO User Account",
-   "UserName":"User1",
-   "RoleId":"Administrator",
+   "UserName":"{username}",
+   "RoleId":"{roleId}",
    "Links":{
       "Role":{
          "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Roles/Administrator"
@@ -7475,8 +7466,8 @@ curl -i PATCH \
  -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  -d \
 '{
-  "Password":"Pwd@12345",
-  "RoleId":"Administrator"
+  "Password":"{password}",
+  "RoleId":"{roleId}"
 }' \
 'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts/{AccountID}
 ```
@@ -7486,8 +7477,8 @@ curl -i PATCH \
 
 ```
 {
-"RoleId":"Operator",
-"Password": "Pwd@12345"
+"RoleId":"{roleId}",
+"Password": "{password}"
 }
 ```
 
@@ -7502,8 +7493,8 @@ curl -i PATCH \
    "Id":"16",
    "Name":"User Account",
    "Description":"BMC User Account",
-   "UserName":"admin",
-   "RoleId":"Administrator",
+   "UserName":"{username}",
+   "RoleId":"{roleId}",
    "Links":{
       "Role":{
          "@odata.id":"/redfish/v1/Managers/{ManagerID}/RemoteAccountService/Roles/Administrator"
@@ -7631,7 +7622,7 @@ curl -i GET \
       "ConfigureComponents"
    ],
    "IsPredefined":true,
-   "RoleId":"Administrator"
+   "RoleId":"{roleId}"
 }
 ```
 
@@ -7944,11 +7935,11 @@ curl -i POST \
    -d \
 '{
 "ImageURI": "<URI_of_the_firmware_image>",
-"Password": "<password>",
+"Password": "{password}",
 "Targets": ["/redfish/v1/Systems/{ComputerSystemId}"],
 "@Redfish.OperationApplyTime": "OnStartUpdateRequest"
 "TransferProtocol": "",
-"Username": "<username>"
+"Username": "{username}"
 }' \
  'https://{odim_host}:{port}/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate'
 

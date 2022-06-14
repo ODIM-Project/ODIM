@@ -201,8 +201,8 @@ The following table lists the software components and their versions that are co
 |Nginx|1.14.0-0ubuntu1.7|
 |Keepalived|1:1.3.9-1ubuntu0.20.04.2|
 |Stakater/Reloader|v0.0.76|
-|Redfish Schema|2021.2|
-|Redfish Specification|1.14.0|
+|Redfish Schema|2022.1|
+|Redfish Specification|1.15.1|
 
 
 # Predeployment procedures
@@ -1169,7 +1169,7 @@ It is recommended to have a regular backup of the updated deployment configurati
           	   "Oem":{
           	
           	   },
-          	   "RedfishVersion":"1.11.1",
+          	   "RedfishVersion":"1.15.1",
           	   "UUID":"0554d6ff-a7e7-4c94-80bd-da19125f95e5"
           	}
     ```

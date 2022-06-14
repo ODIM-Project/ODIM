@@ -19,6 +19,7 @@ package rest
 
 import (
 	stdContext "context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -540,7 +541,13 @@ func createTestApplication() (*iris.Application, *miniredis.Miniredis) {
 		panic(err)
 	}
 
-	cm := db.CreateDAO(r.Addr(), "")
+	var getTLSConfig db.TLSConfig = func(pc *config.PluginConfig) (*tls.Config, error) {
+		return nil, nil
+	}
+
+	testConfig.RedisAddress = r.Addr()
+
+	cm := db.CreateDAO(&testConfig, "", getTLSConfig)
 
 	odimraHTTPClient := redfish.NewHTTPClient(
 		redfish.BaseURL(testConfig.OdimURL),

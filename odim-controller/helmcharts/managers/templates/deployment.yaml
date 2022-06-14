@@ -59,6 +59,12 @@ spec:
             - key: odimra_rsaprivate
               path: odimra_rsa.private
               mode: 0444
+            - key: redis_inmemory_password
+              path: redis_inmemory_password
+              mode: 0444
+            - key: redis_ondisk_password
+              path: redis_ondisk_password
+              mode: 0444
             {{- if eq .Values.odimra.messageBusType "Kafka" }}
             - key: odimra_kafka_clientcrt
               path: odimra_kafka_client.crt

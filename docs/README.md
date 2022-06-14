@@ -198,6 +198,10 @@
   * [Single Trigger](#single-trigger)
   * [Updating a trigger](#updating-a-trigger)
 - [License Service](#license-service)
+  - [Viewing the LicenseService root](#viewing-the-licenseservice-root)
+  - [Viewing the license collection](#viewing-the-license-collection)
+  - [Viewing single license](#viewing-single-license)
+  - [Installing a license](#installing-a-license)
 - [Audit logs](#audit-logs)
 - [Security logs](#security-logs)
 
@@ -11883,7 +11887,7 @@ Resource Aggregator for ODIM offers `LicenseService` APIs to view and install li
 | /redfish/v1/LicenseService/Licenses/            | `GET`, `POST`        | `Login`, `ConfigureManager` |
 | /redfish/v1/LicenseService/Licenses/{LicenseID} | `GET`                | `Login`                     |
 
-## Viewing the license service root
+## Viewing the LicenseService root
 
 |                    |                                                              |
 | ------------------ | ------------------------------------------------------------ |

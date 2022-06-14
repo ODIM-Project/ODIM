@@ -21,72 +21,73 @@ import (
 
 // ComputerSystem redfish structure
 type ComputerSystem struct {
-	Ocontext                string              `json:"@odata.context,omitempty"`
-	Oid                     string              `json:"@odata.id"`
-	Otype                   string              `json:"@odata.type"`
-	Oetag                   string              `json:"@odata.etag,omitempty"`
-	ID                      string              `json:"Id"`
-	Description             string              `json:"Description,omitempty"`
-	Name                    string              `json:"Name"`
-	Actions                 *OemActions         `json:"Actions,omitempty"`
-	AssetTag                string              `json:"AssetTag,omitempty"`
-	BiosVersion             string              `json:"BiosVersion,omitempty"`
-	HostName                string              `json:"HostName,omitempty"`
-	IndicatorLED            string              `json:"IndicatorLED,omitempty"`
-	Manufacturer            string              `json:"Manufacturer,omitempty"`
-	Model                   string              `json:"Model,omitempty"`
-	PartNumber              string              `json:"PartNumber,omitempty"`
-	PowerRestorePolicy      string              `json:"PowerRestorePolicy,omitempty"`
-	PowerState              string              `json:"PowerState,omitempty"`
-	SerialNumber            string              `json:"SerialNumber,omitempty"`
-	SKU                     string              `json:"SKU,omitempty"`
-	SubModel                string              `json:"SubModel,omitempty"`
-	SystemType              string              `json:"SystemType,omitempty"`
-	UUID                    string              `json:"UUID,omitempty"`
-	HostingRoles            []string            `json:"HostingRoles,omitempty"`
-	PCIeDevices             []PCIeDevice        `json:"PCIeDevices,omitempty"`
-	PCIeFunctions           []PCIeFunction      `json:"PCIeFunctions,omitempty"`
-	Bios                    Bios                `json:"Bios,omitempty"`
-	Boot                    Boot                `json:"Boot,omitempty"`
-	EthernetInterfaces      EthernetInterfaces  `json:"EthernetInterfaces,omitempty"`
-	HostedServices          HostedServices      `json:"HostedServices,omitempty"`
-	HostWatchdogTimer       HostWatchdogTimer   `json:"HostWatchdogTimer,omitempty"`
-	Links                   Links               `json:"Links,omitempty"`
-	LogServices             LogServices         `json:"LogServices,omitempty"`
-	Memory                  Memory              `json:"Memory,omitempty"`
-	MemoryDomains           MemoryDomains       `json:"MemoryDomains,omitempty"`
-	MemorySummary           MemorySummary       `json:"MemorySummary,omitempty"`
-	NetworkInterfaces       NetworkInterfaces   `json:"NetworkInterfaces,omitempty"`
-	Processors              Processors          `json:"Processors,omitempty"`
-	ProcessorSummary        ProcessorSummary    `json:"ProcessorSummary,omitempty"`
-	Redundancy              []Redundancy        `json:"Redundancy,omitempty"`
-	SecureBoot              SecureBoot          `json:"SecureBoot,omitempty"`
-	SimpleStorage           SimpleStorage       `json:"SimpleStorage,omitempty"`
-	Status                  Status              `json:"Status,omitempty"`
-	Storage                 Storage             `json:"Storage,omitempty"`
-	TrustedModules          []TrustedModule     `json:"TrustedModules,omitempty"`
-	Oem                     Oem                 `json:"Oem,omitempty"`
-	PCIeDevicesCount        int                 `json:"PCIeDevices@odata.count,omitempty"`
-	IdlePowerSaver          *IdlePowerSaver     `json:"IdlePowerSaver,omitempty"`
-	KeyManagement           KeyManagement       `json:"KeyManagement,omitempty"`
-	BootProgress            BootProgress        `json:"BootProgress,omitempty"`
-	Certificates            Certificates        `json:"Certificates"`
-	FabricAdapters          *Link               `json:"FabricAdapters,omitempty"`
-	GraphicalConsole        *GraphicalConsole   `json:"GraphicalConsole,omitempty"`
-	GraphicsControllers     *Link               `json:"GraphicsControllers,omitempty"`
-	LastResetTime           string              `json:"LastResetTime,omitempty"`
-	LocationIndicatorActive bool                `json:"LocationIndicatorActive,omitempty"`
-	Measurements            []*Link             `json:"Measurements,omitempty"`
-	PCIeFunctionsCount      int                 `json:"PCIeFunctions@odata.count,omitempty"`
-	PowerCycleDelaySeconds  float32             `json:"PowerCycleDelaySeconds,omitempty"`
-	PowerMode               string              `json:"PowerMode,omitempty"`
-	PowerOffDelaySeconds    float32             `json:"PowerOffDelaySeconds,omitempty"`
-	PowerOnDelaySeconds     float32             `json:"PowerOnDelaySeconds,omitempty"`
-	RedundancyCount         int                 `json:"Redundancy@odata.count,omitempty"`
-	SerialConsole           SerialConsole       `json:"SerialConsole,omitempty"`
-	USBControllers          *Link               `json:"USBControllers,omitempty"`
-	VirtualMedia            *Link               `json:"VirtualMedia,omitempty"`
-	VirtualMediaConfig      *VirtualMediaConfig `json:"VirtualMediaConfig,omitempty"`
+	Ocontext                        string              `json:"@odata.context,omitempty"`
+	Oid                             string              `json:"@odata.id"`
+	Otype                           string              `json:"@odata.type"`
+	Oetag                           string              `json:"@odata.etag,omitempty"`
+	ID                              string              `json:"Id"`
+	Description                     string              `json:"Description,omitempty"`
+	Name                            string              `json:"Name"`
+	Actions                         *OemActions         `json:"Actions,omitempty"`
+	AssetTag                        string              `json:"AssetTag,omitempty"`
+	BiosVersion                     string              `json:"BiosVersion,omitempty"`
+	HostName                        string              `json:"HostName,omitempty"`
+	IndicatorLED                    string              `json:"IndicatorLED,omitempty"`
+	Manufacturer                    string              `json:"Manufacturer,omitempty"`
+	Model                           string              `json:"Model,omitempty"`
+	PartNumber                      string              `json:"PartNumber,omitempty"`
+	PowerRestorePolicy              string              `json:"PowerRestorePolicy,omitempty"`
+	PowerState                      string              `json:"PowerState,omitempty"`
+	SerialNumber                    string              `json:"SerialNumber,omitempty"`
+	SKU                             string              `json:"SKU,omitempty"`
+	SubModel                        string              `json:"SubModel,omitempty"`
+	SystemType                      string              `json:"SystemType,omitempty"`
+	UUID                            string              `json:"UUID,omitempty"`
+	HostingRoles                    []string            `json:"HostingRoles,omitempty"`
+	PCIeDevices                     []PCIeDevice        `json:"PCIeDevices,omitempty"`
+	PCIeFunctions                   []PCIeFunction      `json:"PCIeFunctions,omitempty"`
+	Bios                            Bios                `json:"Bios,omitempty"`
+	Boot                            Boot                `json:"Boot,omitempty"`
+	EthernetInterfaces              EthernetInterfaces  `json:"EthernetInterfaces,omitempty"`
+	HostedServices                  HostedServices      `json:"HostedServices,omitempty"`
+	HostWatchdogTimer               HostWatchdogTimer   `json:"HostWatchdogTimer,omitempty"`
+	Links                           Links               `json:"Links,omitempty"`
+	LogServices                     LogServices         `json:"LogServices,omitempty"`
+	Memory                          Memory              `json:"Memory,omitempty"`
+	MemoryDomains                   MemoryDomains       `json:"MemoryDomains,omitempty"`
+	MemorySummary                   MemorySummary       `json:"MemorySummary,omitempty"`
+	NetworkInterfaces               NetworkInterfaces   `json:"NetworkInterfaces,omitempty"`
+	Processors                      Processors          `json:"Processors,omitempty"`
+	ProcessorSummary                ProcessorSummary    `json:"ProcessorSummary,omitempty"`
+	Redundancy                      []Redundancy        `json:"Redundancy,omitempty"`
+	SecureBoot                      SecureBoot          `json:"SecureBoot,omitempty"`
+	SimpleStorage                   SimpleStorage       `json:"SimpleStorage,omitempty"`
+	Status                          Status              `json:"Status,omitempty"`
+	Storage                         Storage             `json:"Storage,omitempty"`
+	TrustedModules                  []TrustedModule     `json:"TrustedModules,omitempty"`
+	Oem                             Oem                 `json:"Oem,omitempty"`
+	PCIeDevicesCount                int                 `json:"PCIeDevices@odata.count,omitempty"`
+	IdlePowerSaver                  *IdlePowerSaver     `json:"IdlePowerSaver,omitempty"`
+	KeyManagement                   KeyManagement       `json:"KeyManagement,omitempty"`
+	BootProgress                    BootProgress        `json:"BootProgress,omitempty"`
+	Certificates                    Certificates        `json:"Certificates"`
+	FabricAdapters                  *Link               `json:"FabricAdapters,omitempty"`
+	GraphicalConsole                *GraphicalConsole   `json:"GraphicalConsole,omitempty"`
+	GraphicsControllers             *Link               `json:"GraphicsControllers,omitempty"`
+	LastResetTime                   string              `json:"LastResetTime,omitempty"`
+	LocationIndicatorActive         bool                `json:"LocationIndicatorActive,omitempty"`
+	Measurements                    []*Link             `json:"Measurements,omitempty"` //Deprecated in version v1.17.0
+	PCIeFunctionsCount              int                 `json:"PCIeFunctions@odata.count,omitempty"`
+	PowerCycleDelaySeconds          float32             `json:"PowerCycleDelaySeconds,omitempty"`
+	PowerMode                       string              `json:"PowerMode,omitempty"`
+	PowerOffDelaySeconds            float32             `json:"PowerOffDelaySeconds,omitempty"`
+	PowerOnDelaySeconds             float32             `json:"PowerOnDelaySeconds,omitempty"`
+	RedundancyCount                 int                 `json:"Redundancy@odata.count,omitempty"`
+	SerialConsole                   SerialConsole       `json:"SerialConsole,omitempty"`
+	USBControllers                  *Link               `json:"USBControllers,omitempty"`
+	VirtualMedia                    *Link               `json:"VirtualMedia,omitempty"`
+	VirtualMediaConfig              *VirtualMediaConfig `json:"VirtualMediaConfig,omitempty"`
+	OffloadedNetworkDeviceFunctions []*Link             `json:"OffloadedNetworkDeviceFunctions,omitempty"`
 }
 
 // VirtualMediaConfig redfish structure
@@ -382,7 +383,7 @@ type Memory struct {
 	Enabled                                 bool                    `json:"Enabled,omitempty"`
 	EnvironmentMetrics                      *Link                   `json:"EnvironmentMetrics,omitempty"`
 	LocationIndicatorActive                 bool                    `json:"LocationIndicatorActive,omitempty"`
-	Measurements                            []*Link                 `json:"Measurements,omitempty"`
+	Measurements                            []*Link                 `json:"Measurements,omitempty"` // Deprecated in version v1.14.0
 	Model                                   string                  `json:"Model,omitempty"`
 	SparePartNumber                         string                  `json:"SparePartNumber,omitempty"`
 }
@@ -547,6 +548,15 @@ type PCIeDevice struct {
 	ReadyToRemove      bool           `json:"ReadyToRemove,omitempty"`
 	SparePartNumber    string         `json:"SparePartNumber,omitempty"`
 	UUID               string         `json:"UUID,omitempty"`
+	Slot               *Slot          `json:"Slot,omitempty"`
+}
+
+// Slot Information about the slot for this PCIe device.
+type Slot struct {
+	LaneSplitting string `json:"LaneSplitting,omitempty"`
+	Lanes         int    `json:"Lanes,omitempty"`
+	PCIeType      string `json:"PCIeType,omitempty"`
+	SlotType      string `json:"SlotType,omitempty"`
 }
 
 //PCIeInterface in place object

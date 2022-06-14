@@ -71,6 +71,7 @@
    - [CI process](#ci-process)
       + [GitHub action workflow details](#GitHub-action-workflow-details)
       + [Screenshots of the checks after execution](#Screenshots-of-the-checks-after-execution)
+   - [Using protoc compiler](#using-protoc-compiler)
 
 # Introduction
 

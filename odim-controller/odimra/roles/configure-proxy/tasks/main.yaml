@@ -12,7 +12,7 @@
     force_apt_get: yes
   environment: "{{ proxy_env }}"
 
-- name: an example
+- name: Add nginx repository to apt
   shell:
     cmd: |
       sudo apt install curl gnupg2 ca-certificates lsb-release ubuntu-keyring

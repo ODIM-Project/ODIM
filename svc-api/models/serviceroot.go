@@ -56,6 +56,7 @@ type ServiceRoot struct {
 	ResourceBlocks            *Service     `json:"ResourceBlocks,omitempty"`
 	Storage                   *Service     `json:"Storage,omitempty"`
 	Vendor                    string       `json:"Vendor,omitempty"`
+	LicenseService            *Service     `json:"LicenseService,omitempty"`
 }
 
 //PFSupported struct definition

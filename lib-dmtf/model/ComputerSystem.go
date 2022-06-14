@@ -547,6 +547,19 @@ type PCIeDevice struct {
 	ReadyToRemove      bool           `json:"ReadyToRemove,omitempty"`
 	SparePartNumber    string         `json:"SparePartNumber,omitempty"`
 	UUID               string         `json:"UUID,omitempty"`
+	PCIeErrors         *PCIeErrors    `json:"PCIeErrors,omitempty"`
+}
+
+//PCIeErrors - The PCIe errors associated with this device
+type PCIeErrors struct {
+	CorrectableErrorCount int `json:"CorrectableErrorCount,omitempty"`
+	FatalErrorCount       int `json:"FatalErrorCount,omitempty"`
+	L0ToRecoveryCount     int `json:"L0ToRecoveryCount,omitempty"`
+	NAKReceivedCount      int `json:"NAKReceivedCount,omitempty"`
+	NAKSentCount          int `json:"NAKSentCount,omitempty"`
+	NonFatalErrorCount    int `json:"NonFatalErrorCount,omitempty"`
+	ReplayCount           int `json:"ReplayCount,omitempty"`
+	ReplayRolloverCount   int `json:"ReplayRolloverCount,omitempty"`
 }
 
 //PCIeInterface in place object

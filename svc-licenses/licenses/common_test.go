@@ -16,6 +16,7 @@ package licenses
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -109,7 +110,7 @@ func mockGetAllKeysFromTable(table string, dbtype persistencemgr.DbType) ([]stri
 	return []string{"/redfish/v1/LicenseService/Licenses/uuid.1.1", "/redfish/v1/LicenseService/Licenses/uuid.1.2"}, nil
 }
 
-func mockGetResource(table, key string, dbtype persistencemgr.DbType) (string, *errors.Error) {
+func mockGetResource(table, key string, dbtype persistencemgr.DbType) (interface{}, *errors.Error) {
 	if key == "/redfish/v1/LicenseService/Licenses" {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	} else if key == "/redfish/v1/LicenseService/Licenses/uuid.1.1" {
@@ -126,6 +127,31 @@ func mockGetResource(table, key string, dbtype persistencemgr.DbType) (string, *
 		"ManagedBy":[
 		{
 		"@odata.id": "/redfish/v1/Managers/uuid.1"
+		}
+		]
+		}}`), nil
+	} else if key == "/redfish/v1/AggregationService/Aggregates/uuid" {
+		resourceData := "{\"Elements\":[\"/redfish/v1/Systems/uuid.1\"]}"
+		var resource interface{}
+		json.Unmarshal([]byte(resourceData), &resource)
+		return resource, nil
+	} else if key == "/redfish/v1/AggregationService/Aggregates/uuid2" {
+		resourceData := "{\"Elements\":[\"/redfish/v1/Systems/uuid.2\"]}"
+		var resource interface{}
+		json.Unmarshal([]byte(resourceData), &resource)
+		return resource, nil
+	} else if key == "/redfish/v1/Systems/uuid.2" {
+		return string(`{"Id": "uuid.2",
+		"IndicatorLED": "Off",
+		"Links":{
+		"Chassis":[
+		{
+		"@odata.id": "/redfish/v1/Chassis/uuid.2"
+		}
+		],
+		"ManagedBy":[
+		{
+		"@odata.id": "/redfish/v1/Managers/uuid.2"
 		}
 		]
 		}}`), nil

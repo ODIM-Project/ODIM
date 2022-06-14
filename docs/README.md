@@ -223,7 +223,7 @@ Resource Aggregator for ODIM framework comprises the following two components.
     - Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks
     - Integration of additional third-party plugins: Dell, Lenovo and Cisco ACI plugins
 
-This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.14.0](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.14.0.pdf) and are fully Redfish-compliant.
+This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.15.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.15.1.pdf) and are fully Redfish-compliant.
 
 Redfish® is an open industry standard specification, API, and schema. Redfish specifies a RESTful interface and uses JSON and OData. The Redfish standards are designed to deliver simple and secure environment for managing multivendor, converged, and hybrid IT infrastructure.
 
@@ -236,8 +236,7 @@ Resource Aggregator for ODIM framework adopts a layered architecture and has man
 
 **API layer**
 
-
-This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The northbound clients communicate with this layer through a REST-based protocol that is fully compliant with DMTF's Redfish® specifications (Schema 2021.2 and Specification 1.14.0).
+This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The northbound clients communicate with this layer through a REST-based protocol that is fully compliant with DMTF's Redfish® specifications (Schema 2022.1 and Specification 1.15.1).
 The API layer sends user requests to the plugins through the aggregation, the event, and the fabric services.
 
 **Services layer**
@@ -265,7 +264,7 @@ To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS
 Tip: It is good to use a tool, such as curl or any Desktop REST Client application initially to perform requests. Later,
 you will want to write your own scripting code to perform requests.
 </blockquote>
-This guide contains sample request and response payloads. For information on response payload parameters, see [Redfish® Scalable Platforms API (Redfish) schema 2021.2](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2021.2.pdf).
+This guide contains sample request and response payloads. For information on response payload parameters, see [Redfish® Scalable Platforms API (Redfish) schema 2022.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP0268_2022.1.pdf).
 
 > **IMPORTANT:**
 The response codes and the JSON request and response parameters provided in this guide may vary for systems depending on the vendor, model, and firmware versions.
@@ -573,7 +572,7 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |LicenseService||
 |-------|--------------------|
 |/redfish/v1/LicenseService|`GET`|
-|/redfish/v1/LicenseService/Licenses/|`GET`|
+|/redfish/v1/LicenseService/Licenses/|`GET`,`POST`|
 |/redfish/v1/LicenseService/Licenses/{LicenseId}|`GET`|
 
 |Fabrics||
@@ -709,7 +708,7 @@ Date":Fri,15 May 2020 13:55:53 GMT+5m 11s
    "Oem":{
 
    },
-   "RedfishVersion": "1.14.0",
+   "RedfishVersion": "1.15.1",
    "UUID": "a64fc187-e0e9-4f68-82a8-67a616b84b1d"
 }
 ```
@@ -8197,7 +8196,7 @@ curl -i GET \
    ],
    "Members@odata.count":1,
    "Name":"Fabric Collection",
-   "RedfishVersion":"1.14.0",
+   "RedfishVersion":"1.15.1",
    "@odata.type":"#FabricCollection.FabricCollection"
 }
 ```
@@ -8526,7 +8525,7 @@ curl -i GET \
 	],
 	"Members@odata.count": 12,
 	"Name": "AddressPool Collection",
-	"RedfishVersion": "1.14.0",
+	"RedfishVersion": "1.15.1",
 	"@odata.type": "#AddressPoolCollection.AddressPoolCollection"
 }
 	
@@ -11870,21 +11869,15 @@ curl -i -X PATCH \
 
 # License Service
 
-Resource Aggregator for ODIM offers `LicenseService` APIs to view the BMC server licenses.
+Resource Aggregator for ODIM offers `LicenseService` APIs to view and install licenses on multiple BMC servers.
 
 **Supported APIs**
 
-| API URI                                         | Operation Applicable | Required privileges |
-| ----------------------------------------------- | -------------------- | ------------------- |
-| /redfish/v1/LicenseService                      | GET                  | `Login`             |
-| /redfish/v1/LicenseService/Licenses/            | GET                  | `Login`             |
-| /redfish/v1/LicenseService/Licenses/{LicenseID} | GET                  | `Login`             |
-
-
->**NOTE:**
->To access Redfish message registries, ensure that you have a minimum privilege of `Login`. If you do not have the necessary privileges, you will receive an HTTP `403 Forbidden` error.
-
-
+| API URI                                         | Supported operations | Required privileges         |
+| ----------------------------------------------- | -------------------- | --------------------------- |
+| /redfish/v1/LicenseService                      | `GET`                | `Login`                     |
+| /redfish/v1/LicenseService/Licenses/            | `GET`, `POST`        | `Login`, `ConfigureManager` |
+| /redfish/v1/LicenseService/Licenses/{LicenseID} | `GET`                | `Login`                     |
 
 ## Viewing the license service root
 
@@ -11903,7 +11896,6 @@ Resource Aggregator for ODIM offers `LicenseService` APIs to view the BMC server
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/LicenseService'
-
 ```
 
 
@@ -11923,8 +11915,6 @@ curl -i GET \
    "ServiceEnabled":true
 }
 ```
-
-
 
 ## Viewing the license collection
 
@@ -12003,6 +11993,61 @@ curl -i GET \
    "ExpirationDate":"24Nov2022"
 }
 ```
+
+
+
+## Installing a license
+
+|                    |                                                      |
+| ------------------ | ---------------------------------------------------- |
+| **Method**         | `POST`                                               |
+| **URI**            | `/redfish/v1/LicenseService/Licenses`                |
+| **Description**    | This endpoint installs a license on the BMC servers. |
+| **Returns**        | No content                                           |
+| **Response Code**  | `204 No Content`                                     |
+| **Authentication** | Yes                                                  |
+
+>**curl command**
+
+```
+curl -i -X POST \
+  -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+  -H "Content-Type:application/json" \
+  -d \
+'{
+  "LicenseString": "xxxxx-xxxxx-xxxxx-xxxxx-xxxxx",
+  "Links": {
+  "AuthorizedDevices": [{
+"@odata.id": "/redfish/v1/Systems/78869dd2-d2e2-4a49-854f-d495f873f199.1"
+     }
+  ]
+ }
+}
+' \
+'https://{odim_host}:{port}/redfish/v1/LicenseService/Licenses'
+
+```
+
+
+>**Sample request body**
+
+```
+{
+  "LicenseString": "xxxxx-xxxxx-xxxxx-xxxxx-xxxxx",
+  "Links": {
+  "AuthorizedDevices": [{
+  "@odata.id": "/redfish/v1/Systems/78869dd2-d2e2-4a49-854f-d495f873f199.1"
+   }
+  ]
+ }
+}
+```
+
+**Request parameter**
+
+| Parameter     | Type   | Description                              |
+| ------------- | ------ | ---------------------------------------- |
+| LicenseString | string | The base64-encoded string of the license |
 
 
 

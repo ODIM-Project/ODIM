@@ -26,14 +26,16 @@ import (
 // SubscriptionResponse is used to return response to end user
 type SubscriptionResponse struct {
 	response.Response
-	Destination      string       `json:"Destination,omitempty"`
-	Context          string       `json:"Context,omitempty"`
-	Protocol         string       `json:"Protocol,omitempty"`
-	EventTypes       []string     `json:"EventTypes,omitempty"`
-	SubscriptionType string       `json:"SubscriptionType,omitempty"`
-	MessageIds       []string     `json:"MessageIds,omitempty"`
-	ResourceTypes    []string     `json:"ResourceTypes,omitempty"`
-	OriginResources  []ListMember `json:"OriginResources,omitempty"`
+	Destination             string       `json:"Destination,omitempty"`
+	Context                 string       `json:"Context,omitempty"`
+	Protocol                string       `json:"Protocol,omitempty"`
+	EventTypes              []string     `json:"EventTypes,omitempty"`
+	SubscriptionType        string       `json:"SubscriptionType,omitempty"`
+	MessageIds              []string     `json:"MessageIds,omitempty"`
+	ResourceTypes           []string     `json:"ResourceTypes,omitempty"`
+	OriginResources         []ListMember `json:"OriginResources,omitempty"`
+	ExcludeMessageIds       []string     `json:"ExcludeMessageIds,omitempty"`
+	ExcludeRegistryPrefixes []string     `json:"ExcludeRegistryPrefixes,omitempty"`
 }
 
 // ListResponse define list for odimra

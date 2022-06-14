@@ -61,6 +61,7 @@ type Manager struct {
 	AdditionalFirmwareVersions *AdditionalFirmwareVersions `json:"AdditionalFirmwareVersions,omitempty"`
 }
 
+//AdditionalFirmwareVersions redfish structure
 type AdditionalFirmwareVersions struct {
 	Bootloader string `json:"Bootloader,omitempty"`
 	Kernel     string `json:"Kernel,omitempty"`

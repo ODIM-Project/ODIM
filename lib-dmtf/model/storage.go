@@ -28,7 +28,7 @@ type Storage struct {
 	Links                   *StorageLinks         `json:"Links,omitempty"`
 	Redundancy              []*Redundancy         `json:"Redundancy,omitempty"`
 	Status                  *Status               `json:"Status,omitempty"`
-	StorageControllers      []*StorageControllers `json:"StorageControllers,omitempty"`
+	StorageControllers      []*StorageControllers `json:"StorageControllers,omitempty"` //StorageControllers Deprecated in version Storage.v1.13.0
 	Volumes                 *Link                 `json:"Volumes,omitempty"`
 	ConsistencyGroups       *Link                 `json:"ConsistencyGroups,omitempty"`
 	Controllers             *Link                 `json:"Controllers,omitempty"`
@@ -74,6 +74,7 @@ type StorageControllers struct {
 	Ports                        *Link                     `json:"Ports,omitempty"`
 	Status                       *StorageStatus            `json:"Status,omitempty"`
 	Certificates                 *Certificates             `json:"Certificates,omitempty"`
+	Batteries                    []*Link                   `json:"Batteries,omitempty"`
 	Measurements                 []*Link                   `json:"Measurements,omitempty"` // Deprecated in version v1.5.0
 }
 

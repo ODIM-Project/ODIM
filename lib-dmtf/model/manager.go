@@ -16,48 +16,58 @@ package model
 
 // Manager is the redfish Manager model according to the 2020.3 release
 type Manager struct {
-	ODataContext            string            `json:"@odata.context,omitempty"`
-	ODataEtag               string            `json:"@odata.etag,omitempty"`
-	ODataID                 string            `json:"@odata.id"`
-	ODataType               string            `json:"@odata.type"`
-	Actions                 *OemActions       `json:"Actions,omitempty"`
-	Description             string            `json:"Description,omitempty"`
-	ID                      string            `json:"Id"`
-	Links                   *ManagerLinks     `json:"Links,omitempty"`
-	Name                    string            `json:"Name"`
-	Oem                     *Oem              `json:"Oem,omitempty"`
-	EthernetInterfaces      *Link             `json:"EthernetInterfaces,omitempty"`
-	FirmwareVersion         string            `json:"FirmwareVersion,omitempty"`
-	Status                  *Status           `json:"Status,omitempty"`
-	AutoDSTEnabled          bool              `json:"AutoDSTEnabled,omitempty"`
-	DateTime                string            `json:"DateTime,omitempty"`
-	DateTimeLocalOffset     string            `json:"DateTimeLocalOffset,omitempty"`
-	HostInterfaces          *Link             `json:"HostInterfaces,omitempty"`
-	LastResetTime           string            `json:"LastResetTime,omitempty"`
-	LogServices             *Link             `json:"LogServices,omitempty"`
-	ManagerType             string            `json:"ManagerType,omitempty"`
-	Manufacturer            string            `json:"Manufacturer,omitempty"`
-	Model                   string            `json:"Model,omitempty"`
-	NetworkProtocol         *Link             `json:"NetworkProtocol,omitempty"`
-	PartNumber              string            `json:"PartNumber,omitempty"`
-	PowerState              string            `json:"PowerState,omitempty"`
-	Redundancy              []Redundancy      `json:"Redundancy,omitempty"`
-	RemoteAccountService    *Link             `json:"RemoteAccountService,omitempty"`
-	RemoteRedfishServiceURI string            `json:"RemoteRedfishServiceUri,omitempty"`
-	SerialNumber            string            `json:"SerialNumber,omitempty"`
-	ServiceEntryPointUUID   string            `json:"ServiceEntryPointUUID,omitempty"`
-	SerialInterfaces        *Link             `json:"SerialInterfaces,omitempty"`
-	TimeZoneName            string            `json:"TimeZoneName,omitempty"`
-	UUID                    string            `json:"UUID,omitempty"`
-	Measurements            []*Link           `json:"Measurements,omitempty"` // Deprecated in version v1_14_0
-	Certificates            Certificates      `json:"Certificates,omitempty"`
-	CommandShell            *CommandShell     `json:"CommandShell,omitempty"`
-	GraphicalConsole        *GraphicalConsole `json:"GraphicalConsole,omitempty"`
-	Location                *Link             `json:"Location,omitempty"`
-	LocationIndicatorActive bool              `json:"LocationIndicatorActive,omitempty"`
-	RedundancyCount         int               `json:"Redundancy@odata.count,omitempty"`
-	SparePartNumber         string            `json:"SparePartNumber,omitempty"`
-	ManagerDiagnosticData   *Link             `json:"ManagerDiagnosticData,omitempty"`
+	ODataContext               string                      `json:"@odata.context,omitempty"`
+	ODataEtag                  string                      `json:"@odata.etag,omitempty"`
+	ODataID                    string                      `json:"@odata.id"`
+	ODataType                  string                      `json:"@odata.type"`
+	Actions                    *OemActions                 `json:"Actions,omitempty"`
+	Description                string                      `json:"Description,omitempty"`
+	ID                         string                      `json:"Id"`
+	Links                      *ManagerLinks               `json:"Links,omitempty"`
+	Name                       string                      `json:"Name"`
+	Oem                        *Oem                        `json:"Oem,omitempty"`
+	EthernetInterfaces         *Link                       `json:"EthernetInterfaces,omitempty"`
+	FirmwareVersion            string                      `json:"FirmwareVersion,omitempty"`
+	Status                     *Status                     `json:"Status,omitempty"`
+	AutoDSTEnabled             bool                        `json:"AutoDSTEnabled,omitempty"`
+	DateTime                   string                      `json:"DateTime,omitempty"`
+	DateTimeLocalOffset        string                      `json:"DateTimeLocalOffset,omitempty"`
+	HostInterfaces             *Link                       `json:"HostInterfaces,omitempty"`
+	LastResetTime              string                      `json:"LastResetTime,omitempty"`
+	LogServices                *Link                       `json:"LogServices,omitempty"`
+	ManagerType                string                      `json:"ManagerType,omitempty"`
+	Manufacturer               string                      `json:"Manufacturer,omitempty"`
+	Model                      string                      `json:"Model,omitempty"`
+	NetworkProtocol            *Link                       `json:"NetworkProtocol,omitempty"`
+	PartNumber                 string                      `json:"PartNumber,omitempty"`
+	PowerState                 string                      `json:"PowerState,omitempty"`
+	Redundancy                 []Redundancy                `json:"Redundancy,omitempty"`
+	RemoteAccountService       *Link                       `json:"RemoteAccountService,omitempty"`
+	RemoteRedfishServiceURI    string                      `json:"RemoteRedfishServiceUri,omitempty"`
+	SerialNumber               string                      `json:"SerialNumber,omitempty"`
+	ServiceEntryPointUUID      string                      `json:"ServiceEntryPointUUID,omitempty"`
+	SerialInterfaces           *Link                       `json:"SerialInterfaces,omitempty"`
+	TimeZoneName               string                      `json:"TimeZoneName,omitempty"`
+	UUID                       string                      `json:"UUID,omitempty"`
+	Measurements               []*Link                     `json:"Measurements,omitempty"` // Deprecated in version v1_14_0
+	Certificates               Certificates                `json:"Certificates,omitempty"`
+	CommandShell               *CommandShell               `json:"CommandShell,omitempty"`
+	GraphicalConsole           *GraphicalConsole           `json:"GraphicalConsole,omitempty"`
+	Location                   *Link                       `json:"Location,omitempty"`
+	LocationIndicatorActive    bool                        `json:"LocationIndicatorActive,omitempty"`
+	RedundancyCount            int                         `json:"Redundancy@odata.count,omitempty"`
+	SparePartNumber            string                      `json:"SparePartNumber,omitempty"`
+	ManagerDiagnosticData      *Link                       `json:"ManagerDiagnosticData,omitempty"`
+	ServiceIdentification      string                      `json:"ServiceIdentification,omitempty"`
+	AdditionalFirmwareVersions *AdditionalFirmwareVersions `json:"AdditionalFirmwareVersions,omitempty"`
+}
+
+//AdditionalFirmwareVersions redfish structure
+type AdditionalFirmwareVersions struct {
+	Bootloader string `json:"Bootloader,omitempty"`
+	Kernel     string `json:"Kernel,omitempty"`
+	Microcode  string `json:"Microcode,omitempty"`
+	Oem        Oem    `json:"Oem,omitempty"`
 }
 
 // CommandShell redfish structure

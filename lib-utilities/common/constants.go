@@ -119,7 +119,7 @@ const (
 	// ManagerAccountType has schema version to be returned with manager account
 	ManagerAccountType = "#ManagerAccount.v1_8_0.ManagerAccount"
 	// AccountServiceType has schema version to be returned with accountservice
-	AccountServiceType = "#AccountService.v1_10_0.AccountService"
+	AccountServiceType = "#AccountService.v1_11_0.AccountService"
 	// RoleType has schema version to be returned with Role
 	RoleType = "#Role.v1_3_1.Role"
 	// SessionServiceType has schema version to be returned with sessionservice
@@ -146,6 +146,8 @@ const (
 	SettingsType = "#Settings.v1_3_3.OperationApplyTimeSupport"
 	// TelemetryServiceType has version to be returned with Telemetry Service
 	TelemetryServiceType = "#TelemetryService.v1_3_1.TelemetryService"
+	//AggregationSourceType has version to be returned with AggregationSource Service
+	AggregationSourceType = "#AggregationSource.v1_2_0.AggregationSource"
 )
 
 // RediscoverResources contains to get only these resource from the device when

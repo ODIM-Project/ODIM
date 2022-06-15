@@ -174,7 +174,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AccountService_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "AccountService"},
-					models.Include{Namespace: "AccountService.v1_10_0"},
+					models.Include{Namespace: "AccountService.v1_11_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AddressPool_v1.xml",
@@ -208,7 +208,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AggregationSource_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "AggregationSource"},
-					models.Include{Namespace: "AggregationSource.v1_1_0"},
+					models.Include{Namespace: "AggregationSource.v1_2_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AggregationSourceCollection_v1.xml",

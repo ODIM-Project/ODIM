@@ -422,7 +422,7 @@ x-frame-options":"sameorigin"
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_2_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"be626e78-7a8a-4b99-afd2-b8ed45ef3d5a",
@@ -577,7 +577,7 @@ x-frame-options":"sameorigin"
 >** Sample response body \(HTTP 201 status\)**
 ```
  {
-   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_2_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/26562c7b-060b-4fd8-977e-94b1a535f3fb",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"26562c7b-060b-4fd8-977e-94b1a535f3fb",
@@ -661,7 +661,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_2_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c",
@@ -722,7 +722,7 @@ curl -i PATCH \
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_2_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c:1",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c:1",

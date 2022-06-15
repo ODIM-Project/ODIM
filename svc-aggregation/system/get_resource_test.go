@@ -103,7 +103,7 @@ func TestGetAggregationSourceCollection(t *testing.T) {
 func TestGetAggregationSource(t *testing.T) {
 
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
+		OdataType:    common.AggregationSourceType,
 		OdataID:      "/redfish/v1/AggregationService/AggregationSources/36474ba4-a201-46aa-badf-d8104da418e8",
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           "36474ba4-a201-46aa-badf-d8104da418e8",

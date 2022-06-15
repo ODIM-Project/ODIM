@@ -41,6 +41,7 @@ type Links struct {
 	Zones                    []*Link     `json:"Zones,omitempty"`
 	ZonesCount               int         `json:"Zones@odata.count,omitempty"`
 	NetworkDeviceFunctions   []*Link     `json:"NetworkDeviceFunctions,omitempty"`
+	PowerOutlets             []*Link     `json:"PowerOutlets,omitempty"`
 }
 
 // Link holds the odata id redfish links

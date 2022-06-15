@@ -54,6 +54,7 @@ type ServiceRoot struct {
 	Storage                   Storage                    `json:"Storage,omitempty"`
 	TelemetryService          *Link                      `json:"TelemetryService,omitempty"`
 	Vendor                    string                     `json:"Vendor,omitempty"`
+	LicenseService            *Link                      `json:"LicenseService,omitempty"`
 }
 
 // Product redfish structure

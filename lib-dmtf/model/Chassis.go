@@ -21,56 +21,65 @@ import (
 
 // Chassis redfish structure
 type Chassis struct {
-	Ocontext                string            `json:"@odata.context,omitempty"`
-	Oid                     string            `json:"@odata.id"`
-	Otype                   string            `json:"@odata.type"`
-	Oetag                   string            `json:"@odata.etag,omitempty"`
-	ID                      string            `json:"Id"`
-	Description             string            `json:"Description,omitempty"`
-	Name                    string            `json:"Name"`
-	AssetTag                interface{}       `json:"AssetTag"` // omitempty is not added to make value as null if it's not present
-	ChassisType             string            `json:"ChassisType"`
-	DepthMm                 float32           `json:"DepthMm,omitempty"`
-	EnvironmentalClass      string            `json:"EnvironmentalClass,omitempty"`
-	HeightMm                float32           `json:"HeightMm,omitempty"`
-	IndicatorLED            string            `json:"IndicatorLED,omitempty"`
-	Manufacturer            string            `json:"Manufacturer,omitempty"`
-	Model                   string            `json:"Model,omitempty"`
-	PartNumber              interface{}       `json:"PartNumber"` // omitempty is not added to make value as null if it's not present
-	PowerState              string            `json:"PowerState,omitempty"`
-	SerialNumber            string            `json:"SerialNumber,omitempty"`
-	SKU                     string            `json:"SKU,omitempty"`
-	UUID                    string            `json:"UUID,omitempty"`
-	WeightKg                float32           `json:"WeightKg,omitempty"`
-	WidthMm                 float32           `json:"WidthMm,omitempty"`
-	Links                   *Links            `json:"Links,omitempty"`
-	Location                *Link             `json:"Location,omitempty"`
-	LogServices             *LogServices      `json:"LogServices,omitempty"`
-	Assembly                *Assembly         `json:"Assembly,omitempty"`
-	NetworkAdapters         *NetworkAdapters  `json:"NetworkAdapters,omitempty"`
-	PCIeSlots               *PCIeSlots        `json:"PCIeSlots,omitempty"`
-	PhysicalSecurity        *PhysicalSecurity `json:"PhysicalSecurity,omitempty"`
-	Power                   *Link             `json:"Power,omitempty"`
-	Sensors                 *Sensors          `json:"Sensors,omitempty"`
-	Status                  *Status           `json:"Status,omitempty"`
-	Thermal                 *Link             `json:"Thermal,omitempty"`
-	Actions                 *OemActions       `json:"Actions,omitempty"`
-	Certificates            *Certificates     `json:"Certificates,omitempty"`
-	Controls                *Link             `json:"Controls,omitempty"`
-	Drives                  *Link             `json:"Drives,omitempty"`
-	EnvironmentMetrics      *Link             `json:"EnvironmentMetrics,omitempty"`
-	LocationIndicatorActive bool              `json:"LocationIndicatorActive,omitempty"`
-	MaxPowerWatts           float32           `json:"MaxPowerWatts,omitempty"`
-	Measurements            []*Link           `json:"Measurements,omitempty"`
-	MediaControllers        *Link             `json:"MediaControllers,omitempty"` //Deprecated in version v1.20.0
-	Memory                  *Link             `json:"Memory,omitempty"`
-	MemoryDomains           *Link             `json:"MemoryDomains,omitempty"`
-	MinPowerWatts           float32           `json:"MinPowerWatts,omitempty"`
-	Oem                     *Oem              `json:"Oem,omitempty"`
-	PCIeDevices             *Link             `json:"PCIeDevices,omitempty"`
-	PowerSubsystem          *Link             `json:"PowerSubsystem,omitempty"`
-	SparePartNumber         string            `json:"SparePartNumber,omitempty"`
-	ThermalSubsystem        *Link             `json:"ThermalSubsystem,omitempty"`
+	Ocontext                    string            `json:"@odata.context,omitempty"`
+	Oid                         string            `json:"@odata.id"`
+	Otype                       string            `json:"@odata.type"`
+	Oetag                       string            `json:"@odata.etag,omitempty"`
+	ID                          string            `json:"Id"`
+	Description                 string            `json:"Description,omitempty"`
+	Name                        string            `json:"Name"`
+	AssetTag                    interface{}       `json:"AssetTag"` // omitempty is not added to make value as null if it's not present
+	ChassisType                 string            `json:"ChassisType"`
+	DepthMm                     float32           `json:"DepthMm,omitempty"`
+	EnvironmentalClass          string            `json:"EnvironmentalClass,omitempty"`
+	HeightMm                    float32           `json:"HeightMm,omitempty"`
+	IndicatorLED                string            `json:"IndicatorLED,omitempty"`
+	Manufacturer                string            `json:"Manufacturer,omitempty"`
+	Model                       string            `json:"Model,omitempty"`
+	PartNumber                  interface{}       `json:"PartNumber"` // omitempty is not added to make value as null if it's not present
+	PowerState                  string            `json:"PowerState,omitempty"`
+	SerialNumber                string            `json:"SerialNumber,omitempty"`
+	SKU                         string            `json:"SKU,omitempty"`
+	UUID                        string            `json:"UUID,omitempty"`
+	WeightKg                    float32           `json:"WeightKg,omitempty"`
+	WidthMm                     float32           `json:"WidthMm,omitempty"`
+	Links                       *Links            `json:"Links,omitempty"`
+	Location                    *Link             `json:"Location,omitempty"`
+	LogServices                 *LogServices      `json:"LogServices,omitempty"`
+	Assembly                    *Assembly         `json:"Assembly,omitempty"`
+	NetworkAdapters             *NetworkAdapters  `json:"NetworkAdapters,omitempty"`
+	PCIeSlots                   *PCIeSlots        `json:"PCIeSlots,omitempty"`
+	PhysicalSecurity            *PhysicalSecurity `json:"PhysicalSecurity,omitempty"`
+	Power                       *Link             `json:"Power,omitempty"`
+	Sensors                     *Sensors          `json:"Sensors,omitempty"`
+	Status                      *Status           `json:"Status,omitempty"`
+	Thermal                     *Link             `json:"Thermal,omitempty"`
+	Actions                     *OemActions       `json:"Actions,omitempty"`
+	Certificates                *Certificates     `json:"Certificates,omitempty"`
+	Controls                    *Link             `json:"Controls,omitempty"`
+	Drives                      *Link             `json:"Drives,omitempty"`
+	EnvironmentMetrics          *Link             `json:"EnvironmentMetrics,omitempty"`
+	LocationIndicatorActive     bool              `json:"LocationIndicatorActive,omitempty"`
+	MaxPowerWatts               float32           `json:"MaxPowerWatts,omitempty"`
+	Measurements                []*Link           `json:"Measurements,omitempty"` // Deprecated in version v1.19.0
+	MediaControllers            *Link             `json:"MediaControllers,omitempty"`
+	Memory                      *Link             `json:"Memory,omitempty"`
+	MemoryDomains               *Link             `json:"MemoryDomains,omitempty"`
+	MinPowerWatts               float32           `json:"MinPowerWatts,omitempty"`
+	Oem                         *Oem              `json:"Oem,omitempty"`
+	PCIeDevices                 *Link             `json:"PCIeDevices,omitempty"`
+	PowerSubsystem              *Link             `json:"PowerSubsystem,omitempty"`
+	SparePartNumber             string            `json:"SparePartNumber,omitempty"`
+	ThermalSubsystem            *Link             `json:"ThermalSubsystem,omitempty"`
+	ThermalDirection            string            `json:"ThermalDirection,omitempty"`
+	ThermalManagedByParent      bool              `json:"ThermalManagedByParent.omitempty"`
+	PoweredByParent             bool              `json:"PoweredByParent,omitempty"`
+	Fans                        []*Link           `json:"Fans,omitempty"`
+	PowerSupplies               []*Link           `json:"PowerSupplies,omitempty"`
+	PowerDistribution           *Link             `json:"PowerDistribution,omitempty"`
+	FabricAdapters              *Link             `json:"FabricAdapters,omitempty"`
+	ElectricalSourceManagerURIs []string          `json:"ElectricalSourceManagerURIs,omitempty"`
+	ElectricalSourceNames       []string          `json:"ElectricalSourceNames,omitempty"`
 }
 
 // LogServices get

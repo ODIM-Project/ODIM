@@ -58,6 +58,10 @@ type ServiceRoot struct {
 	Vendor                    string       `json:"Vendor,omitempty"`
 	ServiceIdentification     string       `json:"ServiceIdentification,omitempty"`
 	MultipleHTTPRequests      bool         `json:"MultipleHTTPRequests,omitempty"`
+	ComponentIntegrity        *Service     `json:"ComponentIntegrity,omitempty"`
+	RegisteredClients         *Service     `json:"RegisteredClients,omitempty"`
+	ServiceConditions         *Service     `json:"ServiceConditions,omitempty"`
+	LicenseService            *Service     `json:"LicenseService,omitempty"`
 }
 
 //PFSupported struct definition

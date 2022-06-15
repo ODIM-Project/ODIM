@@ -56,6 +56,9 @@ type ServiceRoot struct {
 	ResourceBlocks            *Service     `json:"ResourceBlocks,omitempty"`
 	Storage                   *Service     `json:"Storage,omitempty"`
 	Vendor                    string       `json:"Vendor,omitempty"`
+	ComponentIntegrity        *Service     `json:"ComponentIntegrity,omitempty"`
+	RegisteredClients         *Service     `json:"RegisteredClients,omitempty"`
+	ServiceConditions         *Service     `json:"ServiceConditions,omitempty"`
 	LicenseService            *Service     `json:"LicenseService,omitempty"`
 }
 

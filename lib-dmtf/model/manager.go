@@ -49,7 +49,7 @@ type Manager struct {
 	SerialInterfaces        *Link             `json:"SerialInterfaces,omitempty"`
 	TimeZoneName            string            `json:"TimeZoneName,omitempty"`
 	UUID                    string            `json:"UUID,omitempty"`
-	Measurements            []*Link           `json:"Measurements,omitempty"`
+	Measurements            []*Link           `json:"Measurements,omitempty"` // Deprecated in version v1_14_0
 	Certificates            Certificates      `json:"Certificates,omitempty"`
 	CommandShell            *CommandShell     `json:"CommandShell,omitempty"`
 	GraphicalConsole        *GraphicalConsole `json:"GraphicalConsole,omitempty"`
@@ -57,6 +57,7 @@ type Manager struct {
 	LocationIndicatorActive bool              `json:"LocationIndicatorActive,omitempty"`
 	RedundancyCount         int               `json:"Redundancy@odata.count,omitempty"`
 	SparePartNumber         string            `json:"SparePartNumber,omitempty"`
+	ManagerDiagnosticData   *Link             `json:"ManagerDiagnosticData,omitempty"`
 }
 
 // CommandShell redfish structure

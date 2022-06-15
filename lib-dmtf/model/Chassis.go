@@ -61,7 +61,7 @@ type Chassis struct {
 	EnvironmentMetrics          *Link             `json:"EnvironmentMetrics,omitempty"`
 	LocationIndicatorActive     bool              `json:"LocationIndicatorActive,omitempty"`
 	MaxPowerWatts               float32           `json:"MaxPowerWatts,omitempty"`
-	Measurements                []*Link           `json:"Measurements,omitempty"`
+	Measurements                []*Link           `json:"Measurements,omitempty"` // Deprecated in version v1.19.0
 	MediaControllers            *Link             `json:"MediaControllers,omitempty"`
 	Memory                      *Link             `json:"Memory,omitempty"`
 	MemoryDomains               *Link             `json:"MemoryDomains,omitempty"`

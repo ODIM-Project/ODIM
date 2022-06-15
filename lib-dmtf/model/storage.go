@@ -74,7 +74,7 @@ type StorageControllers struct {
 	Ports                        *Link                     `json:"Ports,omitempty"`
 	Status                       *StorageStatus            `json:"Status,omitempty"`
 	Certificates                 *Certificates             `json:"Certificates,omitempty"`
-	Measurements                 []*Link                   `json:"Measurements,omitempty"`
+	Measurements                 []*Link                   `json:"Measurements,omitempty"` // Deprecated in version v1.5.0
 }
 
 //Actions redfish structure
@@ -206,7 +206,8 @@ type Drive struct {
 	FirmwareVersion               *FirmwareVersion   `json:"FirmwareVersion,omitempty"`
 	Certificates                  *Certificates      `json:"Certificates,omitempty"`
 	EnvironmentMetrics            *Link              `json:"EnvironmentMetrics,omitempty"`
-	Measurements                  []*Link            `json:"Measurements,omitempty"`
+	Measurements                  []*Link            `json:"Measurements,omitempty"` // Deprecated in version v1.14.0
+	NetworkDeviceFunctions        []*Link            `json:"NetworkDeviceFunctions,omitempty"`
 }
 
 // DriveLinks represents drive links

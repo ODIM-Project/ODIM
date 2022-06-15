@@ -17,6 +17,7 @@ package session
 
 import (
 	"net/http"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -139,8 +140,9 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 				}
 
 				respBody := asresponse.Session{
-					Response: commonResponse,
-					UserName: session.UserName,
+					Response:    commonResponse,
+					UserName:    session.UserName,
+					CreatedTime: session.CreatedTime.Format(time.RFC3339),
 				}
 
 				resp.Body = respBody

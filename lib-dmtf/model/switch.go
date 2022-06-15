@@ -53,6 +53,7 @@ type Switch struct {
 	EnvironmentMetrics      *Link        `json:"EnvironmentMetrics,omitempty"`
 	Location                *Link        `json:"Location,omitempty"`
 	Measurements            []*Link      `json:"Measurements,omitempty"` //Deprecated in version v1.8.0
+	Metrics                 *Link        `json:"Metrics,omitempty"`
 }
 
 // SwitchLinks defines the

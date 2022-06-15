@@ -125,6 +125,8 @@ type NVMeControllerProperties struct {
 	ANACharacteristics        *ANACharacteristics        `json:"ANACharacteristics,omitempty"`
 	NVMeControllerAttributes  *NVMeControllerAttributes  `json:"NVMeControllerAttributes,omitempty"`
 	NVMeSMARTCriticalWarnings *NVMeSMARTCriticalWarnings `json:"NVMeSMARTCriticalWarnings,omitempty"`
+	AllocatedSubmissionQueues int                        `json:"AllocatedSubmissionsQueues,omitempty"`
+	AllocatedCompletionQueues int                        `json:"AllocatedCompletionQueues,omitempty"`
 }
 
 // ANACharacteristics struct is to define the ANACharacteristics of the Storage

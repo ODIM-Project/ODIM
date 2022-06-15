@@ -57,6 +57,7 @@ type ServiceRoot struct {
 	ComponentIntegrity        *Link                      `json:"ComponentIntegrity,omitempty"`
 	RegisteredClients         *Link                      `json:"RegisteredClients,omitempty"`
 	ServiceConditions         *Link                      `json:"ServiceConditions,omitempty"`
+	LicenseService            *Link                      `json:"LicenseService,omitempty"`
 }
 
 // Product redfish structure

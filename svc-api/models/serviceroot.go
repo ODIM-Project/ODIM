@@ -59,6 +59,7 @@ type ServiceRoot struct {
 	ComponentIntegrity        *Service     `json:"ComponentIntegrity,omitempty"`
 	RegisteredClients         *Service     `json:"RegisteredClients,omitempty"`
 	ServiceConditions         *Service     `json:"ServiceConditions,omitempty"`
+	LicenseService            *Service     `json:"LicenseService,omitempty"`
 }
 
 //PFSupported struct definition

@@ -549,6 +549,7 @@ type PCIeDevice struct {
 	SparePartNumber    string         `json:"SparePartNumber,omitempty"`
 	UUID               string         `json:"UUID,omitempty"`
 	Slot               *Slot          `json:"Slot,omitempty"`
+	PCIeErrors         *PCIeErrors    `json:"PCIeErrors,omitempty"`
 }
 
 // Slot Information about the slot for this PCIe device.
@@ -557,6 +558,18 @@ type Slot struct {
 	Lanes         int    `json:"Lanes,omitempty"`
 	PCIeType      string `json:"PCIeType,omitempty"`
 	SlotType      string `json:"SlotType,omitempty"`
+}
+
+//PCIeErrors - The PCIe errors associated with this device
+type PCIeErrors struct {
+	CorrectableErrorCount int `json:"CorrectableErrorCount,omitempty"`
+	FatalErrorCount       int `json:"FatalErrorCount,omitempty"`
+	L0ToRecoveryCount     int `json:"L0ToRecoveryCount,omitempty"`
+	NAKReceivedCount      int `json:"NAKReceivedCount,omitempty"`
+	NAKSentCount          int `json:"NAKSentCount,omitempty"`
+	NonFatalErrorCount    int `json:"NonFatalErrorCount,omitempty"`
+	ReplayCount           int `json:"ReplayCount,omitempty"`
+	ReplayRolloverCount   int `json:"ReplayRolloverCount,omitempty"`
 }
 
 //PCIeInterface in place object

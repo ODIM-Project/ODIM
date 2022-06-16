@@ -3763,7 +3763,7 @@ The protoc compiler provides a language-neutral, platform-neutral, extensible me
       
       protos=("account" "aggregator" "auth" "chassis" "events" "fabrics" "managers" "role" "session" "systems" "task" "telemetry" "update" "compositionservice" "licenses")
       for str in ${protos[@]}; do
-      proto_path="$repoFolder/lib-utilities/proto/$str"
+      proto_path="$<your_odim_directory>/lib-utilities/proto/$str"
       proto_file_name="$str.proto"
       if [ $str == 'auth' ]
       then

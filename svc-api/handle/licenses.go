@@ -16,6 +16,7 @@
 package handle
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -27,9 +28,10 @@ import (
 
 // LicenseRPCs defines all the RPC methods in license service
 type LicenseRPCs struct {
-	GetLicenseServiceRPC    func(req licenseproto.GetLicenseServiceRequest) (*licenseproto.GetLicenseResponse, error)
-	GetLicenseCollectionRPC func(req licenseproto.GetLicenseRequest) (*licenseproto.GetLicenseResponse, error)
-	GetLicenseResourceRPC   func(req licenseproto.GetLicenseResourceRequest) (*licenseproto.GetLicenseResponse, error)
+	GetLicenseServiceRPC     func(req licenseproto.GetLicenseServiceRequest) (*licenseproto.GetLicenseResponse, error)
+	GetLicenseCollectionRPC  func(req licenseproto.GetLicenseRequest) (*licenseproto.GetLicenseResponse, error)
+	GetLicenseResourceRPC    func(req licenseproto.GetLicenseResourceRequest) (*licenseproto.GetLicenseResponse, error)
+	InstallLicenseServiceRPC func(req licenseproto.InstallLicenseRequest) (*licenseproto.GetLicenseResponse, error)
 }
 
 func (l *LicenseRPCs) GetLicenseService(ctx iris.Context) {
@@ -87,7 +89,7 @@ func (l *LicenseRPCs) GetLicenseCollection(ctx iris.Context) {
 		return
 	}
 
-	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -119,6 +121,58 @@ func (l *LicenseRPCs) GetLicenseResource(ctx iris.Context) {
 	}
 
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
+}
+
+// InstallLicenseService installs license
+func (l *LicenseRPCs) InstallLicenseService(ctx iris.Context) {
+	defer ctx.Next()
+	var reqIn interface{}
+	err := ctx.ReadJSON(&reqIn)
+	if err != nil {
+		errorMessage := "Error while trying to get JSON body from request body: " + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.JSON(&response.Body)
+		return
+	}
+	request, err := json.Marshal(reqIn)
+	if err != nil {
+		errorMessage := "while trying to create JSON request body: " + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+	req := licenseproto.InstallLicenseRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
+		RequestBody:  request,
+	}
+	if req.SessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized)
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := l.InstallLicenseServiceRPC(req)
+	if err != nil {
+		errorMessage := "error:  RPC error:" + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

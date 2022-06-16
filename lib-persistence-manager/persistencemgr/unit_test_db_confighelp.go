@@ -36,23 +36,25 @@ func MockDBConnection(t *testing.T) (*ConnPool, *errors.Error) {
 func GetMockDBConfig() (*Config, *errors.Error) {
 	//Need to discuss more on this
 	config.Data.DBConf = &config.DBConf{
-		Protocol:             config.DefaultDBProtocol,
-		OnDiskPort:           "6380",
-		OnDiskHost:           "localhost",
-		InMemoryHost:         "localhost",
-		InMemoryPort:         "6379",
-		RedisHAEnabled:       false,
-		InMemorySentinelPort: "26379",
-		OnDiskSentinelPort:   "26379",
-		InMemoryPrimarySet:   "redisSentinel",
-		OnDiskPrimarySet:     "redisSentinel",
-		MaxIdleConns:         config.DefaultDBMaxIdleConns,
-		MaxActiveConns:       config.DefaultDBMaxActiveConns,
+		Protocol:              config.DefaultDBProtocol,
+		OnDiskPort:            "6380",
+		OnDiskHost:            "localhost",
+		InMemoryHost:          "localhost",
+		InMemoryPort:          "6379",
+		RedisHAEnabled:        false,
+		InMemorySentinelPort:  "26379",
+		OnDiskSentinelPort:    "26379",
+		InMemoryPrimarySet:    "redisSentinel",
+		OnDiskPrimarySet:      "redisSentinel",
+		MaxIdleConns:          config.DefaultDBMaxIdleConns,
+		MaxActiveConns:        config.DefaultDBMaxActiveConns,
+		RedisInMemoryPassword: []byte("redis_password"),
 	}
 	config := &Config{
 		Port:     config.Data.DBConf.InMemoryPort,
 		Protocol: config.Data.DBConf.Protocol,
 		Host:     config.Data.DBConf.InMemoryHost,
+		Password: string(config.Data.DBConf.RedisInMemoryPassword),
 	}
 
 	return config, nil

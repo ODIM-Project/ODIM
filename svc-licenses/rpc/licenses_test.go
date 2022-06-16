@@ -95,7 +95,7 @@ func mockGetAllKeysFromTable(table string, dbtype persistencemgr.DbType) ([]stri
 	return []string{"/redfish/v1/LicenseService/Licenses/uuid.1.1", "/redfish/v1/LicenseService/Licenses/uuid.1.2"}, nil
 }
 
-func mockGetResource(table, key string, dbtype persistencemgr.DbType) (string, *errors.Error) {
+func mockGetResource(table, key string, dbtype persistencemgr.DbType) (interface{}, *errors.Error) {
 	if key == "/redfish/v1/LicenseService/Licenses" {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	} else if key == "/redfish/v1/LicenseService/Licenses/uuid.1.1" {
@@ -241,6 +241,45 @@ func TestUpdate_GetLicenseResource(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if _, err := tt.a.GetLicenseResource(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("License.GetLicenseResource() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestUpdate_InstallLicenseService(t *testing.T) {
+	license := new(Licenses)
+	license.connector = mockGetExternalInterface()
+	type args struct {
+		ctx context.Context
+		req *licenseproto.InstallLicenseRequest
+	}
+	tests := []struct {
+		name    string
+		a       *Licenses
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "positive InstallLicenseService",
+			a:    license,
+			args: args{
+				req: &licenseproto.InstallLicenseRequest{SessionToken: "validToken"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "auth fail",
+			a:    license,
+			args: args{
+				req: &licenseproto.InstallLicenseRequest{SessionToken: "invalidToken"},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := tt.a.InstallLicenseService(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
+				t.Errorf("License.InstallLicenseService() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

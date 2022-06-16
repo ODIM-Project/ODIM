@@ -57,3 +57,15 @@ func (l *Licenses) GetLicenseResource(ctx context.Context, req *licenseproto.Get
 	fillProtoResponse(resp, l.connector.GetLicenseResource(req))
 	return resp, nil
 }
+
+// InstallLicenseService to install license
+func (l *Licenses) InstallLicenseService(ctx context.Context, req *licenseproto.InstallLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
+	resp := &licenseproto.GetLicenseResponse{}
+	authResp := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		fillProtoResponse(resp, authResp)
+		return resp, nil
+	}
+	fillProtoResponse(resp, l.connector.InstallLicenseService(req))
+	return resp, nil
+}

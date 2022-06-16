@@ -28,7 +28,7 @@ type Storage struct {
 	Links                   *StorageLinks         `json:"Links,omitempty"`
 	Redundancy              []*Redundancy         `json:"Redundancy,omitempty"`
 	Status                  *Status               `json:"Status,omitempty"`
-	StorageControllers      []*StorageControllers `json:"StorageControllers,omitempty"`
+	StorageControllers      []*StorageControllers `json:"StorageControllers,omitempty"` //StorageControllers Deprecated in version Storage.v1.13.0
 	Volumes                 *Link                 `json:"Volumes,omitempty"`
 	ConsistencyGroups       *Link                 `json:"ConsistencyGroups,omitempty"`
 	Controllers             *Link                 `json:"Controllers,omitempty"`
@@ -74,7 +74,8 @@ type StorageControllers struct {
 	Ports                        *Link                     `json:"Ports,omitempty"`
 	Status                       *StorageStatus            `json:"Status,omitempty"`
 	Certificates                 *Certificates             `json:"Certificates,omitempty"`
-	Measurements                 []*Link                   `json:"Measurements,omitempty"`
+	Batteries                    []*Link                   `json:"Batteries,omitempty"`
+	Measurements                 []*Link                   `json:"Measurements,omitempty"` // Deprecated in version v1.5.0
 }
 
 //Actions redfish structure
@@ -125,6 +126,8 @@ type NVMeControllerProperties struct {
 	ANACharacteristics        *ANACharacteristics        `json:"ANACharacteristics,omitempty"`
 	NVMeControllerAttributes  *NVMeControllerAttributes  `json:"NVMeControllerAttributes,omitempty"`
 	NVMeSMARTCriticalWarnings *NVMeSMARTCriticalWarnings `json:"NVMeSMARTCriticalWarnings,omitempty"`
+	AllocatedSubmissionQueues int                        `json:"AllocatedSubmissionsQueues,omitempty"`
+	AllocatedCompletionQueues int                        `json:"AllocatedCompletionQueues,omitempty"`
 }
 
 // ANACharacteristics struct is to define the ANACharacteristics of the Storage
@@ -204,7 +207,8 @@ type Drive struct {
 	FirmwareVersion               *FirmwareVersion   `json:"FirmwareVersion,omitempty"`
 	Certificates                  *Certificates      `json:"Certificates,omitempty"`
 	EnvironmentMetrics            *Link              `json:"EnvironmentMetrics,omitempty"`
-	Measurements                  []*Link            `json:"Measurements,omitempty"`
+	Measurements                  []*Link            `json:"Measurements,omitempty"` // Deprecated in version v1.14.0
+	NetworkDeviceFunctions        []*Link            `json:"NetworkDeviceFunctions,omitempty"`
 }
 
 // DriveLinks represents drive links

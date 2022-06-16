@@ -347,13 +347,13 @@ Without CA certificate, curl fails to verify that HTTP connections are secure an
 
 You can use the listed Redfish-defined HTTP methods to implement various actions:
 
-| HTTP Request Method           | Description                                                  |
-| ----------------------------- | ------------------------------------------------------------ |
-| `GET` \[Read Requests\]       | Use this method to request a representation of a specified resource \(single resource or collection\). |
-| `PATCH` \[Update\]            | Use this method to apply partial modifications to a resource. |
-| `POST` \[Create\] \[Actions\] | Use this method to create a resource. Submit this request to the resource collection to which you want to add the new resource. You can also use this method to initiate operations on a resource or a collection of resources. |
-| `PUT` \[Replace\]             | Use this method to replace the property values of a resource completely. It is used to both create and update the state of a resource. |
-| `DELETE` \[Delete\]           | Use this method to delete a resource.                        |
+| HTTP Request Method         | Description                                                  |
+| --------------------------- | ------------------------------------------------------------ |
+| `GET` [Read Requests\]      | Use this method to request a representation of a specified resource \(single resource or collection\). |
+| `PATCH` [Update\]           | Use this method to apply partial modifications to a resource. |
+| `POST` [Create\] [Actions\] | Use this method to create a resource. Submit this request to the resource collection to which you want to add the new resource. You can also use this method to initiate operations on a resource or a collection of resources. |
+| `PUT` [Replace\]            | Use this method to replace the property values of a resource completely. It is used to both create and update the state of a resource. |
+| `DELETE` [Delete\]          | Use this method to delete a resource.                        |
 
 ## Responses 
 
@@ -472,80 +472,80 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |-------|--------------------|
 |/redfish/v1/SessionService|`GET`|
 |/redfish/v1/SessionService/Sessions|`POST`, `GET`|
-|redfish/v1/SessionService/Sessions/\{sessionId\}|`GET`, `DELETE`|
+|redfish/v1/SessionService/Sessions/{sessionId\}|`GET`, `DELETE`|
 
 |AccountService||
 |-------|--------------------|
 |/redfish/v1/AccountService|`GET`|
 |/redfish/v1/AccountService/Accounts|`POST`, `GET`|
-|/redfish/v1/AccountService/Accounts/\{accountId\}|`GET`, `DELETE`, `PATCH`|
+|/redfish/v1/AccountService/Accounts/{accountId\}|`GET`, `DELETE`, `PATCH`|
 |/redfish/v1/AccountService/Roles|`POST`, `GET`|
-|/redfish/v1/AccountService/Roles/\{roleId\}|`GET`, `DELETE`, `PATCH`|
+|/redfish/v1/AccountService/Roles/{roleId\}|`GET`, `DELETE`, `PATCH`|
 
 |AggregationService||
 |-------|--------------------|
 |/redfish/v1/AggregationService|`GET`|
 |/redfish/v1/AggregationService/AggregationSources<br> |`GET`, `POST`|
-|/redfish/v1/AggregationService/AggregationSources/\{aggregationSourceId\}|`GET`, `PATCH`, `DELETE`|
+|/redfish/v1/AggregationService/AggregationSources/{aggregationSourceId\}|`GET`, `PATCH`, `DELETE`|
 |/redfish/v1/AggregationService/Actions/AggregationService.Reset|`POST`|
 |/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder|`POST`|
 |/redfish/v1/AggregationService/Aggregates|`GET`, `POST`|
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}|`GET`, `DELETE`|
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Actions/Aggregate.AddElements|`POST`|
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.Reset|`POST`|
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.SetDefaultBootOrder|`POST`|
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Actions/Aggregate.RemoveElements|`POST`|
+|/redfish/v1/AggregationService/Aggregates/{aggregateId\}|`GET`, `DELETE`|
+|/redfish/v1/AggregationService/Aggregates/{aggregateId\}/Actions/Aggregate.AddElements|`POST`|
+|/redfish/v1/AggregationService/Aggregates/{aggregateId\}/Aggregate.Reset|`POST`|
+|/redfish/v1/AggregationService/Aggregates/{aggregateId\}/Aggregate.SetDefaultBootOrder|`POST`|
+|/redfish/v1/AggregationService/Aggregates/{aggregateId\}/Actions/Aggregate.RemoveElements|`POST`|
 |/redfish/v1/AggregationService/ConnectionMethods|GET|
-|/redfish/v1/AggregationService/ConnectionMethods/\{connectionmethodsId\}|GET|
+|/redfish/v1/AggregationService/ConnectionMethods/{connectionmethodsId\}|GET|
 
 |Systems||
 |-------|--------------------|
 |/redfish/v1/Systems|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}|`GET`, `PATCH`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Memory|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Memory/\{memoryId\}|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/MemoryDomains|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/NetworkInterfaces|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/EthernetInterfaces|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/EthernetInterfaces/\{Id\}|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Bios|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/SecureBoot|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId\}|`GET`, `PATCH`|
+|/redfish/v1/Systems/{ComputerSystemId\}/Memory|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId\}/Memory/{memoryId\}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId\}/MemoryDomains|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId\}/NetworkInterfaces|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId\}/EthernetInterfaces|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId\}/EthernetInterfaces/{Id\}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId\}/Bios|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId\}/SecureBoot|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Storage|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Drives/\{driveId\}|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes|`GET` , `POST`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes/\{volumeId\}|`GET`, `DELETE`|
+|/redfish/v1/Systems/{ComputerSystemId\}/Storage|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId\}/Storage/{storageSubsystemId\}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId\}/Storage/{storageSubsystemId\}/Drives/{driveId\}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId\}/Storage/{storageSubsystemId\}/Volumes|`GET` , `POST`|
+|/redfish/v1/Systems/{ComputerSystemId\}/Storage/{storageSubsystemId\}/Volumes/{volumeId\}|`GET`, `DELETE`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools/{storagepool_Id}|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Processors|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Processors/\{Id\}|`GET`|
-|/redfish/v1/Systems?filter=\{searchKeys\}%20\{conditionKeys\}%20\{value/regEx\}|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |`GET`, `PATCH`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.Reset|`POST`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.SetDefaultBootOrder|`POST`|
+|/redfish/v1/Systems/{ComputerSystemId\}/Processors|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId\}/Processors/{Id\}|`GET`|
+|/redfish/v1/Systems?filter={searchKeys\}%20{conditionKeys\}%20{value/regEx\}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId\}/Bios/Settings<br> |`GET`, `PATCH`|
+|/redfish/v1/Systems/{ComputerSystemId\}/Actions/ComputerSystem.Reset|`POST`|
+|/redfish/v1/Systems/{ComputerSystemId\}/Actions/ComputerSystem.SetDefaultBootOrder|`POST`|
 
 |Chassis||
 |-------|--------------------|
 |/redfish/v1/Chassis|`GET`, `POST`|
-|/redfish/v1/Chassis/\{chassisId\}|`GET`, `PATCH`, `DELETE`|
-|/redfish/v1/Chassis/\{chassisId\}/Thermal|`GET`|
-|/redfish/v1/Chassis/\{ChassisId\}/Power|`GET`|
-|/redfish/v1/Chassis/\{chassisId\}/NetworkAdapters|`GET`|
-|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|GET|`Login` |
+|/redfish/v1/Chassis/{chassisId\}|`GET`, `PATCH`, `DELETE`|
+|/redfish/v1/Chassis/{chassisId\}/Thermal|`GET`|
+|/redfish/v1/Chassis/{ChassisId\}/Power|`GET`|
+|/redfish/v1/Chassis/{chassisId\}/NetworkAdapters|`GET`|
+|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|GET|
 
 |Managers||
 |-------|--------------------|
 |/redfish/v1/Managers|`GET`|
-|/redfish/v1/Managers/\{managerId\}|`GET`|
-|/redfish/v1/Managers/\{managerId\}/EthernetInterfaces|`GET`|
-|/redfish/v1/Managers/\{managerId\}/HostInterfaces|`GET`|
-|/redfish/v1/Managers/\{managerId\}/LogServices|`GET`|
-|/redfish/v1/Managers/\{managerId\}/NetworkProtocol|`GET`|
+|/redfish/v1/Managers/{managerId\}|`GET`|
+|/redfish/v1/Managers/{managerId\}/EthernetInterfaces|`GET`|
+|/redfish/v1/Managers/{managerId\}/HostInterfaces|`GET`|
+|/redfish/v1/Managers/{managerId\}/LogServices|`GET`|
+|/redfish/v1/Managers/{managerId\}/NetworkProtocol|`GET`|
 |/redfish/v1/Managers/{ManagerId}/VirtualMedia|`GET`|
 |/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}| `GET`  |
 |/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.InsertMedia|`POST`|
@@ -560,9 +560,9 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |-------|--------------------|
 |/redfish/v1/UpdateService|`GET`|
 |/redfish/v1/UpdateService/FirmwareInventory|`GET`|
-|/redfish/v1/UpdateService/FirmwareInventory/\{inventoryId\}|`GET`|
+|/redfish/v1/UpdateService/FirmwareInventory/{inventoryId\}|`GET`|
 |/redfish/v1/UpdateService/SoftwareInventory|`GET`|
-|/redfish/v1/UpdateService/SoftwareInventory/\{inventoryId\}|`GET`|
+|/redfish/v1/UpdateService/SoftwareInventory/{inventoryId\}|`GET`|
 |/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate|`POST`|
 |/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate|`POST`|
 
@@ -571,7 +571,7 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/EventService|`GET`|
 |/redfish/v1/EventService/Subscriptions|`POST`, `GET`|
 |/redfish/v1/EventService/Actions/EventService.SubmitTestEvent|`POST`|
-|/redfish/v1/EventService/Subscriptions/\{subscriptionId\}|`GET`, `DELETE`|
+|/redfish/v1/EventService/Subscriptions/{subscriptionId\}|`GET`, `DELETE`|
 
 |LicenseService||
 |-------|--------------------|
@@ -582,25 +582,25 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |Fabrics||
 |-------|--------------------|
 |/redfish/v1/Fabrics|`GET`|
-|/redfish/v1/Fabrics/\{fabricId\}|`GET`|
-|/redfish/v1/Fabrics/\{fabricId\}/Switches|`GET`|
-|/redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}|`GET`|
-|/redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}/Ports<br> |`GET`|
-|/redfish/v1/Fabrics/\{fabricId\} /Switches/\{switchId\}/Ports/\{portid\}<br> |`GET`|
-|/redfish/v1/Fabrics/\{fabricId\}/Zones|`GET`, `POST`|
-|/redfish/v1/Fabrics/\{fabricId\}/Zones/\{zoneId\}|`GET`, `PATCH`, `DELETE`|
-|/redfish/v1/Fabrics/\{fabricId\}/AddressPools|`GET`, `POST`|
-|/redfish/v1/Fabrics/\{fabricId\}/AddressPools/\{addresspoolid\}|`GET`, `DELETE`|
-|/redfish/v1/Fabrics/\{fabricId\}/Endpoints|`GET`, `POST`|
-|/redfish/v1/Fabrics/\{fabricId\}/Endpoints/\{endpointid\}|`GET`, `DELETE`|
+|/redfish/v1/Fabrics/{fabricId\}|`GET`|
+|/redfish/v1/Fabrics/{fabricId\}/Switches|`GET`|
+|/redfish/v1/Fabrics/{fabricId\}/Switches/{switchId\}|`GET`|
+|/redfish/v1/Fabrics/{fabricId\}/Switches/{switchId\}/Ports<br> |`GET`|
+|/redfish/v1/Fabrics/{fabricId\} /Switches/{switchId\}/Ports/{portid\}<br> |`GET`|
+|/redfish/v1/Fabrics/{fabricId\}/Zones|`GET`, `POST`|
+|/redfish/v1/Fabrics/{fabricId\}/Zones/{zoneId\}|`GET`, `PATCH`, `DELETE`|
+|/redfish/v1/Fabrics/{fabricId\}/AddressPools|`GET`, `POST`|
+|/redfish/v1/Fabrics/{fabricId\}/AddressPools/{addresspoolid\}|`GET`, `DELETE`|
+|/redfish/v1/Fabrics/{fabricId\}/Endpoints|`GET`, `POST`|
+|/redfish/v1/Fabrics/{fabricId\}/Endpoints/{endpointid\}|`GET`, `DELETE`|
 
 |TaskService||
 |-------|--------------------|
 |/redfish/v1/TaskService|`GET`|
 |/redfish/v1/TaskService/Tasks|`GET`|
-|/redfish/v1/TaskService/Tasks/\{taskId\}|`GET`, `DELETE`|
-| /redfish/v1/TaskService/Tasks/\{taskId\}/SubTasks |`GET`|
-| /redfish/v1/TaskService/Tasks/\{taskId\}/SubTasks/ \{subTaskId\} |`GET`|
+|/redfish/v1/TaskService/Tasks/{taskId\}|`GET`, `DELETE`|
+| /redfish/v1/TaskService/Tasks/{taskId\}/SubTasks |`GET`|
+| /redfish/v1/TaskService/Tasks/{taskId\}/SubTasks/ {subTaskId\} |`GET`|
 
 | TelemetryService                                             |                |
 | ------------------------------------------------------------ | -------------- |
@@ -616,13 +616,13 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 
 |Task monitor||
 |-------|--------------------|
-|/taskmon/\{taskId\}|`GET`|
+|/taskmon/{taskId\}|`GET`|
 
 |Registries||
 |-------|--------------------|
 |/redfish/v1/Registries|`GET`|
-|/redfish/v1/Registries/\{registryId\}|`GET`|
-|/redfish/v1/registries/\{registryFileId\}|`GET`|
+|/redfish/v1/Registries/{registryId\}|`GET`|
+|/redfish/v1/registries/{registryFileId\}|`GET`|
 
 
 >**NOTE:** `ComputerSystemId` is the unique identifier of a system specified by Resource Aggregator for ODIM. It is represented as `<UUID.n>` in Resource Aggregator for ODIM. `<UUID.n>` is the
@@ -946,7 +946,7 @@ Resource Aggregator for ODIM offers Redfish `SessionService` interface for creat
 |-------|--------------------|-------------------|
 |/redfish/v1/SessionService|GET|`Login` |
 |/redfish/v1/SessionService/Sessions|POST, GET|`Login`|
-|redfish/v1/SessionService/Sessions/\{sessionId\}|GET, DELETE|`Login`, `ConfigureManager`, `ConfigureSelf` |
+|redfish/v1/SessionService/Sessions/{sessionId\}|GET, DELETE|`Login`, `ConfigureManager`, `ConfigureSelf` |
 
 >**NOTE:** Before accessing these endpoints, ensure you have the required privileges. If you access these endpoints without the required privileges, an HTTP `403 Forbidden` error is displayed.
 
@@ -1157,7 +1157,7 @@ Resource Aggregator for ODIM allows you to create and manage user roles through 
 |-------|--------------------|-------------------|
 |/redfish/v1/AccountService|GET|`Login` |
 |/redfish/v1/AccountService/Roles|GET, POST|`Login`, `ConfigureManager` |
-|/redfish/v1/AccountService/Roles/\{RoleId\}|GET, PATCH, DELETE|`Login`, `ConfigureManager` |
+|/redfish/v1/AccountService/Roles/{RoleId\}|GET, PATCH, DELETE|`Login`, `ConfigureManager` |
 
 
 >**NOTE:** Before accessing these endpoints, ensure you have the required privileges. If you access these endpoints without the required privileges, an HTTP `403 Forbidden` error is displayed.
@@ -1464,7 +1464,7 @@ curl -i -X DELETE \
 
 Resource Aggregator for ODIM allows users to have accounts to configure their actions and restrictions.
 
-Resource Aggregator for ODIM has an administrator user account by default. Create other user accounts by defining a username, a password, and a role for each account. The username and the password are used to authenticate with the Redfish services \(using `BasicAuth` or `XAuthToken`\).
+Resource Aggregator for ODIM has an administrator user account by default. Create other user accounts by defining a username, a password, and a role for each account. The username and the password are used to authenticate with the Redfish services \(using `BasicAuth` or `XAuthToken`).
 
 Resource Aggregator for ODIM exposes Redfish `AccountsService` APIs to create and manage user accounts. Use these endpoints to perform the following operations:
 
@@ -1478,7 +1478,7 @@ Resource Aggregator for ODIM exposes Redfish `AccountsService` APIs to create an
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
 |/redfish/v1/AccountService/Accounts|POST, GET|`Login`, `ConfigureUsers` |
-|/redfish/v1/AccountService/Accounts/\{accountId\}|GET, DELETE, PATCH|`Login`, `ConfigureUsers`, `ConfigureSelf` |
+|/redfish/v1/AccountService/Accounts/{accountId\}|GET, DELETE, PATCH|`Login`, `ConfigureUsers`, `ConfigureSelf` |
 
 
 >**NOTE:** Before accessing these endpoints, ensure you have the required privileges. If you access these endpoints without the required privileges, an HTTP `403 Forbidden` error is displayed.
@@ -1532,7 +1532,7 @@ curl -i POST \
 
 -   Your password must be at least 12 characters long and at most 16 characters long.
 
--   Your password must contain at least one uppercase letter \(A-Z\), one lowercase letter \(a-z\), one digit \(0-9\), and one special character \(~!@\#$%^&\*-+\_|\(\)\{\}:;<\>,.?/\).
+-   Your password must contain at least one uppercase letter \(A-Z\), one lowercase letter \(a-z\), one digit (0-9\), and one special character (~!@\#$%^&\*-+\_|(){}:;<\>,.?/).
 
 
 >**Sample response header**
@@ -1644,7 +1644,7 @@ curl -i GET \
 |---------|---------------|
 |**Method** | `PATCH` |
 |**URI** |`/redfish/v1/AccountService/Accounts/{accountId}` |
-|**Description** |This operation updates user account details \(`username`, `password`, and `RoleId`\). To modify account details, add them in the request payload \(as shown in the sample request body\) and perform `PATCH` on the mentioned URI. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can modify other user accounts. Users with `ConfigureSelf` privilege can modify only their own accounts.|
+|**Description** |This operation updates user account details (`username`, `password`, and `RoleId`). To modify account details, add them in the request payload \(as shown in the sample request body\) and perform `PATCH` on the mentioned URI. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can modify other user accounts. Users with `ConfigureSelf` privilege can modify only their own accounts.|
 |**Returns** |<ul><li>`Location` header that contains a link to the updated account.</li><li>JSON schema representing the modified account.</li></ul>|
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|
@@ -1755,17 +1755,17 @@ All aggregation actions are performed as *[tasks](#tasks)* in Resource Aggregato
 |-------|--------------------|-------------------|
 |/redfish/v1/AggregationService|GET|`Login` |
 | /redfish/v1/AggregationService/AggregationSources<br> |GET, POST|`Login`, `ConfigureManager` |
-|/redfish/v1/AggregationService/AggregationSources/\{aggregationSourceId\}|GET, PATCH, DELETE|`Login`, `ConfigureManager` |
+|/redfish/v1/AggregationService/AggregationSources/{aggregationSourceId\}|GET, PATCH, DELETE|`Login`, `ConfigureManager` |
 |/redfish/v1/AggregationService/Actions/AggregationService.Reset|POST|`ConfigureManager`, `ConfigureComponents` |
 |/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder|POST|`ConfigureManager`, `ConfigureComponents` |
 |/redfish/v1/AggregationService/Aggregates|GET, POST|`Login`, `ConfigureComponents`, `ConfigureManager` |
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}|GET, DELETE|`Login`, `ConfigureComponents`, `ConfigureManager` |
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Actions/Aggregate.AddElements|POST|`ConfigureComponents`, `ConfigureManager` |
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.Reset|POST|`ConfigureComponents`, `ConfigureManager` |
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.SetDefaultBootOrder|POST|`ConfigureComponents`, `ConfigureManager` |
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Actions/Aggregate.RemoveElements|POST|`ConfigureComponents`, `ConfigureManager` |
+|/redfish/v1/AggregationService/Aggregates/{aggregateId\}|GET, DELETE|`Login`, `ConfigureComponents`, `ConfigureManager` |
+|/redfish/v1/AggregationService/Aggregates/{aggregateId\}/Actions/Aggregate.AddElements|POST|`ConfigureComponents`, `ConfigureManager` |
+|/redfish/v1/AggregationService/Aggregates/{aggregateId\}/Aggregate.Reset|POST|`ConfigureComponents`, `ConfigureManager` |
+|/redfish/v1/AggregationService/Aggregates/{aggregateId\}/Aggregate.SetDefaultBootOrder|POST|`ConfigureComponents`, `ConfigureManager` |
+|/redfish/v1/AggregationService/Aggregates/{aggregateId\}/Actions/Aggregate.RemoveElements|POST|`ConfigureComponents`, `ConfigureManager` |
 |/redfish/v1/AggregationService/ConnectionMethods|GET|`Login`|
-|/redfish/v1/AggregationService/ConnectionMethods/\{connectionmethodsId\}|GET|`Login`|
+|/redfish/v1/AggregationService/ConnectionMethods/{connectionmethodsId\}|GET|`Login`|
 
 >**Note:**
 Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
@@ -1943,8 +1943,8 @@ curl -i GET \
 |---------|----|-----------|
 |ConnectionMethodType|String| The type of this connection method.<br> For possible property values, see "Connection method types" table.<br> |
 |ConnectionMethodVariant|String|The variant of connection method. For more information, see *[Connection method variants](#connection-method-variants)*.|
-|Links \{|Object|Links to other resources that are related to this connection method.|
-|AggregationSources \[ \{<br> @odata.id<br> \} \]<br> |Array|An array of links to the `AggregationSources` resources that use this connection method.|
+|Links {|Object|Links to other resources that are related to this connection method.|
+|AggregationSources [ {<br> @odata.id<br> } ]<br> |Array|An array of links to the `AggregationSources` resources that use this connection method.|
 
  >**Connection method types**
 
@@ -1969,7 +1969,7 @@ It consists of the following parameters:
    The string that represents the type of the plugin.<br>Possible values: Compute, Storage, and Fabric. 
 - **PreferredAuthType:**   
    Preferred authentication method to connect to the plugin - BasicAuth or XAuthToken.  
-- **PluginID\_Firmwareversion:**
+- **PluginID_Firmwareversion:**
    The id of the plugin along with the version of the firmware. To know the plugin ids for all the supported plugins, see *Mapping of plugins and plugin Ids* table.<br>
    Supported values: `GRF_v1.0.0` and `URP_v1.0.0`<br>  
 
@@ -1994,7 +1994,7 @@ Examples:
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources` |
 |<strong>Description</strong> | This operation creates an aggregation source for a plugin and adds it in the inventory. It is performed in the background as a Redfish task.|
-|<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header (HTTP 202 status)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body (HTTP 202 status)".</li><li>On successful completion:<ul><li>The aggregation source Id, the IP address, the username, and other details of the added plugin in the JSON response body.</li><li> A link (having the aggregation source id) to the added plugin in the `Location` header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 201 status\)".</li></ul></li></ul>  |
+|<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header (HTTP 202 status)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body (HTTP 202 status)".</li><li>On successful completion:<ul><li>The aggregation source Id, the IP address, the username, and other details of the added plugin in the JSON response body.</li><li> A link (having the aggregation source id) to the added plugin in the `Location` header. See `Location` URI highlighted in bold in "Sample response header (HTTP 201 status)".</li></ul></li></ul>  |
 |<strong>Response Code</strong> |`202 Accepted` On success, `201 Created`|
 |<strong>Authentication</strong> |Yes|
 
@@ -2071,7 +2071,7 @@ curl -i POST \
 |HostName|String (required)<br> |FQDN of the resource aggregator server and port of a system where the plugin is installed. The default port for the Generic Redfish Plugin is `45001`.<br>The default port for the URP is `45003`.<br> If you are using a different port, ensure that the port is greater than `45000`.<br> **IMPORTANT**: If you have set the `VerifyPeer` property to false in `/etc/plugin_config/config.json`, you can use IP address of the system where the plugin is installed as `HostName`.<br>|
 |UserName|String (required)<br> |The plugin username.|
 |Password|String (required)<br> |The plugin password.|
-|Links\{|Object (required)<br> |Links to other resources that are related to this resource.|
+|Links{|Object (required)<br> |Links to other resources that are related to this resource.|
 |ConnectionMethod|Array (required)|Links to the connection method that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response. Choose a connection method having the details of the plugin of your choice.<br>For example, the `ConnectionMethodVariant` property for the GRF plugin displays the following value:<br>`Compute:BasicAuth:GRF_v1.0.0` <br>For more information, see the "connection method properties" table in [Viewing a connection method](#viewing-a-connection-method)</li></ul>|
 
 >**Sample response header (HTTP 202 status)**
@@ -2082,7 +2082,7 @@ Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
 ```
 
->**Sample response header \(HTTP 201 status\)**
+>**Sample response header (HTTP 201 status)**
 
 ```
 date:"Wed",02 Sep 2020 06:50:43 GMT+7m 2s
@@ -2111,7 +2111,7 @@ location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-af
 
 
 
->**Sample response body \(HTTP 201 status\)**
+>**Sample response body (HTTP 201 status)**
 
 ```
 {
@@ -2304,7 +2304,7 @@ curl -i -X POST \
 |HostName|String (required)<br> |A valid IPv4 or IPv6 address, or hostname of the BMC.|
 |UserName|String (required)<br> |The username of the BMC administrator account.|
 |Password|String (required)<br> |The password of the BMC administrator account.|
-|Links \{|Object (required)<br> |Links to other resources that are related to this resource.|
+|Links {|Object (required)<br> |Links to other resources that are related to this resource.|
 |ConnectionMethod|Array (required)|Links to the connection methods that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response.</li><li>The `ConnectionMethodVariant` property displays the details of a plugin. Choose a connection method having the details of the plugin of your choice.<br> Example: For GRF plugin, the `ConnectionMethodVariant` property displays the following value:<br>`Compute:BasicAuth:GRF:1.0.0`</li></ul>|
 
 >**Sample response header (HTTP 202 status)**
@@ -2315,7 +2315,7 @@ Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
 ```
 
->**Sample response header \(HTTP 201 status\)**
+>**Sample response header (HTTP 201 status)**
 
 ```
 date:"Wed",02 Sep 2020 06:50:43 GMT+7m 2s
@@ -2573,7 +2573,7 @@ curl -i POST \
       "/redfish/v1/Systems/{ComputerSystemId2}"
    ]
 }' \
- 'https://\{odim\_host\}:\{port\}/redfish/v1/AggregationService/Actions/AggregationService.Reset'
+ 'https://{odim\_host\}:{port\}/redfish/v1/AggregationService/Actions/AggregationService.Reset'
 
 
 ```
@@ -2598,7 +2598,7 @@ curl -i POST \
 |Parameter|Type|Description|
 |---------|----|-----------|
 |BatchSize|Integer (optional)<br> |The number of elements to be reset at a time in each batch.|
-|DelayBetweenBatchesInSeconds|Integer \(seconds\) (optional)<br> |The delay among the batches of elements being reset.|
+|DelayBetweenBatchesInSeconds|Integer (seconds) (optional)<br> |The delay among the batches of elements being reset.|
 |ResetType|String (required)<br> |The type of reset to be performed. For possible values, see *Reset type*. If the value is not supported by the target server, you receive an HTTP `400 Bad Request` error.|
 |TargetURIs|Array (required)<br> |The URI of the target for `Reset`. Example: `"/redfish/v1/Systems/{ComputerSystemId}"` |
 
@@ -2606,7 +2606,7 @@ curl -i POST \
 
 |String|Description|
 |------|-----------|
-|ForceOff|Turn off the unit immediately \(non-graceful shutdown\).|
+|ForceOff|Turn off the unit immediately (non-graceful shutdown).|
 |ForceRestart|Perform an immediate (non-graceful) shutdown, followed by a restart of the system.|
 |GracefulRestart|Perform a graceful shutdown followed by a restart of the system.|
 |GracefulShutdown|Perform a graceful shutdown. Graceful shutdown involves shutdown of the operating system followed by the power off of the physical server.|
@@ -2725,7 +2725,7 @@ curl -i POST \
       }
    ]
 }' \
- 'https://\{odim\_host\}:\{port}/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder'
+ 'https://{odim\_host\}:{port}/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder'
 
 
 ```
@@ -3198,7 +3198,7 @@ curl -i POST \
 |Parameter|Type|Description|
 |---------|----|-----------|
 |BatchSize|Integer (optional)<br> |The number of elements to be reset at a time in each batch|
-|DelayBetweenBatchesInSeconds|Integer \(seconds\) (optional)<br> |The delay among the batches of elements being reset|
+|DelayBetweenBatchesInSeconds|Integer (seconds) (optional)<br> |The delay among the batches of elements being reset|
 |ResetType|String (optional)<br> |For possible values, see *Reset type* table in [Resetting servers](#resetting-servers).|
 
 >**Sample response header** (HTTP 202 status)
@@ -3460,50 +3460,50 @@ To discover crucial configuration information about a resource, including chassi
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
 |/redfish/v1/Systems|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}|GET, PATCH|`Login`, `ConfigureComponents` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/Memory|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/Memory/\{memoryId\}|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/MemoryDomains|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/NetworkInterfaces|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/EthernetInterfaces|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/EthernetInterfaces/\{Id\}|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/Bios|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/SecureBoot|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId\}|GET, PATCH|`Login`, `ConfigureComponents` |
+|/redfish/v1/Systems/{ComputerSystemId\}/Memory|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId\}/Memory/{memoryId\}|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId\}/MemoryDomains|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId\}/NetworkInterfaces|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId\}/EthernetInterfaces|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId\}/EthernetInterfaces/{Id\}|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId\}/Bios|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId\}/SecureBoot|GET|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/Storage|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId\}/Storage|GET|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools|GET|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}|GET|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes|GET|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}|GET|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives|GET|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Drives/\{driveId\}|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes|GET, POST|`Login`, `ConfigureComponents` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes/\{volumeId\}|GET, DELETE|`Login`, `ConfigureComponents` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/Processors|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/Processors/\{Id\}|GET|`Login` |
-|/redfish/v1/Systems?$filter=\{searchKeys\}%20\{conditionKeys\}%20\{value\}|GET|`Login` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |GET, PATCH|`Login`, `ConfigureComponents` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.Reset|POST|`ConfigureComponents` |
-|/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.SetDefaultBootOrder|POST|`ConfigureComponents` |
+|/redfish/v1/Systems/{ComputerSystemId\}/Storage/{storageSubsystemId\}|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId\}/Storage/{storageSubsystemId\}/Drives/{driveId\}|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId\}/Storage/{storageSubsystemId\}/Volumes|GET, POST|`Login`, `ConfigureComponents` |
+|/redfish/v1/Systems/{ComputerSystemId\}/Storage/{storageSubsystemId\}/Volumes/{volumeId\}|GET, DELETE|`Login`, `ConfigureComponents` |
+|/redfish/v1/Systems/{ComputerSystemId\}/Processors|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId\}/Processors/{Id\}|GET|`Login` |
+|/redfish/v1/Systems?$filter={searchKeys\}%20{conditionKeys\}%20{value\}|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId\}/Bios/Settings<br> |GET, PATCH|`Login`, `ConfigureComponents` |
+|/redfish/v1/Systems/{ComputerSystemId\}/Actions/ComputerSystem.Reset|POST|`ConfigureComponents` |
+|/redfish/v1/Systems/{ComputerSystemId\}/Actions/ComputerSystem.SetDefaultBootOrder|POST|`ConfigureComponents` |
 
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
 |/redfish/v1/Chassis|GET, POST|`Login`, `ConfigureComponents` |
-|/redfish/v1/Chassis/\{chassisId\}|GET, PATCH, DELETE|`Login`, `ConfigureComponents`|
-|/redfish/v1/Chassis/\{chassisId\}/Thermal|GET|`Login`|
-|/redfish/v1/Chassis/\{chassisId\}/NetworkAdapters|GET|`Login` |
+|/redfish/v1/Chassis/{chassisId\}|GET, PATCH, DELETE|`Login`, `ConfigureComponents`|
+|/redfish/v1/Chassis/{chassisId\}/Thermal|GET|`Login`|
+|/redfish/v1/Chassis/{chassisId\}/NetworkAdapters|GET|`Login` |
 |/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|GET|`Login`|
 
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
 |/redfish/v1/Managers|GET|`Login` |
-|/redfish/v1/Managers/\{managerId\}|GET|`Login` |
-|/redfish/v1/Managers/\{managerId\}/EthernetInterfaces|GET|`Login` |
-|/redfish/v1/Managers/\{managerId\}/HostInterfaces|GET|`Login` |
-|/redfish/v1/Managers/\{managerId\}/LogServices|GET|`Login` |
-|/redfish/v1/Managers/\{managerId\}/NetworkProtocol|GET|`Login` |
+|/redfish/v1/Managers/{managerId\}|GET|`Login` |
+|/redfish/v1/Managers/{managerId\}/EthernetInterfaces|GET|`Login` |
+|/redfish/v1/Managers/{managerId\}/HostInterfaces|GET|`Login` |
+|/redfish/v1/Managers/{managerId\}/LogServices|GET|`Login` |
+|/redfish/v1/Managers/{managerId\}/NetworkProtocol|GET|`Login` |
 
 
 >**NOTE:**
@@ -4156,7 +4156,7 @@ curl -i GET \
 |-----------|----------|
 |**Method** |`GET` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/ EthernetInterfaces/{ethernetInterfaceId}` |
-|**Description** |This endpoint retrieves information on a single, logical Ethernet interface or network interface controller \(NIC\).|
+|**Description** |This endpoint retrieves information on a single, logical Ethernet interface or network interface controller (NIC).|
 |**Returns** |JSON schema representing this Ethernet interface|
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
@@ -4277,7 +4277,7 @@ curl -i GET \
 |---------|-------|
 |**Method** | `GET` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Storage` |
-|**Description** | This operation lists storage subsystems.<br> A storage subsystem is a set of storage controllers \(physical or virtual\) and the resources such as volumes that can be accessed from that subsystem.<br> |
+|**Description** | This operation lists storage subsystems.<br> A storage subsystem is a set of storage controllers (physical or virtual) and the resources such as volumes that can be accessed from that subsystem.<br> |
 |**Returns** |Links to storage subsystems|
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
@@ -4928,8 +4928,8 @@ curl -i -X POST \
 |---------|----|-----------|
 |Name|String (required)<br> |Name of the new volume.|
 |RAIDType|String (required)<br> |The RAID type of the volume you want to create.|
-|Drives\[\{|Array (required)<br> |An array of links to drive resources to contain the new volume.|
-|@odata.id \}\]<br> |String|A link to a drive resource.|
+|Drives[{|Array (required)<br> |An array of links to drive resources to contain the new volume.|
+|@odata.id }]<br> |String|A link to a drive resource.|
 |@Redfish.OperationApplyTimeSupport|Redfish annotation (optional)<br> | It enables you to control when the operation is carried out.<br> Supported values: `OnReset` and `Immediate`.<br> `OnReset` indicates that the new volume is available only after you successfully reset the system. To know how to reset a system, see [Resetting a computer system](#resetting-a-computer-system).<br>`Immediate` indicates that the created volume is available in the system immediately after the operation is successfully complete. |
 
 >**Sample response body** 
@@ -5647,8 +5647,8 @@ curl -i POST \
 |---------|----|-----------|
 |ChassisType|String (required)<br> |The type of chassis. The type to be used to create a rack group is RackGroup.<br> |
 |Description|String (optional)<br> |Description of this rack group.|
-|Links\{|Object (required)<br> |Links to the resources that are related to this rack group.|
-|ManagedBy \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array (required)<br> |An array of links to the manager resources that manage this chassis. The manager resource for racks and rack groups is the URP manager. Provide the link to the URP manager.<br> |
+|Links{|Object (required)<br> |Links to the resources that are related to this rack group.|
+|ManagedBy [{<br> @odata.id<br> }]<br> }<br> |Array (required)<br> |An array of links to the manager resources that manage this chassis. The manager resource for racks and rack groups is the URP manager. Provide the link to the URP manager.<br> |
 |Name|String (required)<br> |Name for this rack group.|
 
 
@@ -5761,9 +5761,9 @@ curl -i POST \
 |---------|----|-----------|
 |ChassisType|String (required)<br> |The type of chassis. The type to be used to create a rack is Rack.<br> |
 |Description|String (optional)<br> |Description of this rack.|
-|Links\{|Object (required)<br> |Links to the resources that are related to this rack.|
-|ManagedBy \[\{<br> @odata.id<br> \}\]<br> |Array (required)<br> |An array of links to the manager resources that manage this chassis. The manager resource for racks and rack groups is the URP manager. Provide the link to the URP manager.<br> |
-|ContainedBy \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array (required)<br> |An array of links to the rack groups for containing this rack.|
+|Links{|Object (required)<br> |Links to the resources that are related to this rack.|
+|ManagedBy [{<br> @odata.id<br> }]<br> |Array (required)<br> |An array of links to the manager resources that manage this chassis. The manager resource for racks and rack groups is the URP manager. Provide the link to the URP manager.<br> |
+|ContainedBy [{<br> @odata.id<br> }]<br> }<br> |Array (required)<br> |An array of links to the rack groups for containing this rack.|
 |Name|String (required)<br> |Name for this rack group.|
 
 
@@ -5864,8 +5864,8 @@ curl -i PATCH \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Links\{|Object (required)<br> |Links to the resources that are related to this rack|
-|Contains \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array (required)<br> |An array of links to the computer system chassis resources to be attached to this rack|
+|Links{|Object (required)<br> |Links to the resources that are related to this rack|
+|Contains [{<br> @odata.id<br> }]<br> }<br> |Array (required)<br> |An array of links to the computer system chassis resources to be attached to this rack|
 
 
 
@@ -5955,8 +5955,8 @@ curl -i PATCH \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Links\{|Object (required)<br> |Links to the resources that are related to this rack.|
-|Contains \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array (required)<br> |An array of links to the computer system chassis resources to be attached to this rack. To detach chassis from this rack, provide an empty array as value.|
+|Links{|Object (required)<br> |Links to the resources that are related to this rack.|
+|Contains [{<br> @odata.id<br> }]<br> }<br> |Array (required)<br> |An array of links to the computer system chassis resources to be attached to this rack. To detach chassis from this rack, provide an empty array as value.|
 
 
 
@@ -6490,12 +6490,12 @@ Resource Aggregator for ODIM exposes `Managers` APIs to retrieve information abo
 |||
 |-------|--------------------|
 |/redfish/v1/Managers|`GET`|
-|/redfish/v1/Managers/\{managerId\}|`GET`|
-|/redfish/v1/Managers/\{managerId\}/EthernetInterfaces|`GET`|
-|/redfish/v1/Managers/\{managerId\}/HostInterfaces|`GET`|
-|/redfish/v1/Managers/\{managerId\}/LogServices|`GET`|
-|/redfish/v1/Managers/\{managerId\}/NetworkProtocol|`GET`|
-|/redfish/v1/Managers/\{managerId\}/VirtualMedia|`GET`|
+|/redfish/v1/Managers/{managerId\}|`GET`|
+|/redfish/v1/Managers/{managerId\}/EthernetInterfaces|`GET`|
+|/redfish/v1/Managers/{managerId\}/HostInterfaces|`GET`|
+|/redfish/v1/Managers/{managerId\}/LogServices|`GET`|
+|/redfish/v1/Managers/{managerId\}/NetworkProtocol|`GET`|
+|/redfish/v1/Managers/{managerId\}/VirtualMedia|`GET`|
 
 
 
@@ -7630,9 +7630,9 @@ The `UpdateService` schema describes the update service and the properties for t
 |-------|--------------------|-------------------|
 |/redfish/v1/UpdateService|GET|`Login` |
 |/redfish/v1/UpdateService/FirmwareInventory|GET|`Login` |
-|/redfish/v1/UpdateService/FirmwareInventory/\{inventoryId\}|GET|`Login` |
+|/redfish/v1/UpdateService/FirmwareInventory/{inventoryId\}|GET|`Login` |
 |/redfish/v1/UpdateService/SoftwareInventory|GET|`Login` |
-|/redfish/v1/UpdateService/SoftwareInventory/\{inventoryId\}|GET|`Login` |
+|/redfish/v1/UpdateService/SoftwareInventory/{inventoryId\}|GET|`Login` |
 |/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate|POST|`ConfigureComponents` |
 |/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate|POST|`ConfigureComponents` |
 
@@ -7962,7 +7962,7 @@ curl -i POST \
 |---------|----|-----------|
 |ImageURI|String (required)<br> |The URI of the software or firmware image to install. It is the location address of the software or firmware image you want to install.|
 |Password|String (optional)<br> |The password to access the URI specified by the Image URI parameter.|
-|Targets\[\]|Array (required)<br> |An array of URIs that indicate where to apply the update image.|
+|Targets[\]|Array (required)<br> |An array of URIs that indicate where to apply the update image.|
 |TransferProtocol|String (optional)<br> | The network protocol that the update service uses to retrieve the software or the firmware image file at the URI provided in the `ImageURI` parameter, if the URI does not contain a scheme.<br> For the possible property values, see *Transfer protocol* table.<br> |
 |Username|String (optional)<br> |The user name to access the URI specified by the Image URI parameter.|
 |@Redfish.OperationApplyTimeSupport|Redfish annotation (optional)<br> | It enables you to control when the update is carried out.<br> Supported value is: `OnStartUpdate`. It indicates that the update will be carried out only after you perform HTTP POST on:<br> `/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate`.<br> |
@@ -7977,7 +7977,7 @@ curl -i POST \
 | NSF (deprecated v1.3)<br> | Network File System.<br>This value has been deprecated in favor of NFS.<br> |
 |OEM|A manufacturer-defined protocol.|
 |SCP|Secure Copy Protocol.|
-| SFTP \(v1.1+\)<br> |Secure File Transfer Protocol.|
+| SFTP \(v1.1+)<br> |Secure File Transfer Protocol.|
 |TFTP|Trivial File Transfer Protocol.|
 
 
@@ -8133,17 +8133,17 @@ When deleting fabric entities, ensure to delete them in the following order:
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
 |/redfish/v1/Fabrics|GET|`Login` |
-|/redfish/v1/Fabrics/\{fabricId\}|GET|`Login` |
-|/redfish/v1/Fabrics/\{fabricId\}/Switches|GET|`Login` |
-|/redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}|GET|`Login` |
-| /redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}/Ports<br> |GET|`Login` |
-| /redfish/v1/Fabrics/\{fabricId\} /Switches/\{switchId\}/Ports/\{portid\}<br> |GET|`Login` |
-|/redfish/v1/Fabrics/\{fabricId\}/Zones|GET, POST|`Login`, `ConfigureComponents` |
-|/redfish/v1/Fabrics/\{fabricId\}/Zones/\{zoneId\}|GET, PATCH, DELETE|`Login`, `ConfigureComponents` |
-|/redfish/v1/Fabrics/\{fabricId\}/AddressPools|GET, POST|`Login`, `ConfigureComponents` |
-|/redfish/v1/Fabrics/\{fabricId\}/AddressPools/\{addresspoolid\}|GET, DELETE|`Login`, `ConfigureComponents` |
-|/redfish/v1/Fabrics/\{fabricId\}/Endpoints|GET, POST|`Login`, `ConfigureComponents` |
-|/redfish/v1/Fabrics/\{fabricId\}/Endpoints/\{endpointId\}|GET, DELETE|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/{fabricId\}|GET|`Login` |
+|/redfish/v1/Fabrics/{fabricId\}/Switches|GET|`Login` |
+|/redfish/v1/Fabrics/{fabricId\}/Switches/{switchId\}|GET|`Login` |
+| /redfish/v1/Fabrics/{fabricId\}/Switches/{switchId\}/Ports<br> |GET|`Login` |
+| /redfish/v1/Fabrics/{fabricId\} /Switches/{switchId\}/Ports/{portid\}<br> |GET|`Login` |
+|/redfish/v1/Fabrics/{fabricId\}/Zones|GET, POST|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/{fabricId\}/Zones/{zoneId\}|GET, PATCH, DELETE|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/{fabricId\}/AddressPools|GET, POST|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/{fabricId\}/AddressPools/{addresspoolid\}|GET, DELETE|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/{fabricId\}/Endpoints|GET, POST|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/{fabricId\}/Endpoints/{endpointId\}|GET, DELETE|`Login`, `ConfigureComponents` |
 
 
 
@@ -8891,11 +8891,11 @@ curl -i POST \
 |---------|----|-----------|
 |Name|String (optional)<br> |Name for the address pool.|
 |Description|String (optional)<br> |Description for the address pool.|
-|IPv4\{| (required)<br> | |
-|VlanIdentifierAddressRange\{| (optional)<br> | A single VLAN to assign on the ports or lags.<br> |
+|IPv4{| (required)<br> | |
+|VlanIdentifierAddressRange{| (optional)<br> | A single VLAN to assign on the ports or lags.<br> |
 |Lower|Integer (required)<br> |VLAN lower address.|
-|Upper\}\}|Integer (required)<br> |VLAN upper address.<br>**NOTE:** `Lower` and `Upper` must have the same value. Ensure that IP range is accurate and it does not overlap with other pools.|
-|BgpEvpn\{| (required)<br> | |
+|Upper\}}|Integer (required)<br> |VLAN upper address.<br>**NOTE:** `Lower` and `Upper` must have the same value. Ensure that IP range is accurate and it does not overlap with other pools.|
+|BgpEvpn{| (required)<br> | |
 |GatewayIPAddressList|Array (required)<br> | IP pool to assign IPv4 address to the IP interface for VLAN per switch.<br> |
 |AnycastGatewayIPAddress\}|String (required)<br> | A single active gateway IP address for the IP interface.<br> |
 | | | |
@@ -9061,21 +9061,21 @@ curl -i POST \
 |---------|----|-----------|
 |Name|String|Name for the address pool.|
 |Description|String (optional)<br> |Description for the address pool.|
-|IPv4\{| (required)<br> | |
-|VlanIdentifierAddressRange\{| (required)<br> | A single VLAN \(virtual LAN\) used for creating the IP interface for the user Virtual Routing and Forwarding \(VRF\).<br> |
+|IPv4{| (required)<br> | |
+|VlanIdentifierAddressRange{| (required)<br> | A single VLAN \(virtual LAN\) used for creating the IP interface for the user Virtual Routing and Forwarding \(VRF\).<br> |
 |Lower|Integer (required)<br> |VLAN lower address|
 |Upper\}|Integer (required)<br> |VLAN upper address|
-|IbgpAddressRange\{| (required)<br> | IPv4 address used as the Router Id for the VRF per switch.<br> |
+|IbgpAddressRange{| (required)<br> | IPv4 address used as the Router Id for the VRF per switch.<br> |
 |Lower|String (required)<br> |IPv4 lower address|
 |Upper\}|String (required)<br> |IPv4 upper address|
-|EbgpAddressRange\{| (optional)<br> |External neighbor IPv4 addresses.|
+|EbgpAddressRange{| (optional)<br> |External neighbor IPv4 addresses.|
 |Lower|String (required)<br> |IPv4 lower address|
-|Upper\} \}|String (required)<br> |IPv4 upper address|
-|Ebgp\{| (optional)<br> | |
-|AsNumberRange\{| (optional)<br> |External neighbor ASN.<br>**NOTE:** `EbgpAddressRange` and `AsNumberRange` values should be a matching sequence and should be of same length.|
+|Upper\} }|String (required)<br> |IPv4 upper address|
+|Ebgp{| (optional)<br> | |
+|AsNumberRange{| (optional)<br> |External neighbor ASN.<br>**NOTE:** `EbgpAddressRange` and `AsNumberRange` values should be a matching sequence and should be of same length.|
 |Lower|Integer (optional)<br> | |
-|Upper\} \}|Integer (optional)<br> | |
-|BgpEvpn\{| (required)<br> | |
+|Upper\} }|Integer (optional)<br> | |
+|BgpEvpn{| (required)<br> | |
 |RouteDistinguisherList|Array (required)<br> | Single route distinguisher value for the VRF.<br> |
 |RouteTargetList|Array (optional)<br> | Route targets. By default, the route targets will be configured as both import and export.<br> |
 |GatewayIPAddressList\}|Array (required)<br> | IP pool to assign IPv4 address to the IP interface used by the VRF per switch.<br> |
@@ -9211,8 +9211,8 @@ curl -i POST \
 |Name|String (optional)<br> |Name for the zone.|
 |Description|String (optional)<br> |Description for the zone.|
 |ZoneType|String|The type of the zone to be created. Options include: `ZoneofZones` and `ZoneofEndpoints`<br> The type of the zone for a zone of zones is `ZoneofZones`. |
-|Links\{| (optional)<br> | |
-|AddressPools|Array (optional)<br> | `AddressPool` links supported for the Zone of Zones \(`AddressPool` links created for `ZoneofZones`\).<br> |
+|Links{| (optional)<br> | |
+|AddressPools|Array (optional)<br> | `AddressPool` links supported for the Zone of Zones (`AddressPool` links created for `ZoneofZones`).<br> |
 
 
 >**Sample response header**
@@ -9343,10 +9343,10 @@ curl -i POST \
 |---------|-----|-----------|
 |Name|String (optional)<br> |Name for the endpoint.|
 |Description|String (optional)<br> |Description for the endpoint.|
-|Links\{| (required)<br> | |
+|Links{| (required)<br> | |
 |ConnectedPorts|Array (required)<br> | Switch port connected to the switch.<br>  <br> |
 |Zones\}|Array (optional)<br> | Endpoint is part of `ZoneofEndpoints`. Only one zone is permitted in the zones list.<br> |
-|Redundancy\[|Array| |
+|Redundancy[|Array| |
 |Mode|String|Redundancy mode.|
 |RedundancySet\]|Array| Set of redundancy ports connected to the switches.<br> |
 
@@ -9490,13 +9490,13 @@ curl -i POST \
 |Description|String (optional)<br> |The description for the zone.|
 |DefaultRoutingEnabled|Boolean (required)<br> |Set to `false`.|
 |ZoneType|String (required)<br> |The type of the zone to be created. Options include: `ZoneofZones`and `ZoneofEndpoints`<br>The type of the zone for a zone of endpoints is `ZoneofEndpoints`.<br> |
-|Links\{|Object (optional)<br> |Contains references to other resources that are related to the zone.|
-|ContainedByZones \[\{|Array (optional)<br> |Represents an array of `ZoneofZones` for the zone being created (applicable when creating a zone of endpoints).|
-|@odata.id \}\]|String|Link to a Zone of zones.|
-|AddressPools \[\{|Array (optional)<br> |Represents an array of address pools linked with the zone \(zone-specific address pools\).|
-|@odata.id \}\]|String|Link to an address pool.|
-|Endpoints \[\{|Array (optional)<br> |Represents an array of endpoints to be included in the zone.|
-|@odata.id \}\]|String|Link to an endpoint.|
+|Links{|Object (optional)<br> |Contains references to other resources that are related to the zone.|
+|ContainedByZones [{|Array (optional)<br> |Represents an array of `ZoneofZones` for the zone being created (applicable when creating a zone of endpoints).|
+|@odata.id }]|String|Link to a Zone of zones.|
+|AddressPools [{|Array (optional)<br> |Represents an array of address pools linked with the zone \(zone-specific address pools\).|
+|@odata.id }]|String|Link to an address pool.|
+|Endpoints [{|Array (optional)<br> |Represents an array of endpoints to be included in the zone.|
+|@odata.id }]|String|Link to an endpoint.|
 
 
 
@@ -9769,10 +9769,10 @@ An example of a task is resetting an aggregate of servers. Resetting all the ser
 |-------|--------------------|-------------------|
 |/redfish/v1/TaskService|GET|`Login` |
 |/redfish/v1/TaskService/Tasks|GET|`Login` |
-|/redfish/v1/TaskService/Tasks/\{taskId\}|GET, DELETE|`Login`, `ConfigureManager` |
-| /redfish/v1/ TaskService/Tasks/\{taskId\}/SubTasks<br> |GET|`Login` |
-| /redfish/v1/ TaskService/Tasks/\{taskId\}/SubTasks/ \{subTaskId\}<br> |GET|`Login` |
-|/taskmon/\{taskId\}|GET|`Login` |
+|/redfish/v1/TaskService/Tasks/{taskId\}|GET, DELETE|`Login`, `ConfigureManager` |
+| /redfish/v1/ TaskService/Tasks/{taskId\}/SubTasks<br> |GET|`Login` |
+| /redfish/v1/ TaskService/Tasks/{taskId\}/SubTasks/ {subTaskId\}<br> |GET|`Login` |
+|/taskmon/{taskId\}|GET|`Login` |
 
 
 >**NOTE:**
@@ -10074,7 +10074,7 @@ An event asynchronously notifies the client of some significant state change or 
 |/redfish/v1/EventService|GET|`Login` |
 |/redfish/v1/EventService/Subscriptions|GET, POST|`Login`, `ConfigureManager`, `ConfigureComponents` |
 |/redfish/v1/EventService/Actions/EventService.SubmitTestEvent|POST|`ConfigureManager` |
-|/redfish/v1/EventService/Subscriptions/\{subscriptionId\}|GET, DELETE|`Login`, `ConfigureManager`, `ConfigureSelf` |
+|/redfish/v1/EventService/Subscriptions/{subscriptionId\}|GET, DELETE|`Login`, `ConfigureManager`, `ConfigureSelf` |
 
 >**Note:**
 Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
@@ -10468,7 +10468,7 @@ Date:Fri, 08 Nov 2019 07:49:42 GMT+7m 9s
 Content-Length:0 byte
 ```
 
->**Sample response header** \(HTTP 201 status\) 
+>**Sample response header** (HTTP 201 status) 
 
 ```
 Location:/redfish/v1/EventService/Subscriptions/76088e1c-4654-4eec-a3f6-60bc33b77cdb
@@ -10523,7 +10523,7 @@ Date:Thu,14 May 2020 09:48:23 GMT+5m 10s
 }
 ```
 
->**Sample response body** \(HTTP 201 status\) 
+>**Sample response body** (HTTP 201 status) 
 
 ```
 {
@@ -10611,7 +10611,7 @@ curl -i POST \
 |EventTimestamp|String|Optional|The date and time stamp for the event to add. When the event is received, it translates as the time the event occurred.|
 |EventType|String (enum)|Optional|The type for the event to add. For possible property values, see *EventType* in [Creating an event subscription](#creating-an-event-subscription).|
 |Message|String|Optional|The human-readable message for the event to add.|
-|MessageArgs \[ \]|Array (string)|Optional|An array of message arguments for the event to add. The message arguments are substituted for the arguments in the message when looked up in the message registry. It helps in trouble ticketing when there are bad events. For example, `MessageArgs` in *Sample event payload* has the following two substitution variables:<br><ul><li>`EthernetInterface 1`</li><li>`/redfish/v1/Systems/{ComputerSystemId}`</li></ul><br>`Description` and `Message` values in "Sample message registry" are substituted with the above-mentioned variables. They translate to "A LAN Disconnect on `EthernetInterface 1` was detected on system `/redfish/v1/Systems/{ComputerSystemId}.` |
+|MessageArgs [ ]|Array (string)|Optional|An array of message arguments for the event to add. The message arguments are substituted for the arguments in the message when looked up in the message registry. It helps in trouble ticketing when there are bad events. For example, `MessageArgs` in *Sample event payload* has the following two substitution variables:<br><ul><li>`EthernetInterface 1`</li><li>`/redfish/v1/Systems/{ComputerSystemId}`</li></ul><br>`Description` and `Message` values in "Sample message registry" are substituted with the above-mentioned variables. They translate to "A LAN Disconnect on `EthernetInterface 1` was detected on system `/redfish/v1/Systems/{ComputerSystemId}.` |
 |MessageId|String|Required|The Message Id for the event to add. It is the key used to find the message in a message registry. It has `RegistryPrefix` concatenated with the version, and the unique identifier for the message registry entry. The `RegistryPrefix` concatenated with the version is the name of the message registry. To get the names of available message registries, perform HTTP `GET` on `/redfish/v1/Registries`. The message registry mentioned in the sample request payload is `Alert.1.0`.|
 |OriginOfCondition|String|Optional|The URL in the `OriginOfCondition` property of the event to add. It is not a reference object. It is the resource that originated the condition that caused the event to be generated. For possible values, see *Origin resources* in *[Creating an event subscription](#creating-an-event-subscription)*.|
 |Severity|String|Optional|The severity for the event to add. For possible values, see *Severity* table.|
@@ -10975,8 +10975,8 @@ The arguments are the substitution variables for the message. The `MessageId` is
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
 |/redfish/v1/Registries|GET|`Login` |
-|/redfish/v1/Registries/\{registryId\}|GET|`Login` |
-|/redfish/v1/registries/\{registryFileId\}|GET|`Login` |
+|/redfish/v1/Registries/{registryId\}|GET|`Login` |
+|/redfish/v1/registries/{registryFileId\}|GET|`Login` |
 
 
 >**NOTE:**

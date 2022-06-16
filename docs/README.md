@@ -999,7 +999,7 @@ curl -i GET \
 |---------|---------------|
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/SessionService/Sessions` |
-|**Description** |This operation creates a session to implement authentication. Creating a session allows you to create an `X-AUTH-TOKEN` which is then used to authenticate with other services.<br>**NOTE:** It is a good practice to note down the following:<br><ul><li>The session authentication token returned in the `X-AUTH-TOKEN` header.</li><li>The session Id returned in the `Location` header and the JSON response body.</li></ul><br>You need the session authentication token to authenticate subsequent requests to the Redfish services and the session id to log out later.|
+|**Description** |This operation creates a session to implement authentication. Creating a session allows you to create an `X-AUTH-TOKEN` which is then used to authenticate with other services.<br>**NOTE:** It is a good practice to make a note of the following:<br><ul><li>The session authentication token returned in the `X-AUTH-TOKEN` header.</li><li>The session Id returned in the `Location` header and the JSON response body.</li></ul><br>You need the session authentication token to authenticate subsequent requests to the Redfish services and the session id to log out later.|
 |**Returns** |<ul><li> An `X-AUTH-TOKEN` header containing session authentication token.</li><li>`Location` header that contains a link to the newly created session instance.</li><li>The session id and a message in the JSON response body saying that the session is created.</li></ul> |
 |**Response Code** |`201 Created` |
 |**Authentication** |No|
@@ -1036,8 +1036,8 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|UserName|String \(required\)|Username of the user account for the session. For the first time, use the username of the default administrator account \(admin\). Subsequently, when you create other user accounts, you can use the credentials of these accounts to create a session.<br>**NOTE:** This user must have `Login` privilege.|
-|Password|String \(required\)<br> |Password of the user account for the session. For the first time, use the password of the default administrator account. Subsequently, when you create other user accounts, you can use the credentials of these accounts to create a session. |
+|UserName|String (required)|Username of the user account for the session. For the first time, use the username of the default administrator account \(admin\). Subsequently, when you create other user accounts, you can use the credentials of these accounts to create a session.<br>**NOTE:** This user must have `Login` privilege.|
+|Password|String (required)<br> |Password of the user account for the session. For the first time, use the password of the default administrator account. Subsequently, when you create other user accounts, you can use the credentials of these accounts to create a session. |
 
 >**Sample response header**
 
@@ -1270,8 +1270,8 @@ curl -i POST \
 |Parameter|Type|Description|
 |---------|----|-----------|
 |Id|String \(required, read-only\)<br> |Name for this role. <br>**NOTE:** Id cannot be modified later.|
-|AssignedPrivileges|Array \(string \(enum\)\) \(required\)<br> |The Redfish privileges this role includes. Possible values are:<br>  `ConfigureManager` <br>   `ConfigureSelf` <br>   `ConfigureUsers` <br>   `Login` <br>   `ConfigureComponents` <br>|
-|OemPrivileges|Array \(string\) \(required\)<br> |The OEM privileges this role includes. If you do not want to specify any OEM privileges, use `null` or `[]` as value.|
+|AssignedPrivileges|Array (string (enum)) (required)<br> |The Redfish privileges this role includes. Possible values are:<br>  `ConfigureManager` <br>   `ConfigureSelf` <br>   `ConfigureUsers` <br>   `Login` <br>   `ConfigureComponents` <br>|
+|OemPrivileges|Array (string) (required)<br> |The OEM privileges this role includes. If you do not want to specify any OEM privileges, use `null` or `[]` as value.|
 
 
 >**Sample response body**
@@ -1522,9 +1522,9 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Username|String \(required\)<br> |User name for the user account.|
-|Password|String \(required\)<br> |Password for the user account. Before creating a password, see the *Password Requirements* section.|
-|RoleId|String \(required\)<br> |Role for this account. To know more about roles, see *[User roles and privileges](#role-based-authorization)*. Ensure the `roleId` you want to assign to this user account exists. To check the existing roles, see *[Listing Roles](#listing-roles)*. If you attempt to assign an unavailable role, an HTTP `400 Bad Request` error is displayed.|
+|Username|String (required)<br> |User name for the user account.|
+|Password|String (required)<br> |Password for the user account. Before creating a password, see the *Password Requirements* section.|
+|RoleId|String (required)<br> |Role for this account. To know more about roles, see *[User roles and privileges](#role-based-authorization)*. Ensure the `roleId` you want to assign to this user account exists. To check the existing roles, see *[Listing Roles](#listing-roles)*. If you attempt to assign an unavailable role, an HTTP `400 Bad Request` error is displayed.|
 
 ### Password requirements
 
@@ -1747,7 +1747,7 @@ The resource aggregator allows you to add southbound infrastructure to its datab
 
 
 
-All aggregation actions are performed as *[tasks](#tasks)* in Resource Aggregator for ODIM. The actions performed on a group of resources \(resetting or changing the boot order to default settings\) are carried out as a set of subtasks.
+All aggregation actions are performed as *[tasks](#tasks)* in Resource Aggregator for ODIM. The actions performed on a group of resources (resetting or changing the boot order to default settings) are carried out as a set of subtasks.
 
 **Supported endpoints**
 
@@ -1971,7 +1971,7 @@ It consists of the following parameters:
    Preferred authentication method to connect to the plugin - BasicAuth or XAuthToken.  
 - **PluginID\_Firmwareversion:**
    The id of the plugin along with the version of the firmware. To know the plugin ids for all the supported plugins, see *Mapping of plugins and plugin Ids* table.<br>
-   Supported values: `GRF\_v1.0.0` and `URP\_v1.0.0`<br>  
+   Supported values: `GRF_v1.0.0` and `URP_v1.0.0`<br>  
 
 
 Examples:
@@ -1994,7 +1994,7 @@ Examples:
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources` |
 |<strong>Description</strong> | This operation creates an aggregation source for a plugin and adds it in the inventory. It is performed in the background as a Redfish task.|
-|<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body \(HTTP 202 status\)".</li><li>On successful completion:<ul><li>The aggregation source Id, the IP address, the username, and other details of the added plugin in the JSON response body.</li><li> A link \(having the aggregation source Id\) to the added plugin in the `Location` header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 201 status\)".</li></ul></li></ul>  |
+|<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header (HTTP 202 status)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body (HTTP 202 status)".</li><li>On successful completion:<ul><li>The aggregation source Id, the IP address, the username, and other details of the added plugin in the JSON response body.</li><li> A link (having the aggregation source id) to the added plugin in the `Location` header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 201 status\)".</li></ul></li></ul>  |
 |<strong>Response Code</strong> |`202 Accepted` On success, `201 Created`|
 |<strong>Authentication</strong> |Yes|
 
@@ -2068,13 +2068,13 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|HostName|String \(required\)<br> |FQDN of the resource aggregator server and port of a system where the plugin is installed. The default port for the Generic Redfish Plugin is `45001`.<br>The default port for the URP is `45003`.<br> If you are using a different port, ensure that the port is greater than `45000`.<br> **IMPORTANT**: If you have set the `VerifyPeer` property to false in the plugin `config.json` file \(/etc/plugin\_config/config.json\), you can use IP address of the system where the plugin is installed as `HostName`.<br>|
-|UserName|String \(required\)<br> |The plugin username.|
-|Password|String \(required\)<br> |The plugin password.|
-|Links\{|Object \(required\)<br> |Links to other resources that are related to this resource.|
+|HostName|String (required)<br> |FQDN of the resource aggregator server and port of a system where the plugin is installed. The default port for the Generic Redfish Plugin is `45001`.<br>The default port for the URP is `45003`.<br> If you are using a different port, ensure that the port is greater than `45000`.<br> **IMPORTANT**: If you have set the `VerifyPeer` property to false in `/etc/plugin_config/config.json`, you can use IP address of the system where the plugin is installed as `HostName`.<br>|
+|UserName|String (required)<br> |The plugin username.|
+|Password|String (required)<br> |The plugin password.|
+|Links\{|Object (required)<br> |Links to other resources that are related to this resource.|
 |ConnectionMethod|Array (required)|Links to the connection method that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response. Choose a connection method having the details of the plugin of your choice.<br>For example, the `ConnectionMethodVariant` property for the GRF plugin displays the following value:<br>`Compute:BasicAuth:GRF_v1.0.0` <br>For more information, see the "connection method properties" table in [Viewing a connection method](#viewing-a-connection-method)</li></ul>|
 
->**Sample response header \(HTTP 202 status\)**
+>**Sample response header (HTTP 202 status)**
 
 ```
 Location:/taskmon/task85de4003-8757-4c7d-942f-55eaf7d6812a
@@ -2090,7 +2090,7 @@ link:/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3
 location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a.1
 ```
 
->**Sample response body \(HTTP 202 status\)**
+>**Sample response body (HTTP 202 status)**
 
 ```
 {
@@ -2216,7 +2216,7 @@ location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-af
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources` |
 |<strong>Description</strong> | This operation creates an aggregation source for a BMC, discovers information, and performs a detailed inventory of it.<br> The `AggregationSource` schema provides information about a BMC such as its IP address, username, password, and so on.<br> This operation is performed in the background as a Redfish task.<br> |
-|<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body \(HTTP 202 status\)".</li><li>On successful completion:<ul><li>The aggregation source id, the IP address, the username, and other details of the added BMC in the JSON response body.</li><li>A link \(having the aggregation source id\) to the added BMC in the `Location` header. See `Location` URI highlighted in bold in *Sample response header (HTTP 201 status)*.</li></ul></li></ul>|
+|<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header (HTTP 202 status)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body (HTTP 202 status)".</li><li>On successful completion:<ul><li>The aggregation source id, the IP address, the username, and other details of the added BMC in the JSON response body.</li><li>A link (having the aggregation source id) to the added BMC in the `Location` header. See `Location` URI highlighted in bold in *Sample response header (HTTP 201 status)*.</li></ul></li></ul>|
 |<strong>Response Code</strong> |On success, `202 Accepted`<br>On successful completion of the task, `201 Created` <br> |
 |<strong>Authentication</strong> |Yes|
 
@@ -2301,13 +2301,13 @@ curl -i -X POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|HostName|String \(required\)<br> |A valid IPv4 or IPv6 address, or hostname of the BMC.|
-|UserName|String \(required\)<br> |The username of the BMC administrator account.|
-|Password|String \(required\)<br> |The password of the BMC administrator account.|
-|Links \{|Object \(required\)<br> |Links to other resources that are related to this resource.|
+|HostName|String (required)<br> |A valid IPv4 or IPv6 address, or hostname of the BMC.|
+|UserName|String (required)<br> |The username of the BMC administrator account.|
+|Password|String (required)<br> |The password of the BMC administrator account.|
+|Links \{|Object (required)<br> |Links to other resources that are related to this resource.|
 |ConnectionMethod|Array (required)|Links to the connection methods that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response.</li><li>The `ConnectionMethodVariant` property displays the details of a plugin. Choose a connection method having the details of the plugin of your choice.<br> Example: For GRF plugin, the `ConnectionMethodVariant` property displays the following value:<br>`Compute:BasicAuth:GRF:1.0.0`</li></ul>|
 
->**Sample response header \(HTTP 202 status\)**
+>**Sample response header (HTTP 202 status)**
 
 ```
 Location:/taskmon/task4aac9e1e-df58-4fff-b781-52373fcb5699
@@ -2539,15 +2539,15 @@ curl -i PATCH \
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationService.Reset` |
 |<strong>Description</strong> |This action shuts down, powers up, and restarts one or more servers. It is performed in the background as a Redfish task and is further divided into subtasks to reset each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation \(task\) in the response header. See `Location` URI highlighted in bold in *Sample response header (HTTP 202 status)*.<br><br>-   Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task id highlighted in bold in *Sample response body (HTTP 202 status)*.<br>**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>-  Upon the completion of the reset operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.|
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation (task) in the response header. See `Location` URI highlighted in bold in *Sample response header (HTTP 202 status)*.<br><br>-   Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task id highlighted in bold in *Sample response body (HTTP 202 status)*.<br>**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`. <br>-  Upon the completion of the reset operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.|
 |<strong>Response code</strong> |On success, `202 Accepted`.<br> On successful completion of the task, `200 OK`.|
 |<strong>Authentication</strong> |Yes|
 
 **Usage information**
 
-To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header \(until the task is complete\).
+To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header (until the task is complete).
 
-To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body \(HTTP 202 status\)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of the reset operation \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in "Sample response body \(subtask\)".
+To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body (HTTP 202 status)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of the reset operation (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in "Sample response body (subtask)".
 
 You can perform reset on a group of servers by specifying multiple target URIs in the request.
 
@@ -2597,25 +2597,25 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|BatchSize|Integer \(optional\)<br> |The number of elements to be reset at a time in each batch.|
-|DelayBetweenBatchesInSeconds|Integer \(seconds\) \(optional\)<br> |The delay among the batches of elements being reset.|
-|ResetType|String \(required\)<br> |The type of reset to be performed. For possible values, see *Reset type*. If the value is not supported by the target server, you receive an HTTP `400 Bad Request` error.|
-|TargetURIs|Array \(required\)<br> |The URI of the target for `Reset`. Example: `"/redfish/v1/Systems/{ComputerSystemId}"` |
+|BatchSize|Integer (optional)<br> |The number of elements to be reset at a time in each batch.|
+|DelayBetweenBatchesInSeconds|Integer \(seconds\) (optional)<br> |The delay among the batches of elements being reset.|
+|ResetType|String (required)<br> |The type of reset to be performed. For possible values, see *Reset type*. If the value is not supported by the target server, you receive an HTTP `400 Bad Request` error.|
+|TargetURIs|Array (required)<br> |The URI of the target for `Reset`. Example: `"/redfish/v1/Systems/{ComputerSystemId}"` |
 
 **Reset type**
 
 |String|Description|
 |------|-----------|
 |ForceOff|Turn off the unit immediately \(non-graceful shutdown\).|
-|ForceRestart|Perform an immediate \(non-graceful\) shutdown, followed by a restart of the system.|
+|ForceRestart|Perform an immediate (non-graceful) shutdown, followed by a restart of the system.|
 |GracefulRestart|Perform a graceful shutdown followed by a restart of the system.|
 |GracefulShutdown|Perform a graceful shutdown. Graceful shutdown involves shutdown of the operating system followed by the power off of the physical server.|
-|Nmi|Generate a Diagnostic Interrupt \(usually an NMI on x86 systems\) to cease normal operations, perform diagnostic actions, and halt the system.|
+|Nmi|Generate a Diagnostic Interrupt (usually an NMI on x86 systems) to cease normal operations, perform diagnostic actions, and halt the system.|
 |On|Turn on the unit.|
 |PowerCycle|Perform a power cycle of the unit.|
 |PushPowerButton|Simulate the pressing of the physical power button on this unit.|
 
->**Sample response header** \(HTTP 202 status\)
+>**Sample response header** (HTTP 202 status)
 
 ```
 Location:/taskmon/task85de4103-8757-4c7d-942f-55eaf7d6412a
@@ -2623,7 +2623,7 @@ Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
 ```
 
->**Sample response body** \(HTTP 202 status\)
+>**Sample response body** (HTTP 202 status)
 
 ```
 {
@@ -2642,7 +2642,7 @@ Content-Length:491 bytes
 }
 ```
 
->**Sample response body** \(subtask\)
+>**Sample response body** (subtask)
 
 ```
 {
@@ -2690,15 +2690,15 @@ Content-Length:491 bytes
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder` |
 |<strong>Description</strong> |This action changes the boot order of one or more servers to default settings. This operation is performed in the background as a Redfish task and is further divided into subtasks to change the boot order of each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in *Sample response header (HTTP 202 status)*.<br><br>-  Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in *Sample response body (HTTP 202 status\)*.<br>IMPORTANT:<br>Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</blockquote><br>- On successful completion of this operation, a message in the response body, saying that the operation is completed successfully. See *Sample response body (HTTP 200 status)*.<br>|
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in *Sample response header (HTTP 202 status)*.<br><br>-  Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in *Sample response body (HTTP 202 status)*.<br>IMPORTANT:<br>Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</blockquote><br>- On successful completion of this operation, a message in the response body, saying that the operation is completed successfully. See *Sample response body (HTTP 200 status)*.<br>|
 |<strong>Response code</strong> |`202 Accepted`. On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
 **Usage information**
 
-To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header \(until the task is complete\).
+To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header (until the task is complete).
 
-To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of `SetDefaultBootOrder` action \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in *Sample response body (subtask)*.
+To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of `SetDefaultBootOrder` action (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in *Sample response body (subtask)*.
 
 You can perform `setDefaultBootOrder` action on a group of servers by specifying multiple server URIs in the request.
 
@@ -2750,9 +2750,9 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Systems|Array \(required\)<br> |Target servers for `SetDefaultBootOrder`.|
+|Systems|Array (required)<br> |Target servers for `SetDefaultBootOrder`.|
 
->**Sample response header** \(HTTP 202 status\)
+>**Sample response header** (HTTP 202 status)
 
 ```
 Location:/taskmon/task85de4003-8057-4c7d-942f-55eaf7d6412a
@@ -2760,7 +2760,7 @@ Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
 ```
 
->**Sample response body** \(HTTP 202 status\)
+>**Sample response body** (HTTP 202 status)
 
 ```
 {
@@ -2779,7 +2779,7 @@ Content-Length:491 bytes
 }
 ```
 
->**Sample response body** \(subtask\)
+>**Sample response body** (subtask)
 
 ```
 {
@@ -2835,7 +2835,7 @@ Content-Length:491 bytes
 
 **Usage information**
 
-To know the progress of this action, perform `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
+To know the progress of this action, perform `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header (until the task is complete).
 
 
 **NOTE:**
@@ -2853,7 +2853,7 @@ curl -i DELETE \
 
 ```
 
->**Sample response header** \(HTTP 202 status\)
+>**Sample response header** (HTTP 202 status)
 
 ```
 Location:/taskmon/task85de4003-8757-2c7d-942f-55eaf7d6412a
@@ -2861,7 +2861,7 @@ Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
 ```
 
->**Sample response body** \(HTTP 202 status\)
+>**Sample response body** (HTTP 202 status)
 
 ```
 {
@@ -2943,7 +2943,7 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Elements|Array \(required\)<br> |An empty array or an array of links to the resources that this aggregate contains. To get the links to the system resources that are available in the resource inventory, perform HTTP `GET` on `/redfish/v1/Systems/`. |
+|Elements|Array (required)<br> |An empty array or an array of links to the resources that this aggregate contains. To get the links to the system resources that are available in the resource inventory, perform HTTP `GET` on `/redfish/v1/Systems/`. |
 
 >**Sample response header**
 
@@ -3121,7 +3121,7 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Elements|Array \(required\)<br> |An array of links to the Computer system resources the aggregate contains|
+|Elements|Array (required)<br> |An array of links to the Computer system resources the aggregate contains|
 
 >**Sample response body**
 
@@ -3150,15 +3150,15 @@ curl -i POST \
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Aggregates/{AggregateId}/Actions/Aggregate.Reset` |
 |<strong>Description</strong> |This action shuts down, powers up, and restarts servers in a specific aggregate. This operation is performed in the background as a Redfish task and is further divided into subtasks to reset each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation \(task\) in the response header. See `Location` URI highlighted in bold in *Sample response header (HTTP 202 status)*.<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in *Sample response body (HTTP 202 status)*.<br>**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>Upon the completion of the reset operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.|
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation (task) in the response header. See `Location` URI highlighted in bold in *Sample response header (HTTP 202 status)*.<br>- Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in *Sample response body (HTTP 202 status)*.<br>**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>- Upon the completion of the reset operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.|
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
 **Usage information**
 
-To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header \(until the task is complete\).
+To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header (until the task is complete).
 
-To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of the reset operation \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in *Sample response body (subtask)*.
+To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of the reset operation (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in *Sample response body (subtask)*.
 
 
 **NOTE:**
@@ -3197,11 +3197,11 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|BatchSize|Integer \(optional\)<br> |The number of elements to be reset at a time in each batch|
-|DelayBetweenBatchesInSeconds|Integer \(seconds\) \(optional\)<br> |The delay among the batches of elements being reset|
-|ResetType|String \(optional\)<br> |For possible values, see *Reset type* table in [Resetting servers](#resetting-servers).|
+|BatchSize|Integer (optional)<br> |The number of elements to be reset at a time in each batch|
+|DelayBetweenBatchesInSeconds|Integer \(seconds\) (optional)<br> |The delay among the batches of elements being reset|
+|ResetType|String (optional)<br> |For possible values, see *Reset type* table in [Resetting servers](#resetting-servers).|
 
->**Sample response header** \(HTTP 202 status\)
+>**Sample response header** (HTTP 202 status)
 
 ```
 Location:/taskmon/task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591
@@ -3209,7 +3209,7 @@ Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
 ```
 
->**Sample response body** \(HTTP 202 status\)
+>**Sample response body** (HTTP 202 status)
 
 ```
 {
@@ -3228,7 +3228,7 @@ Content-Length:491 bytes
 }
 ```
 
->**Sample response body** \(subtask\)
+>**Sample response body** (subtask)
 
 ```
 {
@@ -3283,9 +3283,9 @@ Content-Length:491 bytes
 
 **Usage information**
 
-To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header \(until the task is complete\).
+To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header (until the task is complete).
 
-To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of `SetDefaultBootOrder` action \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in *Sample response body (subtask)*".
+To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of `SetDefaultBootOrder` action (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in *Sample response body (subtask)*".
 
 
 **NOTE:**
@@ -3302,7 +3302,7 @@ curl -i POST \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/Aggregates/{AggregateId}/Actions/Aggregate.SetDefaultBootOrder'
 ```
 
->**Sample response header** \(HTTP 202 status\)
+>**Sample response header** (HTTP 202 status)
 
 ```
 Location:/taskmon/task85de4003-8057-4c7d-942f-55eaf7d6412a
@@ -3310,7 +3310,7 @@ Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
 ```
 
->**Sample response body** \(HTTP 202 status\)
+>**Sample response body** (HTTP 202 status)
 
 ```
 {
@@ -3329,7 +3329,7 @@ Content-Length:491 bytes
 }
 ```
 
->**Sample response body** \(subtask\)
+>**Sample response body** (subtask)
 
 ```
 {
@@ -3415,7 +3415,7 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Elements|Array \(required\)<br> |An array of links to the Computer system resources that you want to remove from this aggregate|
+|Elements|Array (required)<br> |An array of links to the Computer system resources that you want to remove from this aggregate|
 
 >**Sample response body**
 
@@ -4055,7 +4055,7 @@ curl -i GET \
 |-------|-------|
 |**Method** |`GET` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/MemoryDomains` |
-|**Description** | This endpoint lists memory domains of a specific system.<br>Memory Domains indicate to the client which Memory \(DIMMs\) can be grouped in Memory Chunks to form interleave sets, or otherwise grouped.<br> |
+|**Description** | This endpoint lists memory domains of a specific system.<br>Memory Domains indicate to the client which Memory (DIMMs) can be grouped in Memory Chunks to form interleave sets, or otherwise grouped.<br> |
 |**Returns** |List of memory domain endpoints|
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
@@ -4926,11 +4926,11 @@ curl -i -X POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Name|String \(required\)<br> |Name of the new volume.|
-|RAIDType|String \(required\)<br> |The RAID type of the volume you want to create.|
-|Drives\[\{|Array \(required\)<br> |An array of links to drive resources to contain the new volume.|
+|Name|String (required)<br> |Name of the new volume.|
+|RAIDType|String (required)<br> |The RAID type of the volume you want to create.|
+|Drives\[\{|Array (required)<br> |An array of links to drive resources to contain the new volume.|
 |@odata.id \}\]<br> |String|A link to a drive resource.|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported values: `OnReset` and `Immediate`.<br> `OnReset` indicates that the new volume is available only after you successfully reset the system. To know how to reset a system, see [Resetting a computer system](#resetting-a-computer-system).<br>`Immediate` indicates that the created volume is available in the system immediately after the operation is successfully complete. |
+|@Redfish.OperationApplyTimeSupport|Redfish annotation (optional)<br> | It enables you to control when the operation is carried out.<br> Supported values: `OnReset` and `Immediate`.<br> `OnReset` indicates that the new volume is available only after you successfully reset the system. To know how to reset a system, see [Resetting a computer system](#resetting-a-computer-system).<br>`Immediate` indicates that the created volume is available in the system immediately after the operation is successfully complete. |
 
 >**Sample response body** 
 
@@ -4987,7 +4987,7 @@ curl -i -X DELETE \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume is deleted only after you successfully reset the system.<br> `Immediate` indicates that the volume is deleted immediately after the operation is successfully complete. |
+|@Redfish.OperationApplyTimeSupport|Redfish annotation (optional)<br> | It enables you to control when the operation is carried out.<br> Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume is deleted only after you successfully reset the system.<br> `Immediate` indicates that the volume is deleted immediately after the operation is successfully complete. |
 
 
 
@@ -5070,7 +5070,7 @@ curl -i GET \
 
 ## Chassis
 
-Chassis represents the physical components of a system—sheet-metal confined spaces, logical zones such as racks, enclosures, chassis and all other containers, and subsystems \(like sensors\).
+Chassis represents the physical components of a system—sheet-metal confined spaces, logical zones such as racks, enclosures, chassis and all other containers, and subsystems (like sensors).
 
 To view, create, and manage racks or rack groups, ensure that the URP is running and is added into the Resource Aggregator for ODIM framework. To know how to add a plugin, see *[Adding a plugin as an aggregation source](#adding-a-plugin-as-an-aggregation-source)*.
 
@@ -5645,11 +5645,11 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|ChassisType|String \(required\)<br> |The type of chassis. The type to be used to create a rack group is RackGroup.<br> |
-|Description|String \(optional\)<br> |Description of this rack group.|
-|Links\{|Object \(required\)<br> |Links to the resources that are related to this rack group.|
-|ManagedBy \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array \(required\)<br> |An array of links to the manager resources that manage this chassis. The manager resource for racks and rack groups is the URP manager. Provide the link to the URP manager.<br> |
-|Name|String \(required\)<br> |Name for this rack group.|
+|ChassisType|String (required)<br> |The type of chassis. The type to be used to create a rack group is RackGroup.<br> |
+|Description|String (optional)<br> |Description of this rack group.|
+|Links\{|Object (required)<br> |Links to the resources that are related to this rack group.|
+|ManagedBy \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array (required)<br> |An array of links to the manager resources that manage this chassis. The manager resource for racks and rack groups is the URP manager. Provide the link to the URP manager.<br> |
+|Name|String (required)<br> |Name for this rack group.|
 
 
 >**Sample response header**
@@ -5759,12 +5759,12 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|ChassisType|String \(required\)<br> |The type of chassis. The type to be used to create a rack is Rack.<br> |
-|Description|String \(optional\)<br> |Description of this rack.|
-|Links\{|Object \(required\)<br> |Links to the resources that are related to this rack.|
-|ManagedBy \[\{<br> @odata.id<br> \}\]<br> |Array \(required\)<br> |An array of links to the manager resources that manage this chassis. The manager resource for racks and rack groups is the URP manager. Provide the link to the URP manager.<br> |
-|ContainedBy \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array \(required\)<br> |An array of links to the rack groups for containing this rack.|
-|Name|String \(required\)<br> |Name for this rack group.|
+|ChassisType|String (required)<br> |The type of chassis. The type to be used to create a rack is Rack.<br> |
+|Description|String (optional)<br> |Description of this rack.|
+|Links\{|Object (required)<br> |Links to the resources that are related to this rack.|
+|ManagedBy \[\{<br> @odata.id<br> \}\]<br> |Array (required)<br> |An array of links to the manager resources that manage this chassis. The manager resource for racks and rack groups is the URP manager. Provide the link to the URP manager.<br> |
+|ContainedBy \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array (required)<br> |An array of links to the rack groups for containing this rack.|
+|Name|String (required)<br> |Name for this rack group.|
 
 
 >**Sample response header**
@@ -5864,8 +5864,8 @@ curl -i PATCH \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Links\{|Object \(required\)<br> |Links to the resources that are related to this rack|
-|Contains \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array \(required\)<br> |An array of links to the computer system chassis resources to be attached to this rack|
+|Links\{|Object (required)<br> |Links to the resources that are related to this rack|
+|Contains \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array (required)<br> |An array of links to the computer system chassis resources to be attached to this rack|
 
 
 
@@ -5955,8 +5955,8 @@ curl -i PATCH \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Links\{|Object \(required\)<br> |Links to the resources that are related to this rack.|
-|Contains \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array \(required\)<br> |An array of links to the computer system chassis resources to be attached to this rack. To detach chassis from this rack, provide an empty array as value.|
+|Links\{|Object (required)<br> |Links to the resources that are related to this rack.|
+|Contains \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array (required)<br> |An array of links to the computer system chassis resources to be attached to this rack. To detach chassis from this rack, provide an empty array as value.|
 
 
 
@@ -6572,7 +6572,7 @@ curl -i GET \
 |**Method** |`GET` |
 |**URI** |`/redfish/v1/Managers/{managerId}` |
 |**Description** |A single manager.|
-|**Returns** |Information about a specific management control system or a plugin or Resource Aggregator for ODIM. In the JSON schema representing a system \(BMC\) manager, there are links to the managers for:<ul><li>EthernetInterfaces:<br>`/redfish/v1/Managers/{managerId}/EthernetInterfaces`</li><li>HostInterfaces:<br>`/redfish/v1/Managers/{managerId}/HostInterfaces` </li><li>LogServices:<br>`/redfish/v1/Managers/{managerId}/LogServices` </li><li>NetworkProtocol:<br>`/redfish/v1/Managers/{managerId}/NetworkProtocol` <br> To know more about each manager, perform HTTP `GET` on these links.</li></ul>|
+|**Returns** |Information about a specific management control system or a plugin or Resource Aggregator for ODIM. In the JSON schema representing a system (BMC) manager, there are links to the managers for:<ul><li>EthernetInterfaces:<br>`/redfish/v1/Managers/{managerId}/EthernetInterfaces`</li><li>HostInterfaces:<br>`/redfish/v1/Managers/{managerId}/HostInterfaces` </li><li>LogServices:<br>`/redfish/v1/Managers/{managerId}/LogServices` </li><li>NetworkProtocol:<br>`/redfish/v1/Managers/{managerId}/NetworkProtocol` <br> To know more about each manager, perform HTTP `GET` on these links.</li></ul>|
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
 
@@ -6588,7 +6588,7 @@ curl -i GET \
 
 
 
->**Sample response body for a system \(BMC\) manager** 
+>**Sample response body for a system (BMC) manager** 
 
 ```
 {
@@ -7913,7 +7913,7 @@ curl -i GET \
 |<strong>Authentication</strong> |Yes|
 
 **Usage information** 
-To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header \(until the task is complete\).
+To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header (until the task is complete).
 
 > **curl command**
 
@@ -7960,12 +7960,12 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|ImageURI|String \(required\)<br> |The URI of the software or firmware image to install. It is the location address of the software or firmware image you want to install.|
-|Password|String \(optional\)<br> |The password to access the URI specified by the Image URI parameter.|
-|Targets\[\]|Array \(required\)<br> |An array of URIs that indicate where to apply the update image.|
-|TransferProtocol|String \(optional\)<br> | The network protocol that the update service uses to retrieve the software or the firmware image file at the URI provided in the `ImageURI` parameter, if the URI does not contain a scheme.<br> For the possible property values, see *Transfer protocol* table.<br> |
-|Username|String \(optional\)<br> |The user name to access the URI specified by the Image URI parameter.|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the update is carried out.<br> Supported value is: `OnStartUpdate`. It indicates that the update will be carried out only after you perform HTTP POST on:<br> `/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate`.<br> |
+|ImageURI|String (required)<br> |The URI of the software or firmware image to install. It is the location address of the software or firmware image you want to install.|
+|Password|String (optional)<br> |The password to access the URI specified by the Image URI parameter.|
+|Targets\[\]|Array (required)<br> |An array of URIs that indicate where to apply the update image.|
+|TransferProtocol|String (optional)<br> | The network protocol that the update service uses to retrieve the software or the firmware image file at the URI provided in the `ImageURI` parameter, if the URI does not contain a scheme.<br> For the possible property values, see *Transfer protocol* table.<br> |
+|Username|String (optional)<br> |The user name to access the URI specified by the Image URI parameter.|
+|@Redfish.OperationApplyTimeSupport|Redfish annotation (optional)<br> | It enables you to control when the update is carried out.<br> Supported value is: `OnStartUpdate`. It indicates that the update will be carried out only after you perform HTTP POST on:<br> `/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate`.<br> |
 
 |String|Description|
 |------|-----------|
@@ -7973,15 +7973,15 @@ curl -i POST \
 |FTP|File Transfer Protocol.|
 |HTTP|Hypertext Transfer Protocol.|
 |HTTPS|Hypertext Transfer Protocol Secure.|
-| NFS \(v1.3+\)<br> |Network File System.|
-| NSF \(deprecated v1.3\)<br> | Network File System.<br>This value has been deprecated in favor of NFS.<br> |
+| NFS (v1.3+)<br> |Network File System.|
+| NSF (deprecated v1.3)<br> | Network File System.<br>This value has been deprecated in favor of NFS.<br> |
 |OEM|A manufacturer-defined protocol.|
 |SCP|Secure Copy Protocol.|
 | SFTP \(v1.1+\)<br> |Secure File Transfer Protocol.|
 |TFTP|Trivial File Transfer Protocol.|
 
 
->**Sample response header \(HTTP 202 status\)**
+>**Sample response header (HTTP 202 status)**
 
 ```
 Location:/taskmon/task4aac9e1e-df58-4fff-b781-52373fcb5699
@@ -7989,7 +7989,7 @@ Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
 ```
 
->**Sample response body \(HTTP 202 status\)**
+>**Sample response body (HTTP 202 status)**
 
 ```
 {
@@ -8035,7 +8035,7 @@ Content-Length:491 bytes
 |<strong>Authentication</strong> |Yes|
 
 **Usage information** 
-To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header \(until the task is complete\).
+To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header (until the task is complete).
 
 
 ```
@@ -8049,7 +8049,7 @@ curl -i POST \
 
 None
 
->**Sample response header \(HTTP 202 status\)**
+>**Sample response header (HTTP 202 status)**
 
 ```
 Location:/taskmon/task4aac9e1e-df58-4fff-b781-52373fcb5699
@@ -8057,7 +8057,7 @@ Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
 ```
 
->**Sample response body \(HTTP 202 status\)**
+>**Sample response body (HTTP 202 status)**
 
 ```
 {
@@ -8889,15 +8889,15 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Name|String \(optional\)<br> |Name for the address pool.|
-|Description|String \(optional\)<br> |Description for the address pool.|
-|IPv4\{| \(required\)<br> | |
-|VlanIdentifierAddressRange\{| \(optional\)<br> | A single VLAN to assign on the ports or lags.<br> |
-|Lower|Integer \(required\)<br> |VLAN lower address.|
-|Upper\}\}|Integer \(required\)<br> |VLAN upper address.<br>**NOTE:** `Lower` and `Upper` must have the same value. Ensure that IP range is accurate and it does not overlap with other pools.|
-|BgpEvpn\{| \(required\)<br> | |
-|GatewayIPAddressList|Array \(required\)<br> | IP pool to assign IPv4 address to the IP interface for VLAN per switch.<br> |
-|AnycastGatewayIPAddress\}|String \(required\)<br> | A single active gateway IP address for the IP interface.<br> |
+|Name|String (optional)<br> |Name for the address pool.|
+|Description|String (optional)<br> |Description for the address pool.|
+|IPv4\{| (required)<br> | |
+|VlanIdentifierAddressRange\{| (optional)<br> | A single VLAN to assign on the ports or lags.<br> |
+|Lower|Integer (required)<br> |VLAN lower address.|
+|Upper\}\}|Integer (required)<br> |VLAN upper address.<br>**NOTE:** `Lower` and `Upper` must have the same value. Ensure that IP range is accurate and it does not overlap with other pools.|
+|BgpEvpn\{| (required)<br> | |
+|GatewayIPAddressList|Array (required)<br> | IP pool to assign IPv4 address to the IP interface for VLAN per switch.<br> |
+|AnycastGatewayIPAddress\}|String (required)<br> | A single active gateway IP address for the IP interface.<br> |
 | | | |
 
 >**Sample response header**
@@ -9060,25 +9060,25 @@ curl -i POST \
 |Parameter|Type|Description|
 |---------|----|-----------|
 |Name|String|Name for the address pool.|
-|Description|String \(optional\)<br> |Description for the address pool.|
-|IPv4\{| \(required\)<br> | |
-|VlanIdentifierAddressRange\{| \(required\)<br> | A single VLAN \(virtual LAN\) used for creating the IP interface for the user Virtual Routing and Forwarding \(VRF\).<br> |
-|Lower|Integer \(required\)<br> |VLAN lower address|
-|Upper\}|Integer \(required\)<br> |VLAN upper address|
-|IbgpAddressRange\{| \(required\)<br> | IPv4 address used as the Router Id for the VRF per switch.<br> |
-|Lower|String \(required\)<br> |IPv4 lower address|
-|Upper\}|String \(required\)<br> |IPv4 upper address|
-|EbgpAddressRange\{| \(optional\)<br> |External neighbor IPv4 addresses.|
-|Lower|String \(required\)<br> |IPv4 lower address|
-|Upper\} \}|String \(required\)<br> |IPv4 upper address|
-|Ebgp\{| \(optional\)<br> | |
-|AsNumberRange\{| \(optional\)<br> |External neighbor ASN.<br>**NOTE:** `EbgpAddressRange` and `AsNumberRange` values should be a matching sequence and should be of same length.|
-|Lower|Integer \(optional\)<br> | |
-|Upper\} \}|Integer \(optional\)<br> | |
-|BgpEvpn\{| \(required\)<br> | |
-|RouteDistinguisherList|Array \(required\)<br> | Single route distinguisher value for the VRF.<br> |
-|RouteTargetList|Array \(optional\)<br> | Route targets. By default, the route targets will be configured as both import and export.<br> |
-|GatewayIPAddressList\}|Array \(required\)<br> | IP pool to assign IPv4 address to the IP interface used by the VRF per switch.<br> |
+|Description|String (optional)<br> |Description for the address pool.|
+|IPv4\{| (required)<br> | |
+|VlanIdentifierAddressRange\{| (required)<br> | A single VLAN \(virtual LAN\) used for creating the IP interface for the user Virtual Routing and Forwarding \(VRF\).<br> |
+|Lower|Integer (required)<br> |VLAN lower address|
+|Upper\}|Integer (required)<br> |VLAN upper address|
+|IbgpAddressRange\{| (required)<br> | IPv4 address used as the Router Id for the VRF per switch.<br> |
+|Lower|String (required)<br> |IPv4 lower address|
+|Upper\}|String (required)<br> |IPv4 upper address|
+|EbgpAddressRange\{| (optional)<br> |External neighbor IPv4 addresses.|
+|Lower|String (required)<br> |IPv4 lower address|
+|Upper\} \}|String (required)<br> |IPv4 upper address|
+|Ebgp\{| (optional)<br> | |
+|AsNumberRange\{| (optional)<br> |External neighbor ASN.<br>**NOTE:** `EbgpAddressRange` and `AsNumberRange` values should be a matching sequence and should be of same length.|
+|Lower|Integer (optional)<br> | |
+|Upper\} \}|Integer (optional)<br> | |
+|BgpEvpn\{| (required)<br> | |
+|RouteDistinguisherList|Array (required)<br> | Single route distinguisher value for the VRF.<br> |
+|RouteTargetList|Array (optional)<br> | Route targets. By default, the route targets will be configured as both import and export.<br> |
+|GatewayIPAddressList\}|Array (required)<br> | IP pool to assign IPv4 address to the IP interface used by the VRF per switch.<br> |
 
 >**Sample response header** 
 
@@ -9208,11 +9208,11 @@ curl -i POST \
 
 |Parameter|Value|Description|
 |---------|-----|-----------|
-|Name|String \(optional\)<br> |Name for the zone.|
-|Description|String \(optional\)<br> |Description for the zone.|
+|Name|String (optional)<br> |Name for the zone.|
+|Description|String (optional)<br> |Description for the zone.|
 |ZoneType|String|The type of the zone to be created. Options include: `ZoneofZones` and `ZoneofEndpoints`<br> The type of the zone for a zone of zones is `ZoneofZones`. |
-|Links\{| \(optional\)<br> | |
-|AddressPools|Array \(optional\)<br> | `AddressPool` links supported for the Zone of Zones \(`AddressPool` links created for `ZoneofZones`\).<br> |
+|Links\{| (optional)<br> | |
+|AddressPools|Array (optional)<br> | `AddressPool` links supported for the Zone of Zones \(`AddressPool` links created for `ZoneofZones`\).<br> |
 
 
 >**Sample response header**
@@ -9341,11 +9341,11 @@ curl -i POST \
 
 |Parameter|Value|Description|
 |---------|-----|-----------|
-|Name|String \(optional\)<br> |Name for the endpoint.|
-|Description|String \(optional\)<br> |Description for the endpoint.|
-|Links\{| \(required\)<br> | |
-|ConnectedPorts|Array \(required\)<br> | Switch port connected to the switch.<br>  <br> |
-|Zones\}|Array \(optional\)<br> | Endpoint is part of `ZoneofEndpoints`. Only one zone is permitted in the zones list.<br> |
+|Name|String (optional)<br> |Name for the endpoint.|
+|Description|String (optional)<br> |Description for the endpoint.|
+|Links\{| (required)<br> | |
+|ConnectedPorts|Array (required)<br> | Switch port connected to the switch.<br>  <br> |
+|Zones\}|Array (optional)<br> | Endpoint is part of `ZoneofEndpoints`. Only one zone is permitted in the zones list.<br> |
 |Redundancy\[|Array| |
 |Mode|String|Redundancy mode.|
 |RedundancySet\]|Array| Set of redundancy ports connected to the switches.<br> |
@@ -9486,16 +9486,16 @@ curl -i POST \
 
 |Parameter|Value|Description|
 |---------|-----|-----------|
-|Name|String \(optional\)<br> |The name for the zone.|
-|Description|String \(optional\)<br> |The description for the zone.|
-|DefaultRoutingEnabled|Boolean \(required\)<br> |Set to `false`.|
-|ZoneType|String \(required\)<br> |The type of the zone to be created. Options include: `ZoneofZones`and `ZoneofEndpoints`<br>The type of the zone for a zone of endpoints is `ZoneofEndpoints`.<br> |
-|Links\{|Object \(optional\)<br> |Contains references to other resources that are related to the zone.|
-|ContainedByZones \[\{|Array \(optional\)<br> |Represents an array of `ZoneofZones` for the zone being created \(applicable when creating a zone of endpoints\).|
+|Name|String (optional)<br> |The name for the zone.|
+|Description|String (optional)<br> |The description for the zone.|
+|DefaultRoutingEnabled|Boolean (required)<br> |Set to `false`.|
+|ZoneType|String (required)<br> |The type of the zone to be created. Options include: `ZoneofZones`and `ZoneofEndpoints`<br>The type of the zone for a zone of endpoints is `ZoneofEndpoints`.<br> |
+|Links\{|Object (optional)<br> |Contains references to other resources that are related to the zone.|
+|ContainedByZones \[\{|Array (optional)<br> |Represents an array of `ZoneofZones` for the zone being created (applicable when creating a zone of endpoints).|
 |@odata.id \}\]|String|Link to a Zone of zones.|
-|AddressPools \[\{|Array \(optional\)<br> |Represents an array of address pools linked with the zone \(zone-specific address pools\).|
+|AddressPools \[\{|Array (optional)<br> |Represents an array of address pools linked with the zone \(zone-specific address pools\).|
 |@odata.id \}\]|String|Link to an address pool.|
-|Endpoints \[\{|Array \(optional\)<br> |Represents an array of endpoints to be included in the zone.|
+|Endpoints \[\{|Array (optional)<br> |Represents an array of endpoints to be included in the zone.|
 |@odata.id \}\]|String|Link to an endpoint.|
 
 
@@ -9696,7 +9696,7 @@ curl -i -X PATCH \
 |---------------|---------------|
 |**Method** |`DELETE` |
 |**URI** |`/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}` |
-|**Description** |This operation deletes a zone in a specific fabric.<br>**NOTE:**<br> If you delete a non-empty zone \(a zone which contains links to address pools, other zones, endpoints, or switches\), you encounter an HTTP `400` error. Before attempting to delete, unassign all links in the zone. See *[updating a zone](#updating-a-zone)*.|
+|**Description** |This operation deletes a zone in a specific fabric.<br>**NOTE:**<br> If you delete a non-empty zone (a zone which contains links to address pools, other zones, endpoints, or switches), you encounter an HTTP `400` error. Before attempting to delete, unassign all links in the zone. See *[updating a zone](#updating-a-zone)*.|
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
 
@@ -10234,14 +10234,14 @@ Date:Fri,15 May 2020 10:10:15 GMT+5m 11s
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/EventService/Subscriptions` |
 |**Description**| This endpoint subscribes a northbound client to events originating from a set of resources \(southbound devices, managers, Resource Aggregator for ODIM itself\) by creating a subscription entry. For use cases, see *[Subscription use cases](#event-subscription-use-cases)*.<br>This operation is performed in the background as a Redfish task. If there is more than one resource that is sending a specific event, the task is further divided into subtasks. |
-|**Returns** |<ul><li>`Location` URI of the task monitor associated with this operation in the response header.</li><li> Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.<br>**IMPORTANT:**<br> Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</li><li>On success, a `Location` header that contains a link to the newly created subscription and a message in the JSON response body saying that the subscription is created. See *Sample response body (HTTP 201 status)*.</li></ul>|
+|**Returns** |<ul><li>`Location` URI of the task monitor associated with this operation in the response header.</li><li> Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.<br>**IMPORTANT:**<br> Make a note of the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</li><li>On success, a `Location` header that contains a link to the newly created subscription and a message in the JSON response body saying that the subscription is created. See *Sample response body (HTTP 201 status)*.</li></ul>|
 |**Response code** |<ul><li>`202 Accepted`</li><li>`201 Created`</li></ul>|
 |**Authentication** |Yes|
 
 
-To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header \(until the task is complete\).
+To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header (until the task is complete).
 
-To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of this operation \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask.
+To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of this operation (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask.
 
 
 >**NOTE:**
@@ -10404,15 +10404,15 @@ curl -i POST \
 
 |Parameter|Value|Attributes|Description|
 |---------|-----|----------|-----------|
-|Name|String| \(Optional\)<br> |Name for the subscription.|
+|Name|String| (optional)<br> |Name for the subscription.|
 |Destination|String|Read-only \(Required on create\)<br> |The URL of the destination event listener that listens to events \(Fault management system or any northbound client\).<br>**NOTE:** `Destination` is unique to a subscription: There can be only one subscription for a destination event listener.<br>To change the parameters of an existing subscription , delete it and then create again with the new parameters and a new destination URL.<br> |
-|EventTypes|Array \(string \(enum\)\)|Read-only \(Optional\)<br> |The types of events that are sent to the destination. For possible values, see *Event types* table.|
-|ResourceTypes|Array \(string, null\)|Read-only \(Optional\)<br> |The list of resource type values \(Schema names\) that correspond to the `OriginResources`. For possible values, perform `GET` on `redfish/v1/EventService` and check values listed under `ResourceTypes` in the JSON response.<br> Examples: "ComputerSystem", "Storage", "Task"<br> |
+|EventTypes|Array (string (enum))|Read-only (optional)<br> |The types of events that are sent to the destination. For possible values, see *Event types* table.|
+|ResourceTypes|Array \(string, null\)|Read-only (optional)<br> |The list of resource type values \(Schema names\) that correspond to the `OriginResources`. For possible values, perform `GET` on `redfish/v1/EventService` and check values listed under `ResourceTypes` in the JSON response.<br> Examples: "ComputerSystem", "Storage", "Task"<br> |
 |Context|String|Read/write Required \(null\)<br> |A string that is stored with the event destination subscription.|
-|MessageIds|Array|Read-only \(Optional\)<br> |The key used to find the message in a Message Registry.|
-|Protocol|String \(enum\)|Read-only \(Required on create\)<br> |The protocol type of the event connection. For possible values, see *Protocol* table.|
-|SubscriptionType|String \(enum\)|Read-only Required \(null\)<br> |Indicates the subscription type for events. For possible values, see *Subscription type* table.|
-|EventFormatType|String \(enum\)|Read-only \(Optional\)<br> |Indicates the content types of the message that this service can send to the event destination. For possible values, see *EventFormat type* table.|
+|MessageIds|Array|Read-only (optional)<br> |The key used to find the message in a Message Registry.|
+|Protocol|String (enum)|Read-only \(Required on create\)<br> |The protocol type of the event connection. For possible values, see *Protocol* table.|
+|SubscriptionType|String (enum)|Read-only Required \(null\)<br> |Indicates the subscription type for events. For possible values, see *Subscription type* table.|
+|EventFormatType|String (enum)|Read-only (optional)<br> |Indicates the content types of the message that this service can send to the event destination. For possible values, see *EventFormat type* table.|
 |SubordinateResources|Boolean|Read-only \(null\)|Indicates whether the service supports the `SubordinateResource` property on event subscriptions or not. If it is set to `true`, the service creates subscription for an event originating from the specified `OriginResoures` and also from its subordinate resources. For example, by setting this property to `true`, you can receive specified events from a compute node: `/redfish/v1/Systems/{ComputerSystemId}` and from its subordinate resources such as:<br> `/redfish/v1/Systems/{ComputerSystemId}/Memory`<br> `/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces`<br> `/redfish/v1/Systems/{ComputerSystemId}/Bios`<br> `/redfish/v1/Systems/{ComputerSystemId}/Storage`|
 |OriginResources|Array| Optional \(null\)<br> |Resources for which the service only sends related events. If this property is absent or the array is empty, events originating from any resource is sent to the subscriber. For possible values, see *Origin resources* table.|
 
@@ -10460,7 +10460,7 @@ curl -i POST \
 
  
 
->**Sample response header** \(HTTP 202 status\) 
+>**Sample response header** (HTTP 202 status) 
 
 ```
 Location:/taskmon/taska9702e20-884c-41e2-bd9c-d779a4dd2e6e
@@ -10475,7 +10475,7 @@ Location:/redfish/v1/EventService/Subscriptions/76088e1c-4654-4eec-a3f6-60bc33b7
 Date:Thu,14 May 2020 09:48:23 GMT+5m 10s
 ```
 
->**Sample response body** \(HTTP 202 status\) 
+>**Sample response body** (HTTP 202 status) 
 
 ```
 {
@@ -10494,7 +10494,7 @@ Date:Thu,14 May 2020 09:48:23 GMT+5m 10s
 }
 ```
 
->**Sample response body** \(subtask\) 
+>**Sample response body** (subtask) 
 
 
 ```
@@ -10547,7 +10547,7 @@ Date:Thu,14 May 2020 09:48:23 GMT+5m 10s
 |-----------|-----------|
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/EventService/Actions/EventService.SubmitTestEvent` |
-|**Description** | Once the subscription is successfully created, you can post a test event to Resource Aggregator for ODIM to check whether you are able to receive events. If the event is successfully posted, you will receive a JSON payload of the event response on the client machine \(destination\) that is listening to events. To know more about this event, look up the message registry using the `MessageId` received in the payload. See *Sample message registry (Alert.1.0.0)*. For more information on message registries, see *[Message registries](#message-registries)*. |
+|**Description** | Once the subscription is successfully created, you can post a test event to Resource Aggregator for ODIM to check whether you are able to receive events. If the event is successfully posted, you will receive a JSON payload of the event response on the client machine (destination) that is listening to events. To know more about this event, look up the message registry using the `MessageId` received in the payload. See *Sample message registry (Alert.1.0.0)*. For more information on message registries, see *[Message registries](#message-registries)*. |
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -10609,9 +10609,9 @@ curl -i POST \
 |EventGroupId|Integer|Optional|The group Id for the event.|
 |EventId|String|Optional|The Id for the event to add. This id is a string of a unique positive integer. Generate a random positive integer and use it as the Id.|
 |EventTimestamp|String|Optional|The date and time stamp for the event to add. When the event is received, it translates as the time the event occurred.|
-|EventType|String \(enum\)|Optional|The type for the event to add. For possible property values, see *EventType* in [Creating an event subscription](#creating-an-event-subscription).|
+|EventType|String (enum)|Optional|The type for the event to add. For possible property values, see *EventType* in [Creating an event subscription](#creating-an-event-subscription).|
 |Message|String|Optional|The human-readable message for the event to add.|
-|MessageArgs \[ \]|Array \(string\)|Optional|An array of message arguments for the event to add. The message arguments are substituted for the arguments in the message when looked up in the message registry. It helps in trouble ticketing when there are bad events. For example, `MessageArgs` in *Sample event payload* has the following two substitution variables:<br><ul><li>`EthernetInterface 1`</li><li>`/redfish/v1/Systems/{ComputerSystemId}`</li></ul><br>`Description` and `Message` values in "Sample message registry" are substituted with the above-mentioned variables. They translate to "A LAN Disconnect on `EthernetInterface 1` was detected on system `/redfish/v1/Systems/{ComputerSystemId}.` |
+|MessageArgs \[ \]|Array (string)|Optional|An array of message arguments for the event to add. The message arguments are substituted for the arguments in the message when looked up in the message registry. It helps in trouble ticketing when there are bad events. For example, `MessageArgs` in *Sample event payload* has the following two substitution variables:<br><ul><li>`EthernetInterface 1`</li><li>`/redfish/v1/Systems/{ComputerSystemId}`</li></ul><br>`Description` and `Message` values in "Sample message registry" are substituted with the above-mentioned variables. They translate to "A LAN Disconnect on `EthernetInterface 1` was detected on system `/redfish/v1/Systems/{ComputerSystemId}.` |
 |MessageId|String|Required|The Message Id for the event to add. It is the key used to find the message in a message registry. It has `RegistryPrefix` concatenated with the version, and the unique identifier for the message registry entry. The `RegistryPrefix` concatenated with the version is the name of the message registry. To get the names of available message registries, perform HTTP `GET` on `/redfish/v1/Registries`. The message registry mentioned in the sample request payload is `Alert.1.0`.|
 |OriginOfCondition|String|Optional|The URL in the `OriginOfCondition` property of the event to add. It is not a reference object. It is the resource that originated the condition that caused the event to be generated. For possible values, see *Origin resources* in *[Creating an event subscription](#creating-an-event-subscription)*.|
 |Severity|String|Optional|The severity for the event to add. For possible values, see *Severity* table.|

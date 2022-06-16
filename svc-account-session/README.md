@@ -220,7 +220,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Session.v1_3_0.Session",
+   "@odata.type":"#Session.v1_4_0.Session",
    "@odata.id":"/redfish/v1/SessionService/Sessions/4ee42139-22db-4e2a-97e4-020013248768",
    "Id":"4ee42139-22db-4e2a-97e4-020013248768",
    "Name":"User Session",

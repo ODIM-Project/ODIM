@@ -508,7 +508,7 @@ When adding a new subscription, follow these guidelines:
    "@odata.context":"/ODIM/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"AA6D42B0\"",
    "@odata.id":"/ODIM/v1/Managers/<Id>",
-   "@odata.type":"#Manager.v1_13_0.Manager",
+   "@odata.type":"#Manager.v1_15_0.Manager",
    "Name":"<plugin name>",
    "ManagerType":"Service",
    "Id":"<ManagerID>",

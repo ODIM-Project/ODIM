@@ -16,15 +16,17 @@
 package rfphandler
 
 import (
+	"io/ioutil"
+	"net/http"
+	"strings"
+
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
 //GetManagersCollection  Fetches details of the given resource from the device
@@ -95,7 +97,7 @@ func GetManagersInfo(ctx iris.Context) {
 			ODataContext: "/ODIM/v1/$metadata#Manager.Manager",
 			//Etag:            "W/\"AA6D42B0\"",
 			ODataID:         uri,
-			ODataType:       "#Manager.v1_13_0.Manager",
+			ODataType:       common.ManagerType,
 			Name:            pluginConfig.Data.PluginConf.ID,
 			ManagerType:     "Service",
 			ID:              pluginConfig.Data.RootServiceUUID,

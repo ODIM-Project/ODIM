@@ -496,7 +496,7 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/AggregationService/Aggregates/{aggregateId}/Aggregate.SetDefaultBootOrder|`POST`|
 |/redfish/v1/AggregationService/Aggregates/{aggregateId}/Actions/Aggregate.RemoveElements|`POST`|
 |/redfish/v1/AggregationService/ConnectionMethods|GET|
-|/redfish/v1/AggregationService/ConnectionMethods/{connectionmethodsId\}|GET|
+|/redfish/v1/AggregationService/ConnectionMethods/{connectionmethodsId}|GET|
 
 |Systems||
 |-------|--------------------|
@@ -513,9 +513,9 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}|`GET`|
-|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/{driveId\}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/{driveId}|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes|`GET` , `POST`|
-|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId\}|`GET`, `DELETE`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}|`GET`, `DELETE`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools/{storagepool_Id}|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes|`GET`|
@@ -590,9 +590,9 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/Fabrics/{fabricId}/Zones|`GET`, `POST`|
 |/redfish/v1/Fabrics/{fabricId}/Zones/{zoneId\}|`GET`, `PATCH`, `DELETE`|
 |/redfish/v1/Fabrics/{fabricId}/AddressPools|`GET`, `POST`|
-|/redfish/v1/Fabrics/{fabricId}/AddressPools/{addresspoolid\}|`GET`, `DELETE`|
+|/redfish/v1/Fabrics/{fabricId}/AddressPools/{addresspoolid}|`GET`, `DELETE`|
 |/redfish/v1/Fabrics/{fabricId}/Endpoints|`GET`, `POST`|
-|/redfish/v1/Fabrics/{fabricId}/Endpoints/{endpointid\}|`GET`, `DELETE`|
+|/redfish/v1/Fabrics/{fabricId}/Endpoints/{endpointId}|`GET`, `DELETE`|
 
 |TaskService||
 |-------|--------------------|
@@ -1765,7 +1765,7 @@ All aggregation actions are performed as *[tasks](#tasks)* in Resource Aggregato
 |/redfish/v1/AggregationService/Aggregates/{aggregateId}/Aggregate.SetDefaultBootOrder|POST|`ConfigureComponents`, `ConfigureManager` |
 |/redfish/v1/AggregationService/Aggregates/{aggregateId}/Actions/Aggregate.RemoveElements|POST|`ConfigureComponents`, `ConfigureManager` |
 |/redfish/v1/AggregationService/ConnectionMethods|GET|`Login`|
-|/redfish/v1/AggregationService/ConnectionMethods/{connectionmethodsId\}|GET|`Login`|
+|/redfish/v1/AggregationService/ConnectionMethods/{connectionmethodsId}|GET|`Login`|
 
 >**Note:**
 Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
@@ -2573,7 +2573,7 @@ curl -i POST \
       "/redfish/v1/Systems/{ComputerSystemId2}"
    ]
 }' \
- 'https://{odim\_host\}:{port\}/redfish/v1/AggregationService/Actions/AggregationService.Reset'
+ 'https://{odim_host}:{port}/redfish/v1/AggregationService/Actions/AggregationService.Reset'
 
 
 ```
@@ -2725,7 +2725,7 @@ curl -i POST \
       }
    ]
 }' \
- 'https://{odim\_host\}:{port}/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder'
+ 'https://{odim_host}:{port}/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder'
 
 
 ```
@@ -3478,12 +3478,12 @@ To discover crucial configuration information about a resource, including chassi
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives|GET|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}|GET|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}|GET|`Login` |
-|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/{driveId\}|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/{driveId}|GET|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes|GET, POST|`Login`, `ConfigureComponents` |
-|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId\}|GET, DELETE|`Login`, `ConfigureComponents` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}|GET, DELETE|`Login`, `ConfigureComponents` |
 |/redfish/v1/Systems/{ComputerSystemId}/Processors|GET|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Processors/{id}|GET|`Login` |
-|/redfish/v1/Systems?$filter={searchKeys\}%20{conditionKeys\}%20{value\}|GET|`Login` |
+|/redfish/v1/Systems?$filter={searchKeys}%20{conditionKeys}%20{value}|GET|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Bios/Settings<br> |GET, PATCH|`Login`, `ConfigureComponents` |
 |/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset|POST|`ConfigureComponents` |
 |/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.SetDefaultBootOrder|POST|`ConfigureComponents` |
@@ -8141,9 +8141,9 @@ When deleting fabric entities, ensure to delete them in the following order:
 |/redfish/v1/Fabrics/{fabricId}/Zones|GET, POST|`Login`, `ConfigureComponents` |
 |/redfish/v1/Fabrics/{fabricId}/Zones/{zoneId\}|GET, PATCH, DELETE|`Login`, `ConfigureComponents` |
 |/redfish/v1/Fabrics/{fabricId}/AddressPools|GET, POST|`Login`, `ConfigureComponents` |
-|/redfish/v1/Fabrics/{fabricId}/AddressPools/{addresspoolid\}|GET, DELETE|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/{fabricId}/AddressPools/{addresspoolid}|GET, DELETE|`Login`, `ConfigureComponents` |
 |/redfish/v1/Fabrics/{fabricId}/Endpoints|GET, POST|`Login`, `ConfigureComponents` |
-|/redfish/v1/Fabrics/{fabricId}/Endpoints/{endpointId\}|GET, DELETE|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/{fabricId}/Endpoints/{endpointId}|GET, DELETE|`Login`, `ConfigureComponents` |
 
 
 
@@ -9078,7 +9078,7 @@ curl -i POST \
 |BgpEvpn{| (required)<br> | |
 |RouteDistinguisherList|Array (required)<br> | Single route distinguisher value for the VRF.<br> |
 |RouteTargetList|Array (optional)<br> | Route targets. By default, the route targets will be configured as both import and export.<br> |
-|GatewayIPAddressList\}|Array (required)<br> | IP pool to assign IPv4 address to the IP interface used by the VRF per switch.<br> |
+|GatewayIPAddressList}|Array (required)<br> | IP pool to assign IPv4 address to the IP interface used by the VRF per switch.<br> |
 
 >**Sample response header** 
 
@@ -10976,7 +10976,7 @@ The arguments are the substitution variables for the message. The `MessageId` is
 |-------|--------------------|-------------------|
 |/redfish/v1/Registries|GET|`Login` |
 |/redfish/v1/Registries/{registryId}|GET|`Login` |
-|/redfish/v1/registries/{registryFileId\}|GET|`Login` |
+|/redfish/v1/registries/{registryFileId}|GET|`Login` |
 
 
 >**NOTE:**

@@ -524,7 +524,7 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Processors|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Processors/{id}|`GET`|
-|/redfish/v1/Systems?filter={searchKeys\}%20{conditionKeys\}%20{value/regEx\}|`GET`|
+|/redfish/v1/Systems?filter={searchKeys*}%20{conditionKeys}%20{value/regEx}|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Bios/Settings<br> |`GET`, `PATCH`|
 |/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset|`POST`|
 |/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.SetDefaultBootOrder|`POST`|
@@ -586,9 +586,9 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/Fabrics/{fabricId}/Switches|`GET`|
 |/redfish/v1/Fabrics/{fabricId}/Switches/{switchId}|`GET`|
 |/redfish/v1/Fabrics/{fabricId}/Switches/{switchId}/Ports<br> |`GET`|
-|/redfish/v1/Fabrics/{fabricId} /Switches/{switchId}/Ports/{portid\}<br> |`GET`|
+|/redfish/v1/Fabrics/{fabricId} /Switches/{switchId}/Ports/{portid}<br> |`GET`|
 |/redfish/v1/Fabrics/{fabricId}/Zones|`GET`, `POST`|
-|/redfish/v1/Fabrics/{fabricId}/Zones/{zoneId\}|`GET`, `PATCH`, `DELETE`|
+|/redfish/v1/Fabrics/{fabricId}/Zones/{zoneId}|`GET`, `PATCH`, `DELETE`|
 |/redfish/v1/Fabrics/{fabricId}/AddressPools|`GET`, `POST`|
 |/redfish/v1/Fabrics/{fabricId}/AddressPools/{addresspoolid}|`GET`, `DELETE`|
 |/redfish/v1/Fabrics/{fabricId}/Endpoints|`GET`, `POST`|
@@ -1036,7 +1036,7 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|UserName|String (required)|Username of the user account for the session. For the first time, use the username of the default administrator account \(admin\). Subsequently, when you create other user accounts, you can use the credentials of these accounts to create a session.<br>**NOTE:** This user must have `Login` privilege.|
+|UserName|String (required)|Username of the user account for the session. For the first time, use the username of the default administrator account (admin). Subsequently, when you create other user accounts, you can use the credentials of these accounts to create a session.<br>**NOTE:** This user must have `Login` privilege.|
 |Password|String (required)<br> |Password of the user account for the session. For the first time, use the password of the default administrator account. Subsequently, when you create other user accounts, you can use the credentials of these accounts to create a session. |
 
 >**Sample response header**
@@ -7962,7 +7962,7 @@ curl -i POST \
 |---------|----|-----------|
 |ImageURI|String (required)<br> |The URI of the software or firmware image to install. It is the location address of the software or firmware image you want to install.|
 |Password|String (optional)<br> |The password to access the URI specified by the Image URI parameter.|
-|Targets[\]|Array (required)<br> |An array of URIs that indicate where to apply the update image.|
+|Targets[]|Array (required)<br> |An array of URIs that indicate where to apply the update image.|
 |TransferProtocol|String (optional)<br> | The network protocol that the update service uses to retrieve the software or the firmware image file at the URI provided in the `ImageURI` parameter, if the URI does not contain a scheme.<br> For the possible property values, see *Transfer protocol* table.<br> |
 |Username|String (optional)<br> |The user name to access the URI specified by the Image URI parameter.|
 |@Redfish.OperationApplyTimeSupport|Redfish annotation (optional)<br> | It enables you to control when the update is carried out.<br> Supported value is: `OnStartUpdate`. It indicates that the update will be carried out only after you perform HTTP POST on:<br> `/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate`.<br> |
@@ -8137,9 +8137,9 @@ When deleting fabric entities, ensure to delete them in the following order:
 |/redfish/v1/Fabrics/{fabricId}/Switches|GET|`Login` |
 |/redfish/v1/Fabrics/{fabricId}/Switches/{switchId}|GET|`Login` |
 | /redfish/v1/Fabrics/{fabricId}/Switches/{switchId}/Ports<br> |GET|`Login` |
-| /redfish/v1/Fabrics/{fabricId} /Switches/{switchId}/Ports/{portid\}<br> |GET|`Login` |
+| /redfish/v1/Fabrics/{fabricId} /Switches/{switchId}/Ports/{portid}<br> |GET|`Login` |
 |/redfish/v1/Fabrics/{fabricId}/Zones|GET, POST|`Login`, `ConfigureComponents` |
-|/redfish/v1/Fabrics/{fabricId}/Zones/{zoneId\}|GET, PATCH, DELETE|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/{fabricId}/Zones/{zoneid}|GET, PATCH, DELETE|`Login`, `ConfigureComponents` |
 |/redfish/v1/Fabrics/{fabricId}/AddressPools|GET, POST|`Login`, `ConfigureComponents` |
 |/redfish/v1/Fabrics/{fabricId}/AddressPools/{addresspoolid}|GET, DELETE|`Login`, `ConfigureComponents` |
 |/redfish/v1/Fabrics/{fabricId}/Endpoints|GET, POST|`Login`, `ConfigureComponents` |

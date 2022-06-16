@@ -829,7 +829,6 @@ def load_odimra_certs(isUpgrade):
 	CONTROLLER_CONF_DATA['odimra']['rootCACert'] = read_file(os.path.join(cert_dir, 'rootCA.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraServerCert'] = read_file(os.path.join(cert_dir, 'odimra_server.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraServerKey'] = read_file(os.path.join(cert_dir, 'odimra_server.key'))
-	CONTROLLER_CONF_DATA['odimra']['redisPassword'] = read_file(os.path.join(cert_dir, 'redis_password'))
 	if CONTROLLER_CONF_DATA['odimra']['messageBusType'] == 'RedisStreams':
 				logger.info("RedisStreams is selected as messageBusType")
 	else:

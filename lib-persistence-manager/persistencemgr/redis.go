@@ -89,6 +89,7 @@ func sentinelNewClient(dbConfig *Config) *redisSentinel.SentinelClient {
 		Addr:      dbConfig.Host + ":" + dbConfig.SentinelPort,
 		DB:        0, // use default DB
 		TLSConfig: tlsConfig,
+		Password:  dbConfig.Password,
 	})
 	return rdb
 }

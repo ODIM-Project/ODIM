@@ -95,6 +95,7 @@ type UpdateService struct {
 // HTTPPushURIOptions defines the options for HttpPushUri-provided software updates
 type HTTPPushURIOptions struct {
 	HTTPPushURIApplyTime *HTTPPushURIApplyTime `json:"HTTPPushURIApplyTime,omitempty"`
+	ForceUpdate          bool                  `json:"ForceUpdate,omitempty"`
 }
 
 // HTTPPushURIApplyTime defines the settings for when toapply HttpPushUri-provided firmware.

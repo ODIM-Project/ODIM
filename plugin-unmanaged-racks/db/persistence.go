@@ -63,6 +63,7 @@ func CreateDAO(c *config.PluginConfig, sentinelMasterName string, getTLSConfig T
 			redis.NewClient(&redis.Options{
 				Addr:      c.RedisAddress,
 				TLSConfig: tlsConfig,
+				Password:  string(c.RedisOnDiskPassword),
 			}),
 		}
 	}
@@ -72,6 +73,7 @@ func CreateDAO(c *config.PluginConfig, sentinelMasterName string, getTLSConfig T
 			MasterName:    sentinelMasterName,
 			SentinelAddrs: []string{c.RedisAddress},
 			TLSConfig:     tlsConfig,
+			Password:      string(c.RedisOnDiskPassword),
 		}),
 	}
 }

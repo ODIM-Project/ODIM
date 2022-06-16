@@ -3702,16 +3702,10 @@ The protoc compiler provides a language-neutral, platform-neutral, extensible me
    1. Download the protoc compiler package:
 
       ```
-   wget https://github.com/protocolbuffers/protobuf/releases/download/v3.19.1/protoc-3.19.1-linux-x86_64.zip.
+   wget https://github.com/protocolbuffers/protobuf/releases/download/v3.19.1/protoc-3.19.1-linux-x86_64.zip -P /tmp/'
       ```
    
-   2. Create a directory `proto_files`:
-   
-      ```
-      mkdir proto_files
-      ```
-   
-   3. Install unzip (if not already installed):
+   2. Install unzip (if not already installed):
    
       ```
       sudo apt install unzip
@@ -3720,7 +3714,7 @@ The protoc compiler provides a language-neutral, platform-neutral, extensible me
    4. Unzip the the protoc compiler package to the `proto_files` directory: 
    
       ```
-      protoc-3.19.1-linux-x86_64.zip -d proto_files`
+      unzip /tmp/protoc-3.19.1-linux-x86_64.zip -d proto_files
       ```
    
    5. Navigate to the `bin` directory in the `proto_files` directory:

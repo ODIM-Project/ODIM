@@ -1532,7 +1532,7 @@ curl -i POST \
 
 -   Your password must be at least 12 characters long and at most 16 characters long.
 
--   Your password must contain at least one uppercase letter (A-Z), one lowercase letter (a-z), one digit (0-9\), and one special character (~!@\#$%^&\*-+\_|(){}:;<\>,.?/).
+-   Your password must contain at least one uppercase letter (A-Z), one lowercase letter (a-z), one digit (0-9), and one special character (~!@\#$%^&\*-+\_|(){}:;<\>,.?/).
 
 
 >**Sample response header**
@@ -1994,7 +1994,7 @@ Examples:
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources` |
 |<strong>Description</strong> | This operation creates an aggregation source for a plugin and adds it in the inventory. It is performed in the background as a Redfish task.|
-|<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header (HTTP 202 status)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body (HTTP 202 status)".</li><li>On successful completion:<ul><li>The aggregation source Id, the IP address, the username, and other details of the added plugin in the JSON response body.</li><li> A link (having the aggregation source id) to the added plugin in the `Location` header. See `Location` URI highlighted in bold in "Sample response header (HTTP 201 status)".</li></ul></li></ul>  |
+|<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion:<ul><li>The aggregation source Id, the IP address, the username, and other details of the added plugin in the JSON response body.</li><li> A link (having the aggregation source id) to the added plugin in the `Location` header. See `Location` URI in *Sample response header (HTTP 201 status)*.</li></ul></li></ul>  |
 |<strong>Response Code</strong> |`202 Accepted` On success, `201 Created`|
 |<strong>Authentication</strong> |Yes|
 
@@ -2216,7 +2216,7 @@ location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-af
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources` |
 |<strong>Description</strong> | This operation creates an aggregation source for a BMC, discovers information, and performs a detailed inventory of it.<br> The `AggregationSource` schema provides information about a BMC such as its IP address, username, password, and so on.<br> This operation is performed in the background as a Redfish task.<br> |
-|<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header (HTTP 202 status)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body (HTTP 202 status)".</li><li>On successful completion:<ul><li>The aggregation source id, the IP address, the username, and other details of the added BMC in the JSON response body.</li><li>A link (having the aggregation source id) to the added BMC in the `Location` header. See `Location` URI highlighted in bold in *Sample response header (HTTP 201 status)*.</li></ul></li></ul>|
+|<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion:<ul><li>The aggregation source id, the IP address, the username, and other details of the added BMC in the JSON response body.</li><li>A link (having the aggregation source id) to the added BMC in the `Location` header. See `Location` URI in *Sample response header (HTTP 201 status)*.</li></ul></li></ul>|
 |<strong>Response Code</strong> |On success, `202 Accepted`<br>On successful completion of the task, `201 Created` <br> |
 |<strong>Authentication</strong> |Yes|
 
@@ -2539,7 +2539,7 @@ curl -i PATCH \
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationService.Reset` |
 |<strong>Description</strong> |This action shuts down, powers up, and restarts one or more servers. It is performed in the background as a Redfish task and is further divided into subtasks to reset each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation (task) in the response header. See `Location` URI highlighted in bold in *Sample response header (HTTP 202 status)*.<br><br>-   Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task id highlighted in bold in *Sample response body (HTTP 202 status)*.<br>**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`. <br>-  Upon the completion of the reset operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.|
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation (task) in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.<br><br>-   Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task id  in *Sample response body (HTTP 202 status)*.<br>**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`. <br>-  Upon the completion of the reset operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.|
 |<strong>Response code</strong> |On success, `202 Accepted`.<br> On successful completion of the task, `200 OK`.|
 |<strong>Authentication</strong> |Yes|
 
@@ -2547,7 +2547,7 @@ curl -i PATCH \
 
 To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header (until the task is complete).
 
-To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body (HTTP 202 status)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of the reset operation (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in "Sample response body (subtask)".
+To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of the reset operation (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor  in "Sample response body (subtask)".
 
 You can perform reset on a group of servers by specifying multiple target URIs in the request.
 
@@ -2690,7 +2690,7 @@ Content-Length:491 bytes
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder` |
 |<strong>Description</strong> |This action changes the boot order of one or more servers to default settings. This operation is performed in the background as a Redfish task and is further divided into subtasks to change the boot order of each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in *Sample response header (HTTP 202 status)*.<br><br>-  Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in *Sample response body (HTTP 202 status)*.<br>IMPORTANT:<br>Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</blockquote><br>- On successful completion of this operation, a message in the response body, saying that the operation is completed successfully. See *Sample response body (HTTP 200 status)*.<br>|
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.<br><br>-  Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id  in *Sample response body (HTTP 202 status)*.<br>IMPORTANT:<br>Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</blockquote><br>- On successful completion of this operation, a message in the response body, saying that the operation is completed successfully. See *Sample response body (HTTP 200 status)*.<br>|
 |<strong>Response code</strong> |`202 Accepted`. On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
@@ -2698,7 +2698,7 @@ Content-Length:491 bytes
 
 To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header (until the task is complete).
 
-To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of `SetDefaultBootOrder` action (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in *Sample response body (subtask)*.
+To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of `SetDefaultBootOrder` action (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor  in *Sample response body (subtask)*.
 
 You can perform `setDefaultBootOrder` action on a group of servers by specifying multiple server URIs in the request.
 
@@ -2829,7 +2829,7 @@ Content-Length:491 bytes
 |<strong>Method</strong> | `DELETE` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources/{AggregationSourceId}` |
 |<strong>Description</strong> |This operation removes a specific aggregation source (plugin, BMC, or any manager) from the inventory. Deleting an aggregation source also deletes all event subscriptions associated with the BMC. This operation is performed in the background as a Redfish task.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in *Sample response header (HTTP 202 status)*.<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.<br>|
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.<br>|
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `204 No Content` <br> |
 |<strong>Authentication</strong> |Yes|
 
@@ -2908,7 +2908,7 @@ The resource aggregator allows you to perform the following tasks:
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Aggregates` |
 |<strong>Description</strong> |This operation creates an empty aggregate or an aggregate populated with resources.|
-|<strong>Returns</strong> | The `Location` URI of the created aggregate having the aggregate Id. See the `Location` URI highlighted in bold in "Sample response header".<br>-   Link to the new aggregate, its Id, and a message saying that the resource has been created successfully in the JSON response body.<br>|
+|<strong>Returns</strong> | The `Location` URI of the created aggregate having the aggregate Id. See the `Location` URI in "Sample response header".<br>-   Link to the new aggregate, its Id, and a message saying that the resource has been created successfully in the JSON response body.<br> |
 |<strong>Response Code</strong> |On success, `201 Created` |
 |<strong>Authentication</strong> |Yes|
 
@@ -3150,7 +3150,7 @@ curl -i POST \
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Aggregates/{AggregateId}/Actions/Aggregate.Reset` |
 |<strong>Description</strong> |This action shuts down, powers up, and restarts servers in a specific aggregate. This operation is performed in the background as a Redfish task and is further divided into subtasks to reset each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation (task) in the response header. See `Location` URI highlighted in bold in *Sample response header (HTTP 202 status)*.<br>- Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in *Sample response body (HTTP 202 status)*.<br>**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>- Upon the completion of the reset operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.|
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation (task) in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.<br>- Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id  in *Sample response body (HTTP 202 status)*.<br>**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>- Upon the completion of the reset operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.|
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
@@ -3158,7 +3158,7 @@ curl -i POST \
 
 To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header (until the task is complete).
 
-To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of the reset operation (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in *Sample response body (subtask)*.
+To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of the reset operation (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor  in *Sample response body (subtask)*.
 
 
 **NOTE:**
@@ -3277,7 +3277,7 @@ Content-Length:491 bytes
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Aggregates/{AggregateId}/Actions/Aggregate.SetDefaultBootOrder` |
 |<strong>Description</strong> |This action changes the boot order of all the servers belonging to a specific aggregate to default settings. This operation is performed in the background as a Redfish task and is further divided into subtasks to change the boot order of each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the created aggregate having the aggregate id. See the `Location` URI highlighted in bold in *Sample response header*.<br>-   Link to the new aggregate, its id, and a success message in the JSON response body.<br>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in *Sample response header (HTTP 202 status)*.<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in *Sample response header (HTTP 202 status)*.<br>**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>Upon the completion of the operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.<br>|
+|<strong>Returns</strong> |- `Location` URI of the created aggregate having the aggregate id. See the `Location` URI in *Sample response header*.<br>-   Link to the new aggregate, its id, and a success message in the JSON response body.<br>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id  in *Sample response header (HTTP 202 status)*.<br>**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>Upon the completion of the operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.<br>|
 |<strong>Response Code</strong> |`202 Accepted`. On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
@@ -3285,7 +3285,7 @@ Content-Length:491 bytes
 
 To know the progress of this action, perform HTTP `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header (until the task is complete).
 
-To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of `SetDefaultBootOrder` action (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in *Sample response body (subtask)*".
+To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of `SetDefaultBootOrder` action (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor  in *Sample response body (subtask)*".
 
 
 **NOTE:**
@@ -5593,7 +5593,7 @@ curl -i GET \
 |Method | `POST` |
 |URI |`/redfish/v1/Chassis`|
 |Description |This operation creates a rack group.|
-|Returns |<ul><li>`Location` header that contains a link to the created rack group (highlighted in bold in the sample response header)</li><li>JSON schema representing the created rack group<br></li></ul>|
+|Returns |<ul><li>`Location` header that contains a link to the created rack group ( in the sample response header)</li><li>JSON schema representing the created rack group<br></li></ul>|
 |Response code |On success, `201 Created`|
 |Authentication |Yes|
 
@@ -5697,7 +5697,7 @@ Content-Length:462 bytes
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/Chassis`|
 |**Description**|This operation creates a rack.|
-|**Returns** |<ul><li>`Location` header that contains a link to the created rack (highlighted in bold in the sample response header)</li><li>JSON schema representing the created rack<br></li></ul>|
+|**Returns** |<ul><li>`Location` header that contains a link to the created rack ( in the sample response header)</li><li>JSON schema representing the created rack<br></li></ul>|
 |**Response code** |On success, `201 Created`|
 |**Authentication** |Yes|
 

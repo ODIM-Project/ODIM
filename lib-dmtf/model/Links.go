@@ -32,7 +32,7 @@ type Links struct {
 	ManagersInChassis        []*Link     `json:"ManagersInChassis,omitempty"`
 	PCIeDevices              []*Link     `json:"PCIeDevices,omitempty"`
 	PCIeFunctions            []*Link     `json:"PCIeFunctions,omitempty"`
-	PoweredBy                []*Link     `json:"PoweredBy,omitempty"`
+	PoweredBy                []*Link     `json:"PoweredBy,omitempty"` //Deprecated in version v1.20.0
 	Processors               []*Link     `json:"Processors,omitempty"`
 	ResourceBlocks           []*Link     `json:"ResourceBlocks,omitempty"`
 	Storage                  []*Link     `json:"Storage,omitempty"`
@@ -41,6 +41,7 @@ type Links struct {
 	Zones                    []*Link     `json:"Zones,omitempty"`
 	ZonesCount               int         `json:"Zones@odata.count,omitempty"`
 	NetworkDeviceFunctions   []*Link     `json:"NetworkDeviceFunctions,omitempty"`
+	PowerOutlets             []*Link     `json:"PowerOutlets,omitempty"`
 }
 
 // Link holds the odata id redfish links

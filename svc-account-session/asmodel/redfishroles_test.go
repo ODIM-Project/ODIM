@@ -32,23 +32,23 @@ var roles = RedfishRoles{
 }
 
 func TestCreateRedfishRoles(t *testing.T) {
-	 common.SetUpMockConfig()
-	 defer func() {
-	 	common.TruncateDB(common.OnDisk)
-	 	common.TruncateDB(common.InMemory)
-	 }()
-	 GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	common.SetUpMockConfig()
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
 	}
-	 err := roles.Create()
-	 assert.Nil(t, err, "There should be no error")
+	err := roles.Create()
+	assert.Nil(t, err, "There should be no error")
 }
-	
+
 func TestGetRedfishRoles(t *testing.T) {
 	common.SetUpMockConfig()
 	defer func() {
-	 	common.TruncateDB(common.OnDisk)
-	 	common.TruncateDB(common.InMemory)
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
 	}()
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
@@ -59,20 +59,20 @@ func TestGetRedfishRoles(t *testing.T) {
 }
 
 func TestGetRedfishRolesNegativeTestCase(t *testing.T) {
- 	common.SetUpMockConfig()
- 	defer func() {
- 		common.TruncateDB(common.OnDisk)
- 		common.TruncateDB(common.InMemory)
- 	}()
-	 GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	common.SetUpMockConfig()
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
 	}
- 	_, err := GetRedfishRoles()
- 	assert.NotNil(t, err, "There should be an error")
- 	mockData(common.OnDisk, "roles", "redfishdefined", "roles")
- 	_, err = GetRedfishRoles()
- 	assert.NotNil(t, err, "There should be an error")
- }
+	_, err := GetRedfishRoles()
+	assert.NotNil(t, err, "There should be an error")
+	mockData(common.OnDisk, "roles", "redfishdefined", "roles")
+	_, err = GetRedfishRoles()
+	assert.NotNil(t, err, "There should be an error")
+}
 
 func TestCreateRedfishRolesDBError(t *testing.T) {
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {

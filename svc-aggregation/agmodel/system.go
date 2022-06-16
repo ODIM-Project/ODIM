@@ -74,20 +74,21 @@ type SystemOperation struct {
 
 // AggregationSource  payload of adding a AggregationSource
 type AggregationSource struct {
-	HostName     string                `json:"HostName"`
-	UserName     string                `json:"UserName,omitempty"`
-	Password     []byte                `json:"Password,omitempty"`
-	Links        interface{}           `json:"Links,omitempty"`
-	ODataContext string                `json:"@odata.context,omitempty"`
-	ODataEtag    string                `json:"@odata.etag,omitempty"`
-	ODataID      string                `json:"@odata.id"`
-	ODataType    string                `json:"@odata.type"`
-	Name         string                `json:"Name"`
-	Actions      *dmtfmodel.OemActions `json:"Actions,omitempty"`
-	Description  string                `json:"Description,omitempty"`
-	ID           string                `json:"Id"`
-	Oem          *dmtfmodel.Oem        `json:"Oem,omitempty"`
-	SNMP         *SNMP                 `json:"SNMP,omitempty"`
+	HostName        string                `json:"HostName"`
+	UserName        string                `json:"UserName,omitempty"`
+	Password        []byte                `json:"Password,omitempty"`
+	Links           interface{}           `json:"Links,omitempty"`
+	ODataContext    string                `json:"@odata.context,omitempty"`
+	ODataEtag       string                `json:"@odata.etag,omitempty"`
+	ODataID         string                `json:"@odata.id"`
+	ODataType       string                `json:"@odata.type"`
+	Name            string                `json:"Name"`
+	Actions         *dmtfmodel.OemActions `json:"Actions,omitempty"`
+	Description     string                `json:"Description,omitempty"`
+	ID              string                `json:"Id"`
+	Oem             *dmtfmodel.Oem        `json:"Oem,omitempty"`
+	SNMP            *SNMP                 `json:"SNMP,omitempty"`
+	AggregationType string                `json:"AggregationType,omitempty"`
 }
 
 // SNMP  payload of adding a SNMP
@@ -98,6 +99,7 @@ type SNMP struct {
 	EncryptionKey          string `json:"EncryptionKey,omitempty"`
 	EncryptionKeySet       bool   `json:"EncryptionKeySet,omitempty"`
 	EncryptionProtocol     string `json:"EncryptionProtocol,omitempty"`
+	TrapCommunity          string `json:"TrapCommunity,omitempty"`
 }
 
 // Aggregate payload is used for perform the operations on Aggregate

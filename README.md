@@ -313,6 +313,10 @@ The following table lists the software components and their versions that are co
        sudo -H pip3 install pycryptodome==3.4.3 --proxy=${http_proxy}
        ```
 
+   18. ```
+       sudo -H pip3 install cryptography==3.4.8 --proxy=${http_proxy}
+       ```
+
 5. [Download and install go](#downloading-and-installing-go) on the deployment node.
 
 6. [Configure Docker proxy](#configuring-docker-proxy) on the deployment node.
@@ -548,9 +552,9 @@ While deploying Resource Aggregator for ODIM, verify the versions of the followi
 
 
 
-## Generating an encrypted node password
+## Generating encrypted passwords for nodes and Redis
 
-Encrypting the password of the local non-root user on the Kubernetes cluster nodes makes the deployment process non-interactive. If the encrypted password is not available during deployment, you are prompted to enter the password for the first time.
+Encrypting passwords of the local non-root user on the Kubernetes cluster nodes and Redis database makes the deployment process non-interactive. If the encrypted password is not available during deployment, you are prompted to enter the password for the first time.
 
 Resource Aggregator for ODIM uses the odim-vault tool to encrypt and decrypt passwords.
 
@@ -590,13 +594,15 @@ Resource Aggregator for ODIM uses the odim-vault tool to encrypt and decrypt pas
     scripts/odimVaultKeyFile
     ```
 
-5. Enter the password of the default non-root user \(that was set across all cluster nodes initially\) in plain text in a file called nodePasswordFile. Save the file. 
+5. Enter the password of the default non-root user \(that was set across all cluster nodes initially\) in plain text in a file called `nodePasswordFile`. 
 
     ```
     vi nodePasswordFile
     ```
 
-6. To encrypt the entered password, run the following command: 
+6. Save the file. 
+
+8. To encrypt the password, run the following command: 
 
     ```
     ./odim-vault -key ~/ODIM/odim-controller/\
@@ -604,13 +610,63 @@ Resource Aggregator for ODIM uses the odim-vault tool to encrypt and decrypt pas
     scripts/nodePasswordFile
     ```
 
-    **Result**: nodePasswordFile contains the encrypted node password.
+    **Result**: `nodePasswordFile` contains the encrypted node password.
 
-7. Change the file permissions of nodePasswordFile.
+9. Change the file permissions of `nodePasswordFile`.
 
     ```
     chmod 0400 /home/${USER}/ODIM/odim-controller/\
     scripts/nodePasswordFile
+    ```
+
+10. Enter the password of the Redis in-memory database in plain text in a file called `redisInMemoryPasswordFile`.  
+
+   ```
+   vi redisInMemoryPasswordFile
+   ```
+
+11. Save the file.
+
+12. To encrypt the password, run the following command: 
+
+    ```
+    ./odim-vault -key ~/ODIM/odim-controller/\
+    scripts/odimVaultKeyFile -encrypt /home/${USER}/ODIM/odim-controller/\
+    scripts/redisInMemoryPasswordFile
+    ```
+
+    **Result**: `redisInMemoryPasswordFile` contains the encrypted node password.
+
+13. Change the file permissions of `redisInMemoryPasswordFile`.
+
+    ```
+    chmod 0400 /home/${USER}/ODIM/odim-controller/\
+    scripts/redisInMemoryPasswordFile
+    ```
+
+14. Enter the password of the Redis on-disk database in plain text in a file called `redisOnDiskPasswordFile`. 
+
+    ```
+    vi redisOnDiskPasswordFile
+    ```
+
+15. Save the file.
+
+16. To encrypt the password, run the following command: 
+
+    ```
+    ./odim-vault -key ~/ODIM/odim-controller/\
+    scripts/odimVaultKeyFile -encrypt /home/${USER}/ODIM/odim-controller/\
+    scripts/redisOnDiskPasswordFile 
+    ```
+
+    **Result**: `redisOnDiskPasswordFile` contains the encrypted node password.
+
+17. Change the file permissions of `redisOnDiskPasswordFile`.
+
+    ```
+    chmod 0400 /home/${USER}/ODIM/odim-controller/\
+    scripts/redisOnDiskPasswordFile 
     ```
 
 ## Log path for odim-controller
@@ -689,6 +745,8 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
       httpsProxy:
       noProxy:
       nodePasswordFilePath:
+      redisInMemoryPasswordFilePath:
+      redisOnDiskPasswordFilePath:
       nodes:
         <Node1_Hostname>:
           ip: <Node1_IPAddress>
@@ -766,7 +824,7 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
         odimraRSAPublicKey:
         odimraRSAPrivateKey:
         odimraKafkaClientCert:
-        odimraKafkaClientKey:
+     odimraKafkaClientKey:
       ```
 
       For information on each parameter in this configuration file, see [Odim-controller configuration parameters](#odim-controller-configuration-parameters).
@@ -783,31 +841,48 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
 
       - `nodePasswordFilePath`
 
-      - `nodes` (details of the single deployment node or the cluster nodes based on the type of your deployment)
+      - `redisInMemoryPasswordFilePath`
 
-        For three node deployment:
-
-        - hostnames of node 1, node 2, and node 3
+      - `redisOnDiskPasswordFilePath`
    
+      - `nodes` (details of the single deployment node or the cluster nodes based on the type of your deployment)
+   
+        For three node deployment:
+   
+        - hostnames of node 1, node 2, and node 3
+
         - IP addresses of node 1, node 2, and node 3
    
         - username of node 1, node 2, and node 3
-   
+      
         - Priority values of node 1, node 2, and node 3 (mandatory if `haDeploymentEnabled` is set to true)
-
+      
       - `nwPreference` (default value is ipv4. If `dualStack` based deployment is selected, resource aggregator API service can be reached via both IPv4 and IPv6 addresses)
+      
       - `odimControllerSrcPath`
+      
       - `odimVaultKeyFilePath`
+      
       - `odimraImagePath`
+      
       - `odimPluginPath`
+      
       - `fqdn`
+      
       - `rootServiceUUID`
+      
       - `connectionMethodConf`
+      
       - `etcHostsEntries`
+      
       - `apiProxyPort` (mandatory if `haDeploymentEnabled` is set to true)
+      
       - `nginxLogPath` (mandatory if `haDeploymentEnabled` is set to true)
+      
       - `virtualRouterID` (mandatory if `haDeploymentEnabled` is set to true)
+      
       - `virtualIP` (mandatory if `haDeploymentEnabled` is set to true)
+      
       - `virtualIPv6` (mandatory if `haDeploymentEnabled` is set to true and `nwPreference` is set to `dualStack`)
    
 
@@ -841,20 +916,22 @@ It is recommended to have a regular backup of the updated deployment configurati
    httpsProxy: <HTTPS Proxy to be set in the nodes>
    noProxy: <NO PROXY env to be set in the nodes>
    nodePasswordFilePath: <Absolute path of the file containing encrypted node password>
+   redisInMemoryPasswordFilePath: <Absolute path of the file containing encrypted Redis in-memory password>
+   redisOnDiskPasswordFilePath: <Absolute path of the file containing encrypted Redis on-disk password>
    nodes:
      knode1:
-       ip: 17.5.7.8
-       ipv6: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+       ip: <IPv4_address of knode1>
+       ipv6: <IPv6_address of knode1>
        username: user
        priority: 100
      knode2:
-       ip: 17.5.7.9
-       ipv6: 2001:0db8:85a3:0000:0000:8a2e:0371:7335
+       ip: <IPv4 address of knode2>
+       ipv6: <IPv6 address of knode2>
        username: user
        priority: 99
      knode3:
-       ip: 17.5.7.10
-       ipv6: 2001:0db8:85a3:0000:0000:8a2e:0371:7336
+       ip: <IPv4_address of knode3>
+       ipv6: <IPv6_address of knode3>
        username: user
        priority: 98
    nwPreference: ipv4
@@ -914,8 +991,8 @@ It is recommended to have a regular backup of the updated deployment configurati
      
      nginxLogPath: /var/log/nginx
      virtualRouterID: 100
-     virtualIP: 17.5.7.11
-     virtualIPv6:2001:0db8:85a3:0000:0000:8a2e:0373:7337
+     virtualIP: <virtual IPv4 address>
+     virtualIPv6:<virtual IPv6 address>
      
      rootCACert:
      odimraServerCert:
@@ -1391,10 +1468,9 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
      dellPluginRootServiceUUID: 7a38b735-8b9f-48a0-b3e7-e5a180567d37
      username: admin
      password: sTfTyTZFvNj5zU5Tt0TfyDYU-ye3_ZqTMnMIj-LAeXaa8vCnBqq8Ga7zV6ZdfqQCdSAzmaO5AJxccD99UHLVlQ==
-     lbHost: 17.5.7.8
+     lbHost: xxx.xxx.xxx.xxx
      lbPort: 30084
      logPath: /var/log/dellplugin_logs
-    
     ```
     
 5. Update the following parameters in the plugin configuration file: 
@@ -1545,7 +1621,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
      lenovoPluginRootServiceUUID: 7a38b735-8b9f-48a0-b3e7-e5a180567d37
      username: admin
      password: sTfTyTZFvNj5zU5Tt0TfyDYU-ye3_ZqTMnMIj-LAeXaa8vCnBqq8Ga7zV6ZdfqQCdSAzmaO5AJxccD99UHLVlQ==
-     lbHost: 17.5.7.9
+     lbHost: xxx.xxx.xxx.xxx
      lbPort: 30089
      logPath: /var/log/lenovoplugin_logs
    ```
@@ -2409,7 +2485,7 @@ You can also refer the following links for exploring Wiki page and slack channel
     ```
     export http_proxy=<your_HTTP_proxy_address>
     export https_proxy=<your_HTTP_proxy_address>
-    no_proxy="127.0.0.1,localhost,localhost.localdomain,17.5.7.9/12,<Deployment_Node_IP_address>,\
+    no_proxy="127.0.0.1,localhost,localhost.localdomain,xxx.xxx.xxx.9/12,<Deployment_Node_IP_address>,\
     <Comma-separated-list-of-Ip-addresses-of-all-cluster-nodes>"
     ```
 
@@ -2421,7 +2497,7 @@ You can also refer the following links for exploring Wiki page and slack channel
     ```
    export http_proxy=<your_HTTP_proxy_address>
    export https_proxy=<your_HTTP_proxy_address>
-   no_proxy="127.0.0.1,localhost,localhost.localdomain,17.5.7.10/12,<Deployment_Node_IP_address>,<Cluster_Node1_IP>,\
+   no_proxy="127.0.0.1,localhost,localhost.localdomain,xxx.xxx.xxx.10/12,<Deployment_Node_IP_address>,<Cluster_Node1_IP>,\
    <Cluster_Node1_IP>,<Cluster_Node2_IP>,<Cluster_Node3_IP>"
     ```
 
@@ -2683,7 +2759,9 @@ The following table lists all the configuration parameters required by odim-cont
 |httpProxy|HTTP Proxy to be set in all the nodes for connecting to external network. If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
 |httpsProxy|HTTPS Proxy to be set in all the nodes for connecting to external network. If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
 |noProxy|List of IP addresses and FQDNs for which proxy must not be used. It must begin with `127.0.0.1,localhost,localhost.localdomain,10.96.0.0/12,` followed by the IP addresses of the cluster nodes.<br>If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
-|nodePasswordFilePath|The absolute path of the file containing the encoded password of the nodes \(encoded using the odim-vault tool\) - `/home/<username\>/ODIM/odim-controller/scripts/nodePasswordFile`<br>|
+|nodePasswordFilePath|The absolute path of the file containing the encoded password of the nodes \(encoded using the odim-vault tool)<br />`/home/<username\>/ODIM/odim-controller/scripts/nodePasswordFile`<br>|
+|redisInMemoryPasswordFilePath|The absolute path of the file containing the encoded password of the Redis in-memory database (encoded using the odim-vault tool\)<br /> `/home/<username\>/ODIM/odim-controller/scripts/redisInMemoryPasswordFile`<br/>|
+|redisOnDiskPasswordFilePath|The absolute path of the file containing the encoded password of the Redis on-disk database (encoded using the odim-vault tool\)<br /> `/home/<username\>/ODIM/odim-controller/scripts/redisOnDiskPasswordFile`<br/>|
 |nodes:|List of hostnames, IP addresses, and usernames of the nodes that are part of the Kubernetes cluster you want to set up.<br> <blockquote>NOTE: For one-node cluster configuration, information of only the controller node is required.<br></blockquote>|
 |Node<n>_Hostname|Hostname of a cluster node. To know the hostname, run the following command on each node:<br>`hostname`|
 |ip|IPv4 address of cluster node(s).|
@@ -2710,7 +2788,7 @@ The following table lists all the configuration parameters required by odim-cont
 |MessageBusQueue|Event message bus queue name. Allowed characters for the value are alphabets, numbers, period, underscore, and hyphen. <br />NOTE: Do not include blank spaces.|
 |etcHostsEntries|List of FQDNs of the external servers and plugins to be added to the `/etc/hosts` file in each of the service containers of Resource Aggregator for ODIM. The external servers are the servers that you want to add into the resource inventory.<br> <blockquote>NOTE: It must be in the YAML multiline format as shown in the "etcHostsEntries template".<br>|
 |appsLogPath|The path where the logs of the Resource Aggregator for ODIM services must be stored. Default path is `/var/log/odimra`.<br>|
-|odimraServerCertFQDNSan|List of FQDNs to be included in the server certificate of Resource Aggregator for ODIM. It is required for deploying plugins.<br> <blockquote>NOTE: When you add a plugin, add the FQDN of the new plugin to the existing comma-separated list of FQDNs.<br></blockquote>|
+|odimraServerCertFQDNSan|List of FQDNs to be included in the server certificate of Resource Aggregator for ODIM. It is required for deploying plugins.<br><br />The default value for one-node deployment is`redis-inmemory`,`redis-ondisk`.  <br />The default value for three-node deployment is `redis-ha-inmemory,redis-ha-ondisk,redis-ha-inmemory-primary-0.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-inmemory-secondary-0.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-inmemory-secondary-1.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-ondisk-primary-0.redis-ha-ondisk-headless.odim.svc.cluster.local,redis-ha-ondisk-secondary-0.redis-ha-ondisk-headless.odim.svc.cluster.local,redis-ha-ondisk-secondary-1.redis-ha-ondisk-headless.odim.svc.cluster.local` <br />**NOTE**: When you add a plugin, add the FQDN of the new plugin to the existing comma-separated list of FQDNs.|
 |odimraServerCertIPSan|List of IP addresses to be included in the server certificate of Resource Aggregator for ODIM. It is required for deploying plugins.<br> <blockquote>NOTE: It must be comma-separated values of type String.<br></blockquote>|
 |odimraKafkaClientCertFQDNSan|List of FQDNs to be included in the Kafka client certificate of Resource Aggregator for ODIM. It is required for deploying plugins.<br> <blockquote>NOTE: When you add a plugin, add the FQDN of the new plugin to the existing comma-separated list of FQDNs.<br></blockquote>|
 |odimraKafkaClientCertIPSan|List of IP addresses to be included in the Kafka client certificate of Resource Aggregator for ODIM. It is required for deploying plugins.|

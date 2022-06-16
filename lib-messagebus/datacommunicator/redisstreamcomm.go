@@ -46,10 +46,12 @@ func getDBConnection() *redis.Client {
 
 	if len(MQ.RedisStreams.SentinalAddress) > 0 {
 		dbConn = redis.NewFailoverClient(&redis.FailoverOptions{
-			MasterName:    MQ.RedisStreams.SentinalAddress,
-			SentinelAddrs: []string{fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort)},
-			MaxRetries:    -1,
-			TLSConfig:     tlsConfig,
+			MasterName:       MQ.RedisStreams.SentinalAddress,
+			SentinelAddrs:    []string{fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort)},
+			MaxRetries:       -1,
+			TLSConfig:        tlsConfig,
+			SentinelPassword: string(config.Data.DBConf.RedisInMemoryPassword),
+			Password:         string(config.Data.DBConf.RedisInMemoryPassword),
 		})
 	} else {
 		dbConn = redis.NewClient(&redis.Options{

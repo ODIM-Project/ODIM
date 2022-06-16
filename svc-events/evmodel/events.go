@@ -94,8 +94,10 @@ type Subscription struct {
 	// To store all Device address
 	Hosts []string `json:"Hosts"`
 	// Remove Location and EventHostIP
-	Location    string `json:"location,omitempty"`
-	EventHostIP string `json:"EventHostIP,omitempty"`
+	Location                string   `json:"location,omitempty"`
+	EventHostIP             string   `json:"EventHostIP,omitempty"`
+	ExcludeMessageIds       []string `json:"ExcludeMessageIds,omitempty"`
+	ExcludeRegistryPrefixes []string `json:"ExcludeRegistryPrefixes,omitempty"`
 }
 
 //DeviceSubscription is a model to store the subscription details of a device

@@ -46,7 +46,6 @@ func GetPrivilegeRegistry() (Privileges, *errors.Error) {
 
 // Create method is to insert the privileges list to database
 func (p *Privileges) Create() *errors.Error {
-	
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return err

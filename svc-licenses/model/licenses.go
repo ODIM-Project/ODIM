@@ -56,3 +56,7 @@ type Target struct {
 	DeviceUUID     string `json:"DeviceUUID"`
 	PluginID       string `json:"PluginID"`
 }
+
+type Elements struct {
+	Elements []string `json:"Elements"`
+}

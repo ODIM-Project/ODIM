@@ -95,7 +95,7 @@ func mockGetAllKeysFromTable(table string, dbtype persistencemgr.DbType) ([]stri
 	return []string{"/redfish/v1/LicenseService/Licenses/uuid.1.1", "/redfish/v1/LicenseService/Licenses/uuid.1.2"}, nil
 }
 
-func mockGetResource(table, key string, dbtype persistencemgr.DbType) (string, *errors.Error) {
+func mockGetResource(table, key string, dbtype persistencemgr.DbType) (interface{}, *errors.Error) {
 	if key == "/redfish/v1/LicenseService/Licenses" {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	} else if key == "/redfish/v1/LicenseService/Licenses/uuid.1.1" {

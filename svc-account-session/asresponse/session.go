@@ -39,7 +39,8 @@ type ExtendedInfo struct {
 // Session struct is used to omit password for display purposes
 type Session struct {
 	response.Response
-	UserName string `json:"UserName"`
+	UserName    string `json:"UserName"`
+	CreatedTime string `json:"CreatedTime,omitempty"`
 }
 
 //SessionService struct definition

@@ -32,10 +32,11 @@ type Endpoint struct {
 	HostReservationMemoryBytes int                  `json:"HostReservationMemoryBytes,omitempty"`
 	Identifiers                []EndpointIdentifier `json:"Identifiers,omitempty"`
 	IPTransportDetails         []IPTransportDetails `json:"IPTransportDetails,omitempty"`
-	Ports                      []Link               `json:"Ports,omitempty"`
+	Ports                      []Link               `json:"Ports,omitempty"` //Deprecated in version Endpoint.v1_7_0
 	PciID                      *PciID               `json:"PciId,omitempty"`
 	Redundancy                 []Redundancy         `json:"Redundancy,omitempty"`
 	RedundancyCount            int                  `json:"Redundancy@odata.count,omitempty"`
+	LocalPorts                 []Link               `json:"LocalPorts,omitempty"`
 }
 
 // ConnectedEntites for Endpoint

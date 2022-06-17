@@ -97,7 +97,7 @@ func (e *ExternalInterface) GetLicenseResource(req *licenseproto.GetLicenseResou
 	}
 
 	if data != "" {
-		err := json.Unmarshal([]byte(data), &licenseResp)
+		err := json.Unmarshal([]byte(data.(string)), &licenseResp)
 		if err != nil {
 			log.Error("Unable to unmarshall  the data: " + err.Error())
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
@@ -141,7 +141,7 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 		case strings.Contains(serverURI, "Systems"):
 			managerLink, err = e.getManagerURL(serverURI)
 			if err != nil {
-				errMsg := "Unable to get System resource"
+				errMsg := "Unable to get manager link"
 				log.Error(errMsg)
 				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 			}
@@ -150,6 +150,16 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 			}
 		case strings.Contains(serverURI, "Managers"):
 			linksMap[serverURI] = true
+		case strings.Contains(serverURI, "Aggregates"):
+			managerLink, err = e.getDetailsFromAggregate(serverURI)
+			if err != nil {
+				errMsg := "Unable to get manager link from aggregates"
+				log.Error(errMsg)
+				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+			}
+			for _, link := range managerLink {
+				linksMap[link] = true
+			}
 		default:
 			errMsg := "Invalid AuthorizedDevices links"
 			log.Error(errMsg)
@@ -237,21 +247,51 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 	return resp
 }
 
+func (e *ExternalInterface) getDetailsFromAggregate(aggregateURI string) ([]string, error) {
+	var resource model.Elements
+	var links []string
+	respData, err := e.DB.GetResource("Aggregate", aggregateURI, persistencemgr.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	jsonStr, jerr := JsonMarshalFunc(respData)
+	if jerr != nil {
+		return nil, jerr
+	}
+	jerr = JsonUnMarshalFunc([]byte(jsonStr), &resource)
+	if jerr != nil {
+		return nil, jerr
+	}
+	log.Info("System URL's from agrregate: ", resource)
+
+	for _, key := range resource.Elements {
+		res, err := e.getManagerURL(key)
+		if err != nil {
+			errMsg := "Unable to get manager link"
+			log.Error(errMsg)
+			return nil, err
+		}
+		links = append(links, res...)
+	}
+	log.Info("manager links: ", links)
+	return links, nil
+}
+
 func (e *ExternalInterface) getManagerURL(systemURI string) ([]string, error) {
-	var resource map[string]interface{}
+	var resource dmtf.ComputerSystem
 	var managerLink string
 	var links []string
 	respData, err := e.DB.GetResource("ComputerSystem", systemURI, persistencemgr.InMemory)
 	if err != nil {
 		return nil, err
 	}
-	jerr := JsonUnMarshalFunc([]byte(respData), &resource)
+	jerr := JsonUnMarshalFunc([]byte(respData.(string)), &resource)
 	if jerr != nil {
 		return nil, jerr
 	}
-	members := resource["Links"].(map[string]interface{})["ManagedBy"]
-	for _, member := range members.([]interface{}) {
-		managerLink = member.(map[string]interface{})["@odata.id"].(string)
+	members := resource.Links.ManagedBy
+	for _, member := range members {
+		managerLink = member.Oid
 	}
 	links = append(links, managerLink)
 

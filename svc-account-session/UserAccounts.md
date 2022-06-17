@@ -83,7 +83,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#AccountService.v1_10_0.AccountService",
+   "@odata.type":"#AccountService.v1_11_0.AccountService",
    "@odata.id":"/redfish/v1/AccountService",
    "@odata.context":"/redfish/v1/$metadata#AccountService.AccountService",
    "Id":"AccountService",
@@ -439,7 +439,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
@@ -511,7 +511,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
@@ -588,7 +588,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",

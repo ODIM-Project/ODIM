@@ -188,7 +188,7 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
+		OdataType:    common.AggregationSourceType,
 		OdataID:      aggregationSourceURI,
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           aggregationSourceUUID,

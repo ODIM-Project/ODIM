@@ -17,7 +17,6 @@
 package redfish
 
 import (
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/google/uuid"
 )
 
@@ -50,7 +49,7 @@ type Chassis struct {
 
 // ShapeChassis function initializes given struct(ch) with values for ids, odata related fields
 func ShapeChassis(ch *Chassis) *Chassis {
-	ch.Otype = common.ChassisType
+	ch.Otype = "#Chassis.v1_20_0.Chassis"
 	ch.Ocontext = "/redfish/v1/$metadata#Chassis.Chassis"
 	ch.ID = generateChassisID(ch.Name)
 	ch.Oid = "/ODIM/v1/Chassis/" + ch.ID

@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
@@ -97,7 +96,7 @@ func GetManagersInfo(ctx iris.Context) {
 			ODataContext: "/ODIM/v1/$metadata#Manager.Manager",
 			//Etag:            "W/\"AA6D42B0\"",
 			ODataID:         uri,
-			ODataType:       common.ManagerType,
+			ODataType:       "#Manager.v1_13_0.Manager",
 			Name:            pluginConfig.Data.PluginConf.ID,
 			ManagerType:     "Service",
 			ID:              pluginConfig.Data.RootServiceUUID,

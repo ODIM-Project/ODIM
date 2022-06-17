@@ -602,12 +602,14 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 	}
 
 	resourceMembers := resourceMap["Members"]
-	// Loop through all the resource members collection and discover all of them
-	for _, object := range resourceMembers.([]interface{}) {
-		estimatedWork := alottedWork / int32(len(resourceMembers.([]interface{})))
-		oDataID := object.(map[string]interface{})["@odata.id"].(string)
-		req.OID = oDataID
-		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req, resourceList)
+	if resourceMembers != nil {
+		// Loop through all the resource members collection and discover all of them
+		for _, object := range resourceMembers.([]interface{}) {
+			estimatedWork := alottedWork / int32(len(resourceMembers.([]interface{})))
+			oDataID := object.(map[string]interface{})["@odata.id"].(string)
+			req.OID = oDataID
+			progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req, resourceList)
+		}
 	}
 	return progress
 }

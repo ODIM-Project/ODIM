@@ -13,8 +13,15 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/build/accountSession.sh .
-RUN ./accountSession.sh
+COPY svc-account-session /ODIM/svc-account-session
+COPY install/Docker/dockerfiles/scripts/add-hosts  /ODIM/add-hosts/
+RUN cd /ODIM/add-hosts/; go mod download
+RUN cd /ODIM/add-hosts/; go mod vendor
+RUN cd /ODIM/add-hosts/; go build .
+RUN cd svc-account-session; go mod download
+RUN cd svc-account-session; go mod vendor
+RUN cd svc-account-session; go build .
+
 
 
 FROM ubuntu:20.04

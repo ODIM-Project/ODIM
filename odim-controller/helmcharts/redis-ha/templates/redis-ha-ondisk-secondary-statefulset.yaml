@@ -46,6 +46,12 @@ spec:
             - key: odimra_rsaprivate
               path: odimra_rsa.private
               mode: 0444
+            - key: redis_inmemory_password
+              path: redis_inmemory_password
+              mode: 0444
+            - key: redis_ondisk_password
+              path: redis_ondisk_password
+              mode: 0444
             {{- if eq .Values.odimra.messageBusType "Kafka" }}
             - key: odimra_kafka_clientcrt
               path: odimra_kafka_client.crt
@@ -106,7 +112,9 @@ spec:
         - name: REDIS_HA_REDIS_SERVICE_PORT
           value: "6379"
         - name: REDIS_DEFAULT_PASSWORD 
-          value: ""
+          value: {{ .Values.odimra.redisOnDiskPassword }}
+        - name: ODIMRA_RSA_PRIVATE_FILE
+          value: "/etc/odimra_certs/odimra_rsa.private"
         - name: REDIS_HA_SENTINEL_SERVICE_PORT
           value: "26379"
         - name: REDIS_HA_SENTINEL_SERVICE_HOST
@@ -140,7 +148,9 @@ spec:
         - name: REDIS_HA_REDIS_SERVICE_PORT
           value: "6379"
         - name: REDIS_DEFAULT_PASSWORD 
-          value: ""
+          value: {{ .Values.odimra.redisOnDiskPassword }}
+        - name: ODIMRA_RSA_PRIVATE_FILE
+          value: "/etc/odimra_certs/odimra_rsa.private"
         - name: ALLOW_EMPTY_PASSWORD
           value: "yes"
         - name: REDIS_HA_SENTINEL_SERVICE_PORT

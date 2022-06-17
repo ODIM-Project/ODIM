@@ -19,15 +19,16 @@ package rest
 import (
 	"crypto/tls"
 	"encoding/json"
+	"net/http"
+	"net/url"
+	"sync"
+	"time"
+
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/utils"
-	"net/http"
-	"net/url"
-	"sync"
-	"time"
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
@@ -48,7 +49,7 @@ func InitializeAndRun(pluginConfiguration *config.PluginConfig) {
 		redfish.BasicAuth(pluginConfiguration.OdimUserName, enigma.Decrypt(pluginConfiguration.OdimPassword)),
 	)
 
-	dao := db.CreateDAO(pluginConfiguration.RedisAddress, pluginConfiguration.SentinelMasterName)
+	dao := db.CreateDAO(pluginConfiguration, pluginConfiguration.SentinelMasterName, db.GetTLSConfig)
 
 	createApplication(pluginConfiguration, dao, odimraHTTPClient).Run(
 		func(app *iris.Application) error {

@@ -235,13 +235,15 @@ func SetUpMockConfig(t *testing.T) error {
 	Data.LocalhostFQDN = "odim.test.com"
 	Data.EnabledServices = []string{"SessionService", "AccountService", "EventService"}
 	Data.DBConf = &DBConf{
-		Protocol:       "tcp",
-		InMemoryHost:   localhost,
-		InMemoryPort:   "6379",
-		OnDiskHost:     localhost,
-		OnDiskPort:     "6380",
-		MaxIdleConns:   10,
-		MaxActiveConns: 120,
+		Protocol:              "tcp",
+		InMemoryHost:          localhost,
+		InMemoryPort:          "6379",
+		OnDiskHost:            localhost,
+		OnDiskPort:            "6380",
+		MaxIdleConns:          10,
+		MaxActiveConns:        120,
+		RedisInMemoryPassword: []byte("redis_password"),
+		RedisOnDiskPassword:   []byte("redis_password"),
 	}
 	Data.MessageBusConf = &MessageBusConf{
 		MessageBusType:  "Kafka",

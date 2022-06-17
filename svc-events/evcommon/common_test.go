@@ -396,5 +396,5 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	assert.Equal(t, "https://10.10.10.2/EventService/Subscriptions/1", deviceSubscription.Location, "should be same")
+	assert.Equal(t, "https://odim.2.com/EventService/Subscriptions/1", deviceSubscription.Location, "should be same")
 }

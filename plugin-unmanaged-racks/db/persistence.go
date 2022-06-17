@@ -18,20 +18,52 @@ package db
 
 import (
 	stdCtx "context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
+	"io/ioutil"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
 
 	"github.com/go-redis/redis/v8"
 )
 
+type TLSConfig func(*config.PluginConfig) (*tls.Config, error)
+
+var GetTLSConfig TLSConfig = func(c *config.PluginConfig) (*tls.Config, error) {
+	caCert, err := ioutil.ReadFile(c.PKIRootCAPath)
+	if err != nil {
+		return &tls.Config{}, err
+	}
+	pool := x509.NewCertPool()
+	pool.AppendCertsFromPEM(caCert)
+	cert, err := tls.LoadX509KeyPair(c.PKICertificatePath, c.PKIPrivateKeyPath)
+	if err != nil {
+		return &tls.Config{}, err
+	}
+	cfg := &tls.Config{
+		RootCAs:      pool,
+		MinVersion:   c.TLSConf.MinVersion,
+		Certificates: []tls.Certificate{cert},
+	}
+	return cfg, nil
+}
+
 // CreateDAO creates new instance of DAO
-func CreateDAO(redisAddress, sentinelMasterName string) *DAO {
+func CreateDAO(c *config.PluginConfig, sentinelMasterName string, getTLSConfig TLSConfig) *DAO {
+	tlsConfig, err := getTLSConfig(c)
+	if err != nil {
+		logging.Fatalf("error while getting tls configuration: %s", err.Error())
+	}
 	if sentinelMasterName == "" {
 		return &DAO{
 			redis.NewClient(&redis.Options{
-				Addr: redisAddress,
+				Addr:      c.RedisAddress,
+				TLSConfig: tlsConfig,
+				Password:  string(c.RedisOnDiskPassword),
 			}),
 		}
 	}
@@ -39,7 +71,9 @@ func CreateDAO(redisAddress, sentinelMasterName string) *DAO {
 	return &DAO{
 		redis.NewFailoverClient(&redis.FailoverOptions{
 			MasterName:    sentinelMasterName,
-			SentinelAddrs: []string{redisAddress},
+			SentinelAddrs: []string{c.RedisAddress},
+			TLSConfig:     tlsConfig,
+			Password:      string(c.RedisOnDiskPassword),
 		}),
 	}
 }

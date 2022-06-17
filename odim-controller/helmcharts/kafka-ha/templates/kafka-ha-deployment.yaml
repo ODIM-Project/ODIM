@@ -21,16 +21,19 @@ spec:
     spec:
       hostname: kafka1
       subdomain: kafka
+      securityContext:
+        fsGroup: 2201
+        runAsUser: 2201
       initContainers:
         - name: init-kafka1
-          image: busybox:1.33
+          image: image-registry.openshift-image-registry.svc:5000/odim/busybox:1.33
           command: ['sh', '-c', 'sleep 3']
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "node-role.kubernetes.io/master"
+              - key: "node-role.kubernetes.io/worker"
                 operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -42,7 +45,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: kafka1
-          image: kafka:{{ .Values.odimra.kafkaImageTag }}
+          image: image-registry.openshift-image-registry.svc:5000/odim/kafka:{{ .Values.odimra.kafkaImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9092
@@ -117,16 +120,19 @@ spec:
     spec:
       hostname: kafka2
       subdomain: kafka
+      securityContext:
+        fsGroup: 2201
+        runAsUser: 2201
       initContainers:
         - name: init-kafka2
-          image: busybox:1.33
+          image: image-registry.openshift-image-registry.svc:5000/odim/busybox:1.33
           command: ['sh', '-c', 'sleep 5']
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "node-role.kubernetes.io/master"
+              - key: "node-role.kubernetes.io/worker"
                 operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -138,7 +144,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: kafka2
-          image: kafka:{{ .Values.odimra.kafkaImageTag }}
+          image: image-registry.openshift-image-registry.svc:5000/odim/kafka:{{ .Values.odimra.kafkaImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9092
@@ -213,16 +219,19 @@ spec:
     spec:
       hostname: kafka3
       subdomain: kafka
+      securityContext:
+        fsGroup: 2201
+        runAsUser: 2201
       initContainers:
         - name: init-kafka3
-          image: busybox:1.33
+          image: image-registry.openshift-image-registry.svc:5000/odim/busybox:1.33
           command: ['sh', '-c', 'sleep 7']
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "node-role.kubernetes.io/master"
+              - key: "node-role.kubernetes.io/worker"
                 operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -234,7 +243,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: kafka3
-          image: kafka:{{ .Values.odimra.kafkaImageTag }}
+          image: image-registry.openshift-image-registry.svc:5000/odim/kafka:{{ .Values.odimra.kafkaImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9092

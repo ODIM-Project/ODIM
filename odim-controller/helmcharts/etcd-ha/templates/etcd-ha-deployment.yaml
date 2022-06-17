@@ -28,7 +28,8 @@ spec:
       hostname: etcd1
       subdomain: etcd
       securityContext:
-        fsGroup: {{ .Values.odimra.groupID }}
+        fsGroup: 2201
+        runAsUser: 2201
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -39,7 +40,7 @@ spec:
                 values: [ {{ index .Values.hostname 0 }} ]
       containers:
         - name: etcd1
-          image: etcd:{{ .Values.odimra.etcdImageTag }}
+          image: image-registry.openshift-image-registry.svc:5000/odim/etcd:{{ .Values.odimra.etcdImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - name: etcd-server
@@ -132,7 +133,8 @@ spec:
       hostname: etcd2
       subdomain: etcd
       securityContext:
-        fsGroup: {{ .Values.odimra.groupID }}
+        fsGroup: 2201
+        runAsUser: 2201
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -143,7 +145,7 @@ spec:
                 values: [ {{ index .Values.hostname 1 }} ]
       containers:
         - name: etcd2
-          image: etcd:{{ .Values.odimra.etcdImageTag }}
+          image: image-registry.openshift-image-registry.svc:5000/odim/etcd:{{ .Values.odimra.etcdImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - name: etcd-server
@@ -236,7 +238,8 @@ spec:
       hostname: etcd3
       subdomain: etcd
       securityContext:
-        fsGroup: {{ .Values.odimra.groupID }}
+        fsGroup: 2201
+        runAsUser: 2201
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -247,7 +250,7 @@ spec:
                 values: [ {{ index .Values.hostname 2 }} ]
       containers:
         - name: etcd3
-          image: etcd:{{ .Values.odimra.etcdImageTag }}
+          image: image-registry.openshift-image-registry.svc:5000/odim/etcd:{{ .Values.odimra.etcdImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - name: etcd-server

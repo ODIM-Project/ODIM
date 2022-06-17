@@ -58,12 +58,15 @@ spec:
               mode: 0444
             {{- end }}
       restartPolicy: Always
+      securityContext:
+        fsGroup: 2201
+        runAsUser: 2201   
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "node-role.kubernetes.io/master"
+              - key: "node-role.kubernetes.io/worker"
                 operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -77,7 +80,7 @@ spec:
 
       containers:
       - name: redis
-        image: redis:{{ .Values.odimra.redisImageTag }}
+        image: image-registry.openshift-image-registry.svc:5000/odim/redis:{{ .Values.odimra.redisImageTag }}
         imagePullPolicy: IfNotPresent
 
         ports:
@@ -118,7 +121,7 @@ spec:
         - name: REDIS_MASTER_SET
           value: {{ .Values.odimra.redisMasterSet | quote }} 
       - name: sentinel
-        image: redis:{{ .Values.odimra.redisImageTag }}
+        image: image-registry.openshift-image-registry.svc:5000/odim/redis:{{ .Values.odimra.redisImageTag }}
         imagePullPolicy: IfNotPresent
 
         ports:

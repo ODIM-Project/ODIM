@@ -21,12 +21,15 @@ spec:
     spec:
       hostname: zookeeper1
       subdomain: zookeeper
+      securityContext:
+        fsGroup: 2201
+        runAsUser: 2201
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "node-role.kubernetes.io/master"
+              - key: "node-role.kubernetes.io/worker"
                 operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -38,7 +41,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: zookeeper1
-          image: zookeeper:{{ .Values.odimra.zookeeperImageTag }}
+          image: image-registry.openshift-image-registry.svc:5000/odim/zookeeper:{{ .Values.odimra.zookeeperImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 2181
@@ -113,16 +116,19 @@ spec:
     spec:
       hostname: zookeeper2
       subdomain: zookeeper
+      securityContext:
+        fsGroup: 2201
+        runAsUser: 2201
       initContainers:
         - name: init-zookeeper2
-          image: busybox:1.33
+          image: image-registry.openshift-image-registry.svc:5000/odim/busybox:1.33
           command: ['sh', '-c', 'sleep 1']
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "node-role.kubernetes.io/master"
+              - key: "node-role.kubernetes.io/worker"
                 operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -134,7 +140,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: zookeeper2
-          image: zookeeper:{{ .Values.odimra.zookeeperImageTag }}
+          image: image-registry.openshift-image-registry.svc:5000/odim/zookeeper:{{ .Values.odimra.zookeeperImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 2181
@@ -209,16 +215,19 @@ spec:
     spec:
       hostname: zookeeper3
       subdomain: zookeeper
+      securityContext:
+        fsGroup: 2201
+        runAsUser: 2201
       initContainers:
         - name: init-zookeeper3
-          image: busybox:1.33
+          image: image-registry.openshift-image-registry.svc:5000/odim/busybox:1.33
           command: ['sh', '-c', 'sleep 3']
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "node-role.kubernetes.io/master"
+              - key: "node-role.kubernetes.io/worker"
                 operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -230,7 +239,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: zookeeper3
-          image: zookeeper:{{ .Values.odimra.zookeeperImageTag }}
+          image: image-registry.openshift-image-registry.svc:5000/odim/zookeeper:{{ .Values.odimra.zookeeperImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 2181

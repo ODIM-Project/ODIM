@@ -1,8 +1,8 @@
 {
-    "@Redfish.Copyright": "Copyright 2015-2020 DMTF. All rights reserved.",
+    "@Redfish.Copyright": "Copyright 2015-2022 DMTF. All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
     "@odata.type": "#PrivilegeRegistry.v1_1_4.PrivilegeRegistry",
-    "Id": "Redfish_1.1.0_PrivilegeRegistry",
+    "Id": "Redfish_1.3.0_PrivilegeRegistry",
     "Name": "Privilege Mapping array collection",
     "PrivilegesUsed": [
         "Login",
@@ -571,6 +571,100 @@
             }
         },
         {
+            "Entity": "AllowDeny",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "AllowDenyCollection",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
             "Entity": "Assembly",
             "OperationMap": {
                 "GET": [
@@ -612,6 +706,147 @@
                     {
                         "Privilege": [
                             "ConfigureComponents"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "Battery",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "BatteryCollection",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "BatteryMetrics",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
                         ]
                     }
                 ]
@@ -713,6 +948,100 @@
         },
         {
             "Entity": "BootOptionCollection",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "Cable",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "CableCollection",
             "OperationMap": {
                 "GET": [
                     {
@@ -1237,6 +1566,100 @@
             }
         },
         {
+            "Entity": "CompositionReservation",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "CompositionReservationCollection",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
             "Entity": "CompositionService",
             "OperationMap": {
                 "GET": [
@@ -1566,6 +1989,100 @@
             }
         },
         {
+            "Entity": "Control",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "ControlCollection",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
             "Entity": "Drive",
             "OperationMap": {
                 "GET": [
@@ -1846,6 +2363,265 @@
                     }
                 ]
             }
+        },
+        {
+            "Entity": "EnvironmentMetrics",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            },
+            "SubordinateOverrides": [
+                {
+                    "Targets": [
+                        "Processor"
+                    ],
+                    "OperationMap": {
+                        "PATCH": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "PUT": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "DELETE": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "POST": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "Targets": [
+                        "Memory"
+                    ],
+                    "OperationMap": {
+                        "PATCH": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "PUT": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "DELETE": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "POST": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "Targets": [
+                        "Drive"
+                    ],
+                    "OperationMap": {
+                        "PATCH": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "PUT": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "DELETE": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "POST": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "Targets": [
+                        "PCIeDevice"
+                    ],
+                    "OperationMap": {
+                        "PATCH": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "PUT": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "DELETE": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "POST": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "Targets": [
+                        "StorageController"
+                    ],
+                    "OperationMap": {
+                        "PATCH": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "PUT": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "DELETE": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "POST": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "Targets": [
+                        "Port"
+                    ],
+                    "OperationMap": {
+                        "PATCH": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "PUT": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "DELETE": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ],
+                        "POST": [
+                            {
+                                "Privilege": [
+                                    "ConfigureComponents"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
         },
         {
             "Entity": "EthernetInterface",
@@ -2537,6 +3313,194 @@
             }
         },
         {
+            "Entity": "Fan",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "FanCollection",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "GraphicsController",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "GraphicsControllerCollection",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
             "Entity": "HostInterface",
             "OperationMap": {
                 "GET": [
@@ -2857,6 +3821,241 @@
                     }
                 ],
                 "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "Key",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "KeyCollection",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "KeyPolicy",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "KeyPolicyCollection",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "KeyService",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
                     {
                         "Privilege": [
                             "ConfigureManager"
@@ -3623,6 +4822,46 @@
                     {
                         "Privilege": [
                             "ConfigureUsers"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "ManagerDiagnosticData",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
                         ]
                     }
                 ]
@@ -4569,6 +5808,53 @@
             }
         },
         {
+            "Entity": "NetworkAdapterMetrics",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
             "Entity": "NetworkDeviceFunction",
             "OperationMap": {
                 "GET": [
@@ -4657,6 +5943,53 @@
                     {
                         "Privilege": [
                             "ConfigureComponents"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "NetworkDeviceFunctionMetrics",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
                         ]
                     }
                 ]
@@ -5697,6 +7030,335 @@
             }
         },
         {
+            "Entity": "PowerDomain",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "PowerDomainCollection",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "PowerEquipment",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "PowerSubsystem",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "PowerSupply",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "PowerSupplyCollection",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "PowerSupplyMetrics",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
             "Entity": "Processor",
             "OperationMap": {
                 "GET": [
@@ -6120,7 +7782,7 @@
             }
         },
         {
-            "Entity": "RouteEntrySet",
+            "Entity": "RouteSetEntry",
             "OperationMap": {
                 "GET": [
                     {
@@ -6167,7 +7829,7 @@
             }
         },
         {
-            "Entity": "RouteEntrySetCollection",
+            "Entity": "RouteSetEntryCollection",
             "OperationMap": {
                 "GET": [
                     {
@@ -7545,6 +9207,100 @@
             }
         },
         {
+            "Entity": "ThermalMetrics",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "ThermalSubsystem",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
             "Entity": "Triggers",
             "OperationMap": {
                 "GET": [
@@ -7677,6 +9433,100 @@
                     }
                 ],
                 "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "USBController",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "USBControllerCollection",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureComponents"
+                        ]
+                    }
+                ],
+                "POST": [
                     {
                         "Privilege": [
                             "ConfigureComponents"

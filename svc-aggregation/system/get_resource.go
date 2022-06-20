@@ -12,9 +12,10 @@
 package system
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -90,7 +91,7 @@ func (e *ExternalInterface) GetAggregationSource(reqURI string) response.RPC {
 	name := connectionMethod.ConnectionMethodType + "-" + aggregationSource.HostName
 	var data = strings.Split(reqURI, "/redfish/v1/AggregationService/AggregationSources/")
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
+		OdataType:    common.AggregationSourceType,
 		OdataID:      reqURI,
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           data[1],

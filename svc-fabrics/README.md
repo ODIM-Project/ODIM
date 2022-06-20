@@ -150,7 +150,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5",
-   "@odata.type":"#Fabric.v1_2_2.Fabric",
+   "@odata.type":"#Fabric.v1_3_0.Fabric",
    "AddressPools":{ 
       "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/AddressPools"
    },
@@ -263,7 +263,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/fb7dc9fd-d0f1-474e-b849-77262f5d73b7",
-   "@odata.type":"#Switch.v1_6_0.Switch",
+   "@odata.type":"#Switch.v1_8_0.Switch",
    "Id":"fb7dc9fd-d0f1-474e-b849-77262f5d73b7",
    "Manufacturer":"Aruba",
    "Model":"Aruba 8325",
@@ -627,7 +627,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/8f6d8828-a21a-464f-abf9-ed062fa08cd9/Endpoints/b21f3e57-e46d-4a8e-92c8-8658edd107cb",
-   "@odata.type":"#Endpoint.v1_3_1.Endpoint",
+   "@odata.type":"#Endpoint.v1_11_0.Endpoint",
    "Description":"NK Endpoint Collection Description",
    "EndpointProtocol":"Ethernet",
    "Id":"b21f3e57-e46d-4a8e-92c8-8658edd107cb",
@@ -1376,7 +1376,7 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Endpoints/fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",
-   "@odata.type":"#Endpoint.v1_3_1.Endpoint",
+   "@odata.type":"#Endpoint.v1_11_0.Endpoint",
    "Description":"Host 2 Endpoint 1 Collection Description",
    "EndpointProtocol":"Ethernet",
    "Id":"fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",

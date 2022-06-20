@@ -94,7 +94,7 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_5_1.Task",
+		OdataType:    common.TaskType,
 		ID:           task.ID,
 		Name:         task.Name,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",

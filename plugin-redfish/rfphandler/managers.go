@@ -16,15 +16,16 @@
 package rfphandler
 
 import (
+	"io/ioutil"
+	"net/http"
+	"strings"
+
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
 //GetManagersCollection  Fetches details of the given resource from the device

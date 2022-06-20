@@ -16,6 +16,9 @@ package rpc
 
 import (
 	"encoding/json"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+
 	teleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-telemetry/telemetry"
@@ -62,7 +65,7 @@ func generateRPCResponse(rpcResp response.RPC, teleResp *teleproto.TelemetryResp
 
 func generateTaskRespone(taskID, taskURI string, rpcResp *response.RPC) {
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_5_1.Task",
+		OdataType:    common.TaskType,
 		ID:           taskID,
 		Name:         "Task " + taskID,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",

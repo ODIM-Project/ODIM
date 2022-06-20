@@ -132,7 +132,7 @@ func (e *ExternalInterface) UpdateAggregationSource(req *aggregatorproto.Aggrega
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
+		OdataType:    common.AggregationSourceType,
 		OdataID:      req.URL,
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           data[1],

@@ -310,7 +310,7 @@ Content-Length:491 bytes
 
 ```
 {
-"code": "Base.1.11.0.Success",
+"code": "Base.1.13.0.Success",
 "message": "Request completed successfully."
 }
 ```
@@ -320,7 +320,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.11.0.GeneralError",
+      "code":"Base.1.13.0.GeneralError",
       "message":"one or more of the reset actions failed, check sub tasks for more info."
    }
 ```

@@ -358,7 +358,7 @@ func Test_getCommonResponse(t *testing.T) {
 		{
 			name: "Pass case",
 			args: args{"Success"},
-			want: asresponse.RedfishSessionResponse{Error: asresponse.Error{Code: "Base.1.11.0.GeneralError", Message: "See @Message.ExtendedInfo for more information.", ExtendedInfos: []asresponse.ExtendedInfo{asresponse.ExtendedInfo{"Success"}}}},
+			want: asresponse.RedfishSessionResponse{Error: asresponse.Error{Code: "Base.1.13.0.GeneralError", Message: "See @Message.ExtendedInfo for more information.", ExtendedInfos: []asresponse.ExtendedInfo{asresponse.ExtendedInfo{"Success"}}}},
 		},
 	}
 	for _, tt := range tests {

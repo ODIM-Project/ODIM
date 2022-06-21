@@ -414,7 +414,7 @@ Transfer-Encoding:chunked
    "Id":"taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a",
    "Name":"Task taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.11.0.Success",
+   "MessageId":"Base.1.13.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -624,7 +624,7 @@ Transfer-Encoding:chunked
       "ResourceAdded"
    ],
    ​   "MessageIds":[ 
-      "ResourceEvent.1.0.3.ResourceAdded"
+      "ResourceEvent.1.2.1.ResourceAdded"
    ],
    ​   "ResourceTypes":[ 
        "ComputerSystem",
@@ -665,7 +665,7 @@ To create this subscription, perform HTTP `POST` on `/redfish/v1/EventService/Su
       "ResourceRemoved"
    ],
    ​   "MessageIds":[ 
-      "ResourceEvent.1.0.3.ResourceRemoved"
+      "ResourceEvent.1.2.1.ResourceRemoved"
    ],
    ​   "ResourceTypes":[ 
       "ComputerSystem",
@@ -707,7 +707,7 @@ To create this subscription, perform HTTP `POST` on `/redfish/v1/EventService/Su
       
    ],
    ​   "MessageIds":[ 
-      "ResourceEvent.1.0.3.StatusChange"
+      "ResourceEvent.1.2.1.StatusChange"
    ],
    ​   "ResourceTypes":[ 
       "Task"
@@ -874,7 +874,7 @@ curl -i -X DELETE \
    "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "Name":"Event Subscription",
    "Message":"The resource has been removed successfully.",
-   "MessageId":"ResourceEvent.1.0.3.ResourceRemoved",
+   "MessageId":"ResourceEvent.1.2.1.ResourceRemoved",
    "Severity":"OK"
 }
 ```

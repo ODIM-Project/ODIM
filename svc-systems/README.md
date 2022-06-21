@@ -2574,7 +2574,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 |**Method** |`PATCH` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}` |
 |**Description** |This action changes the boot order settings of a specific system.|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.11.0.Success`. The registry to look up is `Base.1.11.0`.<br> |
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.13.0.Success`. The registry to look up is `Base.1.13.0`.<br> |
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -2677,7 +2677,7 @@ If you attempt to update `BootSourceOverrideTarget` to `UefiTarget`, when `UefiT
    "error":{ 
       "@Message.ExtendedInfo":[ 
          { 
-            "MessageId":"Base.1.11.0.Success"
+            "MessageId":"Base.1.13.0.Success"
          }
       ],
       "code":"iLO.0.10.ExtendedInfo",

@@ -49,7 +49,7 @@ func TestAccount_Create(t *testing.T) {
 			},
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -60,7 +60,7 @@ func TestAccount_Create(t *testing.T) {
 			},
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -71,7 +71,7 @@ func TestAccount_Create(t *testing.T) {
 			},
 			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -93,7 +93,7 @@ func TestAccount_Create(t *testing.T) {
 			},
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError"},
 			wantErr:                false,
 		},
 	}
@@ -140,7 +140,7 @@ func TestAccount_GetAllAccounts(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAllAccountsFunc:     func(session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -152,7 +152,7 @@ func TestAccount_GetAllAccounts(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAllAccountsFunc:     func(session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -164,7 +164,7 @@ func TestAccount_GetAllAccounts(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
 			GetAllAccountsFunc:     func(session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -236,7 +236,7 @@ func TestAccount_GetAccount(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAccountFunc:         func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -248,7 +248,7 @@ func TestAccount_GetAccount(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAccountFunc:         func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -260,7 +260,7 @@ func TestAccount_GetAccount(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
 			GetAccountFunc:         func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -332,7 +332,7 @@ func TestAccount_GetAccountServices(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAccountServiceFunc:  func() response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -344,7 +344,7 @@ func TestAccount_GetAccountServices(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAccountServiceFunc:  func() response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -356,7 +356,7 @@ func TestAccount_GetAccountServices(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
 			GetAccountServiceFunc:  func() response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -426,7 +426,7 @@ func TestAccount_Update(t *testing.T) {
 			},
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -437,7 +437,7 @@ func TestAccount_Update(t *testing.T) {
 			},
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -448,7 +448,7 @@ func TestAccount_Update(t *testing.T) {
 			},
 			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -470,7 +470,7 @@ func TestAccount_Update(t *testing.T) {
 			},
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError"},
 			wantErr:                false,
 		},
 	}
@@ -517,7 +517,7 @@ func TestAccount_Delete(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			AccDeleteFunc:          func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -529,7 +529,7 @@ func TestAccount_Delete(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			AccDeleteFunc:          func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -541,7 +541,7 @@ func TestAccount_Delete(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
 			AccDeleteFunc:          func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                false,
 		},
 		{

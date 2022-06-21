@@ -13,8 +13,15 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/build/dellplugin.sh .
-RUN ./dellplugin.sh
+COPY plugin-dell /ODIM/plugin-dell/
+COPY install/Docker/dockerfiles/scripts/add-hosts  /ODIM/add-hosts/
+RUN cd /ODIM/add-hosts/; go mod download
+RUN cd /ODIM/add-hosts/; go mod vendor
+RUN cd /ODIM/add-hosts/; go build .
+RUN cd plugin-dell; go mod download
+RUN cd plugin-dell; go mod vendor
+
+RUN cd plugin-dell; go build -i .
 
 FROM ubuntu:20.04
 

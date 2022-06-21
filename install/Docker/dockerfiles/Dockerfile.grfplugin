@@ -13,8 +13,15 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/build/grfplugin.sh .
-RUN ./grfplugin.sh
+COPY plugin-redfish /ODIM/plugin-redfish/
+COPY install/Docker/dockerfiles/scripts/add-hosts  /ODIM/add-hosts/
+RUN cd /ODIM/add-hosts/; go mod download
+RUN cd /ODIM/add-hosts/; go mod vendor
+RUN cd /ODIM/add-hosts/; go build .
+RUN cd plugin-redfish; go mod download
+RUN cd plugin-redfish; go mod vendor
+
+RUN cd plugin-redfish; go build -i .
 
 FROM ubuntu:20.04
 

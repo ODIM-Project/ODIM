@@ -146,7 +146,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#ComputerSystem.ComputerSystem",
    "@odata.etag":"W/\"8C36EBD2\"",
    "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1",
-   "@odata.type":"#ComputerSystem.v1_16_1.ComputerSystem",
+   "@odata.type":"#ComputerSystem.v1_18_0.ComputerSystem",
    "Id":"e24fb205-6669-4080-b53c-67d4923aa73e:1",
    "Actions":{ 
       "#ComputerSystem.Reset":{ 
@@ -552,7 +552,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Memory.Memory",
    "@odata.etag":"W/\"E6EC3A2C\"",
    "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Memory/proc1dimm1",
-   "@odata.type":"#Memory.v1_13_0.Memory",
+   "@odata.type":"#Memory.v1_15_0.Memory",
    "Id":"proc1dimm1",
    "BaseModuleType":"RDIMM",
    "BusWidthBits":72,
@@ -739,7 +739,7 @@ curl -i GET \
 	"@odata.context": "/redfish/v1/$metadata#EthernetInterface.EthernetInterface",
 	"@odata.etag": "W/\"5DEAF04A\"",
 	"@odata.id": "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1/EthernetInterfaces/1",
-	"@odata.type": "#EthernetInterface.v1_7_0.EthernetInterface",
+	"@odata.type": "#EthernetInterface.v1_8_0.EthernetInterface",
 	"Id": "1",
 	"FullDuplex": true,
 	"IPv4Addresses": [],
@@ -792,7 +792,7 @@ curl -i GET \
     "@odata.context": "/redfish/v1/$metadata#PCIeDevice.PCIeDevice",
     "@odata.etag": "W/\"33150E20\"",
     "@odata.id": "/redfish/v1/Systems/1b77fcdd-b6a2-44b4-83f9-cfb4926fcd79:1/PCIeDevices/1",
-    "@odata.type": "#PCIeDevice.v1_5_0.PCIeDevice",
+    "@odata.type": "#PCIeDevice.v1_9_0.PCIeDevice",
     "Id": "1",
     "Name": "HPE Ethernet 1Gb 4-port 331i Adapter - NIC",
     "Oem": {
@@ -884,7 +884,7 @@ curl -i GET \
 {
     "@odata.context": "/redfish/v1/$metadata#Storage.Storage",
     "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf:1/Storage/ArrayControllers-0",
-    "@odata.type": "#Storage.v1_11_0.Storage",
+    "@odata.type": "#Storage.v1_13_0.Storage",
     "Description": "HPE Smart Storage Array Controller View",
     "Drives": [
         {
@@ -1374,7 +1374,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.etag":"W/\"50540B90\"",
    "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
    "Id":"192083d2-c60a-4318-967b-cb5890c6dfe4:1",
    "ChassisType":"RackMount",
    "Links":{ 
@@ -1486,7 +1486,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/f4e24c1c-dd2f-5a17-91b7-71620eb070df",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
    "Id":"f4e24c1c-dd2f-5a17-91b7-71620eb070df",
    "Description":"My RackGroup",
    "Name":"RG8",
@@ -1515,7 +1515,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -1629,7 +1629,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#NetworkAdapter.NetworkAdapter",
    "@odata.etag":"W/\"F303ECE9\"",
    "@odata.id":"/redfish/v1/Chassis/a022faa5-107c-496d-874e-89c9f3e2df1c:1/NetworkAdapters/{rid}",
-   "@odata.type":"#NetworkAdapter.v1_8_0.NetworkAdapter",
+   "@odata.type":"#NetworkAdapter.v1_9_0.NetworkAdapter",
    "Description":"The network adapter resource instances available in this chassis.",
    "Name":"Network Adapter View",
    "Oem":{
@@ -1865,7 +1865,7 @@ Content-Length:462 bytes
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
    "Id":"c2459269-011c-58d3-a217-ef914c4c295d",
    "Description":"My RackGroup",
    "Name":"RG5",
@@ -1984,7 +1984,7 @@ Content-Length:462 bytes
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -2079,7 +2079,7 @@ curl -i PATCH \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -2170,7 +2170,7 @@ curl -i PATCH \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",

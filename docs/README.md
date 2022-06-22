@@ -10673,6 +10673,29 @@ curl -i GET \
  'https://{odimra_host}:{port}/redfish/v1/registries/{jsonFileId}'
 ```
 
+>**Sample response body**
+
+```
+{
+   "Id":"Base.1.13.0",
+   "@odata.context":"/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile",
+   "@odata.id":"/redfish/v1/Registries/Base.1.13.0",
+   "@odata.type":"#MessageRegistryFile.v1_1_3.MessageRegistryFile",
+   "Name":"Registry File Repository",
+   "Description":"Base Message Registry File Locations",
+   "Languages":[
+      "en"
+   ],
+   "Location":[
+      {
+         "Language":"en",
+         "Uri":"/redfish/v1/Registries/Base.1.13.0.json"
+      }
+   ],
+   "Registry":"Base.1.13.0"
+}
+```
+
 
 
 # Redfish Telemetry Service

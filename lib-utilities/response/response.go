@@ -16,7 +16,7 @@ package response
 
 const (
 	// BaseVersion defines the latest version of Base
-	BaseVersion = "Base.1.11.0."
+	BaseVersion = "Base.1.13.0."
 	// Created is the message for successful creation
 	Created = BaseVersion + "Created"
 	// ExtendedInfo message
@@ -62,9 +62,9 @@ const (
 	// QueryNotSupported defines the status message at the time of not supported query
 	QueryNotSupported = BaseVersion + "QueryNotSupported"
 	// ResourceRemoved is the message for successful removal of resource
-	ResourceRemoved = "ResourceEvent.1.0.3.ResourceRemoved"
+	ResourceRemoved = "ResourceEvent.1.2.1.ResourceRemoved"
 	// ResourceCreated is the message for successful creation of resource
-	ResourceCreated = "ResourceEvent.1.0.3.ResourceCreated"
+	ResourceCreated = "ResourceEvent.1.2.1.ResourceCreated"
 	// TaskStarted is the message for denoting the starting of the task
 	TaskStarted = "TaskEvent.1.0.3.TaskStarted"
 	// ActionNotSupported defines requested POST operation is not supported by the resource

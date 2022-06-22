@@ -62,7 +62,7 @@ func TestDeleteTaskRequest(t *testing.T) {
 			args:                        args{},
 			ClientFunc:                  func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
 			NewGetTaskServiceClientFunc: func(cc *grpc.ClientConn) taskproto.GetTaskServiceClient { return fakeStruct{} },
-			want:                        &taskproto.TaskResponse{StatusCode: 500,StatusMessage: "Base.1.11.0.InternalError",Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                        &taskproto.TaskResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                     true,
 		},
 	}
@@ -87,12 +87,12 @@ func TestGetTaskRequest(t *testing.T) {
 		req *taskproto.GetTaskRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
-ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
+		name                        string
+		args                        args
+		ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
 		NewGetTaskServiceClientFunc func(cc *grpc.ClientConn) taskproto.GetTaskServiceClient
-		want    *taskproto.TaskResponse
-		wantErr bool
+		want                        *taskproto.TaskResponse
+		wantErr                     bool
 	}{
 		{
 			name:                        "Client func error",
@@ -107,7 +107,7 @@ ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
 			args:                        args{},
 			ClientFunc:                  func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
 			NewGetTaskServiceClientFunc: func(cc *grpc.ClientConn) taskproto.GetTaskServiceClient { return fakeStruct{} },
-			want:                        &taskproto.TaskResponse{StatusCode: 500,StatusMessage: "Base.1.11.0.InternalError",Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                        &taskproto.TaskResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                     true,
 		},
 	}
@@ -132,12 +132,12 @@ func TestGetSubTasks(t *testing.T) {
 		req *taskproto.GetTaskRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
-ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
+		name                        string
+		args                        args
+		ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
 		NewGetTaskServiceClientFunc func(cc *grpc.ClientConn) taskproto.GetTaskServiceClient
-		want    *taskproto.TaskResponse
-		wantErr bool
+		want                        *taskproto.TaskResponse
+		wantErr                     bool
 	}{
 		{
 			name:                        "Client func error",
@@ -152,7 +152,7 @@ ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
 			args:                        args{},
 			ClientFunc:                  func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
 			NewGetTaskServiceClientFunc: func(cc *grpc.ClientConn) taskproto.GetTaskServiceClient { return fakeStruct{} },
-			want:                        &taskproto.TaskResponse{StatusCode: 500,StatusMessage: "Base.1.11.0.InternalError",Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                        &taskproto.TaskResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                     true,
 		},
 	}
@@ -177,12 +177,12 @@ func TestGetSubTask(t *testing.T) {
 		req *taskproto.GetTaskRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
-ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
+		name                        string
+		args                        args
+		ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
 		NewGetTaskServiceClientFunc func(cc *grpc.ClientConn) taskproto.GetTaskServiceClient
-		want    *taskproto.TaskResponse
-		wantErr bool
+		want                        *taskproto.TaskResponse
+		wantErr                     bool
 	}{
 		{
 			name:                        "Client func error",
@@ -197,7 +197,7 @@ ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
 			args:                        args{},
 			ClientFunc:                  func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
 			NewGetTaskServiceClientFunc: func(cc *grpc.ClientConn) taskproto.GetTaskServiceClient { return fakeStruct{} },
-			want:                        &taskproto.TaskResponse{StatusCode: 500,StatusMessage: "Base.1.11.0.InternalError",Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                        &taskproto.TaskResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                     true,
 		},
 	}
@@ -222,12 +222,12 @@ func TestGetTaskMonitor(t *testing.T) {
 		req *taskproto.GetTaskRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
-ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
+		name                        string
+		args                        args
+		ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
 		NewGetTaskServiceClientFunc func(cc *grpc.ClientConn) taskproto.GetTaskServiceClient
-		want    *taskproto.TaskResponse
-		wantErr bool
+		want                        *taskproto.TaskResponse
+		wantErr                     bool
 	}{
 		{
 			name:                        "Client func error",
@@ -242,7 +242,7 @@ ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
 			args:                        args{},
 			ClientFunc:                  func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
 			NewGetTaskServiceClientFunc: func(cc *grpc.ClientConn) taskproto.GetTaskServiceClient { return fakeStruct{} },
-			want:                        &taskproto.TaskResponse{StatusCode: 500,StatusMessage: "Base.1.11.0.InternalError",Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                        &taskproto.TaskResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                     true,
 		},
 	}
@@ -267,12 +267,12 @@ func TestTaskCollection(t *testing.T) {
 		req *taskproto.GetTaskRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
-ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
+		name                        string
+		args                        args
+		ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
 		NewGetTaskServiceClientFunc func(cc *grpc.ClientConn) taskproto.GetTaskServiceClient
-		want    *taskproto.TaskResponse
-		wantErr bool
+		want                        *taskproto.TaskResponse
+		wantErr                     bool
 	}{
 		{
 			name:                        "Client func error",
@@ -287,7 +287,7 @@ ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
 			args:                        args{},
 			ClientFunc:                  func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
 			NewGetTaskServiceClientFunc: func(cc *grpc.ClientConn) taskproto.GetTaskServiceClient { return fakeStruct{} },
-			want:                        &taskproto.TaskResponse{StatusCode: 500,StatusMessage: "Base.1.11.0.InternalError",Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                        &taskproto.TaskResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                     true,
 		},
 	}
@@ -312,12 +312,12 @@ func TestGetTaskService(t *testing.T) {
 		req *taskproto.GetTaskRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
-ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
+		name                        string
+		args                        args
+		ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
 		NewGetTaskServiceClientFunc func(cc *grpc.ClientConn) taskproto.GetTaskServiceClient
-		want    *taskproto.TaskResponse
-		wantErr bool
+		want                        *taskproto.TaskResponse
+		wantErr                     bool
 	}{
 		{
 			name:                        "Client func error",
@@ -332,7 +332,7 @@ ClientFunc                  func(clientName string) (*grpc.ClientConn, error)
 			args:                        args{},
 			ClientFunc:                  func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
 			NewGetTaskServiceClientFunc: func(cc *grpc.ClientConn) taskproto.GetTaskServiceClient { return fakeStruct{} },
-			want:                        &taskproto.TaskResponse{StatusCode: 500,StatusMessage: "Base.1.11.0.InternalError",Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                        &taskproto.TaskResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                     true,
 		},
 	}

@@ -34,21 +34,6 @@ RUN git clone https://github.com/google/protobuf.git && \
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest && \
     go install github.com/golang/protobuf/protoc-gen-go@v1.3.2
 
-#COPY svc-account-session /ODIM/svc-account-session
-#COPY svc-aggregation /ODIM/svc-aggregation
-#COPY svc-api /ODIM/svc-api
-#COPY svc-events /ODIM/svc-events
-#COPY svc-fabrics /ODIM/svc-fabrics
-#COPY svc-licenses /ODIM/svc-licenses
-#COPY svc-telemetry /ODIM/svc-telemetry
-#COPY svc-managers /ODIM/svc-managers
-#COPY svc-systems /ODIM/svc-systems
-#COPY svc-task /ODIM/svc-task
-#COPY svc-update /ODIM/svc-update
-#COPY plugin-redfish /ODIM/plugin-redfish
-#COPY plugin-dell /ODIM/plugin-dell
-#COPY plugin-unmanaged-racks /ODIM/plugin-unmanaged-racks
-#COPY plugin-lenovo /ODIM/plugin-lenovo
 COPY lib-dmtf /ODIM/lib-dmtf/
 COPY lib-messagebus /ODIM/lib-messagebus/
 COPY lib-persistence-manager /ODIM/lib-persistence-manager/
@@ -59,4 +44,3 @@ COPY install/Docker/dockerfiles/scripts/add-hosts  /ODIM/add-hosts/
 COPY install/Docker/dockerfiles/scripts/fetch_odim_pkgs.sh .
 RUN ./fetch_odim_pkgs.sh
 
-#RUN cd /ODIM/add-hosts/; go build -i .

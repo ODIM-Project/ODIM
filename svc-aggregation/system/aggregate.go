@@ -92,7 +92,7 @@ func (e *ExternalInterface) CreateAggregate(req *aggregatorproto.AggregatorReque
 		"Link":     "<" + aggregateURI + "/>; rel=describedby",
 		"Location": aggregateURI,
 	}
-	commonResponse.CreateGenericResponse(response.Created)
+
 	resp.Body = agresponse.AggregateResponse{
 		Response: commonResponse,
 		Elements: createRequest.Elements,

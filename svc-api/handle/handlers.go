@@ -287,7 +287,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Endpoint_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Endpoint.v1_0_0"},
-					models.Include{Namespace: "Endpoint.v1_11_0"},
+					models.Include{Namespace: "Endpoint.v1_7_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/EndpointCollection_v1.xml",
@@ -398,7 +398,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Memory_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Memory"},
-					models.Include{Namespace: "Memory.v1_13_0"},
+					models.Include{Namespace: "Memory.v1_15_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MemoryCollection_v1.xml",
@@ -419,7 +419,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MessageRegistry_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "MessageRegistry"},
-					models.Include{Namespace: "MessageRegistry.v1_4_2"},
+					models.Include{Namespace: "MessageRegistry.v1_5_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MessageRegistryCollection_v1.xml",
@@ -441,7 +441,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/NetworkAdapter_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "NetworkAdapter"},
-					models.Include{Namespace: "NetworkAdapter.v1_8_0"},
+					models.Include{Namespace: "NetworkAdapter.v1_9_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/NetworkAdapterCollection_v1.xml",
@@ -463,13 +463,13 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/PCIeDevice_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "PCIeDevice"},
-					models.Include{Namespace: "PCIeDevice.v1_7_0"},
+					models.Include{Namespace: "PCIeDevice.v1_9_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Port_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Port"},
-					models.Include{Namespace: "Port.v1_5_0"},
+					models.Include{Namespace: "Port.v1_6_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/PortCollection_v1.xml",
@@ -492,7 +492,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Processor_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Processor"},
-					models.Include{Namespace: "Processor.v1_13_0"},
+					models.Include{Namespace: "Processor.v1_15_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ProcessorCollection_v1.xml",
@@ -524,7 +524,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Resource_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Resource"},
-					models.Include{Namespace: "Resource.v1_13_0"},
+					models.Include{Namespace: "Resource.v1_14_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Role_v1.xml",
@@ -570,7 +570,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Settings_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Settings"},
-					models.Include{Namespace: "Settings.v1_3_3"},
+					models.Include{Namespace: "Settings.v1_3_4"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/SoftwareInventoryCollection_v1.xml",
@@ -603,7 +603,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Task_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Task"},
-					models.Include{Namespace: "Task.v1_5_1"},
+					models.Include{Namespace: "Task.v1_6_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/TaskCollection_v1.xml",
@@ -632,7 +632,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/VirtualMedia_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "VirtualMedia"},
-					models.Include{Namespace: "VirtualMedia.v1_5_0"},
+					models.Include{Namespace: "VirtualMedia.v1_5_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/VirtualMediaCollection_v1.xml",
@@ -681,7 +681,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/PCIeSlots_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "PCIeSlots"},
-					models.Include{Namespace: "PCIeSlots.v1_4_1"},
+					models.Include{Namespace: "PCIeSlots.v1_5_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/NetworkPortCollection_v1.xml",

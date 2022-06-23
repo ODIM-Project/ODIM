@@ -286,7 +286,7 @@ func GetMetadata(ctx iris.Context) {
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Endpoint_v1.xml",
 				TopInclude: []models.Include{
-					models.Include{Namespace: "Endpoint.v1_0_0"},
+					models.Include{Namespace: "Endpoint"},
 					models.Include{Namespace: "Endpoint.v1_7_0"},
 				},
 			},

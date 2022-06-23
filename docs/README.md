@@ -29,11 +29,8 @@
   * [Deleting a session](#deleting-a-session)
 - [User roles and privileges](#user-roles-and-privileges)
   * [Viewing the AccountService root](#viewing-the-accountservice-root)
-  * [Creating a role](#creating-a-role)
   * [Viewing a list of roles](#viewing-a-list-of-roles)
   * [Viewing information about a role](#viewing-information-about-a-role)
-  * [Updating a role](#updating-a-role)
-  * [Deleting a role](#deleting-a-role)
 - [User accounts](#user-accounts)
   * [Creating a user account](#creating-a-user-account)
     + [Password requirements](#password-requirements)
@@ -1164,8 +1161,8 @@ Resource Aggregator for ODIM allows you to view, create, and manage user roles t
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
 |/redfish/v1/AccountService|`GET`|`Login` |
-|/redfish/v1/AccountService/Roles|`GET`, `POST`|`Login`, `ConfigureManager` |
-|/redfish/v1/AccountService/Roles/{roleId}|`GET`, `PATCH`, `DELETE`|`Login`, `ConfigureManager` |
+|/redfish/v1/AccountService/Roles|`GET`|`Login` |
+|/redfish/v1/AccountService/Roles/{roleId}|`GET`|`Login` |
 
 
 ## Viewing the AccountService root
@@ -1200,7 +1197,7 @@ Date:Fri,15 May 2020 14:32:09 GMT+5m 12s
 
 ```
 {
-   "@odata.type":"#AccountService.v1_10_0.AccountService",
+   "@odata.type":"#AccountService.v1_11_0.AccountService",
    "@odata.id":"/redfish/v1/AccountService",
    "@odata.context":"/redfish/v1/$metadata#AccountService.AccountService",
    "Id":"AccountService",
@@ -1210,91 +1207,13 @@ Date:Fri,15 May 2020 14:32:09 GMT+5m 12s
       "Health":"OK"
    },
    "ServiceEnabled":true,
-   "AuthFailureLoggingThreshold":0,
    "MinPasswordLength":12,
-   "AccountLockoutThreshold":0,
-   "AccountLockoutDuration":0,
-   "AccountLockoutCounterResetAfter":0,
    "Accounts":{
       "@odata.id":"/redfish/v1/AccountService/Accounts"
    },
    "Roles":{
       "@odata.id":"/redfish/v1/AccountService/Roles"
    }
-}
-```
-
-## Creating a role
-
-|||
-|---------|---------------|
-|**Method** | `POST` |
-|**URI** |`/redfish/v1/AccountService/Roles` |
-|**Description** |This operation creates a role other than Redfish predefined roles.|
-|**Returns** |JSON schema representing the new role|
-|**Response code** |`201 Created` |
-|**Authentication** |Yes|
-
->**curl command**
-
-```
-curl -i POST \
-   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
-   -H "Content-Type:application/json" \
-   -d \
-'{ 
-   "RoleId":"CLIENT11",
-   "AssignedPrivileges":[ 
-      "Login",
-      "ConfigureUsers",
-      "ConfigureSelf"
-   ],
-   "OemPrivileges":null 
-}' \
- 'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles'
-```
-
->**Sample request body**
-
-```
-{ 
-   "RoleId":"CLIENT11",
-   "AssignedPrivileges":[ 
-      "Login",
-      "ConfigureUsers",
-      "ConfigureSelf"
-   ],
-   "OemPrivileges":null
-}
-```
-
-> **Request parameters**
-
-|Parameter|Type|Description|
-|---------|----|-----------|
-
-|RoleId|String (required, read-only)<br> |Name for this role. <br>**NOTE:** RoleId cannot be modified once created.|
-|AssignedPrivileges|Array (string (enum)) (required)<br> |The Redfish privileges this role includes. Possible values are:<br>  `ConfigureManager` <br>   `ConfigureSelf` <br>   `ConfigureUsers` <br>   `Login` <br>   `ConfigureComponents` <br>|
-|OemPrivileges|Array (string) (required)<br> |The OEM privileges for this role. If you do not want to specify any OEM privileges, use `null` or `[]` as the value.|
-
->**Sample response body**
-
-```
-{
-   "@odata.type":"#Role.v1_3_1.Role",
-   "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
-   "Id":"CLIENT11",
-   "Name":"User Role",
-   "Message":"The resource has been created successfully.",
-   "MessageId":"ResourceEvent.1.0.2.ResourceCreated",
-   "Severity":"OK",
-   "IsPredefined":false,
-   "AssignedPrivileges":[
-      "Login",
-      "ConfigureUsers",
-      "ConfigureSelf"
-   ],
-   "OemPrivileges":null
 }
 ```
 
@@ -1326,7 +1245,7 @@ curl -i GET \
    "@odata.type":"#RoleCollection.RoleCollection",
    "@odata.id":"/redfish/v1/AccountService/Roles",
    "Name":"Roles Collection",
-   "Members@odata.count":5,
+   "Members@odata.count":3,
    "Members":[ 
       { 
          "@odata.id":"/redfish/v1/AccountService/Roles/Administrator"
@@ -1336,14 +1255,7 @@ curl -i GET \
       },
       { 
          "@odata.id":"/redfish/v1/AccountService/Roles/ReadOnly"
-      },
-      { 
-         "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT13"
-      },
-      { 
-         "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11"
-      }
-      
+      },      
    ]
 }
 ```
@@ -1374,91 +1286,15 @@ curl -i GET \
 ```
 {
    "@odata.type":"#Role.v1_3_1.Role",
-   "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
-   "Id":"CLIENT11",
+   "@odata.id":"/redfish/v1/AccountService/Roles/ReadOnly",
+   "Id":"ReadOnly",
    "Name":"User Role",
-   "IsPredefined":false,
+   "IsPredefined":true,
    "AssignedPrivileges":[
-      "Login",
-      "ConfigureUsers",
-      "ConfigureSelf"
-   ],
-   "OemPrivileges":null
+      "ConfigureSelf",
+      "Login"
+   ]
 }
-```
-
-## Updating a role
-
-|||
-|---------|---------------|
-|**Method** | `PATCH` |
-|**URI** |`/redfish/v1/AccountService/Roles/{RoleId}` |
-|**Description** |This operation updates privileges of a specific user role - assigned privileges \(Redfish predefined\) and OEM privileges. RoleId cannot be updated.|
-|**Returns** |JSON schema representing the updated role and privileges|
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|
-
->**curl command**
-
-```
- curl -i -X PATCH \
-   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
-   -H "Content-Type:application/json" \
-   -d \
-'{
-  "AssignedPrivileges": [{Set_Of_Privileges_to_update}],
-  "OemPrivileges": []
-}' \
- 'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles/{RoleId}'
-
-```
-
-
->**Sample request body**
-
-```
-{ 
-   "AssignedPrivileges":[ 
-      "Login",
-      "ConfigureManager",
-      "ConfigureUsers"
-   ],
-   "OemPrivileges": []
-}
-```
-
->**Sample response body**
-
-```
-{
-   "RoleId":"CLIENT11",
-   "IsPredefined":false,
-   "AssignedPrivileges":[
-      "Login",
-      "ConfigureManager",
-      "ConfigureUsers"
-   ],
-   "OemPrivileges":null
-}
-```
-
-
-## Deleting a role
-
-|||
-|---------|---------------|
-|**Method** | `DELETE` |
-|**URI** |`/redfish/v1/AccountService/Roles/{RoleId}` |
-|**Description** |This operation deletes a specific user role. If you attempt to delete a role that is already assigned to a user account, an HTTP `403 Forbidden` error is displayed.|
-|**Response Code** |`204 No Content` |
-|**Authentication** |Yes|
-
->**curl command**
-
-```
-curl -i -X DELETE \
-   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
- 'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles/{RoleId}'
 ```
 
 
@@ -1542,23 +1378,23 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
-   "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
+   "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
+   "@odata.id":"/redfish/v1/AccountService/Accounts/rahul",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-   "Id":"monitor32",
+   "Id":"{Id}",
    "Name":"Account Service",
    "Message":"The resource has been created successfully",
-   "MessageId":"Base.1.11.0.Created",
+   "MessageId":"Base.1.13.0.Created",
    "Severity":"OK",
-   "UserName":"monitor32",
-   "RoleId":"CLIENT11",
+   "UserName":"{Username}",
+   "RoleId":"ReadOnly",
    "AccountTypes":[
       "Redfish"
    ],
    "Password":null,
    "Links":{
       "Role":{
-         "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11/"
+         "@odata.id":"/redfish/v1/AccountService/Roles/ReadOnly"
       }
    }
 }
@@ -1570,7 +1406,7 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 |---------|---------------|
 |**Method** | `GET` |
 |**URI** |`/redfish/v1/AccountService/Accounts` |
-|**Description** |This operation retrieves a list of user accounts. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can view a list of user accounts.|
+|**Description** |This operation retrieves a list of user accounts.|
 |**Returns** |Links to user accounts.|
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|
@@ -1583,12 +1419,27 @@ curl -i GET \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts'
 ```
 
+>**Sample response body**
+
+```
+{
+   "@odata.type":"#ManagerAccountCollection.ManagerAccountCollection",
+   "@odata.id":"/redfish/v1/AccountService/Accounts",
+   "@odata.context":"/redfish/v1/$metadata#ManagerAccountCollection.ManagerAccountCollection",
+   "Name":"Account Service",
+   "Members@odata.count":1,
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/AccountService/Accounts/admin"
+      }
+   ]
+}
+```
 
 
 
 
-
-##  Viewing the user account details
+##  Viewing information about an account
 
 |||
 |---------|---------------|
@@ -1613,20 +1464,20 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
-   "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
+   "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
+   "@odata.id":"/redfish/v1/AccountService/Accounts/rahul",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-   "Id":"monitor32",
+   "Id":"{id}",
    "Name":"Account Service",
-   "UserName":"monitor32",
-   "RoleId":"CLIENT11",
+   "UserName":"{Username}",
+   "RoleId":"ReadOnly",
    "AccountTypes":[
       "Redfish"
    ],
    "Password":null,
    "Links":{
       "Role":{
-         "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11/"
+         "@odata.id":"/redfish/v1/AccountService/Roles/ReadOnly"
       }
    }
 }
@@ -1682,23 +1533,23 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
-   "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
+   "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
+   "@odata.id":"/redfish/v1/AccountService/Accounts/rahul",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-   "Id":"monitor32",
+   "Id":"rahul",
    "Name":"Account Service",
    "Message":"The account was successfully modified.",
-   "MessageId":"Base.1.11.0.AccountModified",
+   "MessageId":"Base.1.13.0.AccountModified",
    "Severity":"OK",
-   "UserName":"monitor32",
-   "RoleId":"{roleId}",
+   "UserName":"rahul",
+   "RoleId":"ReadOnly",
    "AccountTypes":[
       "Redfish"
    ],
    "Password":null,
    "Links":{
       "Role":{
-         "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11/"
+         "@odata.id":"/redfish/v1/AccountService/Roles/ReadOnly"
       }
    }
 }
@@ -1710,7 +1561,7 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 |---------|---------------|
 |**Method** | `DELETE` |
 |**URI** |`/redfish/v1/AccountService/Accounts/{accountId}` |
-|**Description** |This operation deletes a user account. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can delete a user account.|
+|**Description** |This operation deletes a user account.|
 |**Response Code** |`204 No Content` |
 |**Authentication** |Yes|
 
@@ -1739,7 +1590,6 @@ The resource aggregator allows you to add southbound infrastructure to its datab
 
 
 All aggregation actions are performed as *[tasks](#tasks)* in Resource Aggregator for ODIM. The actions performed on a group of resources (resetting or changing the boot order to default settings) are carried out as a set of subtasks.
-
 
 **Supported endpoints**
 

@@ -1379,7 +1379,7 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 ```
 {
    "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
-   "@odata.id":"/redfish/v1/AccountService/Accounts/rahul",
+   "@odata.id":"/redfish/v1/AccountService/Accounts/{accountId}",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"{Id}",
    "Name":"Account Service",
@@ -1465,9 +1465,9 @@ curl -i GET \
 ```
 {
    "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
-   "@odata.id":"/redfish/v1/AccountService/Accounts/rahul",
+   "@odata.id":"/redfish/v1/AccountService/Accounts/{accountId}",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-   "Id":"{id}",
+   "Id":"{accountId}",
    "Name":"Account Service",
    "UserName":"{Username}",
    "RoleId":"ReadOnly",
@@ -1534,14 +1534,14 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 ```
 {
    "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
-   "@odata.id":"/redfish/v1/AccountService/Accounts/rahul",
+   "@odata.id":"/redfish/v1/AccountService/Accounts/{accountId}",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-   "Id":"rahul",
+   "Id":"{accountId}",
    "Name":"Account Service",
    "Message":"The account was successfully modified.",
    "MessageId":"Base.1.13.0.AccountModified",
    "Severity":"OK",
-   "UserName":"rahul",
+   "UserName":"{Username}",
    "RoleId":"ReadOnly",
    "AccountTypes":[
       "Redfish"

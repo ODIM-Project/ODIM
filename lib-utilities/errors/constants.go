@@ -17,7 +17,7 @@ package errors
 
 const (
 	// BaseVersion defines the latest version of Base
-	BaseVersion = "Base.1.11.0."
+	BaseVersion = "Base.1.13.0."
 	// InsufficientPrivileges defines the status message at the time of Insufficient Privileges
 	InsufficientPrivileges = BaseVersion + "InsufficientPrivilege"
 	// InternalError defines the status message at the time of Internal Error

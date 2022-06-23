@@ -2,12 +2,12 @@
     "@Redfish.Copyright": "Copyright 2014-2020 DMTF. All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
     "@odata.type": "#MessageRegistry.v1_4_1.MessageRegistry",
-    "Id": "Update.1.0.0",
+    "Id": "Update.1.0.1",
     "Name": "Update Message Registry",
     "Language": "en",
     "Description": "This registry defines the update status and error messages.",
     "RegistryPrefix": "Update",
-    "RegistryVersion": "1.0.0",
+    "RegistryVersion": "1.0.1",
     "OwningEntity": "DMTF",
     "Messages": {
         "TargetDetermined": {
@@ -46,6 +46,7 @@
             "Message": "An update is in progress.",
             "Severity": "OK",
             "MessageSeverity": "OK",
+            "NumberOfArgs": 0,
             "Resolution": "None."
         },
         "TransferringToComponent": {
@@ -54,7 +55,7 @@
             "Message": "Image '%1' is being transferred to '%2'.",
             "Severity": "OK",
             "MessageSeverity": "OK",
-            "NumberOfArgs": "2",
+            "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
                 "string"
@@ -75,7 +76,7 @@
             "Message": "Image '%1' is being verified at '%2'.",
             "Severity": "OK",
             "MessageSeverity": "OK",
-            "NumberOfArgs": "2",
+            "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
                 "string"
@@ -96,7 +97,7 @@
             "Message": "Image '%1' is being installed on '%2'.",
             "Severity": "OK",
             "MessageSeverity": "OK",
-            "NumberOfArgs": "2",
+            "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
                 "string"
@@ -117,7 +118,7 @@
             "Message": "Image '%1' is being applied on '%2'.",
             "Severity": "OK",
             "MessageSeverity": "OK",
-            "NumberOfArgs": "2",
+            "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
                 "string"
@@ -138,7 +139,7 @@
             "Message": "Transfer of image '%1' to '%2' failed.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
-            "NumberOfArgs": "2",
+            "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
                 "string"
@@ -159,7 +160,7 @@
             "Message": "Verification of image '%1' at '%2' failed.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
-            "NumberOfArgs": "2",
+            "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
                 "string"
@@ -180,7 +181,7 @@
             "Message": "Installation of image '%1' to '%2' failed.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
-            "NumberOfArgs": "2",
+            "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
                 "string"
@@ -201,7 +202,7 @@
             "Message": "Activation of image '%1' on '%2' failed.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
-            "NumberOfArgs": "2",
+            "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
                 "string"
@@ -222,7 +223,7 @@
             "Message": "Awaiting for an action to proceed with installing image '%1' on '%2'.",
             "Severity": "OK",
             "MessageSeverity": "OK",
-            "NumberOfArgs": "2",
+            "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
                 "string"
@@ -243,7 +244,7 @@
             "Message": "Awaiting for an action to proceed with activating image '%1' on '%2'.",
             "Severity": "OK",
             "MessageSeverity": "OK",
-            "NumberOfArgs": "2",
+            "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
                 "string"

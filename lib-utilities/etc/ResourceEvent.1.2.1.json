@@ -1,13 +1,13 @@
 {
-    "@Redfish.Copyright": "Copyright 2014-2020 DMTF in cooperation with the Storage Networking Industry Association (SNIA). All rights reserved.",
+    "@Redfish.Copyright": "Copyright 2014-2021 DMTF in cooperation with the Storage Networking Industry Association (SNIA). All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
-    "@odata.type": "#MessageRegistry.v1_4_0.MessageRegistry",
-    "Id": "ResourceEvent.1.0.3",
+    "@odata.type": "#MessageRegistry.v1_5_0.MessageRegistry",
+    "Id": "ResourceEvent.1.2.1",
     "Name": "Resource Event Message Registry",
     "Language": "en",
     "Description": "This registry defines the messages to use for resource events.",
     "RegistryPrefix": "ResourceEvent",
-    "RegistryVersion": "1.0.3",
+    "RegistryVersion": "1.2.1",
     "OwningEntity": "DMTF",
     "Messages": {
         "ResourceCreated": {
@@ -246,6 +246,123 @@
             ],
             "Resolution": "None."
         },
+        "ResourceStateChanged": {
+            "Description": "Indicates that the state of a resource has changed.",
+            "LongDescription": "This message shall be used to indicate that the value of the State property of a resource has changed.",
+            "Message": "The state of resource `%1` has changed to %2.",
+            "VersionAdded": "1.1.0",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The relevant resource.",
+                "The state of the resource."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the relevant Redfish resource.",
+                "This argument shall contain the value of the `State` property for the relevant Redfish resource.  The values shall be used from the definition of the `State` enumeration in the `Resource` schema."
+            ],
+            "Resolution": "None."
+        },
+        "ResourcePoweredOn": {
+            "Description": "Indicates that the power state of a resource has changed to powered on.",
+            "LongDescription": "This message shall be used to indicate that the value of the PowerState property of a resource has changed to `On`.",
+            "Message": "The resource `%1` has powered on.",
+            "VersionAdded": "1.1.0",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The relevant resource."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the relevant Redfish resource."
+            ],
+            "Resolution": "None."
+        },
+        "ResourcePoweringOn": {
+            "Description": "Indicates that the power state of a resource has changed to powering on.",
+            "LongDescription": "This message shall be used to indicate that the value of the PowerState property of a resource has changed to `PoweringOn`.  This message should not be used if the PowerState transition to `On` will occur immediately.",
+            "Message": "The resource `%1` is powering on.",
+            "VersionAdded": "1.1.0",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The relevant resource."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the relevant Redfish resource."
+            ],
+            "Resolution": "None."
+        },
+        "ResourcePoweredOff": {
+            "Description": "Indicates that the power state of a resource has changed to powered off.",
+            "LongDescription": "This message shall be used to indicate that the value of the PowerState property of a resource has changed to `Off`.",
+            "Message": "The resource `%1` has powered off.",
+            "VersionAdded": "1.1.0",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The relevant resource."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the relevant Redfish resource."
+            ],
+            "Resolution": "None."
+        },
+        "ResourcePoweringOff": {
+            "Description": "Indicates that the power state of a resource has changed to powering off.",
+            "LongDescription": "This message shall be used to indicate that the value of the PowerState property of a resource has changed to `PoweringOff`.  This message should not be used if the PowerState transition to `Off` will occur immediately.",
+            "Message": "The resource `%1` is powering off.",
+            "VersionAdded": "1.1.0",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The relevant resource."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the relevant Redfish resource."
+            ],
+            "Resolution": "None."
+        },
+        "ResourcePaused": {
+            "Description": "Indicates that the power state of a resource has changed to paused.",
+            "LongDescription": "This message shall be used to indicate that the value of the PowerState property of a resource has changed to `Paused`.",
+            "Message": "The resource `%1` has been paused.",
+            "VersionAdded": "1.1.0",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The relevant resource."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the relevant Redfish resource."
+            ],
+            "Resolution": "None."
+        },
         "URIForResourceChanged": {
             "Description": "Indicates that the URI for a resource has changed.  Examples for this would be physical component replacement or redistribution.",
             "LongDescription": "This message shall be used to indicate that the URI for a resource has changed.",
@@ -315,6 +432,28 @@
                 ]
             }
         },
+        "AggregationSourceDiscovered": {
+            "Description": "Indicates that a new aggregation source has been discovered.",
+            "LongDescription": "This message shall be used to indicate an aggregation source has been discovered in the network or host.  The `OriginOfCondition` property shall contain a link to the matching `ConnectionMethod` resource if known.",
+            "Message": "A aggregation source of connection method `%1` located at `%2` has been discovered.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "VersionAdded": "1.2.0",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The connection method of the discovered aggregation source.",
+                "The location of the discovered aggregation source, such as an IP address or service entry point."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain a value from the `ConnectionMethodType` enumeration defined in the `ConnectionMethod` schema that describes connection method of the discovered aggregation source.",
+                "This argument shall contain the location of the discovered aggregation source, such as an IP address or service entry point."
+            ],
+            "Resolution": "The aggregation source is available to the service and can be identified using the identified connection method."
+        },
         "LicenseExpired": {
             "Description": "Indicates that a license has expired.",
             "LongDescription": "This message shall be used to indicate that a license has expired.",
@@ -334,6 +473,8 @@
                 "This argument shall contain the name of the relevant resource or service affected by the software license.",
                 "This argument shall contain the message returned from the license validation process or software."
             ],
+            "Deprecated": "This message has been deprecated in favor of `LicenseExpired` in the License Message Registry.",
+            "VersionDeprecated": "1.1.0",
             "Resolution": "See vendor specific instructions for specific actions."
         },
         "LicenseChanged": {
@@ -347,6 +488,16 @@
                 "string",
                 "string"
             ],
+            "ArgDescriptions": [
+                "The relevant resource.",
+                "The message returned from the license validation process."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the relevant resource or service affected by the software license.",
+                "This argument shall contain the message returned from the license validation process or software."
+            ],
+            "Deprecated": "This message has been deprecated in favor of `ResourceChanged`.",
+            "VersionDeprecated": "1.1.0",
             "Resolution": "See vendor specific instructions for specific actions."
         },
         "LicenseAdded": {
@@ -368,6 +519,8 @@
                 "This argument shall contain the name of the relevant resource or service affected by the software license.",
                 "This argument shall contain the message returned from the license validation process or software."
             ],
+            "Deprecated": "This message has been deprecated in favor of `LicenseAdded` in the License Message Registry.",
+            "VersionDeprecated": "1.1.0",
             "Resolution": "See vendor specific instructions for specific actions."
         }
     }

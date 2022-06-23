@@ -20,8 +20,7 @@ RUN cd /ODIM/add-hosts/; go mod vendor
 RUN cd /ODIM/add-hosts/; go build .
 RUN cd svc-events; go mod download
 RUN cd svc-events; go mod vendor
-
-RUN cd svc-events; go build -i .
+RUN cd svc-events; go build .
 
 
 FROM ubuntu:20.04

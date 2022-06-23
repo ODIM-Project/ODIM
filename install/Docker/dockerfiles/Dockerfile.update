@@ -20,8 +20,7 @@ RUN cd /ODIM/add-hosts/; go mod vendor
 RUN cd /ODIM/add-hosts/; go build .
 RUN cd svc-update; go mod download
 RUN cd svc-update; go mod vendor
-
-RUN cd svc-update; go build -i .
+RUN cd svc-update; go build .
 
 FROM ubuntu:20.04
 

@@ -18,9 +18,7 @@ RUN cd /ODIM/add-hosts/; go mod download
 RUN cd /ODIM/add-hosts/; go mod vendor
 RUN cd /ODIM/add-hosts/; go build .
 
-
 FROM cs:1.0 as build-stage-cs
-
 
 FROM ubuntu:20.04
 

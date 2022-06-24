@@ -38,11 +38,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 )
 
-const (
-	// SaveUndeliveredEventsFlag holds the value to check if  UndeliveredEvents need to be saved in DB
-	SaveUndeliveredEventsFlag = false
-)
-
 //StartUpInteraface Holds the function pointer of  external interface functions
 type StartUpInteraface struct {
 	DecryptPassword                  func([]byte) ([]byte, error)

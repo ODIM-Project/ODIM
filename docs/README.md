@@ -541,7 +541,7 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/Chassis/{chassisId}/Thermal|`GET`|
 |/redfish/v1/Chassis/{chassisId}/Power|`GET`|
 |/redfish/v1/Chassis/{chassisId}/NetworkAdapters|`GET`|
-|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|GET|
+|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|`GET`|
 
 |Managers||
 |-------|--------------------|
@@ -1381,7 +1381,7 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
    "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/{accountId}",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-   "Id":"{Id}",
+   "Id":"{accountId}",
    "Name":"Account Service",
    "Message":"The resource has been created successfully",
    "MessageId":"Base.1.13.0.Created",
@@ -4764,7 +4764,6 @@ To view, create, and manage racks or rack groups, ensure that the URP is running
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Chassis'
-
 ```
 
 >**Sample response body** 
@@ -4837,86 +4836,114 @@ curl -i GET \
 1. **Computer system chassis**
 
 ```
-{ 
+{
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
-   "@odata.etag":"W/\"50540B90\"",
-   "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
-   "Id":"192083d2-c60a-4318-967b-cb5890c6dfe4:1",
+   "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
+   "@odata.etag":"W/\"59209823\"",
+   "Id":"b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1",
+   "Name":"Computer System Chassis",
+   "AssetTag":null,
    "ChassisType":"RackMount",
-   "Links":{ 
-      "ManagedBy":[ 
-         { 
-            "@odata.id":"/redfish/v1/Managers/141cbba9-1e99-4272-b855-1781730bfe1c.1"
+   "IndicatorLED":"Off",
+   "Manufacturer":"HPE",
+   "Model":"ProLiant DL360 Gen10",
+   "PartNumber":null,
+   "PowerState":"On",
+   "SerialNumber":"MXQ91100T6",
+   "SKU":"867959-B21",
+   "Links":{
+      "ComputerSystems":[
+         {
+            "@odata.id":"/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1"
          }
       ],
-      "ComputerSystems":[ 
-         { 
-            "@odata.id":"/redfish/v1/Systems/192083d2-c60a-4318-967b-cb5890c6dfe4.1"
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1"
          }
       ]
    },
-   "Manufacturer":"HPE",
-   "Model":"ProLiant DL380 Gen10",
-   "Name":"Computer System Chassis",
-   "NetworkAdapters":{ 
-      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/NetworkAdapters"
+   "NetworkAdapters":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters"
    },
-   "Oem":{ 
-      
+   "PCIeSlots":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/PCIeSlots"
+   },
+   "Power":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power"
+   },
+   "Status":{
+      "Health":"OK",
+      "State":"Starting"
+   },
+   "Thermal":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Thermal"
+   },
+   "Oem":{
+      "Hpe":{
+         "@odata.context":"/redfish/v1/$metadata#HpeServerChassis.HpeServerChassis",
+         "@odata.type":"#HpeServerChassis.v2_3_1.HpeServerChassis",
+         "Actions":{
+            "#HpeServerChassis.DisableMCTPOnServer":{
+               "target":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Actions/Oem/Hpe/HpeServerChassis.DisableMCTPOnServer"
+            },
+            "#HpeServerChassis.FactoryResetMCTP":{
+               "target":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Actions/Oem/Hpe/HpeServerChassis.FactoryResetMCTP"
+            }
          },
-         "Firmware":{ 
-            "PlatformDefinitionTable":{ 
-               "Current":{ 
-                  "VersionString":"8.9.0 Build 38"
+         "ElConfigOverride":false,
+         "Firmware":{
+            "PlatformDefinitionTable":{
+               "Current":{
+                  "VersionString":"9.8.0 Build 15"
                }
             },
-            "PowerManagementController":{ 
-               "Current":{ 
-                  "VersionString":"1.0.4"
+            "PowerManagementController":{
+               "Current":{
+                  "VersionString":"1.0.7"
                }
             },
-            "PowerManagementControllerBootloader":{ 
-               "Current":{ 
+            "PowerManagementControllerBootloader":{
+               "Current":{
                   "Family":"25",
                   "VersionString":"1.1"
                }
             },
-            "SPSFirmwareVersionData":{ 
-               "Current":{ 
-                  "VersionString":"4.1.4.251"
+            "SPSFirmwareVersionData":{
+               "Current":{
+                  "VersionString":"4.1.4.601"
                }
             },
-            "SystemProgrammableLogicDevice":{ 
-               "Current":{ 
+            "SystemProgrammableLogicDevice":{
+               "Current":{
                   "VersionString":"0x2A"
                }
             }
          },
-         "Links":{ 
-            "Devices":{ 
-               "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/Devices"
+         "Links":{
+            "Devices":{
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Devices"
             }
          },
-         "MCTPEnabledOnServer":true,
-         "SmartStorageBattery":[ 
-            { 
-               "ChargeLevelPercent":100,
+         "SmartStorageBattery":[
+            {
+               "ChargeLevelPercent":99,
                "FirmwareVersion":"0.70",
                "Index":1,
                "MaximumCapWatts":96,
                "Model":"875241-B21",
-               "ProductName":"Smart Storage Battery ",
-               "RemainingChargeTimeSeconds":7,
-               "SerialNumber":"6WQXL0CB2BV63K",
+               "ProductName":"HPE Smart Storage Battery ",
+               "RemainingChargeTimeSeconds":37,
+               "SerialNumber":"6WQXL0CB2BX63Z",
                "SparePartNumber":"878643-001",
-               "Status":{ 
+               "Status":{
                   "Health":"OK",
                   "State":"Enabled"
                }
             }
          ],
-         "SystemMaintenanceSwitches":{ 
+         "SystemMaintenanceSwitches":{
             "Sw1":"Off",
             "Sw10":"Off",
             "Sw11":"Off",
@@ -4932,18 +4959,10 @@ curl -i GET \
          }
       }
    },
-   "Power":{ 
-      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/Power"
+   "PCIeDevices":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/PCIeDevices"
    },
-   "SKU":"868704-B21",
-   "SerialNumber":"2M291101JX",
-   "Status":{ 
-      "Health":"OK",
-      "State":"Disabled"
-   },
-   "Thermal":{ 
-      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/Thermal"
-   }
+   "ThermalManagedByParent.omitempty":false
 }
 ```
 
@@ -4952,11 +4971,11 @@ curl -i GET \
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
-   "@odata.id":"/redfish/v1/Chassis/f4e24c1c-dd2f-5a17-91b7-71620eb070df",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
-   "Id":"f4e24c1c-dd2f-5a17-91b7-71620eb070df",
+   "@odata.id":"/redfish/v1/Chassis/22804541-c439-5d2a-81d5-23d23e0ebe38",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
+   "Id":"22804541-c439-5d2a-81d5-23d23e0ebe38",
    "Description":"My RackGroup",
-   "Name":"RG8",
+   "Name":"RG2",
    "ChassisType":"RackGroup",
    "Links":{
       "ComputerSystems":[
@@ -4964,7 +4983,7 @@ curl -i GET \
       ],
       "ManagedBy":[
          {
-            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+            "@odata.id":"/redfish/v1/Managers/b44b87c0-00de-4184-ad2b-cdd4da52a805"
          }
       ]
    },
@@ -4981,24 +5000,19 @@ curl -i GET \
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
-   "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
-   "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "Description":"rack no 1",
-   "Name":"RACK#1",
-   "ChassisType":"Rack",
+   "@odata.id":"/redfish/v1/Chassis/f03fed09-dd75-5585-ad81-75cd4ae6266a",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
+   "Id":"f03fed09-dd75-5585-ad81-75cd4ae6266a",
+   "Description":"My RackGroup",
+   "Name":"RG_2",
+   "ChassisType":"RackGroup",
    "Links":{
       "ComputerSystems":[
          
       ],
       "ManagedBy":[
          {
-            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
-         }
-      ],
-      "ContainedBy":[
-         {
-            "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d"
+            "@odata.id":"/redfish/v1/Managers/b44b87c0-00de-4184-ad2b-cdd4da52a805"
          }
       ]
    },
@@ -5028,9 +5042,119 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/Thermal'
+```
 
+> **Sample response body**
 
 ```
+{
+    "@odata.context": "/redfish/v1/$metadata#Thermal.Thermal",
+    "@odata.etag": "W/\"B51E22EA\"",
+    "@odata.id": "/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Thermal",
+    "@odata.type": "#Thermal.v1_6_2.Thermal",
+    "Fans": [
+        {
+            "@odata.id": "/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Thermal#Fans/0",
+            "MemberId": "0",
+            "Name": "Fan 1",
+            "Oem": {
+                "Hpe": {
+                    "@odata.context": "/redfish/v1/$metadata#HpeServerFan.HpeServerFan",
+                    "@odata.type": "#HpeServerFan.v2_0_0.HpeServerFan",
+                    "HotPluggable": true,
+                    "Location": "System",
+                    "Redundant": true
+                }
+            },
+            "Reading": 30,
+            "ReadingUnits": "Percent",
+            "Status": {
+                "Health": "OK",
+                "State": "Enabled"
+            }
+        },
+        {
+            "@odata.id": "/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Thermal#Fans/1",
+            "MemberId": "1",
+            "Name": "Fan 2",
+            "Oem": {
+                "Hpe": {
+                    "@odata.context": "/redfish/v1/$metadata#HpeServerFan.HpeServerFan",
+                    "@odata.type": "#HpeServerFan.v2_0_0.HpeServerFan",
+                    "HotPluggable": true,
+                    "Location": "System",
+                    "Redundant": true
+                }
+            },
+            "Reading": 30,
+            "ReadingUnits": "Percent",
+            "Status": {
+                "Health": "OK",
+                "State": "Enabled"
+            }
+        }
+    ],
+    "Id": "Thermal",
+    "Name": "Thermal",
+    "Oem": {
+        "Hpe": {
+            "@odata.context": "/redfish/v1/$metadata#HpeThermalExt.HpeThermalExt",
+            "@odata.type": "#HpeThermalExt.v2_0_0.HpeThermalExt",
+            "Actions": {
+            },
+            "FanPercentMinimum": 0,
+            "ThermalConfiguration": "OptimalCooling"
+        }
+    },
+    "Temperatures": [
+        {
+            "@odata.id": "/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Thermal#Temperatures/1",
+            "MemberId": "1",
+            "Name": "02-CPU 1",
+            "Oem": {
+                "Hpe": {
+                    "@odata.context": "/redfish/v1/$metadata#HpeSeaOfSensors.HpeSeaOfSensors",
+                    "@odata.type": "#HpeSeaOfSensors.v2_0_0.HpeSeaOfSensors",
+                    "LocationXmm": 11,
+                    "LocationYmm": 5
+                }
+            },
+            "PhysicalContext": "CPU",
+            "ReadingCelsius": 40,
+            "SensorNumber": 2,
+            "Status": {
+                "Health": "OK",
+                "State": "Enabled"
+            },
+            "UpperThresholdCritical": 70,
+            "UpperThresholdFatal": null
+        },
+        {
+            "@odata.id": "/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Thermal#Temperatures/2",
+            "MemberId": "2",
+            "Name": "03-CPU 2",
+            "Oem": {
+                "Hpe": {
+                    "@odata.context": "/redfish/v1/$metadata#HpeSeaOfSensors.HpeSeaOfSensors",
+                    "@odata.type": "#HpeSeaOfSensors.v2_0_0.HpeSeaOfSensors",
+                    "LocationXmm": 4,
+                    "LocationYmm": 5
+                }
+            },
+            "PhysicalContext": "CPU",
+            "ReadingCelsius": 40,
+            "SensorNumber": 3,
+            "Status": {
+                "Health": "OK",
+                "State": "Enabled"
+            },
+            "UpperThresholdCritical": 70,
+            "UpperThresholdFatal": null
+        }
+    ]
+}
+```
+
 
 
 ### Collection of network adapters
@@ -5052,10 +5176,32 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters'
-
-
 ```
 
+> **Sample response body**
+
+```
+{   "@odata.context":"/redfish/v1/$metadata#NetworkAdapterCollection.NetworkAdapterCollection",
+   "@odata.etag":"W/\"C321D970\"",
+   "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters",
+   "@odata.type":"#NetworkAdapterCollection.NetworkAdapterCollection",
+   "Description":"The collection of network adapter resource instances available in this chassis.",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000"
+      }
+   ],
+   "Members@odata.count":1,
+   "Name":"NetworkAdapterCollection",
+   "Oem":{
+      "Hpe":{
+         "@odata.context":"/redfish/v1/$metadata#HpeNetworkAdapterStatus.HpeNetworkAdapterStatus",
+         "@odata.type":"#HpeNetworkAdapterStatus.v1_0_0.HpeNetworkAdapterStatus",
+         "MemberContents":"AllDevices"
+      }
+   }
+}
+```
 
 ### Single network adapter
 
@@ -5075,142 +5221,126 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{NetworkAdapterId}'
-
-
 ```
 
 
 >**Sample response body**
 
 ```
-
 {
    "@odata.context":"/redfish/v1/$metadata#NetworkAdapter.NetworkAdapter",
-   "@odata.etag":"W/\"F303ECE9\"",
-   "@odata.id":"/redfish/v1/Chassis/a022faa5-107c-496d-874e-89c9f3e2df1c.1/NetworkAdapters/{rid}",
-   "@odata.type":"#NetworkAdapter.v1_8_0.NetworkAdapter",
-   "Description":"The network adapter resource instances available in this chassis.",
-   "Name":"Network Adapter View",
+   "@odata.etag":"W/\"DA153FEC\"",
+   "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000",
+   "@odata.type":"#NetworkAdapter.v1_4_0.NetworkAdapter",
+   "Actions":{
+      "#NetworkAdapter.ResetSettingsToDefault":{
+         "target":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000/Actions/NetworkAdapter.ResetSettingsToDefault",
+         "title":"Reset network adapter configuration to factory default values."
+      }
+   },
+   "Controllers":[
+      {
+         "ControllerCapabilities":{
+            "DataCenterBridging":{
+               "Capable":true
+            },
+            "NPAR":{
+               "NparCapable":false,
+               "NparEnabled":false
+            },
+            "NPIV":{
+               "MaxDeviceLogins":128,
+               "MaxPortLogins":64
+            },
+            "NetworkDeviceFunctionCount":8,
+            "NetworkPortCount":2,
+            "VirtualizationOffload":{
+               "SRIOV":{
+                  "SRIOVVEPACapable":false
+               },
+               "VirtualFunction":{
+                  "DeviceMaxCount":128,
+                  "MinAssignmentGroupSize":8,
+                  "NetworkPortMaxCount":64
+               }
+            }
+         },
+         "FirmwarePackageVersion":"07.18.27.00",
+         "Location":{
+            "PartLocation":{
+               "LocationOrdinalValue":0,
+               "LocationType":"Slot",
+               "ServiceLabel":"Embedded ALOM"
+            }
+         }
+      }
+   ],
+   "Description":"Device capabilities and characteristics with active configuration status",
+   "Id":"DC07A000",
+   "Manufacturer":"Hewlett Packard Enterprise",
+   "Model":"HP FlexFabric 10Gb 2-port 534FLR-SFP+ Adapter",
+   "Name":"HP FlexFabric 10Gb 2port 534FLR-SFP+ Adapter",
+   "NetworkDeviceFunctions":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000/NetworkDeviceFunctions"
+   },
+   "NetworkPorts":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000/NetworkPorts"
+   },
    "Oem":{
       "Hpe":{
-         "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapter.HpeBaseNetworkAdapter",
-         "@odata.etag":"W/\"7A9A9CE7\"",
-         "@odata.id":"/redfish/v1/Systems/1/BaseNetworkAdapters/1/",
-         "@odata.type":"#HpeBaseNetworkAdapter.v2_0_0.HpeBaseNetworkAdapter",
-         "Id":"1",
-         "FcPorts":[
-            
-         ],
-         "Firmware":{
-            "Current":{
-               "VersionString":"20.14.54"
+         "@odata.context":"/redfish/v1/$metadata#HpeNetworkAdapter.HpeNetworkAdapter",
+         "@odata.type":"#HpeNetworkAdapter.v1_3_0.HpeNetworkAdapter",
+         "Actions":{
+            "#HpeNetworkAdapter.FlushConfigurationToNVM":{
+               "target":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000/Actions/Oem/Hpe/HpeNetworkAdapter.FlushConfigurationToNVM",
+               "title":"Force a save of current network adapter configuration to non-volatile storage."
+            },
+            "#NetworkAdapter.FlushConfigurationToNVM":{
+               "target":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000/Actions/Oem/Hpe/NetworkAdapter.FlushConfigurationToNVM",
+               "title":"NOTE: Deprecated, will be removed in a future release. Replaced by HpeNetworkAdapter.FlushConfigurationToNVM. Force a save of current network adapter configuration to non-volatile storage."
             }
          },
-         "Name":"HPE Ethernet 1Gb 4-port 331i Adapter - NIC",
-         "PhysicalPorts":[
+         "CLPVersion":"",
+         "Controllers":[
             {
-               "FullDuplex":true,
-               "IPv4Addresses":[
-                  
-               ],
-               "IPv6Addresses":[
-                  
-               ],
-               "LinkStatus":null,
-               "MacAddress":"80:30:e0:2c:92:a4",
-               "Name":"",
-               "Oem":{
-                  "Hpe":{
-                     "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapterExt.HpeBaseNetworkAdapterExt",
-                     "@odata.type":"#HpeBaseNetworkAdapterExt.v2_0_0.HpeBaseNetworkAdapterExt",
-                     "BadReceives":0,
-                     "BadTransmits":0,
-                     "GoodReceives":0,
-                     "GoodTransmits":0
-                  }
+               "DeviceLimitationsBitmap":0,
+               "EdgeVirtualBridging":{
+                  "ChannelDescriptionTLVCapable":true,
+                  "ChannelLinkControlTLVCapable":true
                },
-               "SpeedMbps":0
-            },
-            {
-               "FullDuplex":true,
-               "IPv4Addresses":[
-                  
-               ],
-               "IPv6Addresses":[
-                  
-               ],
-               "LinkStatus":null,
-               "MacAddress":"80:30:e0:2c:92:a5",
-               "Name":"",
-               "Oem":{
-                  "Hpe":{
-                     "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapterExt.HpeBaseNetworkAdapterExt",
-                     "@odata.type":"#HpeBaseNetworkAdapterExt.v2_0_0.HpeBaseNetworkAdapterExt",
-                     "BadReceives":0,
-                     "BadTransmits":0,
-                     "GoodReceives":0,
-                     "GoodTransmits":0
-                  }
+               "EmbeddedLLDPFunctions":{
+                  "Enabled":true,
+                  "Optional":true
                },
-               "SpeedMbps":0
-            },
-            {
-               "FullDuplex":true,
-               "IPv4Addresses":[
-                  
-               ],
-               "IPv6Addresses":[
-                  
-               ],
-               "LinkStatus":null,
-               "MacAddress":"80:30:e0:2c:92:a6",
-               "Name":"",
-               "Oem":{
-                  "Hpe":{
-                     "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapterExt.HpeBaseNetworkAdapterExt",
-                     "@odata.type":"#HpeBaseNetworkAdapterExt.v2_0_0.HpeBaseNetworkAdapterExt",
-                     "BadReceives":0,
-                     "BadTransmits":0,
-                     "GoodReceives":0,
-                     "GoodTransmits":0
+               "FunctionTypeLimits":[
+                  {
+                     "ConstraintDescription":"RES1",
+                     "FCoEResourcesConsumed":1,
+                     "TotalSharedResourcesAvailable":1,
+                     "iSCSIResourcesConsumed":1
                   }
-               },
-               "SpeedMbps":0
-            },
-            {
-               "FullDuplex":true,
-               "IPv4Addresses":[
-                  
                ],
-               "IPv6Addresses":[
-                  
+               "FunctionTypes":[
+                  "Ethernet",
+                  "iSCSI",
+                  "FCoE"
                ],
-               "LinkStatus":null,
-               "MacAddress":"80:30:e0:2c:92:a7",
-               "Name":"",
-               "Oem":{
-                  "Hpe":{
-                     "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapterExt.HpeBaseNetworkAdapterExt",
-                     "@odata.type":"#HpeBaseNetworkAdapterExt.v2_0_0.HpeBaseNetworkAdapterExt",
-                     "BadReceives":0,
-                     "BadTransmits":0,
-                     "GoodReceives":0,
-                     "GoodTransmits":0
-                  }
-               },
-               "SpeedMbps":0
+               "MostRecentConfigurationChangeSource":"None",
+               "RDMASupport":[
+                  "None"
+               ],
+               "UnderlyingDataSource":"DCi"
             }
          ],
-         "Status":{
-            "State":null
-         },
-         "StructuredName":"NIC.LOM.1.1",
-         "UEFIDevicePath":"PciRoot(0x0)/Pci(0x1C,0x0)/Pci(0x0,0x0)"
+         "FactoryDefaultsActuationBehavior":"Immediate",
+         "PCAVersion":"700749-001",
+         "RedfishConfiguration":"Disabled"
       }
-   }
+   },
+   "PartNumber":"0",
+   "SKU":"534FLR",
+   "SerialNumber":"CN7842V67N"
 }
-
-
 ```
 
 ###  Power
@@ -5231,8 +5361,162 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/Power'
+```
 
+> **Sample response body**
 
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Power.Power",
+   "@odata.etag":"W/\"ADB9FA3D\"",
+   "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power",
+   "@odata.type":"#Power.v1_3_0.Power",
+   "Id":"Power",
+   "Name":"PowerMetrics",
+   "Oem":{
+      "Hpe":{
+         "@odata.context":"/redfish/v1/$metadata#HpePowerMetricsExt.HpePowerMetricsExt",
+         "@odata.type":"#HpePowerMetricsExt.v2_3_0.HpePowerMetricsExt",
+         "BrownoutRecoveryEnabled":true,
+         "HasCpuPowerMetering":true,
+         "HasDimmPowerMetering":true,
+         "HasGpuPowerMetering":false,
+         "HasPowerMetering":true,
+         "HighEfficiencyMode":"Balanced",
+         "Links":{
+            "FastPowerMeter":{
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power/FastPowerMeter"
+            },
+            "FederatedGroupCapping":{
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power/FederatedGroupCapping"
+            },
+            "PowerMeter":{
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power/PowerMeter"
+            },
+            "SlowPowerMeter":{
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power/SlowPowerMeter"
+            }
+         },
+         "MinimumSafelyAchievableCap":null,
+         "MinimumSafelyAchievableCapValid":false,
+         "SNMPPowerThresholdAlert":{
+            "DurationInMin":0,
+            "ThresholdWatts":0,
+            "Trigger":"Disabled"
+         }
+      }
+   },
+   "PowerControl":[
+      {
+         "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power#PowerControl/0",
+         "MemberId":"0",
+         "PowerCapacityWatts":1000,
+         "PowerConsumedWatts":202,
+         "PowerLimit":{
+            "LimitException":null,
+            "LimitInWatts":null
+         },
+         "PowerMetrics":{
+            "AverageConsumedWatts":211,
+            "IntervalInMin":20,
+            "MaxConsumedWatts":341,
+            "MinConsumedWatts":202
+         }
+      }
+   ],
+   "PowerSupplies":[
+      {
+         "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power#PowerSupplies/0",
+         "FirmwareVersion":"1.00",
+         "LastPowerOutputWatts":104,
+         "LineInputVoltage":211,
+         "LineInputVoltageType":"ACHighLine",
+         "Manufacturer":"LTEON",
+         "MemberId":"0",
+         "Model":"865408-B21",
+         "Name":"HpeServerPowerSupply",
+         "Oem":{
+            "Hpe":{
+               "@odata.context":"/redfish/v1/$metadata#HpeServerPowerSupply.HpeServerPowerSupply",
+               "@odata.type":"#HpeServerPowerSupply.v2_0_0.HpeServerPowerSupply",
+               "AveragePowerOutputWatts":104,
+               "BayNumber":1,
+               "HotplugCapable":true,
+               "MaxPowerOutputWatts":120,
+               "Mismatched":false,
+               "PowerSupplyStatus":{
+                  "State":"Ok"
+               },
+               "iPDUCapable":false
+            }
+         },
+         "PowerCapacityWatts":500,
+         "PowerSupplyType":"AC",
+         "SerialNumber":"5WBXK0ELLB96DW",
+         "SparePartNumber":"866729-001",
+         "Status":{
+            "Health":"OK",
+            "State":"Enabled"
+         }
+      },
+      {
+         "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power#PowerSupplies/1",
+         "FirmwareVersion":"1.00",
+         "LastPowerOutputWatts":98,
+         "LineInputVoltage":210,
+         "LineInputVoltageType":"ACHighLine",
+         "Manufacturer":"LTEON",
+         "MemberId":"1",
+         "Model":"865408-B21",
+         "Name":"HpeServerPowerSupply",
+         "Oem":{
+            "Hpe":{
+               "@odata.context":"/redfish/v1/$metadata#HpeServerPowerSupply.HpeServerPowerSupply",
+               "@odata.type":"#HpeServerPowerSupply.v2_0_0.HpeServerPowerSupply",
+               "AveragePowerOutputWatts":98,
+               "BayNumber":2,
+               "HotplugCapable":true,
+               "MaxPowerOutputWatts":101,
+               "Mismatched":false,
+               "PowerSupplyStatus":{
+                  "State":"Ok"
+               },
+               "iPDUCapable":false
+            }
+         },
+         "PowerCapacityWatts":500,
+         "PowerSupplyType":"AC",
+         "SerialNumber":"5WBXK0ELLB96AP",
+         "SparePartNumber":"866729-001",
+         "Status":{
+            "Health":"OK",
+            "State":"Enabled"
+         }
+      }
+   ],
+   "Redundancy":[
+      {
+         "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power#Redundancy/0",
+         "MaxNumSupported":2,
+         "MemberId":"0",
+         "MinNumNeeded":2,
+         "Mode":"Failover",
+         "Name":"PowerSupply Redundancy Group 1",
+         "RedundancySet":[
+            {
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power#PowerSupplies/0"
+            },
+            {
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power#PowerSupplies/1"
+            }
+         ],
+         "Status":{
+            "Health":"OK",
+            "State":"Enabled"
+         }
+      }
+   ]
+}
 ```
 
 ### Creating a rack group
@@ -5312,11 +5596,11 @@ Content-Length:462 bytes
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
-   "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
-   "Id":"c2459269-011c-58d3-a217-ef914c4c295d",
+   "@odata.id":"/redfish/v1/Chassis/22804541-c439-5d2a-81d5-23d23e0ebe38",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
+   "Id":"22804541-c439-5d2a-81d5-23d23e0ebe38",
    "Description":"My RackGroup",
-   "Name":"RG5",
+   "Name":"RG2",
    "ChassisType":"RackGroup",
    "Links":{
       "ComputerSystems":[
@@ -5324,7 +5608,7 @@ Content-Length:462 bytes
       ],
       "ManagedBy":[
          {
-            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+            "@odata.id":"/redfish/v1/Managers/b44b87c0-00de-4184-ad2b-cdd4da52a805"
          }
       ]
    },
@@ -5348,9 +5632,7 @@ Content-Length:462 bytes
 |**Response code** |On success, `201 Created`|
 |**Authentication** |Yes|
 
- 
-
->**curl command**
+ **curl command**
 
 ```
 curl -i POST \
@@ -5428,7 +5710,7 @@ Content-Length:462 bytes
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -5439,12 +5721,12 @@ Content-Length:462 bytes
       ],
       "ManagedBy":[
          {
-            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+            "@odata.id":"/redfish/v1/Managers/b44b87c0-00de-4184-ad2b-cdd4da52a805"
          }
       ],
       "ContainedBy":[
          {
-            "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d"
+            "@odata.id":"/redfish/v1/Chassis/22804541-c439-5d2a-81d5-23d23e0ebe38"
          }
       ]
    },
@@ -5517,7 +5799,7 @@ curl -i PATCH \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -5604,7 +5886,7 @@ curl -i PATCH \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",

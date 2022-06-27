@@ -13,8 +13,14 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/build/task.sh .
-RUN ./task.sh
+COPY svc-task /ODIM/svc-task/
+COPY install/Docker/dockerfiles/scripts/add-hosts  /ODIM/add-hosts/
+RUN cd /ODIM/add-hosts/; go mod download
+RUN cd /ODIM/add-hosts/; go mod vendor
+RUN cd /ODIM/add-hosts/; go build .
+RUN cd svc-task; go mod download
+RUN cd svc-task; go mod vendor
+RUN cd svc-task; go build .
 
 FROM ubuntu:20.04
 

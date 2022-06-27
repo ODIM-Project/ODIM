@@ -13,8 +13,14 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/build/urplugin.sh .
-RUN ./urplugin.sh
+COPY plugin-unmanaged-racks /ODIM/plugin-unmanaged-racks/
+COPY install/Docker/dockerfiles/scripts/add-hosts  /ODIM/add-hosts/
+RUN cd /ODIM/add-hosts/; go mod download
+RUN cd /ODIM/add-hosts/; go mod vendor
+RUN cd /ODIM/add-hosts/; go build .
+RUN cd plugin-unmanaged-racks; go mod download
+RUN cd plugin-unmanaged-racks; go mod vendor
+RUN cd plugin-unmanaged-racks; go build .
 
 FROM ubuntu:20.04
 

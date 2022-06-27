@@ -13,8 +13,14 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/build/lenovoplugin.sh .
-RUN ./lenovoplugin.sh
+COPY plugin-lenovo /ODIM/plugin-lenovo/
+COPY install/Docker/dockerfiles/scripts/add-hosts  /ODIM/add-hosts/
+RUN cd /ODIM/add-hosts/; go mod download
+RUN cd /ODIM/add-hosts/; go mod vendor
+RUN cd /ODIM/add-hosts/; go build .
+RUN cd plugin-lenovo; go mod download
+RUN cd plugin-lenovo; go mod vendor
+RUN cd plugin-lenovo; go build .
 
 FROM ubuntu:20.04
 

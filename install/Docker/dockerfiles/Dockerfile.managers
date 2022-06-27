@@ -13,8 +13,15 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/build/managers.sh .
-RUN ./managers.sh
+COPY svc-managers /ODIM/svc-managers/
+COPY install/Docker/dockerfiles/scripts/add-hosts  /ODIM/add-hosts/
+RUN cd /ODIM/add-hosts/; go mod download
+RUN cd /ODIM/add-hosts/; go mod vendor
+RUN cd /ODIM/add-hosts/; go build .
+RUN cd svc-managers; go mod download
+RUN cd svc-managers; go mod vendor
+RUN cd svc-managers; go build .
+
 
 FROM ubuntu:20.04
 

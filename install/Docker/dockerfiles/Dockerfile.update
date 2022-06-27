@@ -13,8 +13,14 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/build/update.sh .
-RUN ./update.sh
+COPY svc-update /ODIM/svc-update/
+COPY install/Docker/dockerfiles/scripts/add-hosts  /ODIM/add-hosts/
+RUN cd /ODIM/add-hosts/; go mod download
+RUN cd /ODIM/add-hosts/; go mod vendor
+RUN cd /ODIM/add-hosts/; go build .
+RUN cd svc-update; go mod download
+RUN cd svc-update; go mod vendor
+RUN cd svc-update; go build .
 
 FROM ubuntu:20.04
 

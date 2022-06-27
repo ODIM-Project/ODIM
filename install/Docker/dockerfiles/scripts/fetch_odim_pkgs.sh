@@ -28,10 +28,3 @@ for str in ${protos[@]}; do
 done
 
 
-LIST=`ls | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-|add-hosts'`
-for i in $LIST; do
-    cd $i
-    go mod download
-    go mod vendor
-    cd ../
-done

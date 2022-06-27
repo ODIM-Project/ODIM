@@ -13,8 +13,14 @@
 # under the License.
 
 FROM odim:3.0 as build-stage
-COPY install/Docker/dockerfiles/build/licenses.sh .
-RUN ./licenses.sh
+COPY svc-licenses /ODIM/svc-licenses/
+COPY install/Docker/dockerfiles/scripts/add-hosts  /ODIM/add-hosts/
+RUN cd /ODIM/add-hosts/; go mod download
+RUN cd /ODIM/add-hosts/; go mod vendor
+RUN cd /ODIM/add-hosts/; go build .
+RUN cd svc-licenses; go mod download
+RUN cd svc-licenses; go mod vendor
+RUN cd svc-licenses; go build .
 
 FROM ubuntu:20.04
 

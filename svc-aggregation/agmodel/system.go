@@ -104,7 +104,7 @@ type SNMP struct {
 
 // Aggregate payload is used for perform the operations on Aggregate
 type Aggregate struct {
-	Elements []string `json:"Elements"`
+	Elements []OdataID `json:"Elements"`
 }
 
 // ConnectionMethod payload is used for perform the operations on connection method
@@ -931,8 +931,8 @@ func RemoveElementsFromAggregate(aggregate Aggregate, aggregateURL string) *erro
 	return nil
 }
 
-func removeElements(requestElements, presentElements []string) []string {
-	newElements := []string{}
+func removeElements(requestElements, presentElements []OdataID) []OdataID {
+	newElements := []OdataID{}
 	var present bool
 	for _, presentElement := range presentElements {
 		front := 0

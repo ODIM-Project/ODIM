@@ -195,7 +195,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Task.v1_5_1.Task",
+   "@odata.type":"#Task.v1_6_0.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
@@ -275,7 +275,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_5_1.Task",
+   "@odata.type":"#Task.v1_6_0.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
@@ -310,7 +310,7 @@ Content-Length:491 bytes
 
 ```
 {
-"code": "Base.1.11.0.Success",
+"code": "Base.1.13.0.Success",
 "message": "Request completed successfully."
 }
 ```
@@ -320,7 +320,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.11.0.GeneralError",
+      "code":"Base.1.13.0.GeneralError",
       "message":"one or more of the reset actions failed, check sub tasks for more info."
    }
 ```

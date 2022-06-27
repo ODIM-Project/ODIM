@@ -219,7 +219,7 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_5_1.Task",
+		OdataType:    common.TaskType,
 		ID:           task.ID,
 		Name:         task.Name,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",
@@ -637,7 +637,7 @@ func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest)
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_5_1.Task",
+		OdataType:    common.TaskType,
 		ID:           task.ID,
 		Name:         task.Name,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",

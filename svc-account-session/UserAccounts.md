@@ -83,7 +83,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#AccountService.v1_10_0.AccountService",
+   "@odata.type":"#AccountService.v1_11_0.AccountService",
    "@odata.id":"/redfish/v1/AccountService",
    "@odata.context":"/redfish/v1/$metadata#AccountService.AccountService",
    "Id":"AccountService",
@@ -174,7 +174,7 @@ curl -i POST \
    "Id":"CLIENT11",
    "Name":"User Role",
    "Message":"The resource has been created successfully.",
-   "MessageId":"ResourceEvent.1.0.3.ResourceCreated",
+   "MessageId":"ResourceEvent.1.2.1.ResourceCreated",
    "Severity":"OK",
    "IsPredefined":false,
    "AssignedPrivileges":[
@@ -439,13 +439,13 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
    "Name":"Account Service",
    "Message":"The resource has been created successfully",
-   "MessageId":"Base.1.11.0.Created",
+   "MessageId":"Base.1.13.0.Created",
    "Severity":"OK",
    "UserName":"monitor32",
    "RoleId":"CLIENT11",
@@ -511,7 +511,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
@@ -588,13 +588,13 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
    "Name":"Account Service",
    "Message":"The account was successfully modified.",
-   "MessageId":"Base.1.11.0.AccountModified",
+   "MessageId":"Base.1.13.0.AccountModified",
    "Severity":"OK",
    "UserName":"monitor32",
    "RoleId":"CLIENT11",

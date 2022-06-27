@@ -1595,7 +1595,6 @@ All aggregation actions are performed as *[tasks](#tasks)* in Resource Aggregato
 
 |API URI|Supported operations|Required privileges|
 |-------|--------------------|-------------------|
-
 |/redfish/v1/AggregationService|`GET`|`Login` |
 | /redfish/v1/AggregationService/AggregationSources<br> |`GET`, `POST`|`Login`, `ConfigureManager` |
 |/redfish/v1/AggregationService/AggregationSources/{aggregationSourceId}|`GET`, `PATCH`, `DELETE`|`Login`, `ConfigureManager` |
@@ -3217,7 +3216,6 @@ To discover crucial configuration information about a resource, including chassi
 
 |API URI|Supported operations|Required privileges|
 |-------|--------------------|-------------------|
-
 |/redfish/v1/Systems|`GET`|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}|`GET`, `PATCH`|`Login`, `ConfigureComponents` |
 |/redfish/v1/Systems/{ComputerSystemId}/Memory|`GET`|`Login` |
@@ -3257,7 +3255,6 @@ To discover crucial configuration information about a resource, including chassi
 
 |API URI|Supported operations|Required privileges|
 |-------|--------------------|-------------------|
-
 |/redfish/v1/Managers|`GET`|`Login` |
 |/redfish/v1/Managers/{managerId}|`GET`|`Login` |
 |/redfish/v1/Managers/{managerId}/EthernetInterfaces|`GET`|`Login` |

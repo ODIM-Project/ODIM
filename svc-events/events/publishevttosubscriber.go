@@ -334,18 +334,14 @@ func (e *ExternalInterfaces) postEvent(destination, eventUniqueID string, event 
 	if err == nil {
 		resp.Body.Close()
 		log.Info("Event is successfully forwarded")
-		if evcommon.SaveUndeliveredEventsFlag {
-			// check any undelivered events are present in db for the destination and publish those
-			go e.checkUndeliveredEvents(destination)
-		}
+		// check any undelivered events are present in db for the destination and publish those
+		go e.checkUndeliveredEvents(destination)
 		return
 	}
 	undeliveredEventID := destination + ":" + eventUniqueID
-	if evcommon.SaveUndeliveredEventsFlag {
-		serr := e.SaveUndeliveredEvents(undeliveredEventID, event)
-		if serr != nil {
-			log.Error("error while saving undelivered event: ", serr.Error())
-		}
+	serr := e.SaveUndeliveredEvents(undeliveredEventID, event)
+	if serr != nil {
+		log.Error("error while saving undelivered event: ", serr.Error())
 	}
 	go e.reAttemptEvents(destination, undeliveredEventID, event)
 	return
@@ -379,27 +375,23 @@ func (e *ExternalInterfaces) reAttemptEvents(destination, undeliveredEventID str
 	for i := 0; i < count; i++ {
 		log.Info("Retry event forwarding on destination: ", destination)
 		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
-		if evcommon.SaveUndeliveredEventsFlag {
-			// if undelivered event already published then ignore retrying
-			eventString, err := e.GetUndeliveredEvents(undeliveredEventID)
-			if err != nil || len(eventString) < 1 {
-				log.Info("Event is forwarded to destination")
-				return
-			}
+		// if undelivered event already published then ignore retrying
+		eventString, err := e.GetUndeliveredEvents(undeliveredEventID)
+		if err != nil || len(eventString) < 1 {
+			log.Info("Event is forwarded to destination")
+			return
 		}
 		resp, err = sendEvent(destination, event)
 		if err == nil {
 			resp.Body.Close()
 			log.Info("Event is successfully forwarded")
-			if evcommon.SaveUndeliveredEventsFlag {
-				// if event is delivered then delete the same which is saved in 1st attempt
-				err = e.DeleteUndeliveredEvents(undeliveredEventID)
-				if err != nil {
-					log.Error("error while deleting undelivered events: ", err.Error())
-				}
-				// check any undelivered events are present in db for the destination and publish those
-				go e.checkUndeliveredEvents(destination)
+			// if event is delivered then delete the same which is saved in 1st attempt
+			err = e.DeleteUndeliveredEvents(undeliveredEventID)
+			if err != nil {
+				log.Error("error while deleting undelivered events: ", err.Error())
 			}
+			// check any undelivered events are present in db for the destination and publish those
+			go e.checkUndeliveredEvents(destination)
 			return
 		}
 

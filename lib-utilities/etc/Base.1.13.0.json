@@ -1,13 +1,13 @@
 {
-    "@Redfish.Copyright": "Copyright 2014-2021 DMTF. All rights reserved.",
+    "@Redfish.Copyright": "Copyright 2014-2022 DMTF. All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
-    "@odata.type": "#MessageRegistry.v1_4_0.MessageRegistry",
-    "Id": "Base.1.11.0",
+    "@odata.type": "#MessageRegistry.v1_5_0.MessageRegistry",
+    "Id": "Base.1.13.0",
     "Name": "Base Message Registry",
     "Language": "en",
     "Description": "This registry defines the base messages for Redfish",
     "RegistryPrefix": "Base",
-    "RegistryVersion": "1.11.0",
+    "RegistryVersion": "1.13.0",
     "OwningEntity": "DMTF",
     "Messages": {
         "Success": {
@@ -43,6 +43,7 @@
             "Message": "The request body submitted contain no data to act upon and no changes to the resource took place.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.4.0",
             "NumberOfArgs": 0,
             "Resolution": "Add properties in the JSON object and resubmit the request."
         },
@@ -145,12 +146,35 @@
             ],
             "Resolution": "Choose a value from the enumeration list that the implementation can support and resubmit the request if the operation failed."
         },
+        "PropertyValueOutOfRange": {
+            "Description": "Indicates that a property was given the correct value type but the value of that property is outside the supported range.",
+            "LongDescription": "This value shall be used to indicate that a property was given the correct value type but the value of that property is outside the supported range.",
+            "Message": "The value '%1' for the property %2 is not in the supported range of acceptable values.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "VersionAdded": "1.3.0",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The value provided for the property.",
+                "The name of the property."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value provided for the property.",
+                "This argument shall contain the name of the property."
+            ],
+            "Resolution": "Correct the value for the property in the request body and resubmit the request if the operation failed."
+        },
         "PropertyValueError": {
             "Description": "Indicates that a property was given an invalid value.",
             "LongDescription": "This message shall be used to indicate that a property was given an invalid value, and the value cannot or should not be included in the message text.",
             "Message": "The value provided for the property %1 is not valid.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.11.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -180,6 +204,25 @@
                 "This argument shall contain the name of the property."
             ],
             "Resolution": "Remove the property from the request body and resubmit the request if the operation failed."
+        },
+        "PropertyNotUpdated": {
+            "Description": "Indicates that a property was not updated due to an internal service error, but the service is still functional.",
+            "LongDescription": "This message shall be used to indicate that a property was not updated due to an internal service error, but the service is still functional.",
+            "Message": "The property %1 was not updated due to an internal service error.  The service is still operational.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "VersionAdded": "1.12.0",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The name of the property."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the property."
+            ],
+            "Resolution": "Resubmit the request.  If the problem persists, check for additional messages and consider resetting the service."
         },
         "PropertyMissing": {
             "Description": "Indicates that a required property was not supplied as part of the request.",
@@ -211,9 +254,10 @@
         "InvalidJSON": {
             "Description": "Indicates that the request body contains invalid JSON.",
             "LongDescription": "This message shall be used to indicate that the request body contains invalid JSON.",
-            "Message": "The request body submitted is invalid JSON starting at line $1 and could not be parsed by the receiving service.",
+            "Message": "The request body submitted is invalid JSON starting at line %1 and could not be parsed by the receiving service.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
+            "VersionAdded": "1.10.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "number"
@@ -232,6 +276,7 @@
             "Message": "The request body submitted contained an empty JSON object and the service is unable to process it.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.2.0",
             "NumberOfArgs": 0,
             "Resolution": "Add properties in the JSON object and resubmit the request."
         },
@@ -254,8 +299,8 @@
             "Resolution": "The action supplied cannot be resubmitted to the implementation.  Perhaps the action was invalid, the wrong resource was the target or the implementation documentation may be of assistance."
         },
         "ActionParameterMissing": {
-            "Description": "Indicates that the action requested was missing a parameter that is required to process the action.",
-            "LongDescription": "This message shall be used to indicate that the action requested was missing a parameter that is required to process the action.",
+            "Description": "Indicates that the action requested was missing an action parameter that is required to process the action.",
+            "LongDescription": "This message shall be used to indicate that the action requested was missing an action parameter that is required to process the action.",
             "Message": "The action %1 requires the parameter %2 to be present in the request body.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
@@ -275,8 +320,8 @@
             "Resolution": "Supply the action with the required parameter in the request body when the request is resubmitted."
         },
         "ActionParameterDuplicate": {
-            "Description": "Indicates that the action was supplied with a duplicated parameter in the request body.",
-            "LongDescription": "This message shall be used to indicate that the action was supplied with a duplicated parameter in the request body.",
+            "Description": "Indicates that the action was supplied with a duplicated action parameter in the request body.",
+            "LongDescription": "This message shall be used to indicate that the action was supplied with a duplicated action parameter in the request body.",
             "Message": "The action %1 was submitted with more than one value for the parameter %2.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
@@ -293,11 +338,11 @@
                 "This argument shall contain the name of the action.",
                 "This argument shall contain the name of the action parameter."
             ],
-            "Resolution": "Resubmit the action with only one instance of the parameter in the request body if the operation failed."
+            "Resolution": "Resubmit the action with only one instance of the action parameter in the request body if the operation failed."
         },
         "ActionParameterUnknown": {
-            "Description": "Indicates that an action was submitted but a parameter supplied did not match any of the known parameters.",
-            "LongDescription": "This message shall be used to indicate that an action was submitted but a parameter supplied did not match any of the known parameters.",
+            "Description": "Indicates that an action was submitted but an action parameter supplied did not match any of the known parameters.",
+            "LongDescription": "This message shall be used to indicate that an action was submitted but an action parameter supplied did not match any of the known parameters.",
             "Message": "The action %1 was submitted with the invalid parameter %2.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
@@ -314,7 +359,7 @@
                 "This argument shall contain the name of the action.",
                 "This argument shall contain the name of the action parameter."
             ],
-            "Resolution": "Correct the invalid parameter and resubmit the request if the operation failed."
+            "Resolution": "Correct the invalid action parameter and resubmit the request if the operation failed."
         },
         "ActionParameterValueTypeError": {
             "Description": "Indicates that a parameter was given the wrong value type, such as when a number is supplied for a parameter that requires a string.",
@@ -370,6 +415,7 @@
             "Message": "The value '%1' for the parameter %2 in the action %3 is not in the list of acceptable values.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.10.0",
             "NumberOfArgs": 3,
             "ParamTypes": [
                 "string",
@@ -394,6 +440,7 @@
             "Message": "The value for the parameter %1 in the action %2 is invalid.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.11.0",
             "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
@@ -478,6 +525,7 @@
             "Message": "The value for the parameter %1 is invalid.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.11.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -529,6 +577,7 @@
             "Message": "Querying is not supported with the requested operation.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.6.0",
             "NumberOfArgs": 0,
             "Resolution": "Remove the query parameters and resubmit the request if the operation failed."
         },
@@ -547,6 +596,7 @@
             "Message": "Two or more query parameters in the request cannot be used together.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.6.0",
             "NumberOfArgs": 0,
             "Resolution": "Remove one or more of the query parameters and resubmit the request if the operation failed."
         },
@@ -616,6 +666,7 @@
             "Message": "The requested resource of type %1 named '%2' was not found.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
+            "VersionAdded": "1.2.0",
             "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
@@ -631,12 +682,43 @@
             ],
             "Resolution": "Provide a valid resource identifier and resubmit the request."
         },
+        "PayloadTooLarge": {
+            "Description": "Indicates that the supplied payload is too large to be accepted by the service.",
+            "LongDescription": "This message shall be used to indicate that the payload supplied exceeds the size supported by the service.  For cases where the payload size is supported, but there is insufficent available storage space, the message `InsufficientStorage` shall be used.",
+            "Message": "The supplied payload exceeds the maximum size supported by the service.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "VersionAdded": "1.13.0",
+            "NumberOfArgs": 0,
+            "Resolution": "Check that the supplied payload is correct and supported by this service."
+        },
+        "InsufficientStorage": {
+            "Description": "Indicates that the operation could not be completed due to a lack of storage or memory avaiable to the service.",
+            "LongDescription": "This message shall be used to indicate that the request exceeds the storage or memory available to the serivce.  For cases where the payload is larger than the maximum size supported, regardless of available storage, the message `PayloadTooLarge` shall be used.",
+            "Message": "Insufficent storage or memory available to complete the request.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "VersionAdded": "1.13.0",
+            "NumberOfArgs": 0,
+            "Resolution": "Increase the free storage space available to the service and resubmit the request."
+        },
+        "MissingOrMalformedPart": {
+            "Description": "Indicates that a multipart request is missing a required part or contains malformed parts.",
+            "LongDescription": "This message shall be used to indicate that the request payload supplied as part of an HTTP multipart request is missing one or more required parts or contains malformed parts.",
+            "Message": "The multipart request contains malformed parts or is missing required parts.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "VersionAdded": "1.13.0",
+            "NumberOfArgs": 0,
+            "Resolution": "Add any missing required parts or correct the malformed parts and resubmit the request."
+        },
         "InvalidURI": {
             "Description": "Indicates that the operation encountered a URI that does not correspond to a valid resource.",
             "LongDescription": "This message shall be used to indicate that the operation encountered a URI that does not correspond to a valid resource.",
             "Message": "The URI %1 was not found.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
+            "VersionAdded": "1.10.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -961,6 +1043,7 @@
             "Message": "The request could not be performed because the resource is in standby.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
+            "VersionAdded": "1.2.0",
             "NumberOfArgs": 0,
             "Resolution": "Ensure that the resource is in the correct power state and resubmit the request."
         },
@@ -970,6 +1053,7 @@
             "Message": "The resource '%1' was unable to satisfy the request due to unavailability of resources.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
+            "VersionAdded": "1.2.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -988,6 +1072,7 @@
             "Message": "The string '%1' exceeds the length limit %2.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.2.0",
             "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
@@ -1009,6 +1094,7 @@
             "Message": "The session was successfully terminated.",
             "Severity": "OK",
             "MessageSeverity": "OK",
+            "VersionAdded": "1.3.0",
             "NumberOfArgs": 0,
             "Resolution": "No resolution is required."
         },
@@ -1018,6 +1104,7 @@
             "Message": "The event subscription has been terminated.",
             "Severity": "OK",
             "MessageSeverity": "OK",
+            "VersionAdded": "1.5.0",
             "NumberOfArgs": 0,
             "Resolution": "No resolution is required."
         },
@@ -1027,6 +1114,7 @@
             "Message": "The @odata.type of the request body %1 is incompatible with the @odata.type of the resource, which is %2.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
+            "VersionAdded": "1.2.0",
             "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
@@ -1048,6 +1136,7 @@
             "Message": "The password provided for this account must be changed before access is granted.  PATCH the Password property for this account located at the target URI '%1' to complete this process.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
+            "VersionAdded": "1.5.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -1061,11 +1150,12 @@
             "Resolution": "Change the password for this account using a PATCH to the Password property at the URI provided."
         },
         "ResetRequired": {
-            "Description": "Indicates that a component reset is required for changes or operations to complete.",
-            "LongDescription": "This message shall be used to indicate that a component reset is required for changes or operations to complete.",
-            "Message": "In order to complete the operation, a component reset is required with the Reset action URI '%1' and ResetType '%2'.",
+            "Description": "Indicates that a component reset is required for changes, error recovery, or operations to complete.",
+            "LongDescription": "This message shall be used to indicate that a component reset is required for changes, error recovery, or operations to complete.",
+            "Message": "In order to apply changes, recover from errors, or complete the operation, a component reset is required with the Reset action URI '%1' and ResetType '%2'.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.6.0",
             "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
@@ -1076,10 +1166,32 @@
                 "The `ResetType` required in a reset action on the component URI."
             ],
             "ArgLongDescriptions": [
-                "This argument shall contain the URI for the reset action that is required to be invoked for changes or operations to complete.",
-                "This argument shall contain the `ResetType` required in a reset action on the component URI for changes or operations to complete.  A reset action POST shall contain this `ResetType` parameter."
+                "This argument shall contain the URI for the reset action that is required to be invoked for changes, error recovery or operations to complete.",
+                "This argument shall contain the `ResetType` required in a reset action on the component URI for changes, error recovery or operations to complete.  A reset action POST shall contain this `ResetType` parameter."
             ],
             "Resolution": "Perform the required reset action on the specified component."
+        },
+        "ResetRecommended": {
+            "Description": "Indicates that a component reset is recommended for error recovery while unaffected applications can continue running without any effects on accuracy and performance.",
+            "LongDescription": "This message shall be used to indicate that a component reset is recommended for error recovery while unaffected applications can continue running without any effects on accuracy and performance.",
+            "Message": "In order to recover from errors, a component reset is recommended with the Reset action URI '%1' and ResetType '%2'.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "VersionAdded": "1.12.0",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The URI for the reset action of the component that recommends a reset.",
+                "The `ResetType` required in a reset action on the component URI."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the URI for the reset action that is recommended to be invoked for error recovery.",
+                "This argument shall contain the `ResetType` required in a reset action on the component URI for error recovery while unaffected applications can continue running without any effects on accuracy and performance.  A reset action POST shall contain this `ResetType` parameter."
+            ],
+            "Resolution": "Perform the recommended reset action on the specified component."
         },
         "ChassisPowerStateOnRequired": {
             "Description": "Indicates that the request requires a specified chassis to be powered on.",
@@ -1087,6 +1199,7 @@
             "Message": "The chassis with Id '%1' requires to be powered on to perform this request.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.6.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -1105,6 +1218,7 @@
             "Message": "The Chassis with Id '%1' requires to be powered off to perform this request.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.6.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -1123,6 +1237,7 @@
             "Message": "The property '%1' could not be written because its value would conflict with the value of the '%2' property.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.6.0",
             "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
@@ -1144,6 +1259,7 @@
             "Message": "The property '%1' with the requested value of '%2' could not be written because the value conflicts with the state or configuration of the resource at '%3'.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.10.0",
             "NumberOfArgs": 3,
             "ParamTypes": [
                 "string",
@@ -1168,6 +1284,7 @@
             "Message": "The property '%1' with the requested value of '%2' could not be written because the value is not available due to a configuration conflict.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.10.0",
             "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
@@ -1189,6 +1306,7 @@
             "Message": "The property '%1' with the requested value of '%2' could not be written because the value does not meet the constraints of the implementation.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.7.0",
             "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
@@ -1210,6 +1328,7 @@
             "Message": "The resource could not be created.  The service has a resource at URI '%1' that conflicts with the creation request.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.7.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -1222,12 +1341,35 @@
             ],
             "Resolution": "No resolution is required."
         },
+        "ActionParameterValueConflict": {
+            "Description": "Indicates that the requested parameter value could not be completed, because of a mismatch with other parameters or properties in the resource.",
+            "LongDescription": "This message shall be used to indicate that the requested parameter value could not be completed, because of a mismatch with other parameters or properties in the resource.",
+            "Message": "The parameter '%1' with the requested value of '%2' does not meet the constraints of the implementation.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "VersionAdded": "1.12.0",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The name of the parameter for which a write was requested.",
+                "The value of the parameter with which there is a conflict."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the parameter provided in the action request.",
+                "This argument shall contain the value of the parameter with which there is a conflict."
+            ],
+            "Resolution": "No resolution is required."
+        },
         "MaximumErrorsExceeded": {
             "Description": "Indicates that sufficient errors have occurred that the reporting service cannot return them all.",
             "LongDescription": "The maximum number of errors that the implementation can report has been exceeded.  This shall not be the only message reported by the service.  The use of this message should be limited to RDE implementations.",
             "Message": "Too many errors have occurred to report them all.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
+            "VersionAdded": "1.8.0",
             "NumberOfArgs": 0,
             "Resolution": "Resolve other reported errors and retry the current operation."
         },
@@ -1237,6 +1379,7 @@
             "Message": "The ETag supplied did not match the ETag required to change this resource.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
+            "VersionAdded": "1.8.0",
             "NumberOfArgs": 0,
             "Resolution": "Try the operation again using the appropriate ETag."
         },
@@ -1246,8 +1389,47 @@
             "Message": "A precondition header or annotation is required to change this resource.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
+            "VersionAdded": "1.8.0",
             "NumberOfArgs": 0,
             "Resolution": "Try the operation again using an If-Match or If-None-Match header and appropriate ETag."
+        },
+        "HeaderMissing": {
+            "Description": "Indicates that a required request header is missing.",
+            "LongDescription": "This message shall be used to indicate that a required request header is missing in the request.",
+            "Message": "Required header '%1' is missing in the request.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "VersionAdded": "1.13.0",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The missing required request header."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the missing required request header."
+            ],
+            "Resolution": "Resubmit the request with the required request header."
+        },
+        "HeaderInvalid": {
+            "Description": "Indicates that a request header is invalid.",
+            "LongDescription": "This message shall be used to indicate that a request header is known, but is invalid.",
+            "Message": "Header '%1' is invalid.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "VersionAdded": "1.13.0",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The request header."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the full request header, including the field name and field value."
+            ],
+            "Resolution": "Resubmit the request with a valid request header."
         },
         "OperationFailed": {
             "Description": "Indicates that one of the internal operations necessary to complete the request failed.  Examples of this are when an internal service provider is unable to complete the request, such as in aggregation or RDE.",
@@ -1255,6 +1437,7 @@
             "Message": "An error occurred internal to the service as part of the overall request.  Partial results may have been returned.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.8.0",
             "NumberOfArgs": 0,
             "Resolution": "Resubmit the request.  If the problem persists, consider resetting the service or provider."
         },
@@ -1264,8 +1447,19 @@
             "Message": "A timeout internal to the service occured as part of the request.  Partial results may have been returned.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.8.0",
             "NumberOfArgs": 0,
             "Resolution": "Resubmit the request.  If the problem persists, consider resetting the service or provider."
+        },
+        "OperationNotAllowed": {
+            "Description": "Indicates that the HTTP method in the request is not allowed on this resource.",
+            "LongDescription": "This message shall be used to indicate that the HTTP method in the request is not allowed on this resource.  This error message should be used together with status code 405 Method Not Allowed.",
+            "Message": "The HTTP method is not allowed on this resource.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "VersionAdded": "1.13.0",
+            "NumberOfArgs": 0,
+            "Resolution": "None."
         },
         "UndeterminedFault": {
             "Description": "Indicates that a fault or error condition exists but the source of the fault cannot be determined or is unknown to the service.",
@@ -1273,6 +1467,7 @@
             "Message": "A undetermined fault condition has been reported by '%1'.",
             "Severity": "Critical",
             "MessageSeverity": "Critical",
+            "VersionAdded": "1.9.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -1287,10 +1482,11 @@
         },
         "ConditionInRelatedResource": {
             "Description": "Indicates that one or more fault or error conditions exist in a related resource.",
-            "LongDescription": "This message shall be used to indicate that one or more conditions that require attention exist in a resource that affects the Health or HealthRollup of this resource.  The resource can be located using the `OriginOfCondition` property.",
+            "LongDescription": "This message shall be used to indicate that one or more conditions that require attention exist in a resource that affects the Health or HealthRollup of this resource.  This message can be used in place of multiple messages in a `Conditions` property to roll up conditions from a single resource.  The resource can be located using the `OriginOfCondition` property.  The value of the `MessageSeverity` property should match the highest severity of any conditions in the resource referenced by the `OriginOfCondition` property.",
             "Message": "One or more conditions exist in a related resource.  See the OriginOfCondition property.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.9.0",
             "NumberOfArgs": 0,
             "Resolution": "Check the Conditions array in the resource shown in the OriginOfCondition property to determine the conditions that need attention."
         },
@@ -1300,6 +1496,7 @@
             "Message": "The operation was not successful because the role '%1' is restricted.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.9.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -1318,6 +1515,7 @@
             "Message": "The operation was not successful because the privilege '%1' is restricted.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.9.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -1336,6 +1534,7 @@
             "Message": "The request was not possible to fulfill with the account types included in property '%1' and property StrictAccountTypes set to true.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.9.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -1354,6 +1553,7 @@
             "Message": "The deprecated property %1 was included in the request body.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.10.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -1372,6 +1572,7 @@
             "Message": "The operation was performed on a deprecated resource '%1'.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.10.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -1390,7 +1591,8 @@
             "Message": "The value '%1' for the property %2 is deprecated.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
-            "NumberOfArgs": 1,
+            "VersionAdded": "1.10.0",
+            "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
                 "string"
@@ -1411,6 +1613,7 @@
             "Message": "The action %1 is deprecated.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.10.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -1429,6 +1632,7 @@
             "Message": "Network name resolution has not been configured on this service.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.11.0",
             "NumberOfArgs": 0,
             "Resolution": "Configure the network name resolution protocol support on this service, or update any URI values to include an IP address instead of a network name and resubmit the request."
         },
@@ -1438,6 +1642,7 @@
             "Message": "Resolution of network-based names is not supported by this service.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.11.0",
             "NumberOfArgs": 0,
             "Resolution": "Update any URI values to include an IP address instead of a network name and resubmit the request."
         },
@@ -1447,6 +1652,7 @@
             "Message": "The operation failed because the service at %1 is disabled and cannot accept requests.",
             "Severity": "Warning",
             "MessageSeverity": "Warning",
+            "VersionAdded": "1.11.0",
             "NumberOfArgs": 1,
             "ParamTypes": [
                 "string"
@@ -1458,6 +1664,16 @@
                 "This argument shall contain the URI of the disabled service."
             ],
             "Resolution": "Enable the service and resubmit the request if the operation failed."
+        },
+        "EventBufferExceeded": {
+            "Description": "Indicates undelivered events may have been lost due to a lack of buffer space in the service.",
+            "LongDescription": "This message shall be used to indicate that event buffer space used by the service has been exceeded, and as a result, one or more undelivered events may have been lost.",
+            "Message": "Undelivered events may have been lost due to exceeding the event buffer.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "VersionAdded": "1.13.0",
+            "NumberOfArgs": 0,
+            "Resolution": "None."
         }
     }
 }

@@ -359,7 +359,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/a4ca3161-db95-487d-a930-1b13dc697ed0/Ports/80b5f999-25e9-4b37-992c-de2f065ee0e3",
-   "@odata.type":"#Port.v1_5_0.Port",
+   "@odata.type":"#Port.v1_6_1.Port",
    "CurrentSpeedGbps":0,
    "Description":"single port",
    "Id":"80b5f999-25e9-4b37-992c-de2f065ee0e3",
@@ -627,7 +627,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/8f6d8828-a21a-464f-abf9-ed062fa08cd9/Endpoints/b21f3e57-e46d-4a8e-92c8-8658edd107cb",
-   "@odata.type":"#Endpoint.v1_11_0.Endpoint",
+   "@odata.type":"#Endpoint.v1_7_0.Endpoint",
    "Description":"NK Endpoint Collection Description",
    "EndpointProtocol":"Ethernet",
    "Id":"b21f3e57-e46d-4a8e-92c8-8658edd107cb",
@@ -1376,7 +1376,7 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Endpoints/fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",
-   "@odata.type":"#Endpoint.v1_11_0.Endpoint",
+   "@odata.type":"#Endpoint.v1_7_0.Endpoint",
    "Description":"Host 2 Endpoint 1 Collection Description",
    "EndpointProtocol":"Ethernet",
    "Id":"fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",

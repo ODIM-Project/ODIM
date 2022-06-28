@@ -28,8 +28,8 @@ spec:
       hostname: etcd1
       subdomain: etcd
       securityContext:
-        fsGroup: 2201
-        runAsUser: 2201
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.groupID }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -133,8 +133,8 @@ spec:
       hostname: etcd2
       subdomain: etcd
       securityContext:
-        fsGroup: 2201
-        runAsUser: 2201
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.groupID }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -238,8 +238,8 @@ spec:
       hostname: etcd3
       subdomain: etcd
       securityContext:
-        fsGroup: 2201
-        runAsUser: 2201
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.groupID }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

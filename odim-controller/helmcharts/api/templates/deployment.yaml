@@ -78,8 +78,8 @@ spec:
           persistentVolumeClaim:
             claimName: odimra-log-claim
       securityContext:
-        fsGroup: 2201
-        runAsUser: 2201
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.groupID }}
       containers:
         - name: api
           env:

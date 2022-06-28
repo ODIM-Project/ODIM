@@ -20,8 +20,8 @@ spec:
       hostname: zookeeper
       subdomain: zookeeper
       securityContext:
-        fsGroup: 2201
-        runAsUser: 2201
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.groupID }}
       containers:
         - name: zookeeper
           image: image-registry.openshift-image-registry.svc:5000/odim/zookeeper:{{ .Values.odimra.zookeeperImageTag }}

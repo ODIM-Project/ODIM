@@ -59,8 +59,8 @@ spec:
             {{- end }}
       restartPolicy: Always
       securityContext:
-        fsGroup: 2201
-        runAsUser: 2201
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.groupID }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

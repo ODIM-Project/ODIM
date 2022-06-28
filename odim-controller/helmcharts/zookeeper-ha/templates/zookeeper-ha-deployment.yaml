@@ -22,8 +22,8 @@ spec:
       hostname: zookeeper1
       subdomain: zookeeper
       securityContext:
-        fsGroup: 2201
-        runAsUser: 2201
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.groupID }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -117,8 +117,8 @@ spec:
       hostname: zookeeper2
       subdomain: zookeeper
       securityContext:
-        fsGroup: 2201
-        runAsUser: 2201
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.groupID }}
       initContainers:
         - name: init-zookeeper2
           image: image-registry.openshift-image-registry.svc:5000/odim/busybox:1.33
@@ -216,8 +216,8 @@ spec:
       hostname: zookeeper3
       subdomain: zookeeper
       securityContext:
-        fsGroup: 2201
-        runAsUser: 2201
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.groupID }}
       initContainers:
         - name: init-zookeeper3
           image: image-registry.openshift-image-registry.svc:5000/odim/busybox:1.33

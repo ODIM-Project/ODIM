@@ -22,8 +22,8 @@ spec:
       hostname: kafka1
       subdomain: kafka
       securityContext:
-        fsGroup: 2201
-        runAsUser: 2201
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.groupID }}
       initContainers:
         - name: init-kafka1
           image: image-registry.openshift-image-registry.svc:5000/odim/busybox:1.33
@@ -121,8 +121,8 @@ spec:
       hostname: kafka2
       subdomain: kafka
       securityContext:
-        fsGroup: 2201
-        runAsUser: 2201
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.groupID }}
       initContainers:
         - name: init-kafka2
           image: image-registry.openshift-image-registry.svc:5000/odim/busybox:1.33
@@ -220,8 +220,8 @@ spec:
       hostname: kafka3
       subdomain: kafka
       securityContext:
-        fsGroup: 2201
-        runAsUser: 2201
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.groupID }}
       initContainers:
         - name: init-kafka3
           image: image-registry.openshift-image-registry.svc:5000/odim/busybox:1.33

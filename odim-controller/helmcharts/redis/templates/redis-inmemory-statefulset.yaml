@@ -57,7 +57,7 @@ spec:
             {{- end }}
       restartPolicy: Always
       securityContext:
-        runAsUser: 2201
+        runAsUser: {{ .Values.odimra.groupID }}
       containers:
       - name: redis
         image: image-registry.openshift-image-registry.svc:5000/odim/redis:{{ .Values.odimra.redisImageTag }}

@@ -26,8 +26,8 @@ spec:
       hostname: etcd
       subdomain: etcd
       securityContext:
-        fsGroup: 2201
-        runAsUser: 2201
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.groupID }}
       containers:
         - name: etcd
           image: 10.24.1.61:5000/odim/etcd:{{ .Values.odimra.etcdImageTag }}

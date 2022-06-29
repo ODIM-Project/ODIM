@@ -81,6 +81,7 @@ type ResourceInfoRequest struct {
 // eg: Delete volume requires reset of the BMC to take its effect. Before a reset, volumes retrieval
 // request can provide the deleted volume. We can avoid storing such a data with the use of saveRequired.
 func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (string, error) {
+	fmt.Println("GetResourceInfoFromDevice: ", req)
 	target, gerr := smodel.GetTarget(req.UUID)
 	if gerr != nil {
 		return "", gerr
@@ -167,6 +168,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 			// Get the Table name to save the data in db
 			resourceName = getResourceName(contactRequest.OID, memberFlag)
 		}
+		fmt.Println("resource name------------", resourceName)
 		// persist the response with table resourceName and key as system UUID + Oid Needs relook TODO
 		err = smodel.GenericSave([]byte(updatedData), resourceName, oidKey)
 		if err != nil {

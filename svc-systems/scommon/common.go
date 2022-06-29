@@ -81,7 +81,7 @@ type ResourceInfoRequest struct {
 // eg: Delete volume requires reset of the BMC to take its effect. Before a reset, volumes retrieval
 // request can provide the deleted volume. We can avoid storing such a data with the use of saveRequired.
 func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (string, error) {
-	fmt.Println("GetResourceInfoFromDevice: ", req)
+	fmt.Println("******************GetResourceInfoFromDevice: ", req)
 	target, gerr := smodel.GetTarget(req.UUID)
 	if gerr != nil {
 		return "", gerr
@@ -149,6 +149,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 	 */
 	//replacing the uuid while saving the data
 	//to replace the id of system
+	fmt.Println("*********************updatedData*******", updatedData)
 	var updatedData = strings.Replace(string(body), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+req.UUID+".", -1)
 	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/systems/"+req.UUID+".", -1)
 	// to replace the id in managers

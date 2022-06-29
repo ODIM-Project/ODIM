@@ -243,6 +243,20 @@ type FirmwareVersion struct {
 type Current struct {
 	VersionString string `json:"VersionString,omitempty"`
 }
+type CollectionCapabilities struct {
+	OdataType    string       `json:"@odata.type,omitempty"`
+	Capabilities Capabilities `json:"Capabilities,omitempty"`
+}
+
+type Capabilities struct {
+	CapabilitiesObject *Link    `json:"CapabilitiesObject,omitempty"`
+	Links              CapLinks `json:"Links,omitempty"`
+	UseCase            string   `json:"UseCase,omitempty"`
+}
+
+type CapLinks struct {
+	TargetCollection *Link `json:"TargetCollection,omitempty"`
+}
 
 // Volume contains the details volume properties
 type Volume struct {
@@ -251,6 +265,7 @@ type Volume struct {
 	ODataEtag                        string                   `json:"@odata.etag"`
 	ODataType                        string                   `json:"@odata.type"`
 	AccessCapabilities               []string                 `json:"AccessCapabilities,omitempty"`
+	CollectionCapabilities           CollectionCapabilities   `json:"@Redfish.CollectionCapabilities,omitempty"`
 	Actions                          *Actions                 `json:"Actions,omitempty"`
 	AllocatedPools                   *Link                    `json:"AllocatedPools,omitempty"`
 	BlockSizeBytes                   int                      `json:"BlockSizeBytes,omitempty"`

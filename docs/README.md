@@ -53,14 +53,14 @@
   * [Changing the boot order of servers to default settings](#changing-the-boot-order-of-servers-to-default-settings)
   * [Deleting a resource from the inventory](#deleting-a-resource-from-the-inventory)
   * [Aggregates](#aggregates)
-  * [Creating an aggregate](#creating-an-aggregate)
-  * [Viewing a list of aggregates](#viewing-a-list-of-aggregates)
-  * [Viewing information about a single aggregate](#viewing-information-about-a-single-aggregate)
-  * [Deleting an aggregate](#deleting-an-aggregate)
-  * [Adding elements to an aggregate](#adding-elements-to-an-aggregate)
-  * [Resetting an aggregate of computer systems](#resetting-an-aggregate-of-computer-systems)
-  * [Setting boot order of an aggregate to default settings](#setting-boot-order-of-an-aggregate-to-default-settings)
-  * [Removing elements from an aggregate](#removing-elements-from-an-aggregate)
+    * [Creating an aggregate](#creating-an-aggregate)
+    * [Viewing a list of aggregates](#viewing-a-list-of-aggregates)
+    * [Viewing information about a single aggregate](#viewing-information-about-a-single-aggregate)
+    * [Deleting an aggregate](#deleting-an-aggregate)
+    * [Adding elements to an aggregate](#adding-elements-to-an-aggregate)
+    * [Resetting an aggregate of computer systems](#resetting-an-aggregate-of-computer-systems)
+    * [Setting boot order of an aggregate to default settings](#setting-boot-order-of-an-aggregate-to-default-settings)
+    * [Removing elements from an aggregate](#removing-elements-from-an-aggregate)
 - [Resource inventory](#resource-inventory)
   * [Collection of computer systems](#collection-of-computer-systems)
   * [Single computer system](#single-computer-system)
@@ -2680,7 +2680,7 @@ The resource aggregator allows you to perform the following tasks:
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Aggregates` |
 |<strong>Description</strong> |This operation creates an empty aggregate or an aggregate populated with resources.|
-|<strong>Returns</strong> | The `Location` URI of the created aggregate having the aggregate Id. See the `Location` URI in "Sample response header".<br>-   Link to the new aggregate, its Id, and a message saying that the resource has been created successfully in the JSON response body.<br> |
+|<strong>Returns</strong> | The `Location` URI of the created aggregate having the aggregate Id. See the `Location` URI in "Sample response header".<br>-   Link to the new aggregate, its Id, and a message saying that the resource has been created successfully in the JSON response body. |
 |<strong>Response Code</strong> |On success, `201 Created` |
 |<strong>Authentication</strong> |Yes|
 
@@ -2706,7 +2706,8 @@ curl -i POST \
 ```
 {
       "Elements":[
-            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1"      
+            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
+            "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1.1"
    ]   
 }
 ```
@@ -2735,7 +2736,7 @@ Date:Fri,21 August 2020 14:08:55 GMT+5m 11s
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "Name":"Aggregate",
       "Message":"The resource has been created successfully",
-      "MessageId":"Base.1.6.1.Created",
+      "MessageId":"Base.1.13.0.Created",
       "Severity":"OK",
       "Elements":[
             "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
@@ -2816,7 +2817,7 @@ curl -i GET \
    "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
    "Name":"Aggregate",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.13.0.Success",
    "Severity":"OK",
    "Elements":[
       "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
@@ -2898,7 +2899,7 @@ curl -i POST \
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "Name":"Aggregate",
       "Message":"Successfully Completed Request",
-      "MessageId":"Base.1.6.1.Created",
+      "MessageId":"Base.1.13.0.Created",
       "Severity":"OK",
       "Elements":[
             "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
@@ -3021,7 +3022,7 @@ Content-Length:491 bytes
 ```
  {
    "error":{
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.13.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -3115,7 +3116,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.13.0.Success",
       "message":"Request completed successfully"
    }
 }

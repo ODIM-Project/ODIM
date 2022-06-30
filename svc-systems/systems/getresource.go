@@ -626,8 +626,21 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		respData = data
 	}
 	fmt.Println("respData*****************************", respData)
+
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(respData), &resource)
+	if strings.Contains(req.URL, "/Capabilities") {
+
+		if val, ok := resource["CollectionCapabilities"]; ok {
+			fmt.Println("present************", val)
+			if resource["CollectionCapabilities"].(map[string]interface{})["ODataType"] != nil {
+
+				fmt.Println("present**odatatype**********", val)
+
+			}
+		}
+
+	}
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success

@@ -253,7 +253,17 @@ type Capabilities struct {
 	Links              CapLinks `json:"Links,omitempty"`
 	UseCase            string   `json:"UseCase,omitempty"`
 }
-
+type CapabilitiesObject struct {
+	CapacityBytes     bool   `json:""CapacityBytes@Redfish.OptionalOnCreate,omitempty"`
+	DisplayName       bool   `json:""DisplayName@Redfish.OptionalOnCreate,omitempty"`
+	IOPerfModeEnabled bool   `json:""IOPerfModeEnabled@Redfish.OptionalOnCreate,omitempty"`
+	RAIDType          bool   `json:"RAIDType@Redfish.RequiredOnCreate"`
+	Name              string `json:"Name"`
+	Id                string `json:"Id"`
+	StripSizeBytes    bool   `json:"StripSizeBytes@Redfish.OptionalOnCreate,omitempty"`
+	ReadCachePolicy   bool   `json:"ReadCachePolicy@Redfish.OptionalOnCreate,omitempty"`
+	WriteCachePolicy  bool   `json:"WriteCachePolicy,omitempty"`
+}
 type CapLinks struct {
 	TargetCollection *Link `json:"TargetCollection,omitempty"`
 }
@@ -265,7 +275,7 @@ type Volume struct {
 	ODataEtag                        string                   `json:"@odata.etag"`
 	ODataType                        string                   `json:"@odata.type"`
 	AccessCapabilities               []string                 `json:"AccessCapabilities,omitempty"`
-	CollectionCapabilities           CollectionCapabilities   `json:"@Redfish.CollectionCapabilities,omitempty"`
+	CollectionCapabilities           CollectionCapabilities   `json:"@Redfish.CollectionCapabilities"`
 	Actions                          *Actions                 `json:"Actions,omitempty"`
 	AllocatedPools                   *Link                    `json:"AllocatedPools,omitempty"`
 	BlockSizeBytes                   int                      `json:"BlockSizeBytes,omitempty"`

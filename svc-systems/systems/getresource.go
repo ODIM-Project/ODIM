@@ -612,7 +612,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 					GetPluginStatus: p.GetPluginStatus,
 				}
 				var err error
-				log.Debug("Getting the details from device for URL ", req.URL)
+				log.Info("\nGetting the details from device for URL ", req.URL)
 				if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, saveRequired); err != nil {
 					return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 				}
@@ -625,25 +625,25 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		}
 		respData = data
 	}
-	fmt.Println("*****************8respData*****************************", respData)
 
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(respData), &resource)
 	fmt.Println("*****************req.URL,*****************************", req.URL)
 
-	if strings.Contains(req.URL, "/Capabilities") {
-		fmt.Println("inside Capabilities", req.URL)
-		if val, ok := resource["CollectionCapabilities"]; ok {
-			fmt.Println("present************", val)
-			if resource["CollectionCapabilities"].(map[string]interface{})["ODataType"] != nil {
-
-				fmt.Println("present**odatatype**********", val)
-
-			}
-		}
-
+	volumeCollection := dmtf.Collection{
+		ODataContext:          "/redfish/v1/$metadata#Volume.Volume",
+		ODataEtag:             "W/\"46916D5D\"",
+		Oid:                   req.URL,
+		ODataType:             "#VolumeCollection.VolumeCollection",
+		Name:                  "SR Volume Collection",
+		Members:               resource["Members"],
+		MembersCount:          resource["MembersCount"],
+		CollectionCapabilitie: resource["CollectionCapabilities"],
 	}
-	resp.Body = resource
+	fmt.Println("RESPONSE-----", resource)
+	resp.Body, _ = json.Marshal(volumeCollection)
+	fmt.Println("RESPONSE-----", resp.Body)
+
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	log.Debug("Exiting the GetSystemResource with response ", resp)

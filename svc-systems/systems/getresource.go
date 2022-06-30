@@ -626,7 +626,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		respData = data
 	}
 
-	var resource map[string]interface{}
+	var resource dmtf.Collection
 	json.Unmarshal([]byte(respData), &resource)
 	fmt.Println("*****************req.URL,*****************************", req.URL)
 	var Members []*dmtf.Link
@@ -639,8 +639,8 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		ODataID:               req.URL,
 		ODataType:             "#VolumeCollection.VolumeCollection",
 		Name:                  "SR Volume Collection",
-		Members:               Members,
-		MembersCount:          resource["MembersCount"],
+		Members:               resource.Members,
+		MembersCount:          resource.MembersCount,
 		CollectionCapabilitie: resource["CollectionCapabilities"],
 	}
 	fmt.Println("RESPONSE-----", resource)

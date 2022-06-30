@@ -625,12 +625,14 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		}
 		respData = data
 	}
-	fmt.Println("respData*****************************", respData)
+	fmt.Println("*****************8respData*****************************", respData)
 
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(respData), &resource)
-	if strings.Contains(req.URL, "/Capabilities") {
+	fmt.Println("*****************req.URL,*****************************", req.URL)
 
+	if strings.Contains(req.URL, "/Capabilities") {
+		fmt.Println("inside Capabilities", req.URL)
 		if val, ok := resource["CollectionCapabilities"]; ok {
 			fmt.Println("present************", val)
 			if resource["CollectionCapabilities"].(map[string]interface{})["ODataType"] != nil {

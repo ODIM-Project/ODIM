@@ -993,7 +993,6 @@ curl -i GET \
 |---------|---------------|
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/SessionService/Sessions` |
-
 |**Description** |This operation creates a session to implement authentication. Creating a session allows you to create an `X-AUTH-TOKEN` which is then used to authenticate with other services.<br>**NOTE:** It is a good practice to make a note of the following:<br><ul><li>The session authentication token returned in the `X-AUTH-TOKEN` header.</li><li>The session id returned in the `Location` header and the JSON response body.</li></ul><br>You need the session authentication token to authenticate to subsequent requests to the Redfish services and the session id to log out later.|
 |**Returns** |<ul><li> An `X-AUTH-TOKEN` header containing session authentication token.</li><li>`Location` header that contains a link to the new session instance.</li><li>The session id and a message in the JSON response body denoting a session creation.</li></ul> |
 |**Response Code** |`201 Created` |
@@ -1050,9 +1049,9 @@ Date:Fri,15 May 2020 14:08:55 GMT+5m 11s
 	"Id": "1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Name": "Session Service",
 	"Message": "The resource has been created successfully",
-	"MessageId": "Base.1.11.0.Created",
+	"MessageId": "Base.1.13.0.Created",
 	"Severity": "OK",
-	"UserName": "abc"
+	"UserName": "{username}"
 }
 ```
 
@@ -1123,11 +1122,12 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Session.v1_3_0.Session",
+   "@odata.type":"#Session.v1_4_0.Session",
    "@odata.id":"/redfish/v1/SessionService/Sessions/4ee42139-22db-4e2a-97e4-020013248768",
    "Id":"4ee42139-22db-4e2a-97e4-020013248768",
    "Name":"User Session",
    "UserName":"admin"
+   "CreatedTime": "2022-06-30T06:32:59Z"
 }
 ```
 
@@ -6280,8 +6280,6 @@ curl -i GET \
    ],
    "Members@odata.count":6
 }
-
-
 ```
 
 ##  Single manager
@@ -6312,7 +6310,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"7BFAC0F7\"",
    "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1",
-   "@odata.type":"#Manager.v1_13_0.Manager",
+   "@odata.type":"#Manager.v1_15_0.Manager",
    "Actions":{
       "#Manager.Reset":{
          "ResetType@Redfish.AllowableValues":[
@@ -6642,7 +6640,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.id":"/redfish/v1/Managers/1df3248f-5ddd-4b62-868d-74f33c4a89d0",
-   "@odata.type":"#Manager.v1_13_0.Manager",
+   "@odata.type":"#Manager.v1_15_0.Manager",
    "Name":"odimra",
    "ManagerType":"Service",
    "Id":"1df3248f-5ddd-4b62-868d-74f33c4a89d0",
@@ -6693,7 +6691,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"AA6D42B0\"",
    "@odata.id":"/redfish/v1/Managers/ac04517b-b582-4501-b1a9-7158149cda10",
-   "@odata.type":"#Manager.v1_13_0.Manager",
+   "@odata.type":"#Manager.v1_15_0.Manager",
    "DateTime":"2022-02-22 09:52:43.651476316 +0000 UTC",
    "DateTimeLocalOffset":"+00:00",
    "Description":"Plugin Manager",
@@ -6807,7 +6805,7 @@ curl -i GET \
     "error": {
         "@Message.ExtendedInfo": [
             {
-                "MessageId": "Base.1.4.Success"
+                "MessageId": "Base.1.13.0.Success"
             }
         ],
         "code": "iLO.0.10.ExtendedInfo",
@@ -6849,7 +6847,7 @@ curl -i POST \
     "error": {
         "@Message.ExtendedInfo": [
             {
-                "MessageId": "Base.1.4.Success"
+                "MessageId": "Base.1.13.0.Success"
             }
         ],
         "code": "iLO.0.10.ExtendedInfo",
@@ -6889,7 +6887,7 @@ curl -i POST \
     "error": {
         "@Message.ExtendedInfo": [
             {
-                "MessageId": "Base.1.4.Success"
+                "MessageId": "Base.1.13.0.Success"
             }
         ],
         "code": "iLO.0.10.ExtendedInfo",

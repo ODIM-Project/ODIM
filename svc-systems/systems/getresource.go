@@ -550,11 +550,8 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 // Url will be parsed from that search key will created
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
-
 func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) response.RPC {
-	fmt.Println("***********/////////////////////////////////////***********: ", req.URL)
-
-	fmt.Println("***********Entering the GetSystemResource with URL ***********: ", req.URL)
+	log.Info("\nEntering the GetSystemResource with URL------ : ", req.URL)
 	var resp response.RPC
 	// Splitting the SystemID to get UUID
 	requestData := strings.SplitN(req.RequestParam, ".", 2)
@@ -612,7 +609,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 					GetPluginStatus: p.GetPluginStatus,
 				}
 				var err error
-				log.Info("\nGetting the details from device for URL ", req.URL)
+				log.Debug("Getting the details from device for URL ", req.URL)
 				if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, saveRequired); err != nil {
 					return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 				}
@@ -625,28 +622,10 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		}
 		respData = data
 	}
-
-	var resource dmtf.Collection
+	fmt.Println("\n---------------------------respData----------", respData)
+	var resource map[string]interface{}
 	json.Unmarshal([]byte(respData), &resource)
-	fmt.Println("*****************req.URL,*****************************", req.URL)
-	var Members []*dmtf.Link
-	if val, ok := resource["Members"]; ok {
-		Members = val
-	}
-	volumeCollection := dmtf.Collection{
-		ODataContext:          "/redfish/v1/$metadata#Volume.Volume",
-		ODataEtag:             "W/\"46916D5D\"",
-		ODataID:               req.URL,
-		ODataType:             "#VolumeCollection.VolumeCollection",
-		Name:                  "SR Volume Collection",
-		Members:               resource.Members,
-		MembersCount:          resource.MembersCount,
-		CollectionCapabilitie: resource["CollectionCapabilities"],
-	}
-	fmt.Println("RESPONSE-----", resource)
-	resp.Body, _ = json.Marshal(volumeCollection)
-	fmt.Println("RESPONSE-----", resp.Body)
-
+	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	log.Debug("Exiting the GetSystemResource with response ", resp)

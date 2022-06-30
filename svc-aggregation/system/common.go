@@ -962,11 +962,22 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	if _, ok := resourceData["Members"]; ok {
 		memberFlag = true
 	}
-	resourceName := getResourceName(req.OID, memberFlag)
+	//
 
+	resourceName := getResourceName(req.OID, memberFlag)
+	if strings.Contains(oidKey, "/Volumes/Capabilities") {
+		fmt.Println("-----string(body)", string(body))
+	}
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
+	fmt.Println("updatedResourceData-------", updatedResourceData)
+
 	// persist the response with table resourceName and key as system UUID + Oid Needs relook TODO
+	var resource map[string]interface{}
+
+	json.Unmarshal(body, &resource)
+	//unmarshall
+	fmt.Println("resource-------", resource)
 	err = agmodel.GenericSave([]byte(updatedResourceData), resourceName, oidKey)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") {

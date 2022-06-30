@@ -636,7 +636,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		Oid:                   req.URL,
 		ODataType:             "#VolumeCollection.VolumeCollection",
 		Name:                  "SR Volume Collection",
-		Members:               resource["Members"].([]interface{}),
+		Members:               resource["Members"].(interface{}),
 		MembersCount:          resource["MembersCount"],
 		CollectionCapabilitie: resource["CollectionCapabilities"],
 	}

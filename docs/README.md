@@ -181,6 +181,7 @@
   * [Viewing a collection of event subscriptions](#viewing-a-collection-of-event-subscriptions)
   * [Viewing information about a specific event subscription](#viewing-information-about-a-specific-event-subscription)
   * [Deleting an event subscription](#deleting-an-event-subscription)
+  * [Undelivered events](#undelivered-events)
 - [Message registries](#message-registries)
   * [Viewing a collection of registries](#viewing-a-collection-of-registries)
   * [Viewing a single registry](#viewing-a-single-registry)
@@ -10152,8 +10153,6 @@ curl -i POST \
 ```
 
 
-
-
 > Sample event payload 
 
 ```
@@ -10501,6 +10500,11 @@ curl -i -X DELETE \
    "Severity":"OK"
 }
 ```
+
+## Undelivered events
+
+After subscribing to Resource Aggregator for ODIM events, you receive them regularly on your system. In instances where your system is unavailable to listen to the events for a certain period, the events are saved in the product database as undelivered events. Resource Aggregator for ODIM tries to repost these events three times for the next 60 seconds. 
+Eventually, when your system becomes available for the new events to be published, these undelivered events are published on your system one after the other and are deleted from the database.
 
 
 

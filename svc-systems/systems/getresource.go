@@ -629,14 +629,17 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(respData), &resource)
 	fmt.Println("*****************req.URL,*****************************", req.URL)
-
+	var Members *[]dmtf.Link
+	if val, ok := resource["Members"]; ok {
+		Members = val
+	}
 	volumeCollection := dmtf.Collection{
 		ODataContext:          "/redfish/v1/$metadata#Volume.Volume",
 		ODataEtag:             "W/\"46916D5D\"",
-		Oid:                   req.URL,
+		ODataID:               req.URL,
 		ODataType:             "#VolumeCollection.VolumeCollection",
 		Name:                  "SR Volume Collection",
-		Members:               resource["Members"].(interface{}),
+		Members:               Members,
 		MembersCount:          resource["MembersCount"],
 		CollectionCapabilitie: resource["CollectionCapabilities"],
 	}

@@ -629,7 +629,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(respData), &resource)
 	fmt.Println("*****************req.URL,*****************************", req.URL)
-	var Members *[]dmtf.Link
+	var Members []*dmtf.Link
 	if val, ok := resource["Members"]; ok {
 		Members = val
 	}

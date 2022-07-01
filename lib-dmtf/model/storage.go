@@ -263,6 +263,7 @@ type CapabilitiesObject struct {
 	StripSizeBytes    bool   `json:"StripSizeBytes@Redfish.OptionalOnCreate,omitempty"`
 	ReadCachePolicy   bool   `json:"ReadCachePolicy@Redfish.OptionalOnCreate,omitempty"`
 	WriteCachePolicy  bool   `json:"WriteCachePolicy,omitempty"`
+	Links             bool   `json:"Links@Redfish.RequiredOnCreate"`
 }
 type CapLinks struct {
 	TargetCollection *Link `json:"TargetCollection,omitempty"`

@@ -623,8 +623,9 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		respData = data
 	}
 	fmt.Println("\n---------------------------respData----------", respData)
-	var resource map[string]interface{}
+	var resource dmtf.VolumeCollection
 	json.Unmarshal([]byte(respData), &resource)
+
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success

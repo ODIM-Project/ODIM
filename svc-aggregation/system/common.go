@@ -1025,6 +1025,8 @@ func fillCapabilitiesResponse(resourceData map[string]interface{}) (body []byte)
 	collectionCapabilitiesObject["RAIDType@Redfish.RequiredOnCreate"] = resourceData["RAIDType@Redfish.RequiredOnCreate"]
 	collectionCapabilitiesObject["RAIDType@Redfish.AllowableValues"] = resourceData["RAIDType@Redfish.AllowableValues"]
 	collectionCapabilitiesObject["Links@Redfish.RequiredOnCreate"] = resourceData["Links@Redfish.RequiredOnCreate"]
+	collectionCapabilitiesObject["Drives@Redfish.RequiredOnCreate"] = resourceData["Drives@Redfish.RequiredOnCreate"]
+
 	body, _ = json.Marshal(collectionCapabilitiesObject)
 	return
 }

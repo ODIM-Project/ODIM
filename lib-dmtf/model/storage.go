@@ -244,8 +244,8 @@ type Current struct {
 	VersionString string `json:"VersionString,omitempty"`
 }
 type CollectionCapabilities struct {
-	OdataType    string       `json:"@odata.type,omitempty"`
-	Capabilities Capabilities `json:"Capabilities,omitempty"`
+	OdataType    string       `json:"@odata.type"`
+	Capabilities Capabilities `json:"Capabilities"`
 }
 
 type Capabilities struct {
@@ -267,6 +267,19 @@ type CapabilitiesObject struct {
 }
 type CapLinks struct {
 	TargetCollection *Link `json:"TargetCollection,omitempty"`
+}
+type VolumeCollection struct {
+	ODataContext          string                 `json:"@odata.context,omitempty"`
+	ODataEtag             string                 `json:"@odata.etag,omitempty"`
+	ODataID               string                 `json:"@odata.id"`
+	ODataType             string                 `json:"@odata.type"`
+	Description           string                 `json:"Description,omitempty"`
+	Name                  string                 `json:"Name"`
+	Members               []*Link                `json:"Members"`
+	MembersCount          int                    `json:"Members@odata.count"`
+	MemberNavigationLink  string                 `json:"Members@odata.navigationLink,omitempty"`
+	Oem                   interface{}            `json:"Oem,omitempty"`
+	CollectionCapabilitie CollectionCapabilities `json:"@Redfish.CollectionCapabilities"`
 }
 
 // Volume contains the details volume properties

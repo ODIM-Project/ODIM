@@ -3788,7 +3788,7 @@ python3 odim-controller.py --config \
 
   
 
-# CI process
+## CI process
 
 GitHub action workflows, also known as checks, are added to the ODIM repository. They are triggered whenever a Pull Request (PR) is raised against the master (development) branch. The result from the workflow execution is then updated to the PR.
 
@@ -3804,7 +3804,7 @@ Following checks are added as part of the CI process:
 
 These checks run in parallel and take a few minutes to complete.
 
-## GitHub action workflow details
+### GitHub action workflow details
 
 1. build_unittest.yml
    - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md*.
@@ -3830,7 +3830,7 @@ These checks run in parallel and take a few minutes to complete.
 
 > **NOTE:** Build status notifications having a link to the GitHub Actions build job page will be sent to the developer’s email address.
 
-## Screenshots of the checks after execution
+### Screenshots of the checks after execution
 
 ![screenshot](docs/images/check_1.png)
 

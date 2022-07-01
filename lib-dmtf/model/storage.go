@@ -249,9 +249,9 @@ type CollectionCapabilities struct {
 }
 
 type Capabilities struct {
-	CapabilitiesObject *Link    `json:"CapabilitiesObject,omitempty"`
-	Links              CapLinks `json:"Links,omitempty"`
-	UseCase            string   `json:"UseCase,omitempty"`
+	CapabilitiesObject *Link    `json:"CapabilitiesObject"`
+	Links              CapLinks `json:"Links"`
+	UseCase            string   `json:"UseCase"`
 }
 type CapabilitiesObject struct {
 	CapacityBytes     bool   `json:""CapacityBytes@Redfish.OptionalOnCreate,omitempty"`
@@ -266,7 +266,7 @@ type CapabilitiesObject struct {
 	Links             bool   `json:"Links@Redfish.RequiredOnCreate"`
 }
 type CapLinks struct {
-	TargetCollection *Link `json:"TargetCollection,omitempty"`
+	TargetCollection *Link `json:"TargetCollection,"`
 }
 type VolumeCollection struct {
 	ODataContext          string                 `json:"@odata.context,omitempty"`

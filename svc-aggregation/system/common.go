@@ -1026,6 +1026,7 @@ func fillCapabilitiesResponse(resourceData map[string]interface{}) (body []byte)
 	collectionCapabilitiesObject["RAIDType@Redfish.AllowableValues"] = resourceData["RAIDType@Redfish.AllowableValues"]
 	collectionCapabilitiesObject["Links@Redfish.RequiredOnCreate"] = resourceData["Links@Redfish.RequiredOnCreate"]
 	body, _ = json.Marshal(collectionCapabilitiesObject)
+	return
 }
 func getResourceName(oDataID string, memberFlag bool) string {
 	str := strings.Split(oDataID, "/")

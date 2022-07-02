@@ -966,6 +966,11 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 
 	resourceName := getResourceName(req.OID, memberFlag)
 	if memberFlag == true && strings.Contains(resourceName, "VolumeCollection") {
+		//
+		var res resourceData["@Redfish.CollectionCapabilities"]
+		var 	CollectionCap  dmtf.VolumeCollection
+
+
 		body = fillCollectionCapabilities(resourceData, oidKey)
 	}
 	fmt.Println("\n-----resourceName(resourceName)", resourceName)
@@ -1043,21 +1048,25 @@ func fillCollectionCapabilities(resourceData map[string]interface{}, rid string)
 	CollectionCap := dmtf.VolumeCollection{
 		CollectionCapabilities: dmtf.CollectionCapabilities{
 			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
-			Capabilities: []dmtf.Capabilities{
-				CapabilitiesObject: &dmtf.Link{
-					Oid: rid + "/Capabilities",
-				},
-				Links: dmtf.CapLinks{
-					TargetCollection: &dmtf.Link{
-						Oid: rid,
+			Capabilities: []*dmtf.Capabilities{
+				&dmtf.Capabilities{
+					CapabilitiesObject: &dmtf.Link{
+						Oid: rid + "/Capabilities",
 					},
-				},
-				UseCase: "VolumeCreation",
+					Links: dmtf.CapLinks{
+						TargetCollection: &dmtf.Link{
+							Oid: rid,
+						},
+					},
+					UseCase: "VolumeCreation",
+				}
+				
 			},
 		},
 	}
 	body, _ = json.Marshal(CollectionCap)
 	return
+	
 }
 
 func getResourceName(oDataID string, memberFlag bool) string {

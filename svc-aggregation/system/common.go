@@ -966,7 +966,7 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 
 	resourceName := getResourceName(req.OID, memberFlag)
 	if memberFlag == true && strings.Contains(resourceName, "VolumeCollection") {
-		body = fillCollectionCapabilities(resourceData,oidKey)
+		body = fillCollectionCapabilities(resourceData, oidKey)
 	}
 	fmt.Println("\n-----resourceName(resourceName)", resourceName)
 	if strings.Contains(oidKey, "/Volumes/Capabilities") {
@@ -1037,25 +1037,27 @@ func fillCapabilitiesResponse(resourceData map[string]interface{}) (body []byte)
 	collectionCapabilitiesObject["Links.Drives@Redfish.RequiredOnCreate"] = resourceData["Links.Drives@Redfish.RequiredOnCreat"]
 	body, _ = json.Marshal(collectionCapabilitiesObject)
 	return
-} 
-func  fillCollectionCapabilities(resourceData map[string]interface{})(body []byte){
-	CollectionCap :=dmtf.VolumeCollection{
+}
+func fillCollectionCapabilities(resourceData map[string]interface{}) (body []byte) {
+	CollectionCap := dmtf.VolumeCollection{
 		CollectionCapabilities: dmtf.CollectionCapabilities{
 			ODataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
 			Capabilities: *[]dmtf.Capabilities{
 				CapabilitiesObject: &dmtf.Link{
-					Oid: resourceData["@odata.id"]+"/Capabilities",						
+					Oid: resourceData["@odata.id"] + "/Capabilities",
 				},
 				Links: dmtf.CapLinks{
 					TargetCollection: &dmtf.Link{
-							Oid: resourceData["@odata.id"],						
-						},
-				},		
-				UseCase: "VolumeCreation",		
+						Oid: resourceData["@odata.id"],
+					},
 				},
+				UseCase: "VolumeCreation",
 			},
 		},
 	}
+	body, _ = json.Marshal(CollectionCap)
+	return
+}
 
 func getResourceName(oDataID string, memberFlag bool) string {
 	str := strings.Split(oDataID, "/")

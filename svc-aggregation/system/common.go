@@ -1038,17 +1038,18 @@ func fillCapabilitiesResponse(resourceData map[string]interface{}) (body []byte)
 	body, _ = json.Marshal(collectionCapabilitiesObject)
 	return
 }
-func fillCollectionCapabilities(resourceData map[string]interface{}) (body []byte) {
+func fillCollectionCapabilities(resourceData map[string]interface{},rid) (body []byte) {
+	fmt.Println("rid",rid,"resourceData",resourceData)
 	CollectionCap := dmtf.VolumeCollection{
 		CollectionCapabilities: dmtf.CollectionCapabilities{
 			ODataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
 			Capabilities: *[]dmtf.Capabilities{
 				CapabilitiesObject: &dmtf.Link{
-					Oid: resourceData["@odata.id"] + "/Capabilities",
+					Oid: rid + "/Capabilities",
 				},
 				Links: dmtf.CapLinks{
 					TargetCollection: &dmtf.Link{
-						Oid: resourceData["@odata.id"],
+						Oid: rid,
 					},
 				},
 				UseCase: "VolumeCreation",

@@ -625,15 +625,16 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 	fmt.Println("\n---------------------------respData----------", respData)
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(respData), &resource)
-	if _, ok := resource["UseCase"]; !ok {
-		resource["UseCase"] = "VolumeCreation"
-	}
+	//if
+	// if _, ok := resource["UseCase"]; !ok {
+	// 	resource["UseCase"] = "VolumeCreation"
+	// }
 
-	if _, ok := resource["CapabilitiesObject"]; !ok {
-		resource["CapabilitiesObject"] = &dmtf.Link{
-			Oid: req.URL + "/Capabilities",
-		}
-	}
+	// if _, ok := resource["CapabilitiesObject"]; !ok {
+	// 	resource["CapabilitiesObject"] = &dmtf.Link{
+	// 		Oid: req.URL + "/Capabilities",
+	// 	}
+	// }
 
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK

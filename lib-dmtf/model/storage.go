@@ -277,7 +277,6 @@ type VolumeCollection struct {
 	Name                   string                 `json:"Name"`
 	Members                []*Link                `json:"Members"`
 	MembersCount           int                    `json:"Members@odata.count"`
-	MemberNavigationLink   string                 `json:"Members@odata.navigationLink,omitempty"`
 	Oem                    interface{}            `json:"Oem,omitempty"`
 	CollectionCapabilities CollectionCapabilities `json:"@Redfish.CollectionCapabilities"`
 }

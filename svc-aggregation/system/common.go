@@ -1042,8 +1042,8 @@ func fillCollectionCapabilities(resourceData map[string]interface{}, rid string)
 	fmt.Println("rid", rid, "resourceData", resourceData)
 	CollectionCap := dmtf.VolumeCollection{
 		CollectionCapabilities: dmtf.CollectionCapabilities{
-			ODataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
-			Capabilities: *[]dmtf.Capabilities{
+			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
+			Capabilities: dmtf.Capabilities{
 				CapabilitiesObject: &dmtf.Link{
 					Oid: rid + "/Capabilities",
 				},

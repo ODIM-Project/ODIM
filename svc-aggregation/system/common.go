@@ -967,9 +967,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	resourceName := getResourceName(req.OID, memberFlag)
 	if memberFlag == true && strings.Contains(resourceName, "VolumeCollection") {
 		//
-		var res resourceData["@Redfish.CollectionCapabilities"]
-		var 	CollectionCap  dmtf.VolumeCollection
-
 
 		body = fillCollectionCapabilities(resourceData, oidKey)
 	}
@@ -1059,14 +1056,13 @@ func fillCollectionCapabilities(resourceData map[string]interface{}, rid string)
 						},
 					},
 					UseCase: "VolumeCreation",
-				}
-				
+				},
 			},
 		},
 	}
 	body, _ = json.Marshal(CollectionCap)
 	return
-	
+
 }
 
 func getResourceName(oDataID string, memberFlag bool) string {

@@ -965,8 +965,9 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	//
 
 	resourceName := getResourceName(req.OID, memberFlag)
-	if memberFlag == true && strings.Contains(resourceName, "VolumeCollection") {
+	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
 		//
+		fmt.Println("\n\n\n\n\n\nVolumesCollection------------------------------fillCollectionCapabilities-----------------------------------------")
 
 		body = fillCollectionCapabilities(resourceData, oidKey)
 	}
@@ -1034,9 +1035,7 @@ func fillCapabilitiesResponse(resourceData map[string]interface{}) (body []byte)
 	collectionCapabilitiesObject["RAIDType@Redfish.AllowableValues"] = resourceData["RAIDType@Redfish.AllowableValues"]
 	collectionCapabilitiesObject["Links@Redfish.RequiredOnCreate"] = resourceData["Links@Redfish.RequiredOnCreate"]
 	collectionCapabilitiesObject["Drives@Redfish.RequiredOnCreate"] = resourceData["Drives@Redfish.RequiredOnCreate"]
-	collectionCapabilitiesObject["Links@Redfish.RequiredOnCreate"] = resourceData["Links@Redfish.RequiredOnCreate"]
-
-	collectionCapabilitiesObject["Links.Drives@Redfish.RequiredOnCreate"] = resourceData["Links.Drives@Redfish.RequiredOnCreat"]
+	collectionCapabilitiesObject["Links"] = resourceData["Links"]
 	body, _ = json.Marshal(collectionCapabilitiesObject)
 	return
 }
@@ -1061,6 +1060,7 @@ func fillCollectionCapabilities(resourceData map[string]interface{}, rid string)
 		},
 	}
 	body, _ = json.Marshal(CollectionCap)
+	fmt.Println("\n\n\n\n****************************************body", string(body))
 	return
 
 }

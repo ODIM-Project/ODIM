@@ -968,6 +968,7 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
 		//
 		fmt.Println("\n\n\n\n\n\nVolumesCollection------------------------------fillCollectionCapabilities-----------------------------------------")
+		fmt.Println("\n\n\n\n\n\nVolumesCollection------------------------------fillCollectionCapabilities-----------------------------------------", oidKey)
 
 		body = fillCollectionCapabilities(resourceData, oidKey)
 	}
@@ -1040,27 +1041,33 @@ func fillCapabilitiesResponse(resourceData map[string]interface{}) (body []byte)
 	return
 }
 func fillCollectionCapabilities(resourceData map[string]interface{}, rid string) (body []byte) {
-	fmt.Println("rid", rid, "resourceData", resourceData)
-
-	CollectionCapabilities := dmtf.CollectionCapabilities{
-		OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
-		Capabilities: []*dmtf.Capabilities{
-			&dmtf.Capabilities{
-				CapabilitiesObject: &dmtf.Link{
-					Oid: rid + "/Capabilities",
-				},
-				Links: dmtf.CapLinks{
-					TargetCollection: &dmtf.Link{
-						Oid: rid,
+	fmt.Println("\nrid:--", rid, "\nresourceData:---", resourceData)
+	VolCollection := dmtf.VolumeCollection{
+		ODataID:      resourceData["@odata.id"],
+		ODataEtag:    resourceData["@odata.etag"],
+		ODataType:    resourceData["@odata.type"],
+		Name:         resourceData["Name"],
+		Members:      resourceData["Members"],
+		MembersCount: resourceData["Members@odata.count"],
+		CollectionCapabilities: dmtf.CollectionCapabilities{
+			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
+			Capabilities: []*dmtf.Capabilities{
+				&dmtf.Capabilities{
+					CapabilitiesObject: &dmtf.Link{
+						Oid: rid + "/Capabilities",
 					},
+					Links: dmtf.CapLinks{
+						TargetCollection: &dmtf.Link{
+							Oid: rid,
+						},
+					},
+					UseCase: "VolumeCreation",
 				},
-				UseCase: "VolumeCreation",
 			},
 		},
 	}
-
-	body, _ = json.Marshal(CollectionCapabilities)
-	fmt.Println("\n\n\n\n****************************************body", string(body))
+	body, _ = json.Marshal(VolCollection)
+	fmt.Println("****************************************body", string(body))
 	return
 
 }

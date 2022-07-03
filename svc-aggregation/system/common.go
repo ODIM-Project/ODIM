@@ -987,12 +987,10 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		body, _ = json.Marshal(resourceData)
 
 	}
-	fmt.Println("oidKey", oidKey)
 	if strings.Contains(oidKey, "/Volumes/Capabilities") {
-		fmt.Println("INSIDE /vol/cap")
 		body = fillCapabilitiesResponse(resourceData, req.OID)
 	}
-	fmt.Println("string(body)------------===============", string(body))
+
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
 
@@ -1040,26 +1038,39 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	}
 	return progress
 }
-
-//fillCapabilitiesResponse functions populates the values under CapabilitiesObject
 func fillCapabilitiesResponse(resourceData map[string]interface{}, oid string) (body []byte) {
-	CapabilitiesObject := dmtf.CapabilitiesObject{
-		ODataID:        oid + "/Capabilities",
-		ODataType:      "#Volume.v1_6_2.Volume",
-		Id:             "Capabilities",
-		Name:           "Capabilities for the volume collection",
-		RAIDTypeValues: []string{"RAID0", "RAID1", "RAID10", "RAID5"},
-		RAIDType:       true,
-		Links:          true,
-		LinkValues: dmtf.LinkValues{
-			Drives: true,
-		},
+	collectionCapabilitiesObject := make(map[string]interface{})
+	// CapabilitiesObject:= dmtf.CapabilitiesObject{
+	// 	ODataID: oid+"/Capabilities",
+	// 	ODataType:"#Volume.v1_6_2.Volume",
+	// 	Id: "Capabilities",
+	// 	Name:"Capabilities for the volume collection",
+	// 	RAIDTypeValues:
+	// 	RAIDType:true,
+	// 	Links: true,
+	// 	LinkValues: dmtf.LinkValues{
+	// 		Drives: true,
+	// 	}
+
+	// }
+	collectionCapabilitiesObject["Id"] = oid + "/Capabilities"
+	collectionCapabilitiesObject["Name"] = "Capabilities for the volume collection"
+	collectionCapabilitiesObject["RAIDType@Redfish.RequiredOnCreate"] = true
+	collectionCapabilitiesObject["RAIDType@Redfish.AllowableValues"] = []string{"RAID0", "RAID1", "RAID10", "RAID5"}
+	collectionCapabilitiesObject["Links@Redfish.RequiredOnCreate"] = true
+	collectionCapabilitiesObject["Drives@Redfish.RequiredOnCreate"] = true
+	collectionCapabilitiesObject["Links"] = dmtf.LinkValues{
+		Drives: true,
 	}
 
-	resourceData["CapabilitiesObject"] = CapabilitiesObject
-	body, _ = json.Marshal(resourceData)
+	body, _ = json.Marshal(collectionCapabilitiesObject)
+	return
+}
+func fillCollectionCapabilities(resourceData map[string]interface{}, rid string) (body []byte) {
+	fmt.Println("\nrid:--", rid, "\nresourceData:---", resourceData)
 
 	return
+
 }
 
 func getResourceName(oDataID string, memberFlag bool) string {

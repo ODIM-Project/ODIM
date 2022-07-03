@@ -966,7 +966,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 
 	resourceName := getResourceName(req.OID, memberFlag)
 	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
-
 		CollectionCapabilities := dmtf.CollectionCapabilities{
 			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
 			Capabilities: []*dmtf.Capabilities{
@@ -987,9 +986,15 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		body, _ = json.Marshal(resourceData)
 
 	}
-	if strings.Contains(oidKey, "/Volumes/Capabilities") {
+	fmt.Println("\n oidkey	-------", oidKey)
+	fmt.Println("\n req.OID	-------", req.OID)
+
+	if strings.Contains(req.OID, "/Volumes/Capabilities") {
+		fmt.Println("***********************************INSIDE VOLUME_CAPABILITIES")
 		body = fillCapabilitiesResponse(resourceData, req.OID)
+		fmt.Println("11111111111111111111111111111111111:-", string(body))
 	}
+	fmt.Println("222222222222222222222222222222222222222222:-", string(body))
 
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)

@@ -962,8 +962,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	if _, ok := resourceData["Members"]; ok {
 		memberFlag = true
 	}
-	//
-
 	resourceName := getResourceName(req.OID, memberFlag)
 	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
 		CollectionCapabilities := dmtf.CollectionCapabilities{
@@ -989,7 +987,7 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	fmt.Println("\n oidkey	-------", oidKey)
 	fmt.Println("\n req.OID	-------", req.OID)
 
-	if strings.Contains(req.OID, "/Volumes/Capabilities") {
+	if strings.Contains(oidKey, "/Volumes/Capabilities") {
 		fmt.Println("***********************************INSIDE VOLUME_CAPABILITIES")
 		body = fillCapabilitiesResponse(resourceData, req.OID)
 		fmt.Println("11111111111111111111111111111111111:-", string(body))

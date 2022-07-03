@@ -1043,12 +1043,12 @@ func fillCapabilitiesResponse(resourceData map[string]interface{}) (body []byte)
 func fillCollectionCapabilities(resourceData map[string]interface{}, rid string) (body []byte) {
 	fmt.Println("\nrid:--", rid, "\nresourceData:---", resourceData)
 	VolCollection := dmtf.VolumeCollection{
-		ODataID:      resourceData["@odata.id"],
-		ODataEtag:    resourceData["@odata.etag"],
-		ODataType:    resourceData["@odata.type"],
-		Name:         resourceData["Name"],
-		Members:      resourceData["Members"],
-		MembersCount: resourceData["Members@odata.count"],
+		ODataID:      resourceData["@odata.id"].(string),
+		ODataEtag:    resourceData["@odata.etag"].(string),
+		ODataType:    resourceData["@odata.type"].(string),
+		Name:         resourceData["Name"].(string),
+		Members:      resourceData["Members"].(string),
+		MembersCount: resourceData["Members@odata.count"].(int),
 		CollectionCapabilities: dmtf.CollectionCapabilities{
 			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
 			Capabilities: []*dmtf.Capabilities{

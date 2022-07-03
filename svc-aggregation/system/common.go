@@ -983,17 +983,13 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 				},
 			},
 		}
-		resourceData["CollectionCapabilities"] = CollectionCapabilities
+		resourceData["@Redfish.CollectionCapabilities"] = CollectionCapabilities
 		body, _ = json.Marshal(resourceData)
 
 	}
-	fmt.Println("\n-----resourceName(resourceName)", resourceName)
 	if strings.Contains(oidKey, "/Volumes/Capabilities") {
-		fmt.Println("\n-----inside volume capabilities", resourceName)
-
-		body = fillCapabilitiesResponse(resourceData)
+		body = fillCapabilitiesResponse(resourceData, req.OID)
 	}
-
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
 
@@ -1041,23 +1037,26 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	}
 	return progress
 }
-func fillCapabilitiesResponse(resourceData map[string]interface{}) (body []byte) {
-	collectionCapabilitiesObject := make(map[string]interface{})
-	collectionCapabilitiesObject["Id"] = resourceData["Id"]
-	collectionCapabilitiesObject["Name"] = resourceData["Name"]
-	collectionCapabilitiesObject["RAIDType@Redfish.RequiredOnCreate"] = resourceData["RAIDType@Redfish.RequiredOnCreate"]
-	collectionCapabilitiesObject["RAIDType@Redfish.AllowableValues"] = resourceData["RAIDType@Redfish.AllowableValues"]
-	collectionCapabilitiesObject["Links@Redfish.RequiredOnCreate"] = resourceData["Links@Redfish.RequiredOnCreate"]
-	collectionCapabilitiesObject["Drives@Redfish.RequiredOnCreate"] = resourceData["Drives@Redfish.RequiredOnCreate"]
-	collectionCapabilitiesObject["Links"] = resourceData["Links"]
-	body, _ = json.Marshal(collectionCapabilitiesObject)
-	return
-}
-func fillCollectionCapabilities(resourceData map[string]interface{}, rid string) (body []byte) {
-	fmt.Println("\nrid:--", rid, "\nresourceData:---", resourceData)
+
+//fillCapabilitiesResponse functions populates the values under CapabilitiesObject
+func fillCapabilitiesResponse(resourceData map[string]interface{}, oid string) (body []byte) {
+	CapabilitiesObject := dmtf.CapabilitiesObject{
+		ODataID:        oid + "/Capabilities",
+		ODataType:      "#Volume.v1_6_2.Volume",
+		Id:             "Capabilities",
+		Name:           "Capabilities for the volume collection",
+		RAIDTypeValues: []string{"RAID0", "RAID1", "RAID10", "RAID5"},
+		RAIDType:       true,
+		Links:          true,
+		LinkValues: dmtf.LinkValues{
+			Drives: true,
+		},
+	}
+
+	resourceData["CapabilitiesObject"] = CapabilitiesObject
+	body, _ = json.Marshal(resourceData)
 
 	return
-
 }
 
 func getResourceName(oDataID string, memberFlag bool) string {

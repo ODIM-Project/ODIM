@@ -254,16 +254,24 @@ type Capabilities struct {
 	UseCase            string   `json:"UseCase"`
 }
 type CapabilitiesObject struct {
-	CapacityBytes     bool   `json:""CapacityBytes@Redfish.OptionalOnCreate,omitempty"`
-	DisplayName       bool   `json:""DisplayName@Redfish.OptionalOnCreate,omitempty"`
-	IOPerfModeEnabled bool   `json:""IOPerfModeEnabled@Redfish.OptionalOnCreate,omitempty"`
-	RAIDType          bool   `json:"RAIDType@Redfish.RequiredOnCreate"`
-	Name              string `json:"Name"`
-	Id                string `json:"Id"`
-	StripSizeBytes    bool   `json:"StripSizeBytes@Redfish.OptionalOnCreate,omitempty"`
-	ReadCachePolicy   bool   `json:"ReadCachePolicy@Redfish.OptionalOnCreate,omitempty"`
-	WriteCachePolicy  bool   `json:"WriteCachePolicy,omitempty"`
-	Links             bool   `json:"Links@Redfish.RequiredOnCreate"`
+	ODataID           string     `json:"@odata.id"`
+	ODataType         string     `json:"@odata.type"`
+	CapacityBytes     bool       `json:"CapacityBytes@Redfish.OptionalOnCreate,omitempty"`
+	DisplayName       bool       `json:"DisplayName@Redfish.OptionalOnCreate,omitempty"`
+	IOPerfModeEnabled bool       `json:"IOPerfModeEnabled@Redfish.OptionalOnCreate,omitempty"`
+	RAIDType          bool       `json:"RAIDType@Redfish.RequiredOnCreate"`
+	RAIDTypeValues    []string   `json:"RAIDType@Redfish.AllowableValues"`
+	Name              string     `json:"Name"`
+	Id                string     `json:"Id"`
+	StripSizeBytes    bool       `json:"StripSizeBytes@Redfish.OptionalOnCreate,omitempty"`
+	ReadCachePolicy   bool       `json:"ReadCachePolicy@Redfish.OptionalOnCreate,omitempty"`
+	WriteCachePolicy  bool       `json:"WriteCachePolicy,omitempty"`
+	Links             bool       `json:"Links@Redfish.RequiredOnCreate"`
+	LinkValues        LinkValues `json:"Links"`
+}
+type LinkValues struct {
+	DedicatedSpareDrives bool `json:"DedicatedSpareDrives@Redfish.OptionalOnCreate,omitempty"`
+	Drives               bool `json:"Drives@Redfish.RequiredOnCreate"`
 }
 type CapLinks struct {
 	TargetCollection *Link `json:"TargetCollection,"`

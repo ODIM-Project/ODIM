@@ -1042,7 +1042,7 @@ func fillCapabilitiesResponse(resourceData map[string]interface{}) (body []byte)
 func fillCollectionCapabilities(resourceData map[string]interface{}, rid string) (body []byte) {
 	fmt.Println("rid", rid, "resourceData", resourceData)
 
-CollectionCapabilities:=	dmtf.CollectionCapabilities{
+	CollectionCapabilities := dmtf.CollectionCapabilities{
 		OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
 		Capabilities: []*dmtf.Capabilities{
 			&dmtf.Capabilities{
@@ -1057,9 +1057,9 @@ CollectionCapabilities:=	dmtf.CollectionCapabilities{
 				UseCase: "VolumeCreation",
 			},
 		},
-	},
+	}
 
-		body, _ = json.Marshal(CollectionCapabilities)
+	body, _ = json.Marshal(CollectionCapabilities)
 	fmt.Println("\n\n\n\n****************************************body", string(body))
 	return
 

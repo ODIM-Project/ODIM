@@ -987,9 +987,12 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		body, _ = json.Marshal(resourceData)
 
 	}
+	fmt.Println("oidKey", oidKey)
 	if strings.Contains(oidKey, "/Volumes/Capabilities") {
+		fmt.Println("INSIDE /vol/cap")
 		body = fillCapabilitiesResponse(resourceData, req.OID)
 	}
+	fmt.Println("string(body)------------===============", string(body))
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
 

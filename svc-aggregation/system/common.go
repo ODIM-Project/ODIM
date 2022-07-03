@@ -966,18 +966,35 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 
 	resourceName := getResourceName(req.OID, memberFlag)
 	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
-		//
-		fmt.Println("\n\n\n\n\n\nVolumesCollection------------------------------fillCollectionCapabilities-----------------------------------------")
-		fmt.Println("\n\n\n\n\n\nVolumesCollection------------------------------fillCollectionCapabilities-----------------------------------------", oidKey)
 
-		body = fillCollectionCapabilities(resourceData, oidKey)
+		CollectionCapabilities := dmtf.CollectionCapabilities{
+			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
+			Capabilities: []*dmtf.Capabilities{
+				&dmtf.Capabilities{
+					CapabilitiesObject: &dmtf.Link{
+						Oid: oidKey + "/Capabilities",
+					},
+					Links: dmtf.CapLinks{
+						TargetCollection: &dmtf.Link{
+							Oid: oidKey,
+						},
+					},
+					UseCase: "VolumeCreation",
+				},
+			},
+		}
+		resourceData["CollectionCapabilities"] = CollectionCapabilities
+		body, _ = json.Marshal(resourceData)
+
 	}
 	fmt.Println("\n-----resourceName(resourceName)", resourceName)
 	if strings.Contains(oidKey, "/Volumes/Capabilities") {
 		fmt.Println("\n-----inside volume capabilities", resourceName)
 
-		body = fillCapabilitiesResponse(resourceData)
+		//body = fillCapabilitiesResponse(resourceData)
 	}
+	//marshal map to body
+
 	fmt.Println("\n string(body)-------", string(body))
 
 	//replacing the uuid while saving the data
@@ -1042,32 +1059,7 @@ func fillCapabilitiesResponse(resourceData map[string]interface{}) (body []byte)
 }
 func fillCollectionCapabilities(resourceData map[string]interface{}, rid string) (body []byte) {
 	fmt.Println("\nrid:--", rid, "\nresourceData:---", resourceData)
-	VolCollection := dmtf.VolumeCollection{
-		ODataID:      resourceData["@odata.id"].(string),
-		ODataEtag:    resourceData["@odata.etag"].(string),
-		ODataType:    resourceData["@odata.type"].(string),
-		Name:         resourceData["Name"].(string),
-		Members:      resourceData["Members"].(string),
-		MembersCount: resourceData["Members@odata.count"].(int),
-		CollectionCapabilities: dmtf.CollectionCapabilities{
-			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
-			Capabilities: []*dmtf.Capabilities{
-				&dmtf.Capabilities{
-					CapabilitiesObject: &dmtf.Link{
-						Oid: rid + "/Capabilities",
-					},
-					Links: dmtf.CapLinks{
-						TargetCollection: &dmtf.Link{
-							Oid: rid,
-						},
-					},
-					UseCase: "VolumeCreation",
-				},
-			},
-		},
-	}
-	body, _ = json.Marshal(VolCollection)
-	fmt.Println("****************************************body", string(body))
+
 	return
 
 }

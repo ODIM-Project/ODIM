@@ -249,9 +249,9 @@ type CollectionCapabilities struct {
 }
 
 type Capabilities struct {
-	CapabilitiesObject *Link    `json:"CapabilitiesObject"`
-	Links              CapLinks `json:"Links"`
-	UseCase            string   `json:"UseCase"`
+	CapabilitiesObject *Link     `json:"CapabilitiesObject"`
+	Links              *CapLinks `json:"Links"`
+	UseCase            string    `json:"UseCase"`
 }
 type CapabilitiesObject struct {
 	CapacityBytes     bool   `json:""CapacityBytes@Redfish.OptionalOnCreate,omitempty"`
@@ -269,16 +269,16 @@ type CapLinks struct {
 	TargetCollection *Link `json:"TargetCollection,"`
 }
 type VolumeCollection struct {
-	ODataContext           string                 `json:"@odata.context,omitempty"`
-	ODataEtag              string                 `json:"@odata.etag,omitempty"`
-	ODataID                string                 `json:"@odata.id"`
-	ODataType              string                 `json:"@odata.type"`
-	Description            string                 `json:"Description,omitempty"`
-	Name                   string                 `json:"Name"`
-	Members                []*Link                `json:"Members"`
-	MembersCount           int                    `json:"Members@odata.count"`
-	Oem                    interface{}            `json:"Oem,omitempty"`
-	CollectionCapabilities CollectionCapabilities `json:"@Redfish.CollectionCapabilities"`
+	ODataContext           string                  `json:"@odata.context,omitempty"`
+	ODataEtag              string                  `json:"@odata.etag,omitempty"`
+	ODataID                string                  `json:"@odata.id"`
+	ODataType              string                  `json:"@odata.type"`
+	Description            string                  `json:"Description,omitempty"`
+	Name                   string                  `json:"Name"`
+	Members                []*Link                 `json:"Members"`
+	MembersCount           int                     `json:"Members@odata.count"`
+	Oem                    interface{}             `json:"Oem,omitempty"`
+	CollectionCapabilities *CollectionCapabilities `json:"@Redfish.CollectionCapabilities"`
 }
 
 // Volume contains the details volume properties

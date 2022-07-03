@@ -972,11 +972,11 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 			Capabilities: []*dmtf.Capabilities{
 				&dmtf.Capabilities{
 					CapabilitiesObject: &dmtf.Link{
-						Oid: oidKey + "/Capabilities",
+						Oid: req.OID + "/Capabilities",
 					},
 					Links: dmtf.CapLinks{
 						TargetCollection: &dmtf.Link{
-							Oid: oidKey,
+							Oid: req.OID,
 						},
 					},
 					UseCase: "VolumeCreation",
@@ -991,15 +991,11 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	if strings.Contains(oidKey, "/Volumes/Capabilities") {
 		fmt.Println("\n-----inside volume capabilities", resourceName)
 
-		//body = fillCapabilitiesResponse(resourceData)
+		body = fillCapabilitiesResponse(resourceData)
 	}
-	//marshal map to body
-
-	fmt.Println("\n string(body)-------", string(body))
 
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
-	fmt.Println("\n-----resourceName(resourceName)", resourceName)
 
 	fmt.Println("\nupdatedResourceData-------", updatedResourceData)
 

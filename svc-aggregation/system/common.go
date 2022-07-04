@@ -982,22 +982,13 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		}
 		resourceData["@Redfish.CollectionCapabilities"] = CollectionCapabilities
 		body, _ = json.Marshal(resourceData)
-
 	}
-	fmt.Println("\n oidkey	-------", oidKey)
-	fmt.Println("\n req.OID	-------", req.OID)
-
 	if strings.Contains(oidKey, "/Volumes/Capabilities") {
-		fmt.Println("***********************************INSIDE VOLUME_CAPABILITIES")
 		body = fillCapabilitiesResponse(resourceData, req.OID)
-		fmt.Println("11111111111111111111111111111111111:-", string(body))
 	}
-	fmt.Println("222222222222222222222222222222222222222222:-", string(body))
 
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
-
-	fmt.Println("\nupdatedResourceData-------", updatedResourceData)
 
 	// persist the response with table resourceName and key as system UUID + Oid Needs relook TODO
 
@@ -1043,19 +1034,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 }
 func fillCapabilitiesResponse(resourceData map[string]interface{}, oid string) (body []byte) {
 	collectionCapabilitiesObject := make(map[string]interface{})
-	// CapabilitiesObject:= dmtf.CapabilitiesObject{
-	// 	ODataID: oid+"/Capabilities",
-	// 	ODataType:"#Volume.v1_6_2.Volume",
-	// 	Id: "Capabilities",
-	// 	Name:"Capabilities for the volume collection",
-	// 	RAIDTypeValues:
-	// 	RAIDType:true,
-	// 	Links: true,
-	// 	LinkValues: dmtf.LinkValues{
-	// 		Drives: true,
-	// 	}
-
-	// }
 	collectionCapabilitiesObject["Id"] = oid + "/Capabilities"
 	collectionCapabilitiesObject["Name"] = "Capabilities for the volume collection"
 	collectionCapabilitiesObject["RAIDType@Redfish.RequiredOnCreate"] = true
@@ -1065,17 +1043,9 @@ func fillCapabilitiesResponse(resourceData map[string]interface{}, oid string) (
 	collectionCapabilitiesObject["Links"] = dmtf.LinkValues{
 		Drives: true,
 	}
-
 	body, _ = json.Marshal(collectionCapabilitiesObject)
 	return
 }
-func fillCollectionCapabilities(resourceData map[string]interface{}, rid string) (body []byte) {
-	fmt.Println("\nrid:--", rid, "\nresourceData:---", resourceData)
-
-	return
-
-}
-
 func getResourceName(oDataID string, memberFlag bool) string {
 	str := strings.Split(oDataID, "/")
 	if memberFlag {

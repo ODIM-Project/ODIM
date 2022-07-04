@@ -984,8 +984,8 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		resourceData["@Redfish.CollectionCapabilities"] = CollectionCapabilities
 		body, _ = json.Marshal(resourceData)
 
-		//}
-		//if strings.Contains(oidKey, "/Volumes/Capabilities") {
+	}
+	if strings.Contains(oidKey, "/Volumes/Capabilities") {
 		body = fillCapabilitiesResponse(resourceData, req.OID)
 	}
 

@@ -629,18 +629,17 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		var result map[string]interface{}
 
 		body := fillCapabilitiesResponse(resource, req.URL)
-		err := json.Unmarshal([]byte(body), &result)
+		err := json.Unmarshal(body, &result)
 		if err != nil {
 			fmt.Println("Error unmarshalling capabilities response: ", err)
 		}
 
 		fmt.Println("\n string(body)====================", string(body))
 		fmt.Println("\n resource=========INSIDE===========", result)
-		fmt.Println("\n resource=========OUTSIDE===========", result)
-		resp.StatusCode = http.StatusOK
-		resp.StatusMessage = response.Success
-		log.Debug("Exiting the GetSystemResource with response ", resp)
-		return resp
+		delete(result, "MembersCount")
+		delete(result, "Members")
+		fmt.Println("\n resource=========INSIDE===========", result)
+
 		resp.Body = result
 		resp.StatusCode = http.StatusOK
 		resp.StatusMessage = response.Success

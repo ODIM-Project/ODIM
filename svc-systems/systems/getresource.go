@@ -628,8 +628,11 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 	if strings.Contains(req.URL, "/Volumes/Capabilities") {
 		var result map[string]interface{}
 
-		body := fillCapabilitiesResponse(result, req.URL)
-		json.Unmarshal([]byte(body), &result)
+		body := fillCapabilitiesResponse(resource, req.URL)
+		err := json.Unmarshal([]byte(body), &result)
+		if err != nil {
+			fmt.Println("Error unmarshalling capabilities response: ", err)
+		}
 
 		fmt.Println("\n string(body)====================", string(body))
 		fmt.Println("\n resource=========INSIDE===========", result)

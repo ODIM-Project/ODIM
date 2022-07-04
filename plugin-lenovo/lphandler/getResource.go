@@ -22,12 +22,13 @@ import (
 
 	"encoding/json"
 
+	log "github.com/sirupsen/logrus"
+
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-lenovo/config"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lputilities"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 )
 
 //GetResource : Fetches details of the given resource from the device

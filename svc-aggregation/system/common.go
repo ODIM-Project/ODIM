@@ -965,9 +965,9 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		memberFlag = true
 	}
 	resourceName := getResourceName(req.OID, memberFlag)
-	fmt.Println("resourceName===============================:", resourceName)
-	fmt.Println("request url===============================", req.OID)
-	fmt.Println("request url===============================", oidKey)
+	fmt.Println("\nresourceName===============================:", resourceName)
+	fmt.Println("\nrequest url===============================", req.OID)
+	fmt.Println("\nrequest url===============================", oidKey)
 
 	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
 		CollectionCapabilities := dmtf.CollectionCapabilities{

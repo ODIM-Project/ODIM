@@ -1039,7 +1039,9 @@ func fillCapabilitiesResponse(resourceData map[string]interface{}, oid string) (
 	collectionCapabilitiesObject["Id"] = oid + "/Capabilities"
 	collectionCapabilitiesObject["Name"] = "Capabilities for the volume collection"
 	collectionCapabilitiesObject["RAIDType@Redfish.RequiredOnCreate"] = true
-	collectionCapabilitiesObject["RAIDType@Redfish.AllowableValues"] = []string{"RAID0", "RAID1", "RAID10", "RAID5"}
+	if resourceData["RAIDType@Redfish.AllowableValues"] != nil {
+		collectionCapabilitiesObject["RAIDType@Redfish.AllowableValues"] = resourceData["RAIDType@Redfish.AllowableValues"]
+	}
 	collectionCapabilitiesObject["Links@Redfish.RequiredOnCreate"] = true
 	collectionCapabilitiesObject["Drives@Redfish.RequiredOnCreate"] = true
 	collectionCapabilitiesObject["Links"] = dmtf.LinkValues{

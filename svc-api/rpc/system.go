@@ -62,7 +62,7 @@ func GetSystemRequestRPC(req systemsproto.GetSystemsRequest) (*systemsproto.Syst
 //GetSystemResource will do the rpc call to collect System Resource
 func GetSystemResource(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 
-	fmt.Println("******GetSystemResource")
+	fmt.Println("******GetSystemResource************************8")
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)

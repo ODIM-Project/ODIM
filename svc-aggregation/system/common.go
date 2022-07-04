@@ -966,6 +966,9 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	}
 	resourceName := getResourceName(req.OID, memberFlag)
 	fmt.Println("resourceName===============================:", resourceName)
+	fmt.Println("request url===============================", req.OID)
+	fmt.Println("request url===============================", oidKey)
+
 	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
 		CollectionCapabilities := dmtf.CollectionCapabilities{
 			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
@@ -987,6 +990,7 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		body, _ = json.Marshal(resourceData)
 
 	}
+
 	if strings.Contains(oidKey, "/Volumes/Capabilities") {
 		body = fillCapabilitiesResponse(resourceData, req.OID)
 	}
@@ -1037,6 +1041,7 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	return progress
 }
 func fillCapabilitiesResponse(resourceData map[string]interface{}, oid string) (body []byte) {
+	fmt.Println("*******************fillCapabilitiesResponse*******************************")
 	collectionCapabilitiesObject := make(map[string]interface{})
 	collectionCapabilitiesObject["Id"] = oid + "/Capabilities"
 	collectionCapabilitiesObject["Name"] = "Capabilities for the volume collection"

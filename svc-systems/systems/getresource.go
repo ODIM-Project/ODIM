@@ -646,13 +646,14 @@ func fillCapabilitiesResponse(respMap map[string]interface{}, oid string) (body 
 	if _, ok := respMap["RAIDType@Redfish.AllowableValues"]; !ok {
 		respMap["RAIDType@Redfish.AllowableValues"] = []string{"RAID0", "RAID1", "RAID3", "RAID4", "RAID5", "RAID6", "RAID10", "RAID01", "RAID6TP", "RAID1E", "RAID50", "RAID60", "RAID00", "RAID10E", "RAID1Triple", "RAID10Triple", "None"}
 	}
+	x := respMap["RAIDType@Redfish.AllowableValues"]
 
 	CapabilitiesObject := dmtf.CapabilitiesObject{
 		ODataID:        oid,
 		ODataType:      "#Volume.v1_6_2.Volume",
 		Id:             "Capabilities",
 		Name:           "Capabilities for the volume collection",
-		RAIDTypeValues: respMap["RAIDType@Redfish.AllowableValues"].(string),
+		RAIDTypeValues: x,
 		RAIDType:       true,
 		Links:          true,
 		LinkValues: dmtf.LinkValues{

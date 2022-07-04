@@ -622,26 +622,38 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		}
 		respData = data
 	}
-
 	var resource map[string]interface{}
+	if strings.Contains(req.URL, "/Volumes/Capabilities") {
+		var result map[string]interface{}
+
+		body := fillCapabilitiesResponse(resource, req.URL)
+		json.Unmarshal([]byte(body), &resource)
+
+		fmt.Println("\n string(body)====================", string(body))
+		fmt.Println("\n resource=========INSIDE===========", result)
+		fmt.Println("\n resource=========OUTSIDE===========", result)
+		resp.StatusCode = http.StatusOK
+		resp.StatusMessage = response.Success
+		log.Debug("Exiting the GetSystemResource with response ", resp)
+		return resp
+		resp.Body = result
+		fmt.Println("\n resource=========OUTSIDE===========", resource)
+		resp.StatusCode = http.StatusOK
+		resp.StatusMessage = response.Success
+		log.Debug("Exiting the GetSystemResource with response ", resp)
+		return resp
+
+	}
 	json.Unmarshal([]byte(respData), &resource)
 	fmt.Println("\n resource=========FISRT===========", resource)
 
-	url := req.URL
-	if strings.Contains(req.URL, "/Volumes/Capabilities") {
-		body := fillCapabilitiesResponse(resource, url)
-		json.Unmarshal([]byte(body), &resource)
-		resp.Body = body
-		fmt.Println("\n string(body)====================", body)
-		fmt.Println("\n resource=========INSIDE===========", resource)
-
-	}
 	resp.Body = resource
 	fmt.Println("\n resource=========OUTSIDE===========", resource)
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	log.Debug("Exiting the GetSystemResource with response ", resp)
 	return resp
+
 }
 func fillCapabilitiesResponse(respMap map[string]interface{}, oid string) (body []byte) {
 	fmt.Println("=================fillCapabilitiesResponse===============")
@@ -650,18 +662,6 @@ func fillCapabilitiesResponse(respMap map[string]interface{}, oid string) (body 
 		respMap["RAIDType@Redfish.AllowableValues"] = []string{"RAID0", "RAID1", "RAID3", "RAID4", "RAID5", "RAID6", "RAID10", "RAID01", "RAID6TP", "RAID1E", "RAID50", "RAID60", "RAID00", "RAID10E", "RAID1Triple", "RAID10Triple", "None"}
 	}
 
-	// CapabilitiesObject := dmtf.CapabilitiesObject{
-	// 	ODataID:        oid,
-	// 	ODataType:      "#Volume.v1_6_2.Volume",
-	// 	Id:             "Capabilities",
-	// 	Name:           "Capabilities for the volume collection",
-	// 	RAIDTypeValues: &x,
-	// 	RAIDType:       true,
-	// 	Links:          true,
-	// 	LinkValues: dmtf.LinkValues{
-	// 		Drives: true,
-	// 	},
-	// }
 	collectionCapabilitiesObject := make(map[string]interface{})
 	collectionCapabilitiesObject["@odata.id"] = oid
 	collectionCapabilitiesObject["@odata.type"] = "#Volume.v1_6_2.Volume"
@@ -673,7 +673,6 @@ func fillCapabilitiesResponse(respMap map[string]interface{}, oid string) (body 
 	collectionCapabilitiesObject["RAIDType@Redfish.AllowableValues"] = respMap["RAIDType@Redfish.AllowableValues"]
 
 	collectionCapabilitiesObject["Links@Redfish.RequiredOnCreate"] = true
-	collectionCapabilitiesObject["Drives@Redfish.RequiredOnCreate"] = true
 	collectionCapabilitiesObject["Links"] = dmtf.LinkValues{
 		Drives: true,
 	}

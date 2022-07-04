@@ -625,16 +625,19 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(respData), &resource)
-	resp.Body = resource
+	fmt.Println("\n resource=========FISRT===========", resource)
+
 	url := req.URL
 	if strings.Contains(req.URL, "/Volumes/Capabilities") {
 		body := fillCapabilitiesResponse(resource, url)
 		json.Unmarshal([]byte(body), &resource)
 		resp.Body = body
 		fmt.Println("\n string(body)====================", body)
+		fmt.Println("\n resource=========INSIDE===========", resource)
 
 	}
-	fmt.Println("\n resource====================", resource)
+	resp.Body = resource
+	fmt.Println("\n resource=========OUTSIDE===========", resource)
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	log.Debug("Exiting the GetSystemResource with response ", resp)

@@ -646,23 +646,33 @@ func fillCapabilitiesResponse(respMap map[string]interface{}, oid string) (body 
 	if _, ok := respMap["RAIDType@Redfish.AllowableValues"]; !ok {
 		respMap["RAIDType@Redfish.AllowableValues"] = []string{"RAID0", "RAID1", "RAID3", "RAID4", "RAID5", "RAID6", "RAID10", "RAID01", "RAID6TP", "RAID1E", "RAID50", "RAID60", "RAID00", "RAID10E", "RAID1Triple", "RAID10Triple", "None"}
 	}
-	x := respMap["RAIDType@Redfish.AllowableValues"]
 
-	CapabilitiesObject := dmtf.CapabilitiesObject{
-		ODataID:        oid,
-		ODataType:      "#Volume.v1_6_2.Volume",
-		Id:             "Capabilities",
-		Name:           "Capabilities for the volume collection",
-		RAIDTypeValues: x,
-		RAIDType:       true,
-		Links:          true,
-		LinkValues: dmtf.LinkValues{
-			Drives: true,
-		},
+	// CapabilitiesObject := dmtf.CapabilitiesObject{
+	// 	ODataID:        oid,
+	// 	ODataType:      "#Volume.v1_6_2.Volume",
+	// 	Id:             "Capabilities",
+	// 	Name:           "Capabilities for the volume collection",
+	// 	RAIDTypeValues: &x,
+	// 	RAIDType:       true,
+	// 	Links:          true,
+	// 	LinkValues: dmtf.LinkValues{
+	// 		Drives: true,
+	// 	},
+	// }
+	collectionCapabilitiesObject := make(map[string]interface{})
+	collectionCapabilitiesObject["Id"] = oid
+	collectionCapabilitiesObject["Name"] = "Capabilities for the volume collection"
+	collectionCapabilitiesObject["RAIDType@Redfish.RequiredOnCreate"] = true
+
+	collectionCapabilitiesObject["RAIDType@Redfish.AllowableValues"] = respMap["RAIDType@Redfish.AllowableValues"]
+
+	collectionCapabilitiesObject["Links@Redfish.RequiredOnCreate"] = true
+	collectionCapabilitiesObject["Drives@Redfish.RequiredOnCreate"] = true
+	collectionCapabilitiesObject["Links"] = dmtf.LinkValues{
+		Drives: true,
 	}
-
-	body, _ = json.Marshal(CapabilitiesObject)
-
+	body, _ = json.Marshal(collectionCapabilitiesObject)
+	return
 }
 
 // getDeviceLoadInfo accepts URL and System ID as parameters and returns int

@@ -3157,7 +3157,7 @@ Content-Length:491 bytes
         "HttpHeaders": [
         ],
         "HttpOperation": "POST",
-        "JsonBody": "{\"BatchSize\":2,\"DelayBetweenBatchesInSeconds\":2,\"ResetType\":\"ForceRestart\"}",
+        "JsonBody": "{\"BatchSize\":2,\"DelayBetweenBatchesInSeconds\":2,\"Password\":\"null\",\"ResetType\":\"ForceRestart\"}",
         "TargetUri": "/redfish/v1/AggregationService/Aggregates/ca3f2462-15b5-4eb6-80c1-89f99ac36b12/Actions/Aggregate.Reset"
     },
     "Oem": {
@@ -3251,7 +3251,7 @@ Content-Length:491 bytes
         "HttpHeaders": [
         ],
         "HttpOperation": "POST",
-        "JsonBody": "{\"SessionToken\":\"1e2ce744-8bcb-4e97-9eb1-2b419b1e7a2c\",\"URL\":\"/redfish/v1/AggregationService/Aggregates/ca3f2462-15b5-4eb6-80c1-89f99ac36b12/Actions/Aggregate.SetDefaultBootOrder\"}",
+        "JsonBody": "{\"Password\":\"null\",\"SessionToken\":\"1e2ce744-8bcb-4e97-9eb1-2b419b1e7a2c\",\"URL\":\"/redfish/v1/AggregationService/Aggregates/ca3f2462-15b5-4eb6-80c1-89f99ac36b12/Actions/Aggregate.SetDefaultBootOrder\"}",
         "TargetUri": "/redfish/v1/AggregationService/Aggregates/ca3f2462-15b5-4eb6-80c1-89f99ac36b12/Actions/Aggregate.SetDefaultBootOrder"
     },
     "Oem": {

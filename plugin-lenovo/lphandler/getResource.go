@@ -20,8 +20,6 @@ import (
 	"net/http"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"encoding/json"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
@@ -29,6 +27,7 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lputilities"
 	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
 )
 
 //GetResource : Fetches details of the given resource from the device

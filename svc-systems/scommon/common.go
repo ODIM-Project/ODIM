@@ -81,7 +81,6 @@ type ResourceInfoRequest struct {
 // eg: Delete volume requires reset of the BMC to take its effect. Before a reset, volumes retrieval
 // request can provide the deleted volume. We can avoid storing such a data with the use of saveRequired.
 func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (string, error) {
-	fmt.Println("\n*************-------------*****GetResourceInfoFromDevice: \n")
 	target, gerr := smodel.GetTarget(req.UUID)
 	if gerr != nil {
 		return "", gerr
@@ -150,8 +149,6 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 	//replacing the uuid while saving the data
 	//to replace the id of system
 	var updatedData = strings.Replace(string(body), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+req.UUID+".", -1)
-	fmt.Println("\n**********GetResourceInfoFromDevice***********updatedData*******\n", updatedData)
-
 	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/systems/"+req.UUID+".", -1)
 	// to replace the id in managers
 	updatedData = strings.Replace(updatedData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.UUID+".", -1)
@@ -170,7 +167,6 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 			// Get the Table name to save the data in db
 			resourceName = getResourceName(contactRequest.OID, memberFlag)
 		}
-		fmt.Println("resource name------------", resourceName)
 		// persist the response with table resourceName and key as system UUID + Oid Needs relook TODO
 		err = smodel.GenericSave([]byte(updatedData), resourceName, oidKey)
 		if err != nil {

@@ -551,7 +551,6 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) response.RPC {
-	fmt.Println("***************GetSystemResource whie contacting system******req.URL*,", req.URL)
 	var resp response.RPC
 	// Splitting the SystemID to get UUID
 	requestData := strings.SplitN(req.RequestParam, ".", 2)
@@ -629,17 +628,9 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		var result map[string]interface{}
 
 		body := fillCapabilitiesResponse(resource, req.URL)
-		err := json.Unmarshal(body, &result)
-		if err != nil {
-			fmt.Println("Error unmarshalling capabilities response: ", err)
-		}
-
-		fmt.Println("\n string(body)====================", string(body))
-		fmt.Println("\n resource=========INSIDE===========", result)
+		json.Unmarshal(body, &result)
 		delete(result, "MembersCount")
 		delete(result, "Members")
-		fmt.Println("\n resource=========INSIDE===========", result)
-
 		resp.Body = result
 		resp.StatusCode = http.StatusOK
 		resp.StatusMessage = response.Success
@@ -647,11 +638,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		return resp
 
 	}
-
-	fmt.Println("\n resource=========FISRT===========", resource)
-
 	resp.Body = resource
-	fmt.Println("\n resource=========OUTSIDE===========", resource)
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	log.Debug("Exiting the GetSystemResource with response ", resp)
@@ -659,7 +646,6 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 
 }
 func fillCapabilitiesResponse(respMap map[string]interface{}, oid string) (body []byte) {
-	fmt.Println("=================fillCapabilitiesResponse===============")
 	if _, ok := respMap["RAIDType@Redfish.AllowableValues"]; !ok {
 		respMap["RAIDType@Redfish.AllowableValues"] = []string{"RAID0", "RAID1", "RAID3", "RAID4", "RAID5", "RAID6", "RAID10", "RAID01", "RAID6TP", "RAID1E", "RAID50", "RAID60", "RAID00", "RAID10E", "RAID1Triple", "RAID10Triple", "None"}
 	}

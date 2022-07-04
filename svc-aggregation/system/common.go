@@ -874,8 +874,6 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 	return searchForm
 }
 func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
-
-	fmt.Println("getIndivdualInfo===========================================")
 	resourceName := getResourceName(req.OID, false)
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
 	if err != nil {
@@ -930,7 +928,6 @@ func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork
 }
 
 func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
-	fmt.Println("\n\n\n\n\n\nCalling getResourceDetails..........", req.OID)
 	h.TraversedLinks[req.OID] = true
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get the "+req.OID+" details: ")
 	if err != nil {
@@ -966,10 +963,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		memberFlag = true
 	}
 	resourceName := getResourceName(req.OID, memberFlag)
-	fmt.Println("\nresourceName===============================:", resourceName)
-	fmt.Println("\nrequest url===============================", req.OID)
-	fmt.Println("\nrequest url===============================", oidKey)
-
 	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
 		CollectionCapabilities := dmtf.CollectionCapabilities{
 			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
@@ -991,11 +984,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		body, _ = json.Marshal(resourceData)
 
 	}
-
-	if strings.Contains(oidKey, "/Volumes/Capabilities") {
-		body = fillCapabilitiesResponse(resourceData, req.OID)
-	}
-
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
 
@@ -1029,7 +1017,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 			progress = h.getResourceDetails(taskID, progress, estimatedWork, childReq)
 		}
 	}
-
 	progress = progress + alottedWork
 	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
 	err = req.UpdateTask(task)
@@ -1040,25 +1027,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 
 	}
 	return progress
-}
-func fillCapabilitiesResponse(resourceData map[string]interface{}, oid string) (body []byte) {
-	fmt.Println("*******************fillCapabilitiesResponse*******************************")
-	collectionCapabilitiesObject := make(map[string]interface{})
-	collectionCapabilitiesObject["Id"] = oid + "/Capabilities"
-	collectionCapabilitiesObject["Name"] = "Capabilities for the volume collection"
-	collectionCapabilitiesObject["RAIDType@Redfish.RequiredOnCreate"] = true
-	if resourceData["RAIDType@Redfish.AllowableValues"] != nil {
-		collectionCapabilitiesObject["RAIDType@Redfish.AllowableValues"] = resourceData["RAIDType@Redfish.AllowableValues"]
-	}
-	collectionCapabilitiesObject["Links@Redfish.RequiredOnCreate"] = true
-	collectionCapabilitiesObject["Drives@Redfish.RequiredOnCreate"] = true
-	collectionCapabilitiesObject["Links"] = dmtf.LinkValues{
-		Drives: true,
-	}
-	//	resourceData["CapabilitiesObject"] = CapabilitiesObject
-
-	body, _ = json.Marshal(collectionCapabilitiesObject)
-	return
 }
 func getResourceName(oDataID string, memberFlag bool) string {
 	str := strings.Split(oDataID, "/")

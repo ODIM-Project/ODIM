@@ -90,7 +90,6 @@ func GetSystemByUUID(systemUUID string) (string, *errors.Error) {
 
 //GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
-	fmt.Println("111111111111111GetResource called with table database key: ", key)
 	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return "", err

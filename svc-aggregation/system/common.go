@@ -930,6 +930,7 @@ func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork
 }
 
 func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
+	fmt.Println("\n\n\n\n\n\nCalling getResourceDetails..........", req.OID)
 	h.TraversedLinks[req.OID] = true
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get the "+req.OID+" details: ")
 	if err != nil {

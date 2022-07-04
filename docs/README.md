@@ -10507,17 +10507,17 @@ curl -i -X DELETE \
 
 # Message registries
 
-A `MessageRegistry` represents the properties for a message registry.
+The`MessageRegistry` endpoint represents the properties for a message registry.
 
 A message registry is an array of messages and their attributes organized by `MessageId`. Each entry has:
 
 -   Description
 
--   The message this id translates to
+-   Message this id translates to
 
 -   Severity
 
--   The number and type of arguments
+-   Number and type of arguments
 
 -   Proposed resolution
 
@@ -10563,64 +10563,13 @@ curl -i GET \
    "@odata.type":"#MessageRegistryFileCollection.MessageRegistryFileCollection",
    "Name":"Registry File Repository",
    "Description":"Registry Repository",
-   "Members@odata.count":49,
+   "Members@odata.count":14,
    "Members":[
       {
-         "@odata.id":"/redfish/v1/Registries/Base.1.0.0"
+         "@odata.id":"/redfish/v1/Registries/Base.1.13.0"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/Base.1.10.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.10.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.11.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.2.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.3.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.3.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.4.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.5.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.6.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.6.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.7.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.8.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.8.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.8.2"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.9.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Composition.1.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Composition.1.0.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Composition.1.1.0"
+         "@odata.id":"/redfish/v1/Registries/Composition.1.1.1"
       },
       {
          "@odata.id":"/redfish/v1/Registries/EthernetFabric.1.0.0"
@@ -10632,88 +10581,34 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Registries/JobEvent.1.0.0"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/LogService.1.0.0"
+         "@odata.id":"/redfish/v1/Registries/License.1.0.1"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/NetworkDevice.1.0.0"
+         "@odata.id":"/redfish/v1/Registries/LogService.1.0.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/NetworkDevice.1.0.1"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/Redfish_1.0.1_PrivilegeRegistry"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Redfish_1.0.2_PrivilegeRegistry"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Redfish_1.0.3_PrivilegeRegistry"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Redfish_1.0.4_PrivilegeRegistry"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Redfish_1.1.0_PrivilegeRegistry"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.2"
+         "@odata.id":"/redfish/v1/Registries/Redfish_1.3.0_PrivilegeRegistry"
       },
       {
          "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.3"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/StorageDevice.1.0.0"
+         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.2.1"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.2"
+         "@odata.id":"/redfish/v1/Registries/StorageDevice.1.1.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.3"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/Update.1.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/%23SmartStorageMessages.v2_0_1.SmartStorageMessages"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/iLOeRS.1.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU56.v1_1_42"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/HpeDcpmmDiags.1.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/iLO.2.14.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/HpeCommon.2.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU32.v1_2_32"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/iLOEvents.2.3.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/HpeBiosMessageRegistry.v1_0_0"
+         "@odata.id":"/redfish/v1/Registries/Update.1.0.1"
       }
    ]
-}	
+}
 ```
 
 ##  Viewing a single registry
@@ -10735,29 +10630,24 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Registries/{registryId}'
-
 ```
 
 >**Sample response body**
 
 ```
 {
-   "Id":"Base.1.6.1",
-   "@odata.context":"/redfish/v1/https://10.24.1.95:45000/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile",
-   "@odata.id":"/redfish/v1/Registries/Base.1.6.1",
-   "@odata.type":"#MessageRegistryFile.v1_1_3.MessageRegistryFile",
-   "Name":"Registry File Repository",
-   "Description":"Base Message Registry File Locations",
-   "Languages":[
-      "en"
-   ],
-   "Location":[
-      {
-         "Language":"en",
-         "Uri":"/redfish/v1/registries/Base.1.6.1.json"
-      }
-   ],
-   "Registry":"Base.1.6.1"
+   "@Redfish.Copyright":"Copyright 2014-2022 DMTF. All rights reserved.",
+   "@Redfish.License":"Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
+   "@odata.type":"#MessageRegistry.v1_5_0.MessageRegistry",
+   "Description":"This registry defines the base messages for Redfish",
+   "Id":"Base.1.13.0",
+   "Language":"en",
+   "Messages":{
+      "Name":"Base Message Registry",
+      "OwningEntity":"DMTF",
+      "RegistryPrefix":"Base",
+      "RegistryVersion":"1.13.0"
+   }
 }
 ```
 
@@ -10781,6 +10671,29 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/registries/{jsonFileId}'
+```
+
+>**Sample response body**
+
+```
+{
+   "Id":"Base.1.13.0",
+   "@odata.context":"/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile",
+   "@odata.id":"/redfish/v1/Registries/Base.1.13.0",
+   "@odata.type":"#MessageRegistryFile.v1_1_3.MessageRegistryFile",
+   "Name":"Registry File Repository",
+   "Description":"Base Message Registry File Locations",
+   "Languages":[
+      "en"
+   ],
+   "Location":[
+      {
+         "Language":"en",
+         "Uri":"/redfish/v1/Registries/Base.1.13.0.json"
+      }
+   ],
+   "Registry":"Base.1.13.0"
+}
 ```
 
 

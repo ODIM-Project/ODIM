@@ -874,6 +874,8 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 	return searchForm
 }
 func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
+
+	fmt.Println("getIndivdualInfo===========================================")
 	resourceName := getResourceName(req.OID, false)
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
 	if err != nil {

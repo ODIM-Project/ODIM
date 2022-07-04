@@ -17,6 +17,7 @@ package agresponse
 import (
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
 // AggregationSourceResponse defines the response for AggregationSource
@@ -44,5 +45,5 @@ type SNMP struct {
 // AggregateResponse defines the response for aggregate
 type AggregateResponse struct {
 	response.Response
-	Elements []string `json:"Elements"`
+	Elements []agmodel.OdataID `json:"Elements"`
 }

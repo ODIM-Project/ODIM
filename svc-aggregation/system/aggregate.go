@@ -18,13 +18,14 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"reflect"
 	"runtime"
 	"strings"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -91,7 +92,7 @@ func (e *ExternalInterface) CreateAggregate(req *aggregatorproto.AggregatorReque
 		"Link":     "<" + aggregateURI + "/>; rel=describedby",
 		"Location": aggregateURI,
 	}
-	commonResponse.CreateGenericResponse(response.Created)
+
 	resp.Body = agresponse.AggregateResponse{
 		Response: commonResponse,
 		Elements: createRequest.Elements,
@@ -101,12 +102,12 @@ func (e *ExternalInterface) CreateAggregate(req *aggregatorproto.AggregatorReque
 }
 
 // check if the resource is exist in odim
-func validateElements(elements []string) (int32, error) {
+func validateElements(elements []agmodel.OdataID) (int32, error) {
 	if checkDuplicateElements(elements) {
 		return http.StatusBadRequest, errors.PackError(errors.UndefinedErrorType, fmt.Errorf("Duplicate elements present"))
 	}
 	for _, element := range elements {
-		if _, err := agmodel.GetComputerSystem(element); err != nil {
+		if _, err := agmodel.GetComputerSystem(element.OdataID); err != nil {
 			return http.StatusNotFound, err
 		}
 	}
@@ -114,15 +115,15 @@ func validateElements(elements []string) (int32, error) {
 }
 
 //check if the elements have duplicate element
-func checkDuplicateElements(elelments []string) bool {
+func checkDuplicateElements(elelments []agmodel.OdataID) bool {
 	duplicate := make(map[string]int)
 	for _, element := range elelments {
 		// check if the item/element exist in the duplicate map
-		_, exist := duplicate[element]
+		_, exist := duplicate[element.OdataID]
 		if exist {
 			return true
 		}
-		duplicate[element] = 1
+		duplicate[element.OdataID] = 1
 
 	}
 	return false
@@ -187,7 +188,6 @@ func (e *ExternalInterface) GetAggregate(req *aggregatorproto.AggregatorRequest)
 		StatusMessage: response.Success,
 	}
 
-	commonResponse.CreateGenericResponse(response.Success)
 	resp.Body = agresponse.AggregateResponse{
 		Response: commonResponse,
 		Elements: aggregate.Elements,
@@ -233,7 +233,7 @@ func (e *ExternalInterface) AddElementsToAggregate(req *aggregatorproto.Aggregat
 		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, nil)
 	}
 	//empty request check
-	if reflect.DeepEqual(agmodel.Aggregate{}, addRequest) || reflect.DeepEqual(addRequest.Elements, []string{}) {
+	if reflect.DeepEqual(agmodel.Aggregate{}, addRequest) || reflect.DeepEqual(addRequest.Elements, []agmodel.OdataID{}) {
 		errMsg := "empty request can not be processed"
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Elements"}, nil)
@@ -310,7 +310,7 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(req *aggregatorproto.Agg
 	}
 
 	//empty request check
-	if reflect.DeepEqual(agmodel.Aggregate{}, removeRequest) || reflect.DeepEqual(removeRequest.Elements, []string{}) {
+	if reflect.DeepEqual(agmodel.Aggregate{}, removeRequest) || reflect.DeepEqual(removeRequest.Elements, []agmodel.OdataID{}) {
 		errMsg := "empty request can not be processed"
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Elements"}, nil)
@@ -372,7 +372,7 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(req *aggregatorproto.Agg
 	return resp
 }
 
-func checkElementsPresent(requestElements, presentElements []string) bool {
+func checkElementsPresent(requestElements, presentElements []agmodel.OdataID) bool {
 	for _, element := range requestElements {
 		front := 0
 		rear := len(presentElements) - 1
@@ -387,7 +387,7 @@ func checkElementsPresent(requestElements, presentElements []string) bool {
 	return false
 }
 
-func checkRemovingElementsPresent(requestElements, presentElements []string) bool {
+func checkRemovingElementsPresent(requestElements, presentElements []agmodel.OdataID) bool {
 	for _, element := range requestElements {
 		var present bool
 		front := 0
@@ -500,7 +500,7 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 		// if batch size is 0 then reset all the systems without any kind of batch and ignore the DelayBetweenBatchesInSeconds
 		tempIndex = tempIndex + 1
 		if resetRequest.BatchSize == 0 || tempIndex <= resetRequest.BatchSize {
-			go e.resetSystem(taskID, string(req.RequestBody), subTaskChan, sessionUserName, element, resetRequest.ResetType, &wg)
+			go e.resetSystem(taskID, string(req.RequestBody), subTaskChan, sessionUserName, element.OdataID, resetRequest.ResetType, &wg)
 		}
 
 		if tempIndex == resetRequest.BatchSize && resetRequest.BatchSize != 0 {
@@ -717,7 +717,7 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 	partialResultFlag := false
 	subTaskChan := make(chan int32, len(aggregate.Elements))
 	for _, element := range aggregate.Elements {
-		go e.collectAndSetDefaultOrder(taskID, element, reqJSON, subTaskChan, sessionUserName)
+		go e.collectAndSetDefaultOrder(taskID, element.OdataID, reqJSON, subTaskChan, sessionUserName)
 	}
 	resp.StatusCode = http.StatusOK
 	for i := 0; i < len(aggregate.Elements); i++ {

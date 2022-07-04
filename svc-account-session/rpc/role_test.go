@@ -95,7 +95,7 @@ func TestRole_CreateRole1(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			CreateFunc:             func(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			want:                   &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -107,7 +107,7 @@ func TestRole_CreateRole1(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			CreateFunc:             func(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			want:                   &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -119,7 +119,7 @@ func TestRole_CreateRole1(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
 			CreateFunc:             func(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -133,7 +133,7 @@ func TestRole_CreateRole1(t *testing.T) {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
@@ -195,7 +195,7 @@ func TestRole_GetRole(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetRoleFunc:            func(req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			want:                   &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -207,7 +207,7 @@ func TestRole_GetRole(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetRoleFunc:            func(req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			want:                   &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -219,7 +219,7 @@ func TestRole_GetRole(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
 			GetRoleFunc:            func(req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -233,7 +233,7 @@ func TestRole_GetRole(t *testing.T) {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
@@ -296,7 +296,7 @@ func TestRole_GetAllRoles(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAllRolesFunc:        func(session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			want:                   &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -308,7 +308,7 @@ func TestRole_GetAllRoles(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAllRolesFunc:        func(session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			want:                   &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -320,7 +320,7 @@ func TestRole_GetAllRoles(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
 			GetAllRolesFunc:        func(session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -334,7 +334,7 @@ func TestRole_GetAllRoles(t *testing.T) {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
@@ -396,7 +396,7 @@ func TestRole_UpdateRole(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			UpdateFunc:             func(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			want:                   &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -408,7 +408,7 @@ func TestRole_UpdateRole(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			UpdateFunc:             func(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			want:                   &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -420,7 +420,7 @@ func TestRole_UpdateRole(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
 			UpdateFunc:             func(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -434,7 +434,7 @@ func TestRole_UpdateRole(t *testing.T) {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
@@ -498,7 +498,7 @@ func TestRole_DeleteRole(t *testing.T) {
 				return &response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{

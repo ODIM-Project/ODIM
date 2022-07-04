@@ -551,7 +551,6 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) response.RPC {
-	log.Info("\nEntering the GetSystemResource with URL------ : ", req.URL)
 	var resp response.RPC
 	// Splitting the SystemID to get UUID
 	requestData := strings.SplitN(req.RequestParam, ".", 2)
@@ -622,19 +621,8 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		}
 		respData = data
 	}
-	fmt.Println("\n---------------------------respData----------", respData)
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(respData), &resource)
-	//if
-	// if _, ok := resource["UseCase"]; !ok {
-	// 	resource["UseCase"] = "VolumeCreation"
-	// }
-
-	// if _, ok := resource["CapabilitiesObject"]; !ok {
-	// 	resource["CapabilitiesObject"] = &dmtf.Link{
-	// 		Oid: req.URL + "/Capabilities",
-	// 	}
-	// }
 
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK

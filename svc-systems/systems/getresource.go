@@ -625,12 +625,43 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(respData), &resource)
-	fmt.Println("\n resource====================", resource)
 	resp.Body = resource
+	url := req.URL
+	if strings.Contains(req.URL, "/Volumes/Capabilities") {
+		body := fillCapabilitiesResponse(resource, url)
+		json.Unmarshal([]byte(body), &resource)
+		resp.Body = body
+		fmt.Println("\n string(body)====================", body)
+
+	}
+	fmt.Println("\n resource====================", resource)
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	log.Debug("Exiting the GetSystemResource with response ", resp)
 	return resp
+}
+func fillCapabilitiesResponse(respMap map[string]interface{}, oid string) (body []byte) {
+	fmt.Println("=================fillCapabilitiesResponse===============")
+
+	if _, ok := respMap["RAIDType@Redfish.AllowableValues"]; !ok {
+		respMap["RAIDType@Redfish.AllowableValues"] = []string{"RAID0", "RAID1", "RAID3", "RAID4", "RAID5", "RAID6", "RAID10", "RAID01", "RAID6TP", "RAID1E", "RAID50", "RAID60", "RAID00", "RAID10E", "RAID1Triple", "RAID10Triple", "None"}
+	}
+
+	CapabilitiesObject := dmtf.CapabilitiesObject{
+		ODataID:        oid,
+		ODataType:      "#Volume.v1_6_2.Volume",
+		Id:             "Capabilities",
+		Name:           "Capabilities for the volume collection",
+		RAIDTypeValues: respMap["RAIDType@Redfish.AllowableValues"],
+		RAIDType:       true,
+		Links:          true,
+		LinkValues: dmtf.LinkValues{
+			Drives: true,
+		},
+	}
+
+	body, _ = json.Marshal(CapabilitiesObject)
+
 }
 
 // getDeviceLoadInfo accepts URL and System ID as parameters and returns int

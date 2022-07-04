@@ -70,7 +70,6 @@ func (e *ExternalInterface) GetLicenseCollection(req *licenseproto.GetLicenseReq
 	licenseCollectionKeysArray, err := e.DB.GetAllKeysFromTable("Licenses", persistencemgr.InMemory)
 	if err != nil || len(licenseCollectionKeysArray) == 0 {
 		log.Error("odimra doesnt have Licenses")
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), nil, nil)
 	}
 
 	for _, key := range licenseCollectionKeysArray {

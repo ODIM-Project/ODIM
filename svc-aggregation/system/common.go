@@ -963,6 +963,7 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		memberFlag = true
 	}
 	resourceName := getResourceName(req.OID, memberFlag)
+	fmt.Println("resourceName===============================:", resourceName)
 	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
 		CollectionCapabilities := dmtf.CollectionCapabilities{
 			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
@@ -982,8 +983,9 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		}
 		resourceData["@Redfish.CollectionCapabilities"] = CollectionCapabilities
 		body, _ = json.Marshal(resourceData)
-	}
-	if strings.Contains(oidKey, "/Volumes/Capabilities") {
+
+		//}
+		//if strings.Contains(oidKey, "/Volumes/Capabilities") {
 		body = fillCapabilitiesResponse(resourceData, req.OID)
 	}
 
@@ -1043,6 +1045,8 @@ func fillCapabilitiesResponse(resourceData map[string]interface{}, oid string) (
 	collectionCapabilitiesObject["Links"] = dmtf.LinkValues{
 		Drives: true,
 	}
+	//	resourceData["CapabilitiesObject"] = CapabilitiesObject
+
 	body, _ = json.Marshal(collectionCapabilitiesObject)
 	return
 }

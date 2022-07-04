@@ -652,7 +652,7 @@ func fillCapabilitiesResponse(respMap map[string]interface{}, oid string) (body 
 		ODataType:      "#Volume.v1_6_2.Volume",
 		Id:             "Capabilities",
 		Name:           "Capabilities for the volume collection",
-		RAIDTypeValues: respMap["RAIDType@Redfish.AllowableValues"],
+		RAIDTypeValues: respMap["RAIDType@Redfish.AllowableValues"].(string),
 		RAIDType:       true,
 		Links:          true,
 		LinkValues: dmtf.LinkValues{

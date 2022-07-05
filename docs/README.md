@@ -88,6 +88,7 @@
     + [Single drive](#single-drive)
   * [Volumes](#volumes)
     + [Collection of volumes](#collection-of-volumes)
+    + [Viewing volume collection capabilities](#viewing-volume-collection-capabilities)
     + [Single volume](#single-volume)
     + [Creating a volume](#creating-a-volume)
     + [Deleting a volume](#deleting-a-volume)
@@ -524,6 +525,7 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/{driveId}|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes|`GET` , `POST`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}|`GET`, `DELETE`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/Capabilities|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools/{storagepool_Id}|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes|`GET`|
@@ -3367,7 +3369,6 @@ To discover crucial configuration information about a resource, including chassi
 
 |API URI|Supported operations|Required privileges|
 |-------|--------------------|-------------------|
-
 |/redfish/v1/Systems|`GET`|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}|`GET`, `PATCH`|`Login`, `ConfigureComponents` |
 |/redfish/v1/Systems/{ComputerSystemId}/Memory|`GET`|`Login` |
@@ -3390,6 +3391,7 @@ To discover crucial configuration information about a resource, including chassi
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/{driveId}|`GET`|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes|`GET`, `POST`|`Login`, `ConfigureComponents` |
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}|`GET`, `DELETE`|`Login`, `ConfigureComponents` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/Capabilities|`GET`|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Processors|`GET`|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}/Processors/{id}|`GET`|`Login` |
 |/redfish/v1/Systems?$filter={searchKeys}%20{conditionKeys}%20{value}|`GET`|`Login` |
@@ -3407,7 +3409,6 @@ To discover crucial configuration information about a resource, including chassi
 
 |API URI|Supported operations|Required privileges|
 |-------|--------------------|-------------------|
-
 |/redfish/v1/Managers|`GET`|`Login` |
 |/redfish/v1/Managers/{managerId}|`GET`|`Login` |
 |/redfish/v1/Managers/{managerId}/EthernetInterfaces|`GET`|`Login` |
@@ -4630,6 +4631,23 @@ curl -i GET \
 
 ```
 {
+    "@Redfish.CollectionCapabilities": {
+        "@odata.type": "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
+        "Capabilities": [
+            {
+                "CapabilitiesObject": {
+                    "@odata.id": "/redfish/v1/Systems/64992250-2a1a-41c6-82c6-b046140d615d.1/Storage/ArrayControllers-0/Volumes/Capabilities"
+                },
+                "Links": {
+                    "TargetCollection": {
+                        "@odata.id": "/redfish/v1/Systems/64992250-2a1a-41c6-82c6-b046140d615d.1/Storage/ArrayControllers-0/Volumes"
+                    }
+                },
+                "UseCase": "VolumeCreation"
+            }
+        ]
+    },
+{
       "@odata.context":"/redfish/v1/$metadata#VolumeCollection.VolumeCollection",
       "@odata.etag":"W/\"AA6D42B0\"",
       "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407.1/Storage/ArrayControllers-0/Volumes",
@@ -4644,6 +4662,82 @@ curl -i GET \
       "Name":"Volume Collection"   
 }
 ```
+
+### Viewing volume collection capabilities
+
+
+|                                 |                                                              |
+| ------------------------------- | ------------------------------------------------------------ |
+| <strong>Method</strong>         | `GET`                                                        |
+| <strong>URI</strong>            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/Capabilities` |
+| <strong>Description</strong>    | This operation displays all allowed property values you can use while creating a volume. |
+| <strong>Response code</strong>  | On success, `200 OK`                                         |
+| <strong>Authentication</strong> | Yes                                                          |
+
+>**curl command**
+
+```
+curl -i -X GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json" \
+ 'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/Capabilities'
+
+```
+
+>**Sample response body** 
+
+```
+{
+    "@odata.id": "/redfish/v1/Systems/1/Storage/DE00C000/Volumes/Capabilities",
+    "@odata.type": "#Volume.v1_6_2.Volume",
+    "Id": "Capabilities",
+    "Name": "Capabilities for the volume collection",
+    "RAIDType@Redfish.RequiredOnCreate": true,
+    "RAIDType@Redfish.AllowableValues": [
+        "RAID0",
+        "RAID1",
+        "RAID10",
+        "RAID5",
+        "RAID50",
+        "RAID6",
+        "RAID60",
+        "RAID1Triple",
+        "RAID10Triple"
+    ],
+    "CapacityBytes@Redfish.OptionalOnCreate": true,
+    "StripSizeBytes@Redfish.OptionalOnCreate": true,
+    "IOPerfModeEnabled@Redfish.OptionalOnCreate": true,
+    "MediaSpanCount@Redfish.OptionalOnCreate": true,
+    "DisplayName@Redfish.OptionalOnCreate": true,
+    "ReadCachePolicy@Redfish.OptionalOnCreate": true,
+    "ReadCachePolicy@Redfish.AllowableValues": [
+        "Off",
+        "ReadAhead"
+    ],
+    "WriteCachePolicy@Redfish.OptionalOnCreate": true,
+    "WriteCachePolicy@Redfish.AllowableValues": [
+        "Off",
+        "UnprotectedWriteBack"
+    ],
+    "VolumeUsage@Redfish.OptionalOnCreate": true,
+    "VolumeUsage@Redfish.AllowableValues": [
+        "Data"
+    ],
+    "InitializeMethod@Redfish.OptionalOnCreate": true,
+    "InitializeMethod@Redfish.AllowableValues": [
+        "Background",
+        "Foreground"
+    ],
+    "Links@Redfish.RequiredOnCreate": true,
+    "Links": {
+        "Drives@Redfish.RequiredOnCreate": true,
+        "DedicatedSpareDrives@Redfish.OptionalOnCreate": true
+    },
+    "@odata.etag": "\"4C159FB2\""
+}
+```
+
+
 
 ### Single volume
 
@@ -4820,6 +4914,9 @@ curl -i -X DELETE \
 |Parameter|Type|Description|
 |---------|----|-----------|
 |@Redfish.OperationApplyTime|Redfish annotation (optional)<br> | It enables you to control when the operation is carried out.<br> Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume is deleted only after you successfully reset the system.<br> `Immediate` indicates that the volume is deleted immediately after the operation is successfully complete. |
+
+
+
 
 
 ##  SecureBoot

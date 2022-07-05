@@ -36,6 +36,7 @@ type SubscriptionResponse struct {
 	OriginResources         []ListMember `json:"OriginResources,omitempty"`
 	ExcludeMessageIds       []string     `json:"ExcludeMessageIds,omitempty"`
 	ExcludeRegistryPrefixes []string     `json:"ExcludeRegistryPrefixes,omitempty"`
+	DeliveryRetryPolicy     string       `json:"DeliveryRetryPolicy,omitempty"`
 }
 
 // ListResponse define list for odimra

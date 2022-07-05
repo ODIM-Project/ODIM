@@ -4782,7 +4782,7 @@ curl -i -X POST \
 }
 ```
 
-> **NOTE**: Reset your system if prompted in your response message. After the system reset, the new volume is available.
+> **NOTE**: Reset your system only if prompted in your response message id. After the system reset, the new volume is available. For a success message id, system reset is not required.
 
 ### Deleting a volume
 

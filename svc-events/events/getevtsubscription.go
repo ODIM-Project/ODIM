@@ -83,15 +83,16 @@ func (e *ExternalInterfaces) GetEventSubscriptionsDetails(req *eventsproto.Event
 		}
 
 		subscriptions = &evresponse.SubscriptionResponse{
-			Response:         commonResponse,
-			Destination:      evtSubscription.Destination,
-			Protocol:         evtSubscription.Protocol,
-			Context:          evtSubscription.Context,
-			EventTypes:       evtSubscription.EventTypes,
-			SubscriptionType: evtSubscription.SubscriptionType,
-			MessageIds:       evtSubscription.MessageIds,
-			ResourceTypes:    evtSubscription.ResourceTypes,
-			OriginResources:  updateOriginResourceswithOdataID(evtSubscription.OriginResources),
+			Response:            commonResponse,
+			Destination:         evtSubscription.Destination,
+			Protocol:            evtSubscription.Protocol,
+			Context:             evtSubscription.Context,
+			EventTypes:          evtSubscription.EventTypes,
+			SubscriptionType:    evtSubscription.SubscriptionType,
+			MessageIds:          evtSubscription.MessageIds,
+			ResourceTypes:       evtSubscription.ResourceTypes,
+			OriginResources:     updateOriginResourceswithOdataID(evtSubscription.OriginResources),
+			DeliveryRetryPolicy: evtSubscription.DeliveryRetryPolicy,
 		}
 	}
 	resp.Body = subscriptions

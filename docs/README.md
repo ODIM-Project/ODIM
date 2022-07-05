@@ -10503,8 +10503,11 @@ curl -i -X DELETE \
 
 ## Undelivered events
 
-After subscribing to Resource Aggregator for ODIM events, you receive them regularly on your system. In instances where your system is unavailable to listen to the events for a certain period, the events are saved in the product database as undelivered events. Resource Aggregator for ODIM tries to repost these events three times for the next 60 seconds. 
-Eventually, when your system becomes available for the new events to be published, these undelivered events are published on your system one after the other and are deleted from the database.
+In instances where your subscribed destination is unavailable to listen to the events for a certain period, the events are saved in the product database as undelivered events. By default, Resource Aggregator for ODIM tries to repost the undelivered events three times in the interval of every 60 seconds. 
+
+Eventually, when the destination becomes available for the new events to be published, the undelivered events are published to the destination and are deleted from the database.
+
+You can configure the number of reposting instances and the required time interval by editing the values for `DeliveryRetryAttempts` and `DeliveryRetryIntervalSeconds` properties.
 
 
 

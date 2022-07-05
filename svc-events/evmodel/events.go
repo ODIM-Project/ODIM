@@ -51,6 +51,8 @@ const (
 
 	// ReadInProgres holds table for ReadInProgres
 	ReadInProgres = "ReadInProgres"
+	// DeliveryRetryPolicy is set to default value incase if its empty
+	DeliveryRetryPolicy = "RetryForever"
 )
 
 // OdataIDLink containes link to a resource
@@ -71,6 +73,7 @@ type RequestBody struct {
 	EventFormatType      string        `json:"EventFormatType"`
 	SubordinateResources bool          `json:"SubordinateResources"`
 	OriginResources      []OdataIDLink `json:"OriginResources"`
+	DeliveryRetryPolicy  string        `json:"DeliveryRetryPolicy"`
 }
 
 //Subscription is a model to store the subscription details
@@ -98,6 +101,7 @@ type Subscription struct {
 	EventHostIP             string   `json:"EventHostIP,omitempty"`
 	ExcludeMessageIds       []string `json:"ExcludeMessageIds,omitempty"`
 	ExcludeRegistryPrefixes []string `json:"ExcludeRegistryPrefixes,omitempty"`
+	DeliveryRetryPolicy     string   `json:"DeliveryRetryPolicy"`
 }
 
 //DeviceSubscription is a model to store the subscription details of a device
@@ -117,6 +121,7 @@ type EvtSubPost struct {
 	HTTPHeaders          []HTTPHeaders `json:"HttpHeaders"`
 	Context              string        `json:"Context"`
 	OriginResources      []OdataIDLink `json:"OriginResources"`
+	DeliveryRetryPolicy  string        `json:"DeliveryRetryPolicy,omitempty"`
 }
 
 //HTTPHeaders required for the suscribing for events

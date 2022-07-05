@@ -181,6 +181,7 @@
   * [Viewing a collection of event subscriptions](#viewing-a-collection-of-event-subscriptions)
   * [Viewing information about a specific event subscription](#viewing-information-about-a-specific-event-subscription)
   * [Deleting an event subscription](#deleting-an-event-subscription)
+  * [Undelivered events](#undelivered-events)
 - [Message registries](#message-registries)
   * [Viewing a collection of registries](#viewing-a-collection-of-registries)
   * [Viewing a single registry](#viewing-a-single-registry)
@@ -10152,8 +10153,6 @@ curl -i POST \
 ```
 
 
-
-
 > Sample event payload 
 
 ```
@@ -10501,6 +10500,14 @@ curl -i -X DELETE \
    "Severity":"OK"
 }
 ```
+
+## Undelivered events
+
+In instances where your subscribed destination is unavailable to listen to the events for a certain period, the events are saved in the product database as undelivered events. By default, Resource Aggregator for ODIM tries to repost the undelivered events three times in the interval of every 60 seconds. 
+
+Eventually, when the destination becomes available for the new events to be published, the undelivered events are published to the destination and are deleted from the database.
+
+You can configure the number of reposting instances and the required time interval by editing the values for `DeliveryRetryAttempts` and `DeliveryRetryIntervalSeconds` properties.
 
 
 

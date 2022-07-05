@@ -4764,7 +4764,7 @@ curl -i -X POST \
 |RAIDType|String (required)<br> |The RAID type of the volume you want to create.|
 |Drives[{|Array (required)<br> |An array of links to drive resources to contain the new volume.|
 |@odata.id }]<br> |String|A link to a drive resource.|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation (optional)<br> | It enables you to control when the operation is carried out.<br> Supported values: `OnReset` and `Immediate`.<br> `OnReset` indicates that the new volume is available only after you successfully reset the system. To know how to reset a system, see [Resetting a computer system](#resetting-a-computer-system).<br>`Immediate` indicates that the created volume is available in the system immediately after the operation is successfully complete. |
+|@Redfish.OperationApplyTime|Redfish annotation (optional)<br> | It enables you to control when the operation is carried out.<br> Supported values: `OnReset` and `Immediate`.<br> `OnReset` indicates that the new volume is available only after you successfully reset the system. To know how to reset a system, see [Resetting a computer system](#resetting-a-computer-system).<br>`Immediate` indicates that the created volume is available in the system immediately after the operation is successfully complete. |
 
 >**Sample response body** 
 
@@ -4773,7 +4773,7 @@ curl -i -X POST \
       "error":{
             "@Message.ExtendedInfo":[
                   {
-                        "MessageId":"iLO.2.13.SystemResetRequired"            
+                        "MessageId": "Base.1.4.Success"            
          }         
       ],
             "code":"iLO.0.10.ExtendedInfo",
@@ -4781,6 +4781,8 @@ curl -i -X POST \
    }   
 }
 ```
+
+> **NOTE**: Reset your system if prompted in your response message. After the system reset, the new volume is available.
 
 ### Deleting a volume
 
@@ -4817,7 +4819,7 @@ curl -i -X DELETE \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation (optional)<br> | It enables you to control when the operation is carried out.<br> Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume is deleted only after you successfully reset the system.<br> `Immediate` indicates that the volume is deleted immediately after the operation is successfully complete. |
+|@Redfish.OperationApplyTime|Redfish annotation (optional)<br> | It enables you to control when the operation is carried out.<br> Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume is deleted only after you successfully reset the system.<br> `Immediate` indicates that the volume is deleted immediately after the operation is successfully complete. |
 
 
 ##  SecureBoot

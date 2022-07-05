@@ -68,7 +68,11 @@ func (e *ExternalInterface) GetLicenseCollection(req *licenseproto.GetLicenseReq
 	var members []*dmtf.Link
 
 	licenseCollectionKeysArray, err := e.DB.GetAllKeysFromTable("Licenses", persistencemgr.InMemory)
-	if err != nil || len(licenseCollectionKeysArray) == 0 {
+	if err != nil {
+		log.Error("error while getting license collection details from db")
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+	}
+	if len(licenseCollectionKeysArray) == 0 {
 		log.Error("odimra doesnt have Licenses")
 	}
 

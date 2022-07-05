@@ -29,11 +29,8 @@
   * [Deleting a session](#deleting-a-session)
 - [User roles and privileges](#user-roles-and-privileges)
   * [Viewing the AccountService root](#viewing-the-accountservice-root)
-  * [Creating a role](#creating-a-role)
   * [Viewing a list of roles](#viewing-a-list-of-roles)
   * [Viewing information about a role](#viewing-information-about-a-role)
-  * [Updating a role](#updating-a-role)
-  * [Deleting a role](#deleting-a-role)
 - [User accounts](#user-accounts)
   * [Creating a user account](#creating-a-user-account)
     + [Password requirements](#password-requirements)
@@ -56,14 +53,14 @@
   * [Changing the boot order of servers to default settings](#changing-the-boot-order-of-servers-to-default-settings)
   * [Deleting a resource from the inventory](#deleting-a-resource-from-the-inventory)
   * [Aggregates](#aggregates)
-  * [Creating an aggregate](#creating-an-aggregate)
-  * [Viewing a list of aggregates](#viewing-a-list-of-aggregates)
-  * [Viewing information about a single aggregate](#viewing-information-about-a-single-aggregate)
-  * [Deleting an aggregate](#deleting-an-aggregate)
-  * [Adding elements to an aggregate](#adding-elements-to-an-aggregate)
-  * [Resetting an aggregate of computer systems](#resetting-an-aggregate-of-computer-systems)
-  * [Setting boot order of an aggregate to default settings](#setting-boot-order-of-an-aggregate-to-default-settings)
-  * [Removing elements from an aggregate](#removing-elements-from-an-aggregate)
+    * [Creating an aggregate](#creating-an-aggregate)
+    * [Viewing a list of aggregates](#viewing-a-list-of-aggregates)
+    * [Viewing information about a single aggregate](#viewing-information-about-a-single-aggregate)
+    * [Deleting an aggregate](#deleting-an-aggregate)
+    * [Adding elements to an aggregate](#adding-elements-to-an-aggregate)
+    * [Resetting an aggregate of computer systems](#resetting-an-aggregate-of-computer-systems)
+    * [Setting boot order of an aggregate to default settings](#setting-boot-order-of-an-aggregate-to-default-settings)
+    * [Removing elements from an aggregate](#removing-elements-from-an-aggregate)
 - [Resource inventory](#resource-inventory)
   * [Collection of computer systems](#collection-of-computer-systems)
   * [Single computer system](#single-computer-system)
@@ -545,7 +542,7 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/Chassis/{chassisId}/Thermal|`GET`|
 |/redfish/v1/Chassis/{chassisId}/Power|`GET`|
 |/redfish/v1/Chassis/{chassisId}/NetworkAdapters|`GET`|
-|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|GET|
+|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|`GET`|
 
 |Managers||
 |-------|--------------------|
@@ -1165,8 +1162,8 @@ Resource Aggregator for ODIM allows you to view, create, and manage user roles t
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
 |/redfish/v1/AccountService|`GET`|`Login` |
-|/redfish/v1/AccountService/Roles|`GET`, `POST`|`Login`, `ConfigureManager` |
-|/redfish/v1/AccountService/Roles/{roleId}|`GET`, `PATCH`, `DELETE`|`Login`, `ConfigureManager` |
+|/redfish/v1/AccountService/Roles|`GET`|`Login` |
+|/redfish/v1/AccountService/Roles/{roleId}|`GET`|`Login` |
 
 
 ## Viewing the AccountService root
@@ -1201,7 +1198,7 @@ Date:Fri,15 May 2020 14:32:09 GMT+5m 12s
 
 ```
 {
-   "@odata.type":"#AccountService.v1_10_0.AccountService",
+   "@odata.type":"#AccountService.v1_11_0.AccountService",
    "@odata.id":"/redfish/v1/AccountService",
    "@odata.context":"/redfish/v1/$metadata#AccountService.AccountService",
    "Id":"AccountService",
@@ -1211,91 +1208,13 @@ Date:Fri,15 May 2020 14:32:09 GMT+5m 12s
       "Health":"OK"
    },
    "ServiceEnabled":true,
-   "AuthFailureLoggingThreshold":0,
    "MinPasswordLength":12,
-   "AccountLockoutThreshold":0,
-   "AccountLockoutDuration":0,
-   "AccountLockoutCounterResetAfter":0,
    "Accounts":{
       "@odata.id":"/redfish/v1/AccountService/Accounts"
    },
    "Roles":{
       "@odata.id":"/redfish/v1/AccountService/Roles"
    }
-}
-```
-
-## Creating a role
-
-|||
-|---------|---------------|
-|**Method** | `POST` |
-|**URI** |`/redfish/v1/AccountService/Roles` |
-|**Description** |This operation creates a role other than Redfish predefined roles.|
-|**Returns** |JSON schema representing the new role|
-|**Response code** |`201 Created` |
-|**Authentication** |Yes|
-
->**curl command**
-
-```
-curl -i POST \
-   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
-   -H "Content-Type:application/json" \
-   -d \
-'{ 
-   "RoleId":"CLIENT11",
-   "AssignedPrivileges":[ 
-      "Login",
-      "ConfigureUsers",
-      "ConfigureSelf"
-   ],
-   "OemPrivileges":null 
-}' \
- 'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles'
-```
-
->**Sample request body**
-
-```
-{ 
-   "RoleId":"CLIENT11",
-   "AssignedPrivileges":[ 
-      "Login",
-      "ConfigureUsers",
-      "ConfigureSelf"
-   ],
-   "OemPrivileges":null
-}
-```
-
-> **Request parameters**
-
-|Parameter|Type|Description|
-|---------|----|-----------|
-
-|RoleId|String (required, read-only)<br> |Name for this role. <br>**NOTE:** RoleId cannot be modified once created.|
-|AssignedPrivileges|Array (string (enum)) (required)<br> |The Redfish privileges this role includes. Possible values are:<br>  `ConfigureManager` <br>   `ConfigureSelf` <br>   `ConfigureUsers` <br>   `Login` <br>   `ConfigureComponents` <br>|
-|OemPrivileges|Array (string) (required)<br> |The OEM privileges for this role. If you do not want to specify any OEM privileges, use `null` or `[]` as the value.|
-
->**Sample response body**
-
-```
-{
-   "@odata.type":"#Role.v1_3_1.Role",
-   "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
-   "Id":"CLIENT11",
-   "Name":"User Role",
-   "Message":"The resource has been created successfully.",
-   "MessageId":"ResourceEvent.1.0.2.ResourceCreated",
-   "Severity":"OK",
-   "IsPredefined":false,
-   "AssignedPrivileges":[
-      "Login",
-      "ConfigureUsers",
-      "ConfigureSelf"
-   ],
-   "OemPrivileges":null
 }
 ```
 
@@ -1327,7 +1246,7 @@ curl -i GET \
    "@odata.type":"#RoleCollection.RoleCollection",
    "@odata.id":"/redfish/v1/AccountService/Roles",
    "Name":"Roles Collection",
-   "Members@odata.count":5,
+   "Members@odata.count":3,
    "Members":[ 
       { 
          "@odata.id":"/redfish/v1/AccountService/Roles/Administrator"
@@ -1337,14 +1256,7 @@ curl -i GET \
       },
       { 
          "@odata.id":"/redfish/v1/AccountService/Roles/ReadOnly"
-      },
-      { 
-         "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT13"
-      },
-      { 
-         "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11"
-      }
-      
+      },      
    ]
 }
 ```
@@ -1375,91 +1287,15 @@ curl -i GET \
 ```
 {
    "@odata.type":"#Role.v1_3_1.Role",
-   "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
-   "Id":"CLIENT11",
+   "@odata.id":"/redfish/v1/AccountService/Roles/ReadOnly",
+   "Id":"ReadOnly",
    "Name":"User Role",
-   "IsPredefined":false,
+   "IsPredefined":true,
    "AssignedPrivileges":[
-      "Login",
-      "ConfigureUsers",
-      "ConfigureSelf"
-   ],
-   "OemPrivileges":null
+      "ConfigureSelf",
+      "Login"
+   ]
 }
-```
-
-## Updating a role
-
-|||
-|---------|---------------|
-|**Method** | `PATCH` |
-|**URI** |`/redfish/v1/AccountService/Roles/{RoleId}` |
-|**Description** |This operation updates privileges of a specific user role - assigned privileges \(Redfish predefined\) and OEM privileges. RoleId cannot be updated.|
-|**Returns** |JSON schema representing the updated role and privileges|
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|
-
->**curl command**
-
-```
- curl -i -X PATCH \
-   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
-   -H "Content-Type:application/json" \
-   -d \
-'{
-  "AssignedPrivileges": [{Set_Of_Privileges_to_update}],
-  "OemPrivileges": []
-}' \
- 'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles/{RoleId}'
-
-```
-
-
->**Sample request body**
-
-```
-{ 
-   "AssignedPrivileges":[ 
-      "Login",
-      "ConfigureManager",
-      "ConfigureUsers"
-   ],
-   "OemPrivileges": []
-}
-```
-
->**Sample response body**
-
-```
-{
-   "RoleId":"CLIENT11",
-   "IsPredefined":false,
-   "AssignedPrivileges":[
-      "Login",
-      "ConfigureManager",
-      "ConfigureUsers"
-   ],
-   "OemPrivileges":null
-}
-```
-
-
-## Deleting a role
-
-|||
-|---------|---------------|
-|**Method** | `DELETE` |
-|**URI** |`/redfish/v1/AccountService/Roles/{RoleId}` |
-|**Description** |This operation deletes a specific user role. If you attempt to delete a role that is already assigned to a user account, an HTTP `403 Forbidden` error is displayed.|
-|**Response Code** |`204 No Content` |
-|**Authentication** |Yes|
-
->**curl command**
-
-```
-curl -i -X DELETE \
-   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
- 'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles/{RoleId}'
 ```
 
 
@@ -1543,23 +1379,23 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
-   "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
+   "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
+   "@odata.id":"/redfish/v1/AccountService/Accounts/{accountId}",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-   "Id":"monitor32",
+   "Id":"{accountId}",
    "Name":"Account Service",
    "Message":"The resource has been created successfully",
-   "MessageId":"Base.1.11.0.Created",
+   "MessageId":"Base.1.13.0.Created",
    "Severity":"OK",
-   "UserName":"monitor32",
-   "RoleId":"CLIENT11",
+   "UserName":"{Username}",
+   "RoleId":"ReadOnly",
    "AccountTypes":[
       "Redfish"
    ],
    "Password":null,
    "Links":{
       "Role":{
-         "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11/"
+         "@odata.id":"/redfish/v1/AccountService/Roles/ReadOnly"
       }
    }
 }
@@ -1571,7 +1407,7 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 |---------|---------------|
 |**Method** | `GET` |
 |**URI** |`/redfish/v1/AccountService/Accounts` |
-|**Description** |This operation retrieves a list of user accounts. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can view a list of user accounts.|
+|**Description** |This operation retrieves a list of user accounts.|
 |**Returns** |Links to user accounts.|
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|
@@ -1584,12 +1420,27 @@ curl -i GET \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts'
 ```
 
+>**Sample response body**
+
+```
+{
+   "@odata.type":"#ManagerAccountCollection.ManagerAccountCollection",
+   "@odata.id":"/redfish/v1/AccountService/Accounts",
+   "@odata.context":"/redfish/v1/$metadata#ManagerAccountCollection.ManagerAccountCollection",
+   "Name":"Account Service",
+   "Members@odata.count":1,
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/AccountService/Accounts/admin"
+      }
+   ]
+}
+```
 
 
 
 
-
-##  Viewing the user account details
+##  Viewing information about an account
 
 |||
 |---------|---------------|
@@ -1614,20 +1465,20 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
-   "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
+   "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
+   "@odata.id":"/redfish/v1/AccountService/Accounts/{accountId}",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-   "Id":"monitor32",
+   "Id":"{accountId}",
    "Name":"Account Service",
-   "UserName":"monitor32",
-   "RoleId":"CLIENT11",
+   "UserName":"{Username}",
+   "RoleId":"ReadOnly",
    "AccountTypes":[
       "Redfish"
    ],
    "Password":null,
    "Links":{
       "Role":{
-         "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11/"
+         "@odata.id":"/redfish/v1/AccountService/Roles/ReadOnly"
       }
    }
 }
@@ -1683,23 +1534,23 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
-   "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
+   "@odata.type":"#ManagerAccount.v1_9_0.ManagerAccount",
+   "@odata.id":"/redfish/v1/AccountService/Accounts/{accountId}",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-   "Id":"monitor32",
+   "Id":"{accountId}",
    "Name":"Account Service",
    "Message":"The account was successfully modified.",
-   "MessageId":"Base.1.11.0.AccountModified",
+   "MessageId":"Base.1.13.0.AccountModified",
    "Severity":"OK",
-   "UserName":"monitor32",
-   "RoleId":"{roleId}",
+   "UserName":"{Username}",
+   "RoleId":"ReadOnly",
    "AccountTypes":[
       "Redfish"
    ],
    "Password":null,
    "Links":{
       "Role":{
-         "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11/"
+         "@odata.id":"/redfish/v1/AccountService/Roles/ReadOnly"
       }
    }
 }
@@ -1711,7 +1562,7 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 |---------|---------------|
 |**Method** | `DELETE` |
 |**URI** |`/redfish/v1/AccountService/Accounts/{accountId}` |
-|**Description** |This operation deletes a user account. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can delete a user account.|
+|**Description** |This operation deletes a user account.|
 |**Response Code** |`204 No Content` |
 |**Authentication** |Yes|
 
@@ -1741,12 +1592,10 @@ The resource aggregator allows you to add southbound infrastructure to its datab
 
 All aggregation actions are performed as *[tasks](#tasks)* in Resource Aggregator for ODIM. The actions performed on a group of resources (resetting or changing the boot order to default settings) are carried out as a set of subtasks.
 
-
 **Supported endpoints**
 
 |API URI|Supported operations|Required privileges|
 |-------|--------------------|-------------------|
-
 |/redfish/v1/AggregationService|`GET`|`Login` |
 | /redfish/v1/AggregationService/AggregationSources<br> |`GET`, `POST`|`Login`, `ConfigureManager` |
 |/redfish/v1/AggregationService/AggregationSources/{aggregationSourceId}|`GET`, `PATCH`, `DELETE`|`Login`, `ConfigureManager` |
@@ -1843,38 +1692,34 @@ The `ConnectionMethod` schema describes these connection methods for the Redfish
 |**Response Code** |On success, `200 Ok` |
 |**Authentication** |Yes|
 
-
-
 >**curl command** 
 
 ```
 curl -i GET \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/ConnectionMethods'
-
-
 ```
 
 >**Sample response body**
 
 ```
 {
-   ​   "@odata.type":"#ConnectionMethodCollection.ConnectionMethodCollection",
-   ​   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods",
-   ​   "@odata.context":"/redfish/v1/$metadata#ConnectionMethodCollection.ConnectionMethodCollection",
-   ​   "Name":"Connection Methods",
-   ​   "Members@odata.count":3,
-   ​   "Members":[
-      ​      {
-         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/c27575d2-052d-4ce9-8be1-978cab002a0f"         ​
+   "@odata.type":"#ConnectionMethodCollection.ConnectionMethodCollection",
+   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods",
+   "@odata.context":"/redfish/v1/$metadata#ConnectionMethodCollection.ConnectionMethodCollection",
+   "Name":"Connection Methods",
+   "Members@odata.count":3,
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/18312728-d687-4cd3-b7e6-27a1cbd3b2e3"
       },
-      ​      {
-         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/aa166b6b-a367-40ba-ac2e-402f9a0c818f"         ​
+      {
+         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/a1b31c57-dcaa-4d7c-b405-9244a24b502c"
       },
-      ​      {
-         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/7cb9fc3b-8b75-45da-8aad-5ff595968b71"         ​
-      }      ​
-   ]   ​
+      {
+         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/3077f07c-6496-4503-a3c2-b02108a54000"
+      }
+   ]
 }
 ```
 
@@ -1895,32 +1740,30 @@ curl -i GET \
 curl -i GET \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/ConnectionMethods/{connectionmethodsId}'
-
-
 ```
 
 >**Sample response body**
 
 ```
 {
-   ​   "@odata.type":"#ConnectionMethod.v1_0_0.ConnectionMethod",
-   ​   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/c27575d2-052d-4ce9-8be1-978cab002a0f",
-   ​   "@odata.context":"/redfish/v1/$metadata#ConnectionMethod.v1_0_0.ConnectionMethod",
-   ​   "Id":"c27575d2-052d-4ce9-8be1-978cab002a0f",
-   ​   "Name":"Connection Method",
-   ​   "ConnectionMethodType":"Redfish",
-   ​   "ConnectionMethodVariant":"Compute:BasicAuth:GRF_v1.0.0",
-   ​   "Links":{
-      ​      "AggregationSources":[
+      "@odata.type":"#ConnectionMethod.v1_0_0.ConnectionMethod",
+      "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/c27575d2-052d-4ce9-8be1-978cab002a0f",
+      "@odata.context":"/redfish/v1/$metadata#ConnectionMethod.v1_0_0.ConnectionMethod",
+      "Id":"c27575d2-052d-4ce9-8be1-978cab002a0f",
+      "Name":"Connection Method",
+      "ConnectionMethodType":"Redfish",
+      "ConnectionMethodVariant":"Compute:BasicAuth:GRF_v1.0.0",
+      "Links":{
+            "AggregationSources":[
          {
             "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c"
          },
          {
             "@odata.id":"/redfish/v1/AggregationService/AggregationSources/3536bb46-a023-4e3a-ac1a-7528cc18b660"
          }
-      ]      ​
-   }   ​
-}​
+      ]      
+   }   
+}
 ```
 
 >**Connection method properties**
@@ -1951,16 +1794,16 @@ A connection method variant provides details about a plugin and is displayed in 
 
 It consists of the following parameters:
 
-- **PluginType:**
+- **PluginType**
    The string that represents the type of the plugin.<br>Possible values: Compute, Storage, and Fabric. 
 - **PreferredAuthType:**   
    Preferred authentication method to connect to the plugin - BasicAuth or XAuthToken.  
 - **PluginID_Firmwareversion:**
-   The id of the plugin along with the version of the firmware. To know the plugin ids for all the supported plugins, see *Mapping of plugins and plugin Ids* table.<br>
-   Supported values: `GRF_v1.0.0` and `URP_v1.0.0`<br>  
+   The id of the plugin along with the version of the firmware. To know the plugin ids for the supported plugins, see *Mapping of plugins and plugin Ids* table.<br>
+   Supported values: `GRF_v1.0.0` and `URP_v1.0.0`<br>
 
+**Examples**:
 
-Examples:
 1. `Compute:BasicAuth:GRF_v1.0.0`
 2. `Compute:BasicAuth:URP_v1.0.0`
 
@@ -2096,7 +1939,7 @@ location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-af
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_2_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"be626e78-7a8a-4b99-afd2-b8ed45ef3d5a",
@@ -2110,8 +1953,6 @@ location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-af
    }
 } 
 ```
-
-
 
 ## Adding a server as an aggregation source
 
@@ -2190,7 +2031,6 @@ location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-af
    
 9. Import `BMC.crt` in the BMC server.
 
-   
 
 | | |
 |-------------|---------------------|
@@ -2319,7 +2159,7 @@ location:/redfish/v1/AggregationService/AggregationSources/0102a4b5-03db-40be-ad
 >**Sample response body (HTTP 201 status)**
 ```
  {
-   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_2_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/26562c7b-060b-4fd8-977e-94b1a535f3fb",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"26562c7b-060b-4fd8-977e-94b1a535f3fb",
@@ -2338,7 +2178,7 @@ location:/redfish/v1/AggregationService/AggregationSources/0102a4b5-03db-40be-ad
 
 ```
  {
-   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_2_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/26562c7b-060b-4fd8-977e-94b1a535f3fb",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"26562c7b-060b-4fd8-977e-94b1a535f3fb",
@@ -2370,8 +2210,6 @@ location:/redfish/v1/AggregationService/AggregationSources/0102a4b5-03db-40be-ad
 curl -i GET \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources'
-
-
 ```
 
 >**Sample response body**
@@ -2411,15 +2249,13 @@ curl -i GET \
 curl -i GET \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources/{AggregationSourceId}'
-
-
 ```
 
 >**Sample response body**
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_2_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c",
@@ -2479,7 +2315,7 @@ curl -i PATCH \
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_2_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c.1",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c.1",
@@ -2845,7 +2681,7 @@ The resource aggregator allows you to perform the following tasks:
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Aggregates` |
 |<strong>Description</strong> |This operation creates an empty aggregate or an aggregate populated with resources.|
-|<strong>Returns</strong> | The `Location` URI of the created aggregate having the aggregate Id. See the `Location` URI in "Sample response header".<br>-   Link to the new aggregate, its Id, and a message saying that the resource has been created successfully in the JSON response body.<br> |
+|<strong>Returns</strong> | The `Location` URI of the created aggregate having the aggregate Id. See the `Location` URI in "Sample response header".<br>-   Link to the new aggregate, its Id, and a message saying that the resource has been created successfully in the JSON response body. |
 |<strong>Response Code</strong> |On success, `201 Created` |
 |<strong>Authentication</strong> |Yes|
 
@@ -2871,7 +2707,8 @@ curl -i POST \
 ```
 {
       "Elements":[
-            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1"      
+            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
+            "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1.1"
    ]   
 }
 ```
@@ -2900,7 +2737,7 @@ Date:Fri,21 August 2020 14:08:55 GMT+5m 11s
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "Name":"Aggregate",
       "Message":"The resource has been created successfully",
-      "MessageId":"Base.1.6.1.Created",
+      "MessageId":"Base.1.13.0.Created",
       "Severity":"OK",
       "Elements":[
             "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
@@ -2927,7 +2764,6 @@ Date:Fri,21 August 2020 14:08:55 GMT+5m 11s
 curl -i GET \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/Aggregates'
-
 
 ```
 
@@ -2982,7 +2818,7 @@ curl -i GET \
    "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
    "Name":"Aggregate",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.13.0.Success",
    "Severity":"OK",
    "Elements":[
       "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
@@ -3064,7 +2900,7 @@ curl -i POST \
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "Name":"Aggregate",
       "Message":"Successfully Completed Request",
-      "MessageId":"Base.1.6.1.Created",
+      "MessageId":"Base.1.13.0.Created",
       "Severity":"OK",
       "Elements":[
             "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
@@ -3187,7 +3023,7 @@ Content-Length:491 bytes
 ```
  {
    "error":{
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.13.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -3281,7 +3117,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.13.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -3368,7 +3204,6 @@ To discover crucial configuration information about a resource, including chassi
 
 |API URI|Supported operations|Required privileges|
 |-------|--------------------|-------------------|
-
 |/redfish/v1/Systems|`GET`|`Login` |
 |/redfish/v1/Systems/{ComputerSystemId}|`GET`, `PATCH`|`Login`, `ConfigureComponents` |
 |/redfish/v1/Systems/{ComputerSystemId}/Memory|`GET`|`Login` |
@@ -3408,7 +3243,6 @@ To discover crucial configuration information about a resource, including chassi
 
 |API URI|Supported operations|Required privileges|
 |-------|--------------------|-------------------|
-
 |/redfish/v1/Managers|`GET`|`Login` |
 |/redfish/v1/Managers/{managerId}|`GET`|`Login` |
 |/redfish/v1/Managers/{managerId}/EthernetInterfaces|`GET`|`Login` |
@@ -3486,350 +3320,367 @@ curl -i GET \
 >**Sample response body** 
 
 ```
-{ 
-   "@odata.context":"/redfish/v1/$metadata#ComputerSystem.ComputerSystem",
-   "@odata.etag":"W/\"8C36EBD2\"",
-   "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1",
-   "@odata.type":"#ComputerSystem.v1_16_0.ComputerSystem",
-   "Id":"e24fb205-6669-4080-b53c-67d4923aa73e.1",
-   "Actions":{ 
-      "#ComputerSystem.Reset":{ 
-         "ResetType@Redfish.AllowableValues":[ 
-            "On",
-            "ForceOff",
-            "GracefulShutdown",
-            "ForceRestart",
-            "Nmi",
-            "PushPowerButton"
-         ],
-         "target":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Actions/ComputerSystem.Reset"
-      }
-   },
-   "AssetTag":"",
-   "Bios":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Bios"
-   },
-   "BiosVersion":"U32 v2.00 (02/02/2019)",
-   "Boot":{ 
-      "BootOptions":{ 
-         "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/BootOptions"
-      },
-      "BootOrder":[ 
-         "Boot000A",
-         "Boot000B",
-         "Boot000C",
-         "Boot0012",
-         "Boot000D",
-         "Boot000F",
-         "Boot000E",
-         "Boot0010",
-         "Boot0011",
-         "Boot0013",
-         "Boot0015",
-         "Boot0014",
-         "Boot0016"
-      ],
-      "BootSourceOverrideEnabled":"Disabled",
-      "BootSourceOverrideMode":"UEFI",
-      "BootSourceOverrideTarget":"None",
-      "BootSourceOverrideTarget@Redfish.AllowableValues":[ 
-         "None",
-         "Cd",
-         "Hdd",
-         "Usb",
-         "SDCard",
-         "Utilities",
-         "Diags",
-         "BiosSetup",
-         "Pxe",
-         "UefiShell",
-         "UefiHttp",
-         "UefiTarget"
-      ],
-      "UefiTargetBootSourceOverride":"None",
-      "UefiTargetBootSourceOverride@Redfish.AllowableValues":[ 
-         "UsbClass(0xFFFF,0xFFFF,0xFF,0xFF,0xFF)",
-         "PciRoot(0x0)/Pci(0x14,0x0)/USB(0x13,0x0)",
-         "PciRoot(0x3)/Pci(0x0,0x0)/Pci(0x0,0x0)/Scsi(0x0,0x4000)",
-         "PciRoot(0x3)/Pci(0x0,0x0)/Pci(0x0,0x0)/Scsi(0x1,0x4000)",
-         "PciRoot(0x0)/Pci(0x1C,0x0)/Pci(0x0,0x0)/MAC(8030E02C92B0,0x1)/IPv4(0.0.0.0)/Uri()",
-         "PciRoot(0x0)/Pci(0x1C,0x0)/Pci(0x0,0x0)/MAC(8030E02C92B0,0x1)/IPv4(0.0.0.0)",
-         "PciRoot(0x0)/Pci(0x1C,0x0)/Pci(0x0,0x0)/MAC(8030E02C92B0,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)/Uri()",
-         "PciRoot(0x0)/Pci(0x1C,0x0)/Pci(0x0,0x0)/MAC(8030E02C92B0,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)",
-         "HD(2,GPT,E0698C18-D9A0-4F58-93CA-A6AEA6BFC93B,0x96800,0x32000)/\\EFI\\Microsoft\\Boot\\bootmgfw.efi",
-         "PciRoot(0x3)/Pci(0x2,0x0)/Pci(0x0,0x0)/MAC(20677CEEF298,0x1)/IPv4(0.0.0.0)/Uri()",
-         "PciRoot(0x3)/Pci(0x2,0x0)/Pci(0x0,0x0)/MAC(20677CEEF298,0x1)/IPv4(0.0.0.0)",
-         "PciRoot(0x3)/Pci(0x2,0x0)/Pci(0x0,0x0)/MAC(20677CEEF298,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)/Uri()",
-         "PciRoot(0x3)/Pci(0x2,0x0)/Pci(0x0,0x0)/MAC(20677CEEF298,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)"
-      ]
-   },
-   "EthernetInterfaces":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/EthernetInterfaces"
-   },
-   "HostName":"",
-   "IndicatorLED":"Off",
-   "Links":{ 
-      "ManagedBy":[ 
-         { 
-            "@odata.id":"/redfish/v1/Managers/e24fb205-6669-4080-b53c-67d4923aa73e.1"
-         }
-      ],
-      "Chassis":[ 
-         { 
-            "@odata.id":"/redfish/v1/Chassis/e24fb205-6669-4080-b53c-67d4923aa73e.1"
-         }
-      ]
-   },
-   "LogServices":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/LogServices"
-   },
-   "Manufacturer":"HPE",
-   "Memory":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Memory"
-   },
-   "MemoryDomains":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/MemoryDomains"
-   },
-   "MemorySummary":{ 
-      "Status":{ 
-         "HealthRollup":"OK"
-      },
-      "TotalSystemMemoryGiB":384,
-      "TotalSystemPersistentMemoryGiB":0
-   },
-   "Model":"ProLiant DL360 Gen10",
-   "Name":"Computer System",
-   "NetworkInterfaces":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/NetworkInterfaces"
-   },
-   "Oem":{ 
-      
-         },
-         "AggregateHealthStatus":{ 
-            "AgentlessManagementService":"Unavailable",
-            "BiosOrHardwareHealth":{ 
-               "Status":{ 
-                  "Health":"OK"
-               }
-            },
-            "FanRedundancy":"Redundant",
-            "Fans":{ 
-               "Status":{ 
-                  "Health":"OK"
-               }
-            },
-            "Memory":{ 
-               "Status":{ 
-                  "Health":"OK"
-               }
-            },
-            "Network":{ 
-               "Status":{ 
-                  "Health":"OK"
-               }
-            },
-            "PowerSupplies":{ 
-               "PowerSuppliesMismatch":false,
-               "Status":{ 
-                  "Health":"OK"
-               }
-            },
-            "PowerSupplyRedundancy":"Redundant",
-            "Processors":{ 
-               "Status":{ 
-                  "Health":"OK"
-               }
-            },
-            "SmartStorageBattery":{ 
-               "Status":{ 
-                  "Health":"OK"
-               }
-            },
-            "Storage":{ 
-               "Status":{ 
-                  "Health":"OK"
-               }
-            },
-            "Temperatures":{ 
-               "Status":{ 
-                  "Health":"OK"
-               }
+{
+    "@odata.context": "/redfish/v1/$metadata#ComputerSystem.ComputerSystem",
+    "@odata.etag": "W/\"BB5DA93F\"",
+    "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1",
+    "@odata.type": "#ComputerSystem.v1_18_0.ComputerSystem",
+    "Actions": {
+        "#ComputerSystem.Reset": {
+            "ResetType@Redfish.AllowableValues": [
+                "On",
+                "ForceOff",
+                "GracefulShutdown",
+                "ForceRestart",
+                "Nmi",
+                "PushPowerButton",
+                "GracefulRestart"
+            ],
+            "target": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/Actions/ComputerSystem.Reset"
+        }
+    },
+    "AssetTag": "",
+    "Bios": {
+        "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/Bios"
+    },
+    "BiosVersion": "A40 v1.46 (07/10/2019)",
+    "Boot": {
+        "BootOptions": {
+            "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/BootOptions"
+        },
+        "BootOrder": [
+            "Boot0024:Unknown.Unknown.200.1",
+            "Boot0017:NIC.FlexLOM.1.1.IPv4",
+            "Boot000A:Generic.USB.1.1",
+            "Boot000C:HD.SD.1.2",
+            "Boot0011:HD.EmbRAID.1.3",
+            "Boot0012:HD.EmbRAID.1.4",
+            "Boot0013:HD.EmbRAID.1.5",
+            "Boot0016:NIC.FlexLOM.1.1.Httpv4",
+            "Boot001A:NIC.LOM.1.1.Httpv4",
+            "Boot001B:NIC.LOM.1.1.IPv4",
+            "Boot0018:NIC.LOM.1.1.Httpv6",
+            "Boot0019:NIC.LOM.1.1.IPv6",
+            "Boot0014:NIC.FlexLOM.1.1.Httpv6",
+            "Boot0015:NIC.FlexLOM.1.1.IPv6",
+            "Boot0021:NIC.Slot.1.1.Httpv4",
+            "Boot0022:NIC.Slot.1.1.IPv4",
+            "Boot001D:NIC.Slot.2.1.Httpv4",
+            "Boot001E:NIC.Slot.2.1.IPv4",
+            "Boot001F:NIC.Slot.1.1.Httpv6",
+            "Boot0020:NIC.Slot.1.1.IPv6",
+            "Boot000B:NIC.Slot.2.1.Httpv6",
+            "Boot001C:NIC.Slot.2.1.IPv6",
+            "Boot0009:HD.EmbRAID.1.6",
+            "Boot000E:HD.EmbRAID.1.7",
+            "Boot000F:HD.EmbRAID.1.8",
+            "Boot000D:HD.EmbRAID.1.2"
+        ],
+        "BootSourceOverrideEnabled": "Disabled",
+        "BootSourceOverrideMode": "UEFI",
+        "BootSourceOverrideTarget": "None",
+        "BootSourceOverrideTarget@Redfish.AllowableValues": [
+            "None",
+            "Cd",
+            "Hdd",
+            "Usb",
+            "SDCard",
+            "Utilities",
+            "Diags",
+            "BiosSetup",
+            "Pxe",
+            "UefiShell",
+            "UefiHttp",
+            "UefiTarget"
+        ],
+        "UefiTargetBootSourceOverride": "None",
+        "UefiTargetBootSourceOverride@Redfish.AllowableValues": [
+            "HD(1,GPT,D8898303-6CD4-43FA-BDA0-66F8967EEA78,0x800,0x64000)/\\EFI\\red\\grubx64.efi",
+            "PciRoot(0x0)/Pci(0x1,0x1)/Pci(0x0,0x0)/MAC(48DF377EF730,0x1)/IPv4(0.0.0.0)",
+            "UsbClass(0xFFFF,0xFFFF,0xFF,0xFF,0xFF)",
+            "PciRoot(0x0)/Pci(0x7,0x1)/Pci(0x0,0x3)/USB(0x3,0x0)/USB(0x0,0x0)",
+            "PciRoot(0x1)/Pci(0x1,0x1)/Pci(0x0,0x0)/Scsi(0x4,0x4000)",
+            "PciRoot(0x1)/Pci(0x1,0x1)/Pci(0x0,0x0)/Scsi(0x5,0x4000)",
+            "PciRoot(0x1)/Pci(0x1,0x1)/Pci(0x0,0x0)/Scsi(0x6,0x4000)",
+            "PciRoot(0x0)/Pci(0x1,0x1)/Pci(0x0,0x0)/MAC(48DF377EF730,0x1)/IPv4(0.0.0.0)/Uri()",
+            "PciRoot(0x0)/Pci(0x1,0x2)/Pci(0x0,0x0)/MAC(08F1EA8EE70C,0x1)/IPv4(0.0.0.0)/Uri()",
+            "PciRoot(0x0)/Pci(0x1,0x2)/Pci(0x0,0x0)/MAC(08F1EA8EE70C,0x1)/IPv4(0.0.0.0)",
+            "PciRoot(0x0)/Pci(0x1,0x2)/Pci(0x0,0x0)/MAC(08F1EA8EE70C,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)/Uri()",
+            "PciRoot(0x0)/Pci(0x1,0x2)/Pci(0x0,0x0)/MAC(08F1EA8EE70C,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)",
+            "PciRoot(0x0)/Pci(0x1,0x1)/Pci(0x0,0x0)/MAC(48DF377EF730,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)/Uri()",
+            "PciRoot(0x0)/Pci(0x1,0x1)/Pci(0x0,0x0)/MAC(48DF377EF730,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)",
+            "PciRoot(0x2)/Pci(0x3,0x1)/Pci(0x0,0x0)/MAC(040973D10340,0x1)/IPv4(0.0.0.0)/Uri()",
+            "PciRoot(0x2)/Pci(0x3,0x1)/Pci(0x0,0x0)/MAC(040973D10340,0x1)/IPv4(0.0.0.0)",
+            "PciRoot(0x3)/Pci(0x3,0x1)/Pci(0x0,0x0)/MAC(48DF374763E4,0x1)/IPv4(0.0.0.0)/Uri()",
+            "PciRoot(0x3)/Pci(0x3,0x1)/Pci(0x0,0x0)/MAC(48DF374763E4,0x1)/IPv4(0.0.0.0)",
+            "PciRoot(0x2)/Pci(0x3,0x1)/Pci(0x0,0x0)/MAC(040973D10340,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)/Uri()",
+            "PciRoot(0x2)/Pci(0x3,0x1)/Pci(0x0,0x0)/MAC(040973D10340,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)",
+            "PciRoot(0x3)/Pci(0x3,0x1)/Pci(0x0,0x0)/MAC(48DF374763E4,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)/Uri()",
+            "PciRoot(0x3)/Pci(0x3,0x1)/Pci(0x0,0x0)/MAC(48DF374763E4,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)",
+            "PciRoot(0x1)/Pci(0x1,0x1)/Pci(0x0,0x0)/Scsi(0x3,0x4000)",
+            "PciRoot(0x1)/Pci(0x1,0x1)/Pci(0x0,0x0)/Scsi(0x1,0x4000)",
+            "PciRoot(0x1)/Pci(0x1,0x1)/Pci(0x0,0x0)/Scsi(0x0,0x4000)",
+            "PciRoot(0x1)/Pci(0x1,0x1)/Pci(0x0,0x0)/Scsi(0x0,0x0)"
+        ]
+    },
+    "EthernetInterfaces": {
+        "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/EthernetInterfaces"
+    },
+    "Id": "add8f39d-aea7-4eea-aa24-fc1764c33040.1",
+    "IndicatorLED": "Off",
+    "Links": {
+        "Chassis": [
+            {
+                "@odata.id": "/redfish/v1/Chassis/add8f39d-aea7-4eea-aa24-fc1764c33040.1"
             }
-         },
-         "Bios":{ 
-            "Backup":{ 
-               "Date":"10/02/2018",
-               "Family":"U32",
-               "VersionString":"U32 v1.46 (10/02/2018)"
-            },
-            "Current":{ 
-               "Date":"02/02/2019",
-               "Family":"U32",
-               "VersionString":"U32 v2.00 (02/02/2019)"
-            },
-            "UefiClass":2
-         },
-         "CurrentPowerOnTimeSeconds":38039,
-         "DeviceDiscoveryComplete":{ 
-            "AMSDeviceDiscovery":"NoAMS",
-            "DeviceDiscovery":"vMainDeviceDiscoveryComplete",
-            "SmartArrayDiscovery":"Complete"
-         },
-         "ElapsedEraseTimeInMinutes":0,
-         "EndOfPostDelaySeconds":null,
-         "EstimatedEraseTimeInMinutes":0,
-         "IntelligentProvisioningAlwaysOn":true,
-         "IntelligentProvisioningIndex":9,
-         "IntelligentProvisioningLocation":"System Board",
-         "IntelligentProvisioningVersion":"3.20.154",
-         "IsColdBooting":false,
-         "Links":{ 
-            "PCIDevices":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIDevices"
-            },
-            "PCISlots":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCISlots"
-            },
-            "NetworkAdapters":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/BaseNetworkAdapters"
-            },
-            "SmartStorage":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/SmartStorage"
-            },
-            "USBPorts":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/USBPorts"
-            },
-            "USBDevices":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/USBDevices"
-            },
-            "EthernetInterfaces":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/EthernetInterfaces"
-            },
-            "WorkloadPerformanceAdvisor":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/WorkloadPerformanceAdvisor"
+        ],
+        "ManagedBy": [
+            {
+                "@odata.id": "/redfish/v1/Managers/add8f39d-aea7-4eea-aa24-fc1764c33040.1"
             }
-         },
-         "PCAPartNumber":"847479-001",
-         "PCASerialNumber":"PVZEK0ARHBV392",
-         "PostDiscoveryCompleteTimeStamp":"2020-02-23T23:09:45Z",
-         "PostDiscoveryMode":null,
-         "PostMode":null,
-         "PostState":"InPostDiscoveryComplete",
-         "PowerAllocationLimit":1000,
-         "PowerAutoOn":"Restore",
-         "PowerOnDelay":"Minimum",
-         "PowerOnMinutes":463,
-         "PowerRegulatorMode":"Dynamic",
-         "PowerRegulatorModesSupported":[ 
-            "OSControl",
-            "Dynamic",
-            "Max",
-            "Min"
-         ],
-         "SMBIOS":{ 
-            "extref":"/smbios"
-         },
-         "ServerFQDN":"",
-         "SmartStorageConfig":[ 
-            { 
-               "@odata.id":"/redfish/v1/systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/smartstorageconfig"
+        ]
+    },
+    "LogServices": {
+        "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/LogServices"
+    },
+    "Manufacturer": "HPE",
+    "Memory": {
+        "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/Memory"
+    },
+    "MemoryDomains": {
+        "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/MemoryDomains"
+    },
+    "MemorySummary": {
+        "Status": {
+            "HealthRollup": "OK"
+        },
+        "TotalSystemMemoryGiB": 512,
+        "TotalSystemPersistentMemoryGiB": 0
+    },
+    "Model": "ProLiant DL385 Gen10",
+    "Name": "Computer System",
+    "NetworkInterfaces": {
+        "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/NetworkInterfaces"
+    },
+    "Oem": {
+        "Hpe": {
+            "@odata.context": "/redfish/v1/$metadata#HpeComputerSystemExt.HpeComputerSystemExt",
+            "@odata.type": "#HpeComputerSystemExt.v2_9_0.HpeComputerSystemExt",
+            "Actions": {
+                "#HpeComputerSystemExt.PowerButton": {
+                    "PushType@Redfish.AllowableValues": [
+                        "Press",
+                        "PressAndHold"
+                    ],
+                    "target": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/Actions/Oem/Hpe/HpeComputerSystemExt.PowerButton"
+                },
+                "#HpeComputerSystemExt.SecureSystemErase": {
+                    "target": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/Actions/Oem/Hpe/HpeComputerSystemExt.SecureSystemErase"
+                },
+                "#HpeComputerSystemExt.SystemReset": {
+                    "ResetType@Redfish.AllowableValues": [
+                        "ColdBoot",
+                        "AuxCycle"
+                    ],
+                    "target": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/Actions/Oem/Hpe/HpeComputerSystemExt.SystemReset"
+                }
+            },
+            "AggregateHealthStatus": {
+                "AgentlessManagementService": "Unavailable",
+                "BiosOrHardwareHealth": {
+                    "Status": {
+                        "Health": "OK"
+                    }
+                },
+                "FanRedundancy": "Redundant",
+                "Fans": {
+                    "Status": {
+                        "Health": "OK"
+                    }
+                },
+                "Memory": {
+                    "Status": {
+                        "Health": "OK"
+                    }
+                },
+                "Network": {
+                    "Status": {
+                        "Health": "OK"
+                    }
+                },
+                "PowerSupplies": {
+                    "PowerSuppliesMismatch": false,
+                    "Status": {
+                        "Health": "OK"
+                    }
+                },
+                "PowerSupplyRedundancy": "Redundant",
+                "Processors": {
+                    "Status": {
+                        "Health": "OK"
+                    }
+                },
+                "SmartStorageBattery": {
+                    "Status": {
+                        "Health": "OK"
+                    }
+                },
+                "Storage": {
+                    "Status": {
+                        "Health": "OK"
+                    }
+                },
+                "Temperatures": {
+                    "Status": {
+                        "Health": "OK"
+                    }
+                }
+            },
+            "Bios": {
+                "Backup": {
+                    "Date": "06/24/2019",
+                    "Family": "A40",
+                    "VersionString": "A40 v1.44 (06/24/2019)"
+                },
+                "Current": {
+                    "Date": "07/10/2019",
+                    "Family": "A40",
+                    "VersionString": "A40 v1.46 (07/10/2019)"
+                },
+                "UefiClass": 2
+            },
+            "CriticalTempRemainOff": false,
+            "CurrentPowerOnTimeSeconds": null,
+            "DeviceDiscoveryComplete": {
+                "AMSDeviceDiscovery": "NoAMS",
+                "DeviceDiscovery": "vMainDeviceDiscoveryComplete",
+                "SmartArrayDiscovery": "Complete"
+            },
+            "ElapsedEraseTimeInMinutes": 0,
+            "EndOfPostDelaySeconds": null,
+            "EstimatedEraseTimeInMinutes": 0,
+            "IntelligentProvisioningAlwaysOn": true,
+            "IntelligentProvisioningIndex": 8,
+            "IntelligentProvisioningLocation": "System Board",
+            "IntelligentProvisioningVersion": "3.30.213",
+            "IsColdBooting": false,
+            "Links": {
+                "EthernetInterfaces": {
+                    "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/EthernetInterfaces"
+                },
+                "NetworkAdapters": {
+                    "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/BaseNetworkAdapters"
+                },
+                "PCISlots": {
+                    "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/PCISlots"
+                },
+                "PCIeDevices": {
+                    "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/PCIeDevices"
+                },
+                "SecureEraseReportService": {
+                    "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/SecureEraseReportService"
+                },
+                "SmartStorage": {
+                    "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/SmartStorage"
+                },
+                "USBDevices": {
+                    "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/USBDevices"
+                },
+                "USBPorts": {
+                    "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/USBPorts"
+                },
+                "WorkloadPerformanceAdvisor": {
+                    "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/WorkloadPerformanceAdvisor"
+                }
+            },
+            "PCAPartNumber": "866342-001",
+            "PCASerialNumber": "PWCDH%%LMBT086",
+            "PostDiscoveryCompleteTimeStamp": null,
+            "PostDiscoveryMode": null,
+            "PostMode": null,
+            "PostState": "InPostDiscoveryComplete",
+            "PowerAllocationLimit": 1600,
+            "PowerAutoOn": "Restore",
+            "PowerOnDelay": "Minimum",
+            "PowerOnMinutes": 270768,
+            "PowerRegulatorMode": "Dynamic",
+            "PowerRegulatorModesSupported": [
+            ],
+            "SMBIOS": {
+                "extref": "/smBios"
+            },
+            "ServerFQDN": "",
+            "SmartStorageConfig": [
+                {
+                    "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/smartstorageconfig"
+                }
+            ],
+            "SystemROMAndiLOEraseComponentStatus": {
+                "BIOSSettingsEraseStatus": "Idle",
+                "iLOSettingsEraseStatus": "Idle"
+            },
+            "SystemROMAndiLOEraseStatus": "Idle",
+            "UserDataEraseComponentStatus": {
+            },
+            "UserDataEraseStatus": "Idle",
+            "VirtualProfile": "Inactive"
+        }
+    },
+    "PCIeDevices": [
+        {
+            "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/PCIeDevices/1"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/PCIeDevices/2"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/PCIeDevices/3"
+        }
+    ],
+    "PCIeDevices@odata.count": 3,
+    "PowerState": "On",
+    "ProcessorSummary": {
+        "Count": 2,
+        "Model": "AMD EPYC 7601 32-Core Processor                ",
+        "Status": {
+            "HealthRollup": "OK"
+        }
+    },
+    "Processors": {
+        "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/Processors"
+    },
+    "SKU": "878612-B21",
+    "SecureBoot": {
+        "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/SecureBoot"
+    },
+    "SerialNumber": "2M29120289",
+    "Status": {
+        "Health": "OK",
+        "HealthRollup": "OK",
+        "State": "Enabled"
+    },
+    "Storage": {
+        "@odata.id": "/redfish/v1/Systems/add8f39d-aea7-4eea-aa24-fc1764c33040.1/Storage"
+    },
+    "SystemType": "Physical",
+    "TrustedModules": [
+        {
+            "Oem": {
+                "Hpe": {
+                    "@odata.context": "/redfish/v1/$metadata#HpeTrustedModuleExt.HpeTrustedModuleExt",
+                    "@odata.type": "#HpeTrustedModuleExt.v2_0_0.HpeTrustedModuleExt"
+                }
+            },
+            "Status": {
+                "State": "Absent"
             }
-         ],
-         "SystemROMAndiLOEraseComponentStatus":{ 
-            "BIOSSettingsEraseStatus":"Idle",
-            "iLOSettingsEraseStatus":"Idle"
-         },
-         "SystemROMAndiLOEraseStatus":"Idle",
-         "SystemUsage":{ 
-            "AvgCPU0Freq":126,
-            "AvgCPU1Freq":0,
-            "CPU0Power":62,
-            "CPU1Power":54,
-            "CPUICUtil":0,
-            "CPUUtil":2,
-            "IOBusUtil":0,
-            "JitterCount":0,
-            "MemoryBusUtil":0
-         },
-         "UserDataEraseComponentStatus":{ 
-
-         },
-         "UserDataEraseStatus":"Idle",
-         "VirtualProfile":"Inactive"
-      }
-   },
-   "PCIeDevices":[
-    {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/1"
-    },
-    {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/2"
-    },
-    {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/3"
-    },
-    {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/4"
-    },
-    {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/5"
-    },
-    {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/6"
-    },
-    {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/7"
-    },
-    {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/8"
-    },
-    {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/9"
-    },
-    {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/10"
-    },
-    {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/11"
+        }
+    ],
+    "UUID": "36383738-3231-4D32-3239-313230323839",
+    "VirtualMedia": {
+        "@odata.id": "/redfish/v1/Managers/add8f39d-aea7-4eea-aa24-fc1764c33040.1/VirtualMedia"
     }
-   ],
-   "PCIeDevices@odata.count": 11,
-   "PowerState":"On",
-   "ProcessorSummary":{ 
-      "Count":2,
-      "Model":"Intel(R) Xeon(R) Gold 6152 CPU @ 2.10GHz",
-      "Status":{ 
-         "HealthRollup":"OK"
-      }
-   },
-   "Processors":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Processors"
-   },
-   "SKU":"867959-B21",
-   "SecureBoot":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/SecureBoot"
-   },
-   "SerialNumber":"MXQ91100T9",
-   "Status":{ 
-      "Health":"OK",
-      "HealthRollup":"OK",
-      "State":"Starting"
-   },
-   "Storage":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Storage"
-   },
-   "SystemType":"Physical",
-   "TrustedModules":[ 
-      { 
-         "Oem":{ 
-            
-         },
-         "Status":{ 
-            "State":"Absent"
-         }
-      }
-   ],
-   "UUID":"39373638-3935-584D-5139-313130305439"
+}
 ```
 
 ##  Memory collection
@@ -3850,8 +3701,64 @@ curl -i GET \
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Memory'
+```
 
+> **Sample response body** 
 
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#MemoryCollection.MemoryCollection",
+    "@odata.etag": "W/\"09417F5F\"",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Memory",
+    "@odata.type": "#MemoryCollection.MemoryCollection",
+    "Description": "Memory DIMM Collection",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Memory/proc1dimm1"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Memory/proc1dimm2"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Memory/proc1dimm3"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Memory/proc1dimm4"
+        }
+    ],
+    "Members@odata.count": 4,
+    "Name": "Memory DIMM Collection",
+    "Oem": {
+        "Hpe": {
+            "@odata.context": "/redfish/v1/$metadata#HpeAdvancedMemoryProtection.HpeAdvancedMemoryProtection",
+            "@odata.type": "#HpeAdvancedMemoryProtection.v2_0_0.HpeAdvancedMemoryProtection",
+            "AmpModeActive": "A3DC",
+            "AmpModeStatus": "DegradedA3DC",
+            "AmpModeSupported": [
+                "AdvancedECC",
+                "OnlineSpareRank",
+                "IntrasocketMirroring",
+                "A3DC"
+            ],
+            "MemoryList": [
+                {
+                    "BoardCpuNumber": 1,
+                    "BoardNumberOfSockets": 12,
+                    "BoardOperationalFrequency": 2666,
+                    "BoardOperationalVoltage": 1200,
+                    "BoardTotalMemorySize": 196608
+                },
+                {
+                    "BoardCpuNumber": 2,
+                    "BoardNumberOfSockets": 12,
+                    "BoardOperationalFrequency": 2666,
+                    "BoardOperationalVoltage": 1200,
+                    "BoardTotalMemorySize": 196608
+                }
+            ]
+        }
+    }
+}
 ```
 
 ## Single memory
@@ -3878,54 +3785,66 @@ curl -i GET \
 >**Sample response body** 
 
 ```
-{ 
-   "@odata.context":"/redfish/v1/$metadata#Memory.Memory",
-   "@odata.etag":"W/\"E6EC3A2C\"",
-   "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Memory/proc1dimm1",
-   "@odata.type":"#Memory.v1_13_0.Memory",
-   "Id":"proc1dimm1",
-   "BaseModuleType":"RDIMM",
-   "BusWidthBits":72,
-   "CacheSizeMiB":0,
-   "CapacityMiB":32768,
-   "DataWidthBits":64,
-   "DeviceLocator":"PROC 1 DIMM 1",
-   "ErrorCorrection":"MultiBitECC",
-   "LogicalSizeMiB":0,
-   "Manufacturer":"HPE",
-   "MemoryDeviceType":"DDR4",
-   "MemoryLocation":{ 
-      "Channel":6,
-      "MemoryController":2,
-      "Slot":1,
-      "Socket":1
-   },
-   "MemoryMedia":[ 
-      "DRAM"
-   ],
-   "MemoryType":"DRAM",
-   "Name":"proc1dimm1",
-   "NonVolatileSizeMiB":0,
-   "Oem":{ 
-      
-   },
-   "OperatingMemoryModes":[ 
-      "Volatile"
-   ],
-   "OperatingSpeedMhz":2666,
-   "PartNumber":"840758-091",
-   "PersistentRegionSizeLimitMiB":0,
-   "RankCount":2,
-   "SecurityCapabilities":{ 
-
-   },
-   "Status":{ 
-      "Health":"OK",
-      "State":"Enabled"
-   },
-   "VendorID":"52736",
-   "VolatileRegionSizeLimitMiB":32768,
-   "VolatileSizeMiB":32768
+{
+    "@odata.context": "/redfish/v1/$metadata#Memory.Memory",
+    "@odata.etag": "W/\"E6EC3A2C\"",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Memory/proc1dimm1",
+    "@odata.type": "#Memory.v1_7_1.Memory",
+    "BaseModuleType": "RDIMM",
+    "BusWidthBits": 72,
+    "CacheSizeMiB": 0,
+    "CapacityMiB": 32768,
+    "DataWidthBits": 64,
+    "DeviceLocator": "PROC 1 DIMM 1",
+    "ErrorCorrection": "MultiBitECC",
+    "Id": "proc1dimm1",
+    "LogicalSizeMiB": 0,
+    "Manufacturer": "HPE",
+    "MemoryDeviceType": "DDR4",
+    "MemoryLocation": {
+        "Channel": 6,
+        "MemoryController": 2,
+        "Slot": 1,
+        "Socket": 1
+    },
+    "MemoryMedia": [
+        "DRAM"
+    ],
+    "MemoryType": "DRAM",
+    "Name": "proc1dimm1",
+    "NonVolatileSizeMiB": 0,
+    "Oem": {
+        "Hpe": {
+            "@odata.context": "/redfish/v1/$metadata#HpeMemoryExt.HpeMemoryExt",
+            "@odata.type": "#HpeMemoryExt.v2_5_0.HpeMemoryExt",
+            "Attributes": [
+                "HpeSmartMemory"
+            ],
+            "BaseModuleType": "RDIMM",
+            "DIMMManufacturingDate": "1828",
+            "DIMMStatus": "GoodInUse",
+            "MaxOperatingSpeedMTs": 2666,
+            "MinimumVoltageVoltsX10": 12,
+            "VendorName": "Samsung"
+        }
+    },
+    "OperatingMemoryModes": [
+        "Volatile"
+    ],
+    "OperatingSpeedMhz": 2666,
+    "PartNumber": "M393A4K40CB2-CTD   ",
+    "PersistentRegionSizeLimitMiB": 0,
+    "RankCount": 2,
+    "SecurityCapabilities": {
+    },
+    "SerialNumber": "39F51030",
+    "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+    },
+    "VendorID": "52736",
+    "VolatileRegionSizeLimitMiB": 32768,
+    "VolatileSizeMiB": 32768
 }
 ```
 
@@ -3949,6 +3868,21 @@ curl -i GET \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/MemoryDomains'
 ```
 
+> **Sample response body** 
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#MemoryDomainCollection.MemoryDomainCollection",
+    "@odata.etag": "W/\"75983E8D\"",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/MemoryDomains",
+    "@odata.type": "#MemoryDomainCollection.MemoryDomainCollection",
+    "Description": "Memory Domains Collection",
+    "Members": [
+    ],
+    "Members@odata.count": 0,
+    "Name": "Memory Domains Collection"
+}
+```
 
 ##  BIOS
 
@@ -3968,8 +3902,270 @@ curl -i GET \
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Bios'
+```
 
+> **Sample response body** 
 
+```
+{
+    "@Redfish.Settings": {
+        "@odata.type": "#Settings.v1_0_0.Settings",
+        "ETag": "5D44558E",
+        "Messages": [
+            {
+                "MessageId": "Base.1.0.Success"
+            }
+        ],
+        "SettingsObject": {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Bios/Settings/"
+        },
+        "Time": "2022-03-09T11:56:28+00:00"
+    },
+    "@odata.context": "/redfish/v1/$metadata#Bios.Bios",
+    "@odata.etag": "W/\"A8CFEAA3407A6E6E6E2970FA2E980355\"",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Bios/",
+    "@odata.type": "#Bios.v1_0_0.Bios",
+    "Actions": {
+        "#Bios.ChangePassword": {
+            "target": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Bios/Settings/Actions/Bios.ChangePasswords/"
+        },
+        "#Bios.ResetBios": {
+            "target": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Bios/Settings/Actions/Bios.ResetBios/"
+        }
+    },
+    "AttributeRegistry": "BiosAttributeRegistryU32.v1_2_22",
+    "Attributes": {
+        "AcpiHpet": "Disabled",
+        "AcpiRootBridgePxm": "Enabled",
+        "AcpiSlit": "Enabled",
+        "AdjSecPrefetch": "Enabled",
+        "AdminEmail": "admin2@someorg.com",
+        "AdminName": "admin11",
+        "AdminOtherInfo": "",
+        "AdminPhone": "",
+        "AdvCrashDumpMode": "Disabled",
+        "AdvancedMemProtection": "FastFaultTolerantADDDC",
+        "AsrStatus": "Enabled",
+        "AsrTimeoutMinutes": "Timeout10",
+        "AssetTagProtection": "Unlocked",
+        "AutoPowerOn": "RestoreLastState",
+        "BootMode": "Uefi",
+        "BootOrderPolicy": "RetryIndefinitely",
+        "ChannelInterleaving": "Enabled",
+        "CollabPowerControl": "Enabled",
+        "ConsistentDevNaming": "LomsAndSlots",
+        "CustomPostMessage": "",
+        "DaylightSavingsTime": "Disabled",
+        "DcuIpPrefetcher": "Enabled",
+        "DcuStreamPrefetcher": "Enabled",
+        "Dhcpv4": "Enabled",
+        "DirectToUpi": "Auto",
+        "DynamicPowerCapping": "Disabled",
+        "EmbNicEnable": "Auto",
+        "EmbNicLinkSpeed": "Auto",
+        "EmbNicPCIeOptionROM": "Enabled",
+        "EmbSas1Aspm": "Disabled",
+        "EmbSas1Boot": "TwentyFourTargets",
+        "EmbSas1Enable": "Auto",
+        "EmbSas1LinkSpeed": "Auto",
+        "EmbSas1PcieOptionROM": "Enabled",
+        "EmbSata1Aspm": "Disabled",
+        "EmbSata2Aspm": "Disabled",
+        "EmbVideoConnection": "Auto",
+        "EmbeddedDiagnostics": "Enabled",
+        "EmbeddedSata": "Ahci",
+        "EmbeddedSerialPort": "Com2Irq3",
+        "EmbeddedUefiShell": "Enabled",
+        "EmsConsole": "Disabled",
+        "EnabledCoresPerProc": 0,
+        "EnergyEfficientTurbo": "Enabled",
+        "EnergyPerfBias": "BalancedPerf",
+        "EraseUserDefaults": "No",
+        "ExtendedAmbientTemp": "Disabled",
+        "ExtendedMemTest": "Disabled",
+        "F11BootMenu": "Enabled",
+        "FCScanPolicy": "CardConfig",
+        "FanFailPolicy": "Shutdown",
+        "FanInstallReq": "EnableMessaging",
+        "FlexLom1Aspm": "Disabled",
+        "FlexLom1Enable": "Auto",
+        "FlexLom1LinkSpeed": "Auto",
+        "FlexLom1PCIeOptionROM": "Enabled",
+        "HttpSupport": "Auto",
+        "HwPrefetcher": "Enabled",
+        "IODCConfiguration": "Auto",
+        "IntelDmiLinkFreq": "Auto",
+        "IntelNicDmaChannels": "Enabled",
+        "IntelPerfMonitoring": "Disabled",
+        "IntelProcVtd": "Enabled",
+        "IntelUpiFreq": "Auto",
+        "IntelUpiLinkEn": "Auto",
+        "IntelUpiPowerManagement": "Enabled",
+        "IntelligentProvisioning": "Enabled",
+        "InternalSDCardSlot": "Enabled",
+        "Ipv4Address": "0.0.0.0",
+        "Ipv4Gateway": "0.0.0.0",
+        "Ipv4PrimaryDNS": "0.0.0.0",
+        "Ipv4SecondaryDNS": "0.0.0.0",
+        "Ipv4SubnetMask": "0.0.0.0",
+        "Ipv6Address": "::",
+        "Ipv6ConfigPolicy": "Automatic",
+        "Ipv6Duid": "Auto",
+        "Ipv6Gateway": "::",
+        "Ipv6PrimaryDNS": "::",
+        "Ipv6SecondaryDNS": "::",
+        "LLCDeadLineAllocation": "Enabled",
+        "LlcPrefetch": "Disabled",
+        "LocalRemoteThreshold": "Auto",
+        "MaxMemBusFreqMHz": "Auto",
+        "MaxPcieSpeed": "PerPortCtrl",
+        "MemClearWarmReset": "Disabled",
+        "MemFastTraining": "Enabled",
+        "MemMirrorMode": "Full",
+        "MemPatrolScrubbing": "Enabled",
+        "MemRefreshRate": "Refreshx1",
+        "MemoryControllerInterleaving": "Auto",
+        "MemoryRemap": "NoAction",
+        "MinProcIdlePkgState": "C6Retention",
+        "MinProcIdlePower": "C6",
+        "MixedPowerSupplyReporting": "Enabled",
+        "NetworkBootRetry": "Enabled",
+        "NetworkBootRetryCount": 20,
+        "NicBoot1": "NetworkBoot",
+        "NicBoot2": "Disabled",
+        "NicBoot3": "Disabled",
+        "NicBoot4": "Disabled",
+        "NicBoot5": "NetworkBoot",
+        "NicBoot6": "Disabled",
+        "NodeInterleaving": "Disabled",
+        "NumaGroupSizeOpt": "Flat",
+        "NvmeOptionRom": "Enabled",
+        "OpportunisticSelfRefresh": "Disabled",
+        "PciPeerToPeerSerialization": "Disabled",
+        "PciResourcePadding": "Normal",
+        "PciSlot1Bifurcation": "Auto",
+        "PciSlot2Bifurcation": "Auto",
+        "PciSlot3Bifurcation": "Auto",
+        "PersistentMemBackupPowerPolicy": "WaitForBackupPower",
+        "PostBootProgress": "Disabled",
+        "PostDiscoveryMode": "Auto",
+        "PostF1Prompt": "Delayed20Sec",
+        "PostVideoSupport": "DisplayAll",
+        "PowerButton": "Enabled",
+        "PowerOnDelay": "NoDelay",
+        "PowerRegulator": "DynamicPowerSavings",
+        "PreBootNetwork": "Auto",
+        "PrebootNetworkEnvPolicy": "Auto",
+        "PrebootNetworkProxy": "",
+        "ProcAes": "Enabled",
+        "ProcHyperthreading": "Enabled",
+        "ProcTurbo": "Enabled",
+        "ProcVirtualization": "Enabled",
+        "ProcX2Apic": "Enabled",
+        "ProcessorConfigTDPLevel": "Normal",
+        "ProcessorJitterControl": "Disabled",
+        "ProcessorJitterControlFrequency": 0,
+        "ProcessorJitterControlOptimization": "ZeroLatency",
+        "ProductId": "867959-B21",
+        "RedundantPowerSupply": "BalancedMode",
+        "RemovableFlashBootSeq": "ExternalKeysFirst",
+        "RestoreDefaults": "No",
+        "RestoreManufacturingDefaults": "No",
+        "RomSelection": "CurrentRom",
+        "SataSecureErase": "Disabled",
+        "SaveUserDefaults": "No",
+        "SecStartBackupImage": "Disabled",
+        "SecureBootStatus": "Disabled",
+        "SerialConsoleBaudRate": "BaudRate115200",
+        "SerialConsoleEmulation": "Vt100Plus",
+        "SerialConsolePort": "Auto",
+        "SerialNumber": "MXQ91100T6",
+        "ServerAssetTag": "",
+        "ServerConfigLockStatus": "Disabled",
+        "ServerName": "SRVMXQ91100T6",
+        "ServerOtherInfo": "",
+        "ServerPrimaryOs": "",
+        "ServiceEmail": "",
+        "ServiceName": "",
+        "ServiceOtherInfo": "",
+        "ServicePhone": "",
+        "SetupBrowserSelection": "Auto",
+        "Slot1MctpBroadcastSupport": "Enabled",
+        "Slot2MctpBroadcastSupport": "Enabled",
+        "Slot3MctpBroadcastSupport": "Enabled",
+        "Sriov": "Enabled",
+        "StaleAtoS": "Disabled",
+        "SubNumaClustering": "Disabled",
+        "ThermalConfig": "OptimalCooling",
+        "ThermalShutdown": "Enabled",
+        "TimeFormat": "Utc",
+        "TimeZone": "Unspecified",
+        "TpmChipId": "None",
+        "TpmFips": "FipsMode",
+        "TpmState": "NotPresent",
+        "TpmType": "NoTpm",
+        "UefiOptimizedBoot": "Enabled",
+        "UefiSerialDebugLevel": "Disabled",
+        "UefiShellBootOrder": "Disabled",
+        "UefiShellScriptVerification": "Disabled",
+        "UefiShellStartup": "Disabled",
+        "UefiShellStartupLocation": "Auto",
+        "UefiShellStartupUrl": "",
+        "UefiShellStartupUrlFromDhcp": "Disabled",
+        "UncoreFreqScaling": "Auto",
+        "UpiPrefetcher": "Enabled",
+        "UrlBootFile": "",
+        "UrlBootFile2": "",
+        "UrlBootFile3": "",
+        "UrlBootFile4": "",
+        "UsbBoot": "Enabled",
+        "UsbControl": "UsbEnabled",
+        "UserDefaultsState": "Disabled",
+        "UtilityLang": "English",
+        "VirtualInstallDisk": "Disabled",
+        "VirtualSerialPort": "Com1Irq4",
+        "VlanControl": "Disabled",
+        "VlanId": 0,
+        "VlanPriority": 0,
+        "WakeOnLan": "Enabled",
+        "WorkloadProfile": "GeneralPowerEfficientCompute",
+        "XptPrefetcher": "Auto",
+        "iSCSIPolicy": "SoftwareInitiator"
+    },
+    "Id": "Bios",
+    "Name": "BIOS Current Settings",
+    "Oem": {
+        "Hpe": {
+            "@odata.type": "#HpeBiosExt.v2_0_0.HpeBiosExt",
+            "Links": {
+                "BaseConfigs": {
+                    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Bios/baseconfigs/"
+                },
+                "Boot": {
+                    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Bios/boot/"
+                },
+                "KmsConfig": {
+                    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Bios/kmsconfig/"
+                },
+                "Mappings": {
+                    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Bios/mappings/"
+                },
+                "ServerConfigLock": {
+                    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Bios/serverconfiglock/"
+                },
+                "TlsConfig": {
+                    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Bios/tlsconfig/"
+                },
+                "iScsi": {
+                    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Bios/iscsi/"
+                }
+            },
+            "SettingsObject": {
+                "UnmodifiedETag": "W/\"E1E562A3BB8E1C1C1CBDC6F3070B67B2\""
+            }
+        }
+    }
+}
 ```
 
 ## Network interfaces
@@ -3991,6 +4187,31 @@ curl -i GET \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/NetworkInterfaces'
 ```
 
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#NetworkInterfaceCollection.NetworkInterfaceCollection",
+    "@odata.etag": "W/\"C321D970\"",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkInterfaces",
+    "@odata.type": "#NetworkInterfaceCollection.NetworkInterfaceCollection",
+    "Description": "The collection of network interfaces available in this system.",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkInterfaces/DC07A000"
+        }
+    ],
+    "Members@odata.count": 1,
+    "Name": "Network Interface Collection",
+    "Oem": {
+        "Hpe": {
+            "@odata.context": "/redfish/v1/$metadata#HpeNetworkInterfaceStatus.HpeNetworkInterfaceStatus",
+            "@odata.type": "#HpeNetworkInterfaceStatus.v1_0_0.HpeNetworkInterfaceStatus",
+            "MemberContents": "AllDevices"
+        }
+    }
+}
+```
 
 ##  Ethernet interfaces
 
@@ -4014,6 +4235,39 @@ curl -i GET \
 
 ```
 
+> **Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#EthernetInterfaceCollection.EthernetInterfaceCollection",
+    "@odata.etag": "W/\"D5EC731D\"",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/EthernetInterfaces",
+    "@odata.type": "#EthernetInterfaceCollection.EthernetInterfaceCollection",
+    "Description": "Collection of System Ethernet Interfaces",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/EthernetInterfaces/1"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/EthernetInterfaces/2"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/EthernetInterfaces/3"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/EthernetInterfaces/4"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/EthernetInterfaces/5"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/EthernetInterfaces/6"
+        }
+    ],
+    "Members@odata.count": 6,
+    "Name": "System Ethernet Interfaces"
+}
+```
 
 ## Single Ethernet interface
 
@@ -4033,8 +4287,6 @@ curl -i GET \
 curl -i GET \
              -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces/{ethernetInterfaceId}'
-
-
 ```
 
 
@@ -4042,29 +4294,40 @@ curl -i GET \
 
 ```
 {
-	"@odata.context": "/redfish/v1/$metadata#EthernetInterface.EthernetInterface",
-	"@odata.etag": "W/\"5DEAF04A\"",
-	"@odata.id": "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1/EthernetInterfaces/1",
-	"@odata.type": "#EthernetInterface.v1_7_0.EthernetInterface",
-	"Id": "1",
-	"FullDuplex": true,
-	"IPv4Addresses": [],
-	"IPv4StaticAddresses": [],
-	"IPv6AddressPolicyTable": [],
-	"IPv6Addresses": [],
-	"IPv6StaticAddresses": [],
-	"IPv6StaticDefaultGateways": [],
-	"LinkStatus": null,
-	"MACAddress": "80:30:e0:32:0a:58",
-	"Name": "",
-	"NameServers": [],
-	"SpeedMbps": null,
-	"StaticNameServers": [],
-	"Status": {
-		"Health": null,
-		"State": null
-	},
-	"UefiDevicePath": "PciRoot(0x3)/Pci(0x2,0x0)/Pci(0x0,0x0)"
+    "@odata.context": "/redfish/v1/$metadata#EthernetInterface.EthernetInterface",
+    "@odata.etag": "W/\"A04B8EF5\"",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/EthernetInterfaces/1",
+    "@odata.type": "#EthernetInterface.v1_8_0.EthernetInterface",
+    "FQDN": null,
+    "FullDuplex": false,
+    "HostName": null,
+    "IPv4Addresses": [
+    ],
+    "IPv4StaticAddresses": [
+    ],
+    "IPv6AddressPolicyTable": [
+    ],
+    "IPv6Addresses": [
+    ],
+    "IPv6StaticAddresses": [
+    ],
+    "IPv6StaticDefaultGateways": [
+    ],
+    "Id": "1",
+    "InterfaceEnabled": null,
+    "LinkStatus": null,
+    "MACAddress": "20:67:7c:e9:f6:40",
+    "Name": "",
+    "NameServers": [
+    ],
+    "SpeedMbps": null,
+    "StaticNameServers": [
+    ],
+    "Status": {
+        "Health": null,
+        "State": null
+    },
+    "UefiDevicePath": "PciRoot(0x0)/Pci(0x1C,0x0)/Pci(0x0,0x0)"
 }
 ```
 
@@ -4095,16 +4358,17 @@ curl -i GET \
 {
     "@odata.context": "/redfish/v1/$metadata#PCIeDevice.PCIeDevice",
     "@odata.etag": "W/\"33150E20\"",
-    "@odata.id": "/redfish/v1/Systems/1b77fcdd-b6a2-44b4-83f9-cfb4926fcd79.1/PCIeDevices/1",
-    "@odata.type": "#PCIeDevice.v1_7_0.PCIeDevice",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/PCIeDevices/1",
+    "@odata.type": "#PCIeDevice.v1_9_0.PCIeDevice",
     "Id": "1",
     "Name": "HPE Ethernet 1Gb 4-port 331i Adapter - NIC",
     "Oem": {
         "Hpe": {
             "@odata.context": "/redfish/v1/$metadata#HpeServerPciDevice.HpeServerPciDevice",
             "@odata.etag": "W/\"33150E20\"",
-            "@odata.id": "/redfish/v1/Systems/1b77fcdd-b6a2-44b4-83f9-cfb4926fcd79:1/PCIDevices/1",
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/PCIDevices/1",
             "@odata.type": "#HpeServerPciDevice.v2_0_0.HpeServerPciDevice",
+            "Bifurcated": "BifurcationNotSupported",
             "BusNumber": 2,
             "ClassCode": 2,
             "DeviceID": 5719,
@@ -4127,7 +4391,6 @@ curl -i GET \
         }
     }
 }
-
 ```
 
 ##  Storage
@@ -4149,6 +4412,27 @@ curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage'
 ```
+
+> **Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#StorageCollection.StorageCollection",
+    "@odata.etag": "W/\"AA6D42B0\"",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Storage",
+    "@odata.type": "#StorageCollection.StorageCollection",
+    "Description": "Storage Collection view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Storage/ArrayControllers-0"
+        }
+    ],
+    "Members@odata.count": 1,
+    "Name": "Storage Collection"
+}
+```
+
+
 
 ## StoragePools 
 
@@ -4530,36 +4814,40 @@ curl -i GET \
 ```
 {
     "@odata.context": "/redfish/v1/$metadata#Storage.Storage",
-    "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0",
-    "@odata.type": "#Storage.v1_11_1.Storage",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Storage/ArrayControllers-0",
+    "@odata.type": "#Storage.v1_13_0.Storage",
     "Description": "HPE Smart Storage Array Controller View",
     "Drives": [
         {
-            "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0/Drives/0"
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Storage/ArrayControllers-0/Drives/0"
         },
         {
-            "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0/Drives/1"
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Storage/ArrayControllers-0/Drives/1"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Storage/ArrayControllers-0/Drives/2"
         }
     ],
-    "Id": "ArrayController-0",
-    "Name": "HpeSmartStorageArrayController",
+    "Id": "ArrayControllers-0",
+    "Name": "Hpe Smart Storage Array Controller",
     "StorageControllers": [
         {
-            "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0#/StorageControllers/0",
-            "FirmwareVersion": "1.98",
-            "Manufacturer": "HPE",
-            "MemberId": "0",
-            "Model": "HPE Smart Array P408i-a SR Gen10",
-            "Name": "HpeSmartStorageArrayController",
-            "PartNumber": "836260-001",
-            "PhysicalLocation": {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Storage/ArrayControllers-0#/StorageControllers/0",
+            "@odata.type": "",
+            "FirmwareVersion": "2.65",
+            "Location": {
                 "PartLocation": {
                     "LocationOrdinalValue": 0,
                     "LocationType": "Slot",
                     "ServiceLabel": "Slot=0"
                 }
             },
-            "SerialNumber": "PEYHC0DRHBV3CZ ",
+            "Manufacturer": "HPE",
+            "MemberId": "0",
+            "Model": "HPE Smart Array P408i-a SR Gen10",
+            "Name": "Hpe Smart Storage Array Controller",
+            "PartNumber": "836260-001",
+            "SerialNumber": "PEYHC0DRHBV947 ",
             "Status": {
                 "Health": "OK",
                 "State": "Enabled"
@@ -4567,10 +4855,9 @@ curl -i GET \
         }
     ],
     "Volumes": {
-        "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0/Volumes"
+        "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Storage/ArrayControllers-0/Volumes"
     }
 }
-
 ```
 
 ## Drives
@@ -4596,9 +4883,47 @@ The drive schema represents a single physical drive for a system, including link
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/{driveId}'
+```
 
+> **Sample response body** 
 
 ```
+{
+    "@odata.context": "/redfish/v1/$metadata#Drive.Drive",
+    "@odata.etag": "W/\"990C0D8A\"",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Storage/ArrayControllers-0/Drives/0",
+    "@odata.type": "#Drive.v1_15_0.Drive",
+    "BlockSizeBytes": 512,
+    "CapacityBytes": 1200000000000,
+    "Description": "HPE Smart Storage Disk Drive View",
+    "Id": "0",
+    "Links": {
+        "Volumes": [
+            {
+                "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Storage/ArrayControllers-0/Volumes/1"
+            }
+        ]
+    },
+    "MediaType": "HDD",
+    "Model": "EG001200JWJNQ",
+    "Name": "HpeStorageDiskDrive",
+    "PhysicalLocation": {
+        "PartLocation": {
+            "LocationOrdinalValue": 1,
+            "LocationType": "Bay",
+            "ServiceLabel": "Port=1I:Box=1:Bay=1:LegacyBootPriority=None"
+        }
+    },
+    "Revision": "HPD3",
+    "RotationSpeedRPM": 10500,
+    "SerialNumber": "WFK25Z6F",
+    "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+    }
+}
+```
+
 
 
 ## Volumes
@@ -4623,8 +4948,6 @@ The volume schema represents a volume, virtual disk, LUN, or other logical stora
 curl -i GET \
              -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes'
-
-
 ```
 
 >**Sample response body** 
@@ -4666,8 +4989,6 @@ curl -i GET \
 curl -i GET \
              -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/{volumeId}'
-
-
 ```
 
 >**Sample response body** 
@@ -4839,8 +5160,27 @@ curl -i -X DELETE \
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/SecureBoot'
+```
 
+> **Sample response body**
 
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#SecureBoot.SecureBoot",
+    "@odata.etag": "W/\"4A4CB737\"",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/SecureBoot",
+    "@odata.type": "#SecureBoot.v1_0_0.SecureBoot",
+    "Actions": {
+        "#SecureBoot.ResetKeys": {
+            "target": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/SecureBoot/Actions/SecureBoot.ResetKeys"
+        }
+    },
+    "Id": "SecureBoot",
+    "Name": "SecureBoot",
+    "SecureBootCurrentBoot": "Disabled",
+    "SecureBootEnable": false,
+    "SecureBootMode": "UserMode"
+}
 ```
 
 ##  Processors
@@ -4862,8 +5202,28 @@ curl -i GET \
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Processors'
+```
 
+> **Sample response body**
 
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#ProcessorCollection.ProcessorCollection",
+    "@odata.etag": "W/\"570254F2\"",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Processors",
+    "@odata.type": "#ProcessorCollection.ProcessorCollection",
+    "Description": "Processors view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Processors/1"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Processors/2"
+        }
+    ],
+    "Members@odata.count": 2,
+    "Name": "Processors Collection"
+}
 ```
 
 ### Single processor
@@ -4883,9 +5243,147 @@ curl -i GET \
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Processors/{processoId}'
+```
 
+> **Sample response body**
 
 ```
+{
+    "@odata.context": "/redfish/v1/$metadata#Processor.Processor",
+    "@odata.etag": "W/\"18ABF8BD\"",
+    "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Processors/1",
+    "@odata.type": "#Processor.v1_7_2.Processor",
+    "Id": "1",
+    "InstructionSet": "x86-64",
+    "Manufacturer": "Intel(R) Corporation",
+    "MaxSpeedMHz": 4000,
+    "Model": "Intel(R) Xeon(R) Gold 6152 CPU @ 2.10GHz",
+    "Name": "Processors",
+    "Oem": {
+        "Hpe": {
+            "@odata.context": "/redfish/v1/$metadata#HpeProcessorExt.HpeProcessorExt",
+            "@odata.type": "#HpeProcessorExt.v2_0_0.HpeProcessorExt",
+            "AssetTag": "UNKNOWN",
+            "Cache": [
+                {
+                    "Associativity": "8waySetAssociative",
+                    "CacheSpeedns": 0,
+                    "CurrentSRAMType": [
+                        "Synchronous"
+                    ],
+                    "EccType": "SingleBitECC",
+                    "InstalledSizeKB": 1408,
+                    "Location": "Internal",
+                    "MaximumSizeKB": 1408,
+                    "Name": "L1-Cache",
+                    "Policy": "WriteBack",
+                    "Socketed": false,
+                    "SupportedSRAMType": [
+                        "Synchronous"
+                    ],
+                    "SystemCacheType": "Unified"
+                },
+                {
+                    "Associativity": "16waySetAssociative",
+                    "CacheSpeedns": 0,
+                    "CurrentSRAMType": [
+                        "Synchronous"
+                    ],
+                    "EccType": "SingleBitECC",
+                    "InstalledSizeKB": 22528,
+                    "Location": "Internal",
+                    "MaximumSizeKB": 22528,
+                    "Name": "L2-Cache",
+                    "Policy": "Varies",
+                    "Socketed": false,
+                    "SupportedSRAMType": [
+                        "Synchronous"
+                    ],
+                    "SystemCacheType": "Unified"
+                },
+                {
+                    "Associativity": "FullyAssociative",
+                    "CacheSpeedns": 0,
+                    "CurrentSRAMType": [
+                        "Synchronous"
+                    ],
+                    "EccType": "SingleBitECC",
+                    "InstalledSizeKB": 30976,
+                    "Location": "Internal",
+                    "MaximumSizeKB": 30976,
+                    "Name": "L3-Cache",
+                    "Policy": "Varies",
+                    "Socketed": false,
+                    "SupportedSRAMType": [
+                        "Synchronous"
+                    ],
+                    "SystemCacheType": "Unified"
+                }
+            ],
+            "Characteristics": [
+                "64Bit",
+                "MultiCore",
+                "HwThread",
+                "ExecuteProtection",
+                "EnhancedVirtualization",
+                "PowerPerfControl"
+            ],
+            "ConfigStatus": {
+                "Populated": true,
+                "State": "Enabled"
+            },
+            "CoresEnabled": 22,
+            "ExternalClockMHz": 100,
+            "MicrocodePatches": [
+                {
+                    "CpuId": "0x00050654",
+                    "Date": "2019-09-05T00:00:00Z",
+                    "PatchId": "0x02000065"
+                },
+                {
+                    "CpuId": "0x00050655",
+                    "Date": "2018-10-08T00:00:00Z",
+                    "PatchId": "0x0300000F"
+                },
+                {
+                    "CpuId": "0x00050656",
+                    "Date": "2019-09-05T00:00:00Z",
+                    "PatchId": "0x0400002C"
+                },
+                {
+                    "CpuId": "0x00050657",
+                    "Date": "2019-09-05T00:00:00Z",
+                    "PatchId": "0x0500002C"
+                }
+            ],
+            "PartNumber": "",
+            "RatedSpeedMHz": 2100,
+            "SerialNumber": "",
+            "VoltageVoltsX10": 16
+        }
+    },
+    "PartNumber": "",
+    "ProcessorArchitecture": "x86",
+    "ProcessorId": {
+        "EffectiveFamily": "179",
+        "EffectiveModel": "5",
+        "IdentificationRegisters": "0x06540005fbffbfeb",
+        "MicrocodeInfo": null,
+        "Step": "4",
+        "VendorId": "Intel(R) Corporation"
+    },
+    "ProcessorType": "CPU",
+    "SerialNumber": "",
+    "Socket": "Proc 1",
+    "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+    },
+    "TotalCores": 22,
+    "TotalThreads": 44
+}
+```
+
 
 
 ## Chassis
@@ -4915,7 +5413,6 @@ To view, create, and manage racks or rack groups, ensure that the URP is running
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Chassis'
-
 ```
 
 >**Sample response body** 
@@ -4988,86 +5485,114 @@ curl -i GET \
 1. **Computer system chassis**
 
 ```
-{ 
+{
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
-   "@odata.etag":"W/\"50540B90\"",
-   "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
-   "Id":"192083d2-c60a-4318-967b-cb5890c6dfe4:1",
+   "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
+   "@odata.etag":"W/\"59209823\"",
+   "Id":"b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1",
+   "Name":"Computer System Chassis",
+   "AssetTag":null,
    "ChassisType":"RackMount",
-   "Links":{ 
-      "ManagedBy":[ 
-         { 
-            "@odata.id":"/redfish/v1/Managers/141cbba9-1e99-4272-b855-1781730bfe1c.1"
+   "IndicatorLED":"Off",
+   "Manufacturer":"HPE",
+   "Model":"ProLiant DL360 Gen10",
+   "PartNumber":null,
+   "PowerState":"On",
+   "SerialNumber":"MXQ91100T6",
+   "SKU":"867959-B21",
+   "Links":{
+      "ComputerSystems":[
+         {
+            "@odata.id":"/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1"
          }
       ],
-      "ComputerSystems":[ 
-         { 
-            "@odata.id":"/redfish/v1/Systems/192083d2-c60a-4318-967b-cb5890c6dfe4.1"
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1"
          }
       ]
    },
-   "Manufacturer":"HPE",
-   "Model":"ProLiant DL380 Gen10",
-   "Name":"Computer System Chassis",
-   "NetworkAdapters":{ 
-      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/NetworkAdapters"
+   "NetworkAdapters":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters"
    },
-   "Oem":{ 
-      
+   "PCIeSlots":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/PCIeSlots"
+   },
+   "Power":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power"
+   },
+   "Status":{
+      "Health":"OK",
+      "State":"Starting"
+   },
+   "Thermal":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Thermal"
+   },
+   "Oem":{
+      "Hpe":{
+         "@odata.context":"/redfish/v1/$metadata#HpeServerChassis.HpeServerChassis",
+         "@odata.type":"#HpeServerChassis.v2_3_1.HpeServerChassis",
+         "Actions":{
+            "#HpeServerChassis.DisableMCTPOnServer":{
+               "target":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Actions/Oem/Hpe/HpeServerChassis.DisableMCTPOnServer"
+            },
+            "#HpeServerChassis.FactoryResetMCTP":{
+               "target":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Actions/Oem/Hpe/HpeServerChassis.FactoryResetMCTP"
+            }
          },
-         "Firmware":{ 
-            "PlatformDefinitionTable":{ 
-               "Current":{ 
-                  "VersionString":"8.9.0 Build 38"
+         "ElConfigOverride":false,
+         "Firmware":{
+            "PlatformDefinitionTable":{
+               "Current":{
+                  "VersionString":"9.8.0 Build 15"
                }
             },
-            "PowerManagementController":{ 
-               "Current":{ 
-                  "VersionString":"1.0.4"
+            "PowerManagementController":{
+               "Current":{
+                  "VersionString":"1.0.7"
                }
             },
-            "PowerManagementControllerBootloader":{ 
-               "Current":{ 
+            "PowerManagementControllerBootloader":{
+               "Current":{
                   "Family":"25",
                   "VersionString":"1.1"
                }
             },
-            "SPSFirmwareVersionData":{ 
-               "Current":{ 
-                  "VersionString":"4.1.4.251"
+            "SPSFirmwareVersionData":{
+               "Current":{
+                  "VersionString":"4.1.4.601"
                }
             },
-            "SystemProgrammableLogicDevice":{ 
-               "Current":{ 
+            "SystemProgrammableLogicDevice":{
+               "Current":{
                   "VersionString":"0x2A"
                }
             }
          },
-         "Links":{ 
-            "Devices":{ 
-               "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/Devices"
+         "Links":{
+            "Devices":{
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Devices"
             }
          },
-         "MCTPEnabledOnServer":true,
-         "SmartStorageBattery":[ 
-            { 
-               "ChargeLevelPercent":100,
+         "SmartStorageBattery":[
+            {
+               "ChargeLevelPercent":99,
                "FirmwareVersion":"0.70",
                "Index":1,
                "MaximumCapWatts":96,
                "Model":"875241-B21",
-               "ProductName":"Smart Storage Battery ",
-               "RemainingChargeTimeSeconds":7,
-               "SerialNumber":"6WQXL0CB2BV63K",
+               "ProductName":"HPE Smart Storage Battery ",
+               "RemainingChargeTimeSeconds":37,
+               "SerialNumber":"6WQXL0CB2BX63Z",
                "SparePartNumber":"878643-001",
-               "Status":{ 
+               "Status":{
                   "Health":"OK",
                   "State":"Enabled"
                }
             }
          ],
-         "SystemMaintenanceSwitches":{ 
+         "SystemMaintenanceSwitches":{
             "Sw1":"Off",
             "Sw10":"Off",
             "Sw11":"Off",
@@ -5083,18 +5608,10 @@ curl -i GET \
          }
       }
    },
-   "Power":{ 
-      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/Power"
+   "PCIeDevices":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/PCIeDevices"
    },
-   "SKU":"868704-B21",
-   "SerialNumber":"2M291101JX",
-   "Status":{ 
-      "Health":"OK",
-      "State":"Disabled"
-   },
-   "Thermal":{ 
-      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/Thermal"
-   }
+   "ThermalManagedByParent.omitempty":false
 }
 ```
 
@@ -5103,11 +5620,11 @@ curl -i GET \
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
-   "@odata.id":"/redfish/v1/Chassis/f4e24c1c-dd2f-5a17-91b7-71620eb070df",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
-   "Id":"f4e24c1c-dd2f-5a17-91b7-71620eb070df",
+   "@odata.id":"/redfish/v1/Chassis/22804541-c439-5d2a-81d5-23d23e0ebe38",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
+   "Id":"22804541-c439-5d2a-81d5-23d23e0ebe38",
    "Description":"My RackGroup",
-   "Name":"RG8",
+   "Name":"RG2",
    "ChassisType":"RackGroup",
    "Links":{
       "ComputerSystems":[
@@ -5115,7 +5632,7 @@ curl -i GET \
       ],
       "ManagedBy":[
          {
-            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+            "@odata.id":"/redfish/v1/Managers/b44b87c0-00de-4184-ad2b-cdd4da52a805"
          }
       ]
    },
@@ -5132,24 +5649,19 @@ curl -i GET \
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
-   "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
-   "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "Description":"rack no 1",
-   "Name":"RACK#1",
-   "ChassisType":"Rack",
+   "@odata.id":"/redfish/v1/Chassis/f03fed09-dd75-5585-ad81-75cd4ae6266a",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
+   "Id":"f03fed09-dd75-5585-ad81-75cd4ae6266a",
+   "Description":"My RackGroup",
+   "Name":"RG_2",
+   "ChassisType":"RackGroup",
    "Links":{
       "ComputerSystems":[
          
       ],
       "ManagedBy":[
          {
-            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
-         }
-      ],
-      "ContainedBy":[
-         {
-            "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d"
+            "@odata.id":"/redfish/v1/Managers/b44b87c0-00de-4184-ad2b-cdd4da52a805"
          }
       ]
    },
@@ -5179,9 +5691,119 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/Thermal'
+```
 
+> **Sample response body**
 
 ```
+{
+    "@odata.context": "/redfish/v1/$metadata#Thermal.Thermal",
+    "@odata.etag": "W/\"B51E22EA\"",
+    "@odata.id": "/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Thermal",
+    "@odata.type": "#Thermal.v1_6_2.Thermal",
+    "Fans": [
+        {
+            "@odata.id": "/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Thermal#Fans/0",
+            "MemberId": "0",
+            "Name": "Fan 1",
+            "Oem": {
+                "Hpe": {
+                    "@odata.context": "/redfish/v1/$metadata#HpeServerFan.HpeServerFan",
+                    "@odata.type": "#HpeServerFan.v2_0_0.HpeServerFan",
+                    "HotPluggable": true,
+                    "Location": "System",
+                    "Redundant": true
+                }
+            },
+            "Reading": 30,
+            "ReadingUnits": "Percent",
+            "Status": {
+                "Health": "OK",
+                "State": "Enabled"
+            }
+        },
+        {
+            "@odata.id": "/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Thermal#Fans/1",
+            "MemberId": "1",
+            "Name": "Fan 2",
+            "Oem": {
+                "Hpe": {
+                    "@odata.context": "/redfish/v1/$metadata#HpeServerFan.HpeServerFan",
+                    "@odata.type": "#HpeServerFan.v2_0_0.HpeServerFan",
+                    "HotPluggable": true,
+                    "Location": "System",
+                    "Redundant": true
+                }
+            },
+            "Reading": 30,
+            "ReadingUnits": "Percent",
+            "Status": {
+                "Health": "OK",
+                "State": "Enabled"
+            }
+        }
+    ],
+    "Id": "Thermal",
+    "Name": "Thermal",
+    "Oem": {
+        "Hpe": {
+            "@odata.context": "/redfish/v1/$metadata#HpeThermalExt.HpeThermalExt",
+            "@odata.type": "#HpeThermalExt.v2_0_0.HpeThermalExt",
+            "Actions": {
+            },
+            "FanPercentMinimum": 0,
+            "ThermalConfiguration": "OptimalCooling"
+        }
+    },
+    "Temperatures": [
+        {
+            "@odata.id": "/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Thermal#Temperatures/1",
+            "MemberId": "1",
+            "Name": "02-CPU 1",
+            "Oem": {
+                "Hpe": {
+                    "@odata.context": "/redfish/v1/$metadata#HpeSeaOfSensors.HpeSeaOfSensors",
+                    "@odata.type": "#HpeSeaOfSensors.v2_0_0.HpeSeaOfSensors",
+                    "LocationXmm": 11,
+                    "LocationYmm": 5
+                }
+            },
+            "PhysicalContext": "CPU",
+            "ReadingCelsius": 40,
+            "SensorNumber": 2,
+            "Status": {
+                "Health": "OK",
+                "State": "Enabled"
+            },
+            "UpperThresholdCritical": 70,
+            "UpperThresholdFatal": null
+        },
+        {
+            "@odata.id": "/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Thermal#Temperatures/2",
+            "MemberId": "2",
+            "Name": "03-CPU 2",
+            "Oem": {
+                "Hpe": {
+                    "@odata.context": "/redfish/v1/$metadata#HpeSeaOfSensors.HpeSeaOfSensors",
+                    "@odata.type": "#HpeSeaOfSensors.v2_0_0.HpeSeaOfSensors",
+                    "LocationXmm": 4,
+                    "LocationYmm": 5
+                }
+            },
+            "PhysicalContext": "CPU",
+            "ReadingCelsius": 40,
+            "SensorNumber": 3,
+            "Status": {
+                "Health": "OK",
+                "State": "Enabled"
+            },
+            "UpperThresholdCritical": 70,
+            "UpperThresholdFatal": null
+        }
+    ]
+}
+```
+
 
 
 ### Collection of network adapters
@@ -5203,10 +5825,32 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters'
-
-
 ```
 
+> **Sample response body**
+
+```
+{   "@odata.context":"/redfish/v1/$metadata#NetworkAdapterCollection.NetworkAdapterCollection",
+   "@odata.etag":"W/\"C321D970\"",
+   "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters",
+   "@odata.type":"#NetworkAdapterCollection.NetworkAdapterCollection",
+   "Description":"The collection of network adapter resource instances available in this chassis.",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000"
+      }
+   ],
+   "Members@odata.count":1,
+   "Name":"NetworkAdapterCollection",
+   "Oem":{
+      "Hpe":{
+         "@odata.context":"/redfish/v1/$metadata#HpeNetworkAdapterStatus.HpeNetworkAdapterStatus",
+         "@odata.type":"#HpeNetworkAdapterStatus.v1_0_0.HpeNetworkAdapterStatus",
+         "MemberContents":"AllDevices"
+      }
+   }
+}
+```
 
 ### Single network adapter
 
@@ -5226,142 +5870,126 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{NetworkAdapterId}'
-
-
 ```
 
 
 >**Sample response body**
 
 ```
-
 {
    "@odata.context":"/redfish/v1/$metadata#NetworkAdapter.NetworkAdapter",
-   "@odata.etag":"W/\"F303ECE9\"",
-   "@odata.id":"/redfish/v1/Chassis/a022faa5-107c-496d-874e-89c9f3e2df1c.1/NetworkAdapters/{rid}",
-   "@odata.type":"#NetworkAdapter.v1_8_0.NetworkAdapter",
-   "Description":"The network adapter resource instances available in this chassis.",
-   "Name":"Network Adapter View",
+   "@odata.etag":"W/\"DA153FEC\"",
+   "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000",
+   "@odata.type":"#NetworkAdapter.v1_4_0.NetworkAdapter",
+   "Actions":{
+      "#NetworkAdapter.ResetSettingsToDefault":{
+         "target":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000/Actions/NetworkAdapter.ResetSettingsToDefault",
+         "title":"Reset network adapter configuration to factory default values."
+      }
+   },
+   "Controllers":[
+      {
+         "ControllerCapabilities":{
+            "DataCenterBridging":{
+               "Capable":true
+            },
+            "NPAR":{
+               "NparCapable":false,
+               "NparEnabled":false
+            },
+            "NPIV":{
+               "MaxDeviceLogins":128,
+               "MaxPortLogins":64
+            },
+            "NetworkDeviceFunctionCount":8,
+            "NetworkPortCount":2,
+            "VirtualizationOffload":{
+               "SRIOV":{
+                  "SRIOVVEPACapable":false
+               },
+               "VirtualFunction":{
+                  "DeviceMaxCount":128,
+                  "MinAssignmentGroupSize":8,
+                  "NetworkPortMaxCount":64
+               }
+            }
+         },
+         "FirmwarePackageVersion":"07.18.27.00",
+         "Location":{
+            "PartLocation":{
+               "LocationOrdinalValue":0,
+               "LocationType":"Slot",
+               "ServiceLabel":"Embedded ALOM"
+            }
+         }
+      }
+   ],
+   "Description":"Device capabilities and characteristics with active configuration status",
+   "Id":"DC07A000",
+   "Manufacturer":"Hewlett Packard Enterprise",
+   "Model":"HP FlexFabric 10Gb 2-port 534FLR-SFP+ Adapter",
+   "Name":"HP FlexFabric 10Gb 2port 534FLR-SFP+ Adapter",
+   "NetworkDeviceFunctions":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000/NetworkDeviceFunctions"
+   },
+   "NetworkPorts":{
+      "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000/NetworkPorts"
+   },
    "Oem":{
       "Hpe":{
-         "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapter.HpeBaseNetworkAdapter",
-         "@odata.etag":"W/\"7A9A9CE7\"",
-         "@odata.id":"/redfish/v1/Systems/1/BaseNetworkAdapters/1/",
-         "@odata.type":"#HpeBaseNetworkAdapter.v2_0_0.HpeBaseNetworkAdapter",
-         "Id":"1",
-         "FcPorts":[
-            
-         ],
-         "Firmware":{
-            "Current":{
-               "VersionString":"20.14.54"
+         "@odata.context":"/redfish/v1/$metadata#HpeNetworkAdapter.HpeNetworkAdapter",
+         "@odata.type":"#HpeNetworkAdapter.v1_3_0.HpeNetworkAdapter",
+         "Actions":{
+            "#HpeNetworkAdapter.FlushConfigurationToNVM":{
+               "target":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000/Actions/Oem/Hpe/HpeNetworkAdapter.FlushConfigurationToNVM",
+               "title":"Force a save of current network adapter configuration to non-volatile storage."
+            },
+            "#NetworkAdapter.FlushConfigurationToNVM":{
+               "target":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/NetworkAdapters/DC07A000/Actions/Oem/Hpe/NetworkAdapter.FlushConfigurationToNVM",
+               "title":"NOTE: Deprecated, will be removed in a future release. Replaced by HpeNetworkAdapter.FlushConfigurationToNVM. Force a save of current network adapter configuration to non-volatile storage."
             }
          },
-         "Name":"HPE Ethernet 1Gb 4-port 331i Adapter - NIC",
-         "PhysicalPorts":[
+         "CLPVersion":"",
+         "Controllers":[
             {
-               "FullDuplex":true,
-               "IPv4Addresses":[
-                  
-               ],
-               "IPv6Addresses":[
-                  
-               ],
-               "LinkStatus":null,
-               "MacAddress":"80:30:e0:2c:92:a4",
-               "Name":"",
-               "Oem":{
-                  "Hpe":{
-                     "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapterExt.HpeBaseNetworkAdapterExt",
-                     "@odata.type":"#HpeBaseNetworkAdapterExt.v2_0_0.HpeBaseNetworkAdapterExt",
-                     "BadReceives":0,
-                     "BadTransmits":0,
-                     "GoodReceives":0,
-                     "GoodTransmits":0
-                  }
+               "DeviceLimitationsBitmap":0,
+               "EdgeVirtualBridging":{
+                  "ChannelDescriptionTLVCapable":true,
+                  "ChannelLinkControlTLVCapable":true
                },
-               "SpeedMbps":0
-            },
-            {
-               "FullDuplex":true,
-               "IPv4Addresses":[
-                  
-               ],
-               "IPv6Addresses":[
-                  
-               ],
-               "LinkStatus":null,
-               "MacAddress":"80:30:e0:2c:92:a5",
-               "Name":"",
-               "Oem":{
-                  "Hpe":{
-                     "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapterExt.HpeBaseNetworkAdapterExt",
-                     "@odata.type":"#HpeBaseNetworkAdapterExt.v2_0_0.HpeBaseNetworkAdapterExt",
-                     "BadReceives":0,
-                     "BadTransmits":0,
-                     "GoodReceives":0,
-                     "GoodTransmits":0
-                  }
+               "EmbeddedLLDPFunctions":{
+                  "Enabled":true,
+                  "Optional":true
                },
-               "SpeedMbps":0
-            },
-            {
-               "FullDuplex":true,
-               "IPv4Addresses":[
-                  
-               ],
-               "IPv6Addresses":[
-                  
-               ],
-               "LinkStatus":null,
-               "MacAddress":"80:30:e0:2c:92:a6",
-               "Name":"",
-               "Oem":{
-                  "Hpe":{
-                     "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapterExt.HpeBaseNetworkAdapterExt",
-                     "@odata.type":"#HpeBaseNetworkAdapterExt.v2_0_0.HpeBaseNetworkAdapterExt",
-                     "BadReceives":0,
-                     "BadTransmits":0,
-                     "GoodReceives":0,
-                     "GoodTransmits":0
+               "FunctionTypeLimits":[
+                  {
+                     "ConstraintDescription":"RES1",
+                     "FCoEResourcesConsumed":1,
+                     "TotalSharedResourcesAvailable":1,
+                     "iSCSIResourcesConsumed":1
                   }
-               },
-               "SpeedMbps":0
-            },
-            {
-               "FullDuplex":true,
-               "IPv4Addresses":[
-                  
                ],
-               "IPv6Addresses":[
-                  
+               "FunctionTypes":[
+                  "Ethernet",
+                  "iSCSI",
+                  "FCoE"
                ],
-               "LinkStatus":null,
-               "MacAddress":"80:30:e0:2c:92:a7",
-               "Name":"",
-               "Oem":{
-                  "Hpe":{
-                     "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapterExt.HpeBaseNetworkAdapterExt",
-                     "@odata.type":"#HpeBaseNetworkAdapterExt.v2_0_0.HpeBaseNetworkAdapterExt",
-                     "BadReceives":0,
-                     "BadTransmits":0,
-                     "GoodReceives":0,
-                     "GoodTransmits":0
-                  }
-               },
-               "SpeedMbps":0
+               "MostRecentConfigurationChangeSource":"None",
+               "RDMASupport":[
+                  "None"
+               ],
+               "UnderlyingDataSource":"DCi"
             }
          ],
-         "Status":{
-            "State":null
-         },
-         "StructuredName":"NIC.LOM.1.1",
-         "UEFIDevicePath":"PciRoot(0x0)/Pci(0x1C,0x0)/Pci(0x0,0x0)"
+         "FactoryDefaultsActuationBehavior":"Immediate",
+         "PCAVersion":"700749-001",
+         "RedfishConfiguration":"Disabled"
       }
-   }
+   },
+   "PartNumber":"0",
+   "SKU":"534FLR",
+   "SerialNumber":"CN7842V67N"
 }
-
-
 ```
 
 ###  Power
@@ -5382,8 +6010,162 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/Power'
+```
 
+> **Sample response body**
 
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Power.Power",
+   "@odata.etag":"W/\"ADB9FA3D\"",
+   "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power",
+   "@odata.type":"#Power.v1_3_0.Power",
+   "Id":"Power",
+   "Name":"PowerMetrics",
+   "Oem":{
+      "Hpe":{
+         "@odata.context":"/redfish/v1/$metadata#HpePowerMetricsExt.HpePowerMetricsExt",
+         "@odata.type":"#HpePowerMetricsExt.v2_3_0.HpePowerMetricsExt",
+         "BrownoutRecoveryEnabled":true,
+         "HasCpuPowerMetering":true,
+         "HasDimmPowerMetering":true,
+         "HasGpuPowerMetering":false,
+         "HasPowerMetering":true,
+         "HighEfficiencyMode":"Balanced",
+         "Links":{
+            "FastPowerMeter":{
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power/FastPowerMeter"
+            },
+            "FederatedGroupCapping":{
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power/FederatedGroupCapping"
+            },
+            "PowerMeter":{
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power/PowerMeter"
+            },
+            "SlowPowerMeter":{
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power/SlowPowerMeter"
+            }
+         },
+         "MinimumSafelyAchievableCap":null,
+         "MinimumSafelyAchievableCapValid":false,
+         "SNMPPowerThresholdAlert":{
+            "DurationInMin":0,
+            "ThresholdWatts":0,
+            "Trigger":"Disabled"
+         }
+      }
+   },
+   "PowerControl":[
+      {
+         "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power#PowerControl/0",
+         "MemberId":"0",
+         "PowerCapacityWatts":1000,
+         "PowerConsumedWatts":202,
+         "PowerLimit":{
+            "LimitException":null,
+            "LimitInWatts":null
+         },
+         "PowerMetrics":{
+            "AverageConsumedWatts":211,
+            "IntervalInMin":20,
+            "MaxConsumedWatts":341,
+            "MinConsumedWatts":202
+         }
+      }
+   ],
+   "PowerSupplies":[
+      {
+         "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power#PowerSupplies/0",
+         "FirmwareVersion":"1.00",
+         "LastPowerOutputWatts":104,
+         "LineInputVoltage":211,
+         "LineInputVoltageType":"ACHighLine",
+         "Manufacturer":"LTEON",
+         "MemberId":"0",
+         "Model":"865408-B21",
+         "Name":"HpeServerPowerSupply",
+         "Oem":{
+            "Hpe":{
+               "@odata.context":"/redfish/v1/$metadata#HpeServerPowerSupply.HpeServerPowerSupply",
+               "@odata.type":"#HpeServerPowerSupply.v2_0_0.HpeServerPowerSupply",
+               "AveragePowerOutputWatts":104,
+               "BayNumber":1,
+               "HotplugCapable":true,
+               "MaxPowerOutputWatts":120,
+               "Mismatched":false,
+               "PowerSupplyStatus":{
+                  "State":"Ok"
+               },
+               "iPDUCapable":false
+            }
+         },
+         "PowerCapacityWatts":500,
+         "PowerSupplyType":"AC",
+         "SerialNumber":"5WBXK0ELLB96DW",
+         "SparePartNumber":"866729-001",
+         "Status":{
+            "Health":"OK",
+            "State":"Enabled"
+         }
+      },
+      {
+         "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power#PowerSupplies/1",
+         "FirmwareVersion":"1.00",
+         "LastPowerOutputWatts":98,
+         "LineInputVoltage":210,
+         "LineInputVoltageType":"ACHighLine",
+         "Manufacturer":"LTEON",
+         "MemberId":"1",
+         "Model":"865408-B21",
+         "Name":"HpeServerPowerSupply",
+         "Oem":{
+            "Hpe":{
+               "@odata.context":"/redfish/v1/$metadata#HpeServerPowerSupply.HpeServerPowerSupply",
+               "@odata.type":"#HpeServerPowerSupply.v2_0_0.HpeServerPowerSupply",
+               "AveragePowerOutputWatts":98,
+               "BayNumber":2,
+               "HotplugCapable":true,
+               "MaxPowerOutputWatts":101,
+               "Mismatched":false,
+               "PowerSupplyStatus":{
+                  "State":"Ok"
+               },
+               "iPDUCapable":false
+            }
+         },
+         "PowerCapacityWatts":500,
+         "PowerSupplyType":"AC",
+         "SerialNumber":"5WBXK0ELLB96AP",
+         "SparePartNumber":"866729-001",
+         "Status":{
+            "Health":"OK",
+            "State":"Enabled"
+         }
+      }
+   ],
+   "Redundancy":[
+      {
+         "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power#Redundancy/0",
+         "MaxNumSupported":2,
+         "MemberId":"0",
+         "MinNumNeeded":2,
+         "Mode":"Failover",
+         "Name":"PowerSupply Redundancy Group 1",
+         "RedundancySet":[
+            {
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power#PowerSupplies/0"
+            },
+            {
+               "@odata.id":"/redfish/v1/Chassis/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Power#PowerSupplies/1"
+            }
+         ],
+         "Status":{
+            "Health":"OK",
+            "State":"Enabled"
+         }
+      }
+   ]
+}
 ```
 
 ### Creating a rack group
@@ -5463,11 +6245,11 @@ Content-Length:462 bytes
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
-   "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
-   "Id":"c2459269-011c-58d3-a217-ef914c4c295d",
+   "@odata.id":"/redfish/v1/Chassis/22804541-c439-5d2a-81d5-23d23e0ebe38",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
+   "Id":"22804541-c439-5d2a-81d5-23d23e0ebe38",
    "Description":"My RackGroup",
-   "Name":"RG5",
+   "Name":"RG2",
    "ChassisType":"RackGroup",
    "Links":{
       "ComputerSystems":[
@@ -5475,7 +6257,7 @@ Content-Length:462 bytes
       ],
       "ManagedBy":[
          {
-            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+            "@odata.id":"/redfish/v1/Managers/b44b87c0-00de-4184-ad2b-cdd4da52a805"
          }
       ]
    },
@@ -5499,9 +6281,7 @@ Content-Length:462 bytes
 |**Response code** |On success, `201 Created`|
 |**Authentication** |Yes|
 
- 
-
->**curl command**
+ **curl command**
 
 ```
 curl -i POST \
@@ -5579,7 +6359,7 @@ Content-Length:462 bytes
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -5590,12 +6370,12 @@ Content-Length:462 bytes
       ],
       "ManagedBy":[
          {
-            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+            "@odata.id":"/redfish/v1/Managers/b44b87c0-00de-4184-ad2b-cdd4da52a805"
          }
       ],
       "ContainedBy":[
          {
-            "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d"
+            "@odata.id":"/redfish/v1/Chassis/22804541-c439-5d2a-81d5-23d23e0ebe38"
          }
       ]
    },
@@ -5668,7 +6448,7 @@ curl -i PATCH \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -5755,7 +6535,7 @@ curl -i PATCH \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "@odata.type":"#Chassis.v1_20_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -5821,7 +6601,7 @@ curl -i DELETE \
 
 
 
-##  Searching the inventory
+##   Searching the inventory
 
 |||
 |---------|-------|
@@ -10514,17 +11294,17 @@ You can configure the number of reposting instances and the required time interv
 
 # Message registries
 
-A `MessageRegistry` represents the properties for a message registry.
+The`MessageRegistry` endpoint represents the properties for a message registry.
 
 A message registry is an array of messages and their attributes organized by `MessageId`. Each entry has:
 
 -   Description
 
--   The message this id translates to
+-   Message this id translates to
 
 -   Severity
 
--   The number and type of arguments
+-   Number and type of arguments
 
 -   Proposed resolution
 
@@ -10570,64 +11350,13 @@ curl -i GET \
    "@odata.type":"#MessageRegistryFileCollection.MessageRegistryFileCollection",
    "Name":"Registry File Repository",
    "Description":"Registry Repository",
-   "Members@odata.count":49,
+   "Members@odata.count":14,
    "Members":[
       {
-         "@odata.id":"/redfish/v1/Registries/Base.1.0.0"
+         "@odata.id":"/redfish/v1/Registries/Base.1.13.0"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/Base.1.10.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.10.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.11.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.2.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.3.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.3.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.4.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.5.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.6.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.6.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.7.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.8.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.8.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.8.2"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Base.1.9.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Composition.1.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Composition.1.0.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Composition.1.1.0"
+         "@odata.id":"/redfish/v1/Registries/Composition.1.1.1"
       },
       {
          "@odata.id":"/redfish/v1/Registries/EthernetFabric.1.0.0"
@@ -10639,88 +11368,34 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Registries/JobEvent.1.0.0"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/LogService.1.0.0"
+         "@odata.id":"/redfish/v1/Registries/License.1.0.1"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/NetworkDevice.1.0.0"
+         "@odata.id":"/redfish/v1/Registries/LogService.1.0.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/NetworkDevice.1.0.1"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/Redfish_1.0.1_PrivilegeRegistry"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Redfish_1.0.2_PrivilegeRegistry"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Redfish_1.0.3_PrivilegeRegistry"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Redfish_1.0.4_PrivilegeRegistry"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/Redfish_1.1.0_PrivilegeRegistry"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.2"
+         "@odata.id":"/redfish/v1/Registries/Redfish_1.3.0_PrivilegeRegistry"
       },
       {
          "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.3"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/StorageDevice.1.0.0"
+         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.2.1"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.1"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.2"
+         "@odata.id":"/redfish/v1/Registries/StorageDevice.1.1.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.3"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/Update.1.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/%23SmartStorageMessages.v2_0_1.SmartStorageMessages"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/iLOeRS.1.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU56.v1_1_42"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/HpeDcpmmDiags.1.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/iLO.2.14.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/HpeCommon.2.0.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU32.v1_2_32"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/iLOEvents.2.3.0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Registries/HpeBiosMessageRegistry.v1_0_0"
+         "@odata.id":"/redfish/v1/Registries/Update.1.0.1"
       }
    ]
-}	
+}
 ```
 
 ##  Viewing a single registry
@@ -10742,29 +11417,24 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Registries/{registryId}'
-
 ```
 
 >**Sample response body**
 
 ```
 {
-   "Id":"Base.1.6.1",
-   "@odata.context":"/redfish/v1/https://10.24.1.95:45000/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile",
-   "@odata.id":"/redfish/v1/Registries/Base.1.6.1",
-   "@odata.type":"#MessageRegistryFile.v1_1_3.MessageRegistryFile",
-   "Name":"Registry File Repository",
-   "Description":"Base Message Registry File Locations",
-   "Languages":[
-      "en"
-   ],
-   "Location":[
-      {
-         "Language":"en",
-         "Uri":"/redfish/v1/registries/Base.1.6.1.json"
-      }
-   ],
-   "Registry":"Base.1.6.1"
+   "@Redfish.Copyright":"Copyright 2014-2022 DMTF. All rights reserved.",
+   "@Redfish.License":"Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
+   "@odata.type":"#MessageRegistry.v1_5_0.MessageRegistry",
+   "Description":"This registry defines the base messages for Redfish",
+   "Id":"Base.1.13.0",
+   "Language":"en",
+   "Messages":{
+      "Name":"Base Message Registry",
+      "OwningEntity":"DMTF",
+      "RegistryPrefix":"Base",
+      "RegistryVersion":"1.13.0"
+   }
 }
 ```
 
@@ -10788,6 +11458,29 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/registries/{jsonFileId}'
+```
+
+>**Sample response body**
+
+```
+{
+   "Id":"Base.1.13.0",
+   "@odata.context":"/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile",
+   "@odata.id":"/redfish/v1/Registries/Base.1.13.0",
+   "@odata.type":"#MessageRegistryFile.v1_1_3.MessageRegistryFile",
+   "Name":"Registry File Repository",
+   "Description":"Base Message Registry File Locations",
+   "Languages":[
+      "en"
+   ],
+   "Location":[
+      {
+         "Language":"en",
+         "Uri":"/redfish/v1/Registries/Base.1.13.0.json"
+      }
+   ],
+   "Registry":"Base.1.13.0"
+}
 ```
 
 

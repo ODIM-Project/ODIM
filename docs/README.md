@@ -4692,60 +4692,26 @@ curl -i -X GET \
 
 ```
 {
-    "@odata.id": "/redfish/v1/Systems/1/Storage/DE00C000/Volumes/Capabilities",
+    "@odata.id": "/redfish/v1/Systems/45201b16-5305-49f0-846b-4597e982f6f8.1/Storage/DE00C000/Volumes/Capabilities",
     "@odata.type": "#Volume.v1_6_2.Volume",
     "Id": "Capabilities",
-    "Name": "Capabilities for the volume collection",
-    "RAIDType@Redfish.RequiredOnCreate": true,
-    "RAIDType@Redfish.AllowableValues": [
-                "RAID0",
-                "RAID1",
-                "RAID3",
-                "RAID4",
-                "RAID5",
-                "RAID6",
-                "RAID10",
-                "RAID01",
-                "RAID6TP",
-                "RAID1E",
-                "RAID50",
-                "RAID60",
-                "RAID00",
-                "RAID10E",
-                "RAID1Triple",
-                "RAID10Triple",
-                "None"
-    ],
-    "CapacityBytes@Redfish.OptionalOnCreate": true,
-    "StripSizeBytes@Redfish.OptionalOnCreate": true,
-    "IOPerfModeEnabled@Redfish.OptionalOnCreate": true,
-    "MediaSpanCount@Redfish.OptionalOnCreate": true,
-    "DisplayName@Redfish.OptionalOnCreate": true,
-    "ReadCachePolicy@Redfish.OptionalOnCreate": true,
-    "ReadCachePolicy@Redfish.AllowableValues": [
-        "Off",
-        "ReadAhead"
-    ],
-    "WriteCachePolicy@Redfish.OptionalOnCreate": true,
-    "WriteCachePolicy@Redfish.AllowableValues": [
-        "Off",
-        "UnprotectedWriteBack"
-    ],
-    "VolumeUsage@Redfish.OptionalOnCreate": true,
-    "VolumeUsage@Redfish.AllowableValues": [
-        "Data"
-    ],
-    "InitializeMethod@Redfish.OptionalOnCreate": true,
-    "InitializeMethod@Redfish.AllowableValues": [
-        "Background",
-        "Foreground"
-    ],
-    "Links@Redfish.RequiredOnCreate": true,
     "Links": {
-        "Drives@Redfish.RequiredOnCreate": true,
-        "DedicatedSpareDrives@Redfish.OptionalOnCreate": true
+        "Drives@Redfish.RequiredOnCreate": true
     },
-    "@odata.etag": "\"4C159FB2\""
+    "Links@Redfish.RequiredOnCreate": true,
+    "Name": "Capabilities for the volume collection",
+    "RAIDType@Redfish.AllowableValues": [
+        "RAID0",
+        "RAID1",
+        "RAID10",
+        "RAID5",
+        "RAID50",
+        "RAID6",
+        "RAID60",
+        "RAID1Triple",
+        "RAID10Triple"
+    ],
+    "RAIDType@Redfish.RequiredOnCreate": true
 }
 ```
 

@@ -50,7 +50,7 @@ type Manager struct {
 	TimeZoneName               string                      `json:"TimeZoneName,omitempty"`
 	UUID                       string                      `json:"UUID,omitempty"`
 	Measurements               []*Link                     `json:"Measurements,omitempty"` // Deprecated in version v1_14_0
-	Certificates               Certificates                `json:"Certificates,omitempty"`
+	Certificates               *Certificates               `json:"Certificates,omitempty"`
 	CommandShell               *CommandShell               `json:"CommandShell,omitempty"`
 	GraphicalConsole           *GraphicalConsole           `json:"GraphicalConsole,omitempty"`
 	Location                   *Link                       `json:"Location,omitempty"`

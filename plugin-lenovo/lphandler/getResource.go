@@ -16,12 +16,14 @@
 package lphandler
 
 import (
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
 	"encoding/json"
+
+	log "github.com/sirupsen/logrus"
+
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-lenovo/config"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpmodel"

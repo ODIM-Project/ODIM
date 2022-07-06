@@ -88,6 +88,28 @@ func mockGetPluginDataError(id string) (umodel.Plugin, *errors.Error) {
 
 func mockContactPlugin(req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, ucommon.ResponseStatus, error) {
 	var responseStatus ucommon.ResponseStatus
+	if req.OID == "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate" {
+		encodedTaskData, _ := JSONMarshalFunc(common.TaskData{
+			TaskID:          "1234145125",
+			PercentComplete: 20,
+			TaskState:       common.Running,
+			TaskStatus:      common.OK,
+		})
+		responseStatus.StatusCode = http.StatusAccepted
+		return encodedTaskData, "/taskmon/1234145125", responseStatus, nil
+	} else if req.OID == "ODIM/v1/UpdateService/Actions/UpdateService.StartUpdate" {
+		encodedTaskData, _ := JSONMarshalFunc(common.TaskData{
+			TaskID:          "1234145126",
+			PercentComplete: 15,
+			TaskState:       common.Running,
+			TaskStatus:      common.OK,
+		})
+		responseStatus.StatusCode = http.StatusAccepted
+		return encodedTaskData, "/taskmon/1234145126", responseStatus, nil
+	} else if req.OID == "/taskmon/1234145126" || req.OID == "/taskmon/1234145125" {
+		responseStatus.StatusCode = http.StatusOK
+		return []byte(`{"Attributes":"sample"}`), "token", responseStatus, nil
+	}
 
 	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, nil
 }

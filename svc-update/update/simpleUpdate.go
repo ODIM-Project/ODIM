@@ -262,7 +262,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost
-	_, _, getResponse, err := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
+	respBody, location, getResponse, err := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
 	if err != nil {
 		subTaskChannel <- getResponse.StatusCode
 		errMsg := err.Error()
@@ -270,7 +270,22 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 		return
 	}
-
+	if getResponse.StatusCode == http.StatusAccepted {
+		getResponse, err = e.monitorPluginTask(subTaskChannel, &monitorTaskRequest{
+			subTaskID:         subTaskID,
+			serverURI:         serverURI,
+			updateRequestBody: updateRequestBody,
+			respBody:          respBody,
+			getResponse:       getResponse,
+			taskInfo:          taskInfo,
+			location:          location,
+			pluginRequest:     contactRequest,
+			resp:              resp,
+		})
+		if err != nil {
+			return
+		}
+	}
 	resp.StatusCode = http.StatusOK
 	percentComplete = 100
 

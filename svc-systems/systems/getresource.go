@@ -624,11 +624,41 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 	}
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(respData), &resource)
+	if strings.Contains(req.URL, "/Volumes/Capabilities") {
+		var result map[string]interface{}
+		body := fillCapabilitiesResponse(resource, req.URL)
+		json.Unmarshal(body, &result)
+		delete(result, "MembersCount")
+		delete(result, "Members")
+		resp.Body = result
+		resp.StatusCode = http.StatusOK
+		resp.StatusMessage = response.Success
+		log.Debug("Exiting the GetSystemResource with response ", resp)
+		return resp
+	}
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	log.Debug("Exiting the GetSystemResource with response ", resp)
 	return resp
+}
+func fillCapabilitiesResponse(respMap map[string]interface{}, oid string) (body []byte) {
+	if _, ok := respMap["RAIDType@Redfish.AllowableValues"]; !ok {
+		respMap["RAIDType@Redfish.AllowableValues"] = []string{"RAID0", "RAID1", "RAID3", "RAID4", "RAID5", "RAID6", "RAID10", "RAID01", "RAID6TP", "RAID1E", "RAID50", "RAID60", "RAID00", "RAID10E", "RAID1Triple", "RAID10Triple", "None"}
+	}
+	collectionCapabilitiesObject := make(map[string]interface{})
+	collectionCapabilitiesObject["@odata.id"] = oid
+	collectionCapabilitiesObject["@odata.type"] = "#Volume.v1_6_2.Volume"
+	collectionCapabilitiesObject["Id"] = "Capabilities"
+	collectionCapabilitiesObject["Name"] = "Capabilities for the volume collection"
+	collectionCapabilitiesObject["RAIDType@Redfish.RequiredOnCreate"] = true
+	collectionCapabilitiesObject["RAIDType@Redfish.AllowableValues"] = respMap["RAIDType@Redfish.AllowableValues"]
+	collectionCapabilitiesObject["Links@Redfish.RequiredOnCreate"] = true
+	collectionCapabilitiesObject["Links"] = dmtf.LinkValues{
+		Drives: true,
+	}
+	body, _ = json.Marshal(collectionCapabilitiesObject)
+	return
 }
 
 // getDeviceLoadInfo accepts URL and System ID as parameters and returns int

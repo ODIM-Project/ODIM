@@ -963,7 +963,26 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		memberFlag = true
 	}
 	resourceName := getResourceName(req.OID, memberFlag)
-
+	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
+		CollectionCapabilities := dmtf.CollectionCapabilities{
+			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
+			Capabilities: []*dmtf.Capabilities{
+				&dmtf.Capabilities{
+					CapabilitiesObject: &dmtf.Link{
+						Oid: req.OID + "/Capabilities",
+					},
+					Links: dmtf.CapLinks{
+						TargetCollection: &dmtf.Link{
+							Oid: req.OID,
+						},
+					},
+					UseCase: "VolumeCreation",
+				},
+			},
+		}
+		resourceData["@Redfish.CollectionCapabilities"] = CollectionCapabilities
+		body, _ = json.Marshal(resourceData)
+	}
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
 	// persist the response with table resourceName and key as system UUID + Oid Needs relook TODO

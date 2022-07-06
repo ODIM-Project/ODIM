@@ -256,7 +256,7 @@ type Capabilities struct {
 type CapabilitiesObject struct {
 	ODataID           string     `json:"@odata.id"`
 	ODataType         string     `json:"@odata.type"`
-	CapacityBytes     bool       `json:""CapacityBytes@Redfish.OptionalOnCreate,omitempty"`
+	CapacityBytes     bool       `json:"CapacityBytes@Redfish.OptionalOnCreate,omitempty"`
 	DisplayName       bool       `json:"DisplayName@Redfish.OptionalOnCreate,omitempty"`
 	IOPerfModeEnabled bool       `json:"IOPerfModeEnabled@Redfish.OptionalOnCreate,omitempty"`
 	RAIDType          bool       `json:"RAIDType@Redfish.RequiredOnCreate"`

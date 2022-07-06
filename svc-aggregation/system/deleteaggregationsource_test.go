@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -481,6 +482,37 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 			got := d.DeleteAggregationSource(tt.args.req)
 			if got.StatusCode != tt.want {
 				t.Errorf("DeleteAggregationSource() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_deleteLinkDetails(t *testing.T) {
+	e := mockGetExternalInterface()
+	var chassisLink []*dmtf.Link
+	chassisLink = append(chassisLink, &dmtf.Link{Oid: "/redfish/v1/Managers/uuid.1"})
+	type args struct {
+		managerData map[string]interface{}
+		systemID    string
+		chassisList []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]interface{}
+	}{
+		name:"Test 1"
+		args:    args{
+			managerData: map[string]interface{"Links"},
+			systemID:"/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1",
+			chassisList: chassisLink,
+		}
+		want: http.StatusNotFound
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := deleteLinkDetails(tt.args.managerData, tt.args.systemID, tt.args.chassisList); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("deleteLinkDetails() = %v, want %v", got, tt.want)
 			}
 		})
 	}

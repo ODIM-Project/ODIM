@@ -8175,7 +8175,7 @@ curl -i GET \
 
 ```
 {
-    "@odata.type": "#UpdateService.v1_10_0.UpdateService",
+    "@odata.type": "#UpdateService.v1_11_0.UpdateService",
     "@odata.id": "/redfish/v1/UpdateService",
     "@odata.context": "/redfish/v1/$metadata#UpdateService.UpdateService",
     "Id": "UpdateService",
@@ -8196,7 +8196,7 @@ curl -i GET \
     "Actions": {
         "#UpdateService.SimpleUpdate": {
             "target": "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
-            "@Redfish.OperationApplyTimeSupport": {
+            "@Redfish.OperationApplyTime": {
                 "@odata.type": "#Settings.v1_3_3.OperationApplyTimeSupport",
                 "SupportedValues": [
                     "OnStartUpdateRequest"
@@ -8233,39 +8233,39 @@ curl -i GET \
 
 ```
 {
-   ​   "@odata.context":"/redfish/v1/$metadata#FirmwareInventoryCollection.FirmwareCollection",
-   ​   "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory",
-   ​   "@odata.type":"#FirmwareInventoryCollection.FirmwareInventoryCollection",
-   ​   "Description":"FirmwareInventory view",
-   ​   "Name":"FirmwareInventory",
-   ​   "Members":​[
-      ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.10"         ​
-      },
-      ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.9"         ​
-      },
-      ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.6"         ​
-      },
-      ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.17"         ​
-      },
-      ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.13"         ​
-      },
-      ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.5"         ​
-      },
-      ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.8"         ​
-      },
-      ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.12"         ​
-      }      ​
-   ],
-   ​   "Members@odata.count":8​
-}​
+    "@odata.context": "/redfish/v1/$metadata#FirmwareInventoryCollection.FirmwareCollection",
+    "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory",
+    "@odata.type": "#SoftwareInventoryCollection.SoftwareInventoryCollection",
+    "Description": "FirmwareInventory view",
+    "Name": "FirmwareInventory",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/1c117017-37b7-4beb-b205-97ee73627d6c.7"
+        },
+        {
+            "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/1c117017-37b7-4beb-b205-97ee73627d6c.4"
+        },
+        {
+            "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/1c117017-37b7-4beb-b205-97ee73627d6c.6"
+        },
+        {
+            "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/1c117017-37b7-4beb-b205-97ee73627d6c.11"
+        },
+        {
+            "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/1c117017-37b7-4beb-b205-97ee73627d6c.13"
+        },
+        {
+            "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/1c117017-37b7-4beb-b205-97ee73627d6c.10"
+        },
+        {
+            "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/1c117017-37b7-4beb-b205-97ee73627d6c.9"
+        },
+        {
+            "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory/1c117017-37b7-4beb-b205-97ee73627d6c.12"
+        }
+    ],
+    "Members@odata.count": 8
+}
 ```
 
 ## Viewing a specific firmware resource
@@ -8312,7 +8312,12 @@ curl -i GET \
          ]
       }
    },
-   "Version":"8.5.0 Build 15"
+   "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+    },
+    "Updateable": true,
+   "Version": "1.0.0.20"
 }
 ```
 
@@ -8338,14 +8343,13 @@ curl -i GET \
 >**Sample response body**
 
 ```
-{
-   ​   "@odata.context":"/redfish/v1/$metadata#SoftwareInventoryCollection.SoftwareCollection",
-   ​   "@odata.id":"/redfish/v1/UpdateService/SoftwareInventory",
-   ​   "@odata.type":"#SoftwareInventoryCollection.SoftwareInventoryCollection",
-   ​   "Description":"SoftwareInventory view",
-   ​   "Name":"SoftwareInventory",
-   ​   "Members":null,
-   ​   "Members@odata.count":0​
+{  "@odata.context":"/redfish/v1/$metadata#SoftwareInventoryCollection.SoftwareCollection",
+   "@odata.id":"/redfish/v1/UpdateService/SoftwareInventory",
+   "@odata.type":"#SoftwareInventoryCollection.SoftwareInventoryCollection",
+   "Description":"SoftwareInventory view",
+   "Name":"SoftwareInventory",
+   "Members":[],
+   "Members@odata.count":0
 }
 ```
 
@@ -8421,11 +8425,8 @@ curl -i POST \
    -d \
 '{
 "ImageURI": "<URI_of_the_firmware_image>",
-"Password": "{password}",
 "Targets": ["/redfish/v1/Systems/{ComputerSystemId}"],
 "@Redfish.OperationApplyTime": "OnStartUpdateRequest"
-"TransferProtocol": "",
-"Username": "{username}"
 }' \
  'https://{odim_host}:{port}/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate'
 
@@ -8462,7 +8463,7 @@ curl -i POST \
 |Targets[]|Array (required)<br> |An array of URIs that indicate where to apply the update image.|
 |TransferProtocol|String (optional)<br> | The network protocol that the update service uses to retrieve the software or the firmware image file at the URI provided in the `ImageURI` parameter, if the URI does not contain a scheme.<br> For the possible property values, see *Transfer protocol* table.<br> |
 |Username|String (optional)<br> |The user name to access the URI specified by the Image URI parameter.|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation (optional)<br> | It enables you to control when the update is carried out.<br> Supported value is: `OnStartUpdate`. It indicates that the update will be carried out only after you perform HTTP POST on:<br> `/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate`.<br> |
+|@Redfish.OperationApplyTime|Redfish annotation (optional)<br> | It enables you to control when the update is carried out.<br> Supported value is: `OnStartUpdate`. It indicates that the update will be carried out only after you perform HTTP POST on:<br> `/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate`.<br> |
 
 |String|Description|
 |------|-----------|

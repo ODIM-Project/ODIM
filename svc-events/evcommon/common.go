@@ -133,8 +133,8 @@ func (st *StartUpInteraface) GetAllPluginStatus() {
 			log.Error(err.Error())
 			return
 		}
-		for i := 0; i < len(pluginList); i++ {
-			go st.getPluginStatus(pluginList[i])
+		for _, v := range pluginList {
+			go st.getPluginStatus(v)
 		}
 		var pollingTime int
 		config.TLSConfMutex.RLock()
@@ -205,9 +205,10 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 	EMBTopics.lock.Lock()
 	EMBTopics.EMBConsume = st.EMBConsume
 	EMBTopics.lock.Unlock()
-	for j := 0; j < len(topicsList); j++ {
-		EMBTopics.ConsumeTopic(topicsList[j])
+	for _, v := range topicsList {
+		EMBTopics.ConsumeTopic(v)
 	}
+
 	return
 }
 
@@ -217,9 +218,9 @@ func (st *StartUpInteraface) getAllServers(pluginID string) ([]SavedSystems, err
 	if err != nil {
 		return matchedServers, err
 	}
-	for i := 0; i < len(allServers); i++ {
+	for _, v := range allServers {
 		var s SavedSystems
-		singleServer, err := st.GetSingleSystem(allServers[i])
+		singleServer, err := st.GetSingleSystem(v)
 		if err != nil {
 			// skip to next member in the array.
 			continue
@@ -359,11 +360,11 @@ func (st *StartUpInteraface) getSubscribedEventsDetails(serverAddress string) (s
 	if err != nil {
 		return "", nil, err
 	}
-	for i := 0; i < len(subscriptionDetails); i++ {
-		if len(subscriptionDetails[i].EventTypes) == 0 {
+	for _, v := range subscriptionDetails {
+		if len(v.EventTypes) == 0 {
 			emptyListFlag = true
 		} else {
-			eventTypes = append(eventTypes, subscriptionDetails[i].EventTypes...)
+			eventTypes = append(eventTypes, v.EventTypes...)
 		}
 	}
 	if emptyListFlag {
@@ -525,8 +526,8 @@ func (st *StartUpInteraface) SubscribePluginEMB() {
 		log.Error(err.Error())
 		return
 	}
-	for i := 0; i < len(pluginList); i++ {
-		go st.getPluginEMB(pluginList[i])
+	for _, v := range pluginList {
+		go st.getPluginEMB(v)
 	}
 }
 
@@ -556,8 +557,8 @@ func (st *StartUpInteraface) getPluginEMB(plugin evmodel.Plugin) {
 	EMBTopics.lock.Lock()
 	EMBTopics.EMBConsume = st.EMBConsume
 	EMBTopics.lock.Unlock()
-	for j := 0; j < len(topicsList); j++ {
-		EMBTopics.ConsumeTopic(topicsList[j])
+	for _, v := range topicsList {
+		EMBTopics.ConsumeTopic(v)
 	}
 	return
 }

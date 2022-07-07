@@ -271,6 +271,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 			SubscriptionType:     postRequest.SubscriptionType,
 			OriginResources:      successfulSubscriptionList,
 			Hosts:                hosts,
+			DeliveryRetryPolicy:  postRequest.DeliveryRetryPolicy,
 		}
 
 		if err = e.SaveEventSubscription(evtSubscription); err != nil {
@@ -363,6 +364,7 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 		SubordinateResources: postRequest.SubordinateResources,
 		HTTPHeaders:          httpHeadersSlice,
 		Context:              postRequest.Context,
+		DeliveryRetryPolicy:  postRequest.DeliveryRetryPolicy,
 	}
 	res, err := e.IsEventsSubscribed("", origin, &subscriptionPost, plugin, target, collectionFlag, collectionName)
 	if err != nil {

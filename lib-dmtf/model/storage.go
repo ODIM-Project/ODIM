@@ -243,6 +243,51 @@ type FirmwareVersion struct {
 type Current struct {
 	VersionString string `json:"VersionString,omitempty"`
 }
+type CollectionCapabilities struct {
+	OdataType    string          `json:"@odata.type"`
+	Capabilities []*Capabilities `json:"Capabilities"`
+}
+
+type Capabilities struct {
+	CapabilitiesObject *Link    `json:"CapabilitiesObject"`
+	Links              CapLinks `json:"Links"`
+	UseCase            string   `json:"UseCase"`
+}
+type CapabilitiesObject struct {
+	ODataID           string     `json:"@odata.id"`
+	ODataType         string     `json:"@odata.type"`
+	CapacityBytes     bool       `json:"CapacityBytes@Redfish.OptionalOnCreate,omitempty"`
+	DisplayName       bool       `json:"DisplayName@Redfish.OptionalOnCreate,omitempty"`
+	IOPerfModeEnabled bool       `json:"IOPerfModeEnabled@Redfish.OptionalOnCreate,omitempty"`
+	RAIDType          bool       `json:"RAIDType@Redfish.RequiredOnCreate"`
+	RAIDTypeValues    []string   `json:"RAIDType@Redfish.AllowableValues"`
+	Name              string     `json:"Name"`
+	Id                string     `json:"Id"`
+	StripSizeBytes    bool       `json:"StripSizeBytes@Redfish.OptionalOnCreate,omitempty"`
+	ReadCachePolicy   bool       `json:"ReadCachePolicy@Redfish.OptionalOnCreate,omitempty"`
+	WriteCachePolicy  bool       `json:"WriteCachePolicy,omitempty"`
+	Links             bool       `json:"Links@Redfish.RequiredOnCreate"`
+	LinkValues        LinkValues `json:"Links"`
+}
+type LinkValues struct {
+	DedicatedSpareDrives bool `json:"DedicatedSpareDrives@Redfish.OptionalOnCreate,omitempty"`
+	Drives               bool `json:"Drives@Redfish.RequiredOnCreate"`
+}
+type CapLinks struct {
+	TargetCollection *Link `json:"TargetCollection"`
+}
+type VolumeCollection struct {
+	ODataContext           string                 `json:"@odata.context,omitempty"`
+	ODataEtag              string                 `json:"@odata.etag,omitempty"`
+	ODataID                string                 `json:"@odata.id"`
+	ODataType              string                 `json:"@odata.type"`
+	Description            string                 `json:"Description,omitempty"`
+	Name                   string                 `json:"Name"`
+	Members                []*Link                `json:"Members"`
+	MembersCount           int                    `json:"Members@odata.count"`
+	Oem                    interface{}            `json:"Oem,omitempty"`
+	CollectionCapabilities CollectionCapabilities `json:"@Redfish.CollectionCapabilities"`
+}
 
 // Volume contains the details volume properties
 type Volume struct {
@@ -251,6 +296,7 @@ type Volume struct {
 	ODataEtag                        string                   `json:"@odata.etag"`
 	ODataType                        string                   `json:"@odata.type"`
 	AccessCapabilities               []string                 `json:"AccessCapabilities,omitempty"`
+	CollectionCapabilities           CollectionCapabilities   `json:"@Redfish.CollectionCapabilities"`
 	Actions                          *Actions                 `json:"Actions,omitempty"`
 	AllocatedPools                   *Link                    `json:"AllocatedPools,omitempty"`
 	BlockSizeBytes                   int                      `json:"BlockSizeBytes,omitempty"`

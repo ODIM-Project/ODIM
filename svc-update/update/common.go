@@ -187,6 +187,7 @@ func (e *ExternalInterface) monitorPluginTask(subTaskChannel chan<- int32, monit
 		err := e.External.UpdateTask(updatetask)
 		if err != nil && err.Error() == common.Cancelling {
 			var updatetask = fillTaskData(monitorTaskData.subTaskID, monitorTaskData.serverURI, monitorTaskData.updateRequestBody, monitorTaskData.resp, common.Cancelled, common.Critical, 100, http.MethodPost)
+			subTaskChannel <- http.StatusInternalServerError
 			e.External.UpdateTask(updatetask)
 			return monitorTaskData.getResponse, err
 		}

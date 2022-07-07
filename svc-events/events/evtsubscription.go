@@ -227,7 +227,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 		if originResourceID == resourceID && i > 0 {
 			successfulSubscriptionList = append(successfulSubscriptionList, originResource)
 		}
-		i = i + 1
+		i++
 		if evtResponse.StatusCode == http.StatusCreated {
 			successfulSubscriptionList = append(successfulSubscriptionList, originResource)
 			successfulResponses[originResource] = evtResponse
@@ -625,7 +625,7 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 	}
 	var host string
 	bubbleUpStatusCode := http.StatusCreated
-	for i := 0; i < len(originResources); i++ {
+	for _, v := range originResources {
 		var postRequest evmodel.RequestBody
 		postRequest.Destination = ""
 		postRequest.EventTypes = eventTypes
@@ -635,8 +635,8 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 		postRequest.Protocol = protocol
 		postRequest.SubscriptionType = evmodel.SubscriptionType
 		postRequest.SubordinateResources = true
-		host, response = e.eventSubscription(postRequest, originResources[i], "", false)
-		e.checkCollectionSubscription(originResources[i], protocol)
+		host, response = e.eventSubscription(postRequest, v, "", false)
+		e.checkCollectionSubscription(v, protocol)
 		if response.StatusCode != http.StatusCreated {
 			partialResultFlag = true
 			if response.StatusCode > bubbleUpStatusCode {
@@ -693,13 +693,9 @@ func (e *ExternalInterfaces) saveDeviceSubscriptionDetails(evtSubscription evmod
 	var save = true
 	if deviceSubscription != nil {
 
-		save = true
 		// if the origin resource is present in device subscription details then dont add
 		for _, originResource := range deviceSubscription.OriginResources {
-			if evtSubscription.OriginResource == originResource {
-
-				save = false
-			} else {
+			if evtSubscription.OriginResource != originResource {
 				newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, originResource)
 				save = false
 			}
@@ -1072,7 +1068,7 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 	}
 	contactRequest.URL = "/ODIM/v1/Subscriptions"
 	contactRequest.HTTPMethodType = http.MethodPost
-	err = json.Unmarshal([]byte(reqData), &contactRequest.PostBody)
+	_ = json.Unmarshal([]byte(reqData), &contactRequest.PostBody)
 
 	response, err := e.callPlugin(contactRequest)
 	if err != nil {

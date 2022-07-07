@@ -8249,7 +8249,7 @@ curl -i GET \
     "Actions": {
         "#UpdateService.SimpleUpdate": {
             "target": "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
-            "@Redfish.OperationApplyTimeSupport": {
+            "@Redfish.OperationApplyTime": {
                 "@odata.type": "#Settings.v1_3_3.OperationApplyTimeSupport",
                 "SupportedValues": [
                     "OnStartUpdateRequest"
@@ -8401,7 +8401,7 @@ curl -i GET \
    "@odata.type":"#SoftwareInventoryCollection.SoftwareInventoryCollection",
    "Description":"SoftwareInventory view",
    "Name":"SoftwareInventory",
-   "Members":null,
+   "Members":[],
    "Members@odata.count":0
 }
 ```
@@ -8516,7 +8516,7 @@ curl -i POST \
 |Targets[]|Array (required)<br> |An array of URIs that indicate where to apply the update image.|
 |TransferProtocol|String (optional)<br> | The network protocol that the update service uses to retrieve the software or the firmware image file at the URI provided in the `ImageURI` parameter, if the URI does not contain a scheme.<br> For the possible property values, see *Transfer protocol* table.<br> |
 |Username|String (optional)<br> |The user name to access the URI specified by the Image URI parameter.|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation (optional)<br> | It enables you to control when the update is carried out.<br> Supported value is: `OnStartUpdate`. It indicates that the update will be carried out only after you perform HTTP POST on:<br> `/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate`.<br> |
+|@Redfish.OperationApplyTime|Redfish annotation (optional)<br> | It enables you to control when the update is carried out.<br> Supported value is: `OnStartUpdate`. It indicates that the update will be carried out only after you perform HTTP POST on:<br> `/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate`.<br> |
 
 |String|Description|
 |------|-----------|

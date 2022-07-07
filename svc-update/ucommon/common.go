@@ -191,7 +191,9 @@ func getResourceName(oDataID string, memberFlag bool) string {
 }
 
 var (
-	CallPluginFunc    = callPlugin
+	// CallPluginFunc function  pointer for calling the plugin
+	CallPluginFunc = callPlugin
+	// IOUtilReadAllFunc function  pointer for calling the files
 	IOUtilReadAllFunc = ioutil.ReadAll
 )
 
@@ -222,7 +224,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
-	if pluginResponse.StatusCode != http.StatusCreated && pluginResponse.StatusCode != http.StatusOK {
+	if pluginResponse.StatusCode != http.StatusCreated && pluginResponse.StatusCode != http.StatusOK && pluginResponse.StatusCode != http.StatusAccepted {
 		if pluginResponse.StatusCode == http.StatusUnauthorized {
 			errorMessage += "error: invalid resource username/password"
 			resp.StatusCode = int32(pluginResponse.StatusCode)
@@ -242,6 +244,10 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 	//replacing the resposne with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
+	}
+	// Get location from the header if status code is status accepted
+	if pluginResponse.StatusCode == http.StatusAccepted {
+		return []byte(data), pluginResponse.Header.Get("Location"), resp, nil
 	}
 	return []byte(data), pluginResponse.Header.Get("X-Auth-Token"), resp, nil
 }

@@ -197,7 +197,7 @@ func TestContactPlugin(t *testing.T) {
 	}
 
 	_, _, _, err = ContactPlugin(PluginContactRequest{}, "Dumyy")
-	assert.NotNil(t, err, "There should be error")
+	assert.Nil(t, err, "There should be error")
 	CallPluginFunc = func(req PluginContactRequest) (*http.Response, error) {
 		return &http.Response{Status: "Save", StatusCode: 401, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
 	}

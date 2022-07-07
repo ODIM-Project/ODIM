@@ -187,8 +187,8 @@
   * [Viewing a collection of registries](#viewing-a-collection-of-registries)
   * [Viewing a single registry](#viewing-a-single-registry)
   * [Viewing a file in a registry](#viewing-a-file-in-a-registry)
-- [Redfish Telemetry](#redfish-telemetry)
-  * [Viewing the telemetry service root](#viewing-the-telemetry-service-root)
+- [Redfish Telemetry Service](#redfish-telemetry-service)
+  * [Viewing the TelemetryService root](#viewing-the-telemetryservice-root)
   * [Collection of metric definitions](#collection-of-metric-definitions)
   * [Single metric definition](#single-metric-definition)
   * [Collection of Metric Report Definitions](#collection-of-metric-report-definitions)
@@ -10546,6 +10546,7 @@ Date:Fri,15 May 2020 10:10:15 GMT+5m 11s
    "DeliveryRetryIntervalSeconds":60,
    "EventFormatTypes":[
       "Event"
+      "MetricReport"
    ],
    "EventTypesForSubscription":[
       "StatusChange",
@@ -10553,9 +10554,6 @@ Date:Fri,15 May 2020 10:10:15 GMT+5m 11s
       "ResourceAdded",
       "ResourceRemoved",
       "Alert"
-   ],
-   "RegistryPrefixes":[
-
    ],
    "ResourceTypes":[
       "ManagerAccount",
@@ -10723,28 +10721,30 @@ curl -i POST \
 
 ```
 
-### Sample event
-
-Here is a sample of standard Redfish event delivered to a destination.
+> **Sample event**
 
 ~~~
 {
-   "@odata.context":"/redfish/v1/$metadata#Event.Event",
-   "@odata.type":"#Event.v1_7_0.Event",
-   "Events":[
-      {
-         "EventId":"ffa39cd4-4d95-4296-9ffd-e67c1135e96f",
-         "EventTimestamp":"2022-02-01T16:40:35Z",
-         "EventType":"ResourceAdded",
-         "Message":"The resource has been created successfully.",
-         "MessageId":"ResourceEvent.1.2.0.ResourceAdded",
-         "OriginOfCondition":{
-            "@odata.id":"/redfish/v1/Managers/dd187ab4-310c-4be0-beeb-0412a6b00806.1"
-         },
-         "Severity":"OK"
-      }
-   ],
-   "Name":"Resource Event"
+  "@odata.context": "/redfish/v1/$metadata#Event.Event",
+  "@odata.type": "#Event.v1_7_0.Event",
+  "Events": [
+    {
+      "EventId": "aa378d6b-d612-e146-4d0c-6a58eb43179b",
+      "EventTimestamp": "2022-07-05T08:54:42Z",
+      "EventType": "Alert",
+      "MemberId": "0",
+      "Message": "",
+      "MessageArgs": [
+        "Off"
+      ],
+      "MessageId": "iLOEvents.2.3.IndicatorLEDStateChanged",
+      "OriginOfCondition": {
+        "@odata.id": "/redfish/v1/Systems/799bdb08-8bb6-4067-b2d5-3ffd87341b1a.1/"
+      },
+      "Severity": "OK"
+    }
+  ],
+  "Name": "Events"
 }
 ~~~
 
@@ -10978,7 +10978,8 @@ curl -i POST \
 ```
 
 
-> Sample event payload 
+
+> **Sample event payload** 
 
 ```
 { 
@@ -11975,8 +11976,9 @@ curl -i GET \
    }
 ```
 
-<blockquote> NOTE:  After you remove a system and perform a `GET ` operation on the Metric Report Collection, the collection of all individual metric reports is still displayed in the response body. When you perform a `GET` operation on that individual {MetricReportID}, you get a `404-Not Found` error message. After this, when you perform a GET operation on the Metric Report Collection again, the instance of that individual metric report is erased. 
-This is an implementation choice in Resource Aggregator for ODIM, because Telemetry service is defined for a collection of BMCs and not for an individual BMC as per the DMTF Redfish specification.</blockquote>
+> **NOTE**:  After you remove a system and perform a `GET ` operation on the Metric Report Collection, the collection of all individual metric reports is still displayed in the response body. When you perform a `GET` operation on that individual {MetricReportID}, you get a `404-Not Found` error message. After this, when you perform a GET operation on the Metric Report Collection again, the instance of that individual metric report is erased. 
+> This is an implementation choice in Resource Aggregator for ODIM, because Telemetry service is defined for a collection of BMCs and not for an individual BMC as per the DMTF Redfish specification.
+
 
 ## Collection of triggers
 
@@ -12255,9 +12257,7 @@ curl -i GET \
    "Name":"iLO License",
    "Description":"iLO License View",
    "LicenseType":"Perpetual",
-   "InstallDate":"24Nov2021",
    "SerialNumber":"CN704614C4",
-   "ExpirationDate":"24Nov2022"
 }
 ```
 
@@ -12320,7 +12320,7 @@ curl -i -X POST \
 
 # Audit logs
 
-Audit logs provide information on each API and is stored in the `api.log` file in `odimra` logs.  Each log consists of a priority value, date and time of the log, hostname from which the APIs are sent, user account and role details, API request method and resource, response body, response code, and the message.
+Audit logs provide information on each API and are stored in the `api.log` file in `odimra` logs.  Each log consists of a priority value, date and time of the log, hostname from which the APIs are sent, user account and role details, API request method and resource, response body, response code, and the message.
 
 **Sample logs**
 

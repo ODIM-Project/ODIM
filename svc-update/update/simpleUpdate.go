@@ -282,6 +282,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 			pluginRequest:     contactRequest,
 			resp:              resp,
 		})
+
 		if err != nil {
 			return
 		}

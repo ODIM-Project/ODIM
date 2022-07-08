@@ -121,7 +121,7 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 	var req map[string]interface{}
 	err := json.Unmarshal(reqBody, &req)
 	if err != nil {
-
+		return nil, response.MalformedJSON, err.Error(), []interface{}{}
 	}
 	if val, ok := req["MessageId"]; ok {
 		switch v := val.(type) {

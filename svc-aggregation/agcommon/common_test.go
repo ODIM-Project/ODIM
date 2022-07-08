@@ -207,3 +207,76 @@ func TestLookupHost(t *testing.T) {
 func mockGetPluginStatus(plugin agmodel.Plugin) bool {
 	return true
 }
+
+func TestGetAllPlugins(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	mockPlugins(t)
+
+	plugins, err := GetAllPlugins()
+	fmt.Println("len", len(plugins))
+	assert.Nil(t, err, "Error Should be nil")
+	assert.Equal(t, 3, len(plugins), "should be only 3 plugins")
+}
+
+func getEncryptedKey(t *testing.T, key []byte) []byte {
+	cryptedKey, err := common.EncryptWithPublicKey(key)
+	if err != nil {
+		t.Fatalf("error: failed to encrypt data: %v", err)
+	}
+	return cryptedKey
+}
+
+func mockPlugins(t *testing.T) {
+	connPool, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		t.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+
+	password := getEncryptedKey(t, []byte("Password"))
+	pluginArr := []agmodel.Plugin{
+		{
+			IP:                "localhost",
+			Port:              "1234",
+			Password:          password,
+			Username:          "admin",
+			ID:                "GRF",
+			PreferredAuthType: "BasicAuth",
+			PluginType:        "GRF",
+		},
+		{
+			IP:                "localhost",
+			Port:              "1234",
+			Password:          password,
+			Username:          "admin",
+			ID:                "ILO",
+			PreferredAuthType: "XAuthToken",
+			PluginType:        "ILO",
+		},
+		{
+			IP:                "localhost",
+			Port:              "1234",
+			Password:          password,
+			Username:          "admin",
+			ID:                "CFM",
+			PreferredAuthType: "XAuthToken",
+			PluginType:        "CFM",
+		},
+	}
+	for _, plugin := range pluginArr {
+		pl := "Plugin"
+		//Save data into Database
+		if err := connPool.Create(pl, plugin.ID, &plugin); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}
+}

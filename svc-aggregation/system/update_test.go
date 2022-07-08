@@ -408,17 +408,6 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 			want: resp1,
 		},
 		{
-			name: "Duplicate BMC Manager",
-			e:    p,
-			args: args{
-				req: &aggregatorproto.AggregatorRequest{
-					URL:         "/redfish/v1/AggregationService/AggregationSources/123455",
-					RequestBody: successReqManager,
-				},
-			},
-			want: resp9,
-		},
-		{
 			name: "Positive case BMC",
 			e:    p,
 			args: args{

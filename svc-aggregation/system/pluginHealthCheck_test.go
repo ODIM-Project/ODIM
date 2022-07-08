@@ -1,4 +1,4 @@
-/* (C) Copyright [2020] Hewlett Packard Enterprise Development LP
+/* (C) Copyright [2022] Hewlett Packard Enterprise Development LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -18,19 +18,13 @@
 package system
 
 import (
-	// "encoding/json"
-	//"io/ioutil"
-	//"net/http"
-	//"reflect"
 	"testing"
-	//"time"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/stretchr/testify/assert"
-	//iris "github.com/kataras/iris/v12"
-	//log "github.com/sirupsen/logrus"
 )
 
 func Test_checkPluginStatus(t *testing.T) {

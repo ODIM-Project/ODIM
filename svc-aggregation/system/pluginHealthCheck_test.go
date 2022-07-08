@@ -137,10 +137,12 @@ func Test_sendPluginStartupRequest(t *testing.T) {
 		ResyncEvtSubscription: true,
 	}
 	var startUpData1 interface{}
-	sendPluginStartupRequest(agmodel.Plugin{}, startUpData1, "")
-
-	sendPluginStartupRequest(agmodel.Plugin{}, startUpData1, "ILO_v1.0.0")
-	sendPluginStartupRequest(agmodel.Plugin{}, startUpData, "ILO_v1.0.0")
+	_, err := sendPluginStartupRequest(agmodel.Plugin{}, startUpData1, "")
+	assert.Nil(t, err, "There should be no error")
+	_, err = sendPluginStartupRequest(agmodel.Plugin{}, startUpData1, "ILO_v1.0.0")
+	assert.Nil(t, err, "There should be no error")
+	_, err = sendPluginStartupRequest(agmodel.Plugin{}, startUpData, "ILO_v1.0.0")
+	assert.Nil(t, err, "There should be no error")
 
 }
 func Test_sendFullPluginInventory(t *testing.T) {

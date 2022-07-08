@@ -38,7 +38,6 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
@@ -381,6 +380,10 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	resp8 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 
 	common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
+	var resp9 = response.RPC{
+		StatusCode:    http.StatusInternalServerError,
+		StatusMessage: response.GeneralError,
+	}
 	p := getMockExternalInterface()
 	p.ContactClient = testUpdateContactClient
 	type args struct {
@@ -402,6 +405,17 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 				},
 			},
 			want: resp1,
+		},
+		{
+			name: "Duplicate BMC Manager",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					URL:         "/redfish/v1/AggregationService/AggregationSources/123455",
+					RequestBody: successReqManager,
+				},
+			},
+			want: resp9,
 		},
 		{
 			name: "Positive case BMC",
@@ -488,4 +502,22 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestExternalInterface_updateAggregationSourceWithConnectionMethod(t *testing.T) {
+	config.SetUpMockConfig(t)
+	p := getMockExternalInterface()
+	connectionMethodLink := map[string]interface{}{"connectionMethod","/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d39069"}
+	updateRequest := map[string]interface{}{"connectionMethod": "connection methods"}
+	updateAggregationSourceWithConnectionMethod("",connectionMethodLink,updateRequest,false))
+}
+
+func Test_validateManagerAddress(t *testing.T) {
+	managerAddress:="10.0.0.0:8080"
+	err:=validateManagerAddress("")
+	assert.NotNil(t, err,"Error should not be nil")
+	err:=validateManagerAddress(managerAddress)
+	assert.Nil(t, err,"Error should be nil")
+	err:=validateManagerAddress("FQDN:PORT")
+	assert.NotNil(t, err,"Error should not be nil")
 }

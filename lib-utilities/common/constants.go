@@ -152,6 +152,17 @@ const (
 	ChassisType = "#Chassis.v1_20_0.Chassis"
 )
 
+// Event Type cost
+const (
+	Alert            = "Alert"
+	ResourceAdded    = "ResourceAdded"
+	ResourceRemoved  = "ResourceRemoved"
+	ResourceUpdated  = "ResourceUpdated"
+	StatusChange     = "StatusChange"
+	MetricReportType = "MetricReport"
+	Other            = "Other"
+)
+
 // RediscoverResources contains to get only these resource from the device when
 // reset flag is set when device is restarted.
 var RediscoverResources = []string{

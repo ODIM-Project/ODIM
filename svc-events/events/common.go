@@ -219,8 +219,6 @@ func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errR
 // validateFields is for validating subscription parameters
 func validateFields(request *evmodel.RequestBody) (int32, string, []interface{}, error) {
 	validEventFormatTypes := map[string]bool{"Event": true, "MetricReport": true}
-	validEventTypes := map[string]bool{"Alert": true, "MetricReport": true, "ResourceAdded": true, "ResourceRemoved": true, "ResourceUpdated": true, "StatusChange": true, "Other": true}
-
 	validate := validator.New()
 
 	// if any of the mandatory fields missing in the struct, then it return an error
@@ -243,7 +241,7 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 	}
 
 	for _, eventType := range request.EventTypes {
-		if _, ok := validEventTypes[eventType]; !ok {
+		if !validEventType(eventType) {
 			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{eventType, "EventTypes"}, fmt.Errorf("Invalid EventTypes")
 		}
 	}
@@ -311,6 +309,7 @@ func getUUID(origin string) (string, error) {
 	return uuid, nil
 }
 
+//createEventSubscriptionResponse ...
 func createEventSubscriptionResponse() interface{} {
 	return errors.ErrorClass{
 		MessageExtendedInfo: []errors.MsgExtendedInfo{
@@ -407,6 +406,7 @@ func isHostPresent(hosts []string, hostip string) bool {
 	return false
 }
 
+// getFabricID return fabric id from origin
 func getFabricID(origin string) string {
 	data := strings.Split(origin, "/redfish/v1/Fabrics/")
 	if len(data) > 1 {
@@ -471,4 +471,11 @@ func updateOriginResourceswithOdataID(originResources []string) []evresponse.Lis
 		originRes = append(originRes, evresponse.ListMember{OdataID: origin})
 	}
 	return originRes
+}
+
+// validEventType check event type is allow or not
+func validEventType(event string) (isValid bool) {
+	validEventTypes := map[string]bool{common.Alert: true, common.MetricReportType: true, common.ResourceAdded: true, common.ResourceRemoved: true, common.ResourceUpdated: true, common.StatusChange: true, common.Other: true}
+	_, isValid = validEventTypes[event]
+	return
 }

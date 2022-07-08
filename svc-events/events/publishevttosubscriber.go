@@ -43,7 +43,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// addFabric will add the new fabric resource to db when an event is ResourceAdded and
+// addFabric will add the new fabric resource to db when an event is ResourceAdded, ResourceRemoved  and
 // originofcondition has fabrics odataid.
 func (e *ExternalInterfaces) addFabric(requestData, host string) {
 	var message common.MessageData
@@ -56,11 +56,10 @@ func (e *ExternalInterfaces) addFabric(requestData, host string) {
 			log.Info("event not forwarded : Originofcondition is empty in incoming event")
 			continue
 		}
-		if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
+		if strings.EqualFold(inEvent.EventType, common.ResourceAdded) &&
 			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
 			e.addFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
-		}
-		if strings.EqualFold(inEvent.EventType, "ResourceRemoved") &&
+		} else if strings.EqualFold(inEvent.EventType, common.ResourceRemoved) &&
 			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
 			e.removeFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
 		}
@@ -191,7 +190,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 			}
 		}
 
-		if strings.EqualFold("Alert", inEvent.EventType) {
+		if strings.EqualFold(common.Alert, inEvent.EventType) {
 			if strings.Contains(inEvent.MessageID, "ServerPostDiscoveryComplete") || strings.Contains(inEvent.MessageID, "ServerPostComplete") {
 				go rediscoverSystemInventory(deviceUUID, inEvent.OriginOfCondition.Oid)
 				flag = true
@@ -200,7 +199,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 				go updateSystemPowerState(deviceUUID, inEvent.OriginOfCondition.Oid, inEvent.MessageID)
 				flag = true
 			}
-		} else if strings.EqualFold("ResourceAdded", message.Events[0].EventType) || strings.EqualFold("ResourceRemoved", message.Events[0].EventType) {
+		} else if strings.EqualFold(common.ResourceAdded, message.Events[0].EventType) || strings.EqualFold(common.ResourceRemoved, message.Events[0].EventType) {
 			if strings.Contains(message.Events[0].OriginOfCondition.Oid, "Volumes") {
 				s := strings.Split(message.Events[0].OriginOfCondition.Oid, "/")
 				storageURI := fmt.Sprintf("/%s/%s/%s/%s/%s/", s[1], s[2], s[3], s[4], s[5])
@@ -425,6 +424,8 @@ func rediscoverSystemInventory(systemID, systemURL string) {
 	return
 }
 
+// addFabricRPCCall will be triggered when fabric ResourceAdd event is received
+// When event is detected a rpc is created for fabric which will update the system inventory
 func (e *ExternalInterfaces) addFabricRPCCall(origin, address string) {
 	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
 		return
@@ -448,6 +449,9 @@ func (e *ExternalInterfaces) addFabricRPCCall(origin, address string) {
 	log.Info("Fabric Added")
 	return
 }
+
+// removeFabricRPCCall will be triggered when fabric ResourceAdd event is received
+// When event is detected a rpc is created for fabric which will update the system inventory
 func (e *ExternalInterfaces) removeFabricRPCCall(origin, address string) {
 	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
 		return

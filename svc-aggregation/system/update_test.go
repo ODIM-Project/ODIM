@@ -503,14 +503,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		})
 	}
 }
-
-func TestExternalInterface_updateAggregationSourceWithConnectionMethod(t *testing.T) {
-	config.SetUpMockConfig(t)
-	p := getMockExternalInterface()
-	connectionMethodLink := map[string]interface{}{"connectionMethod","/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d39069"}
-	updateRequest := map[string]interface{}{"connectionMethod": "connection methods"}
-	updateAggregationSourceWithConnectionMethod("",connectionMethodLink,updateRequest,false))
-}
+TestAddConnectionMethods
 
 func Test_validateManagerAddress(t *testing.T) {
 	managerAddress:="10.0.0.0:8080"

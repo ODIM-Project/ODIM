@@ -42,6 +42,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
+	"github.com/stretchr/testify/assert"
 )
 
 func testSystemIndex(uuid string, indexData map[string]interface{}) error {
@@ -502,25 +503,6 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 			}
 		})
 	}
-}
-func TestExternalInterface_UpdateAggregationSourceWithConnectionMethod(t *testing.T) {
-	p := getMockExternalInterface()
-	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	connectionMethodLink := map[string]interface{}{"connectionMethod", "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d39069"}
-	updateRequest := map[string]interface{}{"connectionMethod": "connection methods"}
-
-	p.updateAggregationSourceWithConnectionMethod("", connectionMethodLink, updateRequest, false)
-
 }
 func Test_validateManagerAddress(t *testing.T) {
 	managerAddress := "10.0.0.0:8080"

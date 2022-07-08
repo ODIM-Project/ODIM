@@ -503,14 +503,31 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		})
 	}
 }
-TestAddConnectionMethods
+func TestExternalInterface_UpdateAggregationSourceWithConnectionMethod(t *testing.T) {
+	p := getMockExternalInterface()
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	connectionMethodLink := map[string]interface{}{"connectionMethod", "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d39069"}
+	updateRequest := map[string]interface{}{"connectionMethod": "connection methods"}
 
+	p.updateAggregationSourceWithConnectionMethod("", connectionMethodLink, updateRequest, false)
+
+}
 func Test_validateManagerAddress(t *testing.T) {
-	managerAddress:="10.0.0.0:8080"
-	err:=validateManagerAddress("")
-	assert.NotNil(t, err,"Error should not be nil")
-	err:=validateManagerAddress(managerAddress)
-	assert.Nil(t, err,"Error should be nil")
-	err:=validateManagerAddress("FQDN:PORT")
-	assert.NotNil(t, err,"Error should not be nil")
+	managerAddress := "10.0.0.0:8080"
+	err := validateManagerAddress("")
+	assert.NotNil(t, err, "Error should not be nil")
+	err := validateManagerAddress(managerAddress)
+	assert.Nil(t, err, "Error should be nil")
+	err := validateManagerAddress("FQDN:PORT")
+	assert.NotNil(t, err, "Error should not be nil")
 }

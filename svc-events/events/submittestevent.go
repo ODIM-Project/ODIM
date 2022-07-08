@@ -119,7 +119,10 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []interface{}) {
 	var testEvent common.Event
 	var req map[string]interface{}
-	json.Unmarshal(reqBody, &req)
+	err := json.Unmarshal(reqBody, &req)
+	if err != nil {
+		return nil, response.MalformedJSON, err.Error(), []interface{}{}
+	}
 	if val, ok := req["MessageId"]; ok {
 		switch v := val.(type) {
 		case string:
@@ -230,16 +233,6 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 	return &testEvent, response.Success, "", nil
 }
 
-func validEventType(got string) bool {
-	events := getAllowedEventTypes()
-	for _, event := range events {
-		if event == got {
-			return true
-		}
-	}
-	return false
-}
-
 func validSeverity(got string) bool {
 	severities := getAllowedSeverities()
 	for _, severity := range severities {
@@ -248,18 +241,6 @@ func validSeverity(got string) bool {
 		}
 	}
 	return false
-}
-
-func getAllowedEventTypes() []string {
-	return []string{
-		"Alert",
-		"MetricReport",
-		"Other",
-		"ResourceAdded",
-		"ResourceRemoved",
-		"ResourceUpdated",
-		"StatusChange",
-	}
 }
 
 func getAllowedSeverities() []string {

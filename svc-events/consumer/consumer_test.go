@@ -31,7 +31,7 @@ func TestKafkaSubscriber(t *testing.T) {
 		Context: "context",
 		Events: []common.Event{
 			common.Event{
-				EventType: "Alert",
+				EventType: common.Alert,
 				MessageID: "AlertEvent",
 				OriginOfCondition: &common.Link{
 					Oid: "/redfish/v1/Systems/1",

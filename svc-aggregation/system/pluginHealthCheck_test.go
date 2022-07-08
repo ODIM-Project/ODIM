@@ -138,11 +138,11 @@ func Test_sendPluginStartupRequest(t *testing.T) {
 	}
 	var startUpData1 interface{}
 	_, err := sendPluginStartupRequest(agmodel.Plugin{}, startUpData1, "")
-	assert.Nil(t, err, "There should be no error")
+	assert.NotNil(t, err, "There should be error")
 	_, err = sendPluginStartupRequest(agmodel.Plugin{}, startUpData1, "ILO_v1.0.0")
-	assert.Nil(t, err, "There should be no error")
+	assert.NotNil(t, err, "There should be error")
 	_, err = sendPluginStartupRequest(agmodel.Plugin{}, startUpData, "ILO_v1.0.0")
-	assert.Nil(t, err, "There should be no error")
+	assert.NotNil(t, err, "There should be error")
 
 }
 func Test_sendFullPluginInventory(t *testing.T) {

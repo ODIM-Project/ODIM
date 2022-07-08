@@ -37,6 +37,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
@@ -503,12 +504,13 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		})
 	}
 }
+
 func Test_validateManagerAddress(t *testing.T) {
 	managerAddress := "10.0.0.0:8080"
 	err := validateManagerAddress("")
-	assert.NotNil(t, err, "Error should not be nil")
-	err := validateManagerAddress(managerAddress)
+	assert.Nil(t, err, "Error should not be nil")
+	err = validateManagerAddress(managerAddress)
 	assert.Nil(t, err, "Error should be nil")
-	err := validateManagerAddress("FQDN:PORT")
+	err = validateManagerAddress("FQDN:PORT")
 	assert.NotNil(t, err, "Error should not be nil")
 }

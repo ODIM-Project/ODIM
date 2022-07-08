@@ -381,10 +381,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	resp8 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 
 	common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
-	var resp9 = response.RPC{
-		StatusCode:    http.StatusInternalServerError,
-		StatusMessage: response.GeneralError,
-	}
+
 	p := getMockExternalInterface()
 	p.ContactClient = testUpdateContactClient
 	type args struct {

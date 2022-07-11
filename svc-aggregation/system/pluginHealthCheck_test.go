@@ -213,9 +213,7 @@ func TestSendPluginStartUpData(t *testing.T) {
 		PreferredAuthType: "BasicAuth",
 		PluginType:        "GRF",
 	}
-	plugin1 := agmodel.Plugin{
-		ID: "10.0.0.0",
-	}
+	
 
 	go mockPlugins(t)
 	err := SendPluginStartUpData("", agmodel.Plugin{})
@@ -223,7 +221,5 @@ func TestSendPluginStartUpData(t *testing.T) {
 	err = SendPluginStartUpData("", plugin)
 	assert.Nil(t, err, "There should be no error")
 
-	err = SendPluginStartUpData("10.0.0.0", plugin1)
-	assert.Nil(t, err, "There should be  error")
 
 }

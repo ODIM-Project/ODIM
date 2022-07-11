@@ -413,8 +413,6 @@ func (ts *TasksRPC) GetSubTasks(ctx context.Context, req *taskproto.GetTaskReque
 
 	rsp.StatusCode = http.StatusOK
 	rsp.StatusMessage = response.Success
-	commonResponse.MessageArgs = []string{task.ID}
-	commonResponse.CreateGenericResponse(rsp.StatusMessage)
 
 	//Frame the Response to send it back as response body
 	taskResp := tresponse.TaskCollectionResponse{

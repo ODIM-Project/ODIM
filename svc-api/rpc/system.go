@@ -18,11 +18,12 @@ package rpc
 import (
 	"context"
 	"fmt"
+
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
-var(
+var (
 	NewSystemsClientFunc = systemsproto.NewSystemsClient
 )
 
@@ -32,7 +33,7 @@ func GetSystemsCollection(req systemsproto.GetSystemsRequest) (*systemsproto.Sys
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.GetSystemsCollection(context.TODO(), &req)
 	if err != nil {
@@ -48,7 +49,7 @@ func GetSystemRequestRPC(req systemsproto.GetSystemsRequest) (*systemsproto.Syst
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.GetSystems(context.TODO(), &req)
 	if err != nil {
@@ -64,7 +65,7 @@ func GetSystemResource(req systemsproto.GetSystemsRequest) (*systemsproto.System
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.GetSystemResource(context.TODO(), &req)
 	if err != nil {
@@ -80,7 +81,7 @@ func ComputerSystemReset(req systemsproto.ComputerSystemResetRequest) (*systemsp
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.ComputerSystemReset(context.TODO(), &req)
 	if err != nil {
@@ -96,7 +97,7 @@ func SetDefaultBootOrder(req systemsproto.DefaultBootOrderRequest) (*systemsprot
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.SetDefaultBootOrder(context.TODO(), &req)
 	if err != nil {
@@ -112,7 +113,7 @@ func ChangeBiosSettings(req systemsproto.BiosSettingsRequest) (*systemsproto.Sys
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.ChangeBiosSettings(context.TODO(), &req)
 	if err != nil {
@@ -128,7 +129,7 @@ func ChangeBootOrderSettings(req systemsproto.BootOrderSettingsRequest) (*system
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.ChangeBootOrderSettings(context.TODO(), &req)
 	if err != nil {
@@ -144,7 +145,7 @@ func CreateVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.CreateVolume(context.TODO(), &req)
 	if err != nil {
@@ -160,7 +161,7 @@ func DeleteVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.DeleteVolume(context.TODO(), &req)
 	if err != nil {

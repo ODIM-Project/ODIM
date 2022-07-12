@@ -77,21 +77,21 @@ func mockContactClient(url, method, token string, odataID string, body interface
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.Reset" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
-			StatusCode: http.StatusAccepted,
+			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.SetDefaultBootOrder" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
-			StatusCode: http.StatusAccepted,
+			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/SecureBoot1" {
 		body := `{"@odata.id": "/ODIM/v1/Systems/1/SecureBoot1"}`
 		return &http.Response{
-			StatusCode: http.StatusAccepted,
+			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
@@ -99,28 +99,28 @@ func mockContactClient(url, method, token string, odataID string, body interface
 	if url == "https://localhost:9098/ODIM/v1/Systems/1/Storage" {
 		body := `{"@odata.id": "/ODIM/v1/Systems/1/Storage"}`
 		return &http.Response{
-			StatusCode: http.StatusAccepted,
+			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage" {
 		body := `{"@odata.id": "/ODIM/v1/Systems/1/Storage"}`
 		return &http.Response{
-			StatusCode: http.StatusAccepted,
+			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Bios/Settings" {
 		body := `{"@odata.id": "/ODIM/v1/Systems/1/Bios/Settings"}`
 		return &http.Response{
-			StatusCode: http.StatusAccepted,
+			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1" {
 		body := `{"@odata.id": "/ODIM/v1/Systems/1"}`
 		return &http.Response{
-			StatusCode: http.StatusAccepted,
+			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
@@ -272,7 +272,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 				return json.Unmarshal(data, v)
 			},
 			want: response.RPC{
-				StatusCode:    http.StatusAccepted,
+				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          map[string]interface{}{"MessageId": response.Success},
 			},

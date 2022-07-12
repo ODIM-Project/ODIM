@@ -84,6 +84,9 @@ func main() {
 func registerHandler() {
 	systemRPC := new(rpc.Systems)
 	systemRPC.IsAuthorizedRPC = services.IsAuthorized
+	systemRPC.GetSessionUserName = services.GetSessionUserName
+	systemRPC.CreateTask = services.CreateTask
+
 	systemRPC.EI = systems.GetExternalInterface()
 	systemsproto.RegisterSystemsServer(services.ODIMService.Server(), systemRPC)
 

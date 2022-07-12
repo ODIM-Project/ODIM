@@ -52,9 +52,12 @@ type Plugin struct {
 }
 
 var (
+	// GetDBConnectionFunc  function pointer for the common.GetDBConnection
 	GetDBConnectionFunc = common.GetDBConnection
-	JSONUnmarshalFunc   = json.Unmarshal
-	scanFunc            = scan
+	// JSONUnmarshalFunc  function pointer for the json.Unmarshal
+	JSONUnmarshalFunc = json.Unmarshal
+	// scanFunc function pointer for the scan
+	scanFunc = scan
 )
 
 // Volume is for sending a volume's request to south bound

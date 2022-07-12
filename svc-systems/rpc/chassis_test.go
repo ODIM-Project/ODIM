@@ -346,12 +346,12 @@ func TestChassisRPC_CreateChassis(t *testing.T) {
 }
 
 func Test_jsonMarshal(t *testing.T) {
-	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
+	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
 	generateResponse("dummy")
 	jsonMarshal("dummy")
-	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
+	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)
 	}
 }

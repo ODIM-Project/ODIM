@@ -77,21 +77,21 @@ func mockContactClient(url, method, token string, odataID string, body interface
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.Reset" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
-			StatusCode: http.StatusOK,
+			StatusCode: http.StatusAccepted,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.SetDefaultBootOrder" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
-			StatusCode: http.StatusOK,
+			StatusCode: http.StatusAccepted,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/SecureBoot1" {
 		body := `{"@odata.id": "/ODIM/v1/Systems/1/SecureBoot1"}`
 		return &http.Response{
-			StatusCode: http.StatusOK,
+			StatusCode: http.StatusAccepted,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
@@ -99,28 +99,28 @@ func mockContactClient(url, method, token string, odataID string, body interface
 	if url == "https://localhost:9098/ODIM/v1/Systems/1/Storage" {
 		body := `{"@odata.id": "/ODIM/v1/Systems/1/Storage"}`
 		return &http.Response{
-			StatusCode: http.StatusOK,
+			StatusCode: http.StatusAccepted,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage" {
 		body := `{"@odata.id": "/ODIM/v1/Systems/1/Storage"}`
 		return &http.Response{
-			StatusCode: http.StatusOK,
+			StatusCode: http.StatusAccepted,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Bios/Settings" {
 		body := `{"@odata.id": "/ODIM/v1/Systems/1/Bios/Settings"}`
 		return &http.Response{
-			StatusCode: http.StatusOK,
+			StatusCode: http.StatusAccepted,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1" {
 		body := `{"@odata.id": "/ODIM/v1/Systems/1"}`
 		return &http.Response{
-			StatusCode: http.StatusOK,
+			StatusCode: http.StatusAccepted,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
@@ -201,6 +201,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	pluginContact := PluginContact{
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
+		UpdateTask:     mockUpdateTask,
 	}
 	type args struct {
 		req *systemsproto.ComputerSystemResetRequest
@@ -209,7 +210,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 		name          string
 		p             *PluginContact
 		args          args
-		JsonUnMarshal func(data []byte, v interface{}) error
+		JSONUnMarshal func(data []byte, v interface{}) error
 		want          response.RPC
 	}{
 		{
@@ -221,7 +222,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 				},
 			},
-			JsonUnMarshal: func(data []byte, v interface{}) error {
+			JSONUnMarshal: func(data []byte, v interface{}) error {
 				return json.Unmarshal(data, v)
 			},
 			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 24b243cf-f1e3-5318-92d9-2d6737d6b0b found", []interface{}{"ComputerSystem", "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b.1"}, nil),
@@ -234,7 +235,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 				},
 			},
-			JsonUnMarshal: func(data []byte, v interface{}) error {
+			JSONUnMarshal: func(data []byte, v interface{}) error {
 				return json.Unmarshal(data, v)
 			},
 			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", "24b243cf-f1e3-5318-92d9-2d6737d6b0b"}, nil),
@@ -248,7 +249,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 				},
 			},
-			JsonUnMarshal: func(data []byte, v interface{}) error {
+			JSONUnMarshal: func(data []byte, v interface{}) error {
 				return json.Unmarshal(data, v)
 			},
 			want: response.RPC{
@@ -267,11 +268,11 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 				},
 			},
-			JsonUnMarshal: func(data []byte, v interface{}) error {
+			JSONUnMarshal: func(data []byte, v interface{}) error {
 				return json.Unmarshal(data, v)
 			},
 			want: response.RPC{
-				StatusCode:    http.StatusOK,
+				StatusCode:    http.StatusAccepted,
 				StatusMessage: response.Success,
 				Body:          map[string]interface{}{"MessageId": response.Success},
 			},
@@ -279,7 +280,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.ComputerSystemReset(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.p.ComputerSystemReset(tt.args.req, "task123453", "admin"); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PluginContact.ComputerSystemReset() = %v, want %v", got, tt.want)
 			}
 		})
@@ -288,25 +289,25 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 		SystemID:    "24b243cf-f1e3-5318-92d9-2d6737d6b0b.1",
 		RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 	}
-	JsonUnMarshal = func(data []byte, v interface{}) error {
+	JSONUnMarshal = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
-	resp := pluginContact.ComputerSystemReset(&req)
+	resp := pluginContact.ComputerSystemReset(&req, "task123453", "admin")
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
 	req = systemsproto.ComputerSystemResetRequest{
 		SystemID:    "24b243cf-f1e3-5318-92d9-2d6737d6b0b.1",
 		RequestBody: []byte(`{"resetType": "ForceRestart"}`),
 	}
-	JsonUnMarshal = func(data []byte, v interface{}) error {
+	JSONUnMarshal = func(data []byte, v interface{}) error {
 		return nil
 	}
-	resp = pluginContact.ComputerSystemReset(&req)
+	resp = pluginContact.ComputerSystemReset(&req, "task123453", "admin")
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status code should be StatusBadRequest")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", &errors.Error{}
 	}
-	resp = pluginContact.ComputerSystemReset(&req)
+	resp = pluginContact.ComputerSystemReset(&req, "task123453", "admin")
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
@@ -324,7 +325,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 		SystemID:    "7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
 		RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 	}
-	resp = pluginContact.ComputerSystemReset(&req)
+	resp = pluginContact.ComputerSystemReset(&req, "task123453", "admin")
 	assert.NotNil(t, resp, "Response Should have error")
 
 	//Invalid ContactPlugin
@@ -335,21 +336,27 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 		err = &errors.Error{}
 		return
 	}
-	resp = pluginContact.ComputerSystemReset(&req)
+	resp = pluginContact.ComputerSystemReset(&req, "task123453", "admin")
 	assert.NotNil(t, resp, "Response Should have error")
 
 	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) ([]byte, string, scommon.ResponseStatus, error) {
 		return scommon.ContactPlugin(req, errorMessage)
 	}
 	// Invalid Json
-	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
-	resp = pluginContact.ComputerSystemReset(&req)
+	resp = pluginContact.ComputerSystemReset(&req, "task123453", "admin")
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
 
-	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
 
+}
+func mockUpdateTask(task common.TaskData) error {
+	if task.TaskID == "invalid" {
+		return fmt.Errorf(common.Cancelling)
+	}
+	return nil
 }

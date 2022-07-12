@@ -101,7 +101,7 @@ func (p *PluginContact) SetDefaultBootOrder(systemID string) response.RPC {
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	err = JsonUnMarshalFunc(body, &resp.Body)
+	err = JSONUnmarshalFunc(body, &resp.Body)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
@@ -127,7 +127,7 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	var biosSetting BiosSetting
 
 	// parsing the biosSetting
-	err := JsonUnMarshalFunc(req.RequestBody, &biosSetting)
+	err := JSONUnmarshalFunc(req.RequestBody, &biosSetting)
 	if err != nil {
 		errMsg := "unable to parse the BiosSetting request" + err.Error()
 		log.Error(errMsg)
@@ -200,7 +200,7 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	err = JsonUnMarshalFunc(body, &resp.Body)
+	err = JSONUnmarshalFunc(body, &resp.Body)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
@@ -225,7 +225,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	var bootOrderSettings BootOrderSettings
 
 	// parsing the bootOrderSettings
-	err := JsonUnMarshalFunc(req.RequestBody, &bootOrderSettings)
+	err := JSONUnmarshalFunc(req.RequestBody, &bootOrderSettings)
 	if err != nil {
 		if ute, ok := err.(*json.UnmarshalTypeError); ok {
 			errMsg := fmt.Sprintf("UnmarshalTypeError: Expected field type %v but got %v \n", ute.Type, ute.Value)

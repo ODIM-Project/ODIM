@@ -378,6 +378,11 @@ func TestSystems_ComputerSystemReset(t *testing.T) {
 	common.SetUpMockConfig()
 	sys := new(Systems)
 	sys.IsAuthorizedRPC = mockIsAuthorized
+	sys.GetSessionUserName = getSessionUserNameForTesting
+	sys.CreateTask = createTaskForTesting
+	sys.EI = &systems.ExternalInterface{
+		UpdateTask: mockUpdateTask,
+	}
 
 	type args struct {
 		ctx  context.Context
@@ -708,4 +713,30 @@ func TestSystems_DeleteVolume(t *testing.T) {
 			}
 		})
 	}
+}
+func getSessionUserNameForTesting(sessionToken string) (string, error) {
+	if sessionToken == "noDetailsToken" {
+		return "", fmt.Errorf("no details")
+	} else if sessionToken == "noTaskToken" {
+		return "noTaskUser", nil
+	} else if sessionToken == "taskWithSlashToken" {
+		return "taskWithSlashUser", nil
+	}
+	return "someUserName", nil
+}
+
+func createTaskForTesting(sessionUserName string) (string, error) {
+	if sessionUserName == "noTaskUser" {
+		return "", fmt.Errorf("no details")
+	} else if sessionUserName == "taskWithSlashUser" {
+		return "some/Task/", nil
+	}
+	return "some/Task", nil
+}
+
+func mockUpdateTask(task common.TaskData) error {
+	if task.TaskID == "invalid" {
+		return fmt.Errorf(common.Cancelling)
+	}
+	return nil
 }

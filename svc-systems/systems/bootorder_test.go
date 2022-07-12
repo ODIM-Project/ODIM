@@ -234,13 +234,13 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
 		return scommon.ContactPlugin(req, errorMessage)
 	}
-	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	resp = pluginContact.SetDefaultBootOrder("7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
 
-	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
 
@@ -420,13 +420,13 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 		RequestBody:  request,
 		SessionToken: "token",
 	}
-	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	res := pluginContact.ChangeBiosSettings(&req)
 	assert.Equal(t, http.StatusInternalServerError, int(res.StatusCode), "status should be StatusInternalServerError")
 
-	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
 	req = systemsproto.BiosSettingsRequest{
@@ -677,7 +677,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 		})
 	}
 
-	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	req := systemsproto.BootOrderSettingsRequest{
@@ -688,7 +688,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 	resp := pluginContact.ChangeBootOrderSettings(&req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status code should be StatusBadRequest")
 
-	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {

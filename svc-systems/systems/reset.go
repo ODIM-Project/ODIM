@@ -61,7 +61,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	err = p.UpdateTask(task)
 	// parsing the ResetComputerSystem
 	var resetCompSys ResetComputerSystem
-	err = json.Unmarshal(req.RequestBody, &resetCompSys)
+	err = JSONUnMarshal(req.RequestBody, &resetCompSys)
 	if err != nil {
 		errMsg := "error: unable to parse the computer system reset request" + err.Error()
 		log.Error(errMsg)

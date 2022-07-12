@@ -69,7 +69,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, resetCompSys)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, resetCompSys)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
 		log.Error(errMsg)

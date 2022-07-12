@@ -380,6 +380,9 @@ func TestSystems_ComputerSystemReset(t *testing.T) {
 	sys.IsAuthorizedRPC = mockIsAuthorized
 	sys.GetSessionUserName = getSessionUserNameForTesting
 	sys.CreateTask = createTaskForTesting
+	sys.EI = &systems.ExternalInterface{
+		UpdateTask: mockUpdateTask,
+	}
 
 	type args struct {
 		ctx  context.Context
@@ -729,4 +732,11 @@ func createTaskForTesting(sessionUserName string) (string, error) {
 		return "some/Task/", nil
 	}
 	return "some/Task", nil
+}
+
+func mockUpdateTask(task common.TaskData) error {
+	if task.TaskID == "invalid" {
+		return fmt.Errorf(common.Cancelling)
+	}
+	return nil
 }

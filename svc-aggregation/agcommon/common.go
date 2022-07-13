@@ -64,15 +64,24 @@ var SupportedConnectionMethodTypes = map[string]bool{
 	"IPMI20":  false,
 }
 var (
-	GetResourceDetailsFunc       = agmodel.GetResourceDetails
-	GetAllKeysFromTableFunc      = agmodel.GetAllKeysFromTable
-	GetAllSystemsFunc            = agmodel.GetAllSystems
-	GetDeviceSubscriptionsFunc   = agmodel.GetDeviceSubscriptions
+	//GetResourceDetailsFunc function pointer for the agmodel.GetResourceDetails
+	GetResourceDetailsFunc = agmodel.GetResourceDetails
+	// GetAllKeysFromTableFunc function pointer for the agmodel.GetAllKeysFromTable
+	GetAllKeysFromTableFunc = agmodel.GetAllKeysFromTable
+	//GetAllSystemsFunc function pointer for the agmodel.GetAllSystems
+	GetAllSystemsFunc = agmodel.GetAllSystems
+	//GetDeviceSubscriptionsFunc  function pointer for the  agmodel.GetDeviceSubscriptions
+	GetDeviceSubscriptionsFunc = agmodel.GetDeviceSubscriptions
+	// UpdateDeviceSubscriptionFunc function pointer for the agmodel.UpdateDeviceSubscription
 	UpdateDeviceSubscriptionFunc = agmodel.UpdateDeviceSubscription
-	GetEventSubscriptionsFunc    = agmodel.GetEventSubscriptions
-	JSONUnMarshalFunc            = json.Unmarshal
-	LookupIPfunc                 = net.LookupIP
-	SplitHostPortfunc            = net.SplitHostPort
+	// GetEventSubscriptionsFunc function pointer for the agmodel.GetEventSubscriptions
+	GetEventSubscriptionsFunc = agmodel.GetEventSubscriptions
+	// JSONUnMarshalFunc function pointer for the json.Unmarshal
+	JSONUnMarshalFunc = json.Unmarshal
+	//LookupIPfunc  function pointer for the  net.LookupIP
+	LookupIPfunc = net.LookupIP
+	//SplitHostPortfunc  function pointer for the net.SplitHostPort
+	SplitHostPortfunc = net.SplitHostPort
 )
 var (
 	// ConfigFilePath holds the value of odim config file path

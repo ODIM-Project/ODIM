@@ -26,8 +26,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -481,6 +483,204 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 			got := d.DeleteAggregationSource(tt.args.req)
 			if got.StatusCode != tt.want {
 				t.Errorf("DeleteAggregationSource() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_deleteLinkDetails(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	var chassisLink []string
+	chassisLink = append(chassisLink, "/redfish/v1/Managers/uuid.1")
+	type args struct {
+		managerData map[string]interface{}
+		systemID    string
+		chassisList []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]interface{}
+	}{
+		{
+			name: "Test",
+			args: args{
+				managerData: map[string]interface{}{
+					"Links": map[string]interface{}{
+						"@odata.id": "/redfish/v1/Managers/uuid.1",
+					},
+				},
+				systemID:    "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1",
+				chassisList: chassisLink,
+			},
+			want: map[string]interface{}{
+				"Links": map[string]interface{}{
+					"@odata.id": "/redfish/v1/Managers/uuid.1",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := deleteLinkDetails(tt.args.managerData, tt.args.systemID, tt.args.chassisList); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("deleteLinkDetails() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_checkAndRemoveWildCardValueG(t *testing.T) {
+	var values []string
+	checkAndRemoveWildCardValue("", values)
+}
+
+func TestExternalInterface_deleteWildCardValues(t *testing.T) {
+	p := getMockExternalInterface()
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	type args struct {
+		systemID string
+	}
+	tests := []struct {
+		name string
+		p    *ExternalInterface
+		args args
+	}{
+		{
+			name: "deleteWildCardValues",
+			p:    p,
+			args: args{
+				systemID: "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.p.deleteWildCardValues(tt.args.systemID)
+		})
+	}
+}
+
+func Test_checkAndRemoveWildCardValue(t *testing.T) {
+	var values []string
+	var want []string
+	Values1 := []string{
+		"45201b16-5305-49f0-846b-4597e982f6f8.1",
+		"64992250-2a1a-41c6-82c6-b046140d615d.1",
+	}
+	type args struct {
+		val    string
+		values []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "nagative case",
+			args: args{
+				val:    "wildcard123",
+				values: values,
+			},
+			want: want,
+		},
+		{
+			name: "positive case",
+			args: args{
+				val:    "45201b16-5305-49f0-846b-4597e982f6f8.1",
+				values: Values1,
+			},
+			want: []string{"64992250-2a1a-41c6-82c6-b046140d615d.1"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := checkAndRemoveWildCardValue(tt.args.val, tt.args.values); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("checkAndRemoveWildCardValue() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExternalInterface_updateMemberCollection(t *testing.T) {
+	p := getMockExternalInterface()
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	type args struct {
+		resName string
+		odataID string
+	}
+	tests := []struct {
+		name string
+		e    *ExternalInterface
+		args args
+	}{
+		{
+			name: "test",
+			e:    p,
+			args: args{
+				resName: "Collection",
+				odataID: "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/storage/"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.e.updateMemberCollection(tt.args.resName, tt.args.odataID)
+		})
+	}
+}
+
+func Test_removeMemberFromCollection(t *testing.T) {
+	type args struct {
+		collectionOdataID string
+		telemetryInfo     []*dmtf.Link
+	}
+	tests := []struct {
+		name string
+		args args
+		want []*dmtf.Link
+	}{
+		{
+			name: "test case",
+			args: args{},
+			want: []*dmtf.Link{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := removeMemberFromCollection(tt.args.collectionOdataID, tt.args.telemetryInfo); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("removeMemberFromCollection() = %v, want %v", got, tt.want)
 			}
 		})
 	}

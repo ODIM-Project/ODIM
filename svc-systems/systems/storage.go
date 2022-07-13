@@ -34,12 +34,18 @@ import (
 )
 
 var (
-	StringContain                  = strings.Contains
+	// StringContain function pointer for the strings.Contains
+	StringContain = strings.Contains
+	// RequestParamsCaseValidatorFunc function pointer for the common.RequestParamsCaseValidator
 	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
-	StringsEqualFold               = strings.EqualFold
-	ContactPluginFunc              = scommon.ContactPlugin
-	JsonUnMarshalFunc              = json.Unmarshal
-	StringTrimSpace                = strings.TrimSpace
+	// StringsEqualFold function pointer for the strings.EqualFold
+	StringsEqualFold = strings.EqualFold
+	// ContactPluginFunc  function pointer for the  scommon.ContactPlugin
+	ContactPluginFunc = scommon.ContactPlugin
+	// JSONUnmarshalFunc function pointer for the json.Unmarshal
+	JSONUnmarshalFunc = json.Unmarshal
+	// StringTrimSpace function pointer for the  strings.TrimSpace
+	StringTrimSpace = strings.TrimSpace
 )
 
 // ExternalInterface holds all the external connections managers package functions uses
@@ -183,7 +189,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	err = JsonUnMarshalFunc(body, &resp.Body)
+	err = JSONUnmarshalFunc(body, &resp.Body)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
@@ -300,7 +306,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 
 	var volume smodel.Volume
 	// unmarshalling the volume
-	err := JsonUnMarshalFunc(req.RequestBody, &volume)
+	err := JSONUnmarshalFunc(req.RequestBody, &volume)
 	if err != nil {
 		errorMessage := "Error while unmarshaling the create volume request: " + err.Error()
 		log.Error(errorMessage)

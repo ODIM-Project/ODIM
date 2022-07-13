@@ -65,7 +65,7 @@ func (e *ExternalInterface) GetLicenseCollection(req *licenseproto.GetLicenseReq
 		Description:  "License Collection",
 		Name:         "License Collection",
 	}
-	var members []*dmtf.Link
+	var members = make([]*dmtf.Link, 0)
 
 	licenseCollectionKeysArray, err := e.DB.GetAllKeysFromTable("Licenses", persistencemgr.InMemory)
 	if err != nil {

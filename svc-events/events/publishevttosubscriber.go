@@ -396,7 +396,10 @@ func (e *ExternalInterfaces) reAttemptEvents(destination, undeliveredEventID str
 		}
 
 	}
-	log.Error("error while make https call to send the event: ", err.Error())
+	if err != nil {
+		log.Error("error while make https call to send the event: ", err.Error())
+	}
+
 }
 
 // rediscoverSystemInventory will be triggered when ever the System Restart or Power On

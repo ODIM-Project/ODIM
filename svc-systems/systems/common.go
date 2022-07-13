@@ -123,7 +123,7 @@ func (e *PluginContact) monitorPluginTask(monitorTaskData *monitorTaskRequest) (
 
 		var task common.TaskData
 		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {
-			errMsg := "Unable to parse the simple update respone" + err.Error()
+			errMsg := "Unable to parse the reset respone" + err.Error()
 			log.Warn(errMsg)
 			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
 			return monitorTaskData.getResponse, err

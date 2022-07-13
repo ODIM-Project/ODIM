@@ -46,6 +46,7 @@ var (
 func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemResetRequest, taskID, sessionUserName string) response.RPC {
 	var targetURI = "/redfish/v1/Systems/" + req.SystemID + "/Actions/ComputerSystem.Reset"
 	var resp response.RPC
+	resp.StatusCode = http.StatusAccepted
 	var percentComplete int32
 	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	err := p.UpdateTask(task)
@@ -158,6 +159,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 		return resp
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
+
 		getResponse, err = p.monitorPluginTask(&monitorTaskRequest{
 			taskID:        taskID,
 			serverURI:     targetURI,

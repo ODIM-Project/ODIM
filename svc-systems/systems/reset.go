@@ -59,7 +59,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	}
 	percentComplete = 10
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	err = p.UpdateTask(task)
+	p.UpdateTask(task)
 	// parsing the ResetComputerSystem
 	var resetCompSys ResetComputerSystem
 	err = JSONUnMarshal(req.RequestBody, &resetCompSys)
@@ -104,7 +104,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	target.Password = decryptedPasswordByte
 	percentComplete = 30
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	err = p.UpdateTask(task)
+	p.UpdateTask(task)
 
 	// Get the Plugin info
 	plugin, gerr := smodel.GetPluginData(target.PluginID)
@@ -160,7 +160,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
 
-		getResponse, err = p.monitorPluginTask(&monitorTaskRequest{
+		body, err = p.monitorPluginTask(&monitorTaskRequest{
 			taskID:        taskID,
 			serverURI:     targetURI,
 			requestBody:   string(postBody),
@@ -186,7 +186,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	}
 	smodel.AddSystemResetInfo("/redfish/v1/Systems/"+req.SystemID, resetCompSys.ResetType)
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, common.OK, 100, http.MethodPost)
-	err = p.UpdateTask(task)
+	p.UpdateTask(task)
 
 	return resp
 }

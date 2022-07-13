@@ -118,7 +118,7 @@ func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskStat
 	}
 }
 
-func (e *PluginContact) monitorPluginTask(monitorTaskData *monitorTaskRequest) (scommon.ResponseStatus, error) {
+func (e *PluginContact) monitorPluginTask(monitorTaskData *monitorTaskRequest) ([]byte, error) {
 	for {
 
 		var task common.TaskData
@@ -126,14 +126,14 @@ func (e *PluginContact) monitorPluginTask(monitorTaskData *monitorTaskRequest) (
 			errMsg := "Unable to parse the reset respone" + err.Error()
 			log.Warn(errMsg)
 			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
-			return monitorTaskData.getResponse, err
+			return monitorTaskData.respBody, err
 		}
 		var updatetask = fillTaskData(monitorTaskData.taskID, monitorTaskData.serverURI, monitorTaskData.requestBody, monitorTaskData.resp, task.TaskState, task.TaskStatus, task.PercentComplete, http.MethodPost)
 		err := e.UpdateTask(updatetask)
 		if err != nil && err.Error() == common.Cancelling {
 			var updatetask = fillTaskData(monitorTaskData.taskID, monitorTaskData.serverURI, monitorTaskData.requestBody, monitorTaskData.resp, common.Cancelled, common.Critical, 100, http.MethodPost)
 			e.UpdateTask(updatetask)
-			return monitorTaskData.getResponse, err
+			return monitorTaskData.respBody, err
 		}
 		time.Sleep(time.Second * 5)
 		monitorTaskData.pluginRequest.OID = monitorTaskData.location
@@ -142,11 +142,11 @@ func (e *PluginContact) monitorPluginTask(monitorTaskData *monitorTaskRequest) (
 			errMsg := err.Error()
 			log.Warn(errMsg)
 			common.GeneralError(monitorTaskData.getResponse.StatusCode, monitorTaskData.getResponse.StatusMessage, errMsg, nil, monitorTaskData.taskInfo)
-			return monitorTaskData.getResponse, err
+			return monitorTaskData.respBody, err
 		}
 		if monitorTaskData.getResponse.StatusCode == http.StatusOK {
 			break
 		}
 	}
-	return monitorTaskData.getResponse, nil
+	return monitorTaskData.respBody, nil
 }

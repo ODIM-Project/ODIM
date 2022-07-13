@@ -380,10 +380,7 @@ func TestSystems_ComputerSystemReset(t *testing.T) {
 	sys.IsAuthorizedRPC = mockIsAuthorized
 	sys.GetSessionUserName = getSessionUserNameForTesting
 	sys.CreateTask = createTaskForTesting
-	sys.EI = &systems.ExternalInterface{
-		UpdateTask: mockUpdateTask,
-	}
-
+	sys.UpdateTask = mockUpdateTask
 	type args struct {
 		ctx  context.Context
 		req  *systemsproto.ComputerSystemResetRequest

@@ -54,7 +54,6 @@ type ExternalInterface struct {
 	DevicePassword  func([]byte) ([]byte, error)
 	DB              DB
 	GetPluginStatus func(smodel.Plugin) bool
-	UpdateTask      func(common.TaskData) error
 }
 
 // DB struct to inject the contact DB function into the handlers

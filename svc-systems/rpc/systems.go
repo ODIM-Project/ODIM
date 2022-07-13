@@ -149,7 +149,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	var pc = systems.PluginContact{
 		ContactClient:  pmbhandle.ContactPlugin,
 		DevicePassword: common.DecryptWithPrivateKey,
-		UpdateTask:     s.EI.UpdateTask,
+		UpdateTask:     s.UpdateTask,
 	}
 	go pc.ComputerSystemReset(req, taskID, sessionUserName)
 

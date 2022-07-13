@@ -235,7 +235,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 	log.Info("Response" + string(body))
-	log.Info("response.StatusCode" + string(rune(response.StatusCode)))
+	log.Info("response.StatusCode" + fmt.Sprintf("%d", response.StatusCode))
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted {
 		resp.StatusCode = int32(response.StatusCode)
 		log.Println(errorMessage)

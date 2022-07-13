@@ -147,7 +147,7 @@ func TestPluginHealthCheckInterface_GetPluginStatus(t *testing.T) {
 		DecryptPassword: common.DecryptWithPrivateKey,
 	}
 	password, _ := stubDevicePassword([]byte("password"))
-	plugin_data := agmodel.Plugin{
+	pluginData := agmodel.Plugin{
 		IP:                "duphost",
 		Port:              "9091",
 		Username:          "admin",
@@ -167,7 +167,7 @@ func TestPluginHealthCheckInterface_GetPluginStatus(t *testing.T) {
 			name: "test1",
 			phc:  PluginHealthCheck,
 			args: args{
-				plugin: plugin_data,
+				plugin: pluginData,
 			},
 			want:  false,
 			want1: p,

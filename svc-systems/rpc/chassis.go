@@ -32,7 +32,8 @@ import (
 )
 
 var (
-	JsonMarshalFunc = json.Marshal
+	// JSONMarshalFunc function pointer for the json.Marshal
+	JSONMarshalFunc = json.Marshal
 )
 
 // NewChassisRPC returns an instance of ChassisRPC
@@ -177,7 +178,7 @@ func jsonMarshal(input interface{}) []byte {
 	if bytes, alreadyBytes := input.([]byte); alreadyBytes {
 		return bytes
 	}
-	bytes, err := JsonMarshalFunc(input)
+	bytes, err := JSONMarshalFunc(input)
 	if err != nil {
 		log.Println("error in unmarshalling response object from util-libs", err.Error())
 	}
@@ -188,7 +189,7 @@ func generateResponse(input interface{}) []byte {
 	if bytes, alreadyBytes := input.([]byte); alreadyBytes {
 		return bytes
 	}
-	bytes, err := JsonMarshalFunc(input)
+	bytes, err := JSONMarshalFunc(input)
 	if err != nil {
 		log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}

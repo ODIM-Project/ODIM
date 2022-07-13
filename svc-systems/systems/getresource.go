@@ -42,11 +42,16 @@ import (
 )
 
 var (
-	GetSystemResetInfoFunc        = smodel.GetSystemResetInfo
+	// GetSystemResetInfoFunc function pointer for the smodel.GetSystemResetInfo
+	GetSystemResetInfoFunc = smodel.GetSystemResetInfo
+	// GetResourceInfoFromDeviceFunc function pointer for the scommon.GetResourceInfoFromDevice
 	GetResourceInfoFromDeviceFunc = scommon.GetResourceInfoFromDevice
-	GetAllKeysFromTableFunc       = smodel.GetAllKeysFromTable
-	GetDeviceLoadInfoFunc         = getDeviceLoadInfo
-	GetStringFunc                 = smodel.GetString
+	// GetAllKeysFromTableFunc function pointer for the smodel.GetAllKeysFromTable
+	GetAllKeysFromTableFunc = smodel.GetAllKeysFromTable
+	// GetDeviceLoadInfoFunc function pointer for the getDeviceLoadInfo
+	GetDeviceLoadInfoFunc = getDeviceLoadInfo
+	// GetStringFunc function pointer for the smodel.GetString
+	GetStringFunc = smodel.GetString
 )
 
 func setRegexFlag(val string) bool {

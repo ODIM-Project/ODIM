@@ -32,8 +32,10 @@ import (
 )
 
 var (
-	IOReadAll        = ioutil.ReadAll
-	JsonUnMashalFunc = json.Unmarshal
+	//IOReadAll  function pointer for the ioutil.ReadAll
+	IOReadAll = ioutil.ReadAll
+	//JSONUnmarshalFunc function pointer for the json.Unmarshal
+	JSONUnmarshalFunc = json.Unmarshal
 )
 
 // Schema is used to define the allowed values for search/filter
@@ -137,7 +139,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 	}
 
 	var resourceData map[string]interface{}
-	err = JsonUnMashalFunc(body, &resourceData)
+	err = JSONUnmarshalFunc(body, &resourceData)
 	if err != nil {
 		return "", err
 	}
@@ -233,8 +235,9 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 	log.Info("Response" + string(body))
-	log.Info("response.StatusCode" + string(rune(response.StatusCode)))
-	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
+	log.Info("response.StatusCode: " + fmt.Sprintf("%d", response.StatusCode))
+	resp.StatusCode = int32(response.StatusCode)
+	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted {
 		resp.StatusCode = int32(response.StatusCode)
 		log.Println(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
@@ -244,6 +247,9 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 	//replacing the resposne with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
+	}
+	if response.StatusCode == http.StatusAccepted {
+		return []byte(data), response.Header.Get("Location"), resp, nil
 	}
 	return []byte(data), response.Header.Get("X-Auth-Token"), resp, nil
 }

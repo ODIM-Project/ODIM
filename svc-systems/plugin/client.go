@@ -37,11 +37,16 @@ import (
 )
 
 var (
-	JsonMarshalFunc           = json.Marshal
+	// JSONMarshalFunc function pointer for the json.Marshal
+	JSONMarshalFunc = json.Marshal
+	// DecryptWithPrivateKeyFunc function pointer for the common.DecryptWithPrivateKey
 	DecryptWithPrivateKeyFunc = common.DecryptWithPrivateKey
-	JsonUnmarshalFunc         = json.Unmarshal
-	FindAllFunc               = smodel.FindAll
-	IoutilReadAllFunc         = ioutil.ReadAll
+	// JSONUnmarshalFunc function pointer for the  json.Unmarshal
+	JSONUnmarshalFunc = json.Unmarshal
+	// FindAllFunc function pointer for the smodel.FindAll
+	FindAllFunc = smodel.FindAll
+	// IoutilReadAllFunc function pointer for the ioutil.ReadAll
+	IoutilReadAllFunc = ioutil.ReadAll
 )
 
 // ClientFactory ...
@@ -131,7 +136,7 @@ type collectCollectionMembers struct {
 func (c *collectCollectionMembers) Collect(r response.RPC) error {
 	if is2xx(int(r.StatusCode)) {
 		collection := new(sresponse.Collection)
-		err := JsonUnmarshalFunc(r.Body.([]byte), collection)
+		err := JSONUnmarshalFunc(r.Body.([]byte), collection)
 		if err != nil {
 			return err
 		}
@@ -145,7 +150,7 @@ func (c *collectCollectionMembers) Collect(r response.RPC) error {
 }
 
 func (c *collectCollectionMembers) GetResult() response.RPC {
-	collectionAsBytes, err := JsonMarshalFunc(c.collection)
+	collectionAsBytes, err := JSONMarshalFunc(c.collection)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("Unexpected error: %v", err), nil, nil)
 	}
@@ -366,7 +371,7 @@ func findAllPlugins(key string) (res []*smodel.Plugin, err error) {
 
 	for _, bytes := range pluginsAsBytesSlice {
 		plugin := new(smodel.Plugin)
-		err = JsonUnmarshalFunc(bytes, plugin)
+		err = JSONUnmarshalFunc(bytes, plugin)
 		if err != nil {
 			return nil, err
 		}
@@ -385,7 +390,7 @@ func findAllPlugins(key string) (res []*smodel.Plugin, err error) {
 }
 
 func convertToString(data interface{}) string {
-	byteData, err := JsonMarshalFunc(data)
+	byteData, err := JSONMarshalFunc(data)
 	if err != nil {
 		log.Error("converting interface to string type failed: " + err.Error())
 		return ""

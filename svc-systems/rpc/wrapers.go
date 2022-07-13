@@ -37,3 +37,16 @@ func auth(authenticate authenticator, sessionToken string,
 	}
 	return callback()
 }
+
+func generateTaskRespone(taskID, taskURI string, rpcResp *response.RPC) {
+	commonResponse := response.Response{
+		OdataType:    common.TaskType,
+		ID:           taskID,
+		Name:         "Task " + taskID,
+		OdataContext: "/redfish/v1/$metadata#Task.Task",
+		OdataID:      taskURI,
+	}
+	commonResponse.MessageArgs = []string{taskID}
+	commonResponse.CreateGenericResponse(rpcResp.StatusMessage)
+	rpcResp.Body = commonResponse
+}

@@ -196,7 +196,7 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 	IOReadAll = func(r io.Reader) ([]byte, error) {
 		return ioutil.ReadAll(r)
 	}
-	JsonUnMashalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return errors.New("")
 	}
 	_, err = GetResourceInfoFromDevice(req, true)

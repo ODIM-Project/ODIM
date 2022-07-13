@@ -342,7 +342,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, status scommon.ResponseStatus, err error) {
 		return scommon.ContactPlugin(req, errorMessage)
 	}
-	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	req = systemsproto.VolumeRequest{
@@ -369,7 +369,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		name              string
 		p                 *ExternalInterface
 		req               *systemsproto.VolumeRequest
-		JsonUnMarshalFunc func(data []byte, v interface{}) error
+		JSONUnmarshalFunc func(data []byte, v interface{}) error
 		wantStatusCode    int32
 	}{
 		{
@@ -381,7 +381,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			JsonUnMarshalFunc: func(data []byte, v interface{}) error {
+			JSONUnmarshalFunc: func(data []byte, v interface{}) error {
 				return nil
 			},
 			wantStatusCode: http.StatusNoContent,
@@ -395,7 +395,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			JsonUnMarshalFunc: func(data []byte, v interface{}) error {
+			JSONUnmarshalFunc: func(data []byte, v interface{}) error {
 				return nil
 			},
 			wantStatusCode: http.StatusNotFound,
@@ -409,7 +409,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			JsonUnMarshalFunc: func(data []byte, v interface{}) error {
+			JSONUnmarshalFunc: func(data []byte, v interface{}) error {
 				return nil
 			},
 			wantStatusCode: http.StatusNotFound,
@@ -423,7 +423,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "2",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			JsonUnMarshalFunc: func(data []byte, v interface{}) error {
+			JSONUnmarshalFunc: func(data []byte, v interface{}) error {
 				return nil
 			},
 			wantStatusCode: http.StatusNotFound,
@@ -437,7 +437,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			JsonUnMarshalFunc: func(data []byte, v interface{}) error {
+			JSONUnmarshalFunc: func(data []byte, v interface{}) error {
 				return nil
 			},
 			wantStatusCode: http.StatusInternalServerError,
@@ -451,7 +451,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			JsonUnMarshalFunc: func(data []byte, v interface{}) error {
+			JSONUnmarshalFunc: func(data []byte, v interface{}) error {
 				return &errors.Error{}
 			},
 			wantStatusCode: http.StatusBadRequest,
@@ -465,7 +465,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@redfish.operationapplytime": "OnReset"}`),
 			},
-			JsonUnMarshalFunc: func(data []byte, v interface{}) error {
+			JSONUnmarshalFunc: func(data []byte, v interface{}) error {
 				return nil
 			},
 			wantStatusCode: http.StatusBadRequest,
@@ -479,14 +479,14 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			JsonUnMarshalFunc: func(data []byte, v interface{}) error {
+			JSONUnmarshalFunc: func(data []byte, v interface{}) error {
 				return json.Unmarshal(data, v)
 			},
 			wantStatusCode: http.StatusNotFound,
 		},
 	}
 	for _, tt := range tests {
-		JsonUnMarshalFunc = tt.JsonUnMarshalFunc
+		JSONUnmarshalFunc = tt.JSONUnmarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.DeleteVolume(tt.req); got.StatusCode != tt.wantStatusCode {
 				t.Errorf("PluginContact.DeleteVolume() = %v, want %v", got.StatusCode, tt.wantStatusCode)

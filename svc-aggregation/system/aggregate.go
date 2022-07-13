@@ -640,7 +640,7 @@ func (e *ExternalInterface) resetSystem(taskID, reqBody string, subTaskChan chan
 	pluginContactRequest.DeviceInfo = target
 	pluginContactRequest.OID = "/ODIM/v1/Systems/" + sysID + "/Actions/ComputerSystem.Reset"
 	pluginContactRequest.HTTPMethodType = http.MethodPost
-	_, _, getResponse, err := contactPlugin(pluginContactRequest, "error while reseting the computer system: ")
+	respBody, location, getResponse, err := contactPlugin(pluginContactRequest, "error while reseting the computer system: ")
 
 	if err != nil {
 		subTaskChan <- getResponse.StatusCode
@@ -648,6 +648,23 @@ func (e *ExternalInterface) resetSystem(taskID, reqBody string, subTaskChan chan
 		log.Error(errMsg)
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 		return
+	}
+	if getResponse.StatusCode == http.StatusAccepted {
+		getResponse, err = e.monitorPluginTask(subTaskChan, &monitorTaskRequest{
+			subTaskID:         subTaskID,
+			serverURI:         targetURI,
+			updateRequestBody: reqBody,
+			respBody:          respBody,
+			getResponse:       getResponse,
+			taskInfo:          taskInfo,
+			location:          location,
+			pluginRequest:     pluginContactRequest,
+			resp:              resp,
+		})
+
+		if err != nil {
+			return
+		}
 	}
 
 	resp.StatusMessage = response.Success

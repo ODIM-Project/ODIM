@@ -38,11 +38,11 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
+	"github.com/stretchr/testify/assert"
 )
 
 func testSystemIndex(uuid string, indexData map[string]interface{}) error {
@@ -381,6 +381,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	resp8 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 
 	common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
+
 	p := getMockExternalInterface()
 	p.ContactClient = testUpdateContactClient
 	type args struct {
@@ -488,4 +489,14 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_validateManagerAddress(t *testing.T) {
+	managerAddress := "10.0.0.0:8080"
+	err := validateManagerAddress("")
+	assert.Nil(t, err, "Error should not be nil")
+	err = validateManagerAddress(managerAddress)
+	assert.Nil(t, err, "Error should be nil")
+	err = validateManagerAddress("FQDN:PORT")
+	assert.NotNil(t, err, "Error should not be nil")
 }

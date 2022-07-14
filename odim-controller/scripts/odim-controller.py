@@ -1901,6 +1901,9 @@ def unlockControllerInvocation():
 
 # exit is for cleaning resouces and formal exit
 def exit(code):
+	lockPath = os.path.join(CONTROLLER_SRC_PATH, CONTROLLER_LOCK_FILE)
+	if os.path.exists(lockPath):
+		os.remove(lockPath)
 	unlockControllerInvocation()
 	logger_f.info ("--------- %-7s %s ---------\n", "Ended", time.strftime("%d-%m-%Y %H:%M:%S"))
 	sys.exit(code)

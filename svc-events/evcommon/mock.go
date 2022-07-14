@@ -29,8 +29,8 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 )
 
-var domain_ip = "odim.controller.com"
-var destination_ip = "odim.destination.com"
+var domainIP = "odim.controller.com"
+var destinationIP = "odim.destination.com"
 
 func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
@@ -216,7 +216,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 		}
 	case "110813e0-4859-984c-984c-d72da32d72da":
 		target = &evmodel.Target{
-			ManagerAddress: domain_ip,
+			ManagerAddress: domainIP,
 			Password:       encryptedData,
 			UserName:       "admin",
 			DeviceUUID:     "110813e0-4859-984c-984c-d72da32d72da",
@@ -446,7 +446,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				MessageIds:           []string{},
 				ResourceTypes:        []string{},
 				OriginResources:      []string{"/redfish/v1/Fabrics/123"},
-				Hosts:                []string{domain_ip},
+				Hosts:                []string{domainIP},
 				SubordinateResources: true,
 			},
 		}
@@ -514,10 +514,10 @@ func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, err
 			EventHostIP:     "odim.ip.com",
 			OriginResources: []string{"/redfish/v1/Fabrics/123456"},
 		}
-	} else if strings.Contains(hostIP, domain_ip) {
+	} else if strings.Contains(hostIP, domainIP) {
 		deviceSub = &evmodel.DeviceSubscription{
 			Location:        "/ODIM/v1/Subscriptions/123",
-			EventHostIP:     domain_ip,
+			EventHostIP:     domainIP,
 			OriginResources: []string{"/redfish/v1/Fabrics/123"},
 		}
 	} else if strings.Contains(hostIP, "localhost") {

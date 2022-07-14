@@ -82,7 +82,7 @@ type EventServiceResponse struct {
 	IncludeOriginOfConditionSupported bool                          `json:"IncludeOriginOfConditionSupported,omitempty"`
 	SMTP                              *SMTP                         `json:"SMTP,omitempty"`
 	ExcludeRegistryPrefix             bool                          `json:"ExcludeRegistryPrefix,omitempty"`
-	ExcludeMessageId                  bool                          `json:"ExcludeMessageId,omitempty"`
+	ExcludeMessageID                  bool                          `json:"ExcludeMessageId,omitempty"`
 }
 
 // SMTP is for SMTP event delivery

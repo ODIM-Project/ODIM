@@ -107,7 +107,6 @@ function launchslave() {
   echo "Starting Redis instance as Slave , Master IP $1"
 
   redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512)
-  echo "slave: ${redis_password}"
 
   while true; do
     echo "Trying to retrieve the Master IP again, in case of failover master ip would have changed."

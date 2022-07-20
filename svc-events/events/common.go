@@ -461,8 +461,8 @@ func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, b
 		}
 		var collection []string = []string{}
 		for _, system := range aggregateCollection.Elements {
-			var systemId string = system.OdataID
-			collection = append(collection, systemId)
+			var systemID string = system.OdataID
+			collection = append(collection, systemID)
 		}
 		return collection, "AggregateCollections", true, origin, true, err
 	}

@@ -484,8 +484,8 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 		return "", resp
 	}
 	if isAggragateCollection {
-		aggregateId := getAggregateID(aggrgateResouce)
-		err := e.saveAggregateSubscriptionDetails(aggregateId, deviceIPAddress)
+		aggregateID := getAggregateID(aggrgateResouce)
+		err := e.saveAggregateSubscriptionDetails(aggregateID, deviceIPAddress)
 		if err != nil {
 			errorMessage := "error while trying to save event aggregate host of device data: " + err.Error()
 			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
@@ -1154,16 +1154,16 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 
 // saveAggregateSubscriptionDetails will first check if already origin resource details present
 // otherwise add an entry to redis
-func (e *ExternalInterfaces) saveAggregateSubscriptionDetails(aggregateId, hostIP string) error {
-	aggregateHostIps, err := e.GetAggregateHosts(aggregateId)
+func (e *ExternalInterfaces) saveAggregateSubscriptionDetails(aggregateID, hostIP string) error {
+	aggregateHostIps, err := e.GetAggregateHosts(aggregateID)
 	if err != nil {
-		return e.SaveAggregateSubscription(aggregateId, []string{hostIP})
+		return e.SaveAggregateSubscription(aggregateID, []string{hostIP})
 	}
 	if contains(aggregateHostIps, hostIP) {
 		return nil
 	}
 	aggregateHostIps = append(aggregateHostIps, hostIP)
-	return e.UpdateAggregateHosts(aggregateId, aggregateHostIps)
+	return e.UpdateAggregateHosts(aggregateID, aggregateHostIps)
 }
 func contains(list []string, element string) bool {
 	for _, data := range list {

@@ -1417,7 +1417,7 @@ func (p *ConnPool) TTL(table, key string) (int, *errors.Error) {
 1. index is the name of the index to be created
 2. key is for the index
 */
-func (p *ConnPool) CreateAggregateSubscriptionIndex(index, aggregateId string, hostIP []string) error {
+func (p *ConnPool) CreateAggregateSubscriptionIndex(index, aggregateID string, hostIP []string) error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
 		return fmt.Errorf("WritePool is nil")
@@ -1426,7 +1426,7 @@ func (p *ConnPool) CreateAggregateSubscriptionIndex(index, aggregateId string, h
 	defer writeConn.Close()
 	const value = 0
 	originResourceStr := "[" + strings.Join(hostIP, " ") + "]"
-	key := aggregateId + "::" + originResourceStr
+	key := aggregateID + "::" + originResourceStr
 	// escape the square brackets before scanning
 	searchKey := strings.Replace(key, "[", "\\[", -1)
 	searchKey = strings.Replace(searchKey, "]", "\\]", -1)
@@ -1453,26 +1453,20 @@ func (p *ConnPool) GetAggregateHosts(index string, match string) ([]string, erro
 	defer readConn.Close()
 	const cursor float64 = 0
 
-	fmt.Println("Match is *******  ", match)
-
 	currentCursor := cursor
 	for {
 		d, getErr := readConn.Do("ZSCAN", index, currentCursor, "MATCH", match, "COUNT", count)
 		if getErr != nil {
-			fmt.Println("Error 111111111111111111 ", getErr)
 			return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
 		}
 		if len(d.([]interface{})) > 1 {
 			var err error
 			data, err = redis.Strings(d.([]interface{})[1], getErr)
 			if err != nil {
-				fmt.Println("Error 222222222222 ", err)
 				return []string{}, err
 			}
 			log.Info("No of data records for get device aggregate Host query : " + strconv.Itoa(len(data)))
 			if len(data) < 1 {
-				fmt.Println("Error 222222 ", err)
-
 				return []string{}, fmt.Errorf("no data found for the key: %v", match)
 			}
 			return data, nil
@@ -1489,21 +1483,21 @@ func (p *ConnPool) GetAggregateHosts(index string, match string) ([]string, erro
 	return data, nil
 }
 
-// UpdateDeviceSubscription is for to Update subscription details
+// UpdateAggregateHosts is for to Update subscription details
 // 1. index is the name of the index to be created
 // 2. key and value are the key value pair for the index
-func (p *ConnPool) UpdateAggregateHosts(index, aggregateId string, hostIP []string) error {
-	_, err := p.GetAggregateHosts(index, aggregateId+"[^0-9]*")
+func (p *ConnPool) UpdateAggregateHosts(index, aggregateID string, hostIP []string) error {
+	_, err := p.GetAggregateHosts(index, aggregateID+"[^0-9]*")
 	if err != nil {
 		return err
 	}
 	// host ip will be unique on each index in subscription of device
 	// so there will be only one data
-	err = p.DeleteDeviceSubscription(index, aggregateId+"[^0-9]")
+	err = p.DeleteDeviceSubscription(index, aggregateID+"[^0-9]")
 	if err != nil {
 		return err
 	}
-	err = p.CreateAggregateSubscriptionIndex(index, aggregateId, hostIP)
+	err = p.CreateAggregateSubscriptionIndex(index, aggregateID, hostIP)
 	if err != nil {
 		return fmt.Errorf("error while updating aggregate host ")
 	}

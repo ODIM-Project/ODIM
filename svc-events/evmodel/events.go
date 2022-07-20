@@ -595,12 +595,12 @@ func DeleteUndeliveredEventsFlag(destination string) error {
 }
 
 // SaveAggregateSubscription is to save subscription details of device
-func SaveAggregateSubscription(aggregateId string, hostIP []string) error {
+func SaveAggregateSubscription(aggregateID string, hostIP []string) error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
-	cerr := conn.CreateAggregateSubscriptionIndex(AggregateSubscriptionIndex, aggregateId, hostIP)
+	cerr := conn.CreateAggregateSubscriptionIndex(AggregateSubscriptionIndex, aggregateID, hostIP)
 	if cerr != nil {
 		return fmt.Errorf("error while trying to save subscription of device %v", cerr.Error())
 	}
@@ -608,12 +608,12 @@ func SaveAggregateSubscription(aggregateId string, hostIP []string) error {
 }
 
 // UpdateAggregateHosts is to update aggregate hosts details of device
-func UpdateAggregateHosts(aggregateId string, hostIP []string) error {
+func UpdateAggregateHosts(aggregateID string, hostIP []string) error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
-	cerr := conn.UpdateAggregateHosts(AggregateSubscriptionIndex, aggregateId, hostIP)
+	cerr := conn.UpdateAggregateHosts(AggregateSubscriptionIndex, aggregateID, hostIP)
 	if cerr != nil {
 		return fmt.Errorf("error while trying to save subscription of device %v", cerr.Error())
 	}
@@ -632,6 +632,6 @@ func GetAggregateHosts(aggregateIP string) ([]string, error) {
 		return nil, fmt.Errorf("error while trying to get aggregate host of device %v", gerr.Error())
 	}
 	devSub := strings.Split(aggregateList[0], "::")
-	hostsIp := getSliceFromString(devSub[1])
-	return hostsIp, nil
+	hostsIP := getSliceFromString(devSub[1])
+	return hostsIP, nil
 }

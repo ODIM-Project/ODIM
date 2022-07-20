@@ -48,6 +48,7 @@ type AggregateResponse struct {
 	Elements []agmodel.OdataID `json:"Elements"`
 }
 
+// AggregateGetResponse defines the response for aggregate
 type AggregateGetResponse struct {
 	response.Response
 	ElementsCount int               `json:"ElementsCount,omitempty"`
@@ -55,7 +56,7 @@ type AggregateGetResponse struct {
 	Actions       AggregateActions  `json:"Actions,omitempty"`
 }
 
-// Actions defines the links to the actions available under the service
+// AggregateActions defines the links to the actions available under the service
 type AggregateActions struct {
 	AggregateReset               Action `json:"#Aggregate.Reset"`
 	AggregateSetDefaultBootOrder Action `json:"#Aggregate.SetDefaultBootOrder"`

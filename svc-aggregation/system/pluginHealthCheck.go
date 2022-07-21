@@ -31,10 +31,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	// GetAllPluginfunc function pointer for the agcommon.GetAllPlugins
+	GetAllPluginfunc = agcommon.GetAllPlugins
+	// LookupPlugin function pointer for the agcommon.LookupPlugin
+	LookupPlugin = agcommon.LookupPlugin
+	// DecryptWithPrivateKey function pointer for the agcommon.DecryptWithPrivateKey
+	DecryptWithPrivateKey = common.DecryptWithPrivateKey
+	// GetPluginStatusRecord function pointer for the agcommon.GetPluginStatusRecord
+	GetPluginStatusRecord = agcommon.GetPluginStatusRecord
+)
+
 // SendStartUpData is for sending plugin start up data
 func (e *ExternalInterface) SendStartUpData(startUpReq *aggregatorproto.SendStartUpDataRequest) response.RPC {
 	resp := response.RPC{}
-	plugin, err := agcommon.LookupPlugin(startUpReq.PluginAddr)
+	plugin, err := LookupPlugin(startUpReq.PluginAddr)
 	if err != nil {
 		log.Error("failed to find plugin with address " + startUpReq.PluginAddr + ": " + err.Error())
 		return resp
@@ -47,12 +58,12 @@ func (e *ExternalInterface) SendStartUpData(startUpReq *aggregatorproto.SendStar
 	// EMB topic of the plugin should be enough
 	if plugin.PluginType != "Compute" {
 		phc := agcommon.PluginHealthCheckInterface{
-			DecryptPassword: common.DecryptWithPrivateKey,
+			DecryptPassword: DecryptWithPrivateKey,
 		}
 		phc.DupPluginConf()
 
 		active, topics := phc.GetPluginStatus(plugin)
-		count, exist := agcommon.GetPluginStatusRecord(plugin.ID)
+		count, exist := GetPluginStatusRecord(plugin.ID)
 		if !exist || (active && count != 0) {
 			agcommon.SetPluginStatusRecord(plugin.ID, 0)
 			PublishPluginStatusOKEvent(plugin.ID, topics)
@@ -72,11 +83,11 @@ func (e *ExternalInterface) SendStartUpData(startUpReq *aggregatorproto.SendStar
 func PerformPluginHealthCheck() {
 	log.Info("plugins health check routine started")
 	phc := agcommon.PluginHealthCheckInterface{
-		DecryptPassword: common.DecryptWithPrivateKey,
+		DecryptPassword: DecryptWithPrivateKey,
 	}
 	for {
 		phc.DupPluginConf()
-		if pluginList, err := agcommon.GetAllPlugins(); err != nil {
+		if pluginList, err := GetAllPluginfunc(); err != nil {
 			log.Error("failed to get list of all plugins:", err.Error())
 		} else {
 			for _, plugin := range pluginList {
@@ -89,7 +100,7 @@ func PerformPluginHealthCheck() {
 
 func checkPluginStatus(phc *agcommon.PluginHealthCheckInterface, plugin agmodel.Plugin) {
 	active, topics := phc.GetPluginStatus(plugin)
-	if count, exist := agcommon.GetPluginStatusRecord(plugin.ID); !exist {
+	if count, exist := GetPluginStatusRecord(plugin.ID); !exist {
 		agcommon.SetPluginStatusRecord(plugin.ID, 0)
 	} else {
 		switch {
@@ -127,7 +138,7 @@ func PushPluginStartUpData(plugin agmodel.Plugin, startUpData *agmodel.PluginSta
 
 func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool, serverName string) (ret error) {
 	phc := agcommon.PluginHealthCheckInterface{
-		DecryptPassword: common.DecryptWithPrivateKey,
+		DecryptPassword: DecryptWithPrivateKey,
 	}
 	phc.DupPluginConf()
 	managedServers := phc.GetPluginManagedServers(plugin)
@@ -231,7 +242,7 @@ func sendFullPluginInventory(pluginIP string, plugin agmodel.Plugin) error {
 	var reSubsEvent bool
 	serverName := plugin.IP
 
-	count, exist := agcommon.GetPluginStatusRecord(plugin.ID)
+	count, exist := GetPluginStatusRecord(plugin.ID)
 	if !exist || count > 0 {
 		agcommon.SetPluginStatusRecord(plugin.ID, 0)
 	}

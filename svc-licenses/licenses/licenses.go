@@ -65,12 +65,15 @@ func (e *ExternalInterface) GetLicenseCollection(req *licenseproto.GetLicenseReq
 		Description:  "License Collection",
 		Name:         "License Collection",
 	}
-	var members []*dmtf.Link
+	var members = make([]*dmtf.Link, 0)
 
 	licenseCollectionKeysArray, err := e.DB.GetAllKeysFromTable("Licenses", persistencemgr.InMemory)
-	if err != nil || len(licenseCollectionKeysArray) == 0 {
+	if err != nil {
+		log.Error("error while getting license collection details from db")
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+	}
+	if len(licenseCollectionKeysArray) == 0 {
 		log.Error("odimra doesnt have Licenses")
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), nil, nil)
 	}
 
 	for _, key := range licenseCollectionKeysArray {

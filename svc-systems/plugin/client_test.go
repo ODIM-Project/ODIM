@@ -103,13 +103,13 @@ func Test_uriTranslator(t *testing.T) {
 func Test_convertToString(t *testing.T) {
 	res := convertToString(125544)
 	assert.True(t, res == "125544", "There should be no error ")
-	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
+	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
 	res = convertToString("")
 	assert.NotNil(t, res, "There should be an error ")
 
-	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
+	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)
 	}
 	status := is2xx(200)
@@ -145,13 +145,13 @@ func Test_findAllPlugins(t *testing.T) {
 	_, err = findAllPlugins("ILO")
 	assert.Nil(t, err, "There should be no error ")
 
-	JsonUnmarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	_, err = findAllPlugins("ILO")
 	assert.True(t, true, "There should be an error ", err)
 
-	JsonUnmarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
 	DecryptWithPrivateKeyFunc = func(ciphertext []byte) ([]byte, error) {
@@ -300,13 +300,13 @@ func Test_returnFirst_Collect(t *testing.T) {
 	collectionRes := collectCollectionMembers.Collect(response.RPC{})
 	assert.NotNil(t, collectionRes, "There should be an error ")
 
-	JsonUnmarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return fmt.Errorf("")
 	}
 	collectionRes = collectCollectionMembers.Collect(response.RPC{StatusCode: 200, Body: []byte(`{"Members":[{"@@odata.id":"/redish/v1/session/1"}]}`)})
 	assert.NotNil(t, collectionRes, "There should be an error ")
 
-	JsonUnmarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
 	collectionRes = collectCollectionMembers.Collect(response.RPC{StatusCode: 200, Body: []byte(`{"Members":[{"@@odata.id":"/redish/v1/session/1"}]}`)})
@@ -314,12 +314,12 @@ func Test_returnFirst_Collect(t *testing.T) {
 
 	resultRes := collectCollectionMembers.GetResult()
 	assert.NotNil(t, resultRes, "There should be an error ")
-	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
+	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
 	res3 := collectCollectionMembers.GetResult()
 	assert.NotNil(t, res3, "There should be an error ")
-	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
+	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)
 	}
 	chassisRes := getChassisID("redis/v1")

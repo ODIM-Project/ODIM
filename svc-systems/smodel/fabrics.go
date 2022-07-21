@@ -26,6 +26,7 @@ type Fabric struct {
 }
 
 var (
+	// GetPluginDataFunc function pointer for the GetPluginData
 	GetPluginDataFunc = GetPluginData
 )
 

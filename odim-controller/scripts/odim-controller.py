@@ -38,7 +38,7 @@ lock = None
 CONTROLLER_CONF_DATA = None
 CONTROLLER_CONF_FILE = ""
 CONTROLLER_LOG_FILE = "odim-controller.log"
-CONTROLLER_LOCK_FILE = "/tmp/odim-controller.lock"
+CONTROLLER_LOCK_FILE = "odim-controller.lock"
 DEPLOYMENT_SRC_DIR = ""
 KUBESPRAY_SRC_PATH = ""
 CONTROLLER_SRC_PATH = ""
@@ -1901,6 +1901,9 @@ def unlockControllerInvocation():
 
 # exit is for cleaning resouces and formal exit
 def exit(code):
+	lockPath = os.path.join(CONTROLLER_SRC_PATH, CONTROLLER_LOCK_FILE)
+	if os.path.exists(lockPath):
+		os.remove(lockPath)
 	unlockControllerInvocation()
 	logger_f.info ("--------- %-7s %s ---------\n", "Ended", time.strftime("%d-%m-%Y %H:%M:%S"))
 	sys.exit(code)

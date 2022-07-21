@@ -600,7 +600,7 @@ func SaveAggregateSubscription(aggregateID string, hostIP []string) error {
 	if err != nil {
 		return err
 	}
-	cerr := conn.CreateAggregateSubscriptionIndex(AggregateSubscriptionIndex, aggregateID, hostIP)
+	cerr := conn.CreateAggregateHostIndex(AggregateSubscriptionIndex, aggregateID, hostIP)
 	if cerr != nil {
 		return fmt.Errorf("error while trying to save subscription of device %v", cerr.Error())
 	}

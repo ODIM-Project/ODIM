@@ -1412,12 +1412,12 @@ func (p *ConnPool) TTL(table, key string) (int, *errors.Error) {
 	return time, nil
 }
 
-// CreateAggregateSubscriptionIndex is used to create and save secondary index
-/* CreateAggregateSubscriptionIndex take the following keys are input:
+// CreateAggregateHostIndex is used to create and save secondary index
+/* CreateAggregateHostIndex take the following keys are input:
 1. index is the name of the index to be created
 2. key is for the index
 */
-func (p *ConnPool) CreateAggregateSubscriptionIndex(index, aggregateID string, hostIP []string) error {
+func (p *ConnPool) CreateAggregateHostIndex(index, aggregateID string, hostIP []string) error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
 		return fmt.Errorf("WritePool is nil")
@@ -1427,13 +1427,6 @@ func (p *ConnPool) CreateAggregateSubscriptionIndex(index, aggregateID string, h
 	const value = 0
 	originResourceStr := "[" + strings.Join(hostIP, " ") + "]"
 	key := aggregateID + "::" + originResourceStr
-	// escape the square brackets before scanning
-	searchKey := strings.Replace(key, "[", "\\[", -1)
-	searchKey = strings.Replace(searchKey, "]", "\\]", -1)
-	val, _ := p.GetDeviceSubscription(index, searchKey)
-	if len(val) > 0 {
-		return fmt.Errorf("Data Already Exist for the index: %v", index)
-	}
 	createErr := writeConn.Send("ZADD", index, value, key)
 	if createErr != nil {
 		return createErr
@@ -1497,7 +1490,7 @@ func (p *ConnPool) UpdateAggregateHosts(index, aggregateID string, hostIP []stri
 	if err != nil {
 		return err
 	}
-	err = p.CreateAggregateSubscriptionIndex(index, aggregateID, hostIP)
+	err = p.CreateAggregateHostIndex(index, aggregateID, hostIP)
 	if err != nil {
 		return fmt.Errorf("error while updating aggregate host ")
 	}

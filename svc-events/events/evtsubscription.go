@@ -307,7 +307,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	return resp
 }
 
-func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, origin, collectionName string, collectionFlag bool, aggrgateResouce string, isAggragateCollection bool) (string, evresponse.EventResponse) {
+func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, origin, collectionName string, collectionFlag bool) (string, evresponse.EventResponse) {
 	var resp evresponse.EventResponse
 	var err error
 	var plugin *evmodel.Plugin
@@ -483,17 +483,6 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 		log.Error(errorMessage)
 		return "", resp
 	}
-	if isAggragateCollection {
-		aggregateID := getAggregateID(aggrgateResouce)
-		err := e.saveAggregateSubscriptionDetails(aggregateID, deviceIPAddress)
-		if err != nil {
-			errorMessage := "error while trying to save event aggregate host of device data: " + err.Error()
-			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
-				&resp, []interface{}{})
-			log.Error(errorMessage)
-			return "", resp
-		}
-	}
 	var outBody interface{}
 	body, err := ioutil.ReadAll(response.Body)
 	err = json.Unmarshal(body, &outBody)
@@ -643,7 +632,7 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 		postRequest.Protocol = protocol
 		postRequest.SubscriptionType = evmodel.SubscriptionType
 		postRequest.SubordinateResources = true
-		host, response = e.eventSubscription(postRequest, originResources[i], "", false, "", false)
+		host, response = e.eventSubscription(postRequest, originResources[i], "", false)
 		e.checkCollectionSubscription(originResources[i], protocol)
 		if response.StatusCode != http.StatusCreated {
 			partialResultFlag = true
@@ -845,7 +834,7 @@ func (e *ExternalInterfaces) createEventSubscrption(taskID string, subTaskChan c
 		e.UpdateTask(fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Running, common.OK, percentComplete, http.MethodPost))
 	}
 
-	host, response := e.eventSubscription(request, originResource, collectionName, collectionFlag, aggrgateResouce, isAggragateCollection)
+	host, response := e.eventSubscription(request, originResource, collectionName, collectionFlag)
 	resp.Body = response.Response
 	resp.StatusCode = int32(response.StatusCode)
 	if isAggragateCollection {
@@ -954,7 +943,7 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 	}
 
 	// Subscribing newly added server with collated event list
-	host, response := e.eventSubscription(subscriptionPost, origin, "", false, "", false)
+	host, response := e.eventSubscription(subscriptionPost, origin, "", false)
 	if response.StatusCode != http.StatusCreated {
 		return
 	}
@@ -1150,26 +1139,4 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 	resp.StatusCode = response.StatusCode
 	resp.Location = response.Header.Get("location")
 	return deviceIPAddress, resp
-}
-
-// saveAggregateSubscriptionDetails will first check if already origin resource details present
-// otherwise add an entry to redis
-func (e *ExternalInterfaces) saveAggregateSubscriptionDetails(aggregateID, hostIP string) error {
-	aggregateHostIps, err := e.GetAggregateHosts(aggregateID)
-	if err != nil {
-		return e.SaveAggregateSubscription(aggregateID, []string{hostIP})
-	}
-	if contains(aggregateHostIps, hostIP) {
-		return nil
-	}
-	aggregateHostIps = append(aggregateHostIps, hostIP)
-	return e.UpdateAggregateHosts(aggregateID, aggregateHostIps)
-}
-func contains(list []string, element string) bool {
-	for _, data := range list {
-		if data == element {
-			return true
-		}
-	}
-	return false
 }

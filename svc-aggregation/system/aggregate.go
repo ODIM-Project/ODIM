@@ -81,6 +81,12 @@ func (e *ExternalInterface) CreateAggregate(req *aggregatorproto.AggregatorReque
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
+	err = addAggregateHost(aggregateUUID, createRequest)
+	if err != nil {
+		errMsg := dbErr.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
 	commonResponse := response.Response{
 		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      aggregateURI,
@@ -795,4 +801,20 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 		runtime.Goexit()
 	}
 	return resp
+}
+func addAggregateHost(uuid string, aggregate agmodel.Aggregate) (err error) {
+	var ips []string
+	for _, element := range aggregate.Elements {
+		systemID := element.OdataID[strings.LastIndexAny(element.OdataID, "/")+1:]
+		data := strings.SplitN(systemID, ".", 2)
+		// Get target device Credentials from using device UUID
+		target, err := agmodel.GetTarget(data[0])
+		if err != nil {
+			return err
+		}
+		ips = append(ips, target.ManagerAddress)
+	}
+
+	err = agmodel.AddAggregateHostIndex(uuid, ips)
+	return
 }

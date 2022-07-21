@@ -48,18 +48,27 @@ function launchsentinel() {
   echo -n "${REDIS_DEFAULT_PASSWORD}" | base64 --decode > cipher
   redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512)
 
-  while true; do
-    echo "Trying to connect to Sentinel Service"
+  x=1
+  while [ $x -le 5 ]
+  do
     master=$(redis-cli -a ${redis_password} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
-
     if [[ -n ${master} ]]; then
       echo "Connected to Sentinel Service and retrieved Redis Master hostname as ${master}"
       master="${master//\"}"
+      break
     else
-      echo "Unable to connect to Sentinel Service, probably because I am first Sentinel to start. I will use default master hostname to connect to sentinel"
-      master=${MASTER_HOST_NAME}
+      echo "Unable to connect to sentinel, retrying..."
+      sleep 1
     fi
+    x=$(( $x + 1 ))
+  done
 
+  if ! [[ -n ${master} ]]; then
+    echo "Unable to connect to Sentinel Service, probably because I am first Sentinel to start. I will use default master hostname ${MASTER_HOST_NAME} to connect to sentinel"
+    master=${MASTER_HOST_NAME}
+  fi
+
+  while true; do
     redis-cli -a ${redis_password} -h ${master} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} INFO
     if [[ "$?" == "0" ]]; then
       break

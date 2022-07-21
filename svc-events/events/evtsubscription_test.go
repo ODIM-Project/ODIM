@@ -48,8 +48,6 @@ func TestCreateEventSubscriptionForAgregate(t *testing.T) {
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
 		"OriginResources": []evmodel.OdataIDLink{
-			// {OdataID: "/redfish/v1/Systems"},
-			// {OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da"},
 			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da2"},
 		},

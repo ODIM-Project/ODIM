@@ -6733,7 +6733,7 @@ This filter searches a server having total physical memory of 384 GB and two Int
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset` |
 |**Description** |This action shuts down, powers up, and restarts a specific system.<br>**NOTE:** To reset an aggregate of systems, use the following URI:<br>`/redfish/v1/AggregationService/Actions/AggregationService.Reset` <br> See [Resetting servers](#resetting-servers).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file. Registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. **Example registry file name**: Base.1.4. See [Message Registries](#message-registries).|
+|**Returns** |A Redfish task in the response header and you receive a link to the task monitor associated with it. To know the progress of this operation, perform an `HTTP GET` on the task monitor (until the task is complete).|
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
 
@@ -6769,13 +6769,13 @@ See [Resetting Servers](#resetting-servers) to know about `ResetType.`
 
 ```
 {
-	"error": {
-		"@Message.ExtendedInfo": [{
-			"MessageId": "Base.1.13.0.Success"
-		}],
-		"code": "iLO.0.10.ExtendedInfo",
-		"message": "See @Message.ExtendedInfo for more information."
-	}
+    "error": {
+        "@Message.ExtendedInfo": [{
+            "MessageId": "Base.1.11.Success"
+        }],
+        "code": "iLO.0.10.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information."
+    }
 }
 ```
 

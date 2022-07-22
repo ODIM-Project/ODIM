@@ -83,9 +83,8 @@ func (e *ExternalInterface) CreateAggregate(req *aggregatorproto.AggregatorReque
 	}
 	err = addAggregateHost(aggregateUUID, createRequest)
 	if err != nil {
-		errMsg := dbErr.Error()
-		log.Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		log.Error(err.Error())
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 	commonResponse := response.Response{
 		OdataType:    "#Aggregate.v1_0_1.Aggregate",

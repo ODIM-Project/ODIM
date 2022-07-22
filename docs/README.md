@@ -5052,7 +5052,6 @@ curl -i -X POST \
    -H "Content-Type:application/json" \
    -d \
 '{
-   "Name":"Volume_Demo",
    "RAIDType":"RAID1",
    "Drives":[
       {
@@ -5073,7 +5072,6 @@ curl -i -X POST \
 
 ```
 {
-   "Name":"Volume_Demo",
    "RAIDType":"RAID1",
    "Drives":[
       {
@@ -5091,7 +5089,6 @@ curl -i -X POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Name|String (required)<br> |Name of the new volume.|
 |RAIDType|String (required)<br> |The RAID type of the volume you want to create.|
 |Drives[{|Array (required)<br> |An array of links to drive resources to contain the new volume.|
 |@odata.id }]<br> |String|A link to a drive resource.|
@@ -5104,7 +5101,7 @@ curl -i -X POST \
       "error":{
             "@Message.ExtendedInfo":[
                   {
-                        "MessageId": "Base.1.4.Success"            
+                        "MessageId": "Base.1.11.Success"            
          }         
       ],
             "code":"iLO.0.10.ExtendedInfo",
@@ -5113,7 +5110,7 @@ curl -i -X POST \
 }
 ```
 
-> **NOTE**: Reset your system only if prompted in your response message id. After the system reset, the new volume is available. For a success message id, system reset is not required.
+> **NOTE**: Reset your system only if prompted in your response message id. After the system reset, the new volume is available. In case of successful message id in the response, system reset is not required.
 
 ### Deleting a volume
 

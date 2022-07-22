@@ -10829,7 +10829,7 @@ curl -i POST \
 ```
 
 
->**Sample request body to create event subscriptions for aggregates**  
+>**Sample request body to create event subscriptions for fabrics**
 
 ```
 { 

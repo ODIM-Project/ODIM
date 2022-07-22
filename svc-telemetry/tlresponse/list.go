@@ -24,8 +24,9 @@ type Collection struct {
 	OdataContext string      `json:"@odata.context"`
 	Etag         string      `json:"@odata.etag,omitempty"`
 	OdataID      string      `json:"@odata.id"`
-	OdataType    string      `json:"@odata.type"`
+	OdataType    string      `json:"@odata.type,omitempty"`
 	Description  string      `json:"Description"`
+	Capabilities string      `json:"Capabilities,omitempty"`
 	Name         string      `json:"Name"`
 	Members      []dmtf.Link `json:"Members"`
 	MembersCount int         `json:"Members@odata.count"`

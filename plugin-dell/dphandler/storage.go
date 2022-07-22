@@ -79,7 +79,7 @@ func CreateVolume(ctx iris.Context) {
 	systemID := ctx.Params().Get("id")
 	storageInstance := ctx.Params().Get("id2")
 
-	driveURI := reqBody.Drives[0].OdataID
+	driveURI := reqBody.Links.Drives[0].Oid
 	s := strings.Split(driveURI, "/")
 	driveSystemID := s[4]
 	reqPostBody = strings.Replace(reqPostBody, driveSystemID, systemID, -1)

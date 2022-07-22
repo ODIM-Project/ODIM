@@ -10636,6 +10636,8 @@ Date:Fri,15 May 2020 10:10:15 GMT+5m 11s
 
 ### Creating an event subscription
 
+You can create event subscriptions for systems, aggregates, fabrics, and any of their combinations.
+
 |||
 |-----------|-----------|
 |**Method** | `POST` |
@@ -10651,7 +10653,7 @@ To know the progress of this action, perform HTTP `GET` on the *[task monitor](#
 To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of this operation (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask.
 
 
->**curl command**
+>**curl command to create event subscriptions for systems**
 
 ```
 curl -i POST \
@@ -10689,7 +10691,7 @@ curl -i POST \
 ```
 
 
->**Sample request body**
+>**Sample request body to create event subscriptions for systems**  
 
 ```
 { 
@@ -10718,9 +10720,148 @@ curl -i POST \
       }
    ]
 }
+```
 
+>**curl command to create event subscriptions for aggregates**
 
 ```
+curl -i POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json; charset=utf-8" \
+   -d \
+'{ 
+   "Name":"ODIMRA_NBI_client",
+   "Destination":"https://{Valid_IP_Address}:{Port}/EventListener",
+   "EventTypes":[ 
+      "Alert"
+   ],
+   "MessageIds":[ 
+
+   ],
+   "ResourceTypes":[ 
+      "ComputerSystem"
+   ],
+   "Context":"ODIMRA_Event",
+   "Protocol":"Redfish",
+   "SubscriptionType":"RedfishEvent",
+   "EventFormatType":"Event",
+   "SubordinateResources":true,
+   "OriginResources":[
+      { 
+        "@odata.id":"/redfish/v1/Aggregates/{AggregateId}"
+      },
+      {
+        "@odata.id":"/redfish/v1/Aggregates/{AggregateId}"
+      }
+   ]
+}' \
+ 'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions'
+
+```
+
+
+>**Sample request body to create event subscriptions for aggregates**  
+
+```
+{ 
+   "Name":"ODIMRA_NBI_client",
+   "Destination":"https://{valid_destination_IP_Address}:{Port}/EventListener",
+   "EventTypes":[ 
+      "Alert"
+   ],
+   "MessageIds":[ 
+
+   ],
+   "ResourceTypes":[ 
+      "ComputerSystem"
+   ],
+   "Context":"ODIMRA_Event",
+   "Protocol":"Redfish",
+   "SubscriptionType":"RedfishEvent",
+   "EventFormatType":"Event",
+   "SubordinateResources":true,
+   "OriginResources":[ 
+      { 
+        "@odata.id":"/redfish/v1/Aggregates/{AggregateId}"
+      },
+      {
+        "@odata.id":"/redfish/v1/Aggregates/{AggregateId}"
+      }
+   ]
+}
+```
+
+>**curl command to create event subscriptions for fabrics**
+
+```
+curl -i POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json; charset=utf-8" \
+   -d \
+'{ 
+   "Name":"ODIMRA_NBI_client",
+   "Destination":"https://{Valid_IP_Address}:{Port}/EventListener",
+   "EventTypes":[ 
+      "Alert"
+   ],
+   "MessageIds":[ 
+
+   ],
+   "ResourceTypes":[ 
+      "ComputerSystem"
+   ],
+   "Context":"ODIMRA_Event",
+   "Protocol":"Redfish",
+   "SubscriptionType":"RedfishEvent",
+   "EventFormatType":"Event",
+   "SubordinateResources":true,
+   "OriginResources":[
+      { 
+        "@odata.id":"/redfish/v1/Fabrics/{FabricId}"
+      },
+      {
+        "@odata.id":"/redfish/v1/Fabrics/{FabricId}"
+      }
+   ]
+}' \
+ 'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions'
+
+```
+
+
+>**Sample request body to create event subscriptions for aggregates**  
+
+```
+{ 
+   "Name":"ODIMRA_NBI_client",
+   "Destination":"https://{valid_destination_IP_Address}:{Port}/EventListener",
+   "EventTypes":[ 
+      "Alert"
+   ],
+   "MessageIds":[ 
+
+   ],
+   "ResourceTypes":[ 
+      "ComputerSystem"
+   ],
+   "Context":"ODIMRA_Event",
+   "Protocol":"Redfish",
+   "SubscriptionType":"RedfishEvent",
+   "EventFormatType":"Event",
+   "SubordinateResources":true,
+   "OriginResources":[ 
+      { 
+        "@odata.id":"/redfish/v1/Fabrics/{FabricId}"
+      },
+      {
+        "@odata.id":"/redfish/v1/Fabrics/{FabricId}"
+      }
+   ]
+}
+```
+
+
+
 
 > **Sample event**
 

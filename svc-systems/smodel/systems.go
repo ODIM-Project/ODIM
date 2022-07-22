@@ -62,10 +62,14 @@ var (
 
 // Volume is for sending a volume's request to south bound
 type Volume struct {
-	Name               string        `json:"Name" validate:"required"`
-	RAIDType           string        `json:"RAIDType"`
-	Drives             []OdataIDLink `json:"Drives"`
-	OperationApplyTime string        `json:"@Redfish.OperationApplyTime"`
+	RAIDType           string `json:"RAIDType"`
+	Links              *Links `json:"Links"`
+	OperationApplyTime string `json:"@Redfish.OperationApplyTime"`
+}
+
+// Links contains Drives resoruces info
+type Links struct {
+	Drives []OdataIDLink `json:"Drives"`
 }
 
 // OdataIDLink contains link to a resource

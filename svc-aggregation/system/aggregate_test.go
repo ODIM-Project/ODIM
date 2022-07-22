@@ -25,6 +25,7 @@ import (
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 )
 
 func mockSystemResourceData(body []byte, table, key string) error {
@@ -242,8 +243,26 @@ func TestExternalInterface_GetAggregate(t *testing.T) {
 			},
 			want: response.RPC{
 				StatusCode: http.StatusOK,
+				Body: agresponse.AggregateGetResponse{
+					ElementsCount: 2,
+					Actions: agresponse.AggregateActions{
+						AggregateReset: agresponse.Action{
+							Target: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+						},
+						AggregateSetDefaultBootOrder: agresponse.Action{
+							Target: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
+						},
+						AggregateAddElements: agresponse.Action{
+							Target: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
+						},
+						AggregateRemoveElements: agresponse.Action{
+							Target: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+						},
+					},
+				},
 			},
 		},
+
 		{
 			name: "Invalid aggregate id",
 			e:    p,

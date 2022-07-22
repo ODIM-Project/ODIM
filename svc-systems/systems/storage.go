@@ -222,13 +222,15 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID 
 		if raidTypeWithMinDrives == 0 {
 			return http.StatusBadRequest, response.PropertyValueNotInList, []interface{}{request.RAIDType, "RAIDType"}, fmt.Errorf("RAIDType %v is invalid", request.RAIDType)
 		}
-
+		if request.Links == nil {
+			return http.StatusBadRequest, response.PropertyMissing, []interface{}{"Links"}, fmt.Errorf("Links Property is not present in the request")
+		}
 		//validates the number of Drives
-		if len(request.Drives) < raidTypeWithMinDrives {
+		if len(request.Links.Drives) < raidTypeWithMinDrives {
 			return http.StatusBadRequest, response.PropertyMissing, []interface{}{"Drives"}, fmt.Errorf("Minimum number of Drives not matching for the RAIDType")
 		}
 		// Validated the contents of Drives array and even checks if the request drive exists or not
-		for _, drive := range request.Drives {
+		for _, drive := range request.Links.Drives {
 			driveURI := drive.OdataID
 			if driveURI == "" {
 				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf("Error processing create volume request: @odata.id key(s) is missing in Drives list")

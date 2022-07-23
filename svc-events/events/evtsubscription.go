@@ -217,8 +217,8 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 
 	result.Lock.Lock()
 	originResourceProcessedCount := len(result.Response)
-	i := 0
 	var resourceID string
+	i := 0
 	for originResource, evtResponse := range result.Response {
 		OriginResource := strings.SplitAfter(originResource, "/")
 		originResourceID := OriginResource[len(OriginResource)-1]
@@ -838,6 +838,9 @@ func (e *ExternalInterfaces) createEventSubscrption(taskID string, subTaskChan c
 	resp.Body = response.Response
 	resp.StatusCode = int32(response.StatusCode)
 	if isAggragateCollection {
+		if resp.StatusCode == http.StatusConflict {
+			response.StatusCode = http.StatusCreated
+		}
 		result.AddResponse(aggrgateResouce, getAggregateID(aggrgateResouce), response)
 	} else {
 		result.AddResponse(originResource, host, response)

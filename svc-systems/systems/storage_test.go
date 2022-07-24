@@ -176,9 +176,11 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "ArrayControllers-0",
-				RequestBody: []byte(`{"Name":"Volume1",
+				RequestBody: []byte(`{
 										"RAIDType":"RAID0",
+										"Links":{
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]
+										}
 										,"@Redfish.OperationApplyTime": "OnReset"
 										}`),
 			},
@@ -193,9 +195,10 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "ArrayControllers-0",
-				RequestBody: []byte(`{"Name":"Volume1",
+				RequestBody: []byte(`{
 										"RAIDType":"RAID0",
-										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}`),
+										"Links":{
+										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
@@ -208,9 +211,10 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b.1",
 				StorageInstance: "ArrayControllers-0",
-				RequestBody: []byte(`{"Name":"Volume1",
+				RequestBody: []byte(`{
 										"RAIDType":"RAID0",
-										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0b.1/Storage/ArrayControllers-0/Drives/0"}]}`),
+									    "Links":{
+										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0b.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
 			},
 			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 54b243cf-f1e3-5319-92d9-2d6737d6b0b found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0b"}, nil),
 		}, {
@@ -219,9 +223,10 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "",
-				RequestBody: []byte(`{"Name":"Volume1",
+				RequestBody: []byte(`{
 										"RAIDType":"RAID0",
-										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}`),
+										"Links":{
+										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
 			},
 			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
 		}, {
@@ -230,9 +235,9 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "ArrayControllers-0",
-				RequestBody: []byte(`{"Name":"Volume1",
+				RequestBody: []byte(`{
 										"RAIDType":"Invalid",
-										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}`),
+										"Links":{"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
 			},
 			want: common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, "error: request payload validation failed: RAIDType Invalid is invalid", []interface{}{"Invalid", "RAIDType"}, nil),
 		}, {
@@ -241,9 +246,9 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "ArrayControllers-0",
-				RequestBody: []byte(`{"Name":"Volume1",
+				RequestBody: []byte(`{
 										"RaidType":"Invalid",
-										"Drives":["/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/12"]`),
+										"Links":{"Drives":["/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/12"]}`),
 			},
 			want: common.GeneralError(http.StatusBadRequest, response.MalformedJSON, "Error while unmarshaling the create volume request: unexpected end of JSON input", []interface{}{}, nil),
 		}, {
@@ -252,9 +257,9 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "",
 				StorageInstance: "ArrayControllers-0",
-				RequestBody: []byte(`{"Name":"Volume1",
+				RequestBody: []byte(`{
 										"RaidType":"Invalid",
-										"Drives":["/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/12"]`),
+										"Links":{"Drives":["/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/12"]}`),
 			},
 			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", ""}, nil),
 		},
@@ -287,9 +292,9 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	req = systemsproto.VolumeRequest{
 		SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 		StorageInstance: "ArrayControllers-0",
-		RequestBody: []byte(`{"Name":"Volume1",
+		RequestBody: []byte(`{
 								"RAIDType":"RAID0",
-								"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}`),
+								"Links":{"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 	}
 
 	resp = storage.CreateVolume(&req)
@@ -301,9 +306,9 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	req = systemsproto.VolumeRequest{
 		SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 		StorageInstance: "ArrayControllers-0",
-		RequestBody: []byte(`{"name":"Volume1",
+		RequestBody: []byte(`{
 								"rAIDType":"RAID0",
-								"drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}`),
+								"Links":{"drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 	}
 	resp = storage.CreateVolume(&req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase ")
@@ -314,9 +319,10 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	req = systemsproto.VolumeRequest{
 		SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 		StorageInstance: "ArrayControllers-0",
-		RequestBody: []byte(`{"Name":"Volume1",
+		RequestBody: []byte(`{
 								"RAIDType":"RAID0",
-								"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}`),
+								 "Links":{
+								"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 	}
 
 	resp = storage.CreateVolume(&req)
@@ -332,9 +338,10 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	req = systemsproto.VolumeRequest{
 		SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 		StorageInstance: "ArrayControllers-0",
-		RequestBody: []byte(`{"Name":"Volume1",
+		RequestBody: []byte(`{
 								"RAIDType":"RAID0",
-								"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}`),
+								"Links":{
+								"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 	}
 	resp = storage.CreateVolume(&req)
 	assert.True(t, true, "Error: Plugin Contact")
@@ -348,9 +355,10 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	req = systemsproto.VolumeRequest{
 		SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 		StorageInstance: "ArrayControllers-0",
-		RequestBody: []byte(`{"Name":"Volume1",
+		RequestBody: []byte(`{
 								"RAIDType":"RAID0",
-								"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}`),
+								"Links":{
+								"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 	}
 	resp = storage.CreateVolume(&req)
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Auth type XAuthToken")

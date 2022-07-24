@@ -30,7 +30,7 @@ import (
 )
 
 var domainIP = "odim.controller.com"
-var destination_ip = "odim.destination.com"
+var destinationIP = "odim.destination.com"
 
 func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil

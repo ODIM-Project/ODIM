@@ -181,6 +181,7 @@ func (e *ExternalInterface) GetAggregate(req *aggregatorproto.AggregatorRequest)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/Aggregates/")
+	var ID = data[1]
 	commonResponse := response.Response{
 		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      req.URL,
@@ -193,9 +194,24 @@ func (e *ExternalInterface) GetAggregate(req *aggregatorproto.AggregatorRequest)
 		StatusMessage: response.Success,
 	}
 
-	resp.Body = agresponse.AggregateResponse{
-		Response: commonResponse,
-		Elements: aggregate.Elements,
+	resp.Body = agresponse.AggregateGetResponse{
+		Response:      commonResponse,
+		ElementsCount: len(aggregate.Elements),
+		Elements:      aggregate.Elements,
+		Actions: agresponse.AggregateActions{
+			AggregateReset: agresponse.Action{
+				Target: "/redfish/v1/AggregationService/Aggregates/" + ID + "/Actions/Aggregate.Reset",
+			},
+			AggregateSetDefaultBootOrder: agresponse.Action{
+				Target: "/redfish/v1/AggregationService/Aggregates/" + ID + "/Actions/Aggregate.SetDefaultBootOrder",
+			},
+			AggregateAddElements: agresponse.Action{
+				Target: "/redfish/v1/AggregationService/Aggregates/" + ID + "/Actions/Aggregate.AddElements",
+			},
+			AggregateRemoveElements: agresponse.Action{
+				Target: "/redfish/v1/AggregationService/Aggregates/" + ID + "/Actions/Aggregate.RemoveElements",
+			},
+		},
 	}
 	return resp
 }

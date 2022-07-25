@@ -48,26 +48,27 @@ function launchsentinel() {
   echo -n "${REDIS_DEFAULT_PASSWORD}" | base64 --decode > cipher
   redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512)
 
-  while true; do
-    echo "Trying to connect to Sentinel Service"
+  x=1
+  while [ $x -le 5 ]
+  do
     master=$(redis-cli -a ${redis_password} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_MASTER_SET} | tr ',' ' ' | cut -d' ' -f1)
-
     if [[ -n ${master} ]]; then
-      echo "Connected to Sentinel Service and retrieved Redis Master IP as ${master}"
+      echo "Connected to Sentinel Service and retrieved Redis Master hostname as ${master}"
       master="${master//\"}"
+      break
     else
-      echo "Unable to connect to Sentinel Service, probably because I am first Sentinel to start. I will try to find STARTUP_MASTER_IP from the redis service"
-      master=$(redis-cli -a ${redis_password} -h ${REDIS_HA_REDIS_SERVICE_HOST} -p ${REDIS_HA_REDIS_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} get STARTUP_MASTER_IP)
-
-      if [[ -n ${master} ]]; then
-        echo "Retrieved Redis Master IP as ${master}"
-      else
-        echo "Unable to retrieve Master IP from the redis service. Waiting..."
-        sleep 10
-        continue
-      fi
+      echo "Unable to connect to sentinel, retrying..."
+      sleep 1
     fi
+    x=$(( $x + 1 ))
+  done
 
+  if ! [[ -n ${master} ]]; then
+    echo "Unable to connect to Sentinel Service, probably because I am first Sentinel to start. I will use default master hostname ${MASTER_HOST_NAME} to connect to sentinel"
+    master=${MASTER_HOST_NAME}
+  fi
+
+  while true; do
     redis-cli -a ${redis_password} -h ${master} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} INFO
     if [[ "$?" == "0" ]]; then
       break
@@ -84,7 +85,7 @@ function launchsentinel() {
   echo "sentinel announce-hostnames yes" >> ${sentinel_conf}
   echo "sentinel announce-ip ${hostname}" >> ${sentinel_conf}
   echo "sentinel announce-port ${REDIS_HA_SENTINEL_SERVICE_PORT}" >> ${sentinel_conf}
-  echo "sentinel monitor ${REDIS_MASTER_SET} ${MASTER_HOST_NAME} ${REDIS_HA_REDIS_SERVICE_PORT} ${SENTINEL_QUORUM}" >> ${sentinel_conf}
+  echo "sentinel monitor ${REDIS_MASTER_SET} ${master} ${REDIS_HA_REDIS_SERVICE_PORT} ${SENTINEL_QUORUM}" >> ${sentinel_conf}
   echo "sentinel auth-pass ${REDIS_MASTER_SET} ${redis_password}" >> ${sentinel_conf}
   echo "requirepass ${redis_password}" >> ${sentinel_conf}
   echo "sentinel down-after-milliseconds ${REDIS_MASTER_SET} ${DOWN_AFTER_MILLISECONDS}" >> ${sentinel_conf}
@@ -107,7 +108,6 @@ function launchslave() {
   echo "Starting Redis instance as Slave , Master IP $1"
 
   redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512)
-  echo "slave: ${redis_password}"
 
   while true; do
     echo "Trying to retrieve the Master IP again, in case of failover master ip would have changed."
@@ -147,6 +147,10 @@ function launchredis() {
   echo -n "${REDIS_DEFAULT_PASSWORD}" | base64 --decode > cipher
   redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512)
   
+  # If it is sentinel restart, I am giving some time to sentinel for complete shutdown
+  sentinel_down_time=10
+  sleep ${sentinel_down_time}
+
   # Loop till I am able to launch slave or master
   while true; do
     # I will check if sentinel is up or not by connecting to it.

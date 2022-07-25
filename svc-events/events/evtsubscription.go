@@ -147,7 +147,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	removeDuplicatesFromSlice(&originResources, &originResourcesCount)
 
 	// If origin resource is nil then subscribe to all collection
-	if originResourcesCount <= 0 {
+	if originResourcesCount == 0 {
 		originResources = []string{
 			"/redfish/v1/Systems",
 			"/redfish/v1/Chassis",
@@ -183,21 +183,23 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	}()
 
 	for _, origin := range originResources {
-		_, _, err := e.getTargetDetails(origin)
+		_, err := getUUID(origin)
 		if err != nil {
-			collection, collectionName, collectionFlag, _ := e.checkCollection(origin)
+			collection, collectionName, collectionFlag, aggregateResource, isAggregate, _ := e.checkCollection(origin)
 			wg.Add(1)
 			// for origin is collection
-			go e.createEventSubscrption(taskID, subTaskChan, sessionUserName, targetURI, postRequest, origin, result, &wg, collectionFlag, collectionName)
+			go e.createEventSubscrption(taskID, subTaskChan, sessionUserName, targetURI, postRequest, origin, result, &wg, collectionFlag, collectionName, aggregateResource, isAggregate)
 			for i := 0; i < len(collection); i++ {
 				wg.Add(1)
 				// for suboridinate origin
-				go e.createEventSubscrption("", subTaskChan, sessionUserName, targetURI, postRequest, collection[i], result, &wg, false, "")
+				go e.createEventSubscrption("", subTaskChan, sessionUserName, targetURI, postRequest, collection[i], result, &wg, false, "", aggregateResource, isAggregate)
 			}
-			collectionList = append(collectionList, collection...)
+			if !isAggregate {
+				collectionList = append(collectionList, collection...)
+			}
 		} else {
 			wg.Add(1)
-			go e.createEventSubscrption(taskID, subTaskChan, sessionUserName, targetURI, postRequest, origin, result, &wg, false, "")
+			go e.createEventSubscrption(taskID, subTaskChan, sessionUserName, targetURI, postRequest, origin, result, &wg, false, "", "", false)
 		}
 	}
 
@@ -215,9 +217,8 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 
 	result.Lock.Lock()
 	originResourceProcessedCount := len(result.Response)
-	i := 0
 	var resourceID string
-
+	i := 0
 	for originResource, evtResponse := range result.Response {
 		OriginResource := strings.SplitAfter(originResource, "/")
 		originResourceID := OriginResource[len(OriginResource)-1]
@@ -246,7 +247,6 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 			}
 		}
 	}
-
 	// if Subscription Name is empty then use default name
 	if postRequest.Name == "" {
 		postRequest.Name = evmodel.SubscriptionName
@@ -321,7 +321,6 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 		if err != nil {
 			return "", resp
 		}
-
 		var errs *errors.Error
 		plugin, errs = e.GetPluginData(target.PluginID)
 		if errs != nil {
@@ -386,7 +385,6 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 			log.Error(errorMessage)
 			return "", resp
 		}
-
 		resp.StatusCode = http.StatusCreated
 		resp.Response = createEventSubscriptionResponse()
 		return collectionName, resp
@@ -485,7 +483,6 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 		log.Error(errorMessage)
 		return "", resp
 	}
-
 	var outBody interface{}
 	body, err := ioutil.ReadAll(response.Body)
 	err = json.Unmarshal(body, &outBody)
@@ -683,7 +680,6 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 func (e *ExternalInterfaces) saveDeviceSubscriptionDetails(evtSubscription evmodel.Subscription) error {
 	searchKey := evcommon.GetSearchKey(evtSubscription.EventHostIP, evmodel.DeviceSubscriptionIndex)
 	deviceSubscription, _ := e.GetDeviceSubscriptions(searchKey)
-
 	var newDevSubscription = evmodel.DeviceSubscription{
 		EventHostIP:     evtSubscription.EventHostIP,
 		Location:        evtSubscription.Location,
@@ -697,7 +693,6 @@ func (e *ExternalInterfaces) saveDeviceSubscriptionDetails(evtSubscription evmod
 		// if the origin resource is present in device subscription details then dont add
 		for _, originResource := range deviceSubscription.OriginResources {
 			if evtSubscription.OriginResource == originResource {
-
 				save = false
 			} else {
 				newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, originResource)
@@ -717,7 +712,6 @@ func (e *ExternalInterfaces) saveDeviceSubscriptionDetails(evtSubscription evmod
 
 func (e *ExternalInterfaces) getTargetDetails(origin string) (*evmodel.Target, evresponse.EventResponse, error) {
 	var resp evresponse.EventResponse
-
 	uuid, err := getUUID(origin)
 	if err != nil {
 		evcommon.GenEventErrorResponse(err.Error(), errResponse.ResourceNotFound, http.StatusNotFound,
@@ -812,7 +806,7 @@ func (e *ExternalInterfaces) DeleteSubscriptions(originResource, token string, p
 	return resp, nil
 }
 
-func (e *ExternalInterfaces) createEventSubscrption(taskID string, subTaskChan chan<- int32, reqSessionToken string, targetURI string, request evmodel.RequestBody, originResource string, result *evresponse.MutexLock, wg *sync.WaitGroup, collectionFlag bool, collectionName string) {
+func (e *ExternalInterfaces) createEventSubscrption(taskID string, subTaskChan chan<- int32, reqSessionToken string, targetURI string, request evmodel.RequestBody, originResource string, result *evresponse.MutexLock, wg *sync.WaitGroup, collectionFlag bool, collectionName string, aggrgateResouce string, isAggragateCollection bool) {
 	var (
 		subTaskURI      string
 		subTaskID       string
@@ -829,7 +823,6 @@ func (e *ExternalInterfaces) createEventSubscrption(taskID string, subTaskChan c
 		log.Error("error while trying to marshal create event request: " + err.Error())
 	}
 	reqJSON = string(reqBody)
-
 	if taskID != "" {
 		subTaskURI, err = e.CreateChildTask(reqSessionToken, taskID)
 		if err != nil {
@@ -844,7 +837,14 @@ func (e *ExternalInterfaces) createEventSubscrption(taskID string, subTaskChan c
 	host, response := e.eventSubscription(request, originResource, collectionName, collectionFlag)
 	resp.Body = response.Response
 	resp.StatusCode = int32(response.StatusCode)
-	result.AddResponse(originResource, host, response)
+	if isAggragateCollection {
+		if resp.StatusCode == http.StatusConflict {
+			response.StatusCode = http.StatusCreated
+		}
+		result.AddResponse(aggrgateResouce, getAggregateID(aggrgateResouce), response)
+	} else {
+		result.AddResponse(originResource, host, response)
+	}
 	percentComplete = 100
 	if subTaskID != "" {
 		if response.StatusCode != http.StatusCreated {
@@ -940,7 +940,7 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 		SubordinateResources: subordinateFlag,
 	}
 	subscriptionPost.OriginResources = []evmodel.OdataIDLink{
-		evmodel.OdataIDLink{
+		{
 			OdataID: origin,
 		},
 	}

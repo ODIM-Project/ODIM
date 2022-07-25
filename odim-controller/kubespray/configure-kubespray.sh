@@ -72,9 +72,9 @@ enable_dualStack()
 	sed -i "s/enable_dual_stack_networks: false/enable_dual_stack_networks: true/" ${kubespray_k8s_cluster}
 
 	# Adding nat_outgoing_ipv6 /roles/network_plugin/calico/defaults/main.yml file
-	calico_conf_file=${KUBESPRAY_SRC_PATH}//roles/network_plugin/calico/defaults/main.yml
-	if ! grep -Fxq "nat_outgoing_ipv6: true" roles/network_plugin/calico/defaults/main.yml;then
-		echo -e "# Enables Internet connectivity from containers for ipv6 \n nat_outgoing_ipv6: true"  >> ${calico_conf_file}
+	calico_conf_file=${KUBESPRAY_SRC_PATH}/roles/network_plugin/calico/defaults/main.yml
+	if ! grep -Fxq "nat_outgoing_ipv6: true" ${calico_conf_file};then
+		echo -e "# Enables Internet connectivity from containers for ipv6 \nnat_outgoing_ipv6: true"  >> ${calico_conf_file}
 	fi
 
 }

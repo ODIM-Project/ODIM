@@ -5093,7 +5093,7 @@ curl -i -X POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Links|Object|Links of drives collections|
+|Links|Object (required)|Links of drives collections.|
 |RAIDType|String (required)<br> |The RAID type of the volume you want to create.|
 |Drives[{|Array (required)<br> |An array of links to drive resources to contain the new volume.|
 |@odata.id }]<br> |String|A link to a drive resource.|

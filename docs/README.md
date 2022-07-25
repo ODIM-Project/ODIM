@@ -5101,7 +5101,7 @@ curl -i -X POST \
       "error":{
             "@Message.ExtendedInfo":[
                   {
-                        "MessageId": "Base.1.11.Success"            
+                        "MessageId": "Base.1.13.Success"            
          }         
       ],
             "code":"iLO.0.10.ExtendedInfo",

@@ -5053,14 +5053,16 @@ curl -i -X POST \
    -d \
 '{
    "RAIDType":"RAID1",
-   "Drives":[
+   "Links":{
+     "Drives":[
       {
          "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/0"
       },
       {
          "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/1"
       }
-   ],
+   ]
+ }, 
    "@Redfish.OperationApplyTime":"OnReset"
 }' \
  'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes'
@@ -5073,14 +5075,16 @@ curl -i -X POST \
 ```
 {
    "RAIDType":"RAID1",
-   "Drives":[
+   "Links":{
+     "Drives":[
       {
          "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Drives/0"
       },
       {
          "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Drives/1"
       }
-   ],
+   ]
+  },
    "@Redfish.OperationApplyTime":"OnReset"
 }
 ```
@@ -5089,6 +5093,7 @@ curl -i -X POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
+|Links|Object|Links of drives collections|
 |RAIDType|String (required)<br> |The RAID type of the volume you want to create.|
 |Drives[{|Array (required)<br> |An array of links to drive resources to contain the new volume.|
 |@odata.id }]<br> |String|A link to a drive resource.|

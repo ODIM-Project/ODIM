@@ -6768,7 +6768,7 @@ See [Resetting Servers](#resetting-servers) to know about `ResetType.`
 {
     "error": {
         "@Message.ExtendedInfo": [{
-            "MessageId": "Base.1.11.Success"
+            "MessageId": "Base.1.13.Success"
         }],
         "code": "iLO.0.10.ExtendedInfo",
         "message": "See @Message.ExtendedInfo for more information."

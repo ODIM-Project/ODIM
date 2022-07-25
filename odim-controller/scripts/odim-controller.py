@@ -553,7 +553,7 @@ def scale_out_k8s():
 			nodes_list += '{hostname},'.format(hostname=node)
 			temp_dict = {node : {'ansible_host': attrs['ip'], 'ip':attrs['ip'], 'access_ip':attrs['ip']}}
 			if  CONTROLLER_CONF_DATA['nwPreference']=='dualStack':
-				temp_dict[node].update({"ipv6":attrs['ipv6']})
+				temp_dict[node].update({"ip6":attrs['ipv6']})
 			K8S_INVENTORY_DATA['all']['hosts'].update(temp_dict)
 			temp_dict = {node: None}
 			K8S_INVENTORY_DATA['all']['children']['kube_node']['hosts'].update(temp_dict)
@@ -778,7 +778,7 @@ def deploy_k8s():
 			load_k8s_host_conf()
 		#update the ipv6 address in hosts.yaml
 			for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
-				K8S_INVENTORY_DATA['all']['hosts'][node].update({"ipv6":attrs['ipv6']})
+				K8S_INVENTORY_DATA['all']['hosts'][node].update({"ip6":attrs['ipv6']})
 			SafeDumper.add_representer(type(None),lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:null', ''))
 			with open(K8S_INVENTORY_FILE, 'w') as f:
 				yaml.safe_dump(K8S_INVENTORY_DATA, f, default_flow_style=False)

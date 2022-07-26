@@ -14,6 +14,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: configure pre-req for odimra deployment
       run: |
+        set +e
         echo "[$(date)] -- INFO  -- Start pre req conguration"
         echo
         
@@ -209,6 +210,8 @@ jobs:
         echo
         cd ${ODIM_SOURCE_PATH}/
         time ./build_images.sh
+        echo "the images that got built are :"
+        docker images
         
         cd ${ODIM_CONTROLLER_PATH}/scripts/
         python3 odim-controller.py --deploy odimra --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml
@@ -253,6 +256,8 @@ jobs:
         helm package ${ODIM_CONTROLLER_PATH}/helmcharts/urplugin/urplugin -d ${ODIM_PLUGIN_PATH}/urplugin
         cp urplugin-config.yaml ${ODIM_PLUGIN_PATH}/urplugin
         
+        echo "Checking the list of images available after the odimra build..."
+        docker images
         docker save urplugin -o ${ODIM_PLUGIN_PATH}/urplugin/urplugin.tar
         cat urplugin-config.yaml
         
@@ -329,6 +334,8 @@ jobs:
         helm package ${ODIM_CONTROLLER_PATH}/helmcharts/dellplugin/dellplugin -d ${ODIM_PLUGIN_PATH}/dellplugin
         cp dellplugin-config.yaml ${ODIM_PLUGIN_PATH}/dellplugin
         
+        echo "Checking the list of images available after the odimra build..."
+        docker images
         docker save dellplugin -o ${ODIM_PLUGIN_PATH}/dellplugin/dellplugin.tar
         cat dellplugin-config.yaml
         
@@ -391,7 +398,9 @@ jobs:
         helm package ${ODIM_CONTROLLER_PATH}/helmcharts/grfplugin/grfplugin -d ${ODIM_PLUGIN_PATH}/grfplugin
         cp grfplugin-config.yaml ${ODIM_PLUGIN_PATH}/grfplugin
         
-        docker save dellplugin -o ${ODIM_PLUGIN_PATH}/grfplugin/grfplugin.tar
+        echo "Checking the list of images available after the odimra build..."
+        docker images
+        docker save grfplugin -o ${ODIM_PLUGIN_PATH}/grfplugin/grfplugin.tar
         cat grfplugin-config.yaml
         
         cd ${ODIM_CONTROLLER_PATH}/scripts
@@ -509,6 +518,7 @@ jobs:
         
     - name: Prepare Build Artifacts
       run: |
+        set +e
         sudo mkdir /artifacts
         sudo chmod 777 /artifacts
         output=$(kubectl get pods -n odim | grep -v NAME | awk '{print $1}')

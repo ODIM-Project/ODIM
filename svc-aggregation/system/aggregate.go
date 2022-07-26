@@ -81,6 +81,11 @@ func (e *ExternalInterface) CreateAggregate(req *aggregatorproto.AggregatorReque
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
+	err = addAggregateHost(aggregateUUID, createRequest)
+	if err != nil {
+		log.Error(err.Error())
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+	}
 	commonResponse := response.Response{
 		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      aggregateURI,
@@ -176,6 +181,7 @@ func (e *ExternalInterface) GetAggregate(req *aggregatorproto.AggregatorRequest)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/Aggregates/")
+	var ID = data[1]
 	commonResponse := response.Response{
 		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      req.URL,
@@ -188,9 +194,24 @@ func (e *ExternalInterface) GetAggregate(req *aggregatorproto.AggregatorRequest)
 		StatusMessage: response.Success,
 	}
 
-	resp.Body = agresponse.AggregateResponse{
-		Response: commonResponse,
-		Elements: aggregate.Elements,
+	resp.Body = agresponse.AggregateGetResponse{
+		Response:      commonResponse,
+		ElementsCount: len(aggregate.Elements),
+		Elements:      aggregate.Elements,
+		Actions: agresponse.AggregateActions{
+			AggregateReset: agresponse.Action{
+				Target: "/redfish/v1/AggregationService/Aggregates/" + ID + "/Actions/Aggregate.Reset",
+			},
+			AggregateSetDefaultBootOrder: agresponse.Action{
+				Target: "/redfish/v1/AggregationService/Aggregates/" + ID + "/Actions/Aggregate.SetDefaultBootOrder",
+			},
+			AggregateAddElements: agresponse.Action{
+				Target: "/redfish/v1/AggregationService/Aggregates/" + ID + "/Actions/Aggregate.AddElements",
+			},
+			AggregateRemoveElements: agresponse.Action{
+				Target: "/redfish/v1/AggregationService/Aggregates/" + ID + "/Actions/Aggregate.RemoveElements",
+			},
+		},
 	}
 	return resp
 }
@@ -640,7 +661,7 @@ func (e *ExternalInterface) resetSystem(taskID, reqBody string, subTaskChan chan
 	pluginContactRequest.DeviceInfo = target
 	pluginContactRequest.OID = "/ODIM/v1/Systems/" + sysID + "/Actions/ComputerSystem.Reset"
 	pluginContactRequest.HTTPMethodType = http.MethodPost
-	_, _, getResponse, err := contactPlugin(pluginContactRequest, "error while reseting the computer system: ")
+	respBody, location, getResponse, err := contactPlugin(pluginContactRequest, "error while reseting the computer system: ")
 
 	if err != nil {
 		subTaskChan <- getResponse.StatusCode
@@ -648,6 +669,23 @@ func (e *ExternalInterface) resetSystem(taskID, reqBody string, subTaskChan chan
 		log.Error(errMsg)
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 		return
+	}
+	if getResponse.StatusCode == http.StatusAccepted {
+		getResponse, err = e.monitorPluginTask(subTaskChan, &monitorTaskRequest{
+			subTaskID:         subTaskID,
+			serverURI:         targetURI,
+			updateRequestBody: reqBody,
+			respBody:          respBody,
+			getResponse:       getResponse,
+			taskInfo:          taskInfo,
+			location:          location,
+			pluginRequest:     pluginContactRequest,
+			resp:              resp,
+		})
+
+		if err != nil {
+			return
+		}
 	}
 
 	resp.StatusMessage = response.Success
@@ -778,4 +816,20 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 		runtime.Goexit()
 	}
 	return resp
+}
+func addAggregateHost(uuid string, aggregate agmodel.Aggregate) (err error) {
+	var ips []string
+	for _, element := range aggregate.Elements {
+		systemID := element.OdataID[strings.LastIndexAny(element.OdataID, "/")+1:]
+		data := strings.SplitN(systemID, ".", 2)
+		// Get target device Credentials from using device UUID
+		target, err := agmodel.GetTarget(data[0])
+		if err != nil {
+			return err
+		}
+		ips = append(ips, target.ManagerAddress)
+	}
+
+	err = agmodel.AddAggregateHostIndex(uuid, ips)
+	return
 }

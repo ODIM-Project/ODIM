@@ -34,12 +34,18 @@ import (
 )
 
 var (
-	StringContain                  = strings.Contains
+	// StringContain function pointer for the strings.Contains
+	StringContain = strings.Contains
+	// RequestParamsCaseValidatorFunc function pointer for the common.RequestParamsCaseValidator
 	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
-	StringsEqualFold               = strings.EqualFold
-	ContactPluginFunc              = scommon.ContactPlugin
-	JsonUnMarshalFunc              = json.Unmarshal
-	StringTrimSpace                = strings.TrimSpace
+	// StringsEqualFold function pointer for the strings.EqualFold
+	StringsEqualFold = strings.EqualFold
+	// ContactPluginFunc  function pointer for the  scommon.ContactPlugin
+	ContactPluginFunc = scommon.ContactPlugin
+	// JSONUnmarshalFunc function pointer for the json.Unmarshal
+	JSONUnmarshalFunc = json.Unmarshal
+	// StringTrimSpace function pointer for the  strings.TrimSpace
+	StringTrimSpace = strings.TrimSpace
 )
 
 // ExternalInterface holds all the external connections managers package functions uses
@@ -183,7 +189,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	err = JsonUnMarshalFunc(body, &resp.Body)
+	err = JSONUnmarshalFunc(body, &resp.Body)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
@@ -216,13 +222,15 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID 
 		if raidTypeWithMinDrives == 0 {
 			return http.StatusBadRequest, response.PropertyValueNotInList, []interface{}{request.RAIDType, "RAIDType"}, fmt.Errorf("RAIDType %v is invalid", request.RAIDType)
 		}
-
+		if request.Links == nil {
+			return http.StatusBadRequest, response.PropertyMissing, []interface{}{"Links"}, fmt.Errorf("Links Property is not present in the request")
+		}
 		//validates the number of Drives
-		if len(request.Drives) < raidTypeWithMinDrives {
+		if len(request.Links.Drives) < raidTypeWithMinDrives {
 			return http.StatusBadRequest, response.PropertyMissing, []interface{}{"Drives"}, fmt.Errorf("Minimum number of Drives not matching for the RAIDType")
 		}
 		// Validated the contents of Drives array and even checks if the request drive exists or not
-		for _, drive := range request.Drives {
+		for _, drive := range request.Links.Drives {
 			driveURI := drive.OdataID
 			if driveURI == "" {
 				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf("Error processing create volume request: @odata.id key(s) is missing in Drives list")
@@ -300,7 +308,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 
 	var volume smodel.Volume
 	// unmarshalling the volume
-	err := JsonUnMarshalFunc(req.RequestBody, &volume)
+	err := JSONUnmarshalFunc(req.RequestBody, &volume)
 	if err != nil {
 		errorMessage := "Error while unmarshaling the create volume request: " + err.Error()
 		log.Error(errorMessage)

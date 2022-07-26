@@ -52,17 +52,24 @@ type Plugin struct {
 }
 
 var (
+	// GetDBConnectionFunc  function pointer for the common.GetDBConnection
 	GetDBConnectionFunc = common.GetDBConnection
-	JSONUnmarshalFunc   = json.Unmarshal
-	scanFunc            = scan
+	// JSONUnmarshalFunc  function pointer for the json.Unmarshal
+	JSONUnmarshalFunc = json.Unmarshal
+	// scanFunc function pointer for the scan
+	scanFunc = scan
 )
 
 // Volume is for sending a volume's request to south bound
 type Volume struct {
-	Name               string        `json:"Name" validate:"required"`
-	RAIDType           string        `json:"RAIDType"`
-	Drives             []OdataIDLink `json:"Drives"`
-	OperationApplyTime string        `json:"@Redfish.OperationApplyTime"`
+	RAIDType           string `json:"RAIDType"`
+	Links              *Links `json:"Links"`
+	OperationApplyTime string `json:"@Redfish.OperationApplyTime"`
+}
+
+// Links contains Drives resoruces info
+type Links struct {
+	Drives []OdataIDLink `json:"Drives"`
 }
 
 // OdataIDLink contains link to a resource

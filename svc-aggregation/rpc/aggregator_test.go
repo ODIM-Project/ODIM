@@ -732,6 +732,15 @@ func mockSystemResourceData(body []byte, table, key string) error {
 	}
 	return nil
 }
+func mockData(t *testing.T, dbType common.DbType, table, id string, data interface{}) {
+	connPool, err := common.GetDBConnection(dbType)
+	if err != nil {
+		t.Fatalf("error: mockData() failed to DB connection: %v", err)
+	}
+	if err = connPool.Create(table, id, data); err != nil {
+		t.Fatalf("error: mockData() failed to create entry %s-%s: %v", table, id, err)
+	}
+}
 
 func TestAggregator_CreateAggregate(t *testing.T) {
 	common.MuxLock.Lock()
@@ -741,7 +750,8 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-
+	mockData(t, common.OnDisk, "System", "6d4a0a66-7efa-578e-83cf-44dc68d2874e", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e"})
+	mockData(t, common.OnDisk, "System", "c14d91b5-3333-48bb-a7b7-75f74a137d48", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "c14d91b5-3333-48bb-a7b7-75f74a137d48"})
 	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"})
 	err := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
 	if err != nil {
@@ -756,8 +766,8 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 
 	successReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-			agmodel.OdataID{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	})
 	successReq1, _ := json.Marshal(agmodel.Aggregate{
@@ -765,7 +775,7 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 	})
 	invalidReqBody, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/123456"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/123456"},
 		},
 	})
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
@@ -844,8 +854,8 @@ func TestAggregator_GetAllAggregates(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-			agmodel.OdataID{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
@@ -895,8 +905,8 @@ func TestAggregator_GetAggregate(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-			agmodel.OdataID{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
@@ -954,8 +964,8 @@ func TestAggregator_DeleteAggregate(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-			agmodel.OdataID{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
@@ -1013,8 +1023,8 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-			agmodel.OdataID{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
@@ -1030,20 +1040,20 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 
 	successReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"},
 		},
 	})
 
 	badReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"},
 		},
 	})
 
 	duplicateReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"},
-			agmodel.OdataID{"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"},
 		},
 	})
 
@@ -1053,7 +1063,7 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 
 	invalidReqBody, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/123456"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/123456"},
 		},
 	})
 
@@ -1178,8 +1188,8 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-			agmodel.OdataID{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
@@ -1189,20 +1199,20 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 
 	successReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	})
 
 	badReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	})
 
 	duplicateReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-			agmodel.OdataID{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 		},
 	})
 
@@ -1212,7 +1222,7 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 
 	invalidReqBody, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/123456"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/123456"},
 		},
 	})
 
@@ -1337,8 +1347,8 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-			agmodel.OdataID{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
@@ -1483,8 +1493,8 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-			agmodel.OdataID{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")

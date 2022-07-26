@@ -36,6 +36,7 @@ type SubscriptionResponse struct {
 	OriginResources         []ListMember `json:"OriginResources,omitempty"`
 	ExcludeMessageIds       []string     `json:"ExcludeMessageIds,omitempty"`
 	ExcludeRegistryPrefixes []string     `json:"ExcludeRegistryPrefixes,omitempty"`
+	DeliveryRetryPolicy     string       `json:"DeliveryRetryPolicy,omitempty"`
 }
 
 // ListResponse define list for odimra
@@ -81,7 +82,7 @@ type EventServiceResponse struct {
 	IncludeOriginOfConditionSupported bool                          `json:"IncludeOriginOfConditionSupported,omitempty"`
 	SMTP                              *SMTP                         `json:"SMTP,omitempty"`
 	ExcludeRegistryPrefix             bool                          `json:"ExcludeRegistryPrefix,omitempty"`
-	ExcludeMessageId                  bool                          `json:"ExcludeMessageId,omitempty"`
+	ExcludeMessageID                  bool                          `json:"ExcludeMessageId,omitempty"`
 }
 
 // SMTP is for SMTP event delivery

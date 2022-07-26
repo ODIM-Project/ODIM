@@ -206,6 +206,19 @@ type connectionMethodVariants struct {
 	FirmwareVersion   string
 }
 
+// monitorTaskRequest hold values required monitorTask function
+type monitorTaskRequest struct {
+	respBody          []byte
+	subTaskID         string
+	serverURI         string
+	updateRequestBody string
+	getResponse       responseStatus
+	location          string
+	taskInfo          *common.TaskUpdateInfo
+	pluginRequest     getResourceRequest
+	resp              response.RPC
+}
+
 func getIPAndPortFromAddress(address string) (string, string) {
 	ip, port, err := net.SplitHostPort(address)
 	if err != nil {
@@ -306,7 +319,7 @@ func contactPlugin(req getResourceRequest, errorMessage string) ([]byte, string,
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
-	if pluginResp.StatusCode != http.StatusCreated && pluginResp.StatusCode != http.StatusOK {
+	if pluginResp.StatusCode != http.StatusCreated && pluginResp.StatusCode != http.StatusOK && pluginResp.StatusCode != http.StatusAccepted {
 		if pluginResp.StatusCode == http.StatusUnauthorized {
 			errorMessage += "error: invalid resource username/password"
 			resp.StatusCode = int32(pluginResp.StatusCode)
@@ -327,6 +340,11 @@ func contactPlugin(req getResourceRequest, errorMessage string) ([]byte, string,
 	for key, value := range getTranslationURL(northBoundURL) {
 		data = strings.Replace(data, key, value, -1)
 	}
+	// Get location from the header if status code is status accepted
+	if pluginResp.StatusCode == http.StatusAccepted {
+		return []byte(data), pluginResp.Header.Get("Location"), resp, nil
+	}
+
 	resp.StatusCode = int32(pluginResp.StatusCode)
 	return []byte(data), pluginResp.Header.Get("X-Auth-Token"), resp, nil
 }
@@ -963,10 +981,32 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		memberFlag = true
 	}
 	resourceName := getResourceName(req.OID, memberFlag)
+	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
+		CollectionCapabilities := dmtf.CollectionCapabilities{
+			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
+			Capabilities: []*dmtf.Capabilities{
+				&dmtf.Capabilities{
+					CapabilitiesObject: &dmtf.Link{
+						Oid: req.OID + "/Capabilities",
+					},
+					Links: dmtf.CapLinks{
+						TargetCollection: &dmtf.Link{
+							Oid: req.OID,
+						},
+					},
+					UseCase: "VolumeCreation",
+				},
+			},
+		}
+		resourceData["@Redfish.CollectionCapabilities"] = CollectionCapabilities
+		body, _ = json.Marshal(resourceData)
 
+	}
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
+
 	// persist the response with table resourceName and key as system UUID + Oid Needs relook TODO
+
 	err = agmodel.GenericSave([]byte(updatedResourceData), resourceName, oidKey)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") {
@@ -995,7 +1035,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 			progress = h.getResourceDetails(taskID, progress, estimatedWork, childReq)
 		}
 	}
-
 	progress = progress + alottedWork
 	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
 	err = req.UpdateTask(task)
@@ -1007,7 +1046,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	}
 	return progress
 }
-
 func getResourceName(oDataID string, memberFlag bool) string {
 	str := strings.Split(oDataID, "/")
 	if memberFlag {
@@ -1679,4 +1717,41 @@ func getEmptyWildCard() []WildCard {
 	w.Values = []string{}
 	wildCards = append(wildCards, w)
 	return wildCards
+}
+
+func (e *ExternalInterface) monitorPluginTask(subTaskChannel chan<- int32, monitorTaskData *monitorTaskRequest) (responseStatus, error) {
+	for {
+
+		var task common.TaskData
+		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {
+			subTaskChannel <- http.StatusInternalServerError
+			errMsg := "Unable to parse the simple update respone" + err.Error()
+			log.Warn(errMsg)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
+			return monitorTaskData.getResponse, err
+		}
+		var updatetask = fillTaskData(monitorTaskData.subTaskID, monitorTaskData.serverURI, monitorTaskData.updateRequestBody, monitorTaskData.resp, task.TaskState, task.TaskStatus, task.PercentComplete, http.MethodPost)
+		err := e.UpdateTask(updatetask)
+		if err != nil && err.Error() == common.Cancelling {
+			var updatetask = fillTaskData(monitorTaskData.subTaskID, monitorTaskData.serverURI, monitorTaskData.updateRequestBody, monitorTaskData.resp, common.Cancelled, common.Critical, 100, http.MethodPost)
+			subTaskChannel <- http.StatusInternalServerError
+			e.UpdateTask(updatetask)
+			return monitorTaskData.getResponse, err
+		}
+		time.Sleep(time.Second * 5)
+		monitorTaskData.pluginRequest.OID = monitorTaskData.location
+		monitorTaskData.pluginRequest.HTTPMethodType = http.MethodGet
+		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = contactPlugin(monitorTaskData.pluginRequest, "error while performing simple update action: ")
+		if err != nil {
+			subTaskChannel <- monitorTaskData.getResponse.StatusCode
+			errMsg := err.Error()
+			log.Warn(errMsg)
+			common.GeneralError(monitorTaskData.getResponse.StatusCode, monitorTaskData.getResponse.StatusMessage, errMsg, monitorTaskData.getResponse.MsgArgs, monitorTaskData.taskInfo)
+			return monitorTaskData.getResponse, err
+		}
+		if monitorTaskData.getResponse.StatusCode == http.StatusOK {
+			break
+		}
+	}
+	return monitorTaskData.getResponse, nil
 }

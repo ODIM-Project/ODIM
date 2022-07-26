@@ -29,8 +29,8 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 )
 
-var domain_ip = "odim.controller.com"
-var destination_ip = "odim.destination.com"
+var domainIP = "odim.controller.com"
+var destinationIP = "odim.destination.com"
 
 func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
@@ -216,7 +216,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 		}
 	case "110813e0-4859-984c-984c-d72da32d72da":
 		target = &evmodel.Target{
-			ManagerAddress: domain_ip,
+			ManagerAddress: domainIP,
 			Password:       encryptedData,
 			UserName:       "admin",
 			DeviceUUID:     "110813e0-4859-984c-984c-d72da32d72da",
@@ -363,6 +363,19 @@ func MockGetFabricData(fabricID string) (evmodel.Fabric, error) {
 	return fabric, nil
 }
 
+// MockGetAggregateDatacData is for mocking up of get aggregate data against the aggregate id
+func MockGetAggregateDatacData(aggregateID string) (evmodel.Aggregate, error) {
+	var aggregate evmodel.Aggregate
+
+	aggregate = evmodel.Aggregate{
+		Elements: []evmodel.OdataIDLink{{
+			OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+		}},
+	}
+
+	return aggregate, nil
+}
+
 // MockGetEvtSubscriptions is for mocking up of get event  subscription
 func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 	var subarr []evmodel.Subscription
@@ -446,7 +459,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				MessageIds:           []string{},
 				ResourceTypes:        []string{},
 				OriginResources:      []string{"/redfish/v1/Fabrics/123"},
-				Hosts:                []string{domain_ip},
+				Hosts:                []string{domainIP},
 				SubordinateResources: true,
 			},
 		}
@@ -514,10 +527,10 @@ func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, err
 			EventHostIP:     "odim.ip.com",
 			OriginResources: []string{"/redfish/v1/Fabrics/123456"},
 		}
-	} else if strings.Contains(hostIP, domain_ip) {
+	} else if strings.Contains(hostIP, domainIP) {
 		deviceSub = &evmodel.DeviceSubscription{
 			Location:        "/ODIM/v1/Subscriptions/123",
-			EventHostIP:     domain_ip,
+			EventHostIP:     domainIP,
 			OriginResources: []string{"/redfish/v1/Fabrics/123"},
 		}
 	} else if strings.Contains(hostIP, "localhost") {
@@ -572,7 +585,7 @@ func MockUpdateDeviceSubscriptionLocation(devSubscription evmodel.DeviceSubscrip
 
 // MockGetAllKeysFromTable is for mocking up of get all keys from the given table
 func MockGetAllKeysFromTable(table string) ([]string, error) {
-	return []string{}, nil
+	return []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"}, nil
 }
 
 // MockGetAllFabrics is for mocking up of get all fabric details
@@ -583,6 +596,16 @@ func MockGetAllFabrics() ([]string, error) {
 // MockGetAllMatchingDetails is for mocking up of get all matching details from the given table
 func MockGetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
 	return []string{}, nil
+}
+
+// MockGetAggregateHosts is for mocking up of get all matching details from the given table
+func MockGetAggregateHosts(aggregateIP string) ([]string, error) {
+	return []string{}, nil
+}
+
+// MockSaveAggregateSubscription is for mocking up of get all matching details from the given table
+func MockSaveAggregateSubscription(aggregateID string, hostIP []string) error {
+	return nil
 }
 
 // MockSaveUndeliveredEvents is for mocking up of save undelivered events

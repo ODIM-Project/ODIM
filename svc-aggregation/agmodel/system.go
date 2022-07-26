@@ -29,6 +29,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	// aggregateHostIndex is a index name which required for indexing
+	// aggregateHost of device
+	aggregateHostIndex = common.AggregateSubscriptionIndex
+)
+
 //Schema model is used to iterate throgh the schema json for search/filter
 type Schema struct {
 	SearchKeys    []map[string]map[string]string `json:"searchKeys"`
@@ -1136,6 +1142,19 @@ func DeleteMetricRequest(key string) *errors.Error {
 	err = conn.Delete("ActiveMetricRequest", key)
 	if err != nil {
 		return errors.PackError(err.ErrNo(), "error: while trying to delete active connection details: ", err.Error())
+	}
+	return nil
+}
+
+// AddAggregateHostIndex add aggregate hosts
+func AddAggregateHostIndex(uuid string, hostIP []string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	err1 := conn.CreateAggregateHostIndex(aggregateHostIndex, uuid, hostIP)
+	if err1 != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to add aggregate: ", err.Error())
 	}
 	return nil
 }

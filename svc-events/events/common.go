@@ -72,6 +72,7 @@ type DB struct {
 	SaveAggregateSubscription        func(aggregateId string, hostIP []string) error
 	GetAggregateHosts                func(aggregateIP string) ([]string, error)
 	UpdateAggregateHosts             func(aggregateId string, hostIP []string) error
+	GetAggregateList                 func(hostIP string) ([]string, error)
 }
 
 // fillTaskData is to fill task information in TaskData struct

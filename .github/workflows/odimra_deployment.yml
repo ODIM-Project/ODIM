@@ -510,6 +510,7 @@ jobs:
         
     - name: Prepare Build Artifacts
       run: |
+        set +e
         sudo mkdir /artifacts
         sudo chmod 777 /artifacts
         output=$(kubectl get pods -n odim | grep -v NAME | awk '{print $1}')

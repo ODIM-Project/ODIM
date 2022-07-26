@@ -24,7 +24,7 @@ type Collection struct {
 	OdataContext string      `json:"@odata.context"`
 	Etag         string      `json:"@odata.etag,omitempty"`
 	OdataID      string      `json:"@odata.id"`
-	OdataType    string      `json:"@odata.type,omitempty"`
+	OdataType    string      `json:"@odata.type"`
 	Description  string      `json:"Description"`
 	Capabilities string      `json:"Capabilities,omitempty"`
 	Name         string      `json:"Name"`

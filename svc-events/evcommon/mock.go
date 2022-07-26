@@ -363,6 +363,19 @@ func MockGetFabricData(fabricID string) (evmodel.Fabric, error) {
 	return fabric, nil
 }
 
+// MockGetAggregateDatacData is for mocking up of get aggregate data against the aggregate id
+func MockGetAggregateDatacData(aggregateID string) (evmodel.Aggregate, error) {
+	var aggregate evmodel.Aggregate
+
+	aggregate = evmodel.Aggregate{
+		Elements: []evmodel.OdataIDLink{{
+			OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+		}},
+	}
+
+	return aggregate, nil
+}
+
 // MockGetEvtSubscriptions is for mocking up of get event  subscription
 func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 	var subarr []evmodel.Subscription
@@ -572,7 +585,7 @@ func MockUpdateDeviceSubscriptionLocation(devSubscription evmodel.DeviceSubscrip
 
 // MockGetAllKeysFromTable is for mocking up of get all keys from the given table
 func MockGetAllKeysFromTable(table string) ([]string, error) {
-	return []string{}, nil
+	return []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"}, nil
 }
 
 // MockGetAllFabrics is for mocking up of get all fabric details
@@ -583,6 +596,16 @@ func MockGetAllFabrics() ([]string, error) {
 // MockGetAllMatchingDetails is for mocking up of get all matching details from the given table
 func MockGetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
 	return []string{}, nil
+}
+
+// MockGetAggregateHosts is for mocking up of get all matching details from the given table
+func MockGetAggregateHosts(aggregateIP string) ([]string, error) {
+	return []string{}, nil
+}
+
+// MockSaveAggregateSubscription is for mocking up of get all matching details from the given table
+func MockSaveAggregateSubscription(aggregateID string, hostIP []string) error {
+	return nil
 }
 
 // MockSaveUndeliveredEvents is for mocking up of save undelivered events

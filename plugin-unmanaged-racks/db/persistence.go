@@ -70,10 +70,11 @@ func CreateDAO(c *config.PluginConfig, sentinelMasterName string, getTLSConfig T
 
 	return &DAO{
 		redis.NewFailoverClient(&redis.FailoverOptions{
-			MasterName:    sentinelMasterName,
-			SentinelAddrs: []string{c.RedisAddress},
-			TLSConfig:     tlsConfig,
-			Password:      string(c.RedisOnDiskPassword),
+			MasterName:       sentinelMasterName,
+			SentinelAddrs:    []string{c.RedisAddress},
+			TLSConfig:        tlsConfig,
+			SentinelPassword: string(c.RedisOnDiskPassword),
+			Password:         string(c.RedisOnDiskPassword),
 		}),
 	}
 }

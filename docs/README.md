@@ -5095,7 +5095,7 @@ curl -i -X POST \
 |RAIDType|String (required)<br>|The RAID type of the volume you want to create.|
 |Links {|Object (required)|Links to individual drives.|
 |Drives[{|Array (required)<br> |An array of links to drive resources to contain the new volume.|
-|@odata.id }]<br> |String|A link to a drive resource.|
+|@odata.id }]}<br> |String|A link to a drive resource.|
 |@Redfish.OperationApplyTime|Redfish annotation (optional)<br> | It enables you to control when the operation is carried out.<br> Supported values: `OnReset` and `Immediate`.<br> `OnReset` indicates that the new volume is available only after you successfully reset the system. To know how to reset a system, see [Resetting a computer system](#resetting-a-computer-system).<br>`Immediate` indicates that the created volume is available in the system immediately after the operation is successfully complete. |
 
 >**Sample response body** 

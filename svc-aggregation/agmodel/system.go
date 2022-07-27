@@ -288,6 +288,7 @@ func GenericSave(body []byte, table string, key string) error {
 		log.Error("GenericSave : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
+
 	if err = connPool.AddResourceData(table, key, string(body)); err != nil {
 		log.Error("GenericSave : error while trying to add resource date to DB: " + err.Error())
 		return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
@@ -440,6 +441,17 @@ func DeleteSystem(key string) *errors.Error {
 	//Delete All resources
 	if err = connPool.DeleteServer(deleteKey); err != nil {
 		return errors.PackError(err.ErrNo(), "error while trying to delete compute system: ", err.Error())
+	}
+	//Added logic to remove simpleupdate key from inmemory after removing the server
+	var simleUpdateData []string
+	if simleUpdateData, err = connPool.GetAllMatchingDetails("SimpleUpdate", key); err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to get simleUpdate details: ", err.Error())
+	}
+
+	if len(simleUpdateData) > 0 {
+		if err = connPool.Delete("SimpleUpdate", key); err != nil {
+			return errors.PackError(errors.UndefinedErrorType, err)
+		}
 	}
 	return nil
 }

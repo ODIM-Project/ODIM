@@ -617,7 +617,7 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(subscriptionPost evm
 }
 
 func (e *ExternalInterfaces) getSuboridanteResourcesFromCollection(originResources string) []string {
-	data, _, collectionPresentflag, _ := e.checkCollection(originResources)
+	data, _, collectionPresentflag, _, _, _ := e.checkCollection(originResources)
 	if !collectionPresentflag {
 		return []string{originResources}
 	}

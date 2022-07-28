@@ -141,8 +141,8 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 		log.Info("No Aggregate subscription Found ", err)
 	}
 	var aggregateSubscriptionList []evmodel.Subscription
-	for _, aggregateId := range aggregateList {
-		searchKeyAgg := evcommon.GetSearchKey(aggregateId, evmodel.SubscriptionIndex)
+	for _, aggregateID := range aggregateList {
+		searchKeyAgg := evcommon.GetSearchKey(aggregateID, evmodel.SubscriptionIndex)
 
 		subscription, err := e.GetEvtSubscriptions(searchKeyAgg)
 		if err != nil {

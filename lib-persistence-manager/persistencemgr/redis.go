@@ -1152,7 +1152,7 @@ func (p *ConnPool) CreateDeviceSubscriptionIndex(index, hostIP, location string,
 	defer writeConn.Close()
 	const value = 0
 	originResourceStr := "[" + strings.Join(originResources, " ") + "]"
-	key := hostIP + "::" + location + "::" + originResourceStr
+	key := hostIP + "||" + location + "||" + originResourceStr
 	// escape the square brackets before scanning
 	searchKey := strings.Replace(key, "[", "\\[", -1)
 	searchKey = strings.Replace(searchKey, "]", "\\]", -1)

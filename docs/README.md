@@ -10636,8 +10636,6 @@ Date:Fri,15 May 2020 10:10:15 GMT+5m 11s
 
 ### Creating an event subscription
 
-You can create event subscriptions for systems, aggregates, fabrics, and any of their combinations.
-
 |||
 |-----------|-----------|
 |**Method** | `POST` |

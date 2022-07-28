@@ -1426,7 +1426,7 @@ func (p *ConnPool) CreateAggregateHostIndex(index, aggregateID string, hostIP []
 	defer writeConn.Close()
 	const value = 0
 	originResourceStr := "[" + strings.Join(hostIP, " ") + "]"
-	key := aggregateID + "::" + originResourceStr
+	key := aggregateID + "||" + originResourceStr
 	createErr := writeConn.Send("ZADD", index, value, key)
 	if createErr != nil {
 		return createErr
@@ -1484,12 +1484,7 @@ func (p *ConnPool) UpdateAggregateHosts(index, aggregateID string, hostIP []stri
 	if err != nil {
 		return err
 	}
-	// host ip will be unique on each index in subscription of device
-	// so there will be only one data
-	err = p.DeleteDeviceSubscription(index, aggregateID+"[^0-9]")
-	if err != nil {
-		return err
-	}
+
 	err = p.CreateAggregateHostIndex(index, aggregateID, hostIP)
 	if err != nil {
 		return fmt.Errorf("error while updating aggregate host ")

@@ -144,10 +144,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 	for _, aggregateID := range aggregateList {
 		searchKeyAgg := evcommon.GetSearchKey(aggregateID, evmodel.SubscriptionIndex)
 
-		subscription, err := e.GetEvtSubscriptions(searchKeyAgg)
-		if err != nil {
-			log.Info("No Aggregate subscription found")
-		}
+		subscription, _ := e.GetEvtSubscriptions(searchKeyAgg)
 		aggregateSubscriptionList = append(aggregateSubscriptionList, subscription...)
 	}
 	err = json.Unmarshal([]byte(requestData), &message)
@@ -263,8 +260,6 @@ func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.E
 	messageIds := subscription.MessageIds
 	resourceTypes := subscription.ResourceTypes
 	originCondition := strings.TrimSuffix(event.OriginOfCondition.Oid, "/")
-	log.Info(subscription)
-	log.Info(originResources)
 	if (len(eventTypes) == 0 || isStringPresentInSlice(eventTypes, event.EventType, "event type")) &&
 		(len(messageIds) == 0 || isStringPresentInSlice(messageIds, event.MessageID, "message id")) &&
 		(len(resourceTypes) == 0 || isResourceTypeSubscribed(resourceTypes, event.OriginOfCondition.Oid, subscription.SubordinateResources)) {
@@ -422,7 +417,9 @@ func (e *ExternalInterfaces) reAttemptEvents(destination, undeliveredEventID str
 		}
 
 	}
-	log.Error("error while make https call to send the event: ", err.Error())
+	if err != nil {
+		log.Error("error while make https call to send the event: ", err.Error())
+	}
 }
 
 // rediscoverSystemInventory will be triggered when ever the System Restart or Power On
@@ -570,9 +567,6 @@ func (e *ExternalInterfaces) checkUndeliveredEvents(destination string) {
 	// first check any of the instance have already picked up for publishing
 	// undelivered events for the destination
 	flag, err := e.GetUndeliveredEventsFlag(destination)
-	if err != nil {
-		log.Error("error while getting undelivered events flag: ", err.Error())
-	}
 	if !flag {
 		// if flag is false then set the flag true, so other instance shouldnt have to read the undelivered events and publish
 		err = e.SetUndeliveredEventsFlag(destination)

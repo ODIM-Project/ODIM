@@ -449,11 +449,11 @@ func SaveEventSubscription(evtSubscription Subscription) error {
 
 // GetEvtSubscriptions is to get event subscription details
 func GetEvtSubscriptions(searchKey string) ([]Subscription, error) {
-	if strings.Contains(searchkey,"["){
-searchKey = strings.Replace(searchKey, "[", "\\[", -1)
-	searchKey = strings.Replace(searchKey, "]", "\\]", -1)
-	
-}
+	if strings.Contains(searchKey, "[") {
+		searchKey = strings.Replace(searchKey, "[", "\\[", -1)
+		searchKey = strings.Replace(searchKey, "]", "\\]", -1)
+
+	}
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return nil, err

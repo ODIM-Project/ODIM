@@ -118,7 +118,6 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
-	log.Info(subscriptionDetails)
 	for _, evtSubscription := range subscriptionDetails {
 		if evtSubscription.Destination == postRequest.Destination {
 			errorMessage := "Subscription already present for the requested destination"

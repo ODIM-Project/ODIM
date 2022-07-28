@@ -18,6 +18,7 @@
 - [Support for URL Encoding](#support-for-url-encoding)
 - [List of supported APIs](#list-of-supported-apis)
   * [Viewing the list of supported Redfish services](#viewing-the-list-of-supported-redfish-services)
+  * [Modifying configurations for services](#Modifying-configurations-for-services)
 - [Rate limits](#rate-limits)
 - [Authentication and authorization](#authentication-and-authorization)
   * [Authentication methods for Redfish APIs](#authentication-methods-for-redfish-apis)
@@ -719,6 +720,12 @@ Date":Fri,15 May 2022 13:55:53 GMT+5m 11s
 }
 ```
 
+## Modifying configurations for services
+
+You can modify the configurations of all Resource Aggregator for ODIM services by editing the configuration file at:
+
+ `odimra/lib-utilities/config/odimra_config.json`
+
 # Rate limits
 
 It is important to protect the shared services from excessive use to maintain service availability. Rate limits are used to control the rate of requests being sent or received in a network to prevent the frequency of an operation from exceeding specific limits.
@@ -1148,8 +1155,6 @@ curl -i -X DELETE \
                -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
               'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions/{sessionId}'
 ```
-
-
 
 
 #  User roles and privileges

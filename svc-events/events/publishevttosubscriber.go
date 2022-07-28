@@ -195,7 +195,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 				flag = true
 			}
 		}
-
+		log.Info(subscriptions)
 		for _, sub := range subscriptions {
 
 			// filter and send events to destination if destination is not empty

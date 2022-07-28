@@ -436,9 +436,6 @@ func SaveEventSubscription(evtSubscription Subscription) error {
 	if err != nil {
 		return err
 	}
-	evtSubscription.Destination = strings.Replace(evtSubscription.Destination, "[", "\\[", -1)
-
-	evtSubscription.Destination = strings.Replace(evtSubscription.Destination, "]", "\\]", -1)
 	subscription, merr := json.Marshal(evtSubscription)
 	if merr != nil {
 		return fmt.Errorf("error while trying marshall event subscriptions %v", merr.Error())
@@ -452,8 +449,11 @@ func SaveEventSubscription(evtSubscription Subscription) error {
 
 // GetEvtSubscriptions is to get event subscription details
 func GetEvtSubscriptions(searchKey string) ([]Subscription, error) {
-	searchKey = strings.Replace(searchKey, "[", "\\[", -1)
+	if strings.Contains(searchkey,"["){
+searchKey = strings.Replace(searchKey, "[", "\\[", -1)
 	searchKey = strings.Replace(searchKey, "]", "\\]", -1)
+	
+}
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -468,9 +468,6 @@ func GetEvtSubscriptions(searchKey string) ([]Subscription, error) {
 		if err := json.Unmarshal([]byte(value), &eventSub); err != nil {
 			return nil, fmt.Errorf("error while unmarshalling event subscriptions: %v", err.Error())
 		}
-		eventSub.Destination = strings.Replace(eventSub.Destination, "\\[", "[", -1)
-
-		eventSub.Destination = strings.Replace(eventSub.Destination, "\\]", "]", -1)
 		eventSubscriptions = append(eventSubscriptions, eventSub)
 	}
 
@@ -655,7 +652,7 @@ func GetAggregateList(hostIP string) ([]string, error) {
 	}
 	aggregates := []string{}
 	for _, v := range aggregateList {
-		devSub := strings.Split(v, "::")
+		devSub := strings.Split(v, "||")
 		if devSub[0] == "0" {
 			continue
 		}

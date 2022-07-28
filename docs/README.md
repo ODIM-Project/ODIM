@@ -10653,7 +10653,7 @@ To know the progress of this action, perform HTTP `GET` on the *[task monitor](#
 To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of this operation (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask.
 
 
->**curl command to create event subscriptions for systems**
+>**curl command**
 
 ```
 curl -i POST \
@@ -10691,7 +10691,7 @@ curl -i POST \
 ```
 
 
->**Sample request body to create event subscriptions for systems**  
+>**Sample request body**  
 
 ```
 { 
@@ -10722,145 +10722,21 @@ curl -i POST \
 }
 ```
 
->**curl command to create event subscriptions for aggregates**
+> **Request parameters**
 
-```
-curl -i POST \
-   -H "X-Auth-Token:{X-Auth-Token}" \
-   -H "Content-Type:application/json; charset=utf-8" \
-   -d \
-'{ 
-   "Name":"ODIMRA_NBI_client",
-   "Destination":"https://{Valid_IP_Address}:{Port}/EventListener",
-   "EventTypes":[ 
-      "Alert"
-   ],
-   "MessageIds":[ 
-
-   ],
-   "ResourceTypes":[ 
-      "ComputerSystem"
-   ],
-   "Context":"ODIMRA_Event",
-   "Protocol":"Redfish",
-   "SubscriptionType":"RedfishEvent",
-   "EventFormatType":"Event",
-   "SubordinateResources":true,
-   "OriginResources":[
-      { 
-        "@odata.id":"/redfish/v1/Aggregates/{AggregateId}"
-      },
-      {
-        "@odata.id":"/redfish/v1/Aggregates/{AggregateId}"
-      }
-   ]
-}' \
- 'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions'
-
-```
-
-
->**Sample request body to create event subscriptions for aggregates**  
-
-```
-{ 
-   "Name":"ODIMRA_NBI_client",
-   "Destination":"https://{valid_destination_IP_Address}:{Port}/EventListener",
-   "EventTypes":[ 
-      "Alert"
-   ],
-   "MessageIds":[ 
-
-   ],
-   "ResourceTypes":[ 
-      "ComputerSystem"
-   ],
-   "Context":"ODIMRA_Event",
-   "Protocol":"Redfish",
-   "SubscriptionType":"RedfishEvent",
-   "EventFormatType":"Event",
-   "SubordinateResources":true,
-   "OriginResources":[ 
-      { 
-        "@odata.id":"/redfish/v1/Aggregates/{AggregateId}"
-      },
-      {
-        "@odata.id":"/redfish/v1/Aggregates/{AggregateId}"
-      }
-   ]
-}
-```
-
->**curl command to create event subscriptions for fabrics**
-
-```
-curl -i POST \
-   -H "X-Auth-Token:{X-Auth-Token}" \
-   -H "Content-Type:application/json; charset=utf-8" \
-   -d \
-'{ 
-   "Name":"ODIMRA_NBI_client",
-   "Destination":"https://{Valid_IP_Address}:{Port}/EventListener",
-   "EventTypes":[ 
-      "Alert"
-   ],
-   "MessageIds":[ 
-
-   ],
-   "ResourceTypes":[ 
-      "ComputerSystem"
-   ],
-   "Context":"ODIMRA_Event",
-   "Protocol":"Redfish",
-   "SubscriptionType":"RedfishEvent",
-   "EventFormatType":"Event",
-   "SubordinateResources":true,
-   "OriginResources":[
-      { 
-        "@odata.id":"/redfish/v1/Fabrics/{FabricId}"
-      },
-      {
-        "@odata.id":"/redfish/v1/Fabrics/{FabricId}"
-      }
-   ]
-}' \
- 'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions'
-
-```
-
-
->**Sample request body to create event subscriptions for fabrics**
-
-```
-{ 
-   "Name":"ODIMRA_NBI_client",
-   "Destination":"https://{valid_destination_IP_Address}:{Port}/EventListener",
-   "EventTypes":[ 
-      "Alert"
-   ],
-   "MessageIds":[ 
-
-   ],
-   "ResourceTypes":[ 
-      "ComputerSystem"
-   ],
-   "Context":"ODIMRA_Event",
-   "Protocol":"Redfish",
-   "SubscriptionType":"RedfishEvent",
-   "EventFormatType":"Event",
-   "SubordinateResources":true,
-   "OriginResources":[ 
-      { 
-        "@odata.id":"/redfish/v1/Fabrics/{FabricId}"
-      },
-      {
-        "@odata.id":"/redfish/v1/Fabrics/{FabricId}"
-      }
-   ]
-}
-```
-
-
+| Parameter            | Value                 | Attributes                         | Description                                                  |
+| -------------------- | --------------------- | ---------------------------------- | ------------------------------------------------------------ |
+| Name                 | String                | (optional)<br>                     | Name for the subscription.                                   |
+| Destination          | String                | Read-only (Required on create)<br> | The URL of the destination event listener that listens to events (Fault management system or any northbound client).<br>**NOTE:** `Destination` is unique to a subscription: There can be only one subscription for a destination event listener.<br>To change the parameters of an existing subscription , delete it and then create again with the new parameters and a new destination URL.<br> |
+| EventTypes           | Array (string (enum)) | Read-only (optional)<br>           | The types of events that are sent to the destination. For possible values, see *Event types* table. |
+| ResourceTypes        | Array (string, null)  | Read-only (optional)<br>           | The list of resource type values (Schema names) that correspond to the `OriginResources`.  Examples: "Systems", "Chassis", "Tasks"<br>For possible values, perform `GET` on `redfish/v1/EventService` and check values listed under `ResourceTypes` in the JSON response.<br/> |
+| Context              | String                | Read/write Required (null)<br>     | A string that is stored with the event destination subscription. |
+| MessageIds           | Array                 | Read-only (optional)<br>           | The key used to find the message in a Message Registry.      |
+| Protocol             | String (enum)         | Read-only (Required on create)<br> | The protocol type of the event connection. For possible values, see *Protocol* table. |
+| SubscriptionType     | String (enum)         | Read-only Required (null)<br>      | Indicates the subscription type for events. For possible values, see *Subscription type* table. |
+| EventFormatType      | String (enum)         | Read-only (optional)<br>           | Indicates the content types of the message that this service can send to the event destination. For possible values, see *EventFormat type* table. |
+| SubordinateResources | Boolean               | Read-only (null)                   | Indicates whether the service supports the `SubordinateResource` property on event subscriptions or not. If it is set to `true`, the service creates subscription for an event originating from the specified `OriginResoures` and also from its subordinate resources. For example, by setting this property to `true`, you can receive specified events from a compute node: `/redfish/v1/Systems/{ComputerSystemId}` and from its subordinate resources such as:<br> `/redfish/v1/Systems/{ComputerSystemId}/Memory`<br> `/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces`<br> `/redfish/v1/Systems/{ComputerSystemId}/Bios`<br> `/redfish/v1/Systems/{ComputerSystemId}/Storage` |
+| OriginResources      | Array                 | Optional (null)<br>                | Resources for which the service sends related events. If this property is absent or the array is empty, events originating from any resource is sent to the subscriber. For possible values, see *[Origin resources](#origin-resources)* table. |
 
 
 > **Sample event**
@@ -10960,7 +10836,7 @@ curl -i POST \
 |SubordinateResources|Boolean|Read-only (null)|Indicates whether the service supports the `SubordinateResource` property on event subscriptions or not. If it is set to `true`, the service creates subscription for an event originating from the specified `OriginResoures` and also from its subordinate resources. For example, by setting this property to `true`, you can receive specified events from a compute node: `/redfish/v1/Systems/{ComputerSystemId}` and from its subordinate resources such as:<br> `/redfish/v1/Systems/{ComputerSystemId}/Memory`<br> `/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces`<br> `/redfish/v1/Systems/{ComputerSystemId}/Bios`<br> `/redfish/v1/Systems/{ComputerSystemId}/Storage`|
 |OriginResources|Array| Optional (null)<br> |Resources for which the service only sends related events. If this property is absent or the array is empty, events originating from any resource is sent to the subscriber. For possible values, see *Origin resources* table.|
 
-**Origin resources**
+##### **Origin resources**
 
 |String|Description|
 |------|-----------|
@@ -10971,6 +10847,7 @@ curl -i POST \
 |/redfish/v1/Fabrics|All fabric resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/Managers|All manager resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/TaskService/Tasks|All tasks scheduled by or being executed by Redfish `TaskService`. By subscribing to Redfish tasks, you can receive task status change notifications on the subscribed destination client.<br> By specifying the task URIs as `OriginResources` and `EventTypes` as `StatusChange`, you can receive notifications automatically when the tasks are complete.<br> To check the status of a specific task manually, perform HTTP `GET` on its task monitor until the task is complete.<br> |
+| /redfish/v1/Aggregates                          |All aggregates available in Resource Aggregator for ODIM for which the service sends only related events. |
 
 **Event types**
 

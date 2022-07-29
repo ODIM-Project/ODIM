@@ -155,6 +155,7 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 			"ResourceAdded",
 			"ResourceRemoved",
 			"Alert"},
+		RegistryPrefixes: []string{},
 		ResourceTypes:    resourceTypes,
 		//		ServerSentEventURI:"/redfish/v1/EventService/SSE",
 		ServiceEnabled: isServiceEnabled,

@@ -722,9 +722,17 @@ Date":Fri,15 May 2022 13:55:53 GMT+5m 11s
 
 ## Modifying configurations for services
 
-You can modify the configurations of all Resource Aggregator for ODIM services by editing the configuration file at:
+You can modify the existing configurations of all Resource Aggregator for ODIM services by editing the configuration file at:
 
  `odimra/lib-utilities/config/odimra_config.json`
+
+If Resource Aggregator for ODIM is deployed already, run the following command to apply the latest configurations.
+
+```
+python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-config
+```
+
+
 
 # Rate limits
 

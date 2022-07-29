@@ -16,13 +16,16 @@ syntax = "proto3";
 
 service Events {
     rpc GetEventService(EventSubRequest) returns (EventSubResponse) {}
-    rpc SubmitTestEvent(EventSubRequest) returns (EventSubResponse) {}
+    rpc     SubmitTestEvent(EventSubRequest) returns (EventSubResponse) {}
     rpc CreateEventSubscription(EventSubRequest) returns (EventSubResponse) {}
     rpc GetEventSubscription(EventRequest) returns (EventSubResponse) {}
     rpc DeleteEventSubscription(EventRequest) returns (EventSubResponse) {}
     rpc CreateDefaultEventSubscription(DefaultEventSubRequest) returns (DefaultEventSubResponse) {}
     rpc GetEventSubscriptionsCollection(EventRequest) returns (EventSubResponse) {}
     rpc SubsribeEMB(SubscribeEMBRequest) returns (SubscribeEMBResponse){}
+    rpc UpdateEventSubscriptionsRPC(EventUpdateRequest) returns (SubscribeEMBResponse){}
+    rpc RemoveEventSubscriptionsRPC(EventUpdateRequest) returns (SubscribeEMBResponse){}
+    rpc IsAggregateHaveSubscription(EventUpdateRequest) returns (SubscribeEMBResponse){}
 }
 
 message EventSubRequest {
@@ -30,6 +33,11 @@ message EventSubRequest {
     bytes PostBody = 2;
 }
 
+message EventUpdateRequest {
+    string aggregateId =1;
+    string systemID=2;
+    string SessionToken = 3;
+}
 message EventSubResponse {
     int32 statusCode = 1;
     string statusMessage = 2;

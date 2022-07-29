@@ -32,6 +32,7 @@ import (
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
+	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 )
 
@@ -144,4 +145,24 @@ func (e *ExternalInterfaces) GetEventSubscriptionsCollection(req *eventsproto.Ev
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp
+}
+
+// IsAggregateHaveSubscription collects all subscription details
+func (e *ExternalInterfaces) IsAggregateHaveSubscription(req *eventsproto.EventUpdateRequest) bool {
+	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		return false
+	}
+	searchKey := evcommon.GetSearchKey(req.AggregateId, evmodel.SubscriptionIndex)
+	subscriptionDetails, err := e.GetEvtSubscriptions(searchKey)
+	if err != nil {
+		return false
+	}
+	if len(subscriptionDetails) == 0 {
+		return false
+	} else {
+		return true
+
+	}
 }

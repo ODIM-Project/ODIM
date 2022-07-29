@@ -969,7 +969,7 @@ func TestGetDeviceSubscription(t *testing.T) {
 	if len(subscriptions) < 1 {
 		t.Errorf("No data found for the host ip")
 	}
-	devSub := strings.Split(subscriptions[0], "::")
+	devSub := strings.Split(subscriptions[0], "||")
 
 	if devSub[0] != hostIP && devSub[1] != location {
 		t.Errorf("HostIP/Location didn't matched")

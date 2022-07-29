@@ -369,7 +369,7 @@ func GetDeviceSubscriptions(hostIP string) (*DeviceSubscription, error) {
 	if gerr != nil {
 		return nil, fmt.Errorf("error while trying to get subscription of device %v", gerr.Error())
 	}
-	devSub := strings.Split(devSubscription[0], "::")
+	devSub := strings.Split(devSubscription[0], "||")
 	var deviceSubscription = &DeviceSubscription{
 		EventHostIP:     devSub[0],
 		Location:        devSub[1],
@@ -449,7 +449,6 @@ func SaveEventSubscription(evtSubscription Subscription) error {
 
 // GetEvtSubscriptions is to get event subscription details
 func GetEvtSubscriptions(searchKey string) ([]Subscription, error) {
-
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -631,7 +630,7 @@ func GetAggregateHosts(aggregateIP string) ([]string, error) {
 	if gerr != nil {
 		return nil, fmt.Errorf("error while trying to get aggregate host of device %v", gerr.Error())
 	}
-	devSub := strings.Split(aggregateList[0], "::")
+	devSub := strings.Split(aggregateList[0], "||")
 	hostsIP := getSliceFromString(devSub[1])
 	return hostsIP, nil
 }
@@ -648,7 +647,7 @@ func GetAggregateList(hostIP string) ([]string, error) {
 	}
 	aggregates := []string{}
 	for _, v := range aggregateList {
-		devSub := strings.Split(v, "::")
+		devSub := strings.Split(v, "||")
 		if devSub[0] == "0" {
 			continue
 		}

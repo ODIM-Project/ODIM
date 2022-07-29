@@ -44,6 +44,7 @@ KUBESPRAY_SRC_PATH = ""
 CONTROLLER_SRC_PATH = ""
 CONTROLLER_BASE_PATH = ""
 DRY_RUN_SET = False
+IS_ODIMRA_DEPLOYMENT = False
 NO_PROMPT_SET = False
 IGNORE_ERRORS_SET = False
 K8S_INVENTORY_DATA = None
@@ -235,25 +236,28 @@ def perform_checks(skip_opt_param_check=False):
 		if not os.path.exists(ANSIBLE_SUDO_PW_FILE):
 			logger.critical("%s does not exist, exiting!!!", ANSIBLE_SUDO_PW_FILE)
 
-	if 'redisInMemoryPasswordFilePath' not in CONTROLLER_CONF_DATA or \
-	CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] == "":
-		REDIS_INMEMORY_PW_FILE = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s_cluster-' + DEPLOYMENT_ID, '.redis_in_memory_pw.dat')
-		if not os.path.exists(REDIS_INMEMORY_PW_FILE):
-			store_redis_password_in_vault(REDIS_INMEMORY_PW_FILE, "in_memory")
-	else:
-		REDIS_INMEMORY_PW_FILE = CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath']
-		if not os.path.exists(REDIS_INMEMORY_PW_FILE):
-			logger.critical("%s does not exist, exiting!!!", REDIS_INMEMORY_PW_FILE)
+	if IS_ODIMRA_DEPLOYMENT == True:
+		if 'redisInMemoryPasswordFilePath' not in CONTROLLER_CONF_DATA or \
+		CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] == "":
+			REDIS_INMEMORY_PW_FILE = os.path.join(CONTROLLER_SRC_PATH, '.redis_in_memory_pw.dat')
+			CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] = REDIS_INMEMORY_PW_FILE
+			if not os.path.exists(REDIS_INMEMORY_PW_FILE):
+				store_redis_password_in_vault(REDIS_INMEMORY_PW_FILE, "in_memory")
+		else:
+			REDIS_INMEMORY_PW_FILE = CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath']
+			if not os.path.exists(REDIS_INMEMORY_PW_FILE):
+				logger.critical("%s does not exist, exiting!!!", REDIS_INMEMORY_PW_FILE)
 
-	if 'redisOnDiskPasswordFilePath' not in CONTROLLER_CONF_DATA or \
-	CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == "":
-		REDIS_ONDISK_PW_FILE = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s_cluster-' + DEPLOYMENT_ID, '.redis_on_disk_pw.dat')
-		if not os.path.exists(REDIS_ONDISK_PW_FILE):
-			store_redis_password_in_vault(REDIS_ONDISK_PW_FILE, "on_disk")
-	else:
-		REDIS_ONDISK_PW_FILE = CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath']
-		if not os.path.exists(REDIS_ONDISK_PW_FILE):
-			logger.critical("%s does not exist, exiting!!!", REDIS_ONDISK_PW_FILE)
+		if 'redisOnDiskPasswordFilePath' not in CONTROLLER_CONF_DATA or \
+		CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == "":
+			REDIS_ONDISK_PW_FILE = os.path.join(CONTROLLER_SRC_PATH, '.redis_on_disk_pw.dat')
+			CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] = REDIS_ONDISK_PW_FILE
+			if not os.path.exists(REDIS_ONDISK_PW_FILE):
+				store_redis_password_in_vault(REDIS_ONDISK_PW_FILE, "on_disk")
+		else:
+			REDIS_ONDISK_PW_FILE = CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath']
+			if not os.path.exists(REDIS_ONDISK_PW_FILE):
+				logger.critical("%s does not exist, exiting!!!", REDIS_ONDISK_PW_FILE)
 
 	cert_dir = os.path.join(CONTROLLER_SRC_PATH, 'certs')
 	if not os.path.exists(cert_dir):
@@ -553,7 +557,7 @@ def scale_out_k8s():
 			nodes_list += '{hostname},'.format(hostname=node)
 			temp_dict = {node : {'ansible_host': attrs['ip'], 'ip':attrs['ip'], 'access_ip':attrs['ip']}}
 			if  CONTROLLER_CONF_DATA['nwPreference']=='dualStack':
-				temp_dict[node].update({"ipv6":attrs['ipv6']})
+				temp_dict[node].update({"ip6":attrs['ipv6']})
 			K8S_INVENTORY_DATA['all']['hosts'].update(temp_dict)
 			temp_dict = {node: None}
 			K8S_INVENTORY_DATA['all']['children']['kube_node']['hosts'].update(temp_dict)
@@ -778,7 +782,7 @@ def deploy_k8s():
 			load_k8s_host_conf()
 		#update the ipv6 address in hosts.yaml
 			for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
-				K8S_INVENTORY_DATA['all']['hosts'][node].update({"ipv6":attrs['ipv6']})
+				K8S_INVENTORY_DATA['all']['hosts'][node].update({"ip6":attrs['ipv6']})
 			SafeDumper.add_representer(type(None),lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:null', ''))
 			with open(K8S_INVENTORY_FILE, 'w') as f:
 				yaml.safe_dump(K8S_INVENTORY_DATA, f, default_flow_style=False)
@@ -1033,7 +1037,10 @@ def reset_k8s():
 
 # install_odimra is for performing all the necessary steps for installing ODIMRA
 def install_odimra():
+	global IS_ODIMRA_DEPLOYMENT
 	logger.info("Installing ODIMRA")
+	# Setting the flag to true for the redis password file path validation
+	IS_ODIMRA_DEPLOYMENT = True
 	# Parse the conf file passed
 	read_conf()
 	# Validate conf parameters passed

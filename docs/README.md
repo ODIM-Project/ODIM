@@ -2037,7 +2037,6 @@ location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-af
    | <strong>Response Code</strong>  | On success, `202 Accepted`<br>On successful completion of the task, `201 Created` <br> |
    | <strong>Authentication</strong> | Yes                                                          |
 
-
 **Usage information**
 
 1. Perform HTTP `POST` on the mentioned URI with a request body specifying a connection method to use for adding the BMC. To know about connection methods, see *[Connection methods](#connection-methods)*.			
@@ -5052,16 +5051,17 @@ curl -i -X POST \
    -H "Content-Type:application/json" \
    -d \
 '{
-   "Name":"Volume_Demo",
    "RAIDType":"RAID1",
-   "Drives":[
+   "Links":{
+     "Drives":[
       {
          "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/0"
       },
       {
          "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/1"
       }
-   ],
+   ]
+ }, 
    "@Redfish.OperationApplyTime":"OnReset"
 }' \
  'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes'
@@ -5073,16 +5073,17 @@ curl -i -X POST \
 
 ```
 {
-   "Name":"Volume_Demo",
    "RAIDType":"RAID1",
-   "Drives":[
+   "Links":{
+     "Drives":[
       {
          "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Drives/0"
       },
       {
          "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Drives/1"
       }
-   ],
+   ]
+  },
    "@Redfish.OperationApplyTime":"OnReset"
 }
 ```
@@ -5091,10 +5092,10 @@ curl -i -X POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Name|String (required)<br> |Name of the new volume.|
-|RAIDType|String (required)<br> |The RAID type of the volume you want to create.|
+|RAIDType|String (required)<br>|The RAID type of the volume you want to create.|
+|Links {|Object (required)|Links to individual drives.|
 |Drives[{|Array (required)<br> |An array of links to drive resources to contain the new volume.|
-|@odata.id }]<br> |String|A link to a drive resource.|
+|@odata.id }]}<br> |String|A link to a drive resource.|
 |@Redfish.OperationApplyTime|Redfish annotation (optional)<br> | It enables you to control when the operation is carried out.<br> Supported values: `OnReset` and `Immediate`.<br> `OnReset` indicates that the new volume is available only after you successfully reset the system. To know how to reset a system, see [Resetting a computer system](#resetting-a-computer-system).<br>`Immediate` indicates that the created volume is available in the system immediately after the operation is successfully complete. |
 
 >**Sample response body** 
@@ -5104,7 +5105,7 @@ curl -i -X POST \
       "error":{
             "@Message.ExtendedInfo":[
                   {
-                        "MessageId": "Base.1.4.Success"            
+                        "MessageId": "Base.1.13.Success"            
          }         
       ],
             "code":"iLO.0.10.ExtendedInfo",
@@ -5113,7 +5114,7 @@ curl -i -X POST \
 }
 ```
 
-> **NOTE**: Reset your system only if prompted in your response message id. After the system reset, the new volume is available. For a success message id, system reset is not required.
+> **NOTE**: Reset your system only if prompted in your response message id. After the system reset, the new volume is available. In case of successful message id in the response, system reset is not required.
 
 ### Deleting a volume
 
@@ -6733,8 +6734,8 @@ This filter searches a server having total physical memory of 384 GB and two Int
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset` |
 |**Description** |This action shuts down, powers up, and restarts a specific system.<br>**NOTE:** To reset an aggregate of systems, use the following URI:<br>`/redfish/v1/AggregationService/Actions/AggregationService.Reset` <br> See [Resetting servers](#resetting-servers).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file. Registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. **Example registry file name**: Base.1.4. See [Message Registries](#message-registries).|
-|**Response code** | `200 OK` |
+|**Returns** |A Redfish task in the response header and you receive a link to the task monitor associated with it. To know the progress of this operation, perform an `HTTP GET` on the task monitor (until the task is complete).|
+|**Response code** | `202 Accepted`. On successful completion, `200 OK`. |
 |**Authentication** |Yes|
 
 
@@ -6769,13 +6770,13 @@ See [Resetting Servers](#resetting-servers) to know about `ResetType.`
 
 ```
 {
-	"error": {
-		"@Message.ExtendedInfo": [{
-			"MessageId": "Base.1.13.0.Success"
-		}],
-		"code": "iLO.0.10.ExtendedInfo",
-		"message": "See @Message.ExtendedInfo for more information."
-	}
+    "error": {
+        "@Message.ExtendedInfo": [{
+            "MessageId": "Base.1.13.Success"
+        }],
+        "code": "iLO.0.10.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information."
+    }
 }
 ```
 
@@ -10689,7 +10690,7 @@ curl -i POST \
 ```
 
 
->**Sample request body**
+>**Sample request body**  
 
 ```
 { 
@@ -10718,9 +10719,24 @@ curl -i POST \
       }
    ]
 }
-
-
 ```
+
+> **Request parameters**
+
+| Parameter            | Value                 | Attributes                         | Description                                                  |
+| -------------------- | --------------------- | ---------------------------------- | ------------------------------------------------------------ |
+| Name                 | String                | (optional)<br>                     | Name for the subscription.                                   |
+| Destination          | String                | Read-only (Required on create)<br> | The URL of the destination event listener that listens to events (Fault management system or any northbound client).<br>**NOTE:** `Destination` is unique to a subscription: There can be only one subscription for a destination event listener.<br>To change the parameters of an existing subscription , delete it and then create again with the new parameters and a new destination URL.<br> |
+| EventTypes           | Array (string (enum)) | Read-only (optional)<br>           | The types of events that are sent to the destination. For possible values, see *Event types* table. |
+| ResourceTypes        | Array (string, null)  | Read-only (optional)<br>           | The list of resource type values (Schema names) that correspond to the `OriginResources`.  Examples: "Systems", "Chassis", "Tasks"<br>For possible values, perform `GET` on `redfish/v1/EventService` and check values listed under `ResourceTypes` in the JSON response.<br/> |
+| Context              | String                | Read/write Required (null)<br>     | A string that is stored with the event destination subscription. |
+| MessageIds           | Array                 | Read-only (optional)<br>           | The key used to find the message in a Message Registry.      |
+| Protocol             | String (enum)         | Read-only (Required on create)<br> | The protocol type of the event connection. For possible values, see *Protocol* table. |
+| SubscriptionType     | String (enum)         | Read-only Required (null)<br>      | Indicates the subscription type for events. For possible values, see *Subscription type* table. |
+| EventFormatType      | String (enum)         | Read-only (optional)<br>           | Indicates the content types of the message that this service can send to the event destination. For possible values, see *EventFormat type* table. |
+| SubordinateResources | Boolean               | Read-only (null)                   | Indicates whether the service supports the `SubordinateResource` property on event subscriptions or not. If it is set to `true`, the service creates subscription for an event originating from the specified `OriginResoures` and also from its subordinate resources. For example, by setting this property to `true`, you can receive specified events from a compute node: `/redfish/v1/Systems/{ComputerSystemId}` and from its subordinate resources such as:<br> `/redfish/v1/Systems/{ComputerSystemId}/Memory`<br> `/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces`<br> `/redfish/v1/Systems/{ComputerSystemId}/Bios`<br> `/redfish/v1/Systems/{ComputerSystemId}/Storage` |
+| OriginResources      | Array                 | Optional (null)<br>                | Resources for which the service sends related events. If this property is absent or the array is empty, events originating from any resource is sent to the subscriber. For possible values, see *[Origin resources](#origin-resources)* table. |
+
 
 > **Sample event**
 
@@ -10819,7 +10835,7 @@ curl -i POST \
 |SubordinateResources|Boolean|Read-only (null)|Indicates whether the service supports the `SubordinateResource` property on event subscriptions or not. If it is set to `true`, the service creates subscription for an event originating from the specified `OriginResoures` and also from its subordinate resources. For example, by setting this property to `true`, you can receive specified events from a compute node: `/redfish/v1/Systems/{ComputerSystemId}` and from its subordinate resources such as:<br> `/redfish/v1/Systems/{ComputerSystemId}/Memory`<br> `/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces`<br> `/redfish/v1/Systems/{ComputerSystemId}/Bios`<br> `/redfish/v1/Systems/{ComputerSystemId}/Storage`|
 |OriginResources|Array| Optional (null)<br> |Resources for which the service only sends related events. If this property is absent or the array is empty, events originating from any resource is sent to the subscriber. For possible values, see *Origin resources* table.|
 
-**Origin resources**
+##### **Origin resources**
 
 |String|Description|
 |------|-----------|
@@ -10830,6 +10846,7 @@ curl -i POST \
 |/redfish/v1/Fabrics|All fabric resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/Managers|All manager resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/TaskService/Tasks|All tasks scheduled by or being executed by Redfish `TaskService`. By subscribing to Redfish tasks, you can receive task status change notifications on the subscribed destination client.<br> By specifying the task URIs as `OriginResources` and `EventTypes` as `StatusChange`, you can receive notifications automatically when the tasks are complete.<br> To check the status of a specific task manually, perform HTTP `GET` on its task monitor until the task is complete.<br> |
+| /redfish/v1/Aggregates/{AggregateId}         |Individual aggregate available in Resource Aggregator for ODIM for which the service sends only related events. |
 
 **Event types**
 

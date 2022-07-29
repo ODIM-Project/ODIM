@@ -73,6 +73,11 @@ func GetPluginContactInitializer() *Events {
 			SetUndeliveredEventsFlag:         evmodel.SetUndeliveredEventsFlag,
 			DeleteUndeliveredEventsFlag:      evmodel.DeleteUndeliveredEventsFlag,
 			DeleteUndeliveredEvents:          evmodel.DeleteUndeliveredEvents,
+			GetAggregateData:                 evmodel.GetAggregateData,
+			SaveAggregateSubscription:        evmodel.SaveAggregateSubscription,
+			GetAggregateHosts:                evmodel.GetAggregateHosts,
+			UpdateAggregateHosts:             evmodel.UpdateAggregateHosts,
+			GetAggregateList:                 evmodel.GetAggregateList,
 		},
 	}
 	return &Events{

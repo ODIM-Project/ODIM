@@ -150,6 +150,9 @@ const (
 	AggregationSourceType = "#AggregationSource.v1_2_0.AggregationSource"
 	//ChassisType has version to be returned with Chassis Service
 	ChassisType = "#Chassis.v1_20_0.Chassis"
+	// AggregateSubscriptionIndex is a index name which required for indexing
+	// subscription of aggregate
+	AggregateSubscriptionIndex = "AggregateToHost"
 )
 
 // RediscoverResources contains to get only these resource from the device when

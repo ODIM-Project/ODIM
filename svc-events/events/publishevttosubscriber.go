@@ -565,10 +565,10 @@ func callPluginStartUp(event common.Events) {
 func (e *ExternalInterfaces) checkUndeliveredEvents(destination string) {
 	// first check any of the instance have already picked up for publishing
 	// undelivered events for the destination
-	flag, err := e.GetUndeliveredEventsFlag(destination)
+	flag, _ := e.GetUndeliveredEventsFlag(destination)
 	if !flag {
 		// if flag is false then set the flag true, so other instance shouldnt have to read the undelivered events and publish
-		err = e.SetUndeliveredEventsFlag(destination)
+		err := e.SetUndeliveredEventsFlag(destination)
 		if err != nil {
 			log.Error("error while setting undelivered events flag: ", err.Error())
 		}

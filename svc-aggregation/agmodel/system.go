@@ -1082,7 +1082,7 @@ func GetDeviceSubscriptions(hostIP string) (*common.DeviceSubscription, error) {
 	if gerr != nil {
 		return nil, fmt.Errorf("error while trying to get device subscription details: %v", gerr.Error())
 	}
-	devSub := strings.Split(devSubscription[0], "::")
+	devSub := strings.Split(devSubscription[0], "||")
 	var deviceSubscription = &common.DeviceSubscription{
 		EventHostIP:     devSub[0],
 		Location:        devSub[1],

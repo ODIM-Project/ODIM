@@ -44,6 +44,7 @@ KUBESPRAY_SRC_PATH = ""
 CONTROLLER_SRC_PATH = ""
 CONTROLLER_BASE_PATH = ""
 DRY_RUN_SET = False
+IS_ODIMRA_DEPLOYMENT = False
 NO_PROMPT_SET = False
 IGNORE_ERRORS_SET = False
 K8S_INVENTORY_DATA = None
@@ -235,25 +236,28 @@ def perform_checks(skip_opt_param_check=False):
 		if not os.path.exists(ANSIBLE_SUDO_PW_FILE):
 			logger.critical("%s does not exist, exiting!!!", ANSIBLE_SUDO_PW_FILE)
 
-	if 'redisInMemoryPasswordFilePath' not in CONTROLLER_CONF_DATA or \
-	CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] == "":
-		REDIS_INMEMORY_PW_FILE = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s_cluster-' + DEPLOYMENT_ID, '.redis_in_memory_pw.dat')
-		if not os.path.exists(REDIS_INMEMORY_PW_FILE):
-			store_redis_password_in_vault(REDIS_INMEMORY_PW_FILE, "in_memory")
-	else:
-		REDIS_INMEMORY_PW_FILE = CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath']
-		if not os.path.exists(REDIS_INMEMORY_PW_FILE):
-			logger.critical("%s does not exist, exiting!!!", REDIS_INMEMORY_PW_FILE)
+	if IS_ODIMRA_DEPLOYMENT == True:
+		if 'redisInMemoryPasswordFilePath' not in CONTROLLER_CONF_DATA or \
+		CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] == "":
+			REDIS_INMEMORY_PW_FILE = os.path.join(CONTROLLER_SRC_PATH, '.redis_in_memory_pw.dat')
+			CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] = REDIS_INMEMORY_PW_FILE
+			if not os.path.exists(REDIS_INMEMORY_PW_FILE):
+				store_redis_password_in_vault(REDIS_INMEMORY_PW_FILE, "in_memory")
+		else:
+			REDIS_INMEMORY_PW_FILE = CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath']
+			if not os.path.exists(REDIS_INMEMORY_PW_FILE):
+				logger.critical("%s does not exist, exiting!!!", REDIS_INMEMORY_PW_FILE)
 
-	if 'redisOnDiskPasswordFilePath' not in CONTROLLER_CONF_DATA or \
-	CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == "":
-		REDIS_ONDISK_PW_FILE = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s_cluster-' + DEPLOYMENT_ID, '.redis_on_disk_pw.dat')
-		if not os.path.exists(REDIS_ONDISK_PW_FILE):
-			store_redis_password_in_vault(REDIS_ONDISK_PW_FILE, "on_disk")
-	else:
-		REDIS_ONDISK_PW_FILE = CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath']
-		if not os.path.exists(REDIS_ONDISK_PW_FILE):
-			logger.critical("%s does not exist, exiting!!!", REDIS_ONDISK_PW_FILE)
+		if 'redisOnDiskPasswordFilePath' not in CONTROLLER_CONF_DATA or \
+		CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == "":
+			REDIS_ONDISK_PW_FILE = os.path.join(CONTROLLER_SRC_PATH, '.redis_on_disk_pw.dat')
+			CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] = REDIS_ONDISK_PW_FILE
+			if not os.path.exists(REDIS_ONDISK_PW_FILE):
+				store_redis_password_in_vault(REDIS_ONDISK_PW_FILE, "on_disk")
+		else:
+			REDIS_ONDISK_PW_FILE = CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath']
+			if not os.path.exists(REDIS_ONDISK_PW_FILE):
+				logger.critical("%s does not exist, exiting!!!", REDIS_ONDISK_PW_FILE)
 
 	cert_dir = os.path.join(CONTROLLER_SRC_PATH, 'certs')
 	if not os.path.exists(cert_dir):
@@ -1033,7 +1037,10 @@ def reset_k8s():
 
 # install_odimra is for performing all the necessary steps for installing ODIMRA
 def install_odimra():
+	global IS_ODIMRA_DEPLOYMENT
 	logger.info("Installing ODIMRA")
+	# Setting the flag to true for the redis password file path validation
+	IS_ODIMRA_DEPLOYMENT = True
 	# Parse the conf file passed
 	read_conf()
 	# Validate conf parameters passed

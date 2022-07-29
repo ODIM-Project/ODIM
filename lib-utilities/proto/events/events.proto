@@ -16,7 +16,7 @@ syntax = "proto3";
 
 service Events {
     rpc GetEventService(EventSubRequest) returns (EventSubResponse) {}
-    rpc     SubmitTestEvent(EventSubRequest) returns (EventSubResponse) {}
+    rpc SubmitTestEvent(EventSubRequest) returns (EventSubResponse) {}
     rpc CreateEventSubscription(EventSubRequest) returns (EventSubResponse) {}
     rpc GetEventSubscription(EventRequest) returns (EventSubResponse) {}
     rpc DeleteEventSubscription(EventRequest) returns (EventSubResponse) {}

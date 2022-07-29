@@ -10845,7 +10845,7 @@ curl -i POST \
 |/redfish/v1/Fabrics|All fabric resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/Managers|All manager resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/TaskService/Tasks|All tasks scheduled by or being executed by Redfish `TaskService`. By subscribing to Redfish tasks, you can receive task status change notifications on the subscribed destination client.<br> By specifying the task URIs as `OriginResources` and `EventTypes` as `StatusChange`, you can receive notifications automatically when the tasks are complete.<br> To check the status of a specific task manually, perform HTTP `GET` on its task monitor until the task is complete.<br> |
-| /redfish/v1/Aggregates                          |All aggregates available in Resource Aggregator for ODIM for which the service sends only related events. |
+| /redfish/v1/Aggregates/{AggregateId}         |Individual aggregate available in Resource Aggregator for ODIM for which the service sends only related events. |
 
 **Event types**
 

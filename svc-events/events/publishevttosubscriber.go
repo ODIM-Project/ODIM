@@ -572,10 +572,7 @@ func (e *ExternalInterfaces) checkUndeliveredEvents(destination string) {
 		if err != nil {
 			log.Error("error while setting undelivered events flag: ", err.Error())
 		}
-		destData, err := e.GetAllMatchingDetails(evmodel.UndeliveredEvents, destination, common.OnDisk)
-		if err != nil {
-			log.Error("No matching details found")
-		}
+		destData, _ := e.GetAllMatchingDetails(evmodel.UndeliveredEvents, destination, common.OnDisk)
 		for _, dest := range destData {
 			event, err := e.GetUndeliveredEvents(dest)
 			if err != nil {

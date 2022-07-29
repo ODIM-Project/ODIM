@@ -29,6 +29,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	// aggregateHostIndex is a index name which required for indexing
+	// aggregateHost of device
+	aggregateHostIndex = common.AggregateSubscriptionIndex
+)
+
 //Schema model is used to iterate throgh the schema json for search/filter
 type Schema struct {
 	SearchKeys    []map[string]map[string]string `json:"searchKeys"`
@@ -282,6 +288,7 @@ func GenericSave(body []byte, table string, key string) error {
 		log.Error("GenericSave : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
+
 	if err = connPool.AddResourceData(table, key, string(body)); err != nil {
 		log.Error("GenericSave : error while trying to add resource date to DB: " + err.Error())
 		return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
@@ -434,6 +441,17 @@ func DeleteSystem(key string) *errors.Error {
 	//Delete All resources
 	if err = connPool.DeleteServer(deleteKey); err != nil {
 		return errors.PackError(err.ErrNo(), "error while trying to delete compute system: ", err.Error())
+	}
+	//Added logic to remove simpleupdate key from inmemory after removing the server
+	var simleUpdateData []string
+	if simleUpdateData, err = connPool.GetAllMatchingDetails("SimpleUpdate", key); err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to get simleUpdate details: ", err.Error())
+	}
+
+	if len(simleUpdateData) > 0 {
+		if err = connPool.Delete("SimpleUpdate", key); err != nil {
+			return errors.PackError(errors.UndefinedErrorType, err)
+		}
 	}
 	return nil
 }
@@ -1136,6 +1154,19 @@ func DeleteMetricRequest(key string) *errors.Error {
 	err = conn.Delete("ActiveMetricRequest", key)
 	if err != nil {
 		return errors.PackError(err.ErrNo(), "error: while trying to delete active connection details: ", err.Error())
+	}
+	return nil
+}
+
+// AddAggregateHostIndex add aggregate hosts
+func AddAggregateHostIndex(uuid string, hostIP []string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	err1 := conn.CreateAggregateHostIndex(aggregateHostIndex, uuid, hostIP)
+	if err1 != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to add aggregate: ", err.Error())
 	}
 	return nil
 }

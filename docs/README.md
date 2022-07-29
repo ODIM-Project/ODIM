@@ -2037,7 +2037,6 @@ location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-af
    | <strong>Response Code</strong>  | On success, `202 Accepted`<br>On successful completion of the task, `201 Created` <br> |
    | <strong>Authentication</strong> | Yes                                                          |
 
-
 **Usage information**
 
 1. Perform HTTP `POST` on the mentioned URI with a request body specifying a connection method to use for adding the BMC. To know about connection methods, see *[Connection methods](#connection-methods)*.			
@@ -5052,16 +5051,17 @@ curl -i -X POST \
    -H "Content-Type:application/json" \
    -d \
 '{
-   "Name":"Volume_Demo",
    "RAIDType":"RAID1",
-   "Drives":[
+   "Links":{
+     "Drives":[
       {
          "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/0"
       },
       {
          "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/1"
       }
-   ],
+   ]
+ }, 
    "@Redfish.OperationApplyTime":"OnReset"
 }' \
  'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes'
@@ -5073,16 +5073,17 @@ curl -i -X POST \
 
 ```
 {
-   "Name":"Volume_Demo",
    "RAIDType":"RAID1",
-   "Drives":[
+   "Links":{
+     "Drives":[
       {
          "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Drives/0"
       },
       {
          "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Drives/1"
       }
-   ],
+   ]
+  },
    "@Redfish.OperationApplyTime":"OnReset"
 }
 ```
@@ -5091,10 +5092,10 @@ curl -i -X POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Name|String (required)<br> |Name of the new volume.|
-|RAIDType|String (required)<br> |The RAID type of the volume you want to create.|
+|RAIDType|String (required)<br>|The RAID type of the volume you want to create.|
+|Links {|Object (required)|Links to individual drives.|
 |Drives[{|Array (required)<br> |An array of links to drive resources to contain the new volume.|
-|@odata.id }]<br> |String|A link to a drive resource.|
+|@odata.id }]}<br> |String|A link to a drive resource.|
 |@Redfish.OperationApplyTime|Redfish annotation (optional)<br> | It enables you to control when the operation is carried out.<br> Supported values: `OnReset` and `Immediate`.<br> `OnReset` indicates that the new volume is available only after you successfully reset the system. To know how to reset a system, see [Resetting a computer system](#resetting-a-computer-system).<br>`Immediate` indicates that the created volume is available in the system immediately after the operation is successfully complete. |
 
 >**Sample response body** 
@@ -5104,7 +5105,7 @@ curl -i -X POST \
       "error":{
             "@Message.ExtendedInfo":[
                   {
-                        "MessageId": "Base.1.4.Success"            
+                        "MessageId": "Base.1.13.Success"            
          }         
       ],
             "code":"iLO.0.10.ExtendedInfo",
@@ -5113,7 +5114,7 @@ curl -i -X POST \
 }
 ```
 
-> **NOTE**: Reset your system only if prompted in your response message id. After the system reset, the new volume is available. For a success message id, system reset is not required.
+> **NOTE**: Reset your system only if prompted in your response message id. After the system reset, the new volume is available. In case of successful message id in the response, system reset is not required.
 
 ### Deleting a volume
 
@@ -6733,8 +6734,8 @@ This filter searches a server having total physical memory of 384 GB and two Int
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset` |
 |**Description** |This action shuts down, powers up, and restarts a specific system.<br>**NOTE:** To reset an aggregate of systems, use the following URI:<br>`/redfish/v1/AggregationService/Actions/AggregationService.Reset` <br> See [Resetting servers](#resetting-servers).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file. Registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. **Example registry file name**: Base.1.4. See [Message Registries](#message-registries).|
-|**Response code** | `200 OK` |
+|**Returns** |A Redfish task in the response header and you receive a link to the task monitor associated with it. To know the progress of this operation, perform an `HTTP GET` on the task monitor (until the task is complete).|
+|**Response code** | `202 Accepted`. On successful completion, `200 OK`. |
 |**Authentication** |Yes|
 
 
@@ -6769,13 +6770,13 @@ See [Resetting Servers](#resetting-servers) to know about `ResetType.`
 
 ```
 {
-	"error": {
-		"@Message.ExtendedInfo": [{
-			"MessageId": "Base.1.13.0.Success"
-		}],
-		"code": "iLO.0.10.ExtendedInfo",
-		"message": "See @Message.ExtendedInfo for more information."
-	}
+    "error": {
+        "@Message.ExtendedInfo": [{
+            "MessageId": "Base.1.13.Success"
+        }],
+        "code": "iLO.0.10.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information."
+    }
 }
 ```
 

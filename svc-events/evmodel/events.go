@@ -449,11 +449,6 @@ func SaveEventSubscription(evtSubscription Subscription) error {
 
 // GetEvtSubscriptions is to get event subscription details
 func GetEvtSubscriptions(searchKey string) ([]Subscription, error) {
-	if strings.Contains(searchKey, "[") {
-		searchKey = strings.Replace(searchKey, "[", "\\[", -1)
-		searchKey = strings.Replace(searchKey, "]", "\\]", -1)
-
-	}
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -635,7 +630,7 @@ func GetAggregateHosts(aggregateIP string) ([]string, error) {
 	if gerr != nil {
 		return nil, fmt.Errorf("error while trying to get aggregate host of device %v", gerr.Error())
 	}
-	devSub := strings.Split(aggregateList[0], "::")
+	devSub := strings.Split(aggregateList[0], "||")
 	hostsIP := getSliceFromString(devSub[1])
 	return hostsIP, nil
 }

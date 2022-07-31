@@ -40,6 +40,13 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+var (
+	//UpdateSubscription ...
+	UpdateSubscription = updateSubscription
+	//RemoveSubscription ...
+	RemoveSubscription = removeSubscription
+)
+
 //ResetRequest is struct for reset of elements of an aggregate
 type ResetRequest struct {
 	BatchSize                    int    `json:"BatchSize"`
@@ -301,7 +308,10 @@ func (e *ExternalInterface) AddElementsToAggregate(req *aggregatorproto.Aggregat
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
-	updateSubscription(aggregateID, addRequest.Elements, req.SessionToken)
+	err = UpdateSubscription(aggregateID, addRequest.Elements, req.SessionToken)
+	if err != nil {
+		log.Error("Error occured while update subscription ", err)
+	}
 	commonResponse := response.Response{
 		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      aggregateURL,
@@ -377,7 +387,10 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(req *aggregatorproto.Agg
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
-	removeSubscription(aggregateID, removeRequest.Elements, req.SessionToken)
+	err = RemoveSubscription(aggregateID, removeRequest.Elements, req.SessionToken)
+	if err != nil {
+		log.Error("Error occured while update subscription ", err)
+	}
 	commonResponse := response.Response{
 		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      aggregateURL,

@@ -749,6 +749,7 @@ func (e *ExternalInterfaces) DeleteSubscriptions(originResource, token string, p
 	var resp errResponse.RPC
 	var err error
 	var deviceSubscription *evmodel.DeviceSubscription
+
 	addr, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
 	if errorMessage != "" {
 		evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
@@ -758,6 +759,7 @@ func (e *ExternalInterfaces) DeleteSubscriptions(originResource, token string, p
 	}
 	searchKey := evcommon.GetSearchKey(addr, evmodel.DeviceSubscriptionIndex)
 	deviceSubscription, err = e.GetDeviceSubscriptions(searchKey)
+
 	if err != nil {
 		// if its first subscription then no need to check events subscribed
 		if strings.Contains(err.Error(), "No data found for the key") {
@@ -802,7 +804,6 @@ func (e *ExternalInterfaces) DeleteSubscriptions(originResource, token string, p
 	if err != nil {
 		return resp, err
 	}
-
 	return resp, nil
 }
 
@@ -1142,4 +1143,291 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 	resp.StatusCode = response.StatusCode
 	resp.Location = response.Header.Get("location")
 	return deviceIPAddress, resp
+}
+
+// UpdateEventSubscriptions it will add subscription for newly Added system in aggregate
+func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpdateRequest, isRemove bool) error {
+	// var resp response.RPC
+	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		return nil
+	}
+	var plugin *evmodel.Plugin
+	var contactRequest evcommon.PluginContactRequest
+	var target *evmodel.Target
+
+	target, _, err := e.getTargetDetails(req.SystemID)
+	if err != nil {
+		return err
+	}
+	var errs *errors.Error
+	plugin, errs = e.GetPluginData(target.PluginID)
+	if errs != nil {
+		errorMessage := "error while getting plugin data: " + errs.Error()
+		log.Info(errorMessage)
+		return err
+	}
+
+	contactRequest.Plugin = plugin
+	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+		token := e.getPluginToken(plugin)
+		if token == "" {
+			log.Info("error: Unable to create session with plugin " + plugin.ID)
+			return nil
+		}
+		contactRequest.Token = token
+
+	} else {
+		contactRequest.LoginCredential = map[string]string{
+			"UserName": plugin.Username,
+			"Password": string(plugin.Password),
+		}
+	}
+
+	var httpHeadersSlice = make([]evmodel.HTTPHeaders, 0)
+	httpHeadersSlice = append(httpHeadersSlice, evmodel.HTTPHeaders{ContentType: "application/json"})
+	subscriptionPost := evmodel.EvtSubPost{
+		EventTypes:    []string{},
+		MessageIds:    []string{},
+		ResourceTypes: []string{},
+		OriginResources: []evmodel.OdataIDLink{
+			{
+				OdataID: req.SystemID,
+			},
+		},
+		SubordinateResources: true,
+		Protocol:             "Redfish",
+		SubscriptionType:     evmodel.SubscriptionType,
+		HTTPHeaders:          httpHeadersSlice,
+		Context:              evmodel.Context,
+		DeliveryRetryPolicy:  "RetryForever",
+		EventFormatType:      "Event",
+	}
+	_, err = e.UpdateEventsSubscribed("", req.SystemID, &subscriptionPost, plugin, target, false, "", true, req.AggregateId, isRemove)
+	if err != nil {
+
+		return err
+	}
+	postBody, _ := json.Marshal(subscriptionPost)
+	var reqData string
+	//replacing the reruest url with south bound translation URL
+	for key, value := range config.Data.URLTranslation.SouthBoundURL {
+		reqData = strings.Replace(string(postBody), key, value, -1)
+	}
+
+	target.PostBody = []byte(reqData)
+	contactRequest.URL = "/ODIM/v1/Subscriptions"
+	contactRequest.HTTPMethodType = http.MethodPost
+	contactRequest.PostBody = target
+
+	log.Info("Subscription Request: " + reqData)
+	response, err := e.callPlugin(contactRequest)
+	if err != nil {
+		if evcommon.GetPluginStatus(plugin) {
+			response, err = e.callPlugin(contactRequest)
+		}
+		if err != nil {
+			errorMessage := "error while unmarshaling the body : " + err.Error()
+			log.Info(errorMessage)
+			return err
+		}
+	}
+	defer response.Body.Close()
+	log.Info("Subscription Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
+	if response.StatusCode != http.StatusCreated {
+		body, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			errorMessage := "error while trying to read response body: " + err.Error()
+			log.Info(errorMessage)
+			return nil
+		}
+		log.Info("Subscription Response: " + string(body))
+		var res interface{}
+		err = json.Unmarshal(body, &res)
+		if err != nil {
+			errorMessage := "error while unmarshaling the body : " + err.Error()
+			log.Error(errorMessage)
+			return nil
+		}
+
+		errorMessage := "error while trying to create event subscription"
+		log.Error(errorMessage)
+		return nil
+	}
+	// if Subscription location is empty then don't store event details in DB
+	locationHdr := response.Header.Get("location")
+	if locationHdr == "" {
+		errorMessage := "Subscription Location is missing in the response header"
+		log.Info(errorMessage)
+		return nil
+	}
+	// get the ip address from the host name
+	deviceIPAddress, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
+	if errorMessage != "" {
+		log.Info(errorMessage)
+	}
+	log.Info("Saving device subscription details : ", deviceIPAddress)
+	evtSubscription := evmodel.Subscription{
+		Location:       locationHdr,
+		EventHostIP:    deviceIPAddress,
+		OriginResource: req.SystemID,
+	}
+
+	host, _, err := net.SplitHostPort(target.ManagerAddress)
+	if err != nil {
+		host = target.ManagerAddress
+	}
+	if !(strings.Contains(locationHdr, host)) {
+		evtSubscription.Location = "https://" + target.ManagerAddress + locationHdr
+	}
+	err = e.saveDeviceSubscriptionDetails(evtSubscription)
+	if err != nil {
+		errorMessage := "error while trying to save event subscription of device data: " + err.Error()
+		log.Error(errorMessage)
+		return nil
+	}
+
+	return nil
+}
+
+// UpdateEventsSubscribed is to check events already subscribed.
+// if event already subscribed then will do search the subscription details in db against host IP
+// if data found then delete the entry in db and get the event types
+// and also delete the subscription on device also
+// subscription: New Subscription
+// subscriptionDetails : subscription details stored in db for the particular device
+func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscription *evmodel.EvtSubPost, plugin *evmodel.Plugin, target *evmodel.Target, collectionFlag bool, collectionName string, isAggregate bool, aggregateID string, isRemove bool) (errResponse.RPC, error) {
+	var resp errResponse.RPC
+	var err error
+	var host, originResource, searchKey string
+	// if Origin is collection then setting host with collection name
+	if collectionFlag {
+		host = collectionName
+		searchKey = collectionName
+	} else {
+		host1, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
+		host = host1
+		if errorMessage != "" {
+			evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
+				[]interface{}{"ManagerAddress", target.ManagerAddress}, &resp)
+			log.Error(errorMessage)
+			return resp, err
+		}
+		log.Info("After look up, manager address is: ", host)
+		searchKey = evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
+	}
+	// uniqueMap is to ignore duplicate eventTypes
+	// evevntTypes from request  and eventTypes from the all destinations stored in the DB
+	uniqueMap := make(map[string]string)
+
+	// add all events to map to remove duplicate eventTypes
+	// this need to be remove after the desination uniquness check added
+	for _, eventType := range subscription.EventTypes {
+		uniqueMap[eventType] = eventType
+	}
+	var (
+		eventTypes    = subscription.EventTypes
+		messageIDs    = subscription.MessageIds
+		resourceTypes = subscription.ResourceTypes
+	)
+	originResource = origin
+	subscriptionDetails, err := e.GetEvtSubscriptions(searchKey)
+	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
+		errorMessage := "Error while get subscription details: " + err.Error()
+		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
+			[]interface{}{}, &resp)
+		log.Error(errorMessage)
+		return resp, err
+	}
+	var subscriptionPresent, isAggregateSubsctionPresent bool
+	var aggragteSubscriptionDetails []evmodel.Subscription
+	// get all aggregate subscription
+	if isAggregate {
+
+		searchKeyAgg := evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
+
+		aggregateList, err := e.GetAggregateList(searchKeyAgg)
+		if err != nil {
+			log.Info("No Aggregate subscription Found ", err)
+		}
+		for _, id := range aggregateList {
+			if isRemove {
+				if id == aggregateID {
+					continue
+				}
+			}
+			searchKey = evcommon.GetSearchKey(id, evmodel.SubscriptionIndex)
+			aggragteSubscriptionDetails, err = e.GetEvtSubscriptions(searchKey)
+			if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
+				log.Info("Error while get aggragteSubscriptionDetails details: " + err.Error())
+			}
+			for index, evtSubscriptions := range aggragteSubscriptionDetails {
+				if isHostPresent(evtSubscriptions.Hosts, aggregateID) {
+					isAggregateSubsctionPresent = true
+					if len(evtSubscriptions.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
+						eventTypes = append(eventTypes, evtSubscriptions.EventTypes...)
+					}
+					if len(evtSubscriptions.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
+						messageIDs = append(messageIDs, evtSubscriptions.MessageIds...)
+					}
+					if len(evtSubscriptions.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
+						resourceTypes = append(resourceTypes, evtSubscriptions.ResourceTypes...)
+					}
+				}
+			}
+
+		}
+	}
+
+	// if there is no subscription happened then create event subscription
+
+	if len(subscriptionDetails) < 1 && len(aggragteSubscriptionDetails) < 1 {
+		return resp, nil
+	}
+	for index, evtSubscriptions := range subscriptionDetails {
+		if isHostPresent(evtSubscriptions.Hosts, host) {
+			subscriptionPresent = true
+			fmt.Println("Subscription ")
+			if len(evtSubscriptions.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
+				eventTypes = append(eventTypes, evtSubscriptions.EventTypes...)
+			}
+			if len(evtSubscriptions.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
+				messageIDs = append(messageIDs, evtSubscriptions.MessageIds...)
+			}
+
+			if len(evtSubscriptions.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
+				resourceTypes = append(resourceTypes, evtSubscriptions.ResourceTypes...)
+			}
+
+		}
+	}
+	if !subscriptionPresent && !isAggregateSubsctionPresent {
+		return resp, nil
+	}
+	if !collectionFlag {
+		log.Info("Delete Subscription from device")
+		if strings.Contains(originResource, "Fabrics") {
+			resp, err = e.DeleteFabricsSubscription(originResource, plugin)
+			if err != nil {
+				return resp, err
+			}
+		} else {
+			resp, err = e.DeleteSubscriptions(originResource, token, plugin, target)
+			if err != nil {
+				return resp, err
+			}
+		}
+	}
+	// updating the subscritpion information
+	eventTypesCount := len(eventTypes)
+	messageIDsCount := len(messageIDs)
+	resourceTypesCount := len(resourceTypes)
+	removeDuplicatesFromSlice(&eventTypes, &eventTypesCount)
+	removeDuplicatesFromSlice(&messageIDs, &messageIDsCount)
+	removeDuplicatesFromSlice(&resourceTypes, &resourceTypesCount)
+	subscription.EventTypes = eventTypes
+	subscription.MessageIds = messageIDs
+	subscription.ResourceTypes = resourceTypes
+	return resp, nil
 }

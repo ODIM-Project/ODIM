@@ -417,6 +417,9 @@ func TestExternalInterface_AddElementsToAggregate(t *testing.T) {
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
 
 	p := getMockExternalInterface()
+	UpdateSubscription = func(aggragateID string, systemID []agmodel.OdataID, session string) error {
+		return nil
+	}
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}
@@ -566,7 +569,9 @@ func TestExternalInterface_RemoveElementsFromAggregate(t *testing.T) {
 	})
 
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
-
+	RemoveSubscription = func(aggragateID string, systemID []agmodel.OdataID, session string) error {
+		return nil
+	}
 	p := getMockExternalInterface()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest

@@ -1170,3 +1170,61 @@ func AddAggregateHostIndex(uuid string, hostIP []string) error {
 	}
 	return nil
 }
+
+// AddNewHostToAggregateHostIndex add aggregate hosts
+func AddNewHostToAggregateHostIndex(aggregateID string, hostIP string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	aggreagtes, err1 := conn.GetAggregateHosts(aggregateHostIndex, aggregateID+"[^0-9]*")
+	if err != nil {
+		return err1
+	}
+	devSub := strings.Split(aggreagtes[0], "::")
+	ips := getSliceFromString(devSub[1])
+	isUpdate := true
+	for _, ip := range ips {
+		if hostIP == ip {
+			isUpdate = false
+			break
+		}
+	}
+	if isUpdate {
+		ips = append(ips, hostIP)
+		err1 = conn.UpdateAggregateHosts(aggregateHostIndex, aggregateID, ips)
+		if err1 != nil {
+			return errors.PackError(err.ErrNo(), "error: while trying to add aggregate: ", err.Error())
+		}
+	}
+	return nil
+}
+
+// RemoveNewIPToAggregateHostIndex remove existing host ip from aggregate
+func RemoveNewIPToAggregateHostIndex(aggregateID string, hostIP string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	aggreagtes, err1 := conn.GetAggregateHosts(aggregateHostIndex, aggregateID+"[^0-9]*")
+	if err != nil {
+		return err1
+	}
+	devSub := strings.Split(aggreagtes[0], "::")
+	ips := getSliceFromString(devSub[1])
+	ips = removeIps(ips, hostIP)
+	err1 = conn.UpdateAggregateHosts(aggregateHostIndex, aggregateID, ips)
+	if err1 != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to add aggregate: ", err.Error())
+	}
+	return nil
+}
+
+func removeIps(ips []string, ip string) (updatedIps []string) {
+	for index, v := range ips {
+		if v == ip {
+			return append(ips[:index], ips[index+1:]...)
+		}
+	}
+	return ips
+}

@@ -665,3 +665,17 @@ func removeDuplicatesFromSubscription(subscriptions []evmodel.Subscription) []ev
 	}
 	return uniqueElemenstsList
 }
+
+// RemoveEventSubscriptions it will removed subscription for Newly Added system in aggregate
+func (e *ExternalInterfaces) RemoveEventSubscriptions(req *eventsproto.EventUpdateRequest) error {
+	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		return nil
+	}
+
+	fmt.Println("Remove Element is called ********* ", req.AggregateId, req.SystemID)
+
+	return nil
+
+}

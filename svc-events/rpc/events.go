@@ -371,3 +371,29 @@ func generateTaskRespone(taskID, taskURI string, resp *eventsproto.EventSubRespo
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
 	resp.Body = generateResponse(commonResponse)
 }
+
+//RemoveEventSubscriptionsRPC defines the operations which handles the RPC request response
+// it subscribe to the given event message bus queues
+func (e *Events) RemoveEventSubscriptionsRPC(ctx context.Context, req *eventsproto.EventUpdateRequest) (*eventsproto.SubscribeEMBResponse, error) {
+	var resp eventsproto.SubscribeEMBResponse
+	e.Connector.UpdateEventSubscriptions(req, true)
+	resp.Status = true
+	return &resp, nil
+}
+
+//UpdateEventSubscriptionsRPC defines the operations which handles the RPC request response
+// it subscribe to the given event message bus queues
+func (e *Events) UpdateEventSubscriptionsRPC(ctx context.Context, req *eventsproto.EventUpdateRequest) (*eventsproto.SubscribeEMBResponse, error) {
+	var resp eventsproto.SubscribeEMBResponse
+	resp.Status = true
+	e.Connector.UpdateEventSubscriptions(req, false)
+	return &resp, nil
+}
+
+//IsAggregateHaveSubscription defines the operations which handles the RPC request response
+func (e *Events) IsAggregateHaveSubscription(ctx context.Context, req *eventsproto.EventUpdateRequest) (*eventsproto.SubscribeEMBResponse, error) {
+	var resp eventsproto.SubscribeEMBResponse
+	isAvailable := e.Connector.IsAggregateHaveSubscription(req)
+	resp.Status = isAvailable
+	return &resp, nil
+}

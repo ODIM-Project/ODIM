@@ -1942,7 +1942,7 @@ For more information such as curl command, sample request, and sample response, 
 
 ## Searching the inventory for specific BMCs
 
-To search servers in the inventory based on specific criteria, perform HTTP `GET` on the following URI. Specify the search criteria in the URI.
+To search BMCs in the inventory based on specific criteria, perform HTTP `GET` on the following URI. Specify the search criteria in the URI.
 
 
 `/redfish/v1/Systems?$filter={searchKeys}%20{conditionKeys}%20{value/regular_expression}%20{logicalOperand}%20{searchKeys}%20{conditionKeys}%20{value}`
@@ -1951,10 +1951,10 @@ To search servers in the inventory based on specific criteria, perform HTTP `GET
 Example:
 
 
-`redfish/v1/Systems?filter=MemorySummary/TotalSystemMemoryGiB%20eq%20384`
+`/redfish/v1/Systems?filter=MemorySummary/TotalSystemMemoryGiB%20eq%20384`
 
 
-This URI searches the inventory for servers having total physical memory of 384 GB. On successful completion, it provides links to the filtered servers.
+This URI searches the inventory for BMCs having total physical memory of 384 GB. On successful completion, it provides links to the filtered BMCs.
 
 For more information such as curl command, sample request, and sample response, see "Search and filter" in [Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs).
 

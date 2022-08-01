@@ -50,20 +50,20 @@ func TestDoGetEventService(t *testing.T) {
 		wantErr             bool
 	}{
 		{
-			name:                 "Client func error",
-			args:                 args{},
-			ClientFunc:           func(clientName string) (*grpc.ClientConn, error) { return nil, errors.New("fakeError") },
+			name:                "Client func error",
+			args:                args{},
+			ClientFunc:          func(clientName string) (*grpc.ClientConn, error) { return nil, errors.New("fakeError") },
 			NewEventsClientFunc: func(cc *grpc.ClientConn) eventsproto.EventsClient { return nil },
-			want:                 nil,
-			wantErr:              true,
+			want:                nil,
+			wantErr:             true,
 		},
 		{
-			name:                 "GetEventService error",
-			args:                 args{},
-			ClientFunc:           func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
+			name:                "GetEventService error",
+			args:                args{},
+			ClientFunc:          func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
 			NewEventsClientFunc: func(cc *grpc.ClientConn) eventsproto.EventsClient { return fakeStruct{} },
-			want:                 nil,
-			wantErr:              true,
+			want:                nil,
+			wantErr:             true,
 		},
 	}
 	for _, tt := range tests {
@@ -95,20 +95,20 @@ func TestDoCreateEventSubscription(t *testing.T) {
 		wantErr             bool
 	}{
 		{
-			name:                 "Client func error",
-			args:                 args{},
-			ClientFunc:           func(clientName string) (*grpc.ClientConn, error) { return nil, errors.New("fakeError") },
+			name:                "Client func error",
+			args:                args{},
+			ClientFunc:          func(clientName string) (*grpc.ClientConn, error) { return nil, errors.New("fakeError") },
 			NewEventsClientFunc: func(cc *grpc.ClientConn) eventsproto.EventsClient { return nil },
-			want:                 nil,
-			wantErr:              true,
+			want:                nil,
+			wantErr:             true,
 		},
 		{
-			name:                 "CreateEventSubscription error",
-			args:                 args{},
-			ClientFunc:           func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
+			name:                "CreateEventSubscription error",
+			args:                args{},
+			ClientFunc:          func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
 			NewEventsClientFunc: func(cc *grpc.ClientConn) eventsproto.EventsClient { return fakeStruct{} },
-			want:                 nil,
-			wantErr:              true,
+			want:                nil,
+			wantErr:             true,
 		},
 	}
 	for _, tt := range tests {
@@ -140,20 +140,20 @@ func TestDoSubmitTestEvent(t *testing.T) {
 		wantErr             bool
 	}{
 		{
-			name:                 "Client func error",
-			args:                 args{},
-			ClientFunc:           func(clientName string) (*grpc.ClientConn, error) { return nil, errors.New("fakeError") },
+			name:                "Client func error",
+			args:                args{},
+			ClientFunc:          func(clientName string) (*grpc.ClientConn, error) { return nil, errors.New("fakeError") },
 			NewEventsClientFunc: func(cc *grpc.ClientConn) eventsproto.EventsClient { return nil },
-			want:                 nil,
-			wantErr:              true,
+			want:                nil,
+			wantErr:             true,
 		},
 		{
-			name:                 "SubmitTestEvent error",
-			args:                 args{},
-			ClientFunc:           func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
+			name:                "SubmitTestEvent error",
+			args:                args{},
+			ClientFunc:          func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
 			NewEventsClientFunc: func(cc *grpc.ClientConn) eventsproto.EventsClient { return fakeStruct{} },
-			want:                 nil,
-			wantErr:              true,
+			want:                nil,
+			wantErr:             true,
 		},
 	}
 	for _, tt := range tests {
@@ -185,20 +185,20 @@ func TestDoGetEventSubscription(t *testing.T) {
 		wantErr             bool
 	}{
 		{
-			name:                 "Client func error",
-			args:                 args{},
-			ClientFunc:           func(clientName string) (*grpc.ClientConn, error) { return nil, errors.New("fakeError") },
+			name:                "Client func error",
+			args:                args{},
+			ClientFunc:          func(clientName string) (*grpc.ClientConn, error) { return nil, errors.New("fakeError") },
 			NewEventsClientFunc: func(cc *grpc.ClientConn) eventsproto.EventsClient { return nil },
-			want:                 nil,
-			wantErr:              true,
+			want:                nil,
+			wantErr:             true,
 		},
 		{
-			name:                 "GetEventSubscription error",
-			args:                 args{},
-			ClientFunc:           func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
+			name:                "GetEventSubscription error",
+			args:                args{},
+			ClientFunc:          func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
 			NewEventsClientFunc: func(cc *grpc.ClientConn) eventsproto.EventsClient { return fakeStruct{} },
-			want:                 nil,
-			wantErr:              true,
+			want:                nil,
+			wantErr:             true,
 		},
 	}
 	for _, tt := range tests {
@@ -230,20 +230,20 @@ func TestDoDeleteEventSubscription(t *testing.T) {
 		wantErr             bool
 	}{
 		{
-			name:                 "Client func error",
-			args:                 args{},
-			ClientFunc:           func(clientName string) (*grpc.ClientConn, error) { return nil, errors.New("fakeError") },
+			name:                "Client func error",
+			args:                args{},
+			ClientFunc:          func(clientName string) (*grpc.ClientConn, error) { return nil, errors.New("fakeError") },
 			NewEventsClientFunc: func(cc *grpc.ClientConn) eventsproto.EventsClient { return nil },
-			want:                 nil,
-			wantErr:              true,
+			want:                nil,
+			wantErr:             true,
 		},
 		{
-			name:                 "DeleteEventSubscription error",
-			args:                 args{},
-			ClientFunc:           func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
+			name:                "DeleteEventSubscription error",
+			args:                args{},
+			ClientFunc:          func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
 			NewEventsClientFunc: func(cc *grpc.ClientConn) eventsproto.EventsClient { return fakeStruct{} },
-			want:                 nil,
-			wantErr:              true,
+			want:                nil,
+			wantErr:             true,
 		},
 	}
 	for _, tt := range tests {
@@ -275,20 +275,20 @@ func TestDoGetEventSubscriptionsCollection(t *testing.T) {
 		wantErr             bool
 	}{
 		{
-			name:                 "Client func error",
-			args:                 args{},
-			ClientFunc:           func(clientName string) (*grpc.ClientConn, error) { return nil, errors.New("fakeError") },
+			name:                "Client func error",
+			args:                args{},
+			ClientFunc:          func(clientName string) (*grpc.ClientConn, error) { return nil, errors.New("fakeError") },
 			NewEventsClientFunc: func(cc *grpc.ClientConn) eventsproto.EventsClient { return nil },
-			want:                 nil,
-			wantErr:              true,
+			want:                nil,
+			wantErr:             true,
 		},
 		{
-			name:                 "GetEventSubscriptionsCollection error",
-			args:                 args{},
-			ClientFunc:           func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
+			name:                "GetEventSubscriptionsCollection error",
+			args:                args{},
+			ClientFunc:          func(clientName string) (*grpc.ClientConn, error) { return nil, nil },
 			NewEventsClientFunc: func(cc *grpc.ClientConn) eventsproto.EventsClient { return fakeStruct{} },
-			want:                 nil,
-			wantErr:              true,
+			want:                nil,
+			wantErr:             true,
 		},
 	}
 	for _, tt := range tests {

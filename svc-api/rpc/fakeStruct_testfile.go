@@ -7,6 +7,7 @@ import (
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
+	"github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
@@ -154,6 +155,20 @@ func (fakeStruct) GetResetActionInfoService(ctx context.Context, in *aggregatorp
 }
 
 func (fakeStruct) GetSetDefaultBootOrderActionInfo(ctx context.Context, in *aggregatorproto.AggregatorRequest, opts ...grpc.CallOption) (*aggregatorproto.AggregatorResponse, error) {
+
+	return nil, errors.New("fakeError")
+}
+
+func (fakeStruct) IsAggregateHaveSubscription(ctx context.Context, in *events.EventUpdateRequest, opts ...grpc.CallOption) (*events.SubscribeEMBResponse, error) {
+
+	return nil, errors.New("fakeError")
+}
+
+func (fakeStruct) RemoveEventSubscriptionsRPC(ctx context.Context, in *events.EventUpdateRequest, opts ...grpc.CallOption) (*events.SubscribeEMBResponse, error) {
+
+	return nil, errors.New("fakeError")
+}
+func (fakeStruct) UpdateEventSubscriptionsRPC(ctx context.Context, in *events.EventUpdateRequest, opts ...grpc.CallOption) (*events.SubscribeEMBResponse, error) {
 
 	return nil, errors.New("fakeError")
 }

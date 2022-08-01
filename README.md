@@ -443,7 +443,7 @@ The following table lists the software components and versions that are compatib
 	   ```
 	   If the images are built successfully, you get an output similar to the following sample:
 	   
-	   <img src="docs/images/odimra_images.png" style="zoom:95%;"   >
+	   <img src="docs/images/odimra_images.png" style="zoom:55%;"   >
 	   
 	7. Pull the reloader and busybox images:
 	   

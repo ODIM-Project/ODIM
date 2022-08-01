@@ -1152,7 +1152,7 @@ func (p *ConnPool) CreateDeviceSubscriptionIndex(index, hostIP, location string,
 	defer writeConn.Close()
 	const value = 0
 	originResourceStr := "[" + strings.Join(originResources, " ") + "]"
-	key := hostIP + "::" + location + "::" + originResourceStr
+	key := hostIP + "||" + location + "||" + originResourceStr
 	// escape the square brackets before scanning
 	searchKey := strings.Replace(key, "[", "\\[", -1)
 	searchKey = strings.Replace(searchKey, "]", "\\]", -1)
@@ -1426,7 +1426,7 @@ func (p *ConnPool) CreateAggregateHostIndex(index, aggregateID string, hostIP []
 	defer writeConn.Close()
 	const value = 0
 	originResourceStr := "[" + strings.Join(hostIP, " ") + "]"
-	key := aggregateID + "::" + originResourceStr
+	key := aggregateID + "||" + originResourceStr
 	createErr := writeConn.Send("ZADD", index, value, key)
 	if createErr != nil {
 		return createErr

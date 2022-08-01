@@ -109,7 +109,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 
 	// check any of the subscription present for the destination from the request
 	// if errored out or no subscriptions then add subscriptions else return an error
-	subscriptionDetails, err := e.GetEvtSubscriptions(postRequest.Destination)
+	subscriptionDetails, err := e.GetEvtSubscriptions("")
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		errorMessage := "Error while get subscription details: " + err.Error()
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,

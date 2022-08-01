@@ -128,7 +128,7 @@
       apiServerList: "{{ serverlist|join('\n')|indent(8, True) }}"
       virtualIPv6: "{{ odimra.virtualIPv6 }}"
       apiNodePort: "{{ odimra.apiNodePort }}"
-      selfNodeIPv6: "{{ hostvars[inventory_hostname].ipv6 }}"
+      selfNodeIPv6: "{{ hostvars[inventory_hostname].ip6 }}"
   when: nwPreference == 'dualStack'
   
 - name: Get list of plugins under plugin helm charts path

@@ -732,6 +732,15 @@ func mockSystemResourceData(body []byte, table, key string) error {
 	}
 	return nil
 }
+func mockData(t *testing.T, dbType common.DbType, table, id string, data interface{}) {
+	connPool, err := common.GetDBConnection(dbType)
+	if err != nil {
+		t.Fatalf("error: mockData() failed to DB connection: %v", err)
+	}
+	if err = connPool.Create(table, id, data); err != nil {
+		t.Fatalf("error: mockData() failed to create entry %s-%s: %v", table, id, err)
+	}
+}
 
 func TestAggregator_CreateAggregate(t *testing.T) {
 	common.MuxLock.Lock()
@@ -741,7 +750,8 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-
+	mockData(t, common.OnDisk, "System", "6d4a0a66-7efa-578e-83cf-44dc68d2874e", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e"})
+	mockData(t, common.OnDisk, "System", "c14d91b5-3333-48bb-a7b7-75f74a137d48", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "c14d91b5-3333-48bb-a7b7-75f74a137d48"})
 	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"})
 	err := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
 	if err != nil {

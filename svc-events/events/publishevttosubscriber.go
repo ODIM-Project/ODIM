@@ -114,6 +114,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 
 	e.addFabric(requestData, host)
 	searchKey := evcommon.GetSearchKey(host, evmodel.DeviceSubscriptionIndex)
+
 	deviceSubscription, err := e.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		log.Error("Failed to get the event destinations: ", err.Error())
@@ -132,7 +133,20 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 	if err != nil {
 		return false
 	}
+	// Getting Aggregate List
+	searchKeyAgg := evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
 
+	aggregateList, err := e.GetAggregateList(searchKeyAgg)
+	if err != nil {
+		log.Info("No Aggregate subscription Found ", err)
+	}
+	var aggregateSubscriptionList []evmodel.Subscription
+	for _, aggregateID := range aggregateList {
+		searchKeyAgg := evcommon.GetSearchKey(aggregateID, evmodel.SubscriptionIndex)
+
+		subscription, _ := e.GetEvtSubscriptions(searchKeyAgg)
+		aggregateSubscriptionList = append(aggregateSubscriptionList, subscription...)
+	}
 	err = json.Unmarshal([]byte(requestData), &message)
 	if err != nil {
 		log.Error("failed to unmarshal the incoming event: ", requestData, " with the error: ", err.Error())
@@ -162,7 +176,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 				}
 			}
 		} else {
-			log.Info("event not forwarded as originofcondition is empty in ncoming event: ", requestData)
+			log.Info("event not forwarded as originofcondition is empty incoming event: ", requestData)
 			continue
 		}
 
@@ -172,6 +186,12 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 		}
 		collectionSubscriptions := e.getCollectionSubscriptionInfoForOID(inEvent.OriginOfCondition.Oid, host)
 		subscriptions = append(subscriptions, collectionSubscriptions...)
+		for _, sub := range aggregateSubscriptionList {
+			if filterEventsToBeForwarded(sub, inEvent, deviceSubscription.OriginResources) {
+				eventMap[sub.Destination] = append(eventMap[sub.Destination], inEvent)
+				flag = true
+			}
+		}
 		for _, sub := range subscriptions {
 
 			// filter and send events to destination if destination is not empty
@@ -245,7 +265,7 @@ func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.E
 		// if SubordinateResources is true then check if originofresource is top level of originofcondition
 		// if SubordinateResources is flase then check originofresource is same as originofcondition
 		for _, origin := range originResources {
-			if subscription.SubordinateResources == true {
+			if subscription.SubordinateResources {
 				if strings.Contains(originCondition, origin) {
 					return true
 				}
@@ -399,7 +419,6 @@ func (e *ExternalInterfaces) reAttemptEvents(destination, undeliveredEventID str
 	if err != nil {
 		log.Error("error while make https call to send the event: ", err.Error())
 	}
-
 }
 
 // rediscoverSystemInventory will be triggered when ever the System Restart or Power On
@@ -546,20 +565,14 @@ func callPluginStartUp(event common.Events) {
 func (e *ExternalInterfaces) checkUndeliveredEvents(destination string) {
 	// first check any of the instance have already picked up for publishing
 	// undelivered events for the destination
-	flag, err := e.GetUndeliveredEventsFlag(destination)
-	if err != nil {
-		log.Error("error while getting undelivered events flag: ", err.Error())
-	}
+	flag, _ := e.GetUndeliveredEventsFlag(destination)
 	if !flag {
 		// if flag is false then set the flag true, so other instance shouldnt have to read the undelivered events and publish
-		err = e.SetUndeliveredEventsFlag(destination)
+		err := e.SetUndeliveredEventsFlag(destination)
 		if err != nil {
 			log.Error("error while setting undelivered events flag: ", err.Error())
 		}
-		destData, err := e.GetAllMatchingDetails(evmodel.UndeliveredEvents, destination, common.OnDisk)
-		if err != nil {
-			log.Error("No matching details found")
-		}
+		destData, _ := e.GetAllMatchingDetails(evmodel.UndeliveredEvents, destination, common.OnDisk)
 		for _, dest := range destData {
 			event, err := e.GetUndeliveredEvents(dest)
 			if err != nil {

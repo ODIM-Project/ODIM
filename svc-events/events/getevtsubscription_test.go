@@ -61,6 +61,11 @@ func getMockMethods() ExternalInterfaces {
 			SetUndeliveredEventsFlag:         evcommon.MockSetUndeliveredEventsFlag,
 			DeleteUndeliveredEventsFlag:      evcommon.MockDeleteUndeliveredEventsFlag,
 			DeleteUndeliveredEvents:          evcommon.MockDeleteUndeliveredEvents,
+			GetAggregateData:                 evcommon.MockGetAggregateDatacData,
+			SaveAggregateSubscription:        evcommon.MockSaveAggregateSubscription,
+			GetAggregateHosts:                evcommon.MockGetAggregateHosts,
+			UpdateAggregateHosts:             evcommon.MockSaveAggregateSubscription,
+			GetAggregateList:                 evcommon.MockGetAggregateHosts,
 		},
 	}
 }

@@ -68,6 +68,11 @@ type DB struct {
 	GetUndeliveredEventsFlag         func(string) (bool, error)
 	SetUndeliveredEventsFlag         func(string) error
 	DeleteUndeliveredEventsFlag      func(string) error
+	GetAggregateData                 func(string) (evmodel.Aggregate, error)
+	SaveAggregateSubscription        func(aggregateId string, hostIP []string) error
+	GetAggregateHosts                func(aggregateIP string) ([]string, error)
+	UpdateAggregateHosts             func(aggregateId string, hostIP []string) error
+	GetAggregateList                 func(hostIP string) ([]string, error)
 }
 
 // fillTaskData is to fill task information in TaskData struct
@@ -415,6 +420,14 @@ func getFabricID(origin string) string {
 	}
 	return ""
 }
+func getAggregateID(origin string) string {
+	data := strings.Split(origin, "/redfish/v1/AggregationService/Aggregates/")
+	if len(data) > 1 {
+		fabricData := strings.Split(data[1], "/")
+		return fabricData[0]
+	}
+	return ""
+}
 
 // callPlugin check the given request url and PrefereAuth type plugin
 func (e *ExternalInterfaces) callPlugin(req evcommon.PluginContactRequest) (*http.Response, error) {
@@ -426,23 +439,36 @@ func (e *ExternalInterfaces) callPlugin(req evcommon.PluginContactRequest) (*htt
 }
 
 // checkCollection verifies if the given origin is collection and extracts all the suboridinate resources
-func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, bool, error) {
+func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, bool, string, bool, error) {
 	switch origin {
 	case "/redfish/v1/Systems":
 		collection, err := e.GetAllKeysFromTable("ComputerSystem")
-		return collection, "SystemsCollection", true, err
+		return collection, "SystemsCollection", true, "", false, err
 	case "/redfish/v1/Chassis":
-		return []string{}, "ChassisCollection", true, nil
+		return []string{}, "ChassisCollection", true, "", false, nil
 	case "/redfish/v1/Managers":
 		//TODO:After Managers implemention need to get all Managers data
-		return []string{}, "ManagerCollection", true, nil
+		return []string{}, "ManagerCollection", true, "", false, nil
 	case "/redfish/v1/Fabrics":
 		collection, err := e.GetAllFabrics()
-		return collection, "FabricsCollection", true, err
+		return collection, "FabricsCollection", true, "", false, err
 	case "/redfish/v1/TaskService/Tasks":
-		return []string{}, "TasksCollection", true, nil
+		return []string{}, "TasksCollection", true, "", false, nil
 	}
-	return []string{}, "", false, nil
+	if strings.Contains(origin, "/AggregationService/Aggregates/") {
+		aggregateCollection, err := e.GetAggregateData(origin)
+		if err != nil {
+			return []string{}, "AggregateCollections", true, "", false, err
+		}
+		var collection []string = []string{}
+		for _, system := range aggregateCollection.Elements {
+			var systemID string = system.OdataID
+			collection = append(collection, systemID)
+		}
+		return collection, "AggregateCollections", true, origin, true, err
+	}
+
+	return []string{}, "", false, "", false, nil
 }
 
 // isHostPresentInEventForward will check if hostip present in the hosts slice

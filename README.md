@@ -29,7 +29,7 @@
    - [Configuring BIOS settings for a server](#configuring-bios-settings-for-a-server)
    - [Resetting a server](#resetting-a-server)
    - [Setting one time boot path for a server](#setting-one-time-boot-path-for-a-server)
-   - [Searching the inventory for specific servers](#searching-the-inventory-for-specific-servers)
+   - [Searching the inventory for specific BMCs](#searching-the-inventory-for-specific-BMCs)
    - [Updating software and firmware](#updating-software-and-firmware)
    - [Subscribing to southbound events](#subscribing-to-southbound-events)
    - [Viewing network fabrics](#viewing-network-fabrics)
@@ -1940,7 +1940,7 @@ To set boot path of a server, perform HTTP `POST` on the following URI:
 For more information such as curl command, sample request, and sample response, see "Changing the boot order of a computer system to default settings" in [Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs).
 
 
-## Searching the inventory for specific servers
+## Searching the inventory for specific BMCs
 
 To search servers in the inventory based on specific criteria, perform HTTP `GET` on the following URI. Specify the search criteria in the URI.
 

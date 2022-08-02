@@ -214,7 +214,7 @@ func TestSetConfiguration(t *testing.T) {
 		"ConnectionMethodConf":[
 		  {
 				"ConnectionMethodType":"Redfish",
-				"ConnectionMethodVariant":"Compute:GRF_v1.0.0"
+				"ConnectionMethodVariant":"Compute:GRF_v3.1.0"
 			},
 		  {
 				"ConnectionMethodType":"Redfish",
@@ -546,7 +546,7 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			Data.ConnectionMethodConf = []ConnectionMethodConf{
 				{
 					ConnectionMethodType:    "Redfish",
-					ConnectionMethodVariant: "GRF_v1.0.0",
+					ConnectionMethodVariant: "GRF_v3.1.0",
 				},
 			}
 		case 7:

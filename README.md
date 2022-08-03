@@ -193,13 +193,13 @@ The following table lists the software components and versions that are compatib
 |--------|-------|
 |etcd|1.16|
 |Java JRE|11|
-|Kafka|2.5.0|
+|Kafka|3.1.0|
 |Redis|6.2.6|
 |Ubuntu LTS|20.04|
-|ZooKeeper|3.5.7|
+|ZooKeeper|3.7.0|
 |Docker|20.10.11|
 |Ansible|2.9.6|
-|Kubernetes|1.21.5|
+|Kubernetes|1.23.5|
 |Kubespray|2.17.0|
 |Helm charts|3.7.2|
 |Nginx|1.14.0-0ubuntu1.7|

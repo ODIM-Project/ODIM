@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -59,7 +60,33 @@ type TasksRPC struct {
 	PublishToMessageBus              func(taskURI string, taskEvenMessageID string, eventType string, taskMessage string)
 }
 
-var taskCollection = make(map[string]bool)
+//TaskCollectionData ....
+type TaskCollectionData struct {
+	TaskCollection map[string]int32
+	Lock           sync.Mutex
+}
+
+func (t *TaskCollectionData) getTaskFromCollectionData(taskID string, percentComplete int) bool {
+	t.Lock.Lock()
+	defer t.Lock.Unlock()
+	if prevComplete, ok := t.TaskCollection[fmt.Sprintf("%s:%v", taskID, percentComplete)]; ok {
+		if prevComplete == int32(percentComplete) {
+			return true
+		} else if percentComplete == 100 {
+			delete(t.TaskCollection, taskID)
+			return false
+		}
+
+	}
+	t.TaskCollection[taskID] = int32(percentComplete)
+
+	return false
+}
+
+var (
+	// TaskCollection ...
+	TaskCollection TaskCollectionData
+)
 
 //CreateTask is a rpc handler which intern call actual CreatTask to create new task
 func (ts *TasksRPC) CreateTask(ctx context.Context, req *taskproto.CreateTaskRequest) (*taskproto.CreateTaskResponse, error) {
@@ -130,7 +157,7 @@ func (ts *TasksRPC) deleteCompletedTask(taskID string) error {
 		return err
 	}
 	err = ts.DeleteTaskIndex(taskID)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "no data with ID found") {
 		log.Error("error while deleting the main task: " + err.Error())
 		return err
 	}
@@ -1102,9 +1129,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 	// Notify the user about task state change by sending statuschange event
 	//	notifyTaskStateChange(task.URI, taskEvenMessageID)
 	eventType := "StatusChange"
-	runningTask := taskID + fmt.Sprintf("%v", percentComplete)
-	if _, ok := taskCollection[runningTask]; !ok {
-		taskCollection[runningTask] = true
+	if !TaskCollection.getTaskFromCollectionData(taskID, int(percentComplete)) {
 		ts.PublishToMessageBus(task.URI, taskEvenMessageID, eventType, taskMessage)
 	}
 	return err

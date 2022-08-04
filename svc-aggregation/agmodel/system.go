@@ -1182,7 +1182,7 @@ func AddNewHostToAggregateHostIndex(aggregateID string, hostIP string) error {
 	if err != nil {
 		return err1
 	}
-	devSub := strings.Split(aggreagtes[0], "::")
+	devSub := strings.Split(aggreagtes[0], "||")
 	ips := getSliceFromString(devSub[1])
 	isUpdate := true
 	for _, ip := range ips {
@@ -1211,7 +1211,7 @@ func RemoveNewIPToAggregateHostIndex(aggregateID string, hostIP string) error {
 	if err != nil {
 		return err1
 	}
-	devSub := strings.Split(aggreagtes[0], "::")
+	devSub := strings.Split(aggreagtes[0], "||")
 	ips := getSliceFromString(devSub[1])
 	ips = removeIps(ips, hostIP)
 	err1 = conn.UpdateAggregateHosts(aggregateHostIndex, aggregateID, ips)

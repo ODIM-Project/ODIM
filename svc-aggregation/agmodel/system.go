@@ -955,6 +955,7 @@ func removeElements(requestElements, presentElements []OdataID) []OdataID {
 	for _, presentElement := range presentElements {
 		front := 0
 		rear := len(requestElements) - 1
+		present = false
 		for front <= rear {
 			if requestElements[front] == presentElement || requestElements[rear] == presentElement {
 				present = true

@@ -464,28 +464,28 @@ The following table lists the software components and versions that are compatib
     
     | **Docker image name** | **Version** | **Docker image bundle name** |
     | :-------------------- | ----------- | ---------------------------- |
-    | account-session       | 3.0         | account-session.tar          |
-    | aggregation           | 3.0         | aggregation.tar              |
-    | api                   | 3.0         | api.tar                      |
-    | events                | 3.0         | events.tar                   |
-    | fabrics               | 3.0         | fabrics.tar                  |
-    | managers              | 3.0         | managers.tar                 |
-    | systems               | 3.0         | systems.tar                  |
+    | account-session       | 3.1         | account-session.tar          |
+    | aggregation           | 4.0         | aggregation.tar              |
+    | api                   | 4.0         | api.tar                      |
+    | events                | 4.0         | events.tar                   |
+    | fabrics               | 3.1         | fabrics.tar                  |
+    | managers              | 4.0         | managers.tar                 |
+    | systems               | 4.0         | systems.tar                  |
     | composition-service   | 1.0         | composition-service.tar      |
     | licenses              | 1.0         | licenses.tar                 |
-    | task                  | 3.0         | task.tar                     |
-    | update                | 3.0         | update.tar                   |
-    | kafka                 | 1.0         | kafka.tar                    |
-    | zookeeper             | 1.0         | zookeeper.tar                |
+    | task                  | 3.1         | task.tar                     |
+    | update                | 3.1         | update.tar                   |
+    | kafka                 | 2.0         | kafka.tar                    |
+    | zookeeper             | 2.0         | zookeeper.tar                |
     | etcd                  | 1.16        | etcd.tar                     |
-    | redis                 | 2.1         | redis.tar                    |
+    | redis                 | 3.0         | redis.tar                    |
     | stakater/reloader     | v0.0.76     | stakater_reloader.tar        |
     | busybox               | 1.33        | busybox.tar                  |
-    | dellplugin            | 2.0         | dellplugin.tar               |
-    | lenovoplugin          | 1.0         | lenovoplugin.tar             |
-    | urplugin              | 3.0         | urplugin.tar                 |
-    | grfplugin             | 3.0         | grfplugin.tar                |
-    | telemetry             | 2.0         | telemetry.tar                |
+    | dellplugin            | 2.1         | dellplugin.tar               |
+    | lenovoplugin          | 1.1         | lenovoplugin.tar             |
+    | urplugin              | 3.1         | urplugin.tar                 |
+    | grfplugin             | 3.1         | grfplugin.tar                |
+    | telemetry             | 2.1         | telemetry.tar                |
     
 3. To install the Docker images of all services on the cluster nodes, create a directory called `odimra_images` on the deployment node and copy each tar archive to this directory. 
     For example: `cp /home/bruce/ODIM/*.tar /home/bruce/odimra_images`

@@ -974,7 +974,7 @@ func (a *Aggregator) GetSetDefaultBootOrderActionInfo(ctx context.Context, req *
 			{
 				Name:     "Systems",
 				Required: true,
-				DataType: "Array",
+				DataType: "ObjectArray",
 			},
 		},
 		OdataID: "/redfish/v1/AggregationService/SetDefaultBootOrderActionInfo",

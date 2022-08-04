@@ -130,7 +130,7 @@ func (ts *TasksRPC) deleteCompletedTask(taskID string) error {
 		return err
 	}
 	err = ts.DeleteTaskIndex(taskID)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "no data with ID found") {
 		log.Error("error while deleting the main task: " + err.Error())
 		return err
 	}

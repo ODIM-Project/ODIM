@@ -16,6 +16,7 @@
 package system
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -31,10 +32,19 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
+	eventproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 	uuid "github.com/satori/go.uuid"
+)
+
+var (
+	//UpdateSubscription ...
+	UpdateSubscription = updateSubscription
+	//RemoveSubscription ...
+	RemoveSubscription = removeSubscription
 )
 
 //ResetRequest is struct for reset of elements of an aggregate
@@ -298,6 +308,10 @@ func (e *ExternalInterface) AddElementsToAggregate(req *aggregatorproto.Aggregat
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
+	err = UpdateSubscription(aggregateID, addRequest.Elements, req.SessionToken)
+	if err != nil {
+		log.Error("Error occured while update subscription ", err)
+	}
 	commonResponse := response.Response{
 		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      aggregateURL,
@@ -372,6 +386,10 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(req *aggregatorproto.Agg
 		errMsg := dbErr.Error()
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+	err = RemoveSubscription(aggregateID, removeRequest.Elements, req.SessionToken)
+	if err != nil {
+		log.Error("Error occured while update subscription ", err)
 	}
 	commonResponse := response.Response{
 		OdataType:    "#Aggregate.v1_0_1.Aggregate",
@@ -831,5 +849,110 @@ func addAggregateHost(uuid string, aggregate agmodel.Aggregate) (err error) {
 	}
 
 	err = agmodel.AddAggregateHostIndex(uuid, ips)
+	if err != nil {
+		log.Info("Error while adding aggregate host ", err)
+	}
 	return
+}
+
+func updateSubscription(aggragateID string, systemID []agmodel.OdataID, session string) error {
+	conn, err := services.ODIMService.Client(services.Events)
+	if err != nil {
+		log.Error("Error while Event ", err.Error())
+		return nil
+	}
+	defer conn.Close()
+	event := eventproto.NewEventsClient(conn)
+	isSubscribe, err := event.IsAggregateHaveSubscription(context.TODO(), &eventproto.EventUpdateRequest{
+		AggregateId:  aggragateID,
+		SessionToken: session,
+	})
+	if err != nil {
+		log.Info("Error while checking aggragte subscription ", err)
+		return err
+	}
+
+	for _, system := range systemID {
+
+		systemID := system.OdataID[strings.LastIndexAny(system.OdataID, "/")+1:]
+		data := strings.SplitN(systemID, ".", 2)
+		// Get target device Credentials from using device UUID
+		target, err := agmodel.GetTarget(data[0])
+		if err != nil {
+			return err
+		}
+		if isSubscribe.Status {
+			err = agmodel.AddNewHostToAggregateHostIndex(aggragateID, target.ManagerAddress)
+			if err != nil {
+				log.Info("system remove failed ", system.OdataID)
+			}
+			_, err = event.UpdateEventSubscriptionsRPC(context.TODO(), &eventproto.EventUpdateRequest{
+				AggregateId:  aggragateID,
+				SystemID:     system.OdataID,
+				SessionToken: session,
+			})
+			if err != nil {
+				log.Error("Error while Update Subscription ", err.Error())
+				return err
+			}
+		} else {
+			err = agmodel.AddNewHostToAggregateHostIndex(aggragateID, target.ManagerAddress)
+			if err != nil {
+				log.Info("system remove failed ", system.OdataID)
+			}
+		}
+	}
+	log.Info("Updated Subscription ")
+	return nil
+}
+func removeSubscription(aggragateID string, systemID []agmodel.OdataID, session string) error {
+	conn, err := services.ODIMService.Client(services.Events)
+	if err != nil {
+		log.Error("Error while Event ", err.Error())
+		return nil
+	}
+	defer conn.Close()
+	event := eventproto.NewEventsClient(conn)
+	isSubscribe, err := event.IsAggregateHaveSubscription(context.TODO(), &eventproto.EventUpdateRequest{
+		AggregateId:  aggragateID,
+		SessionToken: session,
+	})
+	if err != nil {
+		log.Info("Error while checking aggragte subscription ", err)
+		return err
+	}
+	for _, system := range systemID {
+
+		systemID := system.OdataID[strings.LastIndexAny(system.OdataID, "/")+1:]
+		data := strings.SplitN(systemID, ".", 2)
+		// Get target device Credentials from using device UUID
+		target, err := agmodel.GetTarget(data[0])
+		if err != nil {
+			return err
+		}
+		if isSubscribe.Status {
+			err = agmodel.RemoveNewIPToAggregateHostIndex(aggragateID, target.ManagerAddress)
+			if err != nil {
+				log.Info("system remove failed ", system.OdataID)
+			}
+			_, err := event.RemoveEventSubscriptionsRPC(context.TODO(), &eventproto.EventUpdateRequest{
+				AggregateId:  aggragateID,
+				SystemID:     system.OdataID,
+				SessionToken: session,
+			})
+			if err != nil {
+				log.Error("Error while Update Subscription ", err.Error())
+				return err
+			}
+		} else {
+			err = agmodel.RemoveNewIPToAggregateHostIndex(aggragateID, target.ManagerAddress)
+			if err != nil {
+				log.Info("system remove failed ", system.OdataID)
+			}
+		}
+
+	}
+
+	log.Info("Remove Subscription ")
+	return nil
 }

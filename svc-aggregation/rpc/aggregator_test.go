@@ -1073,6 +1073,9 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 		ctx context.Context
 		req *aggregatorproto.AggregatorRequest
 	}
+	system.UpdateSubscription = func(aggragateID string, systemID []agmodel.OdataID, session string) error {
+		return nil
+	}
 	tests := []struct {
 		name           string
 		a              *Aggregator
@@ -1227,6 +1230,9 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 	})
 
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
+	system.RemoveSubscription = func(aggragateID string, systemID []agmodel.OdataID, session string) error {
+		return nil
+	}
 
 	type args struct {
 		ctx context.Context

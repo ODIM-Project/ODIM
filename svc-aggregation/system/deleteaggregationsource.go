@@ -141,6 +141,8 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 	return resp
 }
 
+// removeAggregationSourceFromAggregates will remove the element from the aggregate
+// if the system is deleted from ODIM
 func removeAggregationSourceFromAggregates(systemList []string) {
 	aggregateKeys, err := agmodel.GetAllKeysFromTable("Aggregate")
 	if err != nil {

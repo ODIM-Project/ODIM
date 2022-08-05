@@ -270,7 +270,7 @@ The following table lists the software components and versions that are compatib
       ```
 
    7. ```
-      sudo apt-get install 6openjdk-11-jre-headless=11.0.16+8-0ubuntu1.20.04 -y
+      sudo apt-get install openjdk-11-jre-headless=11.0.16+8-0ubuntu1.20.04 -y
       ```
 
    8. ```

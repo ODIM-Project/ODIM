@@ -203,7 +203,6 @@ func Router() *iris.Application {
 	// Parses the URL and performs URL decoding for path
 	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		var reqBody map[string]interface{}
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {
@@ -267,8 +266,9 @@ func Router() *iris.Application {
 
 	})
 	router.Done(func(ctx iris.Context) {
+		var reqBody interface{}
+		ctx.ReadJSON(&reqBody)
 		logService.AuditLog(ctx, reqBody)
-		reqBody = make(map[string]interface{})
 		// before returning response, decrement the session limit counter
 		sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 		if sessionToken != "" && config.Data.RequestLimitCountPerSession > 0 {

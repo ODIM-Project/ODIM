@@ -26,12 +26,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strings"
 	"testing"
+
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -91,6 +92,29 @@ func mockManagersData(id string, data map[string]interface{}) error {
 	}
 
 	return nil
+}
+
+func mockAggregateData(id string, data map[string]interface{}) error {
+	connPool, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.Create("Aggregate", id, data); err != nil {
+		return fmt.Errorf("error while trying to create new %v resource: %v", "Managaers", err.Error())
+	}
+	return nil
+}
+
+func getDataFromDB(table, key string, db common.DbType) (string, error) {
+	connPool, err := common.GetDBConnection(db)
+	if err != nil {
+		return "", fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	data, err := connPool.Read(table, key)
+	if err != nil {
+		return "", fmt.Errorf("error while trying to create new %v resource: %v", "Managaers", err.Error())
+	}
+	return data, nil
 }
 
 func mockContactClientForDelete(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
@@ -681,6 +705,73 @@ func Test_removeMemberFromCollection(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := removeMemberFromCollection(tt.args.collectionOdataID, tt.args.telemetryInfo); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("removeMemberFromCollection() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_removeAggregationSourceFromAggregates(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	data := map[string]interface{}{
+		"Elements": []map[string]interface{}{
+			{"@odata.id": "/redfish/v1/Systems/12345678-1234-5678-9123-123456789012.1"},
+			{"@odata.id": "/redfish/v1/Systems/12345678-1234-5678-9123-123456789123.1"},
+			{"@odata.id": "/redfish/v1/Systems/12345678-1234-5678-9123-123456789124.1"},
+		},
+	}
+	mockAggregateData("/redfish/v1/AggregationService/Aggregates/1234877451-1234", data)
+	type args struct {
+		systemURIs []string
+	}
+	wantFunc := func(data map[string]interface{}) string {
+		jsonData, _ := json.Marshal(data)
+		return string(jsonData)
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "no system URIs",
+			args: args{},
+			want: wantFunc(data),
+		},
+		{
+			name: "invalid system URIs",
+			args: args{systemURIs: []string{"/redfish/v1/Systems/12345678-1234-5678-9123-987654321012.1"}},
+			want: wantFunc(data),
+		},
+		{
+			name: "valid system URIs",
+			args: args{
+				systemURIs: []string{"/redfish/v1/Systems/12345678-1234-5678-9123-123456789012.1",
+					"/redfish/v1/Systems/12345678-1234-5678-9123-123456789123.1",
+				}},
+			want: wantFunc(map[string]interface{}{
+				"Elements": []map[string]interface{}{
+					{"@odata.id": "/redfish/v1/Systems/12345678-1234-5678-9123-123456789124.1"},
+				},
+			}),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			removeAggregationSourceFromAggregates(tt.args.systemURIs)
+			elements, _ := getDataFromDB("Aggregate", "/redfish/v1/AggregationService/Aggregates/1234877451-1234", common.OnDisk)
+			if tt.want != elements {
+				t.Errorf("removeAggregationSourceFromAggregates() = %v, want %v", elements, tt.want)
 			}
 		})
 	}

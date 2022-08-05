@@ -93,6 +93,7 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 			index := strings.LastIndexAny(systemURI, "/")
 			resp = e.deleteCompute(systemURI, index, target.PluginID)
 		}
+		removeAggregationSourceFromAggregates(systemList)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return resp
@@ -138,6 +139,32 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 		StatusMessage: response.ResourceRemoved,
 	}
 	return resp
+}
+
+// removeAggregationSourceFromAggregates will remove the element from the aggregate
+// if the system is deleted from ODIM
+func removeAggregationSourceFromAggregates(systemList []string) {
+	aggregateKeys, err := agmodel.GetAllKeysFromTable("Aggregate")
+	if err != nil {
+		log.Error("error getting aggregate : " + err.Error())
+	}
+	for _, aggregateURI := range aggregateKeys {
+		aggregate, err := agmodel.GetAggregate(aggregateURI)
+		if err != nil {
+			log.Error("error getting  Aggregate : " + err.Error())
+			continue
+		}
+		var removeElements agmodel.Aggregate
+		for _, systemURI := range systemList {
+			removeElements.Elements = append(removeElements.Elements, agmodel.OdataID{OdataID: systemURI})
+		}
+		if checkRemovingElementsPresent(removeElements.Elements, aggregate.Elements) {
+			dbErr := agmodel.RemoveElementsFromAggregate(removeElements, aggregateURI)
+			if dbErr != nil {
+				log.Error("Error while deleting system from aggregate : " + dbErr.Error())
+			}
+		}
+	}
 }
 
 // removeAggregationSource will remove the element from the slice return

@@ -200,10 +200,10 @@ func Router() *iris.Application {
 
 	router := iris.New()
 	router.OnErrorCode(iris.StatusNotFound, handle.SystemsMethodInvalidURI)
-	var reqBody map[string]interface{}
 	// Parses the URL and performs URL decoding for path
 	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		var reqBody map[string]interface{}
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {
@@ -214,6 +214,7 @@ func Router() *iris.Application {
 		path := strings.Replace(rawURI, parsedURI.EscapedPath(), parsedURI.Path, -1)
 		r.RequestURI = path
 		r.URL.Path = parsedURI.Path
+		var reqBody map[string]interface{}
 
 		// Validating session token
 		sessionToken := r.Header.Get("X-Auth-Token")

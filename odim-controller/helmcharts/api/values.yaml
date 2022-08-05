@@ -3,4 +3,4 @@ odimra:
   groupID:
   apiNodePort:
   haDeploymentEnabled:
-  apiImageTag: "3.0"
+  apiImageTag: "4.0"

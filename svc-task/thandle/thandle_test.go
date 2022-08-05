@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -1053,6 +1054,10 @@ func TestTasksRPC_CreateChildTask(t *testing.T) {
 	}
 }
 func TestTasksRPC_UpdateTask(t *testing.T) {
+	TaskCollection = TaskCollectionData{
+		TaskCollection: make(map[string]int32),
+		Lock:           sync.Mutex{},
+	}
 	type args struct {
 		ctx context.Context
 		req *taskproto.UpdateTaskRequest

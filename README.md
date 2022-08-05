@@ -366,7 +366,7 @@ The following table lists the software components and versions that are compatib
    docker pull <imagename>:<version>
    ```
    
-   Example: `docker pull quay.io/calico/cni:v3.19.2`
+   Example: `docker pull quay.io/calico/cni:v3.20.3`
    
    The following table lists the Docker images of all the Kubernetes microservices.
    
@@ -458,7 +458,7 @@ The following table lists the software components and versions that are compatib
     ```
     docker save -o <image_name.tar> <image_name>:<version>
     ```
-    Example: `docker save -o api.tar api:3.0`
+    Example: `docker save -o api.tar api:4.0`
 
     The following table lists the Docker images of all Resource Aggregator for ODIM services:
     

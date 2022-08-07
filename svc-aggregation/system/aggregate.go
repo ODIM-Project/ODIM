@@ -230,7 +230,7 @@ func (e *ExternalInterface) GetAggregate(req *aggregatorproto.AggregatorRequest)
 // if the aggregate id is present then delete from the db else return an error.
 func (e *ExternalInterface) DeleteAggregate(req *aggregatorproto.AggregatorRequest) response.RPC {
 	var resp response.RPC
-	_, err := agmodel.GetAggregate(req.URL)
+	aggregate, err := agmodel.GetAggregate(req.URL)
 	if err != nil {
 		log.Error("error getting  Aggregate : " + err.Error())
 		errorMessage := err.Error()
@@ -247,6 +247,10 @@ func (e *ExternalInterface) DeleteAggregate(req *aggregatorproto.AggregatorReque
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Aggregate", req.URL}, nil)
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	}
+	err1 := deleteAggregateSubscription(req.URL, req.SessionToken, aggregate.Elements)
+	if err1 != nil {
+		log.Error("Error while delete subscription details ", err.Error())
 	}
 	resp.StatusCode = http.StatusNoContent
 	return resp
@@ -955,4 +959,59 @@ func removeSubscription(aggragateID string, systemID []agmodel.OdataID, session 
 
 	log.Info("Remove Subscription ")
 	return nil
+}
+func deleteAggregateSubscription(url string, session string, systems []agmodel.OdataID) error {
+	aggragateID := getAggregateID(url)
+	conn, err := services.ODIMService.Client(services.Events)
+	if err != nil {
+		log.Error("Error while Event ", err.Error())
+		return err
+	}
+	defer conn.Close()
+	event := eventproto.NewEventsClient(conn)
+	for _, system := range systems {
+		systemID := system.OdataID[strings.LastIndexAny(system.OdataID, "/")+1:]
+		data := strings.SplitN(systemID, ".", 2)
+		// Get target device Credentials from using device UUID
+		target, err := agmodel.GetTarget(data[0])
+		if err != nil {
+			return err
+		}
+		err = agmodel.RemoveNewIPToAggregateHostIndex(aggragateID, target.ManagerAddress)
+		if err != nil {
+			log.Info("system remove failed ", system.OdataID)
+		}
+		_, err = event.RemoveEventSubscriptionsRPC(context.TODO(), &eventproto.EventUpdateRequest{
+			AggregateId:  aggragateID,
+			SystemID:     system.OdataID,
+			SessionToken: session,
+		})
+		if err != nil {
+			log.Error("Error while Update Subscription ", err.Error())
+			return err
+		}
+	}
+	_, err = event.DeleteAggregateSubscriptionsRPC(context.TODO(), &eventproto.EventUpdateRequest{
+		AggregateId:  aggragateID,
+		SessionToken: session,
+		SystemID:     "",
+	})
+	if err != nil {
+		log.Error("Error occured while removing subscription ")
+	}
+	err1 := agmodel.DeleteAggregateHostIndex(aggragateID)
+	if err1 != nil {
+		log.Info(" Aggregate remove failed ")
+		return nil
+	}
+	log.Info("Aggregate delete subscription completed ")
+	return nil
+}
+func getAggregateID(origin string) string {
+	data := strings.Split(origin, "/redfish/v1/AggregationService/Aggregates/")
+	if len(data) > 1 {
+		fabricData := strings.Split(data[1], "/")
+		return fabricData[0]
+	}
+	return ""
 }

@@ -617,7 +617,6 @@ func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.
 // which is present in the request.
 func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
 	*aggregatorproto.AggregatorResponse, error) {
-
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)

@@ -45,6 +45,8 @@ var (
 	UpdateSubscription = updateSubscription
 	//RemoveSubscription ...
 	RemoveSubscription = removeSubscription
+	//deleteAggregateSubscription ...
+	DeleteAggregateSubscription = deleteAggregateSubscription
 )
 
 //ResetRequest is struct for reset of elements of an aggregate

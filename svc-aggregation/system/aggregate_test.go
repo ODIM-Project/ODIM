@@ -302,7 +302,9 @@ func TestExternalInterface_DeleteAggregate(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-
+	DeleteAggregateSubscription = func(url, session string, systems []agmodel.OdataID) error {
+		return nil
+	}
 	req := agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
 			{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},

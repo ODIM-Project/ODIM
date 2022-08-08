@@ -191,19 +191,19 @@ The following table lists the software components and versions that are compatib
 
 |Software|Version|
 |--------|-------|
-|etcd|1.16|
+|etcd| 3.4.15            |
 |Java JRE|11|
-|Kafka|2.5.0|
+|Kafka|3.1.0|
 |Redis|6.2.6|
-|Ubuntu LTS|20.04|
-|ZooKeeper|3.5.7|
-|Docker|20.10.11|
+|Ubuntu LTS|20.04.4|
+|ZooKeeper|3.7.0|
+|Docker|20.10.12|
 |Ansible|2.9.6|
-|Kubernetes|1.21.5|
-|Kubespray|2.17.0|
-|Helm charts|3.7.2|
-|Nginx|1.14.0-0ubuntu1.7|
-|Keepalived|1:1.3.9-1ubuntu0.20.04.2|
+|Kubernetes|1.23.5|
+|Kubespray|2.18.1|
+|Helm charts|3.9.2|
+|Nginx|1.18.0-0ubuntu1.3|
+|Keepalived|1:2.0.19.2|
 |Stakater/Reloader|v0.0.76|
 |Redfish Schema|2022.1|
 |Redfish Specification|1.15.1|
@@ -230,7 +230,7 @@ The following table lists the software components and versions that are compatib
     - To add 5000 servers or less, you require nodes having 32 GB (32768 MB) RAM, 16 CPU cores and 32 threads, and 200 GB HDD each
 
 
-1. Download and install `ubuntu-20.04.3-live-server-amd64.iso` on the deployment node and all the cluster nodes. 
+1. Download and install `ubuntu-20.04.4-live-server-amd64.iso` on the deployment node and all the cluster nodes. 
     During installation, configure the IP addresses of cluster nodes to reach the management VLANs where devices are connected. Ensure there is no firewall or switches blocking the connections and ports.
 
    <blockquote>
@@ -254,7 +254,7 @@ The following table lists the software components and versions that are compatib
       ```
       
    3. ```
-      sudo apt-get install python3.8=3.8.10-0ubuntu1~20.04.4 -y
+      sudo apt-get install python3.8=3.8.10-0ubuntu1~20.04.5 -y
       ```
 
    4. ```
@@ -270,7 +270,7 @@ The following table lists the software components and versions that are compatib
       ```
 
    7. ```
-      sudo apt-get install openjdk-11-jre-headless=11.0.15+10-0ubuntu0.20.04.1 -y
+      sudo apt-get install openjdk-11-jre-headless=11.0.16+8-0ubuntu1.20.04 -y
       ```
 
    8. ```
@@ -2555,11 +2555,11 @@ Run the following commands:
    ​	`sudo apt-cache madison <package name>`
 	
    1. ```
-      sudo apt-get install -y apt-transport-https=2.0.6 ca-certificates=20210119~20.04.2 curl=7.68.0-1ubuntu2.7
+      sudo apt-get install -y apt-transport-https=2.0.9 ca-certificates=20211016~20.04.1 curl=7.68.0-1ubuntu2.12
       ```
 	  
    2. ```
-      sudo apt-get install -y gnupg-agent=2.2.19-3ubuntu2.1 software-properties-common=0.99.9.8
+      sudo apt-get install -y gnupg-agent=2.2.19-3ubuntu2.2 software-properties-common=0.99.9.8
       ```
 	  
    3. ```

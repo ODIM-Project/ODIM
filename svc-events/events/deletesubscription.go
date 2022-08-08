@@ -665,20 +665,30 @@ func removeDuplicatesFromSubscription(subscriptions []evmodel.Subscription) []ev
 
 // DeleteAggregateSubscriptions it will add subscription for newly Added system in aggregate
 func (e *ExternalInterfaces) DeleteAggregateSubscriptions(req *eventsproto.EventUpdateRequest, isRemove bool) error {
-	// var resp response.RPC
 	var aggregateID = req.AggregateId
 	searchKeyAgg := evcommon.GetSearchKey(aggregateID, evmodel.SubscriptionIndex)
 	subscriptionList, err := e.GetEvtSubscriptions(searchKeyAgg)
 	if err != nil {
 		log.Info("No Aggregate subscription Found ", err)
+		return err
 	}
 	for _, evtSubscription := range subscriptionList {
 		evtSubscription.Hosts = removeElement(evtSubscription.Hosts, aggregateID)
 		evtSubscription.OriginResources = removeElement(evtSubscription.OriginResources, "/redfish/v1/AggregationService/Aggregates/"+aggregateID)
-		err = e.UpdateEventSubscription(evtSubscription)
-		if err != nil {
-			errorMessage := "Error while Updating event subscription : " + err.Error()
-			log.Error(errorMessage)
+		if len(evtSubscription.OriginResources) == 0 {
+			err = e.DeleteEvtSubscription(evtSubscription.SubscriptionID)
+			if err != nil {
+				errorMessage := "Error while delete event subscription : " + err.Error()
+				log.Error(errorMessage)
+				return err
+			}
+		} else {
+			err = e.UpdateEventSubscription(evtSubscription)
+			if err != nil {
+				errorMessage := "Error while Updating event subscription : " + err.Error()
+				log.Error(errorMessage)
+				return err
+			}
 		}
 
 	}

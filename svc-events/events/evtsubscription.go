@@ -373,6 +373,11 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 	}
 	if collectionFlag {
 		log.Info("Saving device subscription details of collection subscription")
+		if collectionName == "AggregateCollections" {
+			resp.StatusCode = http.StatusCreated
+			resp.Response = createEventSubscriptionResponse()
+			return collectionName, resp
+		}
 		err = e.saveDeviceSubscriptionDetails(evmodel.Subscription{
 			Location:       "",
 			EventHostIP:    collectionName,

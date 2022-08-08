@@ -138,7 +138,7 @@ func (s *ServiceRoot) GetServiceRoot(ctx iris.Context) {
 func GetOdata(ctx iris.Context) {
 	defer ctx.Next()
 	Odata := models.Odata{
-		RedfishCopyright: "Copyright © 2014-2015 Distributed Management Task Force, Inc. (DMTF). All rights reserved.",
+		RedfishCopyright: "Copyright Â© 2014-2015 Distributed Management Task Force, Inc. (DMTF). All rights reserved.",
 		OdataContext:     "/redfish/v1/$metadata",
 	}
 	var list []string

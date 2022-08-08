@@ -32,6 +32,13 @@
     force_apt_get: yes
   environment: "{{ proxy_env }}"
 
+- name: Get host os release type
+  shell: lsb_release -cs
+  register: releaseType
+
+- set_fact: 
+    releaseType: "{{ releaseType.stdout }}"
+
 - name: Add GPG key
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
@@ -40,7 +47,7 @@
 
 - name: Add docker repository to apt
   apt_repository:
-    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+    repo: deb https://download.docker.com/linux/ubuntu "{{ releaseType }}" stable
     state: present
   environment: "{{ proxy_env }}"
 

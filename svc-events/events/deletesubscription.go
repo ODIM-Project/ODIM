@@ -153,10 +153,7 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(req *eventsproto.EventRequ
 	err = e.DeleteDeviceSubscription(searchKey)
 	if err != nil {
 		errorMessage := "Error while deleting device subscription : " + err.Error()
-		msgArgs := []interface{}{"Host", target.ManagerAddress}
-		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
 		log.Error(errorMessage)
-		return resp
 	}
 
 	resp.StatusCode = http.StatusNoContent
@@ -669,15 +666,15 @@ func removeDuplicatesFromSubscription(subscriptions []evmodel.Subscription) []ev
 // DeleteAggregateSubscriptions it will add subscription for newly Added system in aggregate
 func (e *ExternalInterfaces) DeleteAggregateSubscriptions(req *eventsproto.EventUpdateRequest, isRemove bool) error {
 	// var resp response.RPC
-	var aggregateId = req.AggregateId
-	searchKeyAgg := evcommon.GetSearchKey(aggregateId, evmodel.SubscriptionIndex)
+	var aggregateID = req.AggregateId
+	searchKeyAgg := evcommon.GetSearchKey(aggregateID, evmodel.SubscriptionIndex)
 	subscriptionList, err := e.GetEvtSubscriptions(searchKeyAgg)
 	if err != nil {
 		log.Info("No Aggregate subscription Found ", err)
 	}
 	for _, evtSubscription := range subscriptionList {
-		evtSubscription.Hosts = removeElement(evtSubscription.Hosts, aggregateId)
-		evtSubscription.OriginResources = removeElement(evtSubscription.OriginResources, "/redfish/v1/AggregationService/Aggregates/"+aggregateId)
+		evtSubscription.Hosts = removeElement(evtSubscription.Hosts, aggregateID)
+		evtSubscription.OriginResources = removeElement(evtSubscription.OriginResources, "/redfish/v1/AggregationService/Aggregates/"+aggregateID)
 		err = e.UpdateEventSubscription(evtSubscription)
 		if err != nil {
 			errorMessage := "Error while Updating event subscription : " + err.Error()
@@ -724,79 +721,5 @@ func (e *ExternalInterfaces) resubscribeAggregateSubscription(subscriptionPost e
 			return err
 		}
 	}
-
-	// if isCollectionOriginResourceURI(originResource) {
-	// 	log.Error("Collection of origin resource:" + originResource)
-	// 	return nil
-	// }
-
-	// target, _, err := e.getTargetDetails(originResource)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// plugin, errs := e.GetPluginData(target.PluginID)
-	// if errs != nil {
-	// 	return errs
-	// }
-
-	// postBody, err := json.Marshal(subscriptionPost)
-	// if err != nil {
-	// 	return fmt.Errorf("Error while marshalling subscription details: %s", err)
-	// }
-	// target.PostBody = postBody
-	// _, err = e.DeleteSubscriptions(origin, "", plugin, target)
-	// if err != nil {
-	// 	return err
-	// }
-	// // if deleteflag is true then only one document is there
-	// // so dont re subscribe again
-	// if deleteflag {
-	// 	return nil
-	// }
-
-	// var contactRequest evcommon.PluginContactRequest
-
-	// contactRequest.Plugin = plugin
-	// if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
-	// 	token := e.getPluginToken(plugin)
-	// 	if token == "" {
-	// 		return fmt.Errorf("error: Unable to create session with plugin " + plugin.ID)
-	// 	}
-	// 	contactRequest.Token = token
-	// } else {
-	// 	contactRequest.LoginCredential = map[string]string{
-	// 		"UserName": plugin.Username,
-	// 		"Password": string(plugin.Password),
-	// 	}
-
-	// }
-	// contactRequest.URL = "/ODIM/v1/Subscriptions"
-	// contactRequest.HTTPMethodType = http.MethodPost
-	// contactRequest.PostBody = target
-
-	// _, loc, _, err := e.PluginCall(contactRequest)
-	// if err != nil {
-	// 	return err
-	// }
-	// // Update Location to all destination of device if already subscribed to the device
-	// var resp response.RPC
-	// deviceIPAddress, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
-	// if errorMessage != "" {
-	// 	msgArgs := []interface{}{"Host", target.ManagerAddress}
-	// 	evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
-	// 	log.Error(errorMessage)
-	// }
-	// searchKey := evcommon.GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
-	// devSub, err := e.GetDeviceSubscriptions(searchKey)
-	// if err != nil {
-	// 	return err
-	// }
-	// deviceSub := evmodel.DeviceSubscription{
-	// 	EventHostIP:     devSub.EventHostIP,
-	// 	Location:        loc,
-	// 	OriginResources: devSub.OriginResources,
-	// }
-	// return e.UpdateDeviceSubscriptionLocation(deviceSub)
 	return nil
 }

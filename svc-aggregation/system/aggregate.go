@@ -45,7 +45,7 @@ var (
 	UpdateSubscription = updateSubscription
 	//RemoveSubscription ...
 	RemoveSubscription = removeSubscription
-	//deleteAggregateSubscription ...
+	//DeleteAggregateSubscription ...
 	DeleteAggregateSubscription = deleteAggregateSubscription
 )
 
@@ -56,7 +56,7 @@ type ResetRequest struct {
 	ResetType                    string `json:"ResetType"`
 }
 
-// CreateAggregate is the handler for creating an aggregate
+// CreateAggregate is the handler for cr/snap/code/103/usr/share/code/resources/app/out/vs/code/electron-sandbox/workbench/workbench.htmleating an aggregate
 // check if the elelments/resources added into odimra if not then return an error.
 // else add an entry of an aggregayte in db
 func (e *ExternalInterface) CreateAggregate(req *aggregatorproto.AggregatorRequest) response.RPC {
@@ -250,7 +250,7 @@ func (e *ExternalInterface) DeleteAggregate(req *aggregatorproto.AggregatorReque
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
-	err1 := deleteAggregateSubscription(req.URL, req.SessionToken, aggregate.Elements)
+	err1 := DeleteAggregateSubscription(req.URL, req.SessionToken, aggregate.Elements)
 	if err1 != nil {
 		log.Error("Error while delete subscription details ", err.Error())
 	}

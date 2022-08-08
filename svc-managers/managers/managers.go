@@ -320,6 +320,10 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 
 	json.Unmarshal([]byte(data), &resource)
 
+	if common.Types[tableName] != "" && resource != nil {
+		resource["@odata.type"] = common.Types[tableName]
+	}
+
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success

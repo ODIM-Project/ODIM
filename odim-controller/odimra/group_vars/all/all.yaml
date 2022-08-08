@@ -21,36 +21,36 @@ odim_pv_pvc_secrets_helmcharts:
    odimra-k8s-access-config: odimra-k8s-access-config-1.0.0
 odim_third_party_helmcharts:
    zookeeper: zookeeper-3.7.0-0.2.0
-   redis: redis-6.2.6-2.1.0
+   redis: redis-6.2.6-3.0.0
    kafka: kafka-3.1.0-0.2.0
    etcd: etcd-1.0.0
 odim_Kafka_helmcharts:
    zookeeper: zookeeper-3.7.0-0.2.0
-   redis: redis-6.2.6-2.1.0
+   redis: redis-6.2.6-3.0.0
    kafka: kafka-3.1.0-0.2.0
    etcd: etcd-1.0.0
 odim_Redis_helmcharts:
-   redis: redis-6.2.6-2.1.0
+   redis: redis-6.2.6-3.0.0
    etcd: etcd-1.0.0
 odim_third_party_har_helmcharts:
-   redis: redis-ha-6.2.6-2.1.0
+   redis: redis-ha-6.2.6-3.0.0
    etcd: etcd-ha-1.0.0
 odim_third_party_ha_helmcharts:
    zookeeper: zookeeper-ha-3.7.0-0.2.0
-   redis: redis-ha-6.2.6-2.1.0
+   redis: redis-ha-6.2.6-3.0.0
    kafka: kafka-ha-3.1.0-0.2.0
    etcd: etcd-ha-1.0.0
 odim_svc_helmcharts:
-   account-session: account-session-3.0.0
-   aggregation: aggregation-3.0.0
-   api: api-3.0.0
-   events: events-3.0.0
-   fabrics: fabrics-3.0.0
-   managers: managers-3.0.0
-   systems: systems-3.0.0
-   task: task-3.0.0
-   update: update-3.0.0
-   telemetry: telemetry-2.0.0
+   account-session: account-session-3.1.0
+   aggregation: aggregation-4.0.0
+   api: api-4.0.0
+   events: events-4.0.0
+   fabrics: fabrics-3.1.0
+   managers: managers-4.0.0
+   systems: systems-4.0.0
+   task: task-3.1.0
+   update: update-3.1.0
+   telemetry: telemetry-2.1.0
    composition-service: composition-service-1.0.0
    licenses: licenses-1.0.0
 odim_docker_images:

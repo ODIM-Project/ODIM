@@ -191,19 +191,19 @@ The following table lists the software components and versions that are compatib
 
 |Software|Version|
 |--------|-------|
-|etcd|1.16|
+|etcd| 3.4.15            |
 |Java JRE|11|
 |Kafka|3.1.0|
 |Redis|6.2.6|
 |Ubuntu LTS|20.04.4|
 |ZooKeeper|3.7.0|
-|Docker|20.10.11|
+|Docker|20.10.12|
 |Ansible|2.9.6|
 |Kubernetes|1.23.5|
-|Kubespray|2.17.0|
-|Helm charts|3.7.2|
+|Kubespray|2.18.1|
+|Helm charts|3.9.2|
 |Nginx|1.18.0-0ubuntu1.3|
-|Keepalived|1:1.3.9-1ubuntu0.20.04.2|
+|Keepalived|1:2.0.19.2|
 |Stakater/Reloader|v0.0.76|
 |Redfish Schema|2022.1|
 |Redfish Specification|1.15.1|

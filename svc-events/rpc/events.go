@@ -397,3 +397,12 @@ func (e *Events) IsAggregateHaveSubscription(ctx context.Context, req *eventspro
 	resp.Status = isAvailable
 	return &resp, nil
 }
+
+//DeleteAggregateSubscriptionsRPC defines the operations which handles the RPC request response
+// it remove subscription details
+func (e *Events) DeleteAggregateSubscriptionsRPC(ctx context.Context, req *eventsproto.EventUpdateRequest) (*eventsproto.SubscribeEMBResponse, error) {
+	var resp eventsproto.SubscribeEMBResponse
+	e.Connector.DeleteAggregateSubscriptions(req, true)
+	resp.Status = true
+	return &resp, nil
+}

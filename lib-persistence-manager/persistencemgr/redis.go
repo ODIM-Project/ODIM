@@ -1515,7 +1515,6 @@ func (p *ConnPool) DeleteAggregateHosts(index, aggregateID string) error {
 				atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
 				return errs
 			}
-
 		}
 	}
 	return nil

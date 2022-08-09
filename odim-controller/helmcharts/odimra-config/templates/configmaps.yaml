@@ -134,7 +134,7 @@ data:
     		"UpdateService",
     		"TelemetryService",
         "CompositionService",
-        "Licenses"
+        "LicenseService"
     	],
       "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},
     	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"],

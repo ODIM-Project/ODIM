@@ -191,19 +191,19 @@ The following table lists the software components and versions that are compatib
 
 |Software|Version|
 |--------|-------|
-|etcd|1.16|
+|etcd| 3.4.15            |
 |Java JRE|11|
-|Kafka|2.5.0|
+|Kafka|3.1.0|
 |Redis|6.2.6|
-|Ubuntu LTS|20.04|
-|ZooKeeper|3.5.7|
-|Docker|20.10.11|
+|Ubuntu LTS|20.04.4|
+|ZooKeeper|3.7.0|
+|Docker|20.10.12|
 |Ansible|2.9.6|
-|Kubernetes|1.21.5|
-|Kubespray|2.17.0|
-|Helm charts|3.7.2|
-|Nginx|1.14.0-0ubuntu1.7|
-|Keepalived|1:1.3.9-1ubuntu0.20.04.2|
+|Kubernetes|1.23.5|
+|Kubespray|2.18.1|
+|Helm charts|3.9.2|
+|Nginx|1.18.0-0ubuntu1.3|
+|Keepalived|1:2.0.19.2|
 |Stakater/Reloader|v0.0.76|
 |Redfish Schema|2022.1|
 |Redfish Specification|1.15.1|
@@ -230,7 +230,7 @@ The following table lists the software components and versions that are compatib
     - To add 5000 servers or less, you require nodes having 32 GB (32768 MB) RAM, 16 CPU cores and 32 threads, and 200 GB HDD each
 
 
-1. Download and install `ubuntu-20.04.3-live-server-amd64.iso` on the deployment node and all the cluster nodes. 
+1. Download and install `ubuntu-20.04.4-live-server-amd64.iso` on the deployment node and all the cluster nodes. 
     During installation, configure the IP addresses of cluster nodes to reach the management VLANs where devices are connected. Ensure there is no firewall or switches blocking the connections and ports.
 
    <blockquote>
@@ -254,7 +254,7 @@ The following table lists the software components and versions that are compatib
       ```
       
    3. ```
-      sudo apt-get install python3.8=3.8.10-0ubuntu1~20.04.4 -y
+      sudo apt-get install python3.8=3.8.10-0ubuntu1~20.04.5 -y
       ```
 
    4. ```
@@ -270,7 +270,7 @@ The following table lists the software components and versions that are compatib
       ```
 
    7. ```
-      sudo apt-get install openjdk-11-jre-headless=11.0.15+10-0ubuntu0.20.04.1 -y
+      sudo apt-get install openjdk-11-jre-headless=11.0.16+8-0ubuntu1.20.04 -y
       ```
 
    8. ```
@@ -366,26 +366,26 @@ The following table lists the software components and versions that are compatib
    docker pull <imagename>:<version>
    ```
    
-   Example: `docker pull quay.io/calico/cni:v3.19.2`
+   Example: `docker pull quay.io/calico/cni:v3.20.3`
    
    The following table lists the Docker images of all the Kubernetes microservices.
    
    |Docker image name|Version|Docker image file name|
    |-----|----|-----|
-   |k8s.gcr.io/kube-apiserver|v1.21.5 |k8s.gcr.io_kube-apiserver.tar |
-   |k8s.gcr.io/kube-controller-manager|v1.21.5 |k8s.gcr.io_kube-controller-manager.tar |
-   |k8s.gcr.io/kube-proxy| v1.21.5 |k8s.gcr.io_kube-proxy.tar |
-   |k8s.gcr.io/kube-scheduler| v1.21.5 |k8s.gcr.io_kube-scheduler.tar |
-   |quay.io/calico/node| v3.19.2 |quay.io_calico_node.tar |
-   |quay.io/calico/pod2daemon-flexvol| v3.19.2 |quay.io_calico_pod2daemon-flexvol.tar |
-   |quay.io/calico/cni| v3.19.2 |quay.io_calico_cni.tar |
-   |quay.io/calico/kube-controllers| v3.19.2 |quay.io_calico_kube-controllers.tar |
-   |k8s.gcr.io/dns/k8s-dns-node-cache|1.17.1 |k8s.gcr.io_dns_k8s-dns-node-cache.tar |
+   |k8s.gcr.io/kube-apiserver|v1.23.5 |k8s.gcr.io_kube-apiserver.tar |
+   |k8s.gcr.io/kube-controller-manager|v1.23.5 |k8s.gcr.io_kube-controller-manager.tar |
+   |k8s.gcr.io/kube-proxy| v1.23.5 |k8s.gcr.io_kube-proxy.tar |
+   |k8s.gcr.io/kube-scheduler| v1.23.5 |k8s.gcr.io_kube-scheduler.tar |
+   |quay.io/calico/node| v3.20.3 |quay.io_calico_node.tar |
+   |quay.io/calico/pod2daemon-flexvol| v3.20.3 |quay.io_calico_pod2daemon-flexvol.tar |
+   |quay.io/calico/cni| v3.20.3 |quay.io_calico_cni.tar |
+   |quay.io/calico/kube-controllers| v3.20.3 |quay.io_calico_kube-controllers.tar |
+   |k8s.gcr.io/dns/k8s-dns-node-cache|1.21.1 |k8s.gcr.io_dns_k8s-dns-node-cache.tar |
    |k8s.gcr.io/pause|3.4.1 |k8s.gcr.io_pause.tar |
-   |nginx|1.19 |nginx.tar |
+   |nginx|1.21.4 |nginx.tar |
    |k8s.gcr.io/coredns/coredns|v1.8.0 |k8s.gcr.io_coredns_coredns.tar |
    |quay.io/coreos/etcd|v3.4.13 |quay.io_coreos_etcd.tar |
-   |k8s.gcr.io/cpa/cluster-proportional-autoscaler-amd64|1.8.3 |k8s.gcr.io_cpa_cluster-proportional-autoscaler-amd64.tar |
+   |k8s.gcr.io/cpa/cluster-proportional-autoscaler-amd64|1.8.5 |k8s.gcr.io_cpa_cluster-proportional-autoscaler-amd64.tar |
    | lachlanevenson/k8s-helm                              |v3.2.3 |lachlanevenson_k8s-helm.tar |
    
 2. Verify you have successfully pulled all the images.
@@ -443,7 +443,7 @@ The following table lists the software components and versions that are compatib
 	   ```
 	   If the images are built successfully, you get an output similar to the following sample:
 	   
-	   <img src="docs/images/odimra_images.png" style="zoom:95%;"   >
+	   <img src="docs/images/odimra_images.png" style="zoom:55%;"   >
 	   
 	7. Pull the reloader and busybox images:
 	   
@@ -458,34 +458,34 @@ The following table lists the software components and versions that are compatib
     ```
     docker save -o <image_name.tar> <image_name>:<version>
     ```
-    Example: `docker save -o api.tar api:3.0`
+    Example: `docker save -o api.tar api:4.0`
 
     The following table lists the Docker images of all Resource Aggregator for ODIM services:
     
     | **Docker image name** | **Version** | **Docker image bundle name** |
     | :-------------------- | ----------- | ---------------------------- |
-    | account-session       | 3.0         | account-session.tar          |
-    | aggregation           | 3.0         | aggregation.tar              |
-    | api                   | 3.0         | api.tar                      |
-    | events                | 3.0         | events.tar                   |
-    | fabrics               | 3.0         | fabrics.tar                  |
-    | managers              | 3.0         | managers.tar                 |
-    | systems               | 3.0         | systems.tar                  |
+    | account-session       | 3.1         | account-session.tar          |
+    | aggregation           | 4.0         | aggregation.tar              |
+    | api                   | 4.0         | api.tar                      |
+    | events                | 4.0         | events.tar                   |
+    | fabrics               | 3.1         | fabrics.tar                  |
+    | managers              | 4.0         | managers.tar                 |
+    | systems               | 4.0         | systems.tar                  |
     | composition-service   | 1.0         | composition-service.tar      |
     | licenses              | 1.0         | licenses.tar                 |
-    | task                  | 3.0         | task.tar                     |
-    | update                | 3.0         | update.tar                   |
-    | kafka                 | 1.0         | kafka.tar                    |
-    | zookeeper             | 1.0         | zookeeper.tar                |
+    | task                  | 3.1         | task.tar                     |
+    | update                | 3.1         | update.tar                   |
+    | kafka                 | 2.0         | kafka.tar                    |
+    | zookeeper             | 2.0         | zookeeper.tar                |
     | etcd                  | 1.16        | etcd.tar                     |
-    | redis                 | 2.1         | redis.tar                    |
+    | redis                 | 3.0         | redis.tar                    |
     | stakater/reloader     | v0.0.76     | stakater_reloader.tar        |
     | busybox               | 1.33        | busybox.tar                  |
-    | dellplugin            | 2.0         | dellplugin.tar               |
-    | lenovoplugin          | 1.0         | lenovoplugin.tar             |
-    | urplugin              | 3.0         | urplugin.tar                 |
-    | grfplugin             | 3.0         | grfplugin.tar                |
-    | telemetry             | 2.0         | telemetry.tar                |
+    | dellplugin            | 2.1         | dellplugin.tar               |
+    | lenovoplugin          | 1.1         | lenovoplugin.tar             |
+    | urplugin              | 3.1         | urplugin.tar                 |
+    | grfplugin             | 3.1         | grfplugin.tar                |
+    | telemetry             | 2.1         | telemetry.tar                |
     
 3. To install the Docker images of all services on the cluster nodes, create a directory called `odimra_images` on the deployment node and copy each tar archive to this directory. 
     For example: `cp /home/bruce/ODIM/*.tar /home/bruce/odimra_images`
@@ -2555,11 +2555,11 @@ Run the following commands:
    ​	`sudo apt-cache madison <package name>`
 	
    1. ```
-      sudo apt-get install -y apt-transport-https=2.0.6 ca-certificates=20210119~20.04.2 curl=7.68.0-1ubuntu2.7
+      sudo apt-get install -y apt-transport-https=2.0.9 ca-certificates=20211016~20.04.1 curl=7.68.0-1ubuntu2.12
       ```
 	  
    2. ```
-      sudo apt-get install -y gnupg-agent=2.2.19-3ubuntu2.1 software-properties-common=0.99.9.8
+      sudo apt-get install -y gnupg-agent=2.2.19-3ubuntu2.2 software-properties-common=0.99.9.8
       ```
 	  
    3. ```

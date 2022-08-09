@@ -159,10 +159,6 @@ func (e *ExternalInterfaces) IsAggregateHaveSubscription(req *eventsproto.EventU
 	if err != nil {
 		return false
 	}
-	if len(subscriptionDetails) == 0 {
-		return false
-	} else {
-		return true
+	return len(subscriptionDetails) > 0
 
-	}
 }

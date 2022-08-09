@@ -37,6 +37,16 @@ func mockData(t *testing.T, dbType common.DbType, table, id string, data interfa
 	}
 }
 
+func mockAggregateHostIndexData(t *testing.T, dbType common.DbType, table, id string, hostIP []string) {
+	connPool, err := common.GetDBConnection(dbType)
+	if err != nil {
+		t.Fatalf("error: mockData() failed to DB connection: %v", err)
+	}
+	if err1 := connPool.CreateAggregateHostIndex(table, id, hostIP); err != nil {
+		t.Fatalf("error: mockData() failed to create entry %s-%s: %v", table, id, err1)
+	}
+}
+
 func stubPluginMgrAddrData(pluginID string) (agmodel.Plugin, *errors.Error) {
 	var plugin agmodel.Plugin
 

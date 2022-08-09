@@ -1229,3 +1229,16 @@ func removeIps(ips []string, ip string) (updatedIps []string) {
 	}
 	return ips
 }
+
+// DeleteAggregateHostIndex delete aggregate from aggregatehostsIndex table
+func DeleteAggregateHostIndex(uuid string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	err1 := conn.DeleteAggregateHosts(aggregateHostIndex, uuid)
+	if err1 != nil {
+		return fmt.Errorf("error: while trying to delete aggregate: %v", err1.Error())
+	}
+	return nil
+}

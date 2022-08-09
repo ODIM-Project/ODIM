@@ -12,7 +12,7 @@
   - [Including HTTP certificate](#including-http-certificate)
   - [HTTP request methods](#http-request-methods)
   - [Responses](#Responses)
-  - [Common response headers](#common-response-headers)
+  - [Common response header properties](#common-response-header-properties)
   - [Status codes](#status-codes)
 - [IPV6 support](#ipv6-support)
 - [Support for URL Encoding](#support-for-url-encoding)

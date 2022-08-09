@@ -18,7 +18,14 @@ package datacommunicator
 // IMPORT Section
 // -----------------------------------------------------------------------------
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha512"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/pem"
 	"fmt"
+	"io/ioutil"
 
 	log "github.com/sirupsen/logrus"
 
@@ -75,12 +82,16 @@ type KafkaF struct {
 
 // RedisStreams  defines the Redis  connection configurations.
 type RedisStreams struct {
-	RedisServerAddress string `toml:"RedisServerAddress"`
-	RedisServerPort    string `toml:"RedisServerPort"`
-	SentinalAddress    string `toml:"SentinalAddress"`
-	RedisCertFile      string `toml:"RedisCertFile"`
-	RedisKeyFile       string `toml:"RedisKeyFile"`
-	RedisCAFile        string `toml:"RedisCAFile"`
+	RedisServerAddress             string `toml:"RedisServerAddress"`
+	RedisServerPort                string `toml:"RedisServerPort"`
+	SentinalAddress                string `toml:"SentinalAddress"`
+	RedisCertFile                  string `toml:"RedisCertFile"`
+	RedisKeyFile                   string `toml:"RedisKeyFile"`
+	RedisCAFile                    string `toml:"RedisCAFile"`
+	RSAPrivateKeyPath              string `toml:"RSAPrivateKeyPath"`
+	RedisInMemoryEncryptedPassword string `toml:"RedisInMemoryEncryptedPassword"`
+	RSAPrivateKey                  []byte
+	RedisInMemoryPassword          []byte
 }
 
 // MQ Create both MQF and KafkaPacket Objects. MQF will be used to store
@@ -114,5 +125,49 @@ func SetConfiguration(filePath string) error {
 			return fmt.Errorf("no value found for KAFKACAFile in messagebus config file")
 		}
 	}
+	if MQ.RedisStreams != nil {
+		var err error
+		if MQ.RedisStreams.RedisInMemoryEncryptedPassword == "" {
+			return fmt.Errorf("error: no value configured for Redis In memory Encrypted Password")
+		}
+		if MQ.RedisStreams.RSAPrivateKey, err = ioutil.ReadFile(MQ.RedisStreams.RSAPrivateKeyPath); err != nil {
+			return fmt.Errorf("error: value check failed for RSAPrivateKeyPath:%s with %v", MQ.RedisStreams.RSAPrivateKeyPath, err)
+		}
+		if MQ.RedisStreams.RedisInMemoryPassword, err = decryptRSAOAEPEncryptedPasswords(MQ.RedisStreams.RedisInMemoryEncryptedPassword); err != nil {
+			return fmt.Errorf("error: while decrypting In Memory DB password: %v", err)
+		}
+	}
 	return nil
+}
+
+func decryptRSAOAEPEncryptedPasswords(encryptedPassword string) ([]byte, error) {
+	decoded, err := base64.StdEncoding.DecodeString(encryptedPassword)
+	if err != nil {
+		return nil, err
+	}
+	hash := sha512.New()
+	priv, err := bytesToPrivateKey(MQ.RedisStreams.RSAPrivateKey)
+	if err != nil {
+		return nil, err
+	}
+	plaintext, err := rsa.DecryptOAEP(hash, rand.Reader, priv, decoded, nil)
+	if err != nil {
+		return nil, err
+	}
+	return plaintext, nil
+}
+
+func bytesToPrivateKey(privateKey []byte) (*rsa.PrivateKey, error) {
+	block, _ := pem.Decode(privateKey)
+	if block == nil {
+		return nil, fmt.Errorf("failed to parse PEM block containing the public key for the RSAPrivateKeyPath:%s",
+			MQ.RedisStreams.RSAPrivateKeyPath)
+	}
+
+	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse DER encoded public key for the RSAPrivateKeyPath:%s with %v",
+			MQ.RedisStreams.RSAPrivateKeyPath, err)
+	}
+	return key, nil
 }

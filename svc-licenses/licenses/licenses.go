@@ -129,20 +129,19 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 		return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, nil)
 	}
 
-	
 	if installreq.Links == nil {
 		errMsg := "Invalid request,mandatory field Links missing"
 		log.Error(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, nil, nil)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Links"}, nil)
 	} else if installreq.LicenseString == "" {
 		errMsg := "Invalid request, mandatory field LicenseString is missing"
 		log.Error(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, nil, nil)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"LicenseString"}, nil)
 
 	} else if len(installreq.Links.Link) == 0 {
 		errMsg := "Invalid request, mandatory field AuthorizedDevices links is missing"
 		log.Error(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, nil, nil)
+	return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"LicenseString"}, nil)
 
 	}
 	var serverURI string

@@ -10837,7 +10837,7 @@ curl -i POST \
 |Parameter|Value|Attributes|Description|
 |---------|-----|----------|-----------|
 |Name|String| (optional)<br> |Name for the subscription.|
-|Destination|String|Read-only (Required on create)<br> |The URL of the destination event listener that listens to events (Fault management system or any northbound client).<br>**NOTE:** `Destination` is unique to a subscription: There can be only one subscription for a destination event listener.<br>To change the parameters of an existing subscription , delete it and then create again with the new parameters and a new destination URL.<br> |
+|Destination|String|Read-only (Required on create)<br> |The URL of the destination event listener that listens to events (Fault management system or any northbound client).<br/>**NOTE:** <br />Destinations with both IPv4 and IPv6 addresses are supported.<br />`Destination` is unique to a subscription. There can be only one subscription for a destination event listener.<br/>To change the parameters of an existing subscription , delete it and then create again with the new parameters and a new destination URL.<br/> |
 |EventTypes|Array (string (enum))|Read-only (optional)<br> |The types of events that are sent to the destination. For possible values, see *Event types* table.|
 |ResourceTypes|Array (string, null)|Read-only (optional)<br> |The list of resource type values (Schema names) that correspond to the `OriginResources`. For possible values, perform `GET` on `redfish/v1/EventService` and check values listed under `ResourceTypes` in the JSON response.<br> Examples: "ComputerSystem", "Storage", "Task"<br> |
 |Context|String|Read/write Required (null)<br> |A string that is stored with the event destination subscription.|

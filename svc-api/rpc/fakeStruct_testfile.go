@@ -172,6 +172,10 @@ func (fakeStruct) UpdateEventSubscriptionsRPC(ctx context.Context, in *events.Ev
 
 	return nil, errors.New("fakeError")
 }
+func (fakeStruct) DeleteAggregateSubscriptionsRPC(ctx context.Context, in *events.EventUpdateRequest, opts ...grpc.CallOption) (*events.SubscribeEMBResponse, error) {
+
+	return nil, errors.New("fakeError")
+}
 
 //--------------------------------CHASSIS--------------------------------
 

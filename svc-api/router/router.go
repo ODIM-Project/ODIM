@@ -508,7 +508,7 @@ func Router() *iris.Application {
 	chassis.Get("/{id}/PCIeDevices/{rid}", cha.GetChassisResource)
 	chassis.Any("/{id}/PCIeDevices", handle.ChassisMethodNotAllowed)
 	chassis.Any("/{id}/PCIeDevices/{rid}", handle.ChassisMethodNotAllowed)
-  chassis.Get("/{id}/PCIeDevices/{rid}/PCIeFunctions", cha.GetChassisResource)
+	chassis.Get("/{id}/PCIeDevices/{rid}/PCIeFunctions", cha.GetChassisResource)
 	chassis.Any("/{id}/PCIeDevices/{rid}/PCIeFunctions", handle.ChassisMethodNotAllowed)
 	chassis.Get("/{id}/PCIeDevices/{rid}/PCIeFunctions/{rid2}", cha.GetChassisResource)
 	chassis.Any("/{id}/PCIeDevices/{rid}/PCIeFunctions/{rid2}", handle.ChassisMethodNotAllowed)

@@ -186,7 +186,7 @@ func routers() *iris.Application {
 		chassis.Get("/{id}/PCIeSlots/{rid}", rfphandler.GetResource)
 		chassis.Get("/{id}/PCIeDevices", rfphandler.GetResource)
 		chassis.Get("/{id}/PCIeDevices/{rid}", rfphandler.GetResource)
-    chassis.Get("/{id}/PCIeDevices/{rid}/PCIeFunctions", rfphandler.GetResource)
+		chassis.Get("/{id}/PCIeDevices/{rid}/PCIeFunctions", rfphandler.GetResource)
 		chassis.Get("/{id}/PCIeDevices/{rid}/PCIeFunctions/{rid2}", rfphandler.GetResource)
 		chassis.Get("/{id}/Sensors", rfphandler.GetResource)
 		chassis.Get("/{id}/Sensors/{rid}", rfphandler.GetResource)

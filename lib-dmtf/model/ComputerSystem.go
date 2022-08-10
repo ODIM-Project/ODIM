@@ -611,9 +611,9 @@ type PCIeFunction struct {
 	DeviceID          string      `json:"DeviceId,omitempty"`
 	FunctionID        int         `json:"FunctionId,omitempty"`
 	FunctionType      string      `json:"FunctionType,omitempty"` //enum
-	Links             Links       `json:"Links,omitempty"`
+	Links             *Links       `json:"Links,omitempty"`
 	RevisionID        string      `json:"RevisionId,omitempty"`
-	Status            Status      `json:"Status,omitempty"`
+	Status            *Status      `json:"Status,omitempty"`
 	SubsystemID       string      `json:"SubsystemId,omitempty"`
 	SubsystemVendorID string      `json:"SubsystemVendorId,omitempty"`
 	VendorID          string      `json:"VendorId,omitempty"`

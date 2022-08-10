@@ -450,6 +450,9 @@ func TestChassisMethodNotAllowed(t *testing.T) {
 	redfishRoutes.Any("/v1/Chassis/{id}/PCIeSlots/{rid}", ChassisMethodNotAllowed)
 	redfishRoutes.Any("/v1/Chassis/{id}/PCIeDevices", ChassisMethodNotAllowed)
 	redfishRoutes.Any("/v1/Chassis/{id}/PCIeDevices/{rid}", ChassisMethodNotAllowed)
+	redfishRoutes.Any("/v1/Chassis/{id}/PCIeDevices/{rid}/PCIeFunctions", ChassisMethodNotAllowed)
+	redfishRoutes.Any("/v1/Chassis/{id}/PCIeDevices/{rid}/PCIeFunctions/{rid2}", ChassisMethodNotAllowed)
+
 	redfishRoutes.Any("/v1/Chassis/{id}/Sensors", ChassisMethodNotAllowed)
 	redfishRoutes.Any("/v1/Chassis/{id}/Sensors/{rid}", ChassisMethodNotAllowed)
 
@@ -516,6 +519,16 @@ func TestChassisMethodNotAllowed(t *testing.T) {
 	e.PUT("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID).Expect().Status(http.StatusMethodNotAllowed)
 	e.PATCH("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID).Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID + "/PCIeFunctions").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID + "/PCIeFunctions").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID + "/PCIeFunctions").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID + "/PCIeFunctions").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID + "/PCIeFunctions/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID + "/PCIeFunctions/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID + "/PCIeFunctions/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID + "/PCIeFunctions/" + rID).Expect().Status(http.StatusMethodNotAllowed)
 
 	e.POST("/redfish/v1/Chassis/" + chassisID + "/Sensors").Expect().Status(http.StatusMethodNotAllowed)
 	e.PUT("/redfish/v1/Chassis/" + chassisID + "/Sensors").Expect().Status(http.StatusMethodNotAllowed)

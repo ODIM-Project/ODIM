@@ -62,9 +62,14 @@ var (
 
 // Volume is for sending a volume's request to south bound
 type Volume struct {
-	RAIDType           string `json:"RAIDType"`
-	Links              *Links `json:"Links"`
-	OperationApplyTime string `json:"@Redfish.OperationApplyTime"`
+	RAIDType             string   `json:"RAIDType"`
+	Links                *Links   `json:"Links"`
+	OperationApplyTime   string   `json:"@Redfish.OperationApplyTime"`
+	DisplayName          string   `json:"DisplayName,omitempty"`
+	WriteCachePolicy     string   `json:"WriteCachePolicy,omitempty"`
+	ReadCachePolicy      string   `json:"ReadCachePolicy,omitempty"`
+	IOPerfModeEnabled    bool     `json:"IOPerfModeEnabled,omitempty"`
+	DedicatedSpareDrives []*Links `json:"DedicatedSpareDrives,omitempty"`
 }
 
 // Links contains Drives resoruces info

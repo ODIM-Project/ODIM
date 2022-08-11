@@ -136,7 +136,6 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 		resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
 		return resp
 	}
-
 	decryptedPasswordByte, err := e.DevicePassword(target.Password)
 	if err != nil {
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
@@ -263,6 +262,24 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID 
 				log.Error(errMsg)
 				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf(errMsg)
 			}
+		}
+	}
+	// validate WriteCachePolicy
+	writeCachePolicy := map[string]bool{"WriteThrough": true, "ProtectedWriteBack": true, "UnprotectedWriteBack": true, "Off": true}
+
+	if request.WriteCachePolicy != "" {
+		_, isExists := writeCachePolicy[request.WriteCachePolicy]
+		if !isExists {
+			return http.StatusBadRequest, response.PropertyValueNotInList, []interface{}{request.WriteCachePolicy, "WriteCachePolicy"}, fmt.Errorf("WriteCachePolicy %v is invalid", request.WriteCachePolicy)
+
+		}
+	}
+	//validate ReadCachePolicy
+	readCachePolicy := map[string]bool{"ReadAhead": true, "AdaptiveReadAhead": true, "Off": true}
+	if request.ReadCachePolicy != "" {
+		_, isExists := readCachePolicy[request.WriteCachePolicy]
+		if !isExists {
+			return http.StatusBadRequest, response.PropertyValueNotInList, []interface{}{request.ReadCachePolicy, "ReadCachePolicy"}, fmt.Errorf("ReadCachePolicy %v is invalid", request.ReadCachePolicy)
 		}
 	}
 

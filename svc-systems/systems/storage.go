@@ -127,7 +127,9 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response
 	}
-
+	fmt.Printf("Volume Data is %+v ", volume)
+	fmt.Printf("Volume Data is links %+v ", volume.Links)
+	fmt.Printf("Volume Data is DedicatedSpareDrives  %+v ", volume.Links.DedicatedSpareDrives)
 	//fields validation
 	statuscode, statusMessage, messageArgs, err := e.validateProperties(&volume, req.SystemID)
 	if err != nil {
@@ -263,6 +265,41 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID 
 				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf(errMsg)
 			}
 		}
+		// Validated the contents of Drives array and even checks if the request drive exists or not
+		for _, drive := range request.Links.DedicatedSpareDrives {
+			driveURI := drive.OdataID
+			if driveURI == "" {
+				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf("Error processing create volume request: @odata.id key(s) is missing in Drives list")
+			}
+			_, err := e.DB.GetResource("Drives", driveURI)
+			if err != nil {
+				log.Error(err.Error())
+				if errors.DBKeyNotFound == err.ErrNo() {
+					requestData := strings.SplitN(systemID, ".", 2)
+					var getDeviceInfoRequest = scommon.ResourceInfoRequest{
+						URL:             driveURI,
+						UUID:            requestData[0],
+						SystemID:        requestData[1],
+						ContactClient:   e.ContactClient,
+						DevicePassword:  e.DevicePassword,
+						GetPluginStatus: e.GetPluginStatus,
+					}
+					var err error
+					if _, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true); err != nil {
+						return http.StatusNotFound, response.ResourceNotFound, []interface{}{"Drives", driveURI}, fmt.Errorf("Error while getting drive details for %s", driveURI)
+					}
+				} else {
+					return http.StatusNotFound, response.ResourceNotFound, []interface{}{"Drives", driveURI}, fmt.Errorf("Error while getting drive details for %s", driveURI)
+				}
+			}
+			// Validating if a a drive URI contains correct system id
+			driveURISplit := strings.Split(driveURI, "/")
+			if len(driveURISplit) > 5 && driveURISplit[4] != systemID {
+				errMsg := "Drive URI contains incorrect system id"
+				log.Error(errMsg)
+				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf(errMsg)
+			}
+		}
 	}
 	// validate WriteCachePolicy
 	writeCachePolicy := map[string]bool{"WriteThrough": true, "ProtectedWriteBack": true, "UnprotectedWriteBack": true, "Off": true}
@@ -277,7 +314,7 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID 
 	//validate ReadCachePolicy
 	readCachePolicy := map[string]bool{"ReadAhead": true, "AdaptiveReadAhead": true, "Off": true}
 	if request.ReadCachePolicy != "" {
-		_, isExists := readCachePolicy[request.WriteCachePolicy]
+		_, isExists := readCachePolicy[request.ReadCachePolicy]
 		if !isExists {
 			return http.StatusBadRequest, response.PropertyValueNotInList, []interface{}{request.ReadCachePolicy, "ReadCachePolicy"}, fmt.Errorf("ReadCachePolicy %v is invalid", request.ReadCachePolicy)
 		}
@@ -422,7 +459,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 		}
 
 	}
-
+	fmt.Printf("System Request Body %+v \n ", req.RequestBody)
 	if string(req.RequestBody) == "null" {
 		target.PostBody = []byte{}
 	} else {

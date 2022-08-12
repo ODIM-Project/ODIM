@@ -923,20 +923,20 @@ func (a *Aggregator) GetResetActionInfoService(ctx context.Context, req *aggrega
 			{
 				Name:            "ResetType",
 				Required:        true,
-				DataType:        "string",
+				DataType:        "String",
 				AllowableValues: []string{"On", "ForceOff", "GracefulShutdown", "GracefulRestart", "ForceRestart", "Nmi", "ForceOn", "PushPowerButton"},
 			}, {
 				Name:     "TargetURIs",
 				Required: true,
-				DataType: "array",
+				DataType: "ObjectArray",
 			}, {
 				Name:     "BatchSize",
 				Required: false,
-				DataType: "number",
+				DataType: "Number",
 			}, {
 				Name:     "DelayBetweenBatchesInSeconds",
 				Required: false,
-				DataType: "number",
+				DataType: "Number",
 			},
 		},
 		OdataID: "/redfish/v1/AggregationService/ResetActionInfo",

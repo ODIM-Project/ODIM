@@ -80,7 +80,7 @@ spec:
 
       containers:
       - name: redis
-        image: image-registry.openshift-image-registry.svc:5000/odim/redis:{{ .Values.odimra.redisImageTag }}
+        image: 10.24.1.61:5000/odim/redis:{{ .Values.odimra.redisImageTag }}
         imagePullPolicy: IfNotPresent
 
         ports:
@@ -121,7 +121,7 @@ spec:
         - name: REDIS_MASTER_SET
           value: {{ .Values.odimra.redisMasterSet | quote }} 
       - name: sentinel
-        image: image-registry.openshift-image-registry.svc:5000/odim/redis:{{ .Values.odimra.redisImageTag }}
+        image: 10.24.1.61:5000/odim/redis:{{ .Values.odimra.redisImageTag }}
         imagePullPolicy: IfNotPresent
 
         ports:

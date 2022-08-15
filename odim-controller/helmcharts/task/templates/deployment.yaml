@@ -90,6 +90,7 @@ spec:
             - name: ODIM_NAMESPACE
               value: {{ .Values.odimra.namespace | quote }}
 <<<<<<< HEAD
+<<<<<<< HEAD
             - name: HOST_NAME
               valueFrom:
                 fieldRef:
@@ -102,6 +103,9 @@ spec:
 =======
           image: image-registry.openshift-image-registry.svc:5000/odim/task:{{ .Values.odimra.taskImageTag }}
 >>>>>>> 8ba4723d (adding changes to related rhocp deployment)
+=======
+          image: 10.24.1.61:5000/odim/task:{{ .Values.odimra.taskImageTag }}
+>>>>>>> 5cd0a891 (updatign the image registry name)
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45105

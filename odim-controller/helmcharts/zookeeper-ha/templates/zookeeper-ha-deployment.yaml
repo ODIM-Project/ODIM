@@ -41,7 +41,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: zookeeper1
-          image: image-registry.openshift-image-registry.svc:5000/odim/zookeeper:{{ .Values.odimra.zookeeperImageTag }}
+          image: 10.24.1.61:5000/odim/zookeeper:{{ .Values.odimra.zookeeperImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 2181
@@ -121,7 +121,7 @@ spec:
         runAsUser: {{ .Values.odimra.groupID }}
       initContainers:
         - name: init-zookeeper2
-          image: image-registry.openshift-image-registry.svc:5000/odim/busybox:1.33
+          image: 10.24.1.61:5000/odim/busybox:1.33
           command: ['sh', '-c', 'sleep 1']
       affinity:
         nodeAffinity:
@@ -140,7 +140,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: zookeeper2
-          image: image-registry.openshift-image-registry.svc:5000/odim/zookeeper:{{ .Values.odimra.zookeeperImageTag }}
+          image: 10.24.1.61:5000/odim/zookeeper:{{ .Values.odimra.zookeeperImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 2181
@@ -220,7 +220,7 @@ spec:
         runAsUser: {{ .Values.odimra.groupID }}
       initContainers:
         - name: init-zookeeper3
-          image: image-registry.openshift-image-registry.svc:5000/odim/busybox:1.33
+          image: 10.24.1.61:5000/odim/busybox:1.33
           command: ['sh', '-c', 'sleep 3']
       affinity:
         nodeAffinity:
@@ -239,7 +239,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: zookeeper3
-          image: image-registry.openshift-image-registry.svc:5000/odim/zookeeper:{{ .Values.odimra.zookeeperImageTag }}
+          image: 10.24.1.61:5000/odim/zookeeper:{{ .Values.odimra.zookeeperImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 2181

@@ -79,7 +79,6 @@ spec:
             claimName: odimra-log-claim
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
-        runAsUser:  {{ .Values.odimra.groupID }}
       containers:
         - name: licenses
           env:
@@ -89,7 +88,6 @@ spec:
               value: {{ .Values.odimra.haDeploymentEnabled | quote }}
             - name: ODIM_NAMESPACE
               value: {{ .Values.odimra.namespace | quote }}
-<<<<<<< HEAD
             - name: HOST_NAME
               valueFrom:
                 fieldRef:
@@ -99,9 +97,6 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
           image: 10.24.1.61:5000/odim/licenses:{{ .Values.odimra.licensesImageTag }}
-=======
-          image: image-registry.openshift-image-registry.svc:5000/odim/licenses:{{ .Values.odimra.licensesImageTag }}
->>>>>>> 8ee25d43 (rhocp changes)
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45113

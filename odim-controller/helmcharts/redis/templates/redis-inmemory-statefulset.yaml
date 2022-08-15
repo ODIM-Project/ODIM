@@ -60,7 +60,7 @@ spec:
         runAsUser: {{ .Values.odimra.groupID }}
       containers:
       - name: redis
-        image: image-registry.openshift-image-registry.svc:5000/odim/redis:{{ .Values.odimra.redisImageTag }}
+        image: 10.24.1.61:5000/odim/redis:{{ .Values.odimra.redisImageTag }}
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 6379

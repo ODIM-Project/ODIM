@@ -24,7 +24,7 @@ spec:
         runAsUser: {{ .Values.odimra.groupID }}
       containers:
         - name: zookeeper
-          image: image-registry.openshift-image-registry.svc:5000/odim/zookeeper:{{ .Values.odimra.zookeeperImageTag }}
+          image: 10.24.1.61:5000/odim/zookeeper:{{ .Values.odimra.zookeeperImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 2281

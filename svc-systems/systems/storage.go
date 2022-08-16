@@ -127,9 +127,6 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response
 	}
-	fmt.Printf("Volume Data is %+v ", volume)
-	fmt.Printf("Volume Data is links %+v ", volume.Links)
-	fmt.Printf("Volume Data is DedicatedSpareDrives  %+v ", volume.Links.DedicatedSpareDrives)
 	//fields validation
 	statuscode, statusMessage, messageArgs, err := e.validateProperties(&volume, req.SystemID)
 	if err != nil {
@@ -459,7 +456,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 		}
 
 	}
-	fmt.Printf("System Request Body %+v \n ", req.RequestBody)
+
 	if string(req.RequestBody) == "null" {
 		target.PostBody = []byte{}
 	} else {

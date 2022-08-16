@@ -245,7 +245,7 @@ type Current struct {
 }
 type CollectionCapabilities struct {
 	OdataType    string          `json:"@odata.type"`
-	Capabilities []*Capabilities `json:"Capabilities"`
+	Capabilities []*Capabilities `json:"Capabilities",omitempty`
 }
 
 type Capabilities struct {

@@ -37,4 +37,6 @@ SentinalAddress =""
 RedisCertFile = ""
 RedisKeyFile  = ""
 RedisCAFile   = ""
+RSAPrivateKeyPath = ""
+RedisInMemoryEncryptedPassword = ""
 

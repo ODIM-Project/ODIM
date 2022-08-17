@@ -8635,7 +8635,10 @@ When deleting fabric entities, ensure to delete them in the following order:
 
 5.  Zone-specific address pools
 
-**IMPORTANT**: Before using the `Fabrics` APIs, ensure that the fabric manager is installed, its plugin is deployed, and added into the Resource Aggregator for ODIM framework.
+**IMPORTANT**: 
+
+- Before using the `Fabrics` APIs, ensure that the fabric manager is installed, its plugin is deployed, and added into the Resource Aggregator for ODIM framework. 
+- The fabric is removed from Resource Aggregator for ODIM when the event is received from the fabric plugin.
 
 
 **Supported endpoints**

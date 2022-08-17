@@ -1173,7 +1173,7 @@ Topics covered in this section include:
 3. Log in to the deployment node and generate an encrypted password of Resource Aggregator for ODIM to be used in the `urplugin-config.yaml` file:
 
     ```
-echo -n '{ODIMRA password}' |openssl pkeyutl -encrypt -inkey {odimCertsPath}/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
+    echo -n '{ODIMRA password}' |openssl pkeyutl -encrypt -inkey {odimCertsPath}/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
     ```
     
     In this command, replace:
@@ -1183,9 +1183,9 @@ echo -n '{ODIMRA password}' |openssl pkeyutl -encrypt -inkey {odimCertsPath}/odi
     
     Example output:
     
-    ```
-    ip/jrKjQdzKIU1JvT4ZQ6gbCe2XJtCKPRgqOQv6g3aIAYtG+hpVgel3k67TB723h9dN2cABWZgE+b9CAxbIXj3qZZFWrUMMuPkT4fwtW8fTlhdR+phmOvnnSw5bvUrXyl5Se1IczwtMXfhqk7U8eqpJnZ6xWNR8Q1K7baDv1QvZwej/v3bqHRTC93pDL+3SvE8VCyrIgbMVdfvv3+mJKvs2F7hXoTJiwjRfKGyzdP0yRIHAFOB3m/xnv6ZIRm8Ak6+sx18NRq8RH20bktzhZ45fT+iX4twMJG1lI0KRJ3j/PL+IqY4MmYzv/72fQhMznL39Rjr9LR6mB/JGI0ww0sMUCFr6obzQfQWv1so+Ck694fNJMQPXQS64VcqVDuISXSd4cqkdMx9zBmfDbgzMQQVwgjDgt4nC1w8/wGSfMtkms8rSJrBa18hKCWi+jfhASbNM84udKc0kQsQJlsnjcdsL84zrE8iUqqXC/fK2cQbNL31H5C+qEfJqdNTauQSskkK3cpNWh1FVw736WBYYJSja59q5QwMniXldwcvRglEIELsjKgjbuOnQoIZaVTcbheaa2b1XAiRKTKuPmweysyV3fbuR0jgSJTmdTehrtYG9omjUbg/L7WFjC43JWq8suWi5uch+jHtGG5mZJFFdkE37pQd3wzHBSa+/9Yq9/ZSY=
-    ```
+```
+     ip/jrKjQdzKIU1JvT4ZQ6gbCe2XJtCKPRgqOQv6g3aIAYtG+hpVgel3k67TB723h9dN2cABWZgE+b9CAxbIXj3qZZFWrUMMuPkT4fwtW8fTlhdR+phmOvnnSw5bvUrXyl5Se1IczwtMXfhqk7U8eqpJnZ6xWNR8Q1K7baDv1QvZwej/v3bqHRTC93pDL+3SvE8VCyrIgbMVdfvv3+mJKvs2F7hXoTJiwjRfKGyzdP0yRIHAFOB3m/xnv6ZIRm8Ak6+sx18NRq8RH20bktzhZ45fT+iX4twMJG1lI0KRJ3j/PL+IqY4MmYzv/72fQhMznL39Rjr9LR6mB/JGI0ww0sMUCFr6obzQfQWv1so+Ck694fNJMQPXQS64VcqVDuISXSd4cqkdMx9zBmfDbgzMQQVwgjDgt4nC1w8/wGSfMtkms8rSJrBa18hKCWi+jfhASbNM84udKc0kQsQJlsnjcdsL84zrE8iUqqXC/fK2cQbNL31H5C+qEfJqdNTauQSskkK3cpNWh1FVw736WBYYJSja59q5QwMniXldwcvRglEIELsjKgjbuOnQoIZaVTcbheaa2b1XAiRKTKuPmweysyV3fbuR0jgSJTmdTehrtYG9omjUbg/L7WFjC43JWq8suWi5uch+jHtGG5mZJFFdkE37pQd3wzHBSa+/9Yq9/ZSY=
+```
     
 4. On the deployment node, copy the UR plugin configuration file and the hook script to `~/plugins/urplugin`.
    ```
@@ -1311,7 +1311,7 @@ echo -n '{ODIMRA password}' |openssl pkeyutl -encrypt -inkey {odimCertsPath}/odi
     Example output of the URP pod details:
     
     ```
-    NAME 						READY 	STATUS 		RESTARTS    AGE
+    NAME 				READY 	STATUS 		RESTARTS    	AGE
     urplugin-5fc4b6788-2xx97 	1/1 	Running 	0 	    	4d22h
     ```
 
@@ -1466,7 +1466,7 @@ echo -n '{ODIMRA password}' |openssl pkeyutl -encrypt -inkey {odimCertsPath}/odi
     Example output of the Dell plugin pod details:
     
     ```
-    NAME 						READY 	STATUS 		RESTARTS    AGE
+    NAME 				READY 	STATUS 		RESTARTS    		AGE
     dellplugin-5fc4b6788-2xx97 	1/1 	Running 	0 	   		4d22h
     ```
 
@@ -1615,7 +1615,7 @@ echo -n '{ODIMRA password}' |openssl pkeyutl -encrypt -inkey {odimCertsPath}/odi
     Example output of the Lenovo plugin pod details:
 
     ```
-    NAME 							READY 	STATUS 		RESTARTS    AGE
+    NAME 				READY 	STATUS 		RESTARTS    		AGE
     lenovoplugin-5fc4b6788-2xx97 	1/1 	Running 	0 	   		4d22h
     ```
 

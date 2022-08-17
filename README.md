@@ -96,10 +96,10 @@ Resource Aggregator for ODIM comprises the following two key components:
 
     -  Generic Redfish plugin for ODIM (GRF plugin): This plugin can be used for any Redfish-compliant device
     -  Dell plugin for ODIM: Plugin for managing Dell servers
-   -  Lenovo plugin: Plugin for managing Lenovo servers
-   -  Cisco ACI plugin: Plugin for managing Cisco ACI servers
-   -  Plugin for unmanaged racks \(URP): This plugin acts as a resource manager for unmanaged racks
-   -  Integration of additional third-party plugins
+    -  Lenovo plugin: Plugin for managing Lenovo servers
+    -  Cisco ACI plugin: Plugin for managing Cisco ACI servers
+    -  Plugin for unmanaged racks (URP): This plugin acts as a resource manager for unmanaged racks
+    -  Integration of additional third-party plugins
    
    Resource Aggregator for ODIM allows third parties to easily develop and integrate their plugins into its framework. For more information, see *[Resource Aggregator for Open Distributed Infrastructure Management™ Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md)*.
    
@@ -133,7 +133,7 @@ The following diagram illustrates how Resource Aggregator for ODIM is deployed a
 
 To deploy Resource Aggregator for ODIM, you will require:
 
--   One virtual machine \(VM\) or a physical machine called the deployment node to deploy Kubernetes and Resource Aggregator for ODIM microservices. You can deploy the Resource Aggregator for ODIM microservices using the odim-controller command-line utility and use commands to:
+-   One virtual machine (VM) or a physical machine called the deployment node to deploy Kubernetes and Resource Aggregator for ODIM microservices. You can deploy the Resource Aggregator for ODIM microservices using the odim-controller command-line utility and use commands to:
     -   Set up the Docker environment
     -   Set up a Kubernetes cluster
     -   Deploy the containerized Resource Aggregator for ODIM microservices and third-party services on the Kubernetes cluster nodes
@@ -397,7 +397,7 @@ The following table lists the software components and versions that are compatib
    
    You get an output similar to the following sample:
    
-   <img src="docs/images/kubernetes_images.png" alt="Cluster node" style="zoom:80%;" />
+   <img src="docs/images/kubernetes_images.png" alt="Cluster node" style="zoom:70%;" />
    
 3. Save each Docker image to a tar archive:
 

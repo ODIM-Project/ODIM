@@ -373,6 +373,11 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 	}
 	if collectionFlag {
 		log.Info("Saving device subscription details of collection subscription")
+		if collectionName == "AggregateCollections" {
+			resp.StatusCode = http.StatusCreated
+			resp.Response = createEventSubscriptionResponse()
+			return collectionName, resp
+		}
 		err = e.saveDeviceSubscriptionDetails(evmodel.Subscription{
 			Location:       "",
 			EventHostIP:    collectionName,
@@ -792,7 +797,6 @@ func (e *ExternalInterfaces) DeleteSubscriptions(originResource, token string, p
 		}
 
 	}
-
 	target.Location = deviceSubscription.Location
 
 	// Call to delete subscription to plugin
@@ -1344,9 +1348,7 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 	var aggragteSubscriptionDetails []evmodel.Subscription
 	// get all aggregate subscription
 	if isAggregate {
-
 		searchKeyAgg := evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
-
 		aggregateList, err := e.GetAggregateList(searchKeyAgg)
 		if err != nil {
 			log.Info("No Aggregate subscription Found ", err)
@@ -1359,6 +1361,7 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 			}
 			searchKey = evcommon.GetSearchKey(id, evmodel.SubscriptionIndex)
 			aggragteSubscriptionDetails, err = e.GetEvtSubscriptions(searchKey)
+
 			if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 				log.Info("Error while get aggragteSubscriptionDetails details: " + err.Error())
 			}
@@ -1388,7 +1391,6 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 	for index, evtSubscriptions := range subscriptionDetails {
 		if isHostPresent(evtSubscriptions.Hosts, host) {
 			subscriptionPresent = true
-			fmt.Println("Subscription ")
 			if len(evtSubscriptions.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
 				eventTypes = append(eventTypes, evtSubscriptions.EventTypes...)
 			}

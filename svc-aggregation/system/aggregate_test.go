@@ -40,6 +40,7 @@ func mockSystemResourceData(body []byte, table, key string) error {
 }
 
 func TestExternalInterface_CreateAggregate(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -296,19 +297,23 @@ func TestExternalInterface_GetAggregate(t *testing.T) {
 }
 
 func TestExternalInterface_DeleteAggregate(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer func() {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-
+	DeleteAggregateSubscription = func(url, session string, systems []agmodel.OdataID) error {
+		return nil
+	}
 	req := agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
-			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
+			{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
 	mockData(t, common.OnDisk, "System", "6d4a0a66-7efa-578e-83cf-44dc68d2874e", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e"})
 	mockData(t, common.OnDisk, "System", "c14d91b5-3333-48bb-a7b7-75f74a137d48", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "c14d91b5-3333-48bb-a7b7-75f74a137d48"})
+	mockAggregateHostIndexData(t, common.OnDisk, common.AggregateSubscriptionIndex, "7ff3bd97-c41c-5de0-937d-85d390691b73", []string{"10.10.0.1"})
 
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
 	if err != nil {

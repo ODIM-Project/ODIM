@@ -106,7 +106,6 @@ func GetStorageResources(oid string) map[string]interface{} {
 		log.Error("Unable to get system data : " + dbErr.Error())
 		return resourceData
 	}
-	fmt.Println("data", data)
 	// unmarshall the resourceData
 	err := JSONUnMarshalFunc([]byte(data), &resourceData)
 	if err != nil {

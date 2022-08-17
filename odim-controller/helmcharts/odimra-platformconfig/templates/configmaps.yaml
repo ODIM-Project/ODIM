@@ -27,6 +27,8 @@ data:
     RedisCertFile = "/etc/odimra_certs/odimra_server.crt"
     RedisKeyFile  = "/etc/odimra_certs/odimra_server.key"
     RedisCAFile   = "/etc/odimra_certs/rootCA.crt"
+    RSAPrivateKeyPath = "/etc/odimra_certs/odimra_rsa.private"
+    RedisInMemoryEncryptedPassword = {{ .Values.odimra.redisInMemoryPassword | toJson }}
     {{ if eq .Values.odimra.haDeploymentEnabled false }}
     RedisServerAddress = "redis-inmemory"
     RedisServerPort = "6379"

@@ -281,10 +281,8 @@ func (e *ExternalInterface) getTargetSystemCollection(target agmodel.Target) ([]
 }
 
 func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, systemKey string) bool {
-	strArray := strings.Split(systemKey, "/")
-	sysID := strArray[len(strArray)-1]
-	systemKey = strings.Replace(systemKey, "/"+sysID, "/"+deviceUUID+".", -1)
-	key := systemKey + sysID
+	systemKey = strings.TrimSuffix(systemKey, "/")
+	key := strings.Replace(systemKey, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+deviceUUID+".", -1)
 	_, err := agmodel.GetResource("ComputerSystem", key)
 	if err != nil {
 		l.Log.Error(err.Error())

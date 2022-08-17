@@ -1357,7 +1357,7 @@ curl -i POST \
 
 ```
 { 
-   "Username":"{username}",
+   "UserName":"{username}",
    "Password":"{password}",
    "RoleId":"{roleId}"
 }
@@ -1504,7 +1504,7 @@ curl -i GET \
 |---------|---------------|
 |**Method** | `PATCH` |
 |**URI** |`/redfish/v1/AccountService/Accounts/{accountId}` |
-|**Description** |This operation updates user account details (`username`, `password`, and `RoleId`). To modify account details, add them in the request payload (as shown in the sample request body) and perform `PATCH` on the mentioned URI. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can modify other user accounts. Users with `ConfigureSelf` privilege can modify only their own accounts.|
+|**Description** |This operation updates user account details (`password`, and `RoleId`). To modify account details, add them in the request payload (as shown in the sample request body) and perform `PATCH` on the mentioned URI. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can modify other user accounts. Users with `ConfigureSelf` privilege can modify only their own accounts.|
 |**Returns** |<ul><li>`Location` header that contains a link to the updated account.</li><li>JSON schema representing the modified account.</li></ul>|
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|

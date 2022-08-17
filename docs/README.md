@@ -8638,7 +8638,7 @@ When deleting fabric entities, ensure to delete them in the following order:
 **IMPORTANT**: 
 
 - Before using the `Fabrics` APIs, ensure that the fabric manager is installed, its plugin is deployed, and added into the Resource Aggregator for ODIM framework. 
-- The fabric is removed from Resource Aggregator for ODIM when the event is received from the fabric plugin.
+- The fabric is removed from Resource Aggregator for ODIM when the delete fabric event is received from the fabric plugin.
 
 
 **Supported endpoints**

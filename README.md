@@ -96,8 +96,9 @@ Resource Aggregator for ODIM comprises the following two key components:
 
     -  Generic Redfish plugin for ODIM (GRF plugin): This plugin can be used for any Redfish-compliant device
     -  Dell plugin for ODIM: Plugin for managing Dell servers
-   -  Plugin for unmanaged racks \(URP): This plugin acts as a resource manager for unmanaged racks.
+   -  Lenovo plugin: Plugin for managing Lenovo servers
    -  Cisco ACI plugin: Plugin for managing Cisco ACI servers
+   -  Plugin for unmanaged racks \(URP): This plugin acts as a resource manager for unmanaged racks
    -  Integration of additional third-party plugins
    
    Resource Aggregator for ODIM allows third parties to easily develop and integrate their plugins into its framework. For more information, see *[Resource Aggregator for Open Distributed Infrastructure Management™ Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md)*.
@@ -120,7 +121,8 @@ Deploying Resource Aggregator for ODIM in a data center involves installing the 
     - Tasks
     - Update
     - Telemetry
--   The plugin microservices such as the Dell plugin, URP, and additional third-party plugins
+    - License
+-   The plugin microservices such as the Dell plugin, Lenovo plugin, URP, and additional third-party plugins
 -   Third-party services such as Kafka, etcd, Zookeeper, and Redis
 
 These microservices can be deployed as portable, light-weight Docker containers. The containerized services are orchestrated and managed by Kubernetes—an open-source container orchestration platform that helps to automate, scale, and manage a containerized application. For more information on Kubernetes and its architecture, see *[https://kubernetes.io/docs/home/](https://kubernetes.io/docs/home/)*.
@@ -381,7 +383,7 @@ The following table lists the software components and versions that are compatib
    |quay.io/calico/cni| v3.20.3 |quay.io_calico_cni.tar |
    |quay.io/calico/kube-controllers| v3.20.3 |quay.io_calico_kube-controllers.tar |
    |k8s.gcr.io/dns/k8s-dns-node-cache|1.21.1 |k8s.gcr.io_dns_k8s-dns-node-cache.tar |
-   |k8s.gcr.io/pause|3.4.1 |k8s.gcr.io_pause.tar |
+   |k8s.gcr.io/pause|3.6 |k8s.gcr.io_pause.tar |
    |nginx|1.21.4 |nginx.tar |
    |k8s.gcr.io/coredns/coredns|v1.8.0 |k8s.gcr.io_coredns_coredns.tar |
    |quay.io/coreos/etcd|v3.4.13 |quay.io_coreos_etcd.tar |
@@ -1171,13 +1173,13 @@ Topics covered in this section include:
 3. Log in to the deployment node and generate an encrypted password of Resource Aggregator for ODIM to be used in the `urplugin-config.yaml` file:
 
     ```
-echo -n '<ODIMRA password>' |openssl pkeyutl -encrypt -inkey <odimCertsPath>/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
+echo -n '{ODIMRA password}' |openssl pkeyutl -encrypt -inkey {odimCertsPath}/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
     ```
     
     In this command, replace:
 
-    -  <ODIMRA password> with the password of Resource Aggregator for ODIM \(default administrator account password\).
-    -  <odimCertsPath> with the path you specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
+    -  {ODIMRA password} with the password of Resource Aggregator for ODIM (default administrator account password).
+    -  {odimCertsPath} with the path you specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
     
     Example output:
     
@@ -1238,13 +1240,13 @@ echo -n '<ODIMRA password>' |openssl pkeyutl -encrypt -inkey <odimCertsPath>/odi
 
 8. Save the URP Docker image on the deployment node at `~/plugins/urplugin`.
 
-      ```
+     ```
      docker save urplugin:3.0 -o ~/plugins/urplugin/urplugin.tar
      ```
 
 9. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
 
-      ```
+     ```
      cd ~/ODIM/odim-controller/scripts
      ```
 

@@ -617,7 +617,6 @@ func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.
 // which is present in the request.
 func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
 	*aggregatorproto.AggregatorResponse, error) {
-
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
@@ -924,20 +923,20 @@ func (a *Aggregator) GetResetActionInfoService(ctx context.Context, req *aggrega
 			{
 				Name:            "ResetType",
 				Required:        true,
-				DataType:        "string",
+				DataType:        "String",
 				AllowableValues: []string{"On", "ForceOff", "GracefulShutdown", "GracefulRestart", "ForceRestart", "Nmi", "ForceOn", "PushPowerButton"},
 			}, {
 				Name:     "TargetURIs",
 				Required: true,
-				DataType: "array",
+				DataType: "ObjectArray",
 			}, {
 				Name:     "BatchSize",
 				Required: false,
-				DataType: "number",
+				DataType: "Number",
 			}, {
 				Name:     "DelayBetweenBatchesInSeconds",
 				Required: false,
-				DataType: "number",
+				DataType: "Number",
 			},
 		},
 		OdataID: "/redfish/v1/AggregationService/ResetActionInfo",

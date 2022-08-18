@@ -155,6 +155,10 @@ const (
 	AggregateSubscriptionIndex = "AggregateToHost"
 )
 
+var Types = map[string]string{
+	"EthernetInterfaces": "#EthernetInterface.v1_8_1.EthernetInterface",
+}
+
 // RediscoverResources contains to get only these resource from the device when
 // reset flag is set when device is restarted.
 var RediscoverResources = []string{

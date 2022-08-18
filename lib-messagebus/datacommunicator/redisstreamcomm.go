@@ -16,14 +16,18 @@ package datacommunicator
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/go-redis/redis/v8"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
+)
+
+const (
+	DefaultTLSMinVersion = tls.VersionTLS12
 )
 
 // RedisStreamsPacket defines the RedisStreamsPacket Message Packet Object. Apart from Base Packet, it
@@ -42,7 +46,7 @@ func getDBConnection() *redis.Client {
 		return nil
 	}
 
-	tlsConfig.MinVersion = config.DefaultTLSMinVersion
+	tlsConfig.MinVersion = DefaultTLSMinVersion
 
 	if len(MQ.RedisStreams.SentinalAddress) > 0 {
 		dbConn = redis.NewFailoverClient(&redis.FailoverOptions{
@@ -50,14 +54,14 @@ func getDBConnection() *redis.Client {
 			SentinelAddrs:    []string{fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort)},
 			MaxRetries:       -1,
 			TLSConfig:        tlsConfig,
-			SentinelPassword: string(config.Data.DBConf.RedisInMemoryPassword),
-			Password:         string(config.Data.DBConf.RedisInMemoryPassword),
+			SentinelPassword: string(MQ.RedisStreams.RedisInMemoryPassword),
+			Password:         string(MQ.RedisStreams.RedisInMemoryPassword),
 		})
 	} else {
 		dbConn = redis.NewClient(&redis.Options{
 			Addr:      fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort),
 			TLSConfig: tlsConfig,
-			Password:  string(config.Data.DBConf.RedisInMemoryPassword),
+			Password:  string(MQ.RedisStreams.RedisInMemoryPassword),
 			DB:        0, // use default DB
 		})
 	}

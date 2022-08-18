@@ -22,11 +22,14 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+
+	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 
 	log "github.com/sirupsen/logrus"
 
@@ -34,6 +37,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 )
@@ -149,10 +153,7 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(req *eventsproto.EventRequ
 	err = e.DeleteDeviceSubscription(searchKey)
 	if err != nil {
 		errorMessage := "Error while deleting device subscription : " + err.Error()
-		msgArgs := []interface{}{"Host", target.ManagerAddress}
-		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
 		log.Error(errorMessage)
-		return resp
 	}
 
 	resp.StatusCode = http.StatusNoContent
@@ -183,7 +184,6 @@ func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(req *eventsproto.Ev
 		log.Error("error while trying to authenticate session: status code: " + string(authResp.StatusCode) + ", status message: " + authResp.StatusMessage)
 		return authResp
 	}
-
 	subscriptionDetails, err := e.GetEvtSubscriptions(req.EventSubscriptionID)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		log.Error("error while deleting eventsubscription details : " + err.Error())
@@ -192,7 +192,6 @@ func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(req *eventsproto.Ev
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
 		return resp
 	}
-
 	if len(subscriptionDetails) < 1 {
 		errorMessage := fmt.Sprintf("Subscription details not found for subscription id: %s", req.EventSubscriptionID)
 		log.Error(errorMessage)
@@ -213,9 +212,8 @@ func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(req *eventsproto.Ev
 		}
 
 		// Delete and re subscrive Event Subscription
-		err = e.deleteAndReSubscribetoEvents(evtSubscription)
+		err = e.deleteAndReSubscribetoEvents(evtSubscription, req.SessionToken)
 		if err != nil {
-			log.Error("error while deleting eventsubscription details : " + err.Error())
 			errorMessage := err.Error()
 			msgArgs := []interface{}{"SubscriptionID", req.EventSubscriptionID}
 			evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
@@ -231,7 +229,6 @@ func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(req *eventsproto.Ev
 			evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
 			return resp
 		}
-
 	}
 
 	commonResponse := response.Response{
@@ -250,7 +247,7 @@ func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(req *eventsproto.Ev
 }
 
 // This function is to delete and re subscribe for Event Subscriptions
-func (e *ExternalInterfaces) deleteAndReSubscribetoEvents(evtSubscription evmodel.Subscription) error {
+func (e *ExternalInterfaces) deleteAndReSubscribetoEvents(evtSubscription evmodel.Subscription, sessionToken string) error {
 	originResources := evtSubscription.OriginResources
 	for _, origin := range originResources {
 		// ignore if origin is empty
@@ -261,12 +258,12 @@ func (e *ExternalInterfaces) deleteAndReSubscribetoEvents(evtSubscription evmode
 		if err != nil {
 			return err
 		}
-
 		// if origin contains fabrics then get all the collection and individual subscription details
 		// for Systems need to add same later
 		subscriptionDetails = e.getAllSubscriptions(origin, subscriptionDetails)
 		// if deleteflag is true then only one document is there
 		// so dont re subscribe again
+
 		var deleteflag bool
 		if len(subscriptionDetails) < 1 {
 			return fmt.Errorf("Subscription details not found for subscription id: %s", origin)
@@ -322,7 +319,7 @@ func (e *ExternalInterfaces) deleteAndReSubscribetoEvents(evtSubscription evmode
 			Destination:   destination,
 		}
 
-		err = e.subscribe(subscriptionPost, origin, deleteflag)
+		err = e.subscribe(subscriptionPost, origin, deleteflag, sessionToken)
 		if err != nil {
 			return err
 		}
@@ -359,10 +356,12 @@ func isCollectionOriginResourceURI(origin string) bool {
 }
 
 // Subscribe to the Event Subsciption
-func (e *ExternalInterfaces) subscribe(subscriptionPost evmodel.EvtSubPost, origin string, deleteflag bool) error {
-
+func (e *ExternalInterfaces) subscribe(subscriptionPost evmodel.EvtSubPost, origin string, deleteflag bool, sessionToken string) error {
 	if strings.Contains(origin, "Fabrics") {
 		return e.resubscribeFabricsSubscription(subscriptionPost, origin, deleteflag)
+	}
+	if strings.Contains(origin, "/redfish/v1/AggregationService/Aggregates") {
+		return e.resubscribeAggregateSubscription(subscriptionPost, origin, deleteflag, sessionToken)
 	}
 	originResource := origin
 	if isCollectionOriginResourceURI(originResource) {
@@ -378,7 +377,6 @@ func (e *ExternalInterfaces) subscribe(subscriptionPost evmodel.EvtSubPost, orig
 	if errs != nil {
 		return errs
 	}
-
 	postBody, err := json.Marshal(subscriptionPost)
 	if err != nil {
 		return fmt.Errorf("Error while marshalling subscription details: %s", err)
@@ -395,7 +393,6 @@ func (e *ExternalInterfaces) subscribe(subscriptionPost evmodel.EvtSubPost, orig
 	}
 
 	var contactRequest evcommon.PluginContactRequest
-
 	contactRequest.Plugin = plugin
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		token := e.getPluginToken(plugin)
@@ -666,16 +663,73 @@ func removeDuplicatesFromSubscription(subscriptions []evmodel.Subscription) []ev
 	return uniqueElemenstsList
 }
 
-// RemoveEventSubscriptions it will removed subscription for Newly Added system in aggregate
-func (e *ExternalInterfaces) RemoveEventSubscriptions(req *eventsproto.EventUpdateRequest) error {
-	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
-	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+// DeleteAggregateSubscriptions it will add subscription for newly Added system in aggregate
+func (e *ExternalInterfaces) DeleteAggregateSubscriptions(req *eventsproto.EventUpdateRequest, isRemove bool) error {
+	var aggregateID = req.AggregateId
+	searchKeyAgg := evcommon.GetSearchKey(aggregateID, evmodel.SubscriptionIndex)
+	subscriptionList, err := e.GetEvtSubscriptions(searchKeyAgg)
+	if err != nil {
+		log.Info("No Aggregate subscription Found ", err)
+		return err
+	}
+	for _, evtSubscription := range subscriptionList {
+		evtSubscription.Hosts = removeElement(evtSubscription.Hosts, aggregateID)
+		evtSubscription.OriginResources = removeElement(evtSubscription.OriginResources, "/redfish/v1/AggregationService/Aggregates/"+aggregateID)
+		if len(evtSubscription.OriginResources) == 0 {
+			err = e.DeleteEvtSubscription(evtSubscription.SubscriptionID)
+			if err != nil {
+				errorMessage := "Error while delete event subscription : " + err.Error()
+				log.Error(errorMessage)
+				return err
+			}
+		} else {
+			err = e.UpdateEventSubscription(evtSubscription)
+			if err != nil {
+				errorMessage := "Error while Updating event subscription : " + err.Error()
+				log.Error(errorMessage)
+				return err
+			}
+		}
+
+	}
+	return nil
+}
+
+func getAggregateList(origin string, sessionToken string) ([]evmodel.OdataIDLink, error) {
+	conn, err := services.ODIMService.Client(services.Aggregator)
+	if err != nil {
+		log.Error("Error while Event ", err.Error())
+		return nil, err
+	}
+	aggregator := aggregatorproto.NewAggregatorClient(conn)
+	var req aggregatorproto.AggregatorRequest
+
+	req.URL = origin
+	req.SessionToken = sessionToken
+	resp, err := aggregator.GetAggregate(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+	var data evmodel.Aggregate
+	err = json.Unmarshal(resp.Body, &data)
+	if err != nil {
+		return nil, fmt.Errorf("invalid json: %v", err)
+	}
+	defer conn.Close()
+	return data.Elements, nil
+
+}
+func (e *ExternalInterfaces) resubscribeAggregateSubscription(subscriptionPost evmodel.EvtSubPost, origin string, deleteflag bool, sessionToken string) error {
+	originResource := origin
+	systems, err := getAggregateList(originResource, sessionToken)
+	if err != nil {
 		return nil
 	}
-
-	fmt.Println("Remove Element is called ********* ", req.AggregateId, req.SystemID)
-
+	for _, system := range systems {
+		err = e.subscribe(subscriptionPost, system.OdataID, deleteflag, sessionToken)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
-
 }

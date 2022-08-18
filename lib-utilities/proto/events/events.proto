@@ -26,6 +26,7 @@ service Events {
     rpc UpdateEventSubscriptionsRPC(EventUpdateRequest) returns (SubscribeEMBResponse){}
     rpc RemoveEventSubscriptionsRPC(EventUpdateRequest) returns (SubscribeEMBResponse){}
     rpc IsAggregateHaveSubscription(EventUpdateRequest) returns (SubscribeEMBResponse){}
+    rpc DeleteAggregateSubscriptionsRPC(EventUpdateRequest) returns (SubscribeEMBResponse){}
 }
 
 message EventSubRequest {

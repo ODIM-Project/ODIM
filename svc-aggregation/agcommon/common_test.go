@@ -128,7 +128,6 @@ func TestGetStorageResources(t *testing.T) {
 		return string([]byte(`{"user":"name"}`)), nil
 	}
 	resp = GetStorageResources(storageURI)
-	fmt.Println("resp", resp)
 	assert.NotNil(t, resp, "There should be no error ")
 }
 
@@ -223,7 +222,6 @@ func TestGetAllPlugins(t *testing.T) {
 	mockPlugins(t)
 
 	plugins, err := GetAllPlugins()
-	fmt.Println("len", len(plugins))
 	assert.Nil(t, err, "Error Should be nil")
 	assert.Equal(t, 3, len(plugins), "should be only 3 plugins")
 }

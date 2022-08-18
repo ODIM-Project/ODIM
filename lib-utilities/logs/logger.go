@@ -25,21 +25,36 @@ import (
 // This can be customized using the functions InitSysLogger or InitJSONLogger
 var Logger *logrus.Entry
 
-// InitSysLogger sets up the Logger and it uses constomized ODIMSysLogFormatter
-// by using this function user can log in sysLog format
-func InitSysLogger() {
-	Logger = logrus.NewEntry(logrus.New())
-	Logger.Logger.SetFormatter(&ODIMSysLogFormatter{})
+// LogFormat type
+type LogFormat uint32
 
-	Logger.Logger.SetLevel(logrus.DebugLevel)
+const (
+	// SysLogFormat will choose constomized ODIMSysLogFormatter for logging
+	SysLogFormat LogFormat = iota
+	// JSONFormat will choose built in JSON format for logging
+	JSONFormat
+)
+
+// Config is used for user configuration
+type Config struct {
+	LogFormat LogFormat
 }
 
-// InitSysLogger sets up the Logger and it uses built in JSONFormatter
-// by using this function user can log in json format
-func InitJSONLogger() {
+// InitLogger sets up the Logger and sets up the format and level
+func InitLogger(c *Config) {
 	Logger = logrus.NewEntry(logrus.New())
-	Logger.Logger.SetFormatter(&logrus.JSONFormatter{})
 
+	// setting logger format
+	switch c.LogFormat {
+	case SysLogFormat:
+		Logger.Logger.SetFormatter(&ODIMSysLogFormatter{})
+	case JSONFormat:
+		Logger.Logger.SetFormatter(&logrus.JSONFormatter{})
+	default:
+		Logger.Logger.SetFormatter(&ODIMSysLogFormatter{})
+	}
+
+	// set the minimum level for logging
 	Logger.Logger.SetLevel(logrus.DebugLevel)
 }
 

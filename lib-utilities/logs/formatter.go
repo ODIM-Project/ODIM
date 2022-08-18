@@ -25,6 +25,18 @@ var priorityLogFields = []string{
 	"host",
 }
 
+var syslogPriorityNumerics = map[string]int8{
+	"unknown": 0,
+	"trace":   0,
+	"panic":   8,
+	"fatal":   9,
+	"error":   11,
+	"warn":    12,
+	"warning": 12,
+	"info":    14,
+	"debug":   15,
+}
+
 var logFields = map[string][]string{
 	"account": {
 		"user",
@@ -45,7 +57,9 @@ type ODIMSysLogFormatter struct{}
 
 // Format renders a log in syslog format
 func (f *ODIMSysLogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	sysLogMsg := fmt.Sprintf("%s %s", entry.Time.UTC().Format(time.RFC3339), entry.Level)
+	level := entry.Level.String()
+	priorityNumber := findSysLogPriorityNumeric(level)
+	sysLogMsg := fmt.Sprintf("<%d> %s %s", priorityNumber, entry.Time.UTC().Format(time.RFC3339), level)
 	sysLogMsg = formatPriorityFields(entry, sysLogMsg)
 	for k, v := range logFields {
 		if accountLog, present := formatSyslog(k, v, entry); present {
@@ -55,6 +69,10 @@ func (f *ODIMSysLogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	sysLogMsg = fmt.Sprintf("%s %s", sysLogMsg, entry.Message)
 	return append([]byte(sysLogMsg), '\n'), nil
+}
+
+func findSysLogPriorityNumeric(level string) int8 {
+	return syslogPriorityNumerics[level]
 }
 
 func formatPriorityFields(entry *logrus.Entry, msg string) string {

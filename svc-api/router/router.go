@@ -685,16 +685,9 @@ func Router() *iris.Application {
 	telemetryService.Any("/MetricReports", handle.MethodNotAllowed)
 	telemetryService.Any("/Triggers", handle.MethodNotAllowed)
 	telemetryService.Any("/MetricDefinitions/{id}", handle.MethodNotAllowed)
-	telemetryService.Any("/MetricReportDefinitions/{id}",handle.MethodNotAllowed)
+	telemetryService.Any("/MetricReportDefinitions/{id}", handle.MethodNotAllowed)
 	telemetryService.Any("/MetricReports/{id}", handle.MethodNotAllowed)
 	telemetryService.Any("/Triggers/{id}", handle.MethodNotAllowed)
-
-
-
-
-
-
-
 
 	licenseService := v1.Party("/LicenseService", middleware.SessionDelMiddleware)
 	licenseService.SetRegisterRule(iris.RouteSkip)

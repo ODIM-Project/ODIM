@@ -272,7 +272,7 @@ The following table lists the software components and versions that are compatib
       ```
 
    7. ```
-      sudo apt-get install openjdk-11-jre-headless=11.0.16+8-0ubuntu1.20.04 -y
+      sudo apt-get install openjdk-11-jre-headless=11.0.16+8-0ubuntu1~20.04 -y
       ```
 
    8. ```
@@ -324,7 +324,7 @@ The following table lists the software components and versions that are compatib
 
 6. *[Download and install go-language](#downloading-and-installing-go-language)* on the deployment node.
 
-7. *[Configure Docker proxy](#configuring-docker-proxy)* on the deployment node.
+7. *[Configure Docker proxy](#configuring-proxy-for-docker)* on the deployment node.
 
 8. *[Install Docker](#installing-docker)* on the deployment node.
 

@@ -731,4 +731,3 @@ func Router() *iris.Application {
 	compositionService.Any("/ActivePool", handle.CompositionServiceMethodNotAllowed)
 	return router
 }
-jerr :=

@@ -91,6 +91,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 	if err != nil {
 		host = event.IP
 	}
+	host = strings.ToLower(host)
 	log.Info("After splitting host address, IP is: ", host)
 
 	var requestData = string(event.Request)
@@ -135,7 +136,6 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 	}
 	// Getting Aggregate List
 	searchKeyAgg := evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
-
 	aggregateList, err := e.GetAggregateList(searchKeyAgg)
 	if err != nil {
 		log.Info("No Aggregate subscription Found ", err)

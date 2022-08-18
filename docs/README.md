@@ -1357,7 +1357,7 @@ curl -i POST \
 
 ```
 { 
-   "Username":"{username}",
+   "UserName":"{username}",
    "Password":"{password}",
    "RoleId":"{roleId}"
 }
@@ -1504,7 +1504,7 @@ curl -i GET \
 |---------|---------------|
 |**Method** | `PATCH` |
 |**URI** |`/redfish/v1/AccountService/Accounts/{accountId}` |
-|**Description** |This operation updates user account details (`username`, `password`, and `RoleId`). To modify account details, add them in the request payload (as shown in the sample request body) and perform `PATCH` on the mentioned URI. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can modify other user accounts. Users with `ConfigureSelf` privilege can modify only their own accounts.|
+|**Description** |This operation updates user account details (`password`, and `RoleId`). To modify account details, add them in the request payload (as shown in the sample request body) and perform `PATCH` on the mentioned URI. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can modify other user accounts. Users with `ConfigureSelf` privilege can modify only their own accounts.|
 |**Returns** |<ul><li>`Location` header that contains a link to the updated account.</li><li>JSON schema representing the modified account.</li></ul>|
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|
@@ -8635,7 +8635,10 @@ When deleting fabric entities, ensure to delete them in the following order:
 
 5.  Zone-specific address pools
 
-**IMPORTANT**: Before using the `Fabrics` APIs, ensure that the fabric manager is installed, its plugin is deployed, and added into the Resource Aggregator for ODIM framework.
+**IMPORTANT**: 
+
+- Before using the `Fabrics` APIs, ensure that the fabric manager is installed, its plugin is deployed, and added into the Resource Aggregator for ODIM framework. 
+- The fabric is removed from Resource Aggregator for ODIM when the delete fabric event is received from the fabric plugin.
 
 
 **Supported endpoints**

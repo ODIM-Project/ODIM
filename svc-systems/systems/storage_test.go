@@ -177,6 +177,10 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{
+										"DisplayName":"Volume1",
+										"WriteCachePolicy":"Off",
+										"ReadCachePolicy":"Off",
+										"IOPerfModeEnabled":false,
 										"RAIDType":"RAID0",
 										"Links":{
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]
@@ -196,6 +200,10 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{
+										"DisplayName":"Volume1",
+										"WriteCachePolicy":"Off",
+										"ReadCachePolicy":"Off",
+										"IOPerfModeEnabled":false,
 										"RAIDType":"RAID0",
 										"Links":{
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
@@ -212,6 +220,10 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b.1",
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{
+										"DisplayName":"Volume1",
+										"WriteCachePolicy":"Off",
+										"ReadCachePolicy":"Off",
+										"IOPerfModeEnabled":false,
 										"RAIDType":"RAID0",
 									    "Links":{
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0b.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
@@ -224,6 +236,42 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "",
 				RequestBody: []byte(`{
+										"DisplayName":"Volume1",
+										"WriteCachePolicy":"Off",
+										"ReadCachePolicy":"Off",
+										"IOPerfModeEnabled":false,
+										"RAIDType":"RAID0",
+										"Links":{
+										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
+			},
+			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
+		}, {
+			name: "invalid WriteCachePolicy",
+			p:    pluginContact,
+			req: &systemsproto.VolumeRequest{
+				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
+				StorageInstance: "",
+				RequestBody: []byte(`{
+										"DisplayName":"Volume1",
+										"WriteCachePolicy":"dummy",
+										"ReadCachePolicy":"Off",
+										"IOPerfModeEnabled":false,
+										"RAIDType":"RAID0",
+										"Links":{
+										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
+			},
+			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
+		}, {
+			name: "invalid ReadCachePolicy instance",
+			p:    pluginContact,
+			req: &systemsproto.VolumeRequest{
+				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
+				StorageInstance: "",
+				RequestBody: []byte(`{
+										"DisplayName":"Volume1",
+										"WriteCachePolicy":"Off",
+										"ReadCachePolicy":"dummy",
+										"IOPerfModeEnabled":false,
 										"RAIDType":"RAID0",
 										"Links":{
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}}`),

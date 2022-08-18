@@ -65,11 +65,16 @@ type Volume struct {
 	RAIDType           string `json:"RAIDType"`
 	Links              *Links `json:"Links"`
 	OperationApplyTime string `json:"@Redfish.OperationApplyTime"`
+	DisplayName        string `json:"DisplayName,omitempty"`
+	WriteCachePolicy   string `json:"WriteCachePolicy,omitempty"`
+	ReadCachePolicy    string `json:"ReadCachePolicy,omitempty"`
+	IOPerfModeEnabled  bool   `json:"IOPerfModeEnabled,omitempty"`
 }
 
 // Links contains Drives resoruces info
 type Links struct {
-	Drives []OdataIDLink `json:"Drives"`
+	Drives               []OdataIDLink `json:"Drives"`
+	DedicatedSpareDrives []OdataIDLink `json:"DedicatedSpareDrives,omitempty"`
 }
 
 // OdataIDLink contains link to a resource

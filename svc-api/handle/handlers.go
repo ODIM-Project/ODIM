@@ -1247,6 +1247,12 @@ func UpdateServiceMethodNotAllowed(ctx iris.Context) {
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
 }
+func MethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}
 
 // ChassisMethodNotAllowed holds builds reponse for the unallowed http operation on Chassis URLs and returns 405 error.
 func ChassisMethodNotAllowed(ctx iris.Context) {

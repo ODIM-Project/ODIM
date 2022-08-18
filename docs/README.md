@@ -171,7 +171,7 @@
   * [Viewing a task monitor](#viewing-a-task-monitor)
   * [Deleting a task](#deleting-a-task)
 - [Events](#events)
-  * [Viewing the event service root](#viewing-the-event-service-root)
+  * [Viewing the event service root](#viewing-the-eventservice-root)
   * [Creating an event subscription](#creating-an-event-subscription)
     + [Sample event](#sample-event)
     + [Creating event subscription with eventformat type “MetricReport”](#creating-event-subscription-with-eventformat-type---metricreport)
@@ -10700,6 +10700,7 @@ curl -i POST \
         "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}"
       }
    ]
+   "DeliveryRetryPolicy": "RetryForever"
 }' \
  'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions'
 
@@ -10733,7 +10734,9 @@ curl -i POST \
       {
         "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}"
       }
-   ]
+   ],
+   "DeliveryRetryPolicy": "RetryForever"
+
 }
 ```
 
@@ -10752,6 +10755,7 @@ curl -i POST \
 | EventFormatType      | String (enum)         | Read-only (optional)<br>           | Indicates the content types of the message that this service can send to the event destination. For possible values, see *EventFormat type* table. |
 | SubordinateResources | Boolean               | Read-only (null)                   | Indicates whether the service supports the `SubordinateResource` property on event subscriptions or not. If it is set to `true`, the service creates subscription for an event originating from the specified `OriginResoures` and also from its subordinate resources. For example, by setting this property to `true`, you can receive specified events from a compute node: `/redfish/v1/Systems/{ComputerSystemId}` and from its subordinate resources such as:<br> `/redfish/v1/Systems/{ComputerSystemId}/Memory`<br> `/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces`<br> `/redfish/v1/Systems/{ComputerSystemId}/Bios`<br> `/redfish/v1/Systems/{ComputerSystemId}/Storage` |
 | OriginResources      | Array                 | Optional (null)<br>                | Resources for which the service sends related events. If this property is absent or the array is empty, events originating from any resource is sent to the subscriber. For possible values, see *[Origin resources](#origin-resources)* table. |
+| DeliveryRetryPolicy  | String                | Optional                           | This property shall indicate the subscription delivery retry policy for events where the subscription type is `RedfishEvent`. Supported value is `RetryForever`, which implies that the attempts at delivery of future events shall continue regardless of the number of retries. |
 
 
 > **Sample event**

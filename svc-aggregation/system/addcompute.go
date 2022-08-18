@@ -51,7 +51,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	}
 
 	var saveSystem agmodel.SaveSystem
-	saveSystem.ManagerAddress = addResourceRequest.ManagerAddress
+	saveSystem.ManagerAddress = strings.ToLower(addResourceRequest.ManagerAddress)
 	saveSystem.UserName = addResourceRequest.UserName
 	//saveSystem.Password = ciphertext
 	saveSystem.Password = []byte(addResourceRequest.Password)

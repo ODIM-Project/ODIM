@@ -12,7 +12,7 @@
   - [Including HTTP certificate](#including-http-certificate)
   - [HTTP request methods](#http-request-methods)
   - [Responses](#Responses)
-  - [Common response headers](#common-response-headers)
+  - [Common response header properties](#common-response-header-properties)
   - [Status codes](#status-codes)
 - [IPV6 support](#ipv6-support)
 - [Support for URL Encoding](#support-for-url-encoding)
@@ -171,7 +171,7 @@
   * [Viewing a task monitor](#viewing-a-task-monitor)
   * [Deleting a task](#deleting-a-task)
 - [Events](#events)
-  * [Viewing the event service root](#viewing-the-event-service-root)
+  * [Viewing the event service root](#viewing-the-eventservice-root)
   * [Creating an event subscription](#creating-an-event-subscription)
     + [Sample event](#sample-event)
     + [Creating event subscription with eventformat type “MetricReport”](#creating-event-subscription-with-eventformat-type---metricreport)
@@ -1357,7 +1357,7 @@ curl -i POST \
 
 ```
 { 
-   "Username":"{username}",
+   "UserName":"{username}",
    "Password":"{password}",
    "RoleId":"{roleId}"
 }
@@ -1504,7 +1504,7 @@ curl -i GET \
 |---------|---------------|
 |**Method** | `PATCH` |
 |**URI** |`/redfish/v1/AccountService/Accounts/{accountId}` |
-|**Description** |This operation updates user account details (`username`, `password`, and `RoleId`). To modify account details, add them in the request payload (as shown in the sample request body) and perform `PATCH` on the mentioned URI. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can modify other user accounts. Users with `ConfigureSelf` privilege can modify only their own accounts.|
+|**Description** |This operation updates user account details (`password`, and `RoleId`). To modify account details, add them in the request payload (as shown in the sample request body) and perform `PATCH` on the mentioned URI. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can modify other user accounts. Users with `ConfigureSelf` privilege can modify only their own accounts.|
 |**Returns** |<ul><li>`Location` header that contains a link to the updated account.</li><li>JSON schema representing the modified account.</li></ul>|
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|
@@ -8635,7 +8635,10 @@ When deleting fabric entities, ensure to delete them in the following order:
 
 5.  Zone-specific address pools
 
-**IMPORTANT**: Before using the `Fabrics` APIs, ensure that the fabric manager is installed, its plugin is deployed, and added into the Resource Aggregator for ODIM framework.
+**IMPORTANT**: 
+
+- Before using the `Fabrics` APIs, ensure that the fabric manager is installed, its plugin is deployed, and added into the Resource Aggregator for ODIM framework. 
+- The fabric is removed from Resource Aggregator for ODIM when the delete fabric event is received from the fabric plugin.
 
 
 **Supported endpoints**
@@ -10674,7 +10677,7 @@ curl -i POST \
    -d \
 '{ 
    "Name":"ODIMRA_NBI_client",
-   "Destination":"https://{Valid_IP_Address}:{Port}/EventListener",
+   "Destination":"https://{Valid_destination__IP_Address}:{Port}/EventListener",
    "EventTypes":[ 
       "Alert"
    ],
@@ -10697,6 +10700,7 @@ curl -i POST \
         "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}"
       }
    ]
+   "DeliveryRetryPolicy": "RetryForever"
 }' \
  'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions'
 
@@ -10730,7 +10734,9 @@ curl -i POST \
       {
         "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}"
       }
-   ]
+   ],
+   "DeliveryRetryPolicy": "RetryForever"
+
 }
 ```
 
@@ -10739,7 +10745,7 @@ curl -i POST \
 | Parameter            | Value                 | Attributes                         | Description                                                  |
 | -------------------- | --------------------- | ---------------------------------- | ------------------------------------------------------------ |
 | Name                 | String                | (optional)<br>                     | Name for the subscription.                                   |
-| Destination          | String                | Read-only (Required on create)<br> | The URL of the destination event listener that listens to events (Fault management system or any northbound client).<br>**NOTE:** `Destination` is unique to a subscription: There can be only one subscription for a destination event listener.<br>To change the parameters of an existing subscription , delete it and then create again with the new parameters and a new destination URL.<br> |
+| Destination          | String                | Read-only (Required on create)<br> | The URL of the destination event listener that listens to events (Fault management system or any northbound client).<br>**NOTE:** <br />Destinations with both IPv4 and IPv6 addresses are supported.<br />`Destination` is unique to a subscription. There can be only one subscription for a destination event listener.<br>To change the parameters of an existing subscription , delete it and then create again with the new parameters and a new destination URL.<br> |
 | EventTypes           | Array (string (enum)) | Read-only (optional)<br>           | The types of events that are sent to the destination. For possible values, see *Event types* table. |
 | ResourceTypes        | Array (string, null)  | Read-only (optional)<br>           | The list of resource type values (Schema names) that correspond to the `OriginResources`.  Examples: "Systems", "Chassis", "Tasks"<br>For possible values, perform `GET` on `redfish/v1/EventService` and check values listed under `ResourceTypes` in the JSON response.<br/> |
 | Context              | String                | Read/write Required (null)<br>     | A string that is stored with the event destination subscription. |
@@ -10749,6 +10755,7 @@ curl -i POST \
 | EventFormatType      | String (enum)         | Read-only (optional)<br>           | Indicates the content types of the message that this service can send to the event destination. For possible values, see *EventFormat type* table. |
 | SubordinateResources | Boolean               | Read-only (null)                   | Indicates whether the service supports the `SubordinateResource` property on event subscriptions or not. If it is set to `true`, the service creates subscription for an event originating from the specified `OriginResoures` and also from its subordinate resources. For example, by setting this property to `true`, you can receive specified events from a compute node: `/redfish/v1/Systems/{ComputerSystemId}` and from its subordinate resources such as:<br> `/redfish/v1/Systems/{ComputerSystemId}/Memory`<br> `/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces`<br> `/redfish/v1/Systems/{ComputerSystemId}/Bios`<br> `/redfish/v1/Systems/{ComputerSystemId}/Storage` |
 | OriginResources      | Array                 | Optional (null)<br>                | Resources for which the service sends related events. If this property is absent or the array is empty, events originating from any resource is sent to the subscriber. For possible values, see *[Origin resources](#origin-resources)* table. |
+| DeliveryRetryPolicy  | String                | Optional                           | This property shall indicate the subscription delivery retry policy for events where the subscription type is `RedfishEvent`. Supported value is `RetryForever`, which implies that the attempts at delivery of future events shall continue regardless of the number of retries. |
 
 
 > **Sample event**
@@ -10837,7 +10844,7 @@ curl -i POST \
 |Parameter|Value|Attributes|Description|
 |---------|-----|----------|-----------|
 |Name|String| (optional)<br> |Name for the subscription.|
-|Destination|String|Read-only (Required on create)<br> |The URL of the destination event listener that listens to events (Fault management system or any northbound client).<br>**NOTE:** `Destination` is unique to a subscription: There can be only one subscription for a destination event listener.<br>To change the parameters of an existing subscription , delete it and then create again with the new parameters and a new destination URL.<br> |
+|Destination|String|Read-only (Required on create)<br> |The URL of the destination event listener that listens to events (Fault management system or any northbound client).<br/>**NOTE:** <br />Destinations with both IPv4 and IPv6 addresses are supported.<br />`Destination` is unique to a subscription. There can be only one subscription for a destination event listener.<br/>To change the parameters of an existing subscription , delete it and then create again with the new parameters and a new destination URL.<br/> |
 |EventTypes|Array (string (enum))|Read-only (optional)<br> |The types of events that are sent to the destination. For possible values, see *Event types* table.|
 |ResourceTypes|Array (string, null)|Read-only (optional)<br> |The list of resource type values (Schema names) that correspond to the `OriginResources`. For possible values, perform `GET` on `redfish/v1/EventService` and check values listed under `ResourceTypes` in the JSON response.<br> Examples: "ComputerSystem", "Storage", "Task"<br> |
 |Context|String|Read/write Required (null)<br> |A string that is stored with the event destination subscription.|

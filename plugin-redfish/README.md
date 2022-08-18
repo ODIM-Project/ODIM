@@ -562,11 +562,7 @@ When adding a new subscription, follow these guidelines:
 
 
 
-
-
-
-
-## The plugin service details
+## Plugin service details
 
 The Plugin service is an in-memory process started as a docker instance as part of the overall host start-up process. This service hosts the API server, event synchronizer, load balancers, worker threads, EMB publishers and, subscribers among other entities as the implementation decides.
 

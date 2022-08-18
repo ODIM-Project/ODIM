@@ -15,8 +15,6 @@
 package logs
 
 import (
-	"fmt"
-
 	"github.com/sirupsen/logrus"
 )
 
@@ -208,7 +206,6 @@ func DebugWithFileds(fields map[string]interface{}, args ...interface{}) {
 // InfoWithFileds calls Info method on package level after appending the fields passed
 func InfoWithFileds(fields map[string]interface{}, args ...interface{}) {
 	data := getFields(fields)
-	fmt.Println("data info:", data)
 	Logger.WithFields(data).Info(args...)
 }
 

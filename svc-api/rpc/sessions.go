@@ -26,9 +26,10 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-api/ratelimiter"
 )
 
-var(
+var (
 	NewSessionClientFunc = sessionproto.NewSessionClient
 )
+
 // DoSessionCreationRequest will do the rpc calls for the auth
 func DoSessionCreationRequest(req sessionproto.SessionCreateRequest) (*sessionproto.SessionCreateResponse, error) {
 	if config.Data.SessionLimitCountPerUser > 0 {
@@ -48,7 +49,7 @@ func DoSessionCreationRequest(req sessionproto.SessionCreateRequest) (*sessionpr
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSessionClientFunc(conn)
 
 	// Call the CreateSession
@@ -66,7 +67,7 @@ func DeleteSessionRequest(sessionID, sessionToken string) (*sessionproto.Session
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSessionClientFunc(conn)
 
 	// Call the DeleteSession
@@ -87,7 +88,7 @@ func GetSessionRequest(sessionID, sessionToken string) (*sessionproto.SessionRes
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSessionClientFunc(conn)
 
 	// Call the GetSession
@@ -108,7 +109,7 @@ func GetAllActiveSessionRequest(sessionID, sessionToken string) (*sessionproto.S
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSessionClientFunc(conn)
 
 	// Call the GetAllActiveSessions
@@ -129,7 +130,7 @@ func GetSessionServiceRequest() (*sessionproto.SessionResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewSessionClientFunc(conn)
 
 	// Call the GetSessionService

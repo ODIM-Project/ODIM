@@ -23,16 +23,17 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
-var(
+var (
 	NewManagersClientFunc = managersproto.NewManagersClient
 )
+
 //GetManagersCollection will do the rpc call to collect Managers
 func GetManagersCollection(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	conn, err := ClientFunc(services.Managers)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewManagersClientFunc(conn)
 	resp, err := asService.GetManagersCollection(context.TODO(), &req)
 	if err != nil {
@@ -48,7 +49,7 @@ func GetManagers(req managersproto.ManagerRequest) (*managersproto.ManagerRespon
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewManagersClientFunc(conn)
 	resp, err := asService.GetManager(context.TODO(), &req)
 	if err != nil {
@@ -64,7 +65,7 @@ func GetManagersResource(req managersproto.ManagerRequest) (*managersproto.Manag
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewManagersClientFunc(conn)
 	resp, err := asService.GetManagersResource(context.TODO(), &req)
 	if err != nil {
@@ -80,7 +81,7 @@ func VirtualMediaInsert(req managersproto.ManagerRequest) (*managersproto.Manage
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewManagersClientFunc(conn)
 	resp, err := asService.VirtualMediaInsert(context.TODO(), &req)
 	if err != nil {
@@ -96,7 +97,7 @@ func VirtualMediaEject(req managersproto.ManagerRequest) (*managersproto.Manager
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewManagersClientFunc(conn)
 	resp, err := asService.VirtualMediaEject(context.TODO(), &req)
 	if err != nil {
@@ -112,7 +113,7 @@ func GetRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.M
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	mService := NewManagersClientFunc(conn)
 	resp, err := mService.GetRemoteAccountService(context.TODO(), &req)
 	if err != nil {
@@ -128,7 +129,7 @@ func CreateRemoteAccountService(req managersproto.ManagerRequest) (*managersprot
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	mService := NewManagersClientFunc(conn)
 	resp, err := mService.CreateRemoteAccountService(context.TODO(), &req)
 	if err != nil {
@@ -144,7 +145,7 @@ func UpdateRemoteAccountService(req managersproto.ManagerRequest) (*managersprot
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	mService := NewManagersClientFunc(conn)
 	resp, err := mService.UpdateRemoteAccountService(context.TODO(), &req)
 	if err != nil {

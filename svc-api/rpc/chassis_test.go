@@ -89,12 +89,12 @@ func TestGetChassisResource(t *testing.T) {
 		req chassisproto.GetChassisRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
+		name                 string
+		args                 args
 		ClientFunc           func(clientName string) (*grpc.ClientConn, error)
 		NewChassisClientFunc func(cc *grpc.ClientConn) chassisproto.ChassisClient
-		want    *chassisproto.GetChassisResponse
-		wantErr bool
+		want                 *chassisproto.GetChassisResponse
+		wantErr              bool
 	}{
 		{
 			name:                 "Client func error",
@@ -134,12 +134,12 @@ func TestGetChassis(t *testing.T) {
 		req chassisproto.GetChassisRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
+		name                 string
+		args                 args
 		ClientFunc           func(clientName string) (*grpc.ClientConn, error)
 		NewChassisClientFunc func(cc *grpc.ClientConn) chassisproto.ChassisClient
-		want    *chassisproto.GetChassisResponse
-		wantErr bool
+		want                 *chassisproto.GetChassisResponse
+		wantErr              bool
 	}{
 		{
 			name:                 "Client func error",
@@ -179,12 +179,12 @@ func TestCreateChassis(t *testing.T) {
 		req chassisproto.CreateChassisRequest
 	}
 	tests := []struct {
-		name    string
-		args    
+		name string
+		args
 		ClientFunc           func(clientName string) (*grpc.ClientConn, error)
 		NewChassisClientFunc func(cc *grpc.ClientConn) chassisproto.ChassisClient
-		want    *chassisproto.GetChassisResponse
-		wantErr bool
+		want                 *chassisproto.GetChassisResponse
+		wantErr              bool
 	}{
 		{
 			name:                 "Client func error",
@@ -224,12 +224,12 @@ func TestDeleteChassis(t *testing.T) {
 		req chassisproto.DeleteChassisRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
+		name                 string
+		args                 args
 		ClientFunc           func(clientName string) (*grpc.ClientConn, error)
 		NewChassisClientFunc func(cc *grpc.ClientConn) chassisproto.ChassisClient
-		want    *chassisproto.GetChassisResponse
-		wantErr bool
+		want                 *chassisproto.GetChassisResponse
+		wantErr              bool
 	}{
 		{
 			name:                 "Client func error",
@@ -269,12 +269,12 @@ func TestUpdateChassis(t *testing.T) {
 		req chassisproto.UpdateChassisRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
+		name                 string
+		args                 args
 		ClientFunc           func(clientName string) (*grpc.ClientConn, error)
 		NewChassisClientFunc func(cc *grpc.ClientConn) chassisproto.ChassisClient
-		want    *chassisproto.GetChassisResponse
-		wantErr bool
+		want                 *chassisproto.GetChassisResponse
+		wantErr              bool
 	}{
 		{
 			name:                 "Client func error",

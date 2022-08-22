@@ -23,9 +23,10 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
-var(
+var (
 	NewEventsClientFunc = eventsproto.NewEventsClient
 )
+
 // DoGetEventService defines the RPC call function for
 // the GetEventService from events micro service
 func DoGetEventService(req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
@@ -33,7 +34,7 @@ func DoGetEventService(req eventsproto.EventSubRequest) (*eventsproto.EventSubRe
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	events := NewEventsClientFunc(conn)
 
 	resp, err := events.GetEventService(context.TODO(), &req)
@@ -52,7 +53,7 @@ func DoCreateEventSubscription(req eventsproto.EventSubRequest) (*eventsproto.Ev
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	events := NewEventsClientFunc(conn)
 
 	resp, err := events.CreateEventSubscription(context.TODO(), &req)
@@ -71,7 +72,7 @@ func DoSubmitTestEvent(req eventsproto.EventSubRequest) (*eventsproto.EventSubRe
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	events := NewEventsClientFunc(conn)
 
 	resp, err := events.SubmitTestEvent(context.TODO(), &req)
@@ -90,7 +91,7 @@ func DoGetEventSubscription(req eventsproto.EventRequest) (*eventsproto.EventSub
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	events := NewEventsClientFunc(conn)
 
 	resp, err := events.GetEventSubscription(context.TODO(), &req)
@@ -109,7 +110,7 @@ func DoDeleteEventSubscription(req eventsproto.EventRequest) (*eventsproto.Event
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	events := NewEventsClientFunc(conn)
 
 	resp, err := events.DeleteEventSubscription(context.TODO(), &req)
@@ -128,7 +129,7 @@ func DoGetEventSubscriptionsCollection(req eventsproto.EventRequest) (*eventspro
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	events := NewEventsClientFunc(conn)
 
 	resp, err := events.GetEventSubscriptionsCollection(context.TODO(), &req)

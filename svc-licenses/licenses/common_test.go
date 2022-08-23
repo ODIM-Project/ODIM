@@ -131,12 +131,12 @@ func mockGetResource(table, key string, dbtype persistencemgr.DbType) (interface
 		]
 		}}`), nil
 	} else if key == "/redfish/v1/AggregationService/Aggregates/uuid" {
-		resourceData := "{\"Elements\":[\"/redfish/v1/Systems/uuid.1\"]}"
+		resourceData := "{\"Elements\":[{\"@odata.id\":\"/redfish/v1/Systems/uuid.1\"}]}"
 		var resource interface{}
 		json.Unmarshal([]byte(resourceData), &resource)
 		return resource, nil
 	} else if key == "/redfish/v1/AggregationService/Aggregates/uuid2" {
-		resourceData := "{\"Elements\":[\"/redfish/v1/Systems/uuid.2\"]}"
+		resourceData := "{\"Elements\":[{\"@odata.id\":\"/redfish/v1/Systems/uuid.2\"}]}"
 		var resource interface{}
 		json.Unmarshal([]byte(resourceData), &resource)
 		return resource, nil

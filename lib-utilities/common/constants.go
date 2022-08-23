@@ -156,7 +156,7 @@ const (
 )
 
 var Types = map[string]string{
-	"EthernetInterfaces": "#EthernetInterface.v1_8_1.EthernetInterface",
+	"EthernetInterfaces": "#EthernetInterface.v1_8_0.EthernetInterface",
 }
 
 // RediscoverResources contains to get only these resource from the device when

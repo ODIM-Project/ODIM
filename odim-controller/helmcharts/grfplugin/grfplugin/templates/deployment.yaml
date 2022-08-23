@@ -53,6 +53,9 @@ spec:
             - key: odimra_serverkey
               path: odimra_server.key
               mode: 0444
+            - key: odimra_rsaprivate
+              path: odimra_rsa.private
+              mode: 0444
             {{- if eq .Values.odimra.messageBusType "Kafka" }}
             - key: odimra_kafka_clientcrt
               path: odimra_kafka_client.crt

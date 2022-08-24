@@ -2467,10 +2467,13 @@ This procedure shows how to set up time synchronization across all the nodes (de
 4. Type the following commands:
 
    ```
-   $ sudo systemctl restart chrony
-   $ sudo systemctl enable chrony
+   sudo systemctl restart chrony
    ```
-
+   
+```
+   sudo systemctl enable chrony
+   ```
+   
    
 
 ## Downloading and installing Go language
@@ -2567,10 +2570,6 @@ Run the following commands:
 
 1. Run the following commands:
    
-   > **NOTE**: If the current version of a package is not found, please run the following command to check for the latest available version of that package and install the first version listed in the output.
-   
-   ​	`sudo apt-cache madison <package name>`
-	
    1. ```
       sudo apt-get install -y apt-transport-https=2.0.9 ca-certificates=20211016~20.04.1 curl=7.68.0-1ubuntu2.12
       ```
@@ -2586,12 +2585,19 @@ Run the following commands:
    4. ```
       sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
       ```
-   
+	
    5. ```
       sudo apt-get install -y docker-ce=5:20.10.12~3-0~ubuntu-focal docker-ce-cli=5:20.10.12~3-0~ubuntu-focal containerd.io --allow-downgrades
       ```
    
+   > **NOTE**: If the current version of a package is not found, please run the following command to check for the latest available version of that package and install the first version listed in the output.
+   
+   ```
+   sudo apt-cache madison <package name>
+   ```
+   
 2. Configure overlay storage for Docker:
+
    ```
    cat << EOF | sudo tee /etc/docker/daemon.json
    {
@@ -2616,7 +2622,7 @@ Run the following commands:
       ```
       sudo groupadd docker
       ```
-   
+
 4. Configure to use Docker CLI without sudo access:
    ```
    sudo usermod -aG docker $USER
@@ -2629,7 +2635,7 @@ Run the following commands:
    ```
 
    > **NOTE**: If you are unable to access Docker CLI without `sudo` even after performing this step, log out and log back in so that Docker group membership is re-evaluated.
-   
+
 6. Restart Docker service:
    ```
    sudo systemctl enable docker
@@ -3047,7 +3053,7 @@ The protoc compiler provides a language-neutral, platform-neutral, extensible me
    - Ensure that `kafka.truststore.jks` and `kafka.truststore.jks` have the following SAN entries:
 
      ```
-    DNS.1 = kafka
+     DNS.1 = kafka
      DNS.2 = kafka1.kafka.${​​​​ODIMRA_NAMESPACE}​​​​.svc.cluster.local
      DNS.3 = kafka2.kafka.${​​​​ODIMRA_NAMESPACE}​​​​.svc.cluster.local
      DNS.4 = kafka3.kafka.${​​​​ODIMRA_NAMESPACE}​​​​.svc.cluster.local
@@ -3060,7 +3066,7 @@ The protoc compiler provides a language-neutral, platform-neutral, extensible me
    - Ensure that `zookeeper.truststore.jks` and `zookeeper.truststore.jks` have the following SAN entries:
 
      ```
-    DNS.1 = zookeeper
+     DNS.1 = zookeeper
      DNS.2 = zookeeper1.zookeeper.${​​ODIMRA_NAMESPACE}​​.svc.cluster.local
      DNS.3 = zookeeper2.zookeeper.${​​ODIMRA_NAMESPACE}​​.svc.cluster.local
      DNS.4 = zookeeper3.zookeeper.${​​ODIMRA_NAMESPACE}​​.svc.cluster.local

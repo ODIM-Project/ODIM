@@ -195,7 +195,7 @@ func Router() *iris.Application {
 	serviceRoot := handle.InitServiceRoot()
 
 	router := iris.New()
-
+	router.OnErrorCode(iris.StatusNotFound, handle.SystemsMethodInvalidURI)
 	var reqBody map[string]interface{}
 	// Parses the URL and performs URL decoding for path
 	// Getting the request body copy
@@ -508,6 +508,10 @@ func Router() *iris.Application {
 	chassis.Get("/{id}/PCIeDevices/{rid}", cha.GetChassisResource)
 	chassis.Any("/{id}/PCIeDevices", handle.ChassisMethodNotAllowed)
 	chassis.Any("/{id}/PCIeDevices/{rid}", handle.ChassisMethodNotAllowed)
+	chassis.Get("/{id}/PCIeDevices/{rid}/PCIeFunctions", cha.GetChassisResource)
+	chassis.Any("/{id}/PCIeDevices/{rid}/PCIeFunctions", handle.ChassisMethodNotAllowed)
+	chassis.Get("/{id}/PCIeDevices/{rid}/PCIeFunctions/{rid2}", cha.GetChassisResource)
+	chassis.Any("/{id}/PCIeDevices/{rid}/PCIeFunctions/{rid2}", handle.ChassisMethodNotAllowed)
 	chassis.Get("/{id}/Sensors", cha.GetChassisResource)
 	chassis.Get("/{id}/Sensors/{rid}", cha.GetChassisResource)
 	chassis.Any("/{id}/Sensors", handle.ChassisMethodNotAllowed)
@@ -680,6 +684,14 @@ func Router() *iris.Application {
 	telemetryService.Get("/MetricReports/{id}", telemetry.GetMetricReport)
 	telemetryService.Get("/Triggers/{id}", telemetry.GetTrigger)
 	telemetryService.Patch("/Triggers/{id}", telemetry.UpdateTrigger)
+	telemetryService.Any("/MetricDefinitions", handle.MethodNotAllowed)
+	telemetryService.Any("/MetricReportDefinitions", handle.MethodNotAllowed)
+	telemetryService.Any("/MetricReports", handle.MethodNotAllowed)
+	telemetryService.Any("/Triggers", handle.MethodNotAllowed)
+	telemetryService.Any("/MetricDefinitions/{id}", handle.MethodNotAllowed)
+	telemetryService.Any("/MetricReportDefinitions/{id}", handle.MethodNotAllowed)
+	telemetryService.Any("/MetricReports/{id}", handle.MethodNotAllowed)
+	telemetryService.Any("/Triggers/{id}", handle.MethodNotAllowed)
 
 	licenseService := v1.Party("/LicenseService", middleware.SessionDelMiddleware)
 	licenseService.SetRegisterRule(iris.RouteSkip)

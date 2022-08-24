@@ -96,9 +96,10 @@ Resource Aggregator for ODIM comprises the following two key components:
 
     -  Generic Redfish plugin for ODIM (GRF plugin): This plugin can be used for any Redfish-compliant device
     -  Dell plugin for ODIM: Plugin for managing Dell servers
-   -  Plugin for unmanaged racks \(URP): This plugin acts as a resource manager for unmanaged racks.
-   -  Cisco ACI plugin: Plugin for managing Cisco ACI servers
-   -  Integration of additional third-party plugins
+    -  Lenovo plugin: Plugin for managing Lenovo servers
+    -  Cisco ACI plugin: Plugin for managing Cisco ACI servers
+    -  Plugin for unmanaged racks (URP): This plugin acts as a resource manager for unmanaged racks
+    -  Integration of additional third-party plugins
    
    Resource Aggregator for ODIM allows third parties to easily develop and integrate their plugins into its framework. For more information, see *[Resource Aggregator for Open Distributed Infrastructure Management™ Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md)*.
    
@@ -120,7 +121,8 @@ Deploying Resource Aggregator for ODIM in a data center involves installing the 
     - Tasks
     - Update
     - Telemetry
--   The plugin microservices such as the Dell plugin, URP, and additional third-party plugins
+    - License
+-   The plugin microservices such as the Dell plugin, Lenovo plugin, URP, and additional third-party plugins
 -   Third-party services such as Kafka, etcd, Zookeeper, and Redis
 
 These microservices can be deployed as portable, light-weight Docker containers. The containerized services are orchestrated and managed by Kubernetes—an open-source container orchestration platform that helps to automate, scale, and manage a containerized application. For more information on Kubernetes and its architecture, see *[https://kubernetes.io/docs/home/](https://kubernetes.io/docs/home/)*.
@@ -131,7 +133,7 @@ The following diagram illustrates how Resource Aggregator for ODIM is deployed a
 
 To deploy Resource Aggregator for ODIM, you will require:
 
--   One virtual machine \(VM\) or a physical machine called the deployment node to deploy Kubernetes and Resource Aggregator for ODIM microservices. You can deploy the Resource Aggregator for ODIM microservices using the odim-controller command-line utility and use commands to:
+-   One virtual machine (VM) or a physical machine called the deployment node to deploy Kubernetes and Resource Aggregator for ODIM microservices. You can deploy the Resource Aggregator for ODIM microservices using the odim-controller command-line utility and use commands to:
     -   Set up the Docker environment
     -   Set up a Kubernetes cluster
     -   Deploy the containerized Resource Aggregator for ODIM microservices and third-party services on the Kubernetes cluster nodes
@@ -270,7 +272,7 @@ The following table lists the software components and versions that are compatib
       ```
 
    7. ```
-      sudo apt-get install openjdk-11-jre-headless=11.0.16+8-0ubuntu1.20.04 -y
+      sudo apt-get install openjdk-11-jre-headless=11.0.16+8-0ubuntu1~20.04 -y
       ```
 
    8. ```
@@ -322,7 +324,7 @@ The following table lists the software components and versions that are compatib
 
 6. *[Download and install go-language](#downloading-and-installing-go-language)* on the deployment node.
 
-7. *[Configure Docker proxy](#configuring-docker-proxy)* on the deployment node.
+7. *[Configure Docker proxy](#configuring-proxy-for-docker)* on the deployment node.
 
 8. *[Install Docker](#installing-docker)* on the deployment node.
 
@@ -381,7 +383,7 @@ The following table lists the software components and versions that are compatib
    |quay.io/calico/cni| v3.20.3 |quay.io_calico_cni.tar |
    |quay.io/calico/kube-controllers| v3.20.3 |quay.io_calico_kube-controllers.tar |
    |k8s.gcr.io/dns/k8s-dns-node-cache|1.21.1 |k8s.gcr.io_dns_k8s-dns-node-cache.tar |
-   |k8s.gcr.io/pause|3.4.1 |k8s.gcr.io_pause.tar |
+   |k8s.gcr.io/pause|3.6 |k8s.gcr.io_pause.tar |
    |nginx|1.21.4 |nginx.tar |
    |k8s.gcr.io/coredns/coredns|v1.8.0 |k8s.gcr.io_coredns_coredns.tar |
    |quay.io/coreos/etcd|v3.4.13 |quay.io_coreos_etcd.tar |
@@ -395,7 +397,7 @@ The following table lists the software components and versions that are compatib
    
    You get an output similar to the following sample:
    
-   <img src="docs/images/kubernetes_images.png" alt="Cluster node" style="zoom:80%;" />
+   <img src="docs/images/kubernetes_images.png" alt="Cluster node" style="zoom:70%;" />
    
 3. Save each Docker image to a tar archive:
 
@@ -1171,19 +1173,19 @@ Topics covered in this section include:
 3. Log in to the deployment node and generate an encrypted password of Resource Aggregator for ODIM to be used in the `urplugin-config.yaml` file:
 
     ```
-echo -n '<ODIMRA password>' |openssl pkeyutl -encrypt -inkey <odimCertsPath>/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
+    echo -n '{ODIMRA password}' |openssl pkeyutl -encrypt -inkey {odimCertsPath}/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
     ```
     
     In this command, replace:
 
-    -  <ODIMRA password> with the password of Resource Aggregator for ODIM \(default administrator account password\).
-    -  <odimCertsPath> with the path you specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
+    -  {ODIMRA password} with the password of Resource Aggregator for ODIM (default administrator account password).
+    -  {odimCertsPath} with the path you specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
     
     Example output:
     
-    ```
-    ip/jrKjQdzKIU1JvT4ZQ6gbCe2XJtCKPRgqOQv6g3aIAYtG+hpVgel3k67TB723h9dN2cABWZgE+b9CAxbIXj3qZZFWrUMMuPkT4fwtW8fTlhdR+phmOvnnSw5bvUrXyl5Se1IczwtMXfhqk7U8eqpJnZ6xWNR8Q1K7baDv1QvZwej/v3bqHRTC93pDL+3SvE8VCyrIgbMVdfvv3+mJKvs2F7hXoTJiwjRfKGyzdP0yRIHAFOB3m/xnv6ZIRm8Ak6+sx18NRq8RH20bktzhZ45fT+iX4twMJG1lI0KRJ3j/PL+IqY4MmYzv/72fQhMznL39Rjr9LR6mB/JGI0ww0sMUCFr6obzQfQWv1so+Ck694fNJMQPXQS64VcqVDuISXSd4cqkdMx9zBmfDbgzMQQVwgjDgt4nC1w8/wGSfMtkms8rSJrBa18hKCWi+jfhASbNM84udKc0kQsQJlsnjcdsL84zrE8iUqqXC/fK2cQbNL31H5C+qEfJqdNTauQSskkK3cpNWh1FVw736WBYYJSja59q5QwMniXldwcvRglEIELsjKgjbuOnQoIZaVTcbheaa2b1XAiRKTKuPmweysyV3fbuR0jgSJTmdTehrtYG9omjUbg/L7WFjC43JWq8suWi5uch+jHtGG5mZJFFdkE37pQd3wzHBSa+/9Yq9/ZSY=
-    ```
+```
+     ip/jrKjQdzKIU1JvT4ZQ6gbCe2XJtCKPRgqOQv6g3aIAYtG+hpVgel3k67TB723h9dN2cABWZgE+b9CAxbIXj3qZZFWrUMMuPkT4fwtW8fTlhdR+phmOvnnSw5bvUrXyl5Se1IczwtMXfhqk7U8eqpJnZ6xWNR8Q1K7baDv1QvZwej/v3bqHRTC93pDL+3SvE8VCyrIgbMVdfvv3+mJKvs2F7hXoTJiwjRfKGyzdP0yRIHAFOB3m/xnv6ZIRm8Ak6+sx18NRq8RH20bktzhZ45fT+iX4twMJG1lI0KRJ3j/PL+IqY4MmYzv/72fQhMznL39Rjr9LR6mB/JGI0ww0sMUCFr6obzQfQWv1so+Ck694fNJMQPXQS64VcqVDuISXSd4cqkdMx9zBmfDbgzMQQVwgjDgt4nC1w8/wGSfMtkms8rSJrBa18hKCWi+jfhASbNM84udKc0kQsQJlsnjcdsL84zrE8iUqqXC/fK2cQbNL31H5C+qEfJqdNTauQSskkK3cpNWh1FVw736WBYYJSja59q5QwMniXldwcvRglEIELsjKgjbuOnQoIZaVTcbheaa2b1XAiRKTKuPmweysyV3fbuR0jgSJTmdTehrtYG9omjUbg/L7WFjC43JWq8suWi5uch+jHtGG5mZJFFdkE37pQd3wzHBSa+/9Yq9/ZSY=
+```
     
 4. On the deployment node, copy the UR plugin configuration file and the hook script to `~/plugins/urplugin`.
    ```
@@ -1238,13 +1240,13 @@ echo -n '<ODIMRA password>' |openssl pkeyutl -encrypt -inkey <odimCertsPath>/odi
 
 8. Save the URP Docker image on the deployment node at `~/plugins/urplugin`.
 
-      ```
+     ```
      docker save urplugin:3.0 -o ~/plugins/urplugin/urplugin.tar
      ```
 
 9. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
 
-      ```
+     ```
      cd ~/ODIM/odim-controller/scripts
      ```
 
@@ -1309,7 +1311,7 @@ echo -n '<ODIMRA password>' |openssl pkeyutl -encrypt -inkey <odimCertsPath>/odi
     Example output of the URP pod details:
     
     ```
-    NAME 						READY 	STATUS 		RESTARTS    AGE
+    NAME 				READY 	STATUS 		RESTARTS    	AGE
     urplugin-5fc4b6788-2xx97 	1/1 	Running 	0 	    	4d22h
     ```
 
@@ -1464,7 +1466,7 @@ echo -n '<ODIMRA password>' |openssl pkeyutl -encrypt -inkey <odimCertsPath>/odi
     Example output of the Dell plugin pod details:
     
     ```
-    NAME 						READY 	STATUS 		RESTARTS    AGE
+    NAME 				READY 	STATUS 		RESTARTS    		AGE
     dellplugin-5fc4b6788-2xx97 	1/1 	Running 	0 	   		4d22h
     ```
 
@@ -1613,7 +1615,7 @@ echo -n '<ODIMRA password>' |openssl pkeyutl -encrypt -inkey <odimCertsPath>/odi
     Example output of the Lenovo plugin pod details:
 
     ```
-    NAME 							READY 	STATUS 		RESTARTS    AGE
+    NAME 				READY 	STATUS 		RESTARTS    		AGE
     lenovoplugin-5fc4b6788-2xx97 	1/1 	Running 	0 	   		4d22h
     ```
 

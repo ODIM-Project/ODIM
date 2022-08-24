@@ -321,7 +321,7 @@ The following table lists the software components and versions that are compatib
    > **NOTE**: If a package version is unavailable or outdated, run the following command to view the latest available versions of that package and install the first version listed in the output.
    
    ```
-sudo apt-cache madison <package name>
+   sudo apt-cache madison <package name>
    ```
    
 6. *[Download and install go-language](#downloading-and-installing-go-language)* on the deployment node.

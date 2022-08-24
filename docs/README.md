@@ -12203,7 +12203,7 @@ curl -i -X PATCH \
 '{
   "EventTriggers": ["Alert"]
 }' \
- 'https://10.24.1.33:30080/redfish/v1/TelemetryService/Triggers/{TriggersID}'
+ 'https://{odimra_host}:{port}/redfish/v1/TelemetryService/Triggers/{TriggersID}'
 
 ```
 

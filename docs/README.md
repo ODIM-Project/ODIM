@@ -11651,6 +11651,7 @@ curl -i GET \
 ```
 {
    "@odata.id":"/redfish/v1/TelemetryService",
+   "@odata.context": "/redfish/v1/$metadata#TelemetryService.TelemetryService",
    "@odata.type":"#TelemetryService.v1_3_1.TelemetryService",
    "Id":"TelemetryService",
    "Name":"Telemetry Service",
@@ -11660,11 +11661,6 @@ curl -i GET \
       "HealthRollup":"OK"
    },
    "ServiceEnabled":true,
-   "SupportedCollectionFunctions":[
-      "Average",
-      "Minimum",
-      "Maximum"
-   ],
    "MetricDefinitions":{
       "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions"
    },
@@ -11704,6 +11700,10 @@ curl -i GET \
 
 ```
 {
+  "@Redfish.CollectionCapabilities":{
+  "@odata.type": "",
+  "Capabilities": null
+},
     "@odata.context": "/redfish/v1/$metadata#MetricDefinitionCollection.MetricDefinitionCollection",
     "@odata.etag": "W/\"1E796226\"",
     "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions",
@@ -11822,6 +11822,10 @@ curl -i GET \
 
 ```
 {
+    "@Redfish.CollectionCapabilities":{
+    "@odata.type": "",
+    "Capabilities": null
+},
     "@odata.context": "/redfish/v1/$metadata#MetricReportDefinitionCollection.MetricReportDefinitionCollection",
     "@odata.etag": "W/\"BFD5C070\"",
     "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions",
@@ -11884,7 +11888,6 @@ curl -i GET \
     "Id": "CPUUtilCustom1",
     "MetricProperties": [
         "/redfish/v1/Systems/{SystemID}#SystemUsage/CPUUtil",
-        "SystemUsage/CPUUtil"
     ],
     "MetricReport": {
         "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1"
@@ -11938,6 +11941,10 @@ curl -i GET \
 
 ```
 {
+    "@Redfish.CollectionCapabilities":{
+    "@odata.type": "",
+    "Capabilities": null
+},
     "@odata.context": "/redfish/v1/$metadata#MetricReportCollection.MetricReportCollection",
     "@odata.etag": "W/\"BFD5C070\"",
     "@odata.id": "/redfish/v1/TelemetryService/MetricReports",
@@ -12073,6 +12080,10 @@ curl -i GET \
 
 ```
 {
+    "@Redfish.CollectionCapabilities":{
+    "@odata.type": "",
+    "Capabilities": null
+},
     "@odata.context": "/redfish/v1/$metadata#TriggersCollection.TriggersCollection",
     "@odata.etag": "W/\"DA402EBA\"",
     "@odata.id": "/redfish/v1/TelemetryService/Triggers",
@@ -12133,7 +12144,7 @@ curl -i GET \
     "@odata.context": "/redfish/v1/$metadata#Triggers.Triggers",
     "@odata.etag": "W/\"BFAAE441\"",
     "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUUtilTriggers",
-    "@odata.type": "#Triggers.v1_2_0.Triggers",
+    "@odata.type": "#Triggers.v1_0_0.Triggers",
     "Description": "Triggers for CPU Utilization",
     "Id": "CPUUtilTriggers",
     "MetricProperties": [

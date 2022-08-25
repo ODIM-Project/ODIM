@@ -54,7 +54,7 @@ type Port struct {
 	EnvironmentMetrics      *Link                `json:"EnvironmentMetrics,omitempty"`
 	FunctionMaxBandwidth    []*FunctionBandwidth `json:"FunctionMaxBandwidth,omitempty"`
 	FunctionMinBandwidth    []*FunctionBandwidth `json:"FunctionMinBandwidth,omitempty"`
-	Location                *Link                `json:"Location,omitempty"`
+	Location                interface{}          `json:"Location,omitempty"`
 	SFP                     SFP                  `json:"SFP,omitempty"`
 }
 

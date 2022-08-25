@@ -47,7 +47,7 @@ type StorageControllers struct {
 	Oid                          string                    `json:"@odata.id"`
 	ODataContext                 string                    `json:"@odata.context,omitempty"`
 	ODataEtag                    string                    `json:"@odata.etag,omitempty"`
-	ODataType                    string                    `json:"@odata.type"`
+	ODataType                    string                    `json:"@odata.type,omitempty"`
 	AssetTag                     string                    `json:"AssetTag,omitempty"`
 	FirmwareVersion              string                    `json:"FirmwareVersion,omitempty"`
 	Manufacturer                 string                    `json:"Manufacturer,omitempty"`

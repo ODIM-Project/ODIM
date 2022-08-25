@@ -466,7 +466,7 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "PCIeDevice.v1_9_0"},
 				},
 			},
-      models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/PCIeFunction_v1.xml",
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/PCIeFunction_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "PCIeFunction"},
 					models.Include{Namespace: "PCIeFunction.v1_2_3"},
@@ -593,6 +593,17 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/StorageCollection_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "StorageCollection"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/StorageController_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "StorageController"},
+					models.Include{Namespace: "Storage.v1_6_0"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/StorageControllerCollection_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "StorageControllerCollection"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Switch_v1.xml",

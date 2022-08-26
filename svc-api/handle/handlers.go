@@ -598,7 +598,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/StorageController_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "StorageController"},
-					models.Include{Namespace: "Storage.v1_6_0"},
+					models.Include{Namespace: "StorageController.v1_6_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/StorageControllerCollection_v1.xml",

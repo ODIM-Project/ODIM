@@ -217,11 +217,11 @@ func (e *ExternalInterface) RediscoverResources() error {
 			for _, member := range members.([]interface{}) {
 				systemURL := member.(map[string]interface{})["@odata.id"].(string)
 				if e.isServerRediscoveryRequired(target.DeviceUUID, systemURL) == true {
-					e.RediscoverSystemInventory(target.DeviceUUID, systemURL, false)
+					e.RediscoverSystemInventory(target.DeviceUUID, systemURL, true)
 					systemURLArray = append(systemURLArray, systemURL)
 				}
 			}
-			e.publishResourceUpdatedEvent(systemURLArray, "systemsCollection")
+			e.publishResourceUpdatedEvent(systemURLArray, "SystemsCollection")
 		}(targets[index])
 	}
 	// if everything is OK return success

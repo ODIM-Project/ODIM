@@ -2686,9 +2686,9 @@ Run the following commands:
      haDeploymentEnabled: True
      connectionMethodConf:
      - ConnectionMethodType: Redfish
-       ConnectionMethodVariant: Compute:BasicAuth: GRF_v1.0.0
+       ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
      - ConnectionMethodType: Redfish
-       ConnectionMethodVariant: Storage:BasicAuth: STG_v1.0.0
+       ConnectionMethodVariant: Storage:BasicAuth:STG_v1.0.0
      etcHostsEntries: ""
    
      appsLogPath: /var/log/odimra

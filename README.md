@@ -793,7 +793,7 @@ Topics covered in this section include:
         haDeploymentEnabled: True
         connectionMethodConf:
         - ConnectionMethodType: Redfish
-          ConnectionMethodVariant: Compute:BasicAuth: GRF_v1.0.0
+          ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
         etcHostsEntries:
       
         appsLogPath: /var/log/odimra
@@ -1739,8 +1739,8 @@ The plugin you want to add is successfully deployed.
    
    |Plugin|Default username|Default password|Connection method variant|
    |------|----------------|----------------|------|
-   |GRF plugin|admin|GRFPlug!n12$4|Compute:BasicAuth:GRF\_v1.0.0|
-   |URP|admin|Plug!n12$4|Compute:BasicAuth:URP\_v1.0.0|
+   |GRF plugin|admin|GRFPlug!n12$4|Compute:BasicAuth:GRF_v1.0.0|
+   |URP|admin|Plug!n12$4|Compute:BasicAuth:URP_v1.0.0|
    
     Use the following curl command to add the plugin:
    

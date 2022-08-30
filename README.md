@@ -454,6 +454,7 @@ The following table lists the software components and versions that are compatib
 	   ```
 	   docker pull stakater/reloader:v0.0.76
 	   ```
+
 	   ```
 	   docker pull busybox:1.33
 	   ```
@@ -466,7 +467,7 @@ The following table lists the software components and versions that are compatib
     Example: `docker save -o api.tar api:4.0`
 
     The following table lists the Docker images of all Resource Aggregator for ODIM services:
-    
+
     | **Docker image name** | **Version** | **Docker image bundle name** |
     | :-------------------- | ----------- | ---------------------------- |
     | account-session       | 3.1         | account-session.tar          |
@@ -491,12 +492,12 @@ The following table lists the software components and versions that are compatib
     | urplugin              | 3.1         | urplugin.tar                 |
     | grfplugin             | 3.1         | grfplugin.tar                |
     | telemetry             | 2.1         | telemetry.tar                |
-    
+
 3. To install the Docker images of all services on the cluster nodes, create a directory called `odimra_images` on the deployment node and copy each tar archive to this directory. 
     For example: `cp /home/bruce/ODIM/*.tar /home/bruce/odimra_images`
 
     > **IMPORTANT**: While deploying ODIMRA, update the `odimraImagePath` parameter in `kube_deploy_nodes.yaml` file with the path of the `odimra_images` directory you choose in this step. The images are automatically installed on all cluster nodes after deployment.
-    
+
     > **NOTE**: The `kube_deploy_nodes.yaml` file is the configuration file used by odim-controller to set up a Kubernetes cluster and to deploy the Resource Aggregator for ODIM services.
 
 
@@ -1244,7 +1245,7 @@ Topics covered in this section include:
 8. Save the URP Docker image on the deployment node at `~/plugins/urplugin`.
 
      ```
-     docker save urplugin:3.0 -o ~/plugins/urplugin/urplugin.tar
+     docker save urplugin:3.1 -o ~/plugins/urplugin/urplugin.tar
      ```
 
 9. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
@@ -1263,7 +1264,7 @@ Topics covered in this section include:
     | ---------------------------- | ------------------------------------------------------------ |
     | connectionMethodConf         | The connection method associated with URP: ConnectionMethodVariant: `Compute:BasicAuth:URP_v1.0.0`<br> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`.<br>Add these values to the existing comma-separated list.<br> |
-    | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`.<br>Add these values to the existing comma-separated list.<br> |
+    | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`, `redis-ha-ondisk.odim.svc.cluster.local`.<br>Add these values to the existing comma-separated list.<br><br />**NOTE**: `redis-ha-ondisk.odim.svc.cluster.local` is applicable to three-node deployment only. |
     | odimPluginPath               | The path of the directory where the URP Helm package, the `urplugin` image, and the modified `urplugin-config.yaml` are copied. |
 
     **Example**:
@@ -1392,13 +1393,13 @@ Topics covered in this section include:
 7. Save the Dell plugin Docker image on the deployment node at `~/plugins/dellplugin`.
 
     ```
-    docker save dellplugin:2.0 -o ~/plugins/dellplugin/dellplugin.tar
+    docker save dellplugin:2.1 -o ~/plugins/dellplugin/dellplugin.tar
     ```
 
 8. Navigate to the `ODIM` directory.
 
     ```
-    cd ODIM
+    cd ~/ODIM
     ```
 
 9. Copy the proxy configuration file `install/templates/dellplugin_proxy_server.conf.j2` to `~/plugins/dellplugin`.
@@ -1519,7 +1520,6 @@ Topics covered in this section include:
 
      ```
      lenovoplugin:
-       hostname: knode1
        eventListenerNodePort: 30089
        lenovoPluginRootServiceUUID: 7a38b735-8b9f-48a0-b3e7-e5a180567d37
        username: admin
@@ -1528,7 +1528,7 @@ Topics covered in this section include:
        lbPort: 30089
        logPath: /var/log/lenovoplugin_logs
      ```
-
+   
 6. Generate the Helm package for the Lenovo plugin on the deployment node.
 
    1. Navigate to `odim-controller/helmcharts/lenovoplugin`.
@@ -1543,12 +1543,12 @@ Topics covered in this section include:
 
 7. Save the Lenovo plugin Docker image on the deployment node at `~/plugins/lenovoplugin`.
 
-       docker save lenovoplugin:1.0 -o ~/plugins/lenovoplugin/lenovoplugin.tar
+       docker save lenovoplugin:1.1 -o ~/plugins/lenovoplugin/lenovoplugin.tar
 
 8. Navigate to the` ODIM` directory.
 
    ```
-   cd ODIM
+   cd ~/ODIM
    ```
 
 9. Copy the proxy configuration file `install/templates/lenovoplugin_proxy_server.conf.j2` to `~/plugins/lenovoplugin`.
@@ -1741,8 +1741,8 @@ The plugin you want to add is successfully deployed.
    
    |Plugin|Default username|Default password|Connection method variant|
    |------|----------------|----------------|------|
-   |GRF plugin|admin|GRFPlug!n12$4|Compute:BasicAuth:GRF\_v1.0.0|
-   |URP|admin|Plug!n12$4|Compute:BasicAuth:URP\_v1.0.0|
+   |GRF plugin|admin|GRFPlug!n12$4|Compute:BasicAuth:GRF_v1.0.0|
+   |URP|admin|Plug!n12$4|Compute:BasicAuth:URP_v1.0.0|
    
     Use the following curl command to add the plugin:
    
@@ -1814,7 +1814,6 @@ The plugin you want to add is successfully deployed.
            "ManagerType":"Service",
            "Name":"URP",
            "Status":{
-              "Health":"OK",
               "State":"Enabled"
            },
            "UUID":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b"
@@ -1825,7 +1824,6 @@ The plugin you want to add is successfully deployed.
    
     -    `State` is `Enabled` 
     
-    -   `Health` is `Ok` 
     
     For more information, see "*Managers*" section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
     	
@@ -2772,8 +2770,8 @@ The following table lists all the configuration parameters required by odim-cont
 |httpsProxy|HTTPS Proxy to be set in all the nodes for connecting to external network. If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
 |noProxy|List of IP addresses and FQDNs for which proxy must not be used. It must begin with `127.0.0.1,localhost,localhost.localdomain,10.96.0.0/12,` followed by the IP addresses of the cluster nodes.<br>If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
 |nodePasswordFilePath|The absolute path of the file containing the encoded password of the nodes \(encoded using the odim-vault tool)<br />`/home/<username\>/ODIM/odim-controller/scripts/nodePasswordFile`<br>|
-|redisInMemoryPasswordFilePath|The absolute path of the file containing the encoded password of the Redis in-memory database (encoded using the odim-vault tool\)<br /> `/home/<username\>/ODIM/odim-controller/scripts/redisInMemoryPasswordFile`<br/>|
-|redisOnDiskPasswordFilePath|The absolute path of the file containing the encoded password of the Redis on-disk database (encoded using the odim-vault tool\)<br /> `/home/<username\>/ODIM/odim-controller/scripts/redisOnDiskPasswordFile`<br/>|
+|redisInMemoryPasswordFilePath|The absolute path of the file containing the encoded password of the Redis in-memory database (encoded using the odim-vault tool\)<br /> `/home/<username>/ODIM/odim-controller/scripts/redisInMemoryPasswordFile`<br/>|
+|redisOnDiskPasswordFilePath|The absolute path of the file containing the encoded password of the Redis on-disk database (encoded using the odim-vault tool\)<br /> `/home/<username>/ODIM/odim-controller/scripts/redisOnDiskPasswordFile`<br/>|
 |nodes|List of hostnames, IP addresses, and usernames of the nodes that are part of the Kubernetes cluster you want to set up.<br>**NOTE**: For one-node cluster configuration, information of only the controller node is required.<br />|
 |Node<n>_Hostname|Hostname of a cluster node. To know the hostname, run `hostname` on each node.<br>|
 |ip|IPv4 address of cluster node(s).|

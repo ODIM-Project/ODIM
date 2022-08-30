@@ -645,7 +645,6 @@ func (e *ExternalInterface) resetSystem(taskID, reqBody string, subTaskChan chan
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", target.PluginID}, taskInfo)
 		return
 	}
-
 	var pluginContactRequest getResourceRequest
 	pluginContactRequest.ContactClient = e.ContactClient
 	pluginContactRequest.GetPluginStatus = e.GetPluginStatus

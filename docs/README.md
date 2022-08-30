@@ -11700,11 +11700,7 @@ curl -i GET \
 
 ```
 {
-  "@Redfish.CollectionCapabilities":{
-  "@odata.type": "",
-  "Capabilities": null
-},
-    "@odata.context": "/redfish/v1/$metadata#MetricDefinitionCollection.MetricDefinitionCollection",
+  "@odata.context": "/redfish/v1/$metadata#MetricDefinitionCollection.MetricDefinitionCollection",
     "@odata.etag": "W/\"1E796226\"",
     "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions",
     "@odata.type": "#MetricDefinitionCollection.MetricDefinitionCollection",
@@ -11822,10 +11818,6 @@ curl -i GET \
 
 ```
 {
-    "@Redfish.CollectionCapabilities":{
-    "@odata.type": "",
-    "Capabilities": null
-},
     "@odata.context": "/redfish/v1/$metadata#MetricReportDefinitionCollection.MetricReportDefinitionCollection",
     "@odata.etag": "W/\"BFD5C070\"",
     "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions",
@@ -11941,10 +11933,6 @@ curl -i GET \
 
 ```
 {
-    "@Redfish.CollectionCapabilities":{
-    "@odata.type": "",
-    "Capabilities": null
-},
     "@odata.context": "/redfish/v1/$metadata#MetricReportCollection.MetricReportCollection",
     "@odata.etag": "W/\"BFD5C070\"",
     "@odata.id": "/redfish/v1/TelemetryService/MetricReports",
@@ -12080,10 +12068,6 @@ curl -i GET \
 
 ```
 {
-    "@Redfish.CollectionCapabilities":{
-    "@odata.type": "",
-    "Capabilities": null
-},
     "@odata.context": "/redfish/v1/$metadata#TriggersCollection.TriggersCollection",
     "@odata.etag": "W/\"DA402EBA\"",
     "@odata.id": "/redfish/v1/TelemetryService/Triggers",

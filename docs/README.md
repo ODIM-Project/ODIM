@@ -1655,13 +1655,15 @@ Link:</redfish/v1/SchemaStore/en/AggregationService.json>; rel=describedby
    "Name":"AggregationService",
    "Description":"AggregationService",
    "Actions":{
-      "#AggregationService.Reset":{
-         "target":"/redfish/v1/AggregationService/Actions/AggregationService.Reset/",     
-      },
-      "#AggregationService.SetDefaultBootOrder":{
-         "target":"/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/"
-         }
-   },
+      "#AggregationService.Reset":{
+            "target": "/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
+            "@Redfish.ActionInfo": "/redfish/v1/AggregationService/ResetActionInfo"
+      },
+      "#AggregationService.SetDefaultBootOrder":{
+            "target": "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/",
+            "@Redfish.ActionInfo": "/redfish/v1/AggregationService/SetDefaultBootOrderActionInfo"
+      }
+},
    "Aggregates":{
       "@odata.id":"/redfish/v1/AggregationService/Aggregates"
    },
@@ -2438,27 +2440,27 @@ Content-Length:491 bytes
 
 ```
 {
-    "@odata.type": "#Task.v1_6_0.Task",
-    "@odata.id": "/redfish/v1/TaskService/Tasks/taskd862139f-c664-4cb2-b771-3e702bde40e3",
-    "@odata.context": "/redfish/v1/$metadata#Task.Task",
-    "Id": "taskd862139f-c664-4cb2-b771-3e702bde40e3",
-    "Name": "Task taskd862139f-c664-4cb2-b771-3e702bde40e3",
-    "TaskState": "Completed",
-    "StartTime": "2022-02-25T13:07:05.938018291Z",
-    "EndTime": "2022-02-25T13:07:08.108846323Z",
-    "TaskStatus": "OK",
-    "SubTasks": "/redfish/v1/TaskService/Tasks/taskd862139f-c664-4cb2-b771-3e702bde40e3/SubTasks",
-    "TaskMonitor": "/taskmon/taskd862139f-c664-4cb2-b771-3e702bde40e3",
-    "PercentComplete": 100,
-    "Payload": {
-        "HttpHeaders": [
-        ],
-        "HttpOperation": "POST",
-        "JsonBody": "{\"BatchSize\":2,\"DelayBetweenBatchesInSeconds\":2,\"ResetType\":\"ForceRestart\"}",
-        "TargetUri": "/redfish/v1/AggregationService/Aggregates/ca3f2462-15b5-4eb6-80c1-89f99ac36b12/Actions/Aggregate.Reset"
-    },
-    "Oem": {
-    }
+"@odata.type": "#Task.v1_6_0.Task",
+"@odata.id": "/redfish/v1/TaskService/Tasks/task2da1ea5d-5604-49e2-9795-694909f99e15",
+"@odata.context": "/redfish/v1/$metadata#Task.Task",
+"Id": "task2da1ea5d-5604-49e2-9795-694909f99e15",
+"Name": "Task task2da1ea5d-5604-49e2-9795-694909f99e15",
+"TaskState": "Exception",
+"StartTime": "2022-08-18T10:41:44.629353222Z",
+"EndTime": "2022-08-18T10:41:46.220216368Z",
+"TaskStatus": "Critical",
+"SubTasks":{
+      "@odata.id": "/redfish/v1/TaskService/Tasks/task2da1ea5d-5604-49e2-9795-694909f99e15/SubTasks"
+},
+"TaskMonitor": "/taskmon/task2da1ea5d-5604-49e2-9795-694909f99e15",
+"PercentComplete": 100,
+"Payload":{
+"HttpHeaders":[],
+"HttpOperation": "POST",
+"JsonBody": "{\"BatchSize\":2,\"DelayBetweenBatchesInSeconds\":1,\"Password\":\"null\",\"ResetType\":\"ForceRestart\",\"TargetURIs\":[\"/redfish/v1/Systems/35270772-a2a0-4b1c-811f-600528eac2d9.1\"]}",
+"TargetUri": "/redfish/v1/AggregationService/Actions/AggregationService.Reset/"
+},
+"Oem":{}
 }
 ```
 
@@ -2574,7 +2576,10 @@ Content-Length:491 bytes
     "StartTime": "2022-02-25T14:50:02.00265165Z",
     "EndTime": "2022-02-25T14:50:02.987585968Z",
     "TaskStatus": "Critical",
-    "SubTasks": "/redfish/v1/TaskService/Tasks/taskabd8c681-a484-44fe-8ec4-e4929a44d1f2/SubTasks",
+    "SubTasks":{
+      "@odata.id": "/redfish/v1/TaskService/Tasks/task2da1ea5d-5604-49e2-9795-694909f99e15/SubTasks"
+},
+
     "TaskMonitor": "/taskmon/taskabd8c681-a484-44fe-8ec4-e4929a44d1f2",
     "PercentComplete": 100,
     "Payload": {
@@ -2760,18 +2765,17 @@ curl -i GET \
 
 ```
 {
-      "@odata.type":"#AggregateCollection.v1_0_0.AggregateCollection",
-      "@odata.id":"/redfish/v1/AggregationService/Aggregates",
-      "@odata.context":"/redfish/v1/$metadata#AggregateCollection.AggregateCollection",
-      "Id":"Aggregate",
-      "Description": "Aggregate collection view",
-      "Name":"Aggregate",
-      "Members@odata.count":1,
-      "Members":[
-            {
-                  "@odata.id":"/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48"         
-      }      
-   ]   
+    "@odata.type": "#AggregateCollection.AggregateCollection",
+    "@odata.id": "/redfish/v1/AggregationService/Aggregates",
+    "@odata.context": "/redfish/v1/$metadata#AggregateCollection.AggregateCollection",
+    "Description": "Aggregate collection view",
+    "Name": "Aggregate",
+    "Members@odata.count": 1,
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/AggregationService/Aggregates/30e04950-df9c-4e4d-8ff1-1f5ffae9c7cb"
+        }
+    ]
 }
 ```
 
@@ -2798,14 +2802,31 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Aggregate.v1_0_1.Aggregate",
-   "@odata.id":"/redfish/v1/AggregationService/Aggregates/{AggregateId}",
-   "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
-   "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
-   "Name":"Aggregate",
-   "Elements":[
-      "@odata.id": "/redfish/v1/Systems/{ComputerSystemId}",
-     ]
+    "@odata.type": "#Aggregate.v1_0_1.Aggregate",
+    "@odata.id": "/redfish/v1/AggregationService/Aggregates/30e04950-df9c-4e4d-8ff1-1f5ffae9c7cb",
+    "@odata.context": "/redfish/v1/$metadata#Aggregate.Aggregate",
+    "Id": "30e04950-df9c-4e4d-8ff1-1f5ffae9c7cb",
+    "Name": "Aggregate",
+    "ElementsCount": 1,
+    "Elements": [
+        {
+            "@odata.id": "/redfish/v1/Systems/766b0eca-ad76-46d5-afb4-b5d6b3650c0e.1"
+        }
+    ],
+    "Actions": {
+        "#Aggregate.Reset": {
+            "target": "/redfish/v1/AggregationService/Aggregates/30e04950-df9c-4e4d-8ff1-1f5ffae9c7cb/Actions/Aggregate.Reset"
+        },
+        "#Aggregate.SetDefaultBootOrder": {
+            "target": "/redfish/v1/AggregationService/Aggregates/30e04950-df9c-4e4d-8ff1-1f5ffae9c7cb/Actions/Aggregate.SetDefaultBootOrder"
+        },
+        "#Aggregate.AddElements": {
+            "target": "/redfish/v1/AggregationService/Aggregates/30e04950-df9c-4e4d-8ff1-1f5ffae9c7cb/Actions/Aggregate.AddElements"
+        },
+        "#Aggregate.RemoveElements": {
+            "target": "/redfish/v1/AggregationService/Aggregates/30e04950-df9c-4e4d-8ff1-1f5ffae9c7cb/Actions/Aggregate.RemoveElements"
+        }
+    }
 }
 ```
 ## Deleting an aggregate
@@ -2979,7 +3000,9 @@ Content-Length:491 bytes
     "StartTime": "2022-02-25T13:07:05.938018291Z",
     "EndTime": "2022-02-25T13:07:08.108846323Z",
     "TaskStatus": "OK",
-    "SubTasks": "/redfish/v1/TaskService/Tasks/taskd862139f-c664-4cb2-b771-3e702bde40e3/SubTasks",
+    "SubTasks":{
+      "@odata.id": "/redfish/v1/TaskService/Tasks/task2da1ea5d-5604-49e2-9795-694909f99e15/SubTasks"
+},
     "TaskMonitor": "/taskmon/taskd862139f-c664-4cb2-b771-3e702bde40e3",
     "PercentComplete": 100,
     "Payload": {
@@ -3066,7 +3089,9 @@ Content-Length:491 bytes
     "StartTime": "2022-02-25T13:27:29.518305955Z",
     "EndTime": "2022-02-25T13:27:30.007624346Z",
     "TaskStatus": "Critical",
-    "SubTasks": "/redfish/v1/TaskService/Tasks/task94f9af7a-fbe4-4846-94c9-9d5f7b949e40/SubTasks",
+    "SubTasks":{
+      "@odata.id": "/redfish/v1/TaskService/Tasks/task2da1ea5d-5604-49e2-9795-694909f99e15/SubTasks"
+},
     "TaskMonitor": "/taskmon/task94f9af7a-fbe4-4846-94c9-9d5f7b949e40",
     "PercentComplete": 100,
     "Payload": {
@@ -4755,7 +4780,7 @@ curl -i GET \
     "StorageControllers": [
         {
             "@odata.id": "/redfish/v1/Systems/b1ae6e44-ca60-4b72-87ce-f1c5d59a094d.1/Storage/ArrayControllers-0#/StorageControllers/0",
-            "@odata.type": "",
+            "@odata.type": "#Storage.v1_13_0.Storage",
             "FirmwareVersion": "2.65",
             "Location": {
                 "PartLocation": {
@@ -7072,333 +7097,343 @@ curl -i GET \
 
 ```
 {
-   "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
-   "@odata.etag":"W/\"7BFAC0F7\"",
-   "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1",
-   "@odata.type":"#Manager.v1_15_0.Manager",
-   "Actions":{
-      "#Manager.Reset":{
-         "ResetType@Redfish.AllowableValues":[
-            "ForceRestart",
-            "GracefulRestart"
-         ],
-         "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Manager.Reset"
-      }
-   },
-   "CommandShell":{
-      "ConnectTypesSupported":[
-         "SSH",
-         "Oem"
-      ],
-      "MaxConcurrentSessions":9,
-      "ServiceEnabled":true
-   },
-   "DateTime":"2022-02-22T09:35:09Z",
-   "DateTimeLocalOffset":"+08:00",
-   "Description":"BMC Manager",
-   "EthernetInterfaces":{
-      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/EthernetInterfaces"
-   },
-   "FirmwareVersion":"iLO 5 v2.60",
-   "GraphicalConsole":{
-      "ConnectTypesSupported":[
-         "KVMIP"
-      ],
-      "MaxConcurrentSessions":10,
-      "ServiceEnabled":true
-   },
-   "HostInterfaces":{
-      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/HostInterfaces"
-   },
-   "Id":"1",
-   "Links":{
-      "ManagerForChassis":[
-         {
-            "@odata.id":"/redfish/v1/Chassis/b91d2658-0a5f-4478-bd11-3e494687afc5.1"
-         }
-      ],
-      "ManagerForServers":[
-         {
-            "@odata.id":"/redfish/v1/Systems/b91d2658-0a5f-4478-bd11-3e494687afc5.1"
-         }
-      ],
-      "ManagerInChassis":{
-         "@odata.id":"/redfish/v1/Chassis/b91d2658-0a5f-4478-bd11-3e494687afc5.1"
-      }
-   },
-   "LogServices":{
-      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/LogServices"
-   },
-   "ManagerType":"BMC",
-   "Model":"iLO 5",
-   "Name":"Manager",
-   "NetworkProtocol":{
-      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/NetworkProtocol"
-   },
-   "Oem":{
-      "Hpe":{
-         "@odata.context":"/redfish/v1/$metadata#HpeiLO.HpeiLO",
-         "@odata.type":"#HpeiLO.v2_8_0.HpeiLO",
-         "Actions":{
-            "#HpeiLO.ClearHotKeys":{
-               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.ClearHotKeys"
-            },
-            "#HpeiLO.ClearRestApiState":{
-               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.ClearRestApiState"
-            },
-            "#HpeiLO.DisableiLOFunctionality":{
-               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.DisableiLOFunctionality"
-            },
-            "#HpeiLO.RequestFirmwareAndOsRecovery":{
-               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.RequestFirmwareAndOsRecovery"
-            },
-            "#HpeiLO.ResetToFactoryDefaults":{
-               "ResetType@Redfish.AllowableValues":[
-                  "Default"
-               ],
-               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.ResetToFactoryDefaults"
-            }
-         },
-         "ClearRestApiStatus":"DataPresent",
-         "ConfigurationLimitations":"None",
-         "ConfigurationSettings":"Current",
-         "FederationConfig":{
-            "IPv6MulticastScope":"Site",
-            "MulticastAnnouncementInterval":600,
-            "MulticastDiscovery":"Enabled",
-            "MulticastTimeToLive":5,
-            "iLOFederationManagement":"Enabled"
-         },
-         "Firmware":{
-            "Current":{
-               "Date":"Dec 06 2021",
-               "DebugBuild":false,
-               "MajorVersion":2,
-               "MinorVersion":60,
-               "VersionString":"iLO 5 v2.60"
-            }
-         },
-         "FrontPanelUSB":{
-            "State":"Ready"
-         },
-         "IdleConnectionTimeoutMinutes":30,
-         "IntegratedRemoteConsole":{
-            "HotKeys":[
-               {
-                  "KeySequence":[
-                     "NONE",
-                     "NONE",
-                     "NONE",
-                     "NONE",
-                     "NONE"
-                  ],
-                  "Name":"Ctrl-T"
-               },
-               {
-                  "KeySequence":[
-                     "NONE",
-                     "NONE",
-                     "NONE",
-                     "NONE",
-                     "NONE"
-                  ],
-                  "Name":"Ctrl-U"
-               },
-               {
-                  "KeySequence":[
-                     "NONE",
-                     "NONE",
-                     "NONE",
-                     "NONE",
-                     "NONE"
-                  ],
-                  "Name":"Ctrl-V"
-               },
-               {
-                  "KeySequence":[
-                     "NONE",
-                     "NONE",
-                     "NONE",
-                     "NONE",
-                     "NONE"
-                  ],
-                  "Name":"Ctrl-W"
-               },
-               {
-                  "KeySequence":[
-                     "NONE",
-                     "NONE",
-                     "NONE",
-                     "NONE",
-                     "NONE"
-                  ],
-                  "Name":"Ctrl-X"
-               },
-               {
-                  "KeySequence":[
-                     "NONE",
-                     "NONE",
-                     "NONE",
-                     "NONE",
-                     "NONE"
-                  ],
-                  "Name":"Ctrl-Y"
-               }
+    "@odata.context": "/redfish/v1/$metadata#Manager.Manager",
+    "@odata.etag": "W/\"887BAFE1\",
+    "@odata.id: "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1",
+    "@odata.type": "#Manager.v1_15_0.Manager",
+    "Actions": {
+        "#Manager.Reset": {
+            ResetType@Redfish.AllowableValues: [
+                "ForceRestart",
+               "GracefulRestart"
             ],
-            "LockKey":{
-               "CustomKeySequence":[
-                  "NONE",
-                  "NONE",
-                  "NONE",
-                  "NONE",
-                  "NONE"
-               ],
-               "LockOption":"Disabled"
-            },
-            "TrustedCertificateRequired":false
-         },
-         "License":{
-            "LicenseKey":"XXXXX-XXXXX-XXXXX-XXXXX-7BK6M",
-            "LicenseString":"iLO Advanced limited-distribution test",
-            "LicenseType":"Internal"
-         },
-         "Links":{
-            "ActiveHealthSystem":{
-               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/ActiveHealthSystem"
-            },
-            "BackupRestoreService":{
-               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/BackupRestoreService"
-            },
-            "DateTimeService":{
-               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/DateTime"
-            },
-            "EmbeddedMediaService":{
-               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/EmbeddedMedia"
-            },
-            "FederationDispatch":{
-               "extref":"/dispatch"
-            },
-            "FederationGroups":{
-               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/FederationGroups"
-            },
-            "FederationPeers":{
-               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/FederationPeers"
-            },
-            "GUIService":{
-               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/GUIService"
-            },
-            "LicenseService":{
-               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/LicenseService"
-            },
-            "RemoteSupport":{
-               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/RemoteSupportService"
-            },
-            "SNMPService":{
-               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/SnmpService"
-            },
-            "SecurityService":{
-               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/SecurityService"
-            },
-            "Thumbnail":{
-               "extref":"/images/thumbnail.bmp"
-            },
-            "VSPLogLocation":{
-               "extref":"/sol.log.gz"
-            }
-         },
-         "PersistentMouseKeyboardEnabled":false,
-         "PhysicalMonitorHealthStatusEnabled":true,
-         "RIBCLEnabled":true,
-         "RemoteConsoleThumbnailEnabled":true,
-         "RequireHostAuthentication":false,
-         "RequiredLoginForiLORBSU":false,
-         "SerialCLISpeed":9600,
-         "SerialCLIStatus":"EnabledAuthReq",
-         "SerialCLIUART":"Present",
-         "VSPDlLoggingEnabled":false,
-         "VSPLogDownloadEnabled":false,
-         "VideoPresenceDetectOverride":true,
-         "VideoPresenceDetectOverrideSupported":true,
-         "VirtualNICEnabled":true,
-         "WebGuiEnabled":true,
-         "iLOFunctionalityEnabled":true,
-         "iLOFunctionalityRequired":false,
-         "iLOIPduringPOSTEnabled":true,
-         "iLORBSUEnabled":true,
-         "iLOSelfTestResults":[
-            {
-               "Notes":"",
-               "SelfTestName":"NVRAMData",
-               "Status":"OK"
-            },
-            {
-               "Notes":"Controller firmware revision  2.11.00  ",
-               "SelfTestName":"EmbeddedFlash",
-               "Status":"OK"
-            },
-            {
-               "Notes":"",
-               "SelfTestName":"EEPROM",
-               "Status":"OK"
-            },
-            {
-               "Notes":"",
-               "SelfTestName":"HostRom",
-               "Status":"OK"
-            },
-            {
-               "Notes":"",
-               "SelfTestName":"SupportedHost",
-               "Status":"OK"
-            },
-            {
-               "Notes":"Version 1.0.7",
-               "SelfTestName":"PowerManagementController",
-               "Status":"Informational"
-            },
-            {
-               "Notes": "ProLiant DL360 Gen10 System Programmable Logic Device 0x2A",
-               "SelfTestName":"CPLDPAL0",
-               "Status":"Informational"
-            },
-            {
-               "Notes":"",
-               "SelfTestName":"ASICFuses",
-               "Status":"OK"
-            }
-         ],
-         "iLOServicePort":{
-            "MassStorageAuthenticationRequired":false,
-            "USBEthernetAdaptersEnabled":true,
-            "USBFlashDriveEnabled":true,
-            "iLOServicePortEnabled":true
-         }
-      }
-   },
-   "PowerState":"On",
-   "RemoteAccountService": {
-        "@odata.id": "/redfish/v1/Managers/c55ea6a6-a501-44a5-b159-3579c67cb81e.1/RemoteAccountService"
+            "target": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/Actions/Manager.Reset"
+        }
     },
-   "SerialConsole":{
-      "ConnectTypesSupported":[
-         "SSH",
-         "IPMI",
-         "Oem"
-      ],
-      "MaxConcurrentSessions":13,
-      "ServiceEnabled":true
-   },
-   "SerialInterfaces":{
-      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/SerialInterfaces"
-   },
-   "Status":{
-      "Health":"OK",
-      "State":"Enabled"
-   },
-   "UUID":"d8887d98-17ff-53a2-9977-e63b5ae66864",
-   "VirtualMedia":{
-      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/VirtualMedia"
-   }
+    "CommandShell": {
+        "ConnectTypesSupported": [
+            "SSH",
+            "Oem"
+        ],
+        "MaxConcurrentSessions": 9,
+        "ServiceEnabled": true
+    },
+    "DateTime": "2022-08-22T05:23:29Z",
+    "DateTimeLocalOffset": "+00:00",
+    "Description": "BMC Manager",
+    "EthernetInterfaces": {
+        "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/EthernetInterfaces"
+    },
+    "FirmwareVersion": "iLO 5 v2.70",
+    "GraphicalConsole": {
+        "ConnectTypesSupported": [
+            "KVMIP"
+        ],
+        "MaxConcurrentSessions": 10,
+        "ServiceEnabled": true
+    },
+    "HostInterfaces": {
+        "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/HostInterfaces"
+    },
+    "Id": "1",
+    "Links": {
+        "ManagerForChassis": [
+            {
+                "@odata.id": "/redfish/v1/Chassis/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1"
+            }
+        ],
+        "ManagerForServers": [
+            {
+                "@odata.id": "/redfish/v1/Systems/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1"
+            }
+        ],
+        "ManagerInChassis": {
+            "@odata.id": "/redfish/v1/Chassis/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1"
+        }
+    },
+    "LogServices": {
+        "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/LogServices"
+    },
+    "ManagerType": "BMC",
+    "Model": "iLO 5",
+    "Name": "Manager",
+    "NetworkProtocol": {
+        "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/NetworkProtocol"
+    },
+    "Oem": {
+        "Hpe": {
+            "@odata.context": "/redfish/v1/$metadata#HpeiLO.HpeiLO",
+            "@odata.type": "#HpeiLO.v2_8_1.HpeiLO",
+            "Actions": {
+                "#HpeiLO.ClearHotKeys": {
+                    "target": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/Actions/Oem/Hpe/HpeiLO.ClearHotKeys"
+                },
+                "#HpeiLO.ClearRestApiState": {
+                    "target": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/Actions/Oem/Hpe/HpeiLO.ClearRestApiState"
+                },
+                "#HpeiLO.DisableCloudConnect": {
+                    "target": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/Actions/Oem/Hpe/HpeiLO.DisableCloudConnect"
+                },
+                "#HpeiLO.DisableiLOFunctionality": {
+                    "target": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/Actions/Oem/Hpe/HpeiLO.DisableiLOFunctionality"
+                },
+                "#HpeiLO.EnableCloudConnect": {
+                    "target": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/Actions/Oem/Hpe/HpeiLO.EnableCloudConnect"
+                },
+                "#HpeiLO.RequestFirmwareAndOsRecovery": {
+                    "target": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/Actions/Oem/Hpe/HpeiLO.RequestFirmwareAndOsRecovery"
+                },
+                "#HpeiLO.ResetToFactoryDefaults": {
+                    ResetType@Redfish.AllowableValues: [
+                        "Default"
+                    ],
+                    "target": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/Actions/Oem/Hpe/HpeiLO.ResetToFactoryDefaults"
+                }
+            },
+            "ClearRestApiStatus": "DataPresent",
+            "CloudConnect": {
+                "ActivationKey": "",
+                "CloudConnectStatus": "NotEnabled"
+            },
+            "ConfigurationLimitations": "None",
+            "ConfigurationSettings": "Current",
+            "FederationConfig": {
+                "IPv6MulticastScope": "Site",
+                "MulticastAnnouncementInterval": 600,
+                "MulticastDiscovery": "Enabled",
+                "MulticastTimeToLive": 5,
+                "iLOFederationManagement": "Enabled"
+            },
+            "Firmware": {
+                "Current": {
+                    "Date": "May 16 2022",
+                    "DebugBuild": false,
+                    "MajorVersion": 2,
+                    "MinorVersion": 70,
+                    "VersionString": "iLO 5 v2.70"
+                }
+            },
+            "FrontPanelUSB": {
+                "State": "Ready"
+            },
+            "IdleConnectionTimeoutMinutes": 120,
+            "IntegratedRemoteConsole": {
+                "HotKeys": [
+                    {
+                        "KeySequence": [
+                            "NONE",
+                            "NONE",
+                            "NONE",
+                            "NONE",
+                            "NONE"
+                        ],
+                        "Name": "Ctrl-T"
+                    },
+                    {
+                        "KeySequence": [
+                            "NONE",
+                            "NONE",
+                            "NONE",
+                            "NONE",
+                            "NONE"
+                        ],
+                        "Name": "Ctrl-U"
+                    },
+                    {
+                        "KeySequence": [
+                            "NONE",
+                            "NONE",
+                            "NONE",
+                            "NONE",
+                            "NONE"
+                        ],
+                        "Name": "Ctrl-V"
+                    },
+                    {
+                        "KeySequence": [
+                            "NONE",
+                            "NONE",
+                            "NONE",
+                            "NONE",
+                            "NONE"
+                        ],
+                        "Name": "Ctrl-W"
+                    },
+                    {
+                        "KeySequence": [
+                            "NONE",
+                            "NONE",
+                            "NONE",
+                            "NONE",
+                            "NONE"
+                        ],
+                        "Name": "Ctrl-X"
+                    },
+                    {
+                        "KeySequence": [
+                            "NONE",
+                            "NONE",
+                            "NONE",
+                            "NONE",
+                            "NONE"
+                        ],
+                        "Name": "Ctrl-Y"
+                    }
+                ],
+                "LockKey": {
+                    "CustomKeySequence": [
+                        "NONE",
+                        "NONE",
+                        "NONE",
+                        "NONE",
+                        "NONE"
+                    ],
+                    "LockOption": "Disabled"
+                },
+                "TrustedCertificateRequired": false
+            },
+            "License": {
+                "LicenseKey": "XXXXX-XXXXX-XXXXX-XXXXX-7BK6M",
+                "LicenseString": "iLO Advanced limited-distribution test",
+                "LicenseType": "Internal"
+            },
+            "Links": {
+                "ActiveHealthSystem": {
+                    "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/ActiveHealthSystem"
+                },
+                "BackupRestoreService": {
+                    "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/BackupRestoreService"
+                },
+                "DateTimeService": {
+                    "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/DateTime"
+                },
+                "EmbeddedMediaService": {
+                    "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/EmbeddedMedia"
+                },
+                "FederationDispatch": {
+                    "extref": "/dispatch"
+                },
+                "FederationGroups": {
+                    "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/FederationGroups"
+                },
+                "FederationPeers": {
+                    "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/FederationPeers"
+                },
+                "GUIService": {
+                    "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/GUIService"
+                },
+                "LicenseService": {
+                    "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/LicenseService"
+                },
+                "RemoteSupport": {
+                    "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/RemoteSupportService"
+                },
+                "SNMPService": {
+                    "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/SnmpService"
+                },
+                "SecurityService": {
+                    "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/SecurityService"
+                },
+                "Thumbnail": {
+                    "extref": "/images/thumbnail.bmp"
+                },
+                "VSPLogLocation": {
+                    "extref": "/sol.log.gz"
+                }
+            },
+            "PersistentMouseKeyboardEnabled": false,
+            "PhysicalMonitorHealthStatusEnabled": true,
+            "RIBCLEnabled": true,
+            "RemoteConsoleThumbnailEnabled": true,
+            "RequireHostAuthentication": false,
+            "RequiredLoginForiLORBSU": false,
+            "SerialCLISpeed": 9600,
+            "SerialCLIStatus": "EnabledAuthReq",
+            "SerialCLIUART": "Present",
+            "VSPDlLoggingEnabled": false,
+            "VSPLogDownloadEnabled": false,
+            "VideoPresenceDetectOverride": true,
+            "VideoPresenceDetectOverrideSupported": true,
+            "VirtualNICEnabled": false,
+            "WebGuiEnabled": true,
+            "iLOFunctionalityEnabled": true,
+            "iLOFunctionalityRequired": false,
+            "iLOIPduringPOSTEnabled": true,
+            "iLORBSUEnabled": true,
+            "iLOSelfTestResults": [
+                {
+                    "Notes": "",
+                    "SelfTestName": "NVRAMData",
+                    "Status": "OK"
+                },
+                {
+                    "Notes": "Controller firmware revision  2.11.00  ",
+                    "SelfTestName": "EmbeddedFlash",
+                    "Status": "OK"
+                },
+                {
+                    "Notes": "",
+                    "SelfTestName": "EEPROM",
+                    "Status": "OK"
+                },
+                {
+                    "Notes": "",
+                    "SelfTestName": "HostRom",
+                    "Status": "OK"
+                },
+                {
+                    "Notes": "",
+                    "SelfTestName": "SupportedHost",
+                    "Status": "OK"
+                },
+                {
+                    "Notes": "Version 1.0.8",
+                    "SelfTestName": "PowerManagementController",
+                    "Status": "Informational"
+                },
+                {
+                    "Notes": "ProLiant DL380 Gen10 Plus System Programmable Logic Device 0x15",
+                    "SelfTestName": "CPLDPAL0",
+                    "Status": "Informational"
+                },
+                {
+                    "Notes": "",
+                    "SelfTestName": "ASICFuses",
+                    "Status": "OK"
+                }
+            ],
+            "iLOServicePort": {
+                "MassStorageAuthenticationRequired": false,
+                "USBEthernetAdaptersEnabled": true,
+                "USBFlashDriveEnabled": true,
+                "iLOServicePortEnabled": true
+            }
+        }
+    },
+    "PowerState": "On",
+    "RemoteAccountService": {
+        "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/RemoteAccountService"
+    },
+    "SerialConsole": {
+        "ConnectTypesSupported": [
+            "SSH",
+            "IPMI",
+            "Oem"
+        ],
+        "MaxConcurrentSessions": 13,
+        "ServiceEnabled": true
+    },
+    "SerialInterfaces": {
+        "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/SerialInterfaces"
+    },
+    "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+    },
+    "UUID": "2a4f0469-b023-58f4-9f89-bfd1f67ed70e",
+    "VirtualMedia": {
+        "@odata.id": "/redfish/v1/Managers/7859c05c-8ed4-4f2d-bef5-ce8b7d2528fc.1/VirtualMedia"
+    }
 }
 ```
 
@@ -7572,7 +7607,6 @@ curl -i GET \
 >**Sample response body**
 
 ```
-[7/1/2022 3:26 PM] Chaube, Rahul
 {
     "@odata.context": "/redfish/v1/$metadata#VirtualMedia.VirtualMedia",
     "@odata.etag": "W/\"3B0F66BA\"",
@@ -7643,16 +7677,20 @@ curl -i POST \
 
 ```
 {
-    "error": {
+    "Error": {
         "@Message.ExtendedInfo": [
             {
-                "MessageId": "Base.1.13.0.Success"
+                "Message": "Successfully performed virtual media actions",
+                "MessageArgs": [
+               ],
+                "MessageId": "Base.1.11.0.Success"
             }
         ],
-        "code": "iLO.0.10.ExtendedInfo",
-        "message": "See @Message.ExtendedInfo for more information."
+        "Code": "Base.1.11.0.Success",
+        "Message": "See @Message.ExtendedInfo for more information."
     }
-}
+} 
+
 ```
 
 ### Ejecting VirtualMedia
@@ -7682,17 +7720,19 @@ curl -i POST \
 
 ```
 {
-    "error": {
+    "Error": {
         "@Message.ExtendedInfo": [
             {
-                "MessageId": "Base.1.13.0.Success"
+                "Message": "Successfully performed virtual media actions",
+                "MessageArgs": [
+                ],
+                "MessageId": "Base.1.11.0.Success"
             }
         ],
-        "code": "iLO.0.10.ExtendedInfo",
-        "message": "See @Message.ExtendedInfo for more information."
+        "Code": "Base.1.11.0.Success",
+        "Message": "See @Message.ExtendedInfo for more information."
     }
 }
- 
 ```
 
 > **Request parameters**
@@ -7866,7 +7906,6 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Roles/Administrator"
       }
    },
-   "AccountTypes":""
 }
 ```
 
@@ -7923,7 +7962,6 @@ curl -i POST \
          "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Roles/Administrator"
       }
    },
-   "AccountTypes":""
 }
 ```
 
@@ -11544,6 +11582,7 @@ curl -i GET \
 ```
 {
    "@odata.id":"/redfish/v1/TelemetryService",
+   "@odata.context": "/redfish/v1/$metadata#TelemetryService.TelemetryService",
    "@odata.type":"#TelemetryService.v1_3_1.TelemetryService",
    "Id":"TelemetryService",
    "Name":"Telemetry Service",
@@ -11553,11 +11592,6 @@ curl -i GET \
       "HealthRollup":"OK"
    },
    "ServiceEnabled":true,
-   "SupportedCollectionFunctions":[
-      "Average",
-      "Minimum",
-      "Maximum"
-   ],
    "MetricDefinitions":{
       "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions"
    },
@@ -11597,7 +11631,7 @@ curl -i GET \
 
 ```
 {
-    "@odata.context": "/redfish/v1/$metadata#MetricDefinitionCollection.MetricDefinitionCollection",
+  "@odata.context": "/redfish/v1/$metadata#MetricDefinitionCollection.MetricDefinitionCollection",
     "@odata.etag": "W/\"1E796226\"",
     "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions",
     "@odata.type": "#MetricDefinitionCollection.MetricDefinitionCollection",
@@ -11777,7 +11811,6 @@ curl -i GET \
     "Id": "CPUUtilCustom1",
     "MetricProperties": [
         "/redfish/v1/Systems/{SystemID}#SystemUsage/CPUUtil",
-        "SystemUsage/CPUUtil"
     ],
     "MetricReport": {
         "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1"
@@ -12023,7 +12056,7 @@ curl -i GET \
     "@odata.context": "/redfish/v1/$metadata#Triggers.Triggers",
     "@odata.etag": "W/\"BFAAE441\"",
     "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUUtilTriggers",
-    "@odata.type": "#Triggers.v1_2_0.Triggers",
+    "@odata.type": "#Triggers.v1_0_0.Triggers",
     "Description": "Triggers for CPU Utilization",
     "Id": "CPUUtilTriggers",
     "MetricProperties": [
@@ -12082,7 +12115,7 @@ curl -i -X PATCH \
 '{
   "EventTriggers": ["Alert"]
 }' \
- 'https://10.24.1.33:30080/redfish/v1/TelemetryService/Triggers/{TriggersID}'
+ 'https://{odimra_host}:{port}/redfish/v1/TelemetryService/Triggers/{TriggersID}'
 
 ```
 

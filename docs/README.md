@@ -230,7 +230,7 @@ Resource Aggregator for ODIM framework comprises the following two components.
     - Integration of additional third-party plugins—Dell, Lenovo and Cisco ACI plugins
 
 
-This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.15.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.15.1.pdf) and are Redfish-compliant.
+This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs are designed as per DMTF's *[Redfish® Scalable Platforms API (Redfish) specification 1.15.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.15.1.pdf)* and are Redfish-compliant.
 
 The Redfish® standard is a suite of specifications that deliver an industry standard protocol providing a RESTful interface for the simple and secure management of servers, storage, networking, multivendor, converged and hybrid IT infrastructure. Redfish uses JSON and OData.
 
@@ -267,7 +267,7 @@ The plugin layer allows developers to create plugins on the tool set of their ch
 
 > **PREREQUISITE**: Ensure that you have the required privileges to access all the services to avoid encountering the HTTP `403 Forbidden` error.
 
-This guide contains sample request and response payloads. For information on response payload parameters, see [Redfish® Scalable Platforms API (Redfish) schema 2022.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2022.1.pdf).
+This guide contains sample request and response payloads. For information on response payload parameters, see *[Redfish® Scalable Platforms API (Redfish) schema 2022.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2022.1.pdf)*.
 
 To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS-capable client, such as a web browser with a REST Client plugin extension, or a Desktop REST Client application, or curl (a popular, free command-line utility). 
 
@@ -299,7 +299,7 @@ Use the following base URL in all your HTTP requests:
 
 ## curl
 
-[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. Resource Aggregator for ODIM supports HTTPS protocol. Examples in this document use curl commands to make HTTP requests.
+*[curl](https://curl.haxx.se)* is a command-line tool which helps you get or send information through URLs using supported protocols. Resource Aggregator for ODIM supports HTTPS protocol. Examples in this document use curl commands to make HTTP requests.
 
 >**IMPORTANT:** If you have set proxy configuration, set `no_proxy` using the following command before you run a curl command:
 >
@@ -316,7 +316,7 @@ Use the following base URL in all your HTTP requests:
 - `-i` returns HTTP response headers.
 - `-v` fetches verbose.
 
-For a complete list of curl flags, see [https://curl.haxx.se](https://curl.haxx.se).
+For a complete list of curl flags, see *[https://curl.haxx.se](https://curl.haxx.se)*.
 
 ## Including HTTP certificate
 
@@ -462,7 +462,7 @@ Replace a character in a URL with its standard encoding notation. Resource Aggre
 
 **For example**: In the URL`/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1`, if you replace the  `/` character with its encoded notation %2F and send the request, Resource Aggregator for ODIM accepts and decodes the encoded notation internally and sends a response.
 
-> **Tip**: You can visit https://www.w3schools.com/tags/ref_urlencode.ASP or browse the Internet to view the standard ASCII Encoding Reference of the URL characters.
+> **Tip**: You can visit *https://www.w3schools.com/tags/ref_urlencode.ASP* or browse the Internet to view the standard ASCII Encoding Reference of the URL characters.
 
 # List of supported APIs
 
@@ -502,8 +502,8 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/AggregationService/Aggregates/{aggregateId}/Actions/Aggregate.Reset|`POST`|
 |/redfish/v1/AggregationService/Aggregates/{aggregateId}/Actions/Aggregate.SetDefaultBootOrder|`POST`|
 |/redfish/v1/AggregationService/Aggregates/{aggregateId}/Actions/Aggregate.RemoveElements|`POST`|
-|/redfish/v1/AggregationService/ConnectionMethods|GET|
-|/redfish/v1/AggregationService/ConnectionMethods/{connectionmethodsId}|GET|
+|/redfish/v1/AggregationService/ConnectionMethods|`GET`|
+|/redfish/v1/AggregationService/ConnectionMethods/{connectionmethodsId}|`GET`|
 
 |Systems||
 |-------|--------------------|
@@ -724,7 +724,9 @@ Date":Fri,15 May 2022 13:55:53 GMT+5m 11s
 
 You can modify the existing configurations of all Resource Aggregator for ODIM services by editing the configuration file at:
 
- `odimra/lib-utilities/config/odimra_config.json`
+```
+odimra/lib-utilities/config/odimra_config.json
+```
 
 If Resource Aggregator for ODIM is deployed already, run the following command to apply the latest configurations.
 
@@ -863,7 +865,7 @@ To authenticate requests with Redfish services, implement one of the following a
         echo -n '{username}:{password}' | base64 -w0
         ```
 
-        Initially, use the username and the password of the default administrator account. Later, you can create additional [user accounts](#user-accounts) and use their details to implement authentication.
+        Initially, use the username and the password of the default administrator account. Later, you can create additional *[user accounts](#user-accounts)* and use their details to implement authentication.
 
      2. Provide the base64 encoded string in an HTTP `Authorization:Basic` header as shown in the curl command:
 
@@ -875,7 +877,7 @@ To authenticate requests with Redfish services, implement one of the following a
 
 -   **Redfish session login authentication (XAuthToken)** 
 
-    1. To implement Redfish session login authentication, create a Redfish login [session](#sessions) and obtain an authentication token through session management interface.
+    1. To implement Redfish session login authentication, create a Redfish login *[session](#sessions)* and obtain an authentication token through session management interface.
        Every session created has an authentication token called `X-AUTH-TOKEN` that is returned in the response header.
     
     2. To authenticate subsequent requests, provide the token in the `X-AUTH-TOKEN` request header.
@@ -977,7 +979,6 @@ Resource Aggregator for ODIM allows you to view, create, and manage user session
 ```
 curl -i GET \
               'https://{odimra_host}:{port}/redfish/v1/SessionService'
-
 ```
 
 
@@ -1023,7 +1024,6 @@ curl -i POST \
 "Password": "{password}"
 }' \
  'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions'
-
 ```
 
 
@@ -1128,7 +1128,6 @@ curl -i GET \
 curl -i GET \
                 -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions/{sessionId}'
-
 ```
 
 
@@ -1249,7 +1248,6 @@ Date:Fri,15 May 2020 14:32:09 GMT+5m 12s
 curl -i GET \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles'
-
 ```
 
 
@@ -1471,8 +1469,6 @@ curl -i GET \
 curl -i GET \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts/{accountId}'
-
-
 ```
 
 >**Sample response body**
@@ -1522,7 +1518,6 @@ curl -i -X PATCH \
 }
 ' \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts/{accountId}'
-
 ```
 
 
@@ -1639,7 +1634,6 @@ All aggregation actions are performed as *[tasks](#tasks)* in Resource Aggregato
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odim_host}:{port}/redfish/v1/AggregationService'
-
 ```
 
 >**Sample response header** 
@@ -1787,7 +1781,7 @@ curl -i GET \
 |ConnectionMethodType|String| The type of this connection method.<br> For possible property values, see "Connection method types" table.<br> |
 |ConnectionMethodVariant|String|The variant of connection method. For more information, see *[Connection method variants](#connection-method-variants)*.|
 |Links {|Object|Links to other resources that are related to this connection method.|
-|AggregationSources [ {<br> @odata.id<br> } ]<br> |Array|An array of links to the `AggregationSources` resources that use this connection method.|
+|AggregationSources [ {<br> @odata.id<br> } ] |Array|An array of links to the `AggregationSources` resources that use this connection method.|
 
  >**Connection method types**
 
@@ -1804,7 +1798,9 @@ curl -i GET \
 
 A connection method variant provides details about a plugin and is displayed in the following format:
 
-*`PluginType:PreferredAuthType:PluginID_Firmwareversion`*. 
+```
+PluginType:PreferredAuthType:PluginID_Firmwareversion
+```
 
 It consists of the following parameters:
 
@@ -1867,8 +1863,6 @@ curl -i POST \
    }
 }' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources'
-
-
 ```
 
 >**Sample request body for adding the GRF plugin**
@@ -1909,7 +1903,7 @@ curl -i POST \
 |UserName|String (required)<br> |The plugin username.|
 |Password|String (required)<br> |The plugin password.|
 |Links{|Object (required)<br> |Links to other resources that are related to this resource.|
-|ConnectionMethod|Array (required)|Links to the connection method that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response. Choose a connection method having the details of the plugin of your choice.<br>For example, the `ConnectionMethodVariant` property for the GRF plugin displays the following value:<br>`Compute:BasicAuth:GRF_v1.0.0` <br>For more information, see the "connection method properties" table in [Viewing a connection method](#viewing-a-connection-method)</li></ul>|
+|ConnectionMethod|Array (required)|Links to the connection method that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response. Choose a connection method having the details of the plugin of your choice.<br>For example, the `ConnectionMethodVariant` property for the GRF plugin displays the following value:<br>`Compute:BasicAuth:GRF_v1.0.0` <br>For more information, see the "connection method properties" table in *[Viewing a connection method](#viewing-a-connection-method)*</li></ul>|
 
 >**Sample response header (HTTP 202 status)**
 
@@ -2305,7 +2299,6 @@ curl -i PATCH \
   "Password": "{password}"
 }' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources/{AggregationSourceId}'
-
 ```
 
 >**Sample request body**
@@ -2520,8 +2513,6 @@ curl -i POST \
    ]
 }' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder'
-
-
 ```
 
 >**Sample request body**
@@ -2537,7 +2528,6 @@ curl -i POST \
       }
    ]
 }
-
 ```
 
 > **Request parameters**
@@ -2629,7 +2619,7 @@ Content-Length:491 bytes
 
 **Usage information**
 
-To know the progress of this action, perform `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header (until the task is complete).
+To know the progress of this action, perform `GET` on the *[task monitor](#viewing-a-task-monitor)* returned in the response header (until the task is complete).
 
 
 >**curl command**
@@ -2770,7 +2760,6 @@ Date:Fri,21 August 2020 14:08:55 GMT+5m 11s
 curl -i GET \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/Aggregates'
-
 ```
 > **Sample response body**
 
@@ -2802,8 +2791,6 @@ curl -i GET \
 | <strong>Authentication</strong> | Yes                                                          |
 
 > **curl command**
-
-
 
 ```
 curl -i GET \
@@ -2972,7 +2959,7 @@ curl -i POST \
 | ---------------------------- | -------------------------------- | ------------------------------------------------------------ |
 | BatchSize                    | Integer (optional)<br>           | The number of elements to be reset at a time in each batch   |
 | DelayBetweenBatchesInSeconds | Integer (seconds) (optional)<br> | The delay among the batches of elements being reset          |
-| ResetType                    | String (optional)<br>            | For possible values, see *Reset type* table in [Resetting servers](#resetting-servers). |
+| ResetType                    | String (optional)<br>            | For possible values, see *Reset type* table in *[Resetting servers](#resetting-servers)*. |
 
 > **Sample response header** (HTTP 202 status)
 
@@ -2999,7 +2986,6 @@ Content-Length:491 bytes
    "NumberOfArgs":1,
    "Severity":"OK"
 }
-
 ```
 > **Sample response body** (subtask)
 
@@ -3029,7 +3015,6 @@ Content-Length:491 bytes
     "Oem": {
     }
 }
-
 ```
 > **Sample response body** (HTTP 200 status)
 
@@ -3119,7 +3104,6 @@ Content-Length:491 bytes
     "Oem": {
     }
 }
-
 ```
 > **Sample response body** (HTTP 200 status)
 
@@ -3298,7 +3282,6 @@ curl -i GET \
    ],
    "Members@odata.count":2
 }
-
 ```
 ## Single computer system
 
@@ -3682,7 +3665,6 @@ curl -i GET \
         "@odata.id": "/redfish/v1/Managers/add8f39d-aea7-4eea-aa24-fc1764c33040.1/VirtualMedia"
     }
 }
-
 ```
 ##  Memory collection
 
@@ -3759,7 +3741,6 @@ curl -i GET \
         }
     }
 }
-
 ```
 ## Single memory
 
@@ -4175,7 +4156,6 @@ curl -i GET \
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/NetworkInterfaces'
-
 ```
 > **Sample response body**
 
@@ -4427,7 +4407,6 @@ The StoragePools schema represents storage pools, allocated volumes, and drives.
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools'
-
 ```
 
 > **Sample response body**
@@ -4462,7 +4441,6 @@ curl -i GET \
  curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}'
-
 ```
 
 > **Sample response body**
@@ -4521,7 +4499,6 @@ curl -i GET \
  curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes'
-
 ```
 
 > **Sample response body**
@@ -4558,7 +4535,6 @@ curl -i GET \
  curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}'
-
 ```
 
 > **Sample response body**
@@ -4778,8 +4754,6 @@ curl -i GET \
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}'
-
-
 ```
 
 > **Sample response body** 
@@ -5098,8 +5072,6 @@ curl -i -X POST \
    "@Redfish.OperationApplyTime":"OnReset"
 }' \
  'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes'
-
-
 ```
 
 >**Sample request body** 
@@ -5167,14 +5139,12 @@ curl -i -X DELETE \
    -H "X-Auth-Token:{X-Auth-Token}" \
    -H "Content-Type:application/json" \
  'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}'
-
 ```
 
 >**Sample request body** 
 
 ```
 {
-  
    "@Redfish.OperationApplyTime":"OnReset"
 }
 ```
@@ -5520,8 +5490,6 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}'
-
-
 ```
 
 >**Sample response body** 
@@ -6351,8 +6319,6 @@ curl -i POST \
 }
 ' \
  'https://{odim_host}:{port}/redfish/v1/Chassis'
-
-
 ```
 
 >**Sample request body**
@@ -6551,8 +6517,6 @@ curl -i PATCH \
 }
 ' \
  'https://{odim_host}:{port}/redfish/v1/Chassis/{rackId}'
-
-
 ```
 
 >**Sample request body**
@@ -6672,30 +6636,29 @@ curl -i GET \
 curl -i GET \
       -H "X-Auth-Token:{X-Auth-Token}" \
     'http://{odimra_host}:{port}/redfish/v1/Systems?$filter=MemorySummary/TotalSystemMemoryGiB%20eq%20384'
-
 ```
 
 ### Request URI parameters
 
 -  `{searchkeys}` refers to `ComputerSystem` parameters. Following are the allowed search keys:
 
-       -   `ProcessorSummary/Count` 
-        
-       -   `ProcessorSummary/Model` 
-        
-       -   `ProcessorSummary/sockets` 
-        
-       -   `SystemType` 
-        
-       -   `MemorySummary/TotalSystemMemoryGiB` 
-        
-       -   `FirmwareVersion` 
-        
-       -   `Storage/Drives/Quantity` 
-        
-       -   `Storage/Drives/Capacity` 
-        
-       -   `Storage/Drives/Type` 
+   - `ProcessorSummary/Count` 
+   
+   -   `ProcessorSummary/Model` 
+   
+   -   `ProcessorSummary/sockets` 
+   
+   -   `SystemType` 
+   
+   -   `MemorySummary/TotalSystemMemoryGiB` 
+   
+   -   `FirmwareVersion` 
+   
+   -   `Storage/Drives/Quantity` 
+   
+   -   `Storage/Drives/Capacity` 
+   
+   -   `Storage/Drives/Type` 
 	
 -  `{conditionKeys}` refers to Redfish-specified conditions. Following are the allowed condition keys:
 
@@ -6766,7 +6729,7 @@ This filter searches a server having total physical memory of 384 GB and two Int
 |---------|-------|
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset` |
-|**Description** |This action shuts down, powers up, and restarts a specific system.<br>**NOTE:** To reset an aggregate of systems, use the following URI:<br>`/redfish/v1/AggregationService/Actions/AggregationService.Reset` <br> See [Resetting servers](#resetting-servers).|
+|**Description** |This action shuts down, powers up, and restarts a specific system.<br>**NOTE:** To reset an aggregate of systems, use the following URI:<br>`/redfish/v1/AggregationService/Actions/AggregationService.Reset` <br> See *[Resetting servers](#resetting-servers)*.|
 |**Returns** |A Redfish task in the response header and you receive a link to the task monitor associated with it. To know the progress of this operation, perform an `HTTP GET` on the task monitor (until the task is complete).|
 |**Response code** | `202 Accepted`. On successful completion, `200 OK`. |
 |**Authentication** |Yes|
@@ -6797,7 +6760,7 @@ This filter searches a server having total physical memory of 384 GB and two Int
 
 > **Request parameters**
 
-See [Resetting Servers](#resetting-servers) to know about `ResetType.` 
+See *[Resetting Servers](#resetting-servers)* to know about `ResetType.` 
 
 >**Sample response body**
 
@@ -6819,8 +6782,8 @@ See [Resetting Servers](#resetting-servers) to know about `ResetType.`
 |--------|------|
 |**Method** |`POST` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.SetDefaultBootOrder` |
-|**Description** |This action changes the boot order of a specific system to default settings.<br>**NOTE:**<br> To change the boot order of an aggregate of systems, use the following URI:<br> `/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder` <br> See [Changing the Boot Order of Servers to Default Settings](#changing-the-boot-order-of-servers-to-default-settings).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file. Registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message id. <br />**Example registry file name**: Base.1.4. See [Message Registries](#message-registries).|
+|**Description** |This action changes the boot order of a specific system to default settings.<br>**NOTE:**<br> To change the boot order of an aggregate of systems, use the following URI:<br> `/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder` <br> See *[Changing the Boot Order of Servers to Default Settings](#changing-the-boot-order-of-servers-to-default-settings)*.|
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file. Registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message id. <br />**Example registry file name**: Base.1.4. See *[Message Registries](#message-registries)*.|
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -6857,8 +6820,8 @@ See [Resetting Servers](#resetting-servers) to know about `ResetType.`
 |-------|-------|
 |**Method** |`PATCH` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Bios/Settings` |
-|**Description** |This action changes BIOS configuration.<br>**NOTE:** Any change in BIOS configuration is reflected only after the system reset. To see the change, [reset the computer system](#resetting-a-computer-system).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file. Registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. See [Message registries](#message-registries). <br />For example:`MessageId` in the sample response body is `iLO.2.8.SystemResetRequired`. The registry to look up is `iLO.2.8`.<br> |
+|**Description** |This action changes BIOS configuration.<br>**NOTE:** Any change in BIOS configuration is reflected only after the system reset. To see the change, *[reset the computer system](#resetting-a-computer-system)*.|
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file. Registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message ID. See *[Message registries](#message-registries)*. <br />For example:`MessageId` in the sample response body is `iLO.2.8.SystemResetRequired`. The registry to look up is `iLO.2.8`.<br> |
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
 
@@ -6913,8 +6876,8 @@ See [Resetting Servers](#resetting-servers) to know about `ResetType.`
 |---------|-------|
 |**Method** |`PATCH` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}` |
-|**Description** |This action changes the boot settings of a specific system such as boot source override target, boot order, and more.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before changing the boot order.</li><li>Power on the system once the operation is successful. Changes are seen in the system only after a successful reset.</li></ul><br> To know how to power off, power on, or restart a system, see [Resetting a computer system](#resetting-a-computer-system).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file. Registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. See [Message Registries](#message-registries). <br />For example,`MessageId` in the sample response body is `Base.1.13.0.Success`. The registry to look up is `Base.1.13.0`.<br> |
+|**Description** |This action changes the boot settings of a specific system such as boot source override target, boot order, and more.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before changing the boot order.</li><li>Power on the system once the operation is successful. Changes are seen in the system only after a successful reset.</li></ul><br> To know how to power off, power on, or restart a system, see *[Resetting a computer system](#resetting-a-computer-system)*.|
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file. Registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. See *[Message Registries](#message-registries)*. <br />For example,`MessageId` in the sample response body is `Base.1.13.0.Success`. The registry to look up is `Base.1.13.0`.<br> |
 |**Response code** |`200 OK`|
 |**Authentication** |Yes|
 
@@ -7708,7 +7671,6 @@ curl -i POST \
   "WriteProtected":true
 }' \
  'https://{odimra_host}:{port}/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.InsertMedia'
-
 ```
 
 >**Sample response body**
@@ -7728,6 +7690,7 @@ curl -i POST \
         "Message": "See @Message.ExtendedInfo for more information."
     }
 } 
+
 ```
 
 ### Ejecting VirtualMedia
@@ -8330,8 +8293,6 @@ curl -i GET \
 curl -i GET \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odim_host}:{port}/redfish/v1/UpdateService/FirmwareInventory/{inventoryId}'
-
-
 ```
 
 >**Sample response body**
@@ -8474,8 +8435,6 @@ curl -i POST \
 "@Redfish.OperationApplyTime": "OnStartUpdateRequest"
 }' \
  'https://{odim_host}:{port}/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate'
-
-
 ```
 
 > **Sample request body**
@@ -8563,7 +8522,7 @@ Content-Length:491 bytes
       ],
       "code":"iLO.0.10.ExtendedInfo",
       "message":"See @Message.ExtendedInfo for more information."
-   }
+}
 ```
 
 
@@ -8632,6 +8591,8 @@ Content-Length:491 bytes
       ],
       "code":"iLO.0.10.ExtendedInfo",
       "message":"See @Message.ExtendedInfo for more information."
+ }
+}
 ```
 
 
@@ -8795,7 +8756,6 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Switches'
-
 ```
 
 >**Sample response body**
@@ -8842,7 +8802,6 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}'
-
 ```
 
 >**Sample response body**
@@ -8887,7 +8846,6 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}/Ports'
-
 ```
 
 >**Sample response body**
@@ -8907,8 +8865,7 @@ curl -i GET \
    "Members@odata.count":6,
    "Name":"PortCollection",
    "@odata.type":"#PortCollection.PortCollection"
-}
-	
+}	
 ```
 
 
@@ -8930,7 +8887,6 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}/Ports/{portid}'
-
 ```
 
 >**Sample response body**
@@ -8983,7 +8939,6 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'
-
 ```
 
 
@@ -9034,8 +8989,7 @@ curl -i GET \
 	"Name": "AddressPool Collection",
 	"RedfishVersion": "1.15.1",
 	"@odata.type": "#AddressPoolCollection.AddressPoolCollection"
-}
-	
+}	
 ```
 
 
@@ -9058,7 +9012,6 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspoolid}'
-
 ```
 
 
@@ -9100,8 +9053,7 @@ curl -i GET \
       "MPIbgpAsNumberUpperAddress":1
    },
    "Name":""
-}
-	
+}	
 ```
 
 
@@ -9124,7 +9076,6 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Endpoints'
-
 ```
 
 >**Sample response body**
@@ -9167,7 +9118,6 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Endpoints/{endpointId}'
-
 ```
 
 >**Sample response body**
@@ -9284,7 +9234,6 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}'
-
 ```
 
 >**Sample response body**
@@ -9391,7 +9340,6 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-
 |Name|String (optional)<br> |Name for the address pool.|
 |Description|String (optional)<br> |Description for the address pool.|
 |IPv4{| (required)<br> | |
@@ -9465,7 +9413,6 @@ Date:Thu, 14 May 2020 16:18:54 GMT
   },
   "Name": "FC 18 vlan_102 - AddressPools"
 }
-
 ```
 
 
@@ -9517,7 +9464,6 @@ curl -i POST \
   }
 }'
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'
-
 ```
 
 >**Sample request body**
@@ -9551,7 +9497,6 @@ curl -i POST \
     "GatewayIPAddressList": ["xxx.xxx.xxx.21/31", "xxx.xxx.xxx.22/31"]
   }
 }
-
 ```
 
 > **Request parameters**
@@ -9793,7 +9738,6 @@ curl -i POST \
 }
 '
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Endpoints'
-
 ```
 
 >**Sample request body** for a single endpoint
@@ -9940,7 +9884,6 @@ curl -i POST \
 }
 '
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Zones'
-
 ```
 
 
@@ -10190,7 +10133,6 @@ curl -i -X PATCH \
 curl -i -X DELETE \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}'
-
 ```
 
 ## Deleting an endpoint
@@ -10210,7 +10152,6 @@ curl -i -X DELETE \
 curl -i DELETE \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odim_hosts}:{port}/redfish/v1/Fabrics/{fabricID}/Endpoints/{endpointId}'
-
 ```
 
 
@@ -10231,7 +10172,6 @@ curl -i DELETE \
 curl -i -X DELETE \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspoolid}'
-
 ```
 
 
@@ -10330,7 +10270,6 @@ Link:</redfish/v1/SchemaStore/en/TaskService.json>; rel=describedby
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/TaskService/Tasks'
-
 ```
 
 >**Sample response body** 
@@ -10516,7 +10455,6 @@ Content-Length:491 bytes
 curl -i DELETE \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/TaskService/Tasks/{TaskID}'
-
 ```
 
 
@@ -10867,7 +10805,6 @@ curl -i POST \
    "SubscriptionType": "RedfishEvent",
    "EventFormatType": "MetricReport"
 }
-
 ```
 
 > **Request parameters**
@@ -11043,7 +10980,6 @@ curl -i POST \
    "Severity":"Critical"
 }' \
  'https://{odimra_host}:{port}/redfish/v1/EventService/Actions/EventService.SubmitTestEvent'
-
 ```
 
 
@@ -11065,7 +11001,6 @@ curl -i POST \
    "OriginOfCondition":"/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7.1/EthernetInterfaces/1",
    "Severity":"Critical"
 }
-
 ```
 
 > **Request parameters** 
@@ -11119,8 +11054,8 @@ Date:Fri,15 May 2020 07:42:59 GMT+5m 11s
          ],
          "OriginOfCondition":"/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7.1/EthernetInterfaces/1",
          "Context":"Event Subscription"
-}
-]
+       }
+   ]
 }
 ```
 
@@ -11144,7 +11079,6 @@ Date:Fri,15 May 2020 07:42:59 GMT+5m 11s
      "NumberOfArgs": 2,
      "Resolution": "None"
 },
-...
 ```
 
 ## Event subscription use cases
@@ -11280,7 +11214,6 @@ To get notified of the task completion status, subscribe to `StatusChange` event
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions'
-
 ```
 
  **Sample response body**
@@ -11328,7 +11261,6 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions/{subscriptionId}'
-
 ```
 
  **Sample response body** 
@@ -11379,7 +11311,6 @@ curl -i GET \
 curl -i -X DELETE \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions/{subscriptionId}'
-
 ```
 
  **Sample response body** 
@@ -11983,7 +11914,6 @@ curl -i GET \
 ```
 curl -i GET \
               'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricReports/{MetricReportID}'
-
 ```
 
 
@@ -12060,7 +11990,6 @@ curl -i GET \
 ```
 curl -i GET \
               'https://{odimra_host}:{port}/redfish/v1/TelemetryService/Triggers/'
-
 ```
 
 
@@ -12117,7 +12046,6 @@ curl -i GET \
 ```
 curl -i GET \
               'https://{odimra_host}:{port}/redfish/v1/TelemetryService/Triggers/'
-
 ```
 
 

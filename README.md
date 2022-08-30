@@ -1260,7 +1260,7 @@ Topics covered in this section include:
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with URP: ConnectionMethodVariant: `Compute:BasicAuth: URP_v1.0.0`<br> |
+    | connectionMethodConf         | The connection method associated with URP: ConnectionMethodVariant: `Compute:BasicAuth:URP_v1.0.0`<br> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`.<br>Add these values to the existing comma-separated list.<br> |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`, `redis-ha-ondisk.odim.svc.cluster.local`.<br>Add these values to the existing comma-separated list.<br><br />**NOTE**: `redis-ha-ondisk.odim.svc.cluster.local` is applicable to three-node deployment only. |
     | odimPluginPath               | The path of the directory where the URP Helm package, the `urplugin` image, and the modified `urplugin-config.yaml` are copied. |
@@ -1278,9 +1278,9 @@ Topics covered in this section include:
       haDeploymentEnabled: True
       connectionMethodConf:
       - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth: GRF_v1.0.0
+        ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
       - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth: URP_v1.0.0
+        ConnectionMethodVariant: Compute:BasicAuth:URP_v1.0.0
       odimraKafkaClientCertFQDNSan: urplugin,api
       odimraServerCertFQDNSan: urplugin,api
     ```
@@ -1422,7 +1422,7 @@ Topics covered in this section include:
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with Dell plugin: ConnectionMethodVariant: <br />`Compute:BasicAuth: DELL_v1.0.0`<br> |
+    | connectionMethodConf         | The connection method associated with Dell plugin: ConnectionMethodVariant: <br />`Compute:BasicAuth:DELL_v1.0.0`<br> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the Dell plugin:<br />`dellplugin`, `dellplugin-events`<br>Add these values to the existing comma-separated list.<br> |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the Dell plugin:<br /> `dellplugin`, `dellplugin-events`<br> Add these values to the existing comma-separated list.<br> |
     
@@ -1439,7 +1439,7 @@ Topics covered in this section include:
       haDeploymentEnabled: True
       connectionMethodConf:
       - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth: DELL_v1.0.0
+        ConnectionMethodVariant: Compute:BasicAuth:DELL_v1.0.0
       odimraKafkaClientCertFQDNSan: dellplugin,dellplugin-events
       odimraServerCertFQDNSan: dellplugin,dellplugin-events    
     ```
@@ -1571,7 +1571,7 @@ Topics covered in this section include:
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with Lenovo: ConnectionMethodVariant: `Compute:BasicAuth: LENOVO_v1.0.0`<br> |
+    | connectionMethodConf         | The connection method associated with Lenovo: ConnectionMethodVariant: `Compute:BasicAuth:LENOVO_v1.0.0`<br> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying Lenovo plugins: `lenovoplugin`, `lenovoplugin-events`<br />Add these values to the existing comma-separated list. |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying Lenovo: `lenovoplugin` `lenovoplugin-events`<br />Add these values to the existing comma-separated list. |
 
@@ -1588,7 +1588,7 @@ Topics covered in this section include:
       haDeploymentEnabled: True
       connectionMethodConf:
       - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth: LENOVO_v1.0.0
+        ConnectionMethodVariant: Compute:BasicAuth:LENOVO_v1.0.0
       odimraKafkaClientCertFQDNSan: lenovoplugin, lenovoplugin-events
       odimraServerCertFQDNSan: lenovoplugin, lenovoplugin-events  
     ```
@@ -3329,7 +3329,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with the GRF plugin:<br/> ConnectionMethodVariant: `Compute:BasicAuth: GRF_v1.0.0`<br/>Check if it is there already before updating. If yes, do not add it again.<br/> |
+    | connectionMethodConf         | The connection method associated with the GRF plugin:<br/> ConnectionMethodVariant: `Compute:BasicAuth:GRF_v1.0.0`<br/>Check if it is there already before updating. If yes, do not add it again.<br/> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the GRF plugin:grfplugin, grfplugin-events<br/>Add these values to the existing comma-separated list.<br/> |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the GRF plugin: grfplugin, grfplugin-events. <br />Add these values to the existing comma-separated list.<br> |
     | odimPluginPath               | The path of the directory where the GRF Helm package, the `grfplugin` image, and the modified `grfplugin-config.yaml` are copied. |
@@ -3347,7 +3347,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
           haDeploymentEnabled: True
           connectionMethodConf:
           - ConnectionMethodType: Redfish
-            ConnectionMethodVariant: Compute:BasicAuth: GRF_v1.0.0
+            ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
           odimraKafkaClientCertFQDNSan: grfplugin,grfplugin-events
           odimraServerCertFQDNSan: grfplugin,grfplugin-events
     ```

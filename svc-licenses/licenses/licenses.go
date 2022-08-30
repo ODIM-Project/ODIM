@@ -278,7 +278,7 @@ func (e *ExternalInterface) getDetailsFromAggregate(aggregateURI string) ([]stri
 	log.Info("System URL's from agrregate: ", resource)
 
 	for _, key := range resource.Elements {
-		res, err := e.getManagerURL(key)
+		res, err := e.getManagerURL(key.OdataID)
 		if err != nil {
 			errMsg := "Unable to get manager link"
 			log.Error(errMsg)

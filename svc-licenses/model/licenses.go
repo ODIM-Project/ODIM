@@ -57,6 +57,12 @@ type Target struct {
 	PluginID       string `json:"PluginID"`
 }
 
+// Elements struct used for storing system details
 type Elements struct {
-	Elements []string `json:"Elements"`
+	Elements []OdataIDLinks `json:"Elements,omitempty"`
+}
+
+// OdataIDLinks struct used for storing odata id
+type OdataIDLinks struct {
+	OdataID string `json:"@odata.id,omitempty"`
 }

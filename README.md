@@ -110,7 +110,7 @@ Resource Aggregator for ODIM comprises the following two key components:
 Deploying Resource Aggregator for ODIM in a data center involves installing the following microservices on one or more machines:
 
 -   Kubernetes microservices
--   The resource aggregator microservices:
+-   Resource aggregator microservices
     - API
     - Account-session
     - Aggregation
@@ -122,7 +122,7 @@ Deploying Resource Aggregator for ODIM in a data center involves installing the 
     - Update
     - Telemetry
     - License
--   The plugin microservices such as the Dell plugin, Lenovo plugin, URP, and additional third-party plugins
+-   Plugin microservices such as the Dell plugin, Lenovo plugin, URP, and additional third-party plugins
 -   Third-party services such as Kafka, etcd, Zookeeper, and Redis
 
 These microservices can be deployed as portable, light-weight Docker containers. The containerized services are orchestrated and managed by Kubernetes—an open-source container orchestration platform that helps to automate, scale, and manage a containerized application. For more information on Kubernetes and its architecture, see *[https://kubernetes.io/docs/home/](https://kubernetes.io/docs/home/)*.
@@ -319,9 +319,11 @@ The following table lists the software components and versions that are compatib
        ```
 
    > **NOTE**: If a package version is unavailable or outdated, run the following command to view the latest available versions of that package and install the first version listed in the output.
-
-   ​	`sudo apt-cache madison <package name>`
-
+   
+   ```
+   sudo apt-cache madison <package name>
+   ```
+   
 6. *[Download and install go-language](#downloading-and-installing-go-language)* on the deployment node.
 
 7. *[Configure Docker proxy](#configuring-proxy-for-docker)* on the deployment node.
@@ -408,7 +410,7 @@ The following table lists the software components and versions that are compatib
 
 4. Copy each saved tar archive to a directory called `kubernetes_images` on the deployment node. 
 
-   For example:`cp /home/bruce/*.tar /home/bruce/kubernetes_images`
+   Example: `cp /home/bruce/*.tar /home/bruce/kubernetes_images`
 
    > **IMPORTANT**: When deploying ODIMRA, update the `kubernetesImagePath` parameter in `kube_deploy_nodes.yaml` file with the path of the `kubernetes_images` directory you choose in this step. The images are automatically installed on all cluster nodes after deployment.
 
@@ -451,7 +453,9 @@ The following table lists the software components and versions that are compatib
 	   
 	   ```
 	   docker pull stakater/reloader:v0.0.76
-	   
+	   ```
+
+	   ```
 	   docker pull busybox:1.33
 	   ```
 	
@@ -463,7 +467,7 @@ The following table lists the software components and versions that are compatib
     Example: `docker save -o api.tar api:4.0`
 
     The following table lists the Docker images of all Resource Aggregator for ODIM services:
-    
+
     | **Docker image name** | **Version** | **Docker image bundle name** |
     | :-------------------- | ----------- | ---------------------------- |
     | account-session       | 3.1         | account-session.tar          |
@@ -488,12 +492,12 @@ The following table lists the software components and versions that are compatib
     | urplugin              | 3.1         | urplugin.tar                 |
     | grfplugin             | 3.1         | grfplugin.tar                |
     | telemetry             | 2.1         | telemetry.tar                |
-    
+
 3. To install the Docker images of all services on the cluster nodes, create a directory called `odimra_images` on the deployment node and copy each tar archive to this directory. 
     For example: `cp /home/bruce/ODIM/*.tar /home/bruce/odimra_images`
 
     > **IMPORTANT**: While deploying ODIMRA, update the `odimraImagePath` parameter in `kube_deploy_nodes.yaml` file with the path of the `odimra_images` directory you choose in this step. The images are automatically installed on all cluster nodes after deployment.
-    
+
     > **NOTE**: The `kube_deploy_nodes.yaml` file is the configuration file used by odim-controller to set up a Kubernetes cluster and to deploy the Resource Aggregator for ODIM services.
 
 
@@ -1136,7 +1140,7 @@ Topics covered in this section include:
    4. Navigate to the `/etc/cron.hourly` directory. 
 
       ```
-   cd /etc/cron.hourly
+      cd /etc/cron.hourly
       ```
    
    5. Create a file called logrotate. 
@@ -1144,13 +1148,13 @@ Topics covered in this section include:
    6. Open the `logrotate` file and add the following content: 
 
        ```
-    logrotate -s /var/lib/logrotate/status /etc/logrotate.d/odimra
+       logrotate -s /var/lib/logrotate/status /etc/logrotate.d/odimra
        ```
    
    7. Verify that the configuration is working: 
 
        ```
-    sudo logrotate -v -f /etc/logrotate.d/odimra
+       sudo logrotate -v -f /etc/logrotate.d/odimra
        ```
 
 
@@ -1186,7 +1190,7 @@ Topics covered in this section include:
 ```
      ip/jrKjQdzKIU1JvT4ZQ6gbCe2XJtCKPRgqOQv6g3aIAYtG+hpVgel3k67TB723h9dN2cABWZgE+b9CAxbIXj3qZZFWrUMMuPkT4fwtW8fTlhdR+phmOvnnSw5bvUrXyl5Se1IczwtMXfhqk7U8eqpJnZ6xWNR8Q1K7baDv1QvZwej/v3bqHRTC93pDL+3SvE8VCyrIgbMVdfvv3+mJKvs2F7hXoTJiwjRfKGyzdP0yRIHAFOB3m/xnv6ZIRm8Ak6+sx18NRq8RH20bktzhZ45fT+iX4twMJG1lI0KRJ3j/PL+IqY4MmYzv/72fQhMznL39Rjr9LR6mB/JGI0ww0sMUCFr6obzQfQWv1so+Ck694fNJMQPXQS64VcqVDuISXSd4cqkdMx9zBmfDbgzMQQVwgjDgt4nC1w8/wGSfMtkms8rSJrBa18hKCWi+jfhASbNM84udKc0kQsQJlsnjcdsL84zrE8iUqqXC/fK2cQbNL31H5C+qEfJqdNTauQSskkK3cpNWh1FVw736WBYYJSja59q5QwMniXldwcvRglEIELsjKgjbuOnQoIZaVTcbheaa2b1XAiRKTKuPmweysyV3fbuR0jgSJTmdTehrtYG9omjUbg/L7WFjC43JWq8suWi5uch+jHtGG5mZJFFdkE37pQd3wzHBSa+/9Yq9/ZSY=
 ```
-    
+
 4. On the deployment node, copy the UR plugin configuration file and the hook script to `~/plugins/urplugin`.
    ```
    cp ~/ODIM/odim-controller/helmcharts/urplugin/urplugin-config.yaml ~/plugins/urplugin
@@ -1241,7 +1245,7 @@ Topics covered in this section include:
 8. Save the URP Docker image on the deployment node at `~/plugins/urplugin`.
 
      ```
-     docker save urplugin:3.0 -o ~/plugins/urplugin/urplugin.tar
+     docker save urplugin:3.1 -o ~/plugins/urplugin/urplugin.tar
      ```
 
 9. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
@@ -1260,7 +1264,7 @@ Topics covered in this section include:
     | ---------------------------- | ------------------------------------------------------------ |
     | connectionMethodConf         | The connection method associated with URP: ConnectionMethodVariant: `Compute:BasicAuth:URP_v1.0.0`<br> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`.<br>Add these values to the existing comma-separated list.<br> |
-    | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`.<br>Add these values to the existing comma-separated list.<br> |
+    | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`, `redis-ha-ondisk.odim.svc.cluster.local`.<br>Add these values to the existing comma-separated list.<br><br />**NOTE**: `redis-ha-ondisk.odim.svc.cluster.local` is applicable to three-node deployment only. |
     | odimPluginPath               | The path of the directory where the URP Helm package, the `urplugin` image, and the modified `urplugin-config.yaml` are copied. |
 
     **Example**:
@@ -1389,13 +1393,13 @@ Topics covered in this section include:
 7. Save the Dell plugin Docker image on the deployment node at `~/plugins/dellplugin`.
 
     ```
-    docker save dellplugin:2.0 -o ~/plugins/dellplugin/dellplugin.tar
+    docker save dellplugin:2.1 -o ~/plugins/dellplugin/dellplugin.tar
     ```
 
 8. Navigate to the `ODIM` directory.
 
     ```
-    cd ODIM
+    cd ~/ODIM
     ```
 
 9. Copy the proxy configuration file `install/templates/dellplugin_proxy_server.conf.j2` to `~/plugins/dellplugin`.
@@ -1516,7 +1520,6 @@ Topics covered in this section include:
 
      ```
      lenovoplugin:
-       hostname: knode1
        eventListenerNodePort: 30089
        lenovoPluginRootServiceUUID: 7a38b735-8b9f-48a0-b3e7-e5a180567d37
        username: admin
@@ -1525,7 +1528,7 @@ Topics covered in this section include:
        lbPort: 30089
        logPath: /var/log/lenovoplugin_logs
      ```
-
+   
 6. Generate the Helm package for the Lenovo plugin on the deployment node.
 
    1. Navigate to `odim-controller/helmcharts/lenovoplugin`.
@@ -1540,12 +1543,12 @@ Topics covered in this section include:
 
 7. Save the Lenovo plugin Docker image on the deployment node at `~/plugins/lenovoplugin`.
 
-       docker save lenovoplugin:1.0 -o ~/plugins/lenovoplugin/lenovoplugin.tar
+       docker save lenovoplugin:1.1 -o ~/plugins/lenovoplugin/lenovoplugin.tar
 
 8. Navigate to the` ODIM` directory.
 
    ```
-   cd ODIM
+   cd ~/ODIM
    ```
 
 9. Copy the proxy configuration file `install/templates/lenovoplugin_proxy_server.conf.j2` to `~/plugins/lenovoplugin`.
@@ -1738,8 +1741,8 @@ The plugin you want to add is successfully deployed.
    
    |Plugin|Default username|Default password|Connection method variant|
    |------|----------------|----------------|------|
-   |GRF plugin|admin|GRFPlug!n12$4|Compute:BasicAuth:GRF\_v1.0.0|
-   |URP|admin|Plug!n12$4|Compute:BasicAuth:URP\_v1.0.0|
+   |GRF plugin|admin|GRFPlug!n12$4|Compute:BasicAuth:GRF_v1.0.0|
+   |URP|admin|Plug!n12$4|Compute:BasicAuth:URP_v1.0.0|
    
     Use the following curl command to add the plugin:
    
@@ -1811,7 +1814,6 @@ The plugin you want to add is successfully deployed.
            "ManagerType":"Service",
            "Name":"URP",
            "Status":{
-              "Health":"OK",
               "State":"Enabled"
            },
            "UUID":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b"
@@ -1822,7 +1824,6 @@ The plugin you want to add is successfully deployed.
    
     -    `State` is `Enabled` 
     
-    -   `Health` is `Ok` 
     
     For more information, see "*Managers*" section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
     	
@@ -2140,10 +2141,7 @@ To search servers in the inventory based on specific criteria, perform HTTP `GET
 `/redfish/v1/Systems?$filter={searchKeys}%20{conditionKeys}%20{value/regular_expression}%20{logicalOperand}%20{searchKeys}%20{conditionKeys}%20{value}`
 
 
-Example:
-
-
-`redfish/v1/Systems?filter=MemorySummary/TotalSystemMemoryGiB%20eq%20384`
+Example: `redfish/v1/Systems?filter=MemorySummary/TotalSystemMemoryGiB%20eq%20384`
 
 
 This URI searches the inventory for servers having total physical memory of 384 GB. On successful completion, it provides links to the filtered servers.
@@ -2168,8 +2166,9 @@ Start update action starts updating software or firmware components for which an
 
 To subscribe to events such as alerts and alarms from southbound resources and the resource aggregator, perform HTTP `POST` on the following URI with the request payload specifying the destination URI where events are received, the type of events such as `Alert`, `ResourceRemoved`, `StatusChange`, the links to the resources where events originate, and more.
 
-
-`/redfish/v1/EventService/Subscriptions`
+```
+/redfish/v1/EventService/Subscriptions
+```
 
 
 For more information such as curl command, sample request, and sample response, see *Creating an event subscription* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
@@ -2178,16 +2177,25 @@ For more information such as curl command, sample request, and sample response, 
 
 To view a collection of network fabrics and its switches, address pools, endpoints, and zones, perform HTTP `GET` on the following URIs respectively.
 
+```
+/redfish/v1/Fabrics
+```
 
-`/redfish/v1/Fabrics`
+```
+/redfish/v1/Fabrics/{fabricID}/Switches
+```
 
-`/redfish/v1/Fabrics/{fabricID}/Switches`
+```
+/redfish/v1/Fabrics/{fabricID}/AddressPools
+```
 
-`/redfish/v1/Fabrics/{fabricID}/AddressPools`
+```
+/redfish/v1/Fabrics/{fabricID}/Endpoints
+```
 
-`/redfish/v1/Fabrics/{fabricID}/Endpoints`
-
-`/redfish/v1/Fabrics/{fabricID}/Zones`
+```
+/redfish/v1/Fabrics/{fabricID}/Zones
+```
 
 
 For more information such as curl command, sample request, and sample response, and for information on how to create fabric resources such as address pools, endpoints, and zones, see *Host to fabric networking* in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
@@ -2196,14 +2204,16 @@ For more information such as curl command, sample request, and sample response, 
 
 To create a volume, perform HTTP POST on the following URI with a request body specifying a name, the RAID type, and links to drives to contain the created volume:
 
-
-`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes`
+```
+/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes
+```
 
 
 To remove an existing volume, perform HTTP DELETE on the following URI:
 
-
-`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}`
+```
+/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}
+```
 
 
 For more information such as curl command, sample request, and sample response, see *Creating a volume* and *Deleting a volume* sections in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
@@ -2213,8 +2223,9 @@ For more information such as curl command, sample request, and sample response, 
 
 To remove a server from the inventory, perform HTTP `DELETE` on the following URI with the request payload specifying a link to the server which you want to remove.
 
-
-`/redfish/v1/AggregationService/AggregationSources`
+```
+/redfish/v1/AggregationService/AggregationSources
+```
 
 
 This action erases the inventory of a specific server and also deletes all the event subscriptions associated with the server.
@@ -2235,7 +2246,9 @@ The odim-controller command-line interface \(CLI\) offers commands to support th
 
 **Command structure**
 
-`python3 odim-controller.py [option(s)] [argument(s)]`
+```
+python3 odim-controller.py [option(s)] [argument(s)]
+```
 
 **Supported command options and arguments**
 
@@ -2452,10 +2465,13 @@ This procedure shows how to set up time synchronization across all the nodes (de
 4. Type the following commands:
 
    ```
-   $ sudo systemctl restart chrony
-   $ sudo systemctl enable chrony
+   sudo systemctl restart chrony
    ```
-
+   
+```
+   sudo systemctl enable chrony
+   ```
+   
    
 
 ## Downloading and installing Go language
@@ -2552,10 +2568,6 @@ Run the following commands:
 
 1. Run the following commands:
    
-   > **NOTE**: If the current version of a package is not found, please run the following command to check for the latest available version of that package and install the first version listed in the output.
-   
-   ​	`sudo apt-cache madison <package name>`
-	
    1. ```
       sudo apt-get install -y apt-transport-https=2.0.9 ca-certificates=20211016~20.04.1 curl=7.68.0-1ubuntu2.12
       ```
@@ -2571,12 +2583,19 @@ Run the following commands:
    4. ```
       sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
       ```
-   
+	
    5. ```
       sudo apt-get install -y docker-ce=5:20.10.12~3-0~ubuntu-focal docker-ce-cli=5:20.10.12~3-0~ubuntu-focal containerd.io --allow-downgrades
       ```
    
+   > **NOTE**: If the current version of a package is not found, please run the following command to check for the latest available version of that package and install the first version listed in the output.
+   
+   ```
+   sudo apt-cache madison <package name>
+   ```
+   
 2. Configure overlay storage for Docker:
+
    ```
    cat << EOF | sudo tee /etc/docker/daemon.json
    {
@@ -2601,7 +2620,7 @@ Run the following commands:
       ```
       sudo groupadd docker
       ```
-   
+
 4. Configure to use Docker CLI without sudo access:
    ```
    sudo usermod -aG docker $USER
@@ -2614,7 +2633,7 @@ Run the following commands:
    ```
 
    > **NOTE**: If you are unable to access Docker CLI without `sudo` even after performing this step, log out and log back in so that Docker group membership is re-evaluated.
-   
+
 6. Restart Docker service:
    ```
    sudo systemctl enable docker
@@ -2751,8 +2770,8 @@ The following table lists all the configuration parameters required by odim-cont
 |httpsProxy|HTTPS Proxy to be set in all the nodes for connecting to external network. If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
 |noProxy|List of IP addresses and FQDNs for which proxy must not be used. It must begin with `127.0.0.1,localhost,localhost.localdomain,10.96.0.0/12,` followed by the IP addresses of the cluster nodes.<br>If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
 |nodePasswordFilePath|The absolute path of the file containing the encoded password of the nodes \(encoded using the odim-vault tool)<br />`/home/<username\>/ODIM/odim-controller/scripts/nodePasswordFile`<br>|
-|redisInMemoryPasswordFilePath|The absolute path of the file containing the encoded password of the Redis in-memory database (encoded using the odim-vault tool\)<br /> `/home/<username\>/ODIM/odim-controller/scripts/redisInMemoryPasswordFile`<br/>|
-|redisOnDiskPasswordFilePath|The absolute path of the file containing the encoded password of the Redis on-disk database (encoded using the odim-vault tool\)<br /> `/home/<username\>/ODIM/odim-controller/scripts/redisOnDiskPasswordFile`<br/>|
+|redisInMemoryPasswordFilePath|The absolute path of the file containing the encoded password of the Redis in-memory database (encoded using the odim-vault tool\)<br /> `/home/<username>/ODIM/odim-controller/scripts/redisInMemoryPasswordFile`<br/>|
+|redisOnDiskPasswordFilePath|The absolute path of the file containing the encoded password of the Redis on-disk database (encoded using the odim-vault tool\)<br /> `/home/<username>/ODIM/odim-controller/scripts/redisOnDiskPasswordFile`<br/>|
 |nodes|List of hostnames, IP addresses, and usernames of the nodes that are part of the Kubernetes cluster you want to set up.<br>**NOTE**: For one-node cluster configuration, information of only the controller node is required.<br />|
 |Node<n>_Hostname|Hostname of a cluster node. To know the hostname, run `hostname` on each node.<br>|
 |ip|IPv4 address of cluster node(s).|
@@ -3032,7 +3051,7 @@ The protoc compiler provides a language-neutral, platform-neutral, extensible me
    - Ensure that `kafka.truststore.jks` and `kafka.truststore.jks` have the following SAN entries:
 
      ```
-    DNS.1 = kafka
+     DNS.1 = kafka
      DNS.2 = kafka1.kafka.${​​​​ODIMRA_NAMESPACE}​​​​.svc.cluster.local
      DNS.3 = kafka2.kafka.${​​​​ODIMRA_NAMESPACE}​​​​.svc.cluster.local
      DNS.4 = kafka3.kafka.${​​​​ODIMRA_NAMESPACE}​​​​.svc.cluster.local
@@ -3045,7 +3064,7 @@ The protoc compiler provides a language-neutral, platform-neutral, extensible me
    - Ensure that `zookeeper.truststore.jks` and `zookeeper.truststore.jks` have the following SAN entries:
 
      ```
-    DNS.1 = zookeeper
+     DNS.1 = zookeeper
      DNS.2 = zookeeper1.zookeeper.${​​ODIMRA_NAMESPACE}​​.svc.cluster.local
      DNS.3 = zookeeper2.zookeeper.${​​ODIMRA_NAMESPACE}​​.svc.cluster.local
      DNS.4 = zookeeper3.zookeeper.${​​ODIMRA_NAMESPACE}​​.svc.cluster.local

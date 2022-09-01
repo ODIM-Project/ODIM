@@ -359,6 +359,16 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 	mockSystemData("/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1")
 	mockSystemData("/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1.1")
 	mockSystemData("/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd.1")
+	req := agmodel.Aggregate{
+		Elements: []agmodel.OdataID{
+			{OdataID: "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1"},
+		},
+	}
+
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b74")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
 
 	type args struct {
 		taskID          string
@@ -384,7 +394,14 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9.1",
 		},
 	})
-
+	successAggregateReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b74",
+		},
+	})
 	invalidUUIDReq, _ := json.Marshal(AggregationResetRequest{
 		BatchSize:                    1,
 		DelayBetweenBatchesInSeconds: 2,
@@ -471,6 +488,20 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
 					RequestBody:  successReq,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "postive test Case Aggregate",
+			p:    &pluginContact,
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  successAggregateReq,
 				},
 			},
 			want: response.RPC{

@@ -254,7 +254,7 @@ jobs:
           protos=("auth" "compositionservice")
           for str in ${protos[@]}; do
             proto_path="$(pwd)/lib-utilities/proto/$str"
-            proto_out_path="$(pwd)/svc-composition-service/app/proto/$str" 
+            proto_out_path="$(pwd)/svc-composition-service/app/proto/$str"
             proto_file_name="$str.proto"
             if [ $str == 'auth' ]
             then
@@ -272,7 +272,7 @@ jobs:
             if [[ -f "$proto_grpc_file" ]]; then
               sed -i 's/import '$protoc_pb2_name'/import proto.'$str'.'$protoc_pb2_name'/gI' $proto_grpc_file
             fi
-          done 
+          done
 
     - name: Build
       run: |
@@ -320,7 +320,7 @@ jobs:
             else
               GORACE=history_size=7 go test ./... --cover
             fi
-            
+
             echo "Test Done"
             if [ $? -eq 0 ]; then
               echo Unit Testing for odimra service/lib dependencies $i is Successful !!!!

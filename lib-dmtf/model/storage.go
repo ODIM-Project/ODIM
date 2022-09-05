@@ -28,7 +28,7 @@ type Storage struct {
 	Links                   *StorageLinks         `json:"Links,omitempty"`
 	Redundancy              []*Redundancy         `json:"Redundancy,omitempty"`
 	Status                  *Status               `json:"Status,omitempty"`
-	StorageControllers      []*StorageControllers `json:"StorageControllers,omitempty"`
+	StorageControllers      []*StorageControllers `json:"StorageControllers,omitempty"` //StorageControllers Deprecated in version Storage.v1.13.0
 	Volumes                 *Link                 `json:"Volumes,omitempty"`
 	ConsistencyGroups       *Link                 `json:"ConsistencyGroups,omitempty"`
 	Controllers             *Link                 `json:"Controllers,omitempty"`
@@ -45,6 +45,9 @@ type Storage struct {
 //StorageControllers redfish structure
 type StorageControllers struct {
 	Oid                          string                    `json:"@odata.id"`
+	ODataContext                 string                    `json:"@odata.context,omitempty"`
+	ODataEtag                    string                    `json:"@odata.etag,omitempty"`
+	ODataType                    string                    `json:"@odata.type,omitempty"`
 	AssetTag                     string                    `json:"AssetTag,omitempty"`
 	FirmwareVersion              string                    `json:"FirmwareVersion,omitempty"`
 	Manufacturer                 string                    `json:"Manufacturer,omitempty"`
@@ -70,8 +73,9 @@ type StorageControllers struct {
 	PCIeInterface                *PCIeInterface            `json:"PCIeInterface,omitempty"`
 	Ports                        *Link                     `json:"Ports,omitempty"`
 	Status                       *StorageStatus            `json:"Status,omitempty"`
-	Certificates                 Certificates              `json:"Certificates,omitempty"`
-	Measurements                 []*Link                   `json:"Measurements,omitempty"`
+	Certificates                 *Certificates             `json:"Certificates,omitempty"`
+	Batteries                    []*Link                   `json:"Batteries,omitempty"`
+	Measurements                 []*Link                   `json:"Measurements,omitempty"` // Deprecated in version v1.5.0
 }
 
 //Actions redfish structure
@@ -122,6 +126,8 @@ type NVMeControllerProperties struct {
 	ANACharacteristics        *ANACharacteristics        `json:"ANACharacteristics,omitempty"`
 	NVMeControllerAttributes  *NVMeControllerAttributes  `json:"NVMeControllerAttributes,omitempty"`
 	NVMeSMARTCriticalWarnings *NVMeSMARTCriticalWarnings `json:"NVMeSMARTCriticalWarnings,omitempty"`
+	AllocatedSubmissionQueues int                        `json:"AllocatedSubmissionsQueues,omitempty"`
+	AllocatedCompletionQueues int                        `json:"AllocatedCompletionQueues,omitempty"`
 }
 
 // ANACharacteristics struct is to define the ANACharacteristics of the Storage
@@ -167,18 +173,18 @@ type Drive struct {
 	Description                   string             `json:"Description,omitempty"`
 	EncryptionAbility             string             `json:"EncryptionAbility,omitempty"`
 	EncryptionStatus              string             `json:"EncryptionStatus,omitempty"`
-	FailurePredicted              bool               `json:"FailurePredicted,omitempty"`
+	FailurePredicted              *bool              `json:"FailurePredicted,omitempty"`
 	HotspareReplacementMode       string             `json:"HotspareReplacementMode,omitempty"`
 	HotspareType                  string             `json:"HotspareType,omitempty"`
 	ID                            string             `json:"Id"`
 	Identifiers                   []*Identifier      `json:"Identifiers,omitempty"`
 	IndicatorLED                  string             `json:"IndicatorLED,omitempty"`
 	Links                         *DriveLinks        `json:"Links,omitempty"`
-	LocationIndicatorActive       bool               `json:"LocationIndicatorActive,omitempty"`
+	LocationIndicatorActive       *bool              `json:"LocationIndicatorActive,omitempty"`
 	Manufacturer                  string             `json:"Manufacturer,omitempty"`
 	MediaType                     string             `json:"MediaType,omitempty"`
 	Model                         string             `json:"Model,omitempty"`
-	Multipath                     bool               `json:"Multipath,omitempty"`
+	Multipath                     *bool              `json:"Multipath,omitempty"`
 	Name                          string             `json:"Name"`
 	NegotiatedSpeedGbs            float32            `json:"NegotiatedSpeedGbs,omitempty"`
 	Oem                           *Oem               `json:"Oem,omitempty"`
@@ -187,21 +193,22 @@ type Drive struct {
 	PhysicalLocation              *PhysicalLocation  `json:"PhysicalLocation,omitempty"`
 	PredictedMediaLifeLeftPercent float32            `json:"PredictedMediaLifeLeftPercent,omitempty"`
 	Protocol                      string             `json:"Protocol,omitempty"`
-	ReadyToRemove                 bool               `json:"ReadyToRemove,omitempty"`
+	ReadyToRemove                 *bool              `json:"ReadyToRemove,omitempty"`
 	Revision                      string             `json:"Revision,omitempty"`
 	RotationSpeedRPM              float32            `json:"RotationSpeedRPM,omitempty"`
 	SKU                           string             `json:"SKU,omitempty"`
 	SerialNumber                  string             `json:"SerialNumber,omitempty"`
 	Status                        *StorageStatus     `json:"Status,omitempty"`
 	StatusIndicator               string             `json:"StatusIndicator,omitempty"`
-	WriteCacheEnabled             bool               `json:"WriteCacheEnabled,omitempty"`
+	WriteCacheEnabled             *bool              `json:"WriteCacheEnabled,omitempty"`
 	CapacityMiB                   int                `json:"CapacityMiB,omitempty"`
 	Location                      string             `json:"Location,omitempty"`
 	RotationalSpeedRpm            int                `json:"RotationalSpeedRpm,omitempty"`
 	FirmwareVersion               *FirmwareVersion   `json:"FirmwareVersion,omitempty"`
-	Certificates                  Certificates       `json:"Certificates,omitempty"`
+	Certificates                  *Certificates      `json:"Certificates,omitempty"`
 	EnvironmentMetrics            *Link              `json:"EnvironmentMetrics,omitempty"`
-	Measurements                  []*Link            `json:"Measurements,omitempty"`
+	Measurements                  []*Link            `json:"Measurements,omitempty"` // Deprecated in version v1.14.0
+	NetworkDeviceFunctions        []*Link            `json:"NetworkDeviceFunctions,omitempty"`
 }
 
 // DriveLinks represents drive links
@@ -236,6 +243,51 @@ type FirmwareVersion struct {
 type Current struct {
 	VersionString string `json:"VersionString,omitempty"`
 }
+type CollectionCapabilities struct {
+	OdataType    string          `json:"@odata.type"`
+	Capabilities []*Capabilities `json:"Capabilities",omitempty`
+}
+
+type Capabilities struct {
+	CapabilitiesObject *Link    `json:"CapabilitiesObject"`
+	Links              CapLinks `json:"Links"`
+	UseCase            string   `json:"UseCase"`
+}
+type CapabilitiesObject struct {
+	ODataID           string     `json:"@odata.id"`
+	ODataType         string     `json:"@odata.type"`
+	CapacityBytes     bool       `json:"CapacityBytes@Redfish.OptionalOnCreate,omitempty"`
+	DisplayName       bool       `json:"DisplayName@Redfish.OptionalOnCreate,omitempty"`
+	IOPerfModeEnabled bool       `json:"IOPerfModeEnabled@Redfish.OptionalOnCreate,omitempty"`
+	RAIDType          bool       `json:"RAIDType@Redfish.RequiredOnCreate"`
+	RAIDTypeValues    []string   `json:"RAIDType@Redfish.AllowableValues"`
+	Name              string     `json:"Name"`
+	Id                string     `json:"Id"`
+	StripSizeBytes    bool       `json:"StripSizeBytes@Redfish.OptionalOnCreate,omitempty"`
+	ReadCachePolicy   bool       `json:"ReadCachePolicy@Redfish.OptionalOnCreate,omitempty"`
+	WriteCachePolicy  bool       `json:"WriteCachePolicy,omitempty"`
+	Links             bool       `json:"Links@Redfish.RequiredOnCreate"`
+	LinkValues        LinkValues `json:"Links"`
+}
+type LinkValues struct {
+	DedicatedSpareDrives bool `json:"DedicatedSpareDrives@Redfish.OptionalOnCreate,omitempty"`
+	Drives               bool `json:"Drives@Redfish.RequiredOnCreate"`
+}
+type CapLinks struct {
+	TargetCollection *Link `json:"TargetCollection"`
+}
+type VolumeCollection struct {
+	ODataContext           string                 `json:"@odata.context,omitempty"`
+	ODataEtag              string                 `json:"@odata.etag,omitempty"`
+	ODataID                string                 `json:"@odata.id"`
+	ODataType              string                 `json:"@odata.type"`
+	Description            string                 `json:"Description,omitempty"`
+	Name                   string                 `json:"Name"`
+	Members                []*Link                `json:"Members"`
+	MembersCount           int                    `json:"Members@odata.count"`
+	Oem                    interface{}            `json:"Oem,omitempty"`
+	CollectionCapabilities CollectionCapabilities `json:"@Redfish.CollectionCapabilities"`
+}
 
 // Volume contains the details volume properties
 type Volume struct {
@@ -244,6 +296,7 @@ type Volume struct {
 	ODataEtag                        string                   `json:"@odata.etag"`
 	ODataType                        string                   `json:"@odata.type"`
 	AccessCapabilities               []string                 `json:"AccessCapabilities,omitempty"`
+	CollectionCapabilities           CollectionCapabilities   `json:"@Redfish.CollectionCapabilities"`
 	Actions                          *Actions                 `json:"Actions,omitempty"`
 	AllocatedPools                   *Link                    `json:"AllocatedPools,omitempty"`
 	BlockSizeBytes                   int                      `json:"BlockSizeBytes,omitempty"`

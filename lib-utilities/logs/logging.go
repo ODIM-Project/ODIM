@@ -106,7 +106,7 @@ func auditLogEntry(ctx iris.Context, reqBody map[string]interface{}) string {
 	method := ctx.Request().Method
 	respStatusCode := ctx.GetStatusCode()
 	timeNow := time.Now().Format(time.RFC3339)
-	reqStr := maskRequestBody(reqBody)
+	reqStr := MaskRequestBody(reqBody)
 
 	// formatting logs in syslog format
 	if reqStr == "null" {

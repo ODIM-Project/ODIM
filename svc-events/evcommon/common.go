@@ -38,11 +38,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 )
 
-const (
-	// SaveUndeliveredEventsFlag holds the value to check if  UndeliveredEvents need to be saved in DB
-	SaveUndeliveredEventsFlag = false
-)
-
 //StartUpInteraface Holds the function pointer of  external interface functions
 type StartUpInteraface struct {
 	DecryptPassword                  func([]byte) ([]byte, error)
@@ -484,6 +479,7 @@ func GetIPFromHostName(fqdn string) (string, string) {
 		if err != nil {
 			errorMessage = "Can't lookup the ip from host name" + err.Error()
 		}
+		return "", errorMessage
 	}
 	return fmt.Sprintf("%v", addr[0]), errorMessage
 }

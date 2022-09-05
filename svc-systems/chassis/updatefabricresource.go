@@ -26,6 +26,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	//JSONUnmarshalFunc ...
+	JSONUnmarshalFunc = json.Unmarshal
+	//RequestParamsCaseValidatorFunc ...
+	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
+)
+
 // updateFabricChassisResource will collect the all available fabric plugins available
 // in the DB and communicates with each one of them concurrently to update the resource
 func (f *fabricFactory) updateFabricChassisResource(url string, body *json.RawMessage) response.RPC {
@@ -90,14 +97,14 @@ func validateReqParamsCase(req *json.RawMessage) *response.RPC {
 	var chassisRequest dmtfmodel.Chassis
 
 	// parsing the fabricRequest
-	err := json.Unmarshal(*req, &chassisRequest)
+	err := JSONUnmarshalFunc(*req, &chassisRequest)
 	if err != nil {
 		errResp = common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, err.Error(), nil, nil)
 		return &errResp
 	}
 
 	// validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(*req, chassisRequest)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(*req, chassisRequest)
 	if err != nil {
 		errResp = common.GeneralError(http.StatusInternalServerError, response.InternalError, "error while validating request parameters: "+err.Error(), nil, nil)
 		return &errResp

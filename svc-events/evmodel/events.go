@@ -51,6 +51,12 @@ const (
 
 	// ReadInProgres holds table for ReadInProgres
 	ReadInProgres = "ReadInProgres"
+	// DeliveryRetryPolicy is set to default value incase if its empty
+	DeliveryRetryPolicy = "RetryForever"
+
+	// AggregateSubscriptionIndex is a index name which required for indexing
+	// subscription of device
+	AggregateSubscriptionIndex = common.AggregateSubscriptionIndex
 )
 
 // OdataIDLink containes link to a resource
@@ -71,6 +77,7 @@ type RequestBody struct {
 	EventFormatType      string        `json:"EventFormatType"`
 	SubordinateResources bool          `json:"SubordinateResources"`
 	OriginResources      []OdataIDLink `json:"OriginResources"`
+	DeliveryRetryPolicy  string        `json:"DeliveryRetryPolicy"`
 }
 
 //Subscription is a model to store the subscription details
@@ -94,8 +101,11 @@ type Subscription struct {
 	// To store all Device address
 	Hosts []string `json:"Hosts"`
 	// Remove Location and EventHostIP
-	Location    string `json:"location,omitempty"`
-	EventHostIP string `json:"EventHostIP,omitempty"`
+	Location                string   `json:"location,omitempty"`
+	EventHostIP             string   `json:"EventHostIP,omitempty"`
+	ExcludeMessageIds       []string `json:"ExcludeMessageIds,omitempty"`
+	ExcludeRegistryPrefixes []string `json:"ExcludeRegistryPrefixes,omitempty"`
+	DeliveryRetryPolicy     string   `json:"DeliveryRetryPolicy"`
 }
 
 //DeviceSubscription is a model to store the subscription details of a device
@@ -115,6 +125,7 @@ type EvtSubPost struct {
 	HTTPHeaders          []HTTPHeaders `json:"HttpHeaders"`
 	Context              string        `json:"Context"`
 	OriginResources      []OdataIDLink `json:"OriginResources"`
+	DeliveryRetryPolicy  string        `json:"DeliveryRetryPolicy,omitempty"`
 }
 
 //HTTPHeaders required for the suscribing for events
@@ -148,6 +159,11 @@ type Plugin struct {
 type Fabric struct {
 	FabricUUID string
 	PluginID   string
+}
+
+//Aggregate is the model for Aggregate information
+type Aggregate struct {
+	Elements []OdataIDLink `json:"Elements"`
 }
 
 //GetResource fetches a resource from database using table and key
@@ -308,6 +324,24 @@ func GetFabricData(fabricID string) (Fabric, error) {
 	return fabric, nil
 }
 
+// GetAggregateData  will fetch aggregate details
+func GetAggregateData(aggreagetKey string) (Aggregate, error) {
+	var aggregate Aggregate
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return aggregate, err
+	}
+	aggregatedata, err := conn.Read("Aggregate", aggreagetKey)
+	if err != nil {
+		return aggregate, fmt.Errorf("error while trying to get user: %v", err.Error())
+	}
+	if errs := json.Unmarshal([]byte(aggregatedata), &aggregate); errs != nil {
+		return aggregate, errs
+	}
+
+	return aggregate, nil
+}
+
 //GetAllFabrics retrun all Fabrics
 func GetAllFabrics() ([]string, error) {
 	conn, err := common.GetDBConnection(common.OnDisk)
@@ -335,7 +369,7 @@ func GetDeviceSubscriptions(hostIP string) (*DeviceSubscription, error) {
 	if gerr != nil {
 		return nil, fmt.Errorf("error while trying to get subscription of device %v", gerr.Error())
 	}
-	devSub := strings.Split(devSubscription[0], "::")
+	devSub := strings.Split(devSubscription[0], "||")
 	var deviceSubscription = &DeviceSubscription{
 		EventHostIP:     devSub[0],
 		Location:        devSub[1],
@@ -415,7 +449,6 @@ func SaveEventSubscription(evtSubscription Subscription) error {
 
 // GetEvtSubscriptions is to get event subscription details
 func GetEvtSubscriptions(searchKey string) ([]Subscription, error) {
-
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -558,4 +591,67 @@ func DeleteUndeliveredEventsFlag(destination string) error {
 		return fmt.Errorf("%v", err.Error())
 	}
 	return nil
+}
+
+// SaveAggregateSubscription is to save subscription details of device
+func SaveAggregateSubscription(aggregateID string, hostIP []string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	cerr := conn.CreateAggregateHostIndex(AggregateSubscriptionIndex, aggregateID, hostIP)
+	if cerr != nil {
+		return fmt.Errorf("error while trying to save subscription of device %v", cerr.Error())
+	}
+	return nil
+}
+
+// UpdateAggregateHosts is to update aggregate hosts details of device
+func UpdateAggregateHosts(aggregateID string, hostIP []string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	cerr := conn.UpdateAggregateHosts(AggregateSubscriptionIndex, aggregateID, hostIP)
+	if cerr != nil {
+		return fmt.Errorf("error while trying to save subscription of device %v", cerr.Error())
+	}
+	return nil
+}
+
+// GetAggregateHosts is to get subscription details of device
+func GetAggregateHosts(aggregateIP string) ([]string, error) {
+
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	aggregateList, gerr := conn.GetAggregateHosts(AggregateSubscriptionIndex, aggregateIP+"[^0-9]*")
+	if gerr != nil {
+		return nil, fmt.Errorf("error while trying to get aggregate host of device %v", gerr.Error())
+	}
+	devSub := strings.Split(aggregateList[0], "||")
+	hostsIP := getSliceFromString(devSub[1])
+	return hostsIP, nil
+}
+
+// GetAggregateList  will fetch aggregate list
+func GetAggregateList(hostIP string) ([]string, error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	aggregateList, gerr := conn.GetAggregateHosts(AggregateSubscriptionIndex, "*"+hostIP+"*")
+	if gerr != nil {
+		return nil, fmt.Errorf("error while trying to get aggregate host list of device %v", gerr.Error())
+	}
+	aggregates := []string{}
+	for _, v := range aggregateList {
+		devSub := strings.Split(v, "||")
+		if devSub[0] == "0" {
+			continue
+		}
+		aggregates = append(aggregates, devSub[0])
+	}
+	return aggregates, nil
 }

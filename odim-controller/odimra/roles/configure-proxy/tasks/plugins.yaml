@@ -30,7 +30,7 @@
       loop_control:
         loop_var: server_item
 
-    - name: Replace values in {{ plugin_name }} proxy conf template
+    - name: Replace values in {{ plugin_name }} proxy conf template for ipv4 
       template:
         src: "{{ odimPluginPath }}/{{ plugin_name }}/{{ plugin_name }}_proxy_server.conf.j2"
         dest: "/opt/nginx/servers/{{ plugin_name }}_proxy_server.conf"
@@ -39,6 +39,26 @@
           virtualIP: "{{ odimra.virtualIP }}"
           pluginProxyPort: "{{ proxy_port }}"
           pluginServerList: "{{ pluginserverlist|join('\n')|indent(8, True) }}"
+          dualStack: "False"
+          virtualIPv6: ""
+          selfNodeIPv6: "" 
+      when: nwPreference == 'ipv4'    
+      loop_control:
+        loop_var: plugin_item
+    - name: Replace values in {{ plugin_name }} proxy conf template for dualStack 
+      template:
+        src: "{{ odimPluginPath }}/{{ plugin_name }}/{{ plugin_name }}_proxy_server.conf.j2"
+        dest: "/opt/nginx/servers/{{ plugin_name }}_proxy_server.conf"
+      with_items:
+        - selfNodeIP: "{{ cur_host_ip }}"
+          virtualIP: "{{ odimra.virtualIP }}"
+          pluginProxyPort: "{{ proxy_port }}"
+          pluginServerList: "{{ pluginserverlist|join('\n')|indent(8, True) }}"
+          dualStack: "True"
+          virtualIPv6: "{{ odimra.virtualIPv6 }}"
+          selfNodeIPv6: "{{ hostvars[inventory_hostname].ip6 }}"
+      when: nwPreference == 'dualStack'
       loop_control:
         loop_var: plugin_item
   when: stat_result.stat.exists and stat_result.stat.isreg
+

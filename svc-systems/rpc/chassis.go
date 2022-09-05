@@ -31,6 +31,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	// JSONMarshalFunc function pointer for the json.Marshal
+	JSONMarshalFunc = json.Marshal
+)
+
+// NewChassisRPC returns an instance of ChassisRPC
 func NewChassisRPC(
 	authWrapper func(sessionToken string, privileges, oemPrivileges []string) response.RPC,
 	createHandler *chassis.Create,
@@ -59,6 +65,12 @@ type ChassisRPC struct {
 	CreateHandler        *chassis.Create
 }
 
+// UpdateChassis defines the operations which handles the RPC request response
+// for updating the system resource of systems micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function uses IsAuthorized of util-lib to validate the session
+// which is present in the request.
 func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	var resp chassisproto.GetChassisResponse
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
@@ -69,6 +81,12 @@ func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.Upda
 	return &resp, nil
 }
 
+// DeleteChassis defines the operations which handles the RPC request response
+// for deleting the system resource of systems micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function uses IsAuthorized of util-lib to validate the session
+// which is present in the request.
 func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	var resp chassisproto.GetChassisResponse
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
@@ -79,6 +97,12 @@ func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.Dele
 	return &resp, nil
 }
 
+// CreateChassis defines the operations which handles the RPC request response
+// for creating the system resource of systems micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function uses IsAuthorized of util-lib to validate the session
+// which is present in the request.
 func (cha *ChassisRPC) CreateChassis(_ context.Context, req *chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	var resp chassisproto.GetChassisResponse
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
@@ -89,8 +113,8 @@ func (cha *ChassisRPC) CreateChassis(_ context.Context, req *chassisproto.Create
 	return &resp, nil
 }
 
-//GetChassisResource defines the operations which handles the RPC request response
-// for the getting the system resource  of systems micro service.
+// GetChassisResource defines the operations which handles the RPC request response
+// for the getting the system resource of systems micro service.
 // The functionality retrives the request and return backs the response to
 // RPC according to the protoc file defined in the util-lib package.
 // The function uses IsAuthorized of util-lib to validate the session
@@ -126,8 +150,8 @@ func (cha *ChassisRPC) GetChassisCollection(_ context.Context, req *chassisproto
 	return &resp, nil
 }
 
-//GetChassisInfo defines the operations which handles the RPC request response
-// for the getting the system resource  of systems micro service.
+// GetChassisInfo defines the operations which handles the RPC request response
+// for the getting the system resource of systems micro service.
 // The functionality retrives the request and return backs the response to
 // RPC according to the protoc file defined in the util-lib package.
 // The function uses IsAuthorized of util-lib to validate the session
@@ -154,7 +178,7 @@ func jsonMarshal(input interface{}) []byte {
 	if bytes, alreadyBytes := input.([]byte); alreadyBytes {
 		return bytes
 	}
-	bytes, err := json.Marshal(input)
+	bytes, err := JSONMarshalFunc(input)
 	if err != nil {
 		log.Println("error in unmarshalling response object from util-libs", err.Error())
 	}
@@ -165,7 +189,7 @@ func generateResponse(input interface{}) []byte {
 	if bytes, alreadyBytes := input.([]byte); alreadyBytes {
 		return bytes
 	}
-	bytes, err := json.Marshal(input)
+	bytes, err := JSONMarshalFunc(input)
 	if err != nil {
 		log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}

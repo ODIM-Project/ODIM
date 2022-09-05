@@ -23,21 +23,25 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
+var(
+	NewFabricsClientFunc = fabricsproto.NewFabricsClient
+)
+
 // GetFabricResource defines the RPC call function for
 // the GetFabricResource from fabrics micro service
 func GetFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
 
-	conn, err := services.ODIMService.Client(services.Fabrics)
+	conn, err := ClientFunc(services.Fabrics)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	fab := fabricsproto.NewFabricsClient(conn)
+	
+	fab := NewFabricsClientFunc(conn)
 	resp, err := fab.GetFabricResource(context.TODO(), &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}
-
+	defer conn.Close()
 	return resp, err
 }
 
@@ -45,18 +49,18 @@ func GetFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricResp
 // the Fabric Resource such as Endpoints, Zones from fabrics micro service
 func UpdateFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
 
-	conn, err := services.ODIMService.Client(services.Fabrics)
+	conn, err := ClientFunc(services.Fabrics)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	fab := fabricsproto.NewFabricsClient(conn)
+	
+	fab := NewFabricsClientFunc(conn)
 
 	resp, err := fab.UpdateFabricResource(context.TODO(), &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}
-
+	defer conn.Close()
 	return resp, err
 }
 
@@ -64,17 +68,17 @@ func UpdateFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricR
 // the DeleteFabricResource from fabrics micro service
 func DeleteFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
 
-	conn, err := services.ODIMService.Client(services.Fabrics)
+	conn, err := ClientFunc(services.Fabrics)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	fab := fabricsproto.NewFabricsClient(conn)
+	
+	fab := NewFabricsClientFunc(conn)
 
 	resp, err := fab.DeleteFabricResource(context.TODO(), &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}
-
+	defer conn.Close()
 	return resp, err
 }

@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/satori/uuid"
 	"golang.org/x/crypto/sha3"
 )
@@ -55,6 +56,7 @@ func createMockUser(username, roleID string) error {
 }
 
 func TestPersistTask(t *testing.T) {
+	config.SetUpMockConfig(t)
 	common.SetUpMockConfig()
 	defer flushDB(t)
 

@@ -20,6 +20,10 @@ package update
 //
 import (
 	"fmt"
+	"net/http"
+	"runtime"
+	"strings"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
@@ -27,9 +31,11 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"runtime"
-	"strings"
+)
+
+var (
+	//GetAllKeysFromTableFunc ...
+	GetAllKeysFromTableFunc = umodel.GetAllKeysFromTable
 )
 
 // StartUpdate function handler for on start update process
@@ -40,7 +46,7 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
 	// Read all the requests from database
-	targetList, err := umodel.GetAllKeysFromTable("SimpleUpdate", common.OnDisk)
+	targetList, err := GetAllKeysFromTableFunc("SimpleUpdate", common.OnDisk)
 	if err != nil {
 		errMsg := "Unable to read SimpleUpdate requests from database: " + err.Error()
 		log.Warn(errMsg)
@@ -194,7 +200,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	contactRequest.ContactClient = e.External.ContactClient
 	contactRequest.Plugin = plugin
 
-	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+	if StringsEqualFoldFunc(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
 		contactRequest.DeviceInfo = map[string]interface{}{
@@ -224,13 +230,29 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.StartUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost
-	_, _, getResponse, contactErr := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
+	respBody, location, getResponse, contactErr := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
 	if contactErr != nil {
 		subTaskChannel <- getResponse.StatusCode
-		errMsg := err.Error()
+		errMsg := contactErr.Error()
 		log.Info(errMsg)
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 		return
+	}
+	if getResponse.StatusCode == http.StatusAccepted {
+		getResponse, err = e.monitorPluginTask(subTaskChannel, &monitorTaskRequest{
+			subTaskID:         subTaskID,
+			serverURI:         uuid,
+			updateRequestBody: data,
+			respBody:          respBody,
+			getResponse:       getResponse,
+			taskInfo:          taskInfo,
+			location:          location,
+			pluginRequest:     contactRequest,
+			resp:              resp,
+		})
+		if err != nil {
+			return
+		}
 	}
 
 	resp.StatusCode = http.StatusOK

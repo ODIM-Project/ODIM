@@ -19,9 +19,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -37,38 +38,47 @@ import (
 
 //Events struct helps to register service
 type Events struct {
-	Connector *events.PluginContact
+	Connector *events.ExternalInterfaces
 }
 
 // GetPluginContactInitializer intializes all the required connection functions for the events execution
 func GetPluginContactInitializer() *Events {
-	connector := &events.PluginContact{
-		ContactClient:                    pmbhandle.ContactPlugin,
-		Auth:                             services.IsAuthorized,
-		CreateTask:                       services.CreateTask,
-		UpdateTask:                       events.UpdateTaskData,
-		CreateChildTask:                  services.CreateChildTask,
-		GetSessionUserName:               services.GetSessionUserName,
-		GetEvtSubscriptions:              evmodel.GetEvtSubscriptions,
-		SaveEventSubscription:            evmodel.SaveEventSubscription,
-		GetPluginData:                    evmodel.GetPluginData,
-		GetDeviceSubscriptions:           evmodel.GetDeviceSubscriptions,
-		GetTarget:                        evmodel.GetTarget,
-		GetAllKeysFromTable:              evmodel.GetAllKeysFromTable,
-		GetAllFabrics:                    evmodel.GetAllFabrics,
-		GetAllMatchingDetails:            evmodel.GetAllMatchingDetails,
-		UpdateDeviceSubscriptionLocation: evmodel.UpdateDeviceSubscriptionLocation,
-		GetFabricData:                    evmodel.GetFabricData,
-		DeleteEvtSubscription:            evmodel.DeleteEvtSubscription,
-		UpdateEventSubscription:          evmodel.UpdateEventSubscription,
-		DeleteDeviceSubscription:         evmodel.DeleteDeviceSubscription,
-		SaveUndeliveredEvents:            evmodel.SaveUndeliveredEvents,
-		SaveDeviceSubscription:           evmodel.SaveDeviceSubscription,
-		GetUndeliveredEvents:             evmodel.GetUndeliveredEvents,
-		GetUndeliveredEventsFlag:         evmodel.GetUndeliveredEventsFlag,
-		SetUndeliveredEventsFlag:         evmodel.SetUndeliveredEventsFlag,
-		DeleteUndeliveredEventsFlag:      evmodel.DeleteUndeliveredEventsFlag,
-		DeleteUndeliveredEvents:          evmodel.DeleteUndeliveredEvents,
+	connector := &events.ExternalInterfaces{
+		External: events.External{
+			ContactClient:   pmbhandle.ContactPlugin,
+			Auth:            services.IsAuthorized,
+			CreateTask:      services.CreateTask,
+			UpdateTask:      events.UpdateTaskData,
+			CreateChildTask: services.CreateChildTask,
+		},
+		DB: events.DB{
+			GetSessionUserName:               services.GetSessionUserName,
+			GetEvtSubscriptions:              evmodel.GetEvtSubscriptions,
+			SaveEventSubscription:            evmodel.SaveEventSubscription,
+			GetPluginData:                    evmodel.GetPluginData,
+			GetDeviceSubscriptions:           evmodel.GetDeviceSubscriptions,
+			GetTarget:                        evmodel.GetTarget,
+			GetAllKeysFromTable:              evmodel.GetAllKeysFromTable,
+			GetAllFabrics:                    evmodel.GetAllFabrics,
+			GetAllMatchingDetails:            evmodel.GetAllMatchingDetails,
+			UpdateDeviceSubscriptionLocation: evmodel.UpdateDeviceSubscriptionLocation,
+			GetFabricData:                    evmodel.GetFabricData,
+			DeleteEvtSubscription:            evmodel.DeleteEvtSubscription,
+			UpdateEventSubscription:          evmodel.UpdateEventSubscription,
+			DeleteDeviceSubscription:         evmodel.DeleteDeviceSubscription,
+			SaveUndeliveredEvents:            evmodel.SaveUndeliveredEvents,
+			SaveDeviceSubscription:           evmodel.SaveDeviceSubscription,
+			GetUndeliveredEvents:             evmodel.GetUndeliveredEvents,
+			GetUndeliveredEventsFlag:         evmodel.GetUndeliveredEventsFlag,
+			SetUndeliveredEventsFlag:         evmodel.SetUndeliveredEventsFlag,
+			DeleteUndeliveredEventsFlag:      evmodel.DeleteUndeliveredEventsFlag,
+			DeleteUndeliveredEvents:          evmodel.DeleteUndeliveredEvents,
+			GetAggregateData:                 evmodel.GetAggregateData,
+			SaveAggregateSubscription:        evmodel.SaveAggregateSubscription,
+			GetAggregateHosts:                evmodel.GetAggregateHosts,
+			UpdateAggregateHosts:             evmodel.UpdateAggregateHosts,
+			GetAggregateList:                 evmodel.GetAggregateList,
+		},
 	}
 	return &Events{
 		Connector: connector,
@@ -138,7 +148,7 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 		},
 		DeliveryRetryAttempts:        config.Data.EventConf.DeliveryRetryAttempts,
 		DeliveryRetryIntervalSeconds: config.Data.EventConf.DeliveryRetryIntervalSeconds,
-		EventFormatTypes:             []string{"Event"},
+		EventFormatTypes:             []string{"Event", "MetricReport"},
 		EventTypesForSubscription: []string{
 			"StatusChange",
 			"ResourceUpdated",
@@ -360,4 +370,39 @@ func generateTaskRespone(taskID, taskURI string, resp *eventsproto.EventSubRespo
 	commonResponse.MessageArgs = []string{taskID}
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
 	resp.Body = generateResponse(commonResponse)
+}
+
+//RemoveEventSubscriptionsRPC defines the operations which handles the RPC request response
+// it subscribe to the given event message bus queues
+func (e *Events) RemoveEventSubscriptionsRPC(ctx context.Context, req *eventsproto.EventUpdateRequest) (*eventsproto.SubscribeEMBResponse, error) {
+	var resp eventsproto.SubscribeEMBResponse
+	e.Connector.UpdateEventSubscriptions(req, true)
+	resp.Status = true
+	return &resp, nil
+}
+
+//UpdateEventSubscriptionsRPC defines the operations which handles the RPC request response
+// it subscribe to the given event message bus queues
+func (e *Events) UpdateEventSubscriptionsRPC(ctx context.Context, req *eventsproto.EventUpdateRequest) (*eventsproto.SubscribeEMBResponse, error) {
+	var resp eventsproto.SubscribeEMBResponse
+	resp.Status = true
+	e.Connector.UpdateEventSubscriptions(req, false)
+	return &resp, nil
+}
+
+//IsAggregateHaveSubscription defines the operations which handles the RPC request response
+func (e *Events) IsAggregateHaveSubscription(ctx context.Context, req *eventsproto.EventUpdateRequest) (*eventsproto.SubscribeEMBResponse, error) {
+	var resp eventsproto.SubscribeEMBResponse
+	isAvailable := e.Connector.IsAggregateHaveSubscription(req)
+	resp.Status = isAvailable
+	return &resp, nil
+}
+
+//DeleteAggregateSubscriptionsRPC defines the operations which handles the RPC request response
+// it remove subscription details
+func (e *Events) DeleteAggregateSubscriptionsRPC(ctx context.Context, req *eventsproto.EventUpdateRequest) (*eventsproto.SubscribeEMBResponse, error) {
+	var resp eventsproto.SubscribeEMBResponse
+	e.Connector.DeleteAggregateSubscriptions(req, true)
+	resp.Status = true
+	return &resp, nil
 }

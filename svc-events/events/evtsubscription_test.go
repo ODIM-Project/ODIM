@@ -32,6 +32,37 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Positive test cases dummy
+func TestCreateEventSubscriptionForAgregate(t *testing.T) {
+	config.SetUpMockConfig(t)
+	p := getMockMethods()
+	taskID := "123"
+	sessionUserName := "admin"
+	SubscriptionReq := map[string]interface{}{
+		"Name":                 "EventSubscription",
+		"Destination":          "https://odim.test24.com:8070/Destination1",
+		"EventTypes":           []string{"Alert"},
+		"Protocol":             "Redfish",
+		"Context":              "Event Subscription",
+		"SubscriptionType":     "RedfishEvent",
+		"EventFormatType":      "Event",
+		"SubordinateResources": true,
+		"OriginResources": []evmodel.OdataIDLink{
+			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da"},
+			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da2"},
+		},
+	}
+	postBody, _ := json.Marshal(&SubscriptionReq)
+
+	// Positive test cases
+	req := &eventsproto.EventSubRequest{
+		SessionToken: "token",
+		PostBody:     postBody,
+	}
+	resp := p.CreateEventSubscription(taskID, sessionUserName, req)
+	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
+}
+
 // Positive test cases
 func TestCreateEventSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
@@ -40,7 +71,7 @@ func TestCreateEventSubscription(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://10.10.10.24:8070/Destination1",
+		"Destination":          "https://odim.test24.com:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -63,7 +94,7 @@ func TestCreateEventSubscription(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// try to subscrie with already subscribed destinations
-	SubscriptionReq["Destination"] = "https://10.10.10.15:9090/events"
+	SubscriptionReq["Destination"] = "https://odim.destination.com:9090/events"
 
 	postBody, _ = json.Marshal(&SubscriptionReq)
 
@@ -121,7 +152,7 @@ func TestCreateEventSubscriptionwithHostName(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://10.10.10.24:8070/Destination1",
+		"Destination":          "https://odim.test24.com:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -154,7 +185,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://10.10.10.24:8070/Destination1",
+		"Destination":          "https://odim.test24.com:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -205,7 +236,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 	}
 	resp = p.CreateEventSubscription(taskID, sessionUserName, req2)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
-	SubscriptionReq["Destination"] = "https://10.10.10.24:8070/Destination1"
+	SubscriptionReq["Destination"] = "https://odim.test24.com:8070/Destination1"
 
 	// if Protocol is empty
 	SubscriptionReq["Protocol"] = ""
@@ -305,7 +336,7 @@ func TestCreateDefaultEventSubscription(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://10.10.10.24:8070/Destination1",
+		"Destination":          "https://odim.test24.com:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -347,7 +378,7 @@ func TestFabricEventSubscription(t *testing.T) {
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://10.10.10.24:8070/Destination1",
+		"Destination":          "https://odim.test24.com:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",

@@ -29,6 +29,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	// aggregateHostIndex is a index name which required for indexing
+	// aggregateHost of device
+	aggregateHostIndex = common.AggregateSubscriptionIndex
+)
+
 //Schema model is used to iterate throgh the schema json for search/filter
 type Schema struct {
 	SearchKeys    []map[string]map[string]string `json:"searchKeys"`
@@ -74,20 +80,21 @@ type SystemOperation struct {
 
 // AggregationSource  payload of adding a AggregationSource
 type AggregationSource struct {
-	HostName     string                `json:"HostName"`
-	UserName     string                `json:"UserName,omitempty"`
-	Password     []byte                `json:"Password,omitempty"`
-	Links        interface{}           `json:"Links,omitempty"`
-	ODataContext string                `json:"@odata.context,omitempty"`
-	ODataEtag    string                `json:"@odata.etag,omitempty"`
-	ODataID      string                `json:"@odata.id"`
-	ODataType    string                `json:"@odata.type"`
-	Name         string                `json:"Name"`
-	Actions      *dmtfmodel.OemActions `json:"Actions,omitempty"`
-	Description  string                `json:"Description,omitempty"`
-	ID           string                `json:"Id"`
-	Oem          *dmtfmodel.Oem        `json:"Oem,omitempty"`
-	SNMP         *SNMP                 `json:"SNMP,omitempty"`
+	HostName        string                `json:"HostName"`
+	UserName        string                `json:"UserName,omitempty"`
+	Password        []byte                `json:"Password,omitempty"`
+	Links           interface{}           `json:"Links,omitempty"`
+	ODataContext    string                `json:"@odata.context,omitempty"`
+	ODataEtag       string                `json:"@odata.etag,omitempty"`
+	ODataID         string                `json:"@odata.id"`
+	ODataType       string                `json:"@odata.type"`
+	Name            string                `json:"Name"`
+	Actions         *dmtfmodel.OemActions `json:"Actions,omitempty"`
+	Description     string                `json:"Description,omitempty"`
+	ID              string                `json:"Id"`
+	Oem             *dmtfmodel.Oem        `json:"Oem,omitempty"`
+	SNMP            *SNMP                 `json:"SNMP,omitempty"`
+	AggregationType string                `json:"AggregationType,omitempty"`
 }
 
 // SNMP  payload of adding a SNMP
@@ -98,11 +105,12 @@ type SNMP struct {
 	EncryptionKey          string `json:"EncryptionKey,omitempty"`
 	EncryptionKeySet       bool   `json:"EncryptionKeySet,omitempty"`
 	EncryptionProtocol     string `json:"EncryptionProtocol,omitempty"`
+	TrapCommunity          string `json:"TrapCommunity,omitempty"`
 }
 
 // Aggregate payload is used for perform the operations on Aggregate
 type Aggregate struct {
-	Elements []string `json:"Elements"`
+	Elements []OdataID `json:"Elements"`
 }
 
 // ConnectionMethod payload is used for perform the operations on connection method
@@ -280,6 +288,7 @@ func GenericSave(body []byte, table string, key string) error {
 		log.Error("GenericSave : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
+
 	if err = connPool.AddResourceData(table, key, string(body)); err != nil {
 		log.Error("GenericSave : error while trying to add resource date to DB: " + err.Error())
 		return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
@@ -433,6 +442,17 @@ func DeleteSystem(key string) *errors.Error {
 	if err = connPool.DeleteServer(deleteKey); err != nil {
 		return errors.PackError(err.ErrNo(), "error while trying to delete compute system: ", err.Error())
 	}
+	//Added logic to remove simpleupdate key from inmemory after removing the server
+	var simleUpdateData []string
+	if simleUpdateData, err = connPool.GetAllMatchingDetails("SimpleUpdate", key); err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to get simleUpdate details: ", err.Error())
+	}
+
+	if len(simleUpdateData) > 0 {
+		if err = connPool.Delete("SimpleUpdate", key); err != nil {
+			return errors.PackError(errors.UndefinedErrorType, err)
+		}
+	}
 	return nil
 }
 
@@ -515,24 +535,24 @@ func GetAllSystems() ([]Target, *errors.Error) {
 }
 
 //DeletePluginData will delete the plugin entry from the database based on the uuid
-func DeletePluginData(key string) *errors.Error {
+func DeletePluginData(key, table string) *errors.Error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
-	if err = conn.Delete("Plugin", key); err != nil {
+	if err = conn.Delete(table, key); err != nil {
 		return err
 	}
 	return nil
 }
 
-//DeleteManagersData will delete the Managers entry from the database based on the uuid
-func DeleteManagersData(key string) *errors.Error {
+//DeleteManagersData will delete the table entry from the database based on the uuid
+func DeleteManagersData(key, table string) *errors.Error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return err
 	}
-	if err = conn.Delete("Managers", key); err != nil {
+	if err = conn.Delete(table, key); err != nil {
 		return err
 	}
 	return nil
@@ -929,12 +949,13 @@ func RemoveElementsFromAggregate(aggregate Aggregate, aggregateURL string) *erro
 	return nil
 }
 
-func removeElements(requestElements, presentElements []string) []string {
-	newElements := []string{}
+func removeElements(requestElements, presentElements []OdataID) []OdataID {
+	newElements := []OdataID{}
 	var present bool
 	for _, presentElement := range presentElements {
 		front := 0
 		rear := len(requestElements) - 1
+		present = false
 		for front <= rear {
 			if requestElements[front] == presentElement || requestElements[rear] == presentElement {
 				present = true
@@ -1062,7 +1083,7 @@ func GetDeviceSubscriptions(hostIP string) (*common.DeviceSubscription, error) {
 	if gerr != nil {
 		return nil, fmt.Errorf("error while trying to get device subscription details: %v", gerr.Error())
 	}
-	devSub := strings.Split(devSubscription[0], "::")
+	devSub := strings.Split(devSubscription[0], "||")
 	var deviceSubscription = &common.DeviceSubscription{
 		EventHostIP:     devSub[0],
 		Location:        devSub[1],
@@ -1134,6 +1155,90 @@ func DeleteMetricRequest(key string) *errors.Error {
 	err = conn.Delete("ActiveMetricRequest", key)
 	if err != nil {
 		return errors.PackError(err.ErrNo(), "error: while trying to delete active connection details: ", err.Error())
+	}
+	return nil
+}
+
+// AddAggregateHostIndex add aggregate hosts
+func AddAggregateHostIndex(uuid string, hostIP []string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	err1 := conn.CreateAggregateHostIndex(aggregateHostIndex, uuid, hostIP)
+	if err1 != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to add aggregate: ", err.Error())
+	}
+	return nil
+}
+
+// AddNewHostToAggregateHostIndex add aggregate hosts
+func AddNewHostToAggregateHostIndex(aggregateID string, hostIP string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	aggreagtes, err1 := conn.GetAggregateHosts(aggregateHostIndex, aggregateID+"[^0-9]*")
+	if err != nil {
+		return err1
+	}
+	devSub := strings.Split(aggreagtes[0], "||")
+	ips := getSliceFromString(devSub[1])
+	isUpdate := true
+	for _, ip := range ips {
+		if hostIP == ip {
+			isUpdate = false
+			break
+		}
+	}
+	if isUpdate {
+		ips = append(ips, hostIP)
+		err1 = conn.UpdateAggregateHosts(aggregateHostIndex, aggregateID, ips)
+		if err1 != nil {
+			return errors.PackError(err.ErrNo(), "error: while trying to add aggregate: ", err.Error())
+		}
+	}
+	return nil
+}
+
+// RemoveNewIPToAggregateHostIndex remove existing host ip from aggregate
+func RemoveNewIPToAggregateHostIndex(aggregateID string, hostIP string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	aggreagtes, err1 := conn.GetAggregateHosts(aggregateHostIndex, aggregateID+"[^0-9]*")
+	if err != nil {
+		return err1
+	}
+	devSub := strings.Split(aggreagtes[0], "||")
+	ips := getSliceFromString(devSub[1])
+	ips = removeIps(ips, hostIP)
+	err1 = conn.UpdateAggregateHosts(aggregateHostIndex, aggregateID, ips)
+	if err1 != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to add aggregate: ", err.Error())
+	}
+	return nil
+}
+
+func removeIps(ips []string, ip string) (updatedIps []string) {
+	for index, v := range ips {
+		if v == ip {
+			return append(ips[:index], ips[index+1:]...)
+		}
+	}
+	return ips
+}
+
+// DeleteAggregateHostIndex delete aggregate from aggregatehostsIndex table
+func DeleteAggregateHostIndex(uuid string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	err1 := conn.DeleteAggregateHosts(aggregateHostIndex, uuid)
+	if err1 != nil {
+		return fmt.Errorf("error: while trying to delete aggregate: %v", err1.Error())
 	}
 	return nil
 }

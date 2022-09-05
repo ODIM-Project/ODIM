@@ -43,6 +43,7 @@ type MetricDefinitions struct {
 	Wildcards               []WildCard         `json:"Wildcards,omitempty"`
 	Actions                 *OemActions        `json:"Actions,omitempty"`
 	Oem                     *Oem               `json:"Oem,omitempty"`
+	LogicalContexts         []string           `json:"LogicalContexts,omitempty"`
 }
 
 // CalculationParam defines the metric properties that are part of a calculation

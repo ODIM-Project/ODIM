@@ -24,6 +24,11 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
+var (
+	GetDBConnectionFunc = common.GetDBConnection
+	MarshalFunc         = json.Marshal
+)
+
 // Manager struct for manager deta
 type Manager struct {
 	OdataContext            string             `json:"@odata.context"`
@@ -96,11 +101,12 @@ type GraphicalConsole struct {
 
 // Links to other Resources that are related to this Resource.
 type Links struct {
-	ActiveSoftwareImage OdataID   `json:"ActiveSoftwareImage"`
-	ManagerForChassis   []OdataID `json:"ManagerForChassis"`
-	ManagerForServers   []OdataID `json:"ManagerForServers"`
-	ManagerForSwitches  []OdataID `json:"ManagerForSwitches"`
-	ManagerInChassis    OdataID   `json:"ManagerInChassis"`
+	ActiveSoftwareImage *dmtf.Link   `json:"ActiveSoftwareImage,omitempty"`
+	ManagerForChassis   []*dmtf.Link `json:"ManagerForChassis,omitempty"`
+	ManagerForServers   []*dmtf.Link `json:"ManagerForServers,omitempty"`
+	ManagerForSwitches  []*dmtf.Link `json:"ManagerForSwitches,omitempty"`
+	ManagerForManagers  []*dmtf.Link `json:"ManagerForManagers,omitempty"`
+	ManagerInChassis    *dmtf.Link   `json:"ManagerInChassis,omitempty"`
 }
 
 // Actions struct for Actions to perform
@@ -123,6 +129,7 @@ type RAManager struct {
 	State           string     `json:"State"`
 	Description     string     `json:"Description"`
 	LogServices     *dmtf.Link `json:"LogServices"`
+	Links           *Links     `json:"Links,omitempty"`
 	Health          string     `json:"Health"`
 	Model           string     `json:"Model"`
 	PowerState      string     `json:"PowerState"`
@@ -139,9 +146,23 @@ type VirtualMediaInsert struct {
 	UserName             string `json:"UserName,omitempty"`
 }
 
+// CreateBMCAccount struct is to store the create BMC account request payload
+type CreateBMCAccount struct {
+	UserName string `json:"UserName" validate:"required"`
+	Password string `json:"Password" validate:"required"`
+	RoleID   string `json:"RoleId" validate:"required"`
+}
+
+// UpdateBMCAccount struct is to store the update BMC account request payload
+
+type UpdateBMCAccount struct {
+	Password string `json:"Password,omitempty"`
+	RoleID   string `json:"RoleId,omitempty"`
+}
+
 //GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
-	conn, err := common.GetDBConnection(common.InMemory)
+	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return "", err
 	}
@@ -158,7 +179,7 @@ func GetResource(Table, key string) (string, *errors.Error) {
 
 //GetAllKeysFromTable fetches all keys in a given table
 func GetAllKeysFromTable(table string) ([]string, error) {
-	conn, err := common.GetDBConnection(common.InMemory)
+	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +193,7 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 // GetManagerByURL fetches computer manager details by URL from database
 func GetManagerByURL(url string) (string, *errors.Error) {
 	var manager string
-	conn, err := common.GetDBConnection(common.InMemory)
+	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		// connection error
 		return manager, err
@@ -189,12 +210,11 @@ func GetManagerByURL(url string) (string, *errors.Error) {
 
 // UpdateData will modify the current details to given changes
 func UpdateData(key string, updateData map[string]interface{}, table string) error {
-
-	conn, err := common.GetDBConnection(common.InMemory)
+	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("unable to connect DB: %v", err)
 	}
-	data, jerr := json.Marshal(updateData)
+	data, jerr := MarshalFunc(updateData)
 	if jerr != nil {
 		return fmt.Errorf("unable to marshal data for updating: %v", jerr)
 	}
@@ -207,7 +227,7 @@ func UpdateData(key string, updateData map[string]interface{}, table string) err
 //GenericSave will save any resource data into the database
 func GenericSave(body []byte, table string, key string) error {
 
-	connPool, err := common.GetDBConnection(common.InMemory)
+	connPool, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("unable to connect DB: %v", err.Error())
 	}
@@ -220,11 +240,11 @@ func GenericSave(body []byte, table string, key string) error {
 // AddManagertoDB will add odimra Manager details to DB
 func AddManagertoDB(mgr RAManager) error {
 	key := "/redfish/v1/Managers/" + mgr.UUID
-	data, err := json.Marshal(mgr)
+	data, err := MarshalFunc(mgr)
 	if err != nil {
 		return fmt.Errorf("unable to marshal manager data: %v", err)
 	}
-	connPool, connErr := common.GetDBConnection(common.InMemory)
+	connPool, connErr := GetDBConnectionFunc(common.InMemory)
 	if connErr != nil {
 		return fmt.Errorf("unable to connect DB: %v", connErr.Error())
 	}

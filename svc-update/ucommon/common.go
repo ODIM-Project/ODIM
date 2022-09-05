@@ -18,11 +18,12 @@ package ucommon
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -189,14 +190,21 @@ func getResourceName(oDataID string, memberFlag bool) string {
 	return str[len(str)-2]
 }
 
+var (
+	// CallPluginFunc function  pointer for calling the plugin
+	CallPluginFunc = callPlugin
+	// IOUtilReadAllFunc function  pointer for calling the files
+	IOUtilReadAllFunc = ioutil.ReadAll
+)
+
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
 func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
 	var resp ResponseStatus
 	var err error
-	pluginResponse, err := callPlugin(req)
+	pluginResponse, err := CallPluginFunc(req)
 	if err != nil {
 		if getPluginStatus(req.Plugin) {
-			pluginResponse, err = callPlugin(req)
+			pluginResponse, err = CallPluginFunc(req)
 		}
 		if err != nil {
 			errorMessage = errorMessage + err.Error()
@@ -207,7 +215,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		}
 	}
 	defer pluginResponse.Body.Close()
-	body, err := ioutil.ReadAll(pluginResponse.Body)
+	body, err := IOUtilReadAllFunc(pluginResponse.Body)
 	if err != nil {
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -216,7 +224,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
-	if pluginResponse.StatusCode != http.StatusCreated && pluginResponse.StatusCode != http.StatusOK {
+	if pluginResponse.StatusCode != http.StatusCreated && pluginResponse.StatusCode != http.StatusOK && pluginResponse.StatusCode != http.StatusAccepted {
 		if pluginResponse.StatusCode == http.StatusUnauthorized {
 			errorMessage += "error: invalid resource username/password"
 			resp.StatusCode = int32(pluginResponse.StatusCode)
@@ -236,6 +244,10 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 	//replacing the resposne with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
+	}
+	// Get location from the header if status code is status accepted
+	if pluginResponse.StatusCode == http.StatusAccepted {
+		return []byte(data), pluginResponse.Header.Get("Location"), resp, nil
 	}
 	return []byte(data), pluginResponse.Header.Get("X-Auth-Token"), resp, nil
 }

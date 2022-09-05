@@ -19,6 +19,7 @@ service Fabrics {
     rpc UpdateFabricResource(FabricRequest) returns (FabricResponse){}
     rpc AddFabric(AddFabricRequest) returns (FabricResponse){}
     rpc DeleteFabricResource(FabricRequest) returns (FabricResponse){}
+    rpc RemoveFabric(AddFabricRequest) returns (FabricResponse){}
 }
 
 message FabricRequest {

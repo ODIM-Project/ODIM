@@ -25,6 +25,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
@@ -35,16 +36,16 @@ import (
 )
 
 // SubmitTestEvent is a helper method to handle the submit test event request.
-func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) response.RPC {
+func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) response.RPC {
 	var resp response.RPC
-	authResp := p.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session: status code: " +
 			string(authResp.StatusCode) + ", status message: " + authResp.StatusMessage)
 		return authResp
 	}
 	// First get the UserName from SessionToken
-	sessionUserName, err := p.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := e.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		// handle the error case with appropriate response body
 		errMsg := "error while trying to authenticate session: " + err.Error()
@@ -81,7 +82,7 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	}
 
 	// Find out all the subscription destinations of the requesting user
-	subscriptions, err := p.GetEvtSubscriptions(sessionUserName)
+	subscriptions, err := e.GetEvtSubscriptions(sessionUserName)
 	if err != nil {
 		// Internall error
 		errMsg := "error while trying to find the event destination"
@@ -99,7 +100,7 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 			if sub.Destination != "" {
 				if filterEventsToBeForwarded(sub, message.Events[0], []string{origin}) {
 					log.Info("Destination: " + sub.Destination)
-					go p.postEvent(sub.Destination, eventUniqueID, messageBytes)
+					go e.postEvent(sub.Destination, eventUniqueID, messageBytes)
 				}
 			}
 		}
@@ -153,7 +154,13 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 	if val, ok := req["EventTimestamp"]; ok {
 		switch v := val.(type) {
 		case string:
+			_, err := time.Parse(time.RFC3339, v)
+			if err != nil {
+				return nil, response.PropertyValueTypeError, "error: optional parameter EventTimestamp must be of valid date time format", []interface{}{fmt.Sprintf("%v", v), "EventTimestamp"}
+
+			}
 			testEvent.EventTimestamp = v
+
 		default:
 			return nil, response.PropertyValueTypeError, "error: optional parameter EventTimestamp must be of type string", []interface{}{fmt.Sprintf("%v", v), "EventTimestamp"}
 		}

@@ -5,7 +5,7 @@
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
 
- http://www.apache.org/licenses/LICENSE-2.0
+ *http://www.apache.org/licenses/LICENSE-2.0*
 
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,13 +20,13 @@ This folder contains implementation of Unamanaged Racks Plugin(URP) for ODIMRA.
 Plugin exposes narrowed obligatory REST API described by Plugin Developer’s Guide (PDG).
 In addition URP exposes following REST endpoints:
 
-* `GET /ODIM/v1/Chassis` - return collection of unmanaged Chassis(RackGroups/Racks)
-* `GET /ODIM/v1/Chassis/{id}` - return instance of unmanaged Chassis(RackGroups/Racks)
-* `POST /ODIM/v1/Chassis` - creates new unmanaged Chassis(RackGroups/Racks) 
-* `DELETE /ODIM/v1/Chassis/{id}` - deletes existing unmanaged Chassis(RackGroups/Racks)
-* `PATCH /ODIM/v1/Chassis/{id}` - updates existing unmanaged Chassis(RackGroups/Racks)
+* `GET /ODIM/v1/Chassis`—Returns collection of unmanaged Chassis(RackGroups/Racks)
+* `GET /ODIM/v1/Chassis/{id}`—Returns instance of unmanaged Chassis(RackGroups/Racks)
+* `POST /ODIM/v1/Chassis`*—Creates new unmanaged Chassis(RackGroups/Racks) 
+* `DELETE /ODIM/v1/Chassis/{id}`—Deletes existing unmanaged Chassis(RackGroups/Racks)
+* `PATCH /ODIM/v1/Chassis/{id}`—Updates existing unmanaged Chassis(RackGroups/Racks)
 
-Full specification of URP is available here: https://wiki.odim.io/display/HOME/Plugin+for+Unmanaged+Racks.
+Full specification of URP is available here: *https://wiki.odim.io/display/HOME/Plugin+for+Unmanaged+Racks*.
 
 Please be aware this plugin is still under development, and some features might be missing.
 

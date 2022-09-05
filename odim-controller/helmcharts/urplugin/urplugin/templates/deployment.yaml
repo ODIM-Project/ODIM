@@ -57,6 +57,9 @@ spec:
             - key: odimra_rsapublic
               path: odimra_rsa.public
               mode: 0444
+            - key: redis_ondisk_password
+              path: redis_ondisk_password
+              mode: 0444
         - name: urplugin-log
           persistentVolumeClaim:
             claimName: urplugin-log-claim

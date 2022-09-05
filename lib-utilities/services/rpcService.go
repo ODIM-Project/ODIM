@@ -28,9 +28,9 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	"github.com/coreos/etcd/clientv3"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -367,6 +367,12 @@ func GetEnabledServiceList() map[string]bool {
 
 		case "CompositionService":
 			resp, err := kv.Get(context.TODO(), CompositionService, clientv3.WithPrefix())
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
+
+		case "LicenseService":
+			resp, err := kv.Get(context.TODO(), Licenses, clientv3.WithPrefix())
 			if err == nil && len(resp.Kvs) > 0 {
 				data[microService] = true
 			}

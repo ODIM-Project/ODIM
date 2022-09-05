@@ -17,7 +17,10 @@ package handle
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"net/url"
+	"reflect"
 
 	log "github.com/sirupsen/logrus"
 
@@ -227,6 +230,13 @@ func (a *UpdateRPCs) SimpleUpdate(ctx iris.Context) {
 		SessionToken: sessionToken,
 		RequestBody:  request,
 	}
+	errResp := validateSimpleUpdateRequest(updateRequest.RequestBody)
+	if errResp.StatusCode != http.StatusOK {
+		common.SetResponseHeader(ctx, errResp.Header)
+		ctx.StatusCode(int(errResp.StatusCode))
+		ctx.JSON(&errResp.Body)
+		return
+	}
 	resp, err := a.SimpleUpdateRPC(updateRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
@@ -241,6 +251,51 @@ func (a *UpdateRPCs) SimpleUpdate(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+}
+
+func validateSimpleUpdateRequest(requestBody []byte) response.RPC {
+	var request map[string]interface{}
+	err := json.Unmarshal(requestBody, &request)
+	if err != nil {
+		errMsg := "Unable to parse the simple update request" + err.Error()
+		log.Warn(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, nil)
+	}
+	if request["Targets"] != nil {
+		if reflect.TypeOf(request["Targets"]).Kind() != reflect.Slice {
+			errMsg := "'Targets' parameter should be of type string array"
+			log.Warn(errMsg)
+			return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{"", "Targets"}, nil)
+		}
+		target := request["Targets"].([]interface{})
+		for _, k := range target {
+			if reflect.TypeOf(k).Kind() != reflect.String {
+				errMsg := "'Targets' parameter should be of type string array"
+				log.Warn(errMsg)
+				return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{fmt.Sprintf("%v", k), "Targets"}, nil)
+			}
+		}
+	}
+	if request["ImageURI"] == nil {
+		errMsg := "'ImageURI' parameter cannot be empty"
+		log.Warn(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"ImageURI"}, nil)
+	}
+	if reflect.TypeOf(request["ImageURI"]).Kind() != reflect.String {
+		errMsg := "'ImageURI' parameter should be of type string"
+		log.Warn(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{"", "ImageURI"}, nil)
+	}
+	if request["ImageURI"] != nil {
+		URI := request["ImageURI"]
+		_, err = url.ParseRequestURI(URI.(string))
+		if err != nil {
+			errMsg := "Provided ImageURI is Invalid"
+			log.Warn(errMsg)
+			return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{fmt.Sprintf("%v", err), "ImageURI"}, nil)
+		}
+	}
+	return response.RPC{StatusCode: http.StatusOK}
 }
 
 //StartUpdate is a handler for start update action

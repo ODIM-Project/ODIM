@@ -34,6 +34,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	logs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -48,6 +49,16 @@ const (
 	SystemUUID = "SystemID"
 	// ChassisUUID is used to replace with chassis id in wildcard property
 	ChassisUUID = "ChassisID"
+	// ManagersTable is used to replace with table id Managers
+	ManagersTable = "Managers"
+	// PluginTable is used to replace with table id PluginTable
+	PluginTable = "Plugin"
+	//LogServiceCollection is used to replace with table id LogServicesCollection
+	LogServiceCollection = "LogServicesCollection"
+	//LogServices is used to replace with table id LogServices
+	LogServices = "LogServices"
+	//EntriesCollection is used to replace with table id EntriesCollection
+	EntriesCollection = "EntriesCollection"
 )
 
 // WildCard is used to reduce the size the of list of metric properties
@@ -195,6 +206,19 @@ type connectionMethodVariants struct {
 	FirmwareVersion   string
 }
 
+// monitorTaskRequest hold values required monitorTask function
+type monitorTaskRequest struct {
+	respBody          []byte
+	subTaskID         string
+	serverURI         string
+	updateRequestBody string
+	getResponse       responseStatus
+	location          string
+	taskInfo          *common.TaskUpdateInfo
+	pluginRequest     getResourceRequest
+	resp              response.RPC
+}
+
 func getIPAndPortFromAddress(address string) (string, string) {
 	ip, port, err := net.SplitHostPort(address)
 	if err != nil {
@@ -238,11 +262,17 @@ func genError(errorMessage string, respPtr *response.RPC, httpStatusCode int32, 
 
 // UpdateTaskData update the task with the given data
 func UpdateTaskData(taskData common.TaskData) error {
+	var res map[string]interface{}
+	if err := json.Unmarshal([]byte(taskData.TaskRequest), &res); err != nil {
+		log.Error(err)
+	}
+	reqStr := logs.MaskRequestBody(res)
+
 	respBody, _ := json.Marshal(taskData.Response.Body)
 	payLoad := &taskproto.Payload{
 		HTTPHeaders:   taskData.Response.Header,
 		HTTPOperation: taskData.HTTPMethod,
-		JSONBody:      taskData.TaskRequest,
+		JSONBody:      reqStr,
 		StatusCode:    taskData.Response.StatusCode,
 		TargetURI:     taskData.TargetURI,
 		ResponseBody:  respBody,
@@ -289,7 +319,7 @@ func contactPlugin(req getResourceRequest, errorMessage string) ([]byte, string,
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
-	if pluginResp.StatusCode != http.StatusCreated && pluginResp.StatusCode != http.StatusOK {
+	if pluginResp.StatusCode != http.StatusCreated && pluginResp.StatusCode != http.StatusOK && pluginResp.StatusCode != http.StatusAccepted {
 		if pluginResp.StatusCode == http.StatusUnauthorized {
 			errorMessage += "error: invalid resource username/password"
 			resp.StatusCode = int32(pluginResp.StatusCode)
@@ -310,6 +340,11 @@ func contactPlugin(req getResourceRequest, errorMessage string) ([]byte, string,
 	for key, value := range getTranslationURL(northBoundURL) {
 		data = strings.Replace(data, key, value, -1)
 	}
+	// Get location from the header if status code is status accepted
+	if pluginResp.StatusCode == http.StatusAccepted {
+		return []byte(data), pluginResp.Header.Get("Location"), resp, nil
+	}
+
 	resp.StatusCode = int32(pluginResp.StatusCode)
 	return []byte(data), pluginResp.Header.Get("X-Auth-Token"), resp, nil
 }
@@ -323,6 +358,10 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	var key []string
 	for i, id := range str {
 		if id == systemID && (strings.EqualFold(str[i-1], "Systems") || strings.EqualFold(str[i-1], "Chassis") || strings.EqualFold(str[i-1], "Managers") || strings.EqualFold(str[i-1], "FirmwareInventory") || strings.EqualFold(str[i-1], "SoftwareInventory")) {
+			key = append(key, DeviceUUID+"."+id)
+			continue
+		}
+		if i != 0 && strings.EqualFold(str[i-1], "Licenses") {
 			key = append(key, DeviceUUID+"."+id)
 			continue
 		}
@@ -581,12 +620,14 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 	}
 
 	resourceMembers := resourceMap["Members"]
-	// Loop through all the resource members collection and discover all of them
-	for _, object := range resourceMembers.([]interface{}) {
-		estimatedWork := alottedWork / int32(len(resourceMembers.([]interface{})))
-		oDataID := object.(map[string]interface{})["@odata.id"].(string)
-		req.OID = oDataID
-		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req, resourceList)
+	if resourceMembers != nil {
+		// Loop through all the resource members collection and discover all of them
+		for _, object := range resourceMembers.([]interface{}) {
+			estimatedWork := alottedWork / int32(len(resourceMembers.([]interface{})))
+			oDataID := object.(map[string]interface{})["@odata.id"].(string)
+			req.OID = oDataID
+			progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req, resourceList)
+		}
 	}
 	return progress
 }
@@ -940,10 +981,32 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		memberFlag = true
 	}
 	resourceName := getResourceName(req.OID, memberFlag)
+	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
+		CollectionCapabilities := dmtf.CollectionCapabilities{
+			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
+			Capabilities: []*dmtf.Capabilities{
+				&dmtf.Capabilities{
+					CapabilitiesObject: &dmtf.Link{
+						Oid: req.OID + "/Capabilities",
+					},
+					Links: dmtf.CapLinks{
+						TargetCollection: &dmtf.Link{
+							Oid: req.OID,
+						},
+					},
+					UseCase: "VolumeCreation",
+				},
+			},
+		}
+		resourceData["@Redfish.CollectionCapabilities"] = CollectionCapabilities
+		body, _ = json.Marshal(resourceData)
 
+	}
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
+
 	// persist the response with table resourceName and key as system UUID + Oid Needs relook TODO
+
 	err = agmodel.GenericSave([]byte(updatedResourceData), resourceName, oidKey)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") {
@@ -972,7 +1035,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 			progress = h.getResourceDetails(taskID, progress, estimatedWork, childReq)
 		}
 	}
-
 	progress = progress + alottedWork
 	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
 	err = req.UpdateTask(task)
@@ -984,7 +1046,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	}
 	return progress
 }
-
 func getResourceName(oDataID string, memberFlag bool) string {
 	str := strings.Split(oDataID, "/")
 	if memberFlag {
@@ -1228,11 +1289,22 @@ func getTranslationURL(translationURL string) map[string]string {
 func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest, cmVariants connectionMethodVariants, taskInfo *common.TaskUpdateInfo) (response.RPC, int32, []string) {
 
 	var queueList = make([]string, 0)
-	ipData := strings.Split(req.ManagerAddress, ":")
 	var ip, port string
-	ip = ipData[0]
-	if len(ipData) > 1 {
-		port = ipData[1]
+	if strings.Count(req.ManagerAddress, ":") > 2 {
+		if !strings.Contains(req.ManagerAddress, "[") {
+			ip = fmt.Sprintf("[%s]", req.ManagerAddress)
+
+		} else {
+			index := strings.LastIndex(req.ManagerAddress, ":")
+			ip = req.ManagerAddress[:index]
+			port = req.ManagerAddress[index+1:]
+		}
+	} else {
+		ipData := strings.Split(req.ManagerAddress, ":")
+		ip = ipData[0]
+		if len(ipData) > 1 {
+			port = ipData[1]
+		}
 	}
 	var plugin = agmodel.Plugin{
 		IP:                ip,
@@ -1645,4 +1717,41 @@ func getEmptyWildCard() []WildCard {
 	w.Values = []string{}
 	wildCards = append(wildCards, w)
 	return wildCards
+}
+
+func (e *ExternalInterface) monitorPluginTask(subTaskChannel chan<- int32, monitorTaskData *monitorTaskRequest) (responseStatus, error) {
+	for {
+
+		var task common.TaskData
+		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {
+			subTaskChannel <- http.StatusInternalServerError
+			errMsg := "Unable to parse the simple update respone" + err.Error()
+			log.Warn(errMsg)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
+			return monitorTaskData.getResponse, err
+		}
+		var updatetask = fillTaskData(monitorTaskData.subTaskID, monitorTaskData.serverURI, monitorTaskData.updateRequestBody, monitorTaskData.resp, task.TaskState, task.TaskStatus, task.PercentComplete, http.MethodPost)
+		err := e.UpdateTask(updatetask)
+		if err != nil && err.Error() == common.Cancelling {
+			var updatetask = fillTaskData(monitorTaskData.subTaskID, monitorTaskData.serverURI, monitorTaskData.updateRequestBody, monitorTaskData.resp, common.Cancelled, common.Critical, 100, http.MethodPost)
+			subTaskChannel <- http.StatusInternalServerError
+			e.UpdateTask(updatetask)
+			return monitorTaskData.getResponse, err
+		}
+		time.Sleep(time.Second * 5)
+		monitorTaskData.pluginRequest.OID = monitorTaskData.location
+		monitorTaskData.pluginRequest.HTTPMethodType = http.MethodGet
+		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = contactPlugin(monitorTaskData.pluginRequest, "error while performing simple update action: ")
+		if err != nil {
+			subTaskChannel <- monitorTaskData.getResponse.StatusCode
+			errMsg := err.Error()
+			log.Warn(errMsg)
+			common.GeneralError(monitorTaskData.getResponse.StatusCode, monitorTaskData.getResponse.StatusMessage, errMsg, monitorTaskData.getResponse.MsgArgs, monitorTaskData.taskInfo)
+			return monitorTaskData.getResponse, err
+		}
+		if monitorTaskData.getResponse.StatusCode == http.StatusOK {
+			break
+		}
+	}
+	return monitorTaskData.getResponse, nil
 }

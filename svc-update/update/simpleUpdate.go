@@ -22,16 +22,26 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"runtime"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
+)
+
+var (
+	//RequestParamsCaseValidatorFunc ...
+	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
+	//JSONMarshalFunc ...
+	JSONMarshalFunc = json.Marshal
+	//StringsEqualFoldFunc ...
+	StringsEqualFoldFunc = strings.EqualFold
 )
 
 // SimpleUpdate function handler for simpe update process
@@ -42,7 +52,7 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
 
-	var updateRequest UpdateRequestBody
+	var updateRequest SimpleUpdateRequest
 	err := json.Unmarshal(req.RequestBody, &updateRequest)
 	if err != nil {
 		errMsg := "Unable to parse the simple update request" + err.Error()
@@ -56,7 +66,7 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, updateRequest)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, updateRequest)
 	if err != nil {
 		errMsg := "Unable to validate request parameters: " + err.Error()
 		log.Warn(errMsg)
@@ -80,7 +90,7 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	serverURI := ""
 	for id, target := range targetList {
 		updateRequest.Targets = target
-		marshalBody, err := json.Marshal(updateRequest)
+		marshalBody, err := JSONMarshalFunc(updateRequest)
 		if err != nil {
 			errMsg := "Unable to parse the simple update request" + err.Error()
 			log.Warn(errMsg)
@@ -222,7 +232,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 	contactRequest.ContactClient = e.External.ContactClient
 	contactRequest.Plugin = plugin
 
-	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+	if StringsEqualFoldFunc(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
 		contactRequest.DeviceInfo = map[string]interface{}{
@@ -231,7 +241,6 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
 		_, token, getResponse, err := e.External.ContactPlugin(contactRequest, "error while creating session with the plugin: ")
-
 		if err != nil {
 			subTaskChannel <- getResponse.StatusCode
 			errMsg := err.Error()
@@ -239,6 +248,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 			return
 		}
+
 		contactRequest.Token = token
 	} else {
 		contactRequest.BasicAuth = map[string]string{
@@ -252,7 +262,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost
-	_, _, getResponse, err := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
+	respBody, location, getResponse, err := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
 	if err != nil {
 		subTaskChannel <- getResponse.StatusCode
 		errMsg := err.Error()
@@ -260,9 +270,26 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 		return
 	}
+	if getResponse.StatusCode == http.StatusAccepted {
+		getResponse, err = e.monitorPluginTask(subTaskChannel, &monitorTaskRequest{
+			subTaskID:         subTaskID,
+			serverURI:         serverURI,
+			updateRequestBody: updateRequestBody,
+			respBody:          respBody,
+			getResponse:       getResponse,
+			taskInfo:          taskInfo,
+			location:          location,
+			pluginRequest:     contactRequest,
+			resp:              resp,
+		})
 
+		if err != nil {
+			return
+		}
+	}
 	resp.StatusCode = http.StatusOK
 	percentComplete = 100
+
 	subTaskChannel <- int32(getResponse.StatusCode)
 	var task = fillTaskData(subTaskID, serverURI, updateRequestBody, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	err = e.External.UpdateTask(task)

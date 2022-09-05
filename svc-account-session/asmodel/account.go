@@ -37,10 +37,14 @@ type User struct {
 	AccountTypes []string `json:"AccountTypes"`
 }
 
+var (
+	GetDBConnectionFunc = common.GetDBConnection
+)
+
 // CreateUser connects to the persistencemgr and creates a user in db
 func CreateUser(user User) *errors.Error {
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return err
 	}
@@ -52,7 +56,7 @@ func CreateUser(user User) *errors.Error {
 
 //GetAllUsers gets all the accounts from the db
 func GetAllUsers() ([]User, *errors.Error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +85,7 @@ func GetAllUsers() ([]User, *errors.Error) {
 func GetUserDetails(userName string) (User, *errors.Error) {
 	var user User
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return user, err
 	}
@@ -98,7 +102,7 @@ func GetUserDetails(userName string) (User, *errors.Error) {
 
 //DeleteUser will delete the user entry from the database based on the uuid
 func DeleteUser(key string) *errors.Error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return err
 	}
@@ -111,7 +115,7 @@ func DeleteUser(key string) *errors.Error {
 // UpdateUserDetails will modify the current details to given changes
 func UpdateUserDetails(user, newData User) *errors.Error {
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return err
 	}

@@ -2,4 +2,4 @@ odimra:
   namespace:
   groupID:
   haDeploymentEnabled:
-  accountSessionImageTag: "3.0"
+  accountSessionImageTag: "3.1"

@@ -762,7 +762,7 @@ Transfer-Encoding: chunked
                 },
                 "Response": {
                     "@odata.id": "/redfish/v1/Systems/6eac063d-60d7-4fe8-a3d8-bf70afb6d235.8",
-                    "@odata.type": "#ComputerSystem.v1_15_0.ComputerSystem",
+                    "@odata.type": "#ComputerSystem.v1_18_0.ComputerSystem",
                     "Id": "6eac063d-60d7-4fe8-a3d8-bf70afb6d235.8",
                     "Name": "Computer System",
                     "SystemType": "Physical",
@@ -887,7 +887,7 @@ Transfer-Encoding: chunked
                 },
                 "Response": {
                    "@odata.id": "/redfish/v1/Systems/6eac063d-60d7-4fe8-a3d8-bf70afb6d235.8",
-                    "@odata.type": "#ComputerSystem.v1_15_0.ComputerSystem",
+                    "@odata.type": "#ComputerSystem.v1_18_0.ComputerSystem",
                     "Id": "6eac063d-60d7-4fe8-a3d8-bf70afb6d235.8",
                     "Name": "Computer System",
                     "SystemType": "Physical",

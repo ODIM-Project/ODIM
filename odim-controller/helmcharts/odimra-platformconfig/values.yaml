@@ -1,3 +1,4 @@
 odimra:
   namespace:
   haDeploymentEnabled:
+  redisInMemoryPassword:

@@ -16,10 +16,12 @@
 package asmodel
 
 import (
+	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
 var roles = RedfishRoles{
@@ -35,6 +37,9 @@ func TestCreateRedfishRoles(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 	err := roles.Create()
 	assert.Nil(t, err, "There should be no error")
 }
@@ -45,6 +50,9 @@ func TestGetRedfishRoles(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 	mockData(common.OnDisk, "roles", "redfishdefined", roles)
 	_, err := GetRedfishRoles()
 	assert.Nil(t, err, "There should be no error")
@@ -56,9 +64,29 @@ func TestGetRedfishRolesNegativeTestCase(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 	_, err := GetRedfishRoles()
 	assert.NotNil(t, err, "There should be an error")
 	mockData(common.OnDisk, "roles", "redfishdefined", "roles")
 	_, err = GetRedfishRoles()
 	assert.NotNil(t, err, "There should be an error")
+}
+
+func TestCreateRedfishRolesDBError(t *testing.T) {
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	err := roles.Create()
+	assert.Equalf(t, &errors.Error{}, err, "CreateRedfishRole() ")
+}
+
+func TestGetRedfishRolesDBError(t *testing.T) {
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	role, err := GetRedfishRoles()
+	assert.Equalf(t, RedfishRoles{}, role, "GetRedfishRoles() ")
+	assert.Equalf(t, &errors.Error{}, err, "GetRedfishRoles() ")
 }

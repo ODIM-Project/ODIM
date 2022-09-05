@@ -16,40 +16,45 @@
 package persistencemgr
 
 import (
+	"testing"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
 // MockDBConnection provides a mock db for unit testing
-func MockDBConnection() (*ConnPool, *errors.Error) {
-	config, err := GetMockDBConfig()
+func MockDBConnection(t *testing.T) (*ConnPool, *errors.Error) {
+	config.SetUpMockConfig(t)
+	cfg, err := GetMockDBConfig()
 	if err != nil {
 		return nil, errors.PackError(errors.UndefinedErrorType, "error while trying to initiate mock db: ", err)
 	}
-	return config.Connection()
+	return cfg.Connection()
 }
 
 // GetMockDBConfig will initiate mock db and will provide the config file
 func GetMockDBConfig() (*Config, *errors.Error) {
 	//Need to discuss more on this
 	config.Data.DBConf = &config.DBConf{
-		Protocol:             config.DefaultDBProtocol,
-		OnDiskPort:           "6380",
-		OnDiskHost:           "localhost",
-		InMemoryHost:         "localhost",
-		InMemoryPort:         "6379",
-		RedisHAEnabled:       false,
-		InMemorySentinelPort: "26379",
-		OnDiskSentinelPort:   "26379",
-		InMemoryPrimarySet:   "redisSentinel",
-		OnDiskPrimarySet:     "redisSentinel",
-		MaxIdleConns:         config.DefaultDBMaxIdleConns,
-		MaxActiveConns:       config.DefaultDBMaxActiveConns,
+		Protocol:              config.DefaultDBProtocol,
+		OnDiskPort:            "6380",
+		OnDiskHost:            "localhost",
+		InMemoryHost:          "localhost",
+		InMemoryPort:          "6379",
+		RedisHAEnabled:        false,
+		InMemorySentinelPort:  "26379",
+		OnDiskSentinelPort:    "26379",
+		InMemoryPrimarySet:    "redisSentinel",
+		OnDiskPrimarySet:      "redisSentinel",
+		MaxIdleConns:          config.DefaultDBMaxIdleConns,
+		MaxActiveConns:        config.DefaultDBMaxActiveConns,
+		RedisInMemoryPassword: []byte("redis_password"),
 	}
 	config := &Config{
 		Port:     config.Data.DBConf.InMemoryPort,
 		Protocol: config.Data.DBConf.Protocol,
 		Host:     config.Data.DBConf.InMemoryHost,
+		Password: string(config.Data.DBConf.RedisInMemoryPassword),
 	}
 
 	return config, nil

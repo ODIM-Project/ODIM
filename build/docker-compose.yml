@@ -88,7 +88,7 @@ services:
           http_proxy: $http_proxy
           https_proxy: $https_proxy
     container_name: odim_zookeeper
-    image: odim_zookeeper:1.0
+    image: odim_zookeeper:2.0
     hostname: zookeeper
     restart: on-failure
     ports:
@@ -122,7 +122,7 @@ services:
           http_proxy: $http_proxy
           https_proxy: $https_proxy
     container_name: odim_kafka
-    image: odim_kafka:1.0
+    image: odim_kafka:2.0
     hostname: kafka
     ports:
       - '9092:9092'
@@ -197,6 +197,7 @@ services:
       - '../build/odimra/telemetry.service:/etc/systemd/system/telemetry.service:rw'
       - '../build/odimra/managers.service:/etc/systemd/system/managers.service:rw'
       - '../build/odimra/update.service:/etc/systemd/system/update.service:rw'
+      - '../build/odimra/licenses.service:/etc/systemd/system/licenses.service:rw'
     command: bash -c "cp -r /var/odimra_config/ /etc/ && /var/tmp/edit_config.sh && rm -rf /var/odimra_config/* && /bin/start_odimra.sh"
   grf_plugin:
     build:

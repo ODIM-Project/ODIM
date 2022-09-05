@@ -578,6 +578,34 @@ func TestCreateErrorResponse(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: SessionLimitExceeded,
+			args: Args{
+				Code:    SessionLimitExceeded,
+				Message: SessionLimitExceeded,
+				ErrorArgs: []ErrArgs{
+					ErrArgs{
+						StatusMessage: SessionLimitExceeded,
+						ErrorMessage:  errMsg,
+					},
+				},
+			},
+			want: CommonError{
+				Error: ErrorClass{
+					Code:    SessionLimitExceeded,
+					Message: SessionLimitExceeded,
+					MessageExtendedInfo: []Msg{
+						Msg{
+							OdataType:  ErrorMessageOdataType,
+							MessageID:  SessionLimitExceeded,
+							Message:    "The session establishment failed due to the number of simultaneous sessions exceeding the limit of the implementation.",
+							Severity:   "Critical",
+							Resolution: "Reduce the number of other sessions before trying to establish the session or increase the limit of simultaneous sessions, if supported.",
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -30,15 +30,25 @@ import (
 // Session struct helps to register service
 type Session struct{}
 
+var (
+	CreateNewSessionFunc     = session.CreateNewSession
+	DeleteSessionFunc        = session.DeleteSession
+	GetSessionFunc           = session.GetSession
+	GetAllActiveSessionsFunc = session.GetAllActiveSessions
+	GetSessionServiceFunc    = session.GetSessionService
+	GetSessionUserNameFunc   = session.GetSessionUserName
+	GetSessionUserRoleIDFunc = session.GetSessionUserRoleID
+	MarshalFunc              = json.Marshal
+)
+
 // CreateSession is a rpc call to create session
 // and It will check the credentials of user, if user is authorized
 // then create session for the same
 func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCreateRequest) (*sessionproto.SessionCreateResponse, error) {
 	var err error
 	var resp sessionproto.SessionCreateResponse
-	response, sessionID := session.CreateNewSession(req)
-
-	resp.Body, err = json.Marshal(response.Body)
+	response, sessionID := CreateNewSessionFunc(req)
+	resp.Body, err = MarshalFunc(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for create account: " + err.Error()
@@ -57,9 +67,9 @@ func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCr
 // It will get all the session tokens from the db and from the session token get the session details
 // if session id is matched with recieved session id ten delete the session
 func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
-	response := session.DeleteSession(req)
+	response := DeleteSessionFunc(req)
 	var resp sessionproto.SessionResponse
-	body, err := json.Marshal(response.Body)
+	body, err := MarshalFunc(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for delete : " + err.Error()
@@ -78,8 +88,8 @@ func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRe
 // if session id is matched with recieved session id then delete the session
 func (s *Session) GetSession(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
 	var resp sessionproto.SessionResponse
-	response := session.GetSession(req)
-	body, err := json.Marshal(response.Body)
+	response := GetSessionFunc(req)
+	body, err := MarshalFunc(response.Body)
 	if err != nil {
 		resp.StatusMessage = "error while trying marshal the response body for get session: " + err.Error()
 		log.Printf(response.StatusMessage)
@@ -95,14 +105,14 @@ func (s *Session) GetSession(ctx context.Context, req *sessionproto.SessionReque
 // GetSessionUserName is a rpc call to get session username
 // It will get all the session username from the session
 func (s *Session) GetSessionUserName(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUserName, error) {
-	resp, err := session.GetSessionUserName(req)
+	resp, err := GetSessionUserNameFunc(req)
 	return resp, err
 }
 
 // GetSessionUserRoleID is a rpc call to get session user's role ID
 // It will get the session username's role id from the session
 func (s *Session) GetSessionUserRoleID(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
-	resp, err := session.GetSessionUserRoleID(req)
+	resp, err := GetSessionUserRoleIDFunc(req)
 	return resp, err
 }
 
@@ -112,8 +122,8 @@ func (s *Session) GetSessionUserRoleID(ctx context.Context, req *sessionproto.Se
 // and respond all the sessionresponse values along with error if there is.
 func (s *Session) GetAllActiveSessions(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
 	var resp sessionproto.SessionResponse
-	response := session.GetAllActiveSessions(req)
-	body, err := json.Marshal(response.Body)
+	response := GetAllActiveSessionsFunc(req)
+	body, err := MarshalFunc(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for get all active session: " + err.Error()
@@ -132,8 +142,8 @@ func (s *Session) GetAllActiveSessions(ctx context.Context, req *sessionproto.Se
 // which basically checks if the session service is enabled or not
 func (s *Session) GetSessionService(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
 	var resp sessionproto.SessionResponse
-	response := session.GetSessionService(req)
-	body, err := json.Marshal(response.Body)
+	response := GetSessionServiceFunc(req)
+	body, err := MarshalFunc(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for get session service: " + err.Error()

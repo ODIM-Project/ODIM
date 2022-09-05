@@ -15,12 +15,13 @@
 //Package dpmodel ...
 package dpmodel
 
+import dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+
 // Volume holds the northbound request body
 type Volume struct {
-	Name               string        `json:"Name" validate:"required"`
-	RAIDType           string        `json:"RAIDType"`
-	Drives             []OdataIDLink `json:"Drives"`
-	OperationApplyTime string        `json:"@Redfish.OperationApplyTime"`
+	RAIDType           string      `json:"RAIDType"`
+	Links              *dmtf.Links `json:"Links"`
+	OperationApplyTime string      `json:"@Redfish.OperationApplyTime"`
 }
 
 // OdataIDLink contains link to a resource

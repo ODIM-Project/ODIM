@@ -37,11 +37,12 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
+	"github.com/stretchr/testify/assert"
 )
 
 func testSystemIndex(uuid string, indexData map[string]interface{}) error {
@@ -222,6 +223,7 @@ func testUpdateContactClient(url, method, token string, odataID string, body int
 }
 
 func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
+	config.SetUpMockConfig(t)
 	mockPluginData(t, "ILO_v1.0.0")
 	mockPluginData(t, "GRF_v1.0.0")
 
@@ -318,7 +320,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	missingparamReq, _ := json.Marshal(map[string]interface{}{})
 
 	commonResponse1 := response.Response{
-		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
+		OdataType:    common.AggregationSourceType,
 		OdataID:      "/redfish/v1/AggregationService/AggregationSources/123455",
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           "123455",
@@ -340,7 +342,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		Links:    reqManagerGRF.Links,
 	}
 	commonResponse2 := response.Response{
-		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
+		OdataType:    common.AggregationSourceType,
 		OdataID:      "/redfish/v1/AggregationService/AggregationSources/123456",
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           "123456",
@@ -379,6 +381,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	resp8 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 
 	common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
+
 	p := getMockExternalInterface()
 	p.ContactClient = testUpdateContactClient
 	type args struct {
@@ -486,4 +489,14 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_validateManagerAddress(t *testing.T) {
+	managerAddress := "10.0.0.0:8080"
+	err := validateManagerAddress("")
+	assert.Nil(t, err, "Error should not be nil")
+	err = validateManagerAddress(managerAddress)
+	assert.Nil(t, err, "Error should be nil")
+	err = validateManagerAddress("FQDN:PORT")
+	assert.NotNil(t, err, "Error should not be nil")
 }

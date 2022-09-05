@@ -23,21 +23,24 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
+var(
+	NewEventsClientFunc = eventsproto.NewEventsClient
+)
 // DoGetEventService defines the RPC call function for
 // the GetEventService from events micro service
 func DoGetEventService(req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
-	conn, err := services.ODIMService.Client(services.Events)
+	conn, err := ClientFunc(services.Events)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	events := eventsproto.NewEventsClient(conn)
+	
+	events := NewEventsClientFunc(conn)
 
 	resp, err := events.GetEventService(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
-
+	defer conn.Close()
 	return resp, err
 }
 
@@ -45,18 +48,18 @@ func DoGetEventService(req eventsproto.EventSubRequest) (*eventsproto.EventSubRe
 // the CreateEventSubscription from events micro service
 func DoCreateEventSubscription(req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
 
-	conn, err := services.ODIMService.Client(services.Events)
+	conn, err := ClientFunc(services.Events)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	events := eventsproto.NewEventsClient(conn)
+	
+	events := NewEventsClientFunc(conn)
 
 	resp, err := events.CreateEventSubscription(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
-
+	defer conn.Close()
 	return resp, err
 }
 
@@ -64,18 +67,18 @@ func DoCreateEventSubscription(req eventsproto.EventSubRequest) (*eventsproto.Ev
 // the SubmitTestEvent from events micro service
 func DoSubmitTestEvent(req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
 
-	conn, err := services.ODIMService.Client(services.Events)
+	conn, err := ClientFunc(services.Events)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	events := eventsproto.NewEventsClient(conn)
+	
+	events := NewEventsClientFunc(conn)
 
 	resp, err := events.SubmitTestEvent(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
-
+	defer conn.Close()
 	return resp, err
 }
 
@@ -83,18 +86,18 @@ func DoSubmitTestEvent(req eventsproto.EventSubRequest) (*eventsproto.EventSubRe
 // the DoGetEventSubscription from events micro service
 func DoGetEventSubscription(req eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
 
-	conn, err := services.ODIMService.Client(services.Events)
+	conn, err := ClientFunc(services.Events)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	events := eventsproto.NewEventsClient(conn)
+	
+	events := NewEventsClientFunc(conn)
 
 	resp, err := events.GetEventSubscription(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
-
+	defer conn.Close()
 	return resp, err
 }
 
@@ -102,18 +105,18 @@ func DoGetEventSubscription(req eventsproto.EventRequest) (*eventsproto.EventSub
 // the DoDeleteEventSubscription from events micro service
 func DoDeleteEventSubscription(req eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
 
-	conn, err := services.ODIMService.Client(services.Events)
+	conn, err := ClientFunc(services.Events)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	events := eventsproto.NewEventsClient(conn)
+	
+	events := NewEventsClientFunc(conn)
 
 	resp, err := events.DeleteEventSubscription(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
-
+	defer conn.Close()
 	return resp, err
 }
 
@@ -121,17 +124,17 @@ func DoDeleteEventSubscription(req eventsproto.EventRequest) (*eventsproto.Event
 // the DoGetEventSubscription from events micro service
 func DoGetEventSubscriptionsCollection(req eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
 
-	conn, err := services.ODIMService.Client(services.Events)
+	conn, err := ClientFunc(services.Events)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	events := eventsproto.NewEventsClient(conn)
+	
+	events := NewEventsClientFunc(conn)
 
 	resp, err := events.GetEventSubscriptionsCollection(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
-
+	defer conn.Close()
 	return resp, err
 }

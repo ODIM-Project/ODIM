@@ -32,20 +32,21 @@ import (
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
+	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 )
 
 // GetEventSubscriptionsDetails collects subscription data against given subscription id
-func (p *PluginContact) GetEventSubscriptionsDetails(req *eventsproto.EventRequest) response.RPC {
+func (e *ExternalInterfaces) GetEventSubscriptionsDetails(req *eventsproto.EventRequest) response.RPC {
 	var resp response.RPC
-	authResp := p.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		return authResp
 	}
 	var subscriptions *evresponse.SubscriptionResponse
 
-	subscriptionDetails, err := p.GetEvtSubscriptions(req.EventSubscriptionID)
+	subscriptionDetails, err := e.GetEvtSubscriptions(req.EventSubscriptionID)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		log.Printf("error getting eventsubscription details : %v", err)
 		errorMessage := err.Error()
@@ -83,15 +84,16 @@ func (p *PluginContact) GetEventSubscriptionsDetails(req *eventsproto.EventReque
 		}
 
 		subscriptions = &evresponse.SubscriptionResponse{
-			Response:         commonResponse,
-			Destination:      evtSubscription.Destination,
-			Protocol:         evtSubscription.Protocol,
-			Context:          evtSubscription.Context,
-			EventTypes:       evtSubscription.EventTypes,
-			SubscriptionType: evtSubscription.SubscriptionType,
-			MessageIds:       evtSubscription.MessageIds,
-			ResourceTypes:    evtSubscription.ResourceTypes,
-			OriginResources:  updateOriginResourceswithOdataID(evtSubscription.OriginResources),
+			Response:            commonResponse,
+			Destination:         evtSubscription.Destination,
+			Protocol:            evtSubscription.Protocol,
+			Context:             evtSubscription.Context,
+			EventTypes:          evtSubscription.EventTypes,
+			SubscriptionType:    evtSubscription.SubscriptionType,
+			MessageIds:          evtSubscription.MessageIds,
+			ResourceTypes:       evtSubscription.ResourceTypes,
+			OriginResources:     updateOriginResourceswithOdataID(evtSubscription.OriginResources),
+			DeliveryRetryPolicy: evtSubscription.DeliveryRetryPolicy,
 		}
 	}
 	resp.Body = subscriptions
@@ -100,18 +102,10 @@ func (p *PluginContact) GetEventSubscriptionsDetails(req *eventsproto.EventReque
 	return resp
 }
 
-func updateOriginResourceswithOdataID(originResources []string) []evresponse.ListMember {
-	var originRes []evresponse.ListMember
-	for _, origin := range originResources {
-		originRes = append(originRes, evresponse.ListMember{OdataID: origin})
-	}
-	return originRes
-}
-
 // GetEventSubscriptionsCollection collects all subscription details
-func (p *PluginContact) GetEventSubscriptionsCollection(req *eventsproto.EventRequest) response.RPC {
+func (e *ExternalInterfaces) GetEventSubscriptionsCollection(req *eventsproto.EventRequest) response.RPC {
 	var resp response.RPC
-	authResp := p.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		return authResp
@@ -119,7 +113,7 @@ func (p *PluginContact) GetEventSubscriptionsCollection(req *eventsproto.EventRe
 	listMembers := []evresponse.ListMember{}
 	searchKey := "*"
 
-	subscriptionDetails, err := p.GetEvtSubscriptions(searchKey)
+	subscriptionDetails, err := e.GetEvtSubscriptions(searchKey)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		log.Printf("error getting eventsubscription details : %v", err)
 		errorMessage := err.Error()
@@ -151,4 +145,20 @@ func (p *PluginContact) GetEventSubscriptionsCollection(req *eventsproto.EventRe
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp
+}
+
+// IsAggregateHaveSubscription collects all subscription details
+func (e *ExternalInterfaces) IsAggregateHaveSubscription(req *eventsproto.EventUpdateRequest) bool {
+	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		return false
+	}
+	searchKey := evcommon.GetSearchKey(req.AggregateId, evmodel.SubscriptionIndex)
+	subscriptionDetails, err := e.GetEvtSubscriptions(searchKey)
+	if err != nil {
+		return false
+	}
+	return len(subscriptionDetails) > 0
+
 }

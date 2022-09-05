@@ -40,18 +40,19 @@ type SubTask struct {
 //Task struct is used to display to the user
 type Task struct {
 	response.Response
-	TaskState       string      `json:"TaskState"`
-	StartTime       time.Time   `json:"StartTime"`
-	EndTime         time.Time   `json:"EndTime,omitempty"`
-	TaskStatus      string      `json:"TaskStatus"`
-	SubTasks        *ListMember `json:"SubTasks,omitempty"`
-	TaskMonitor     string      `json:"TaskMonitor"`
-	PercentComplete int32       `json:"PercentComplete,omitempty"`
-	HidePayload     bool        `json:"HidePayload,omitempty"`
-	Payload         Payload     `json:"Payload,omitempty"`
-	Messages        []Messages  `json:"Messages,omitempty"`
-	Actions         *OemActions `json:"Actions,omitempty"`
-	Oem             Oem         `json:"Oem,omitempty"`
+	TaskState         string      `json:"TaskState"`
+	StartTime         time.Time   `json:"StartTime"`
+	EndTime           time.Time   `json:"EndTime,omitempty"`
+	TaskStatus        string      `json:"TaskStatus"`
+	SubTasks          *ListMember `json:"SubTasks,omitempty"`
+	TaskMonitor       string      `json:"TaskMonitor"`
+	PercentComplete   int32       `json:"PercentComplete,omitempty"`
+	HidePayload       bool        `json:"HidePayload,omitempty"`
+	Payload           Payload     `json:"Payload,omitempty"`
+	Messages          []Messages  `json:"Messages,omitempty"`
+	Actions           *OemActions `json:"Actions,omitempty"`
+	Oem               Oem         `json:"Oem,omitempty"`
+	EstimatedDuration string      `json:"EstimatedDuration,omitempty"`
 }
 
 //Messages struct is used to display to the user

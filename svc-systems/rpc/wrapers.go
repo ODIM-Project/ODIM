@@ -25,7 +25,8 @@ import (
 
 type authenticator func(sessionToken string, privileges, oemPrivileges []string) response.RPC
 
-func auth(authenticate authenticator, sessionToken string, privilages []string, callback func() response.RPC) response.RPC {
+func auth(authenticate authenticator, sessionToken string,
+	privilages []string, callback func() response.RPC) response.RPC {
 	if sessionToken == "" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "X-Auth-Token header is missing", nil, nil)
 	}
@@ -35,4 +36,17 @@ func auth(authenticate authenticator, sessionToken string, privilages []string, 
 		return resp
 	}
 	return callback()
+}
+
+func generateTaskRespone(taskID, taskURI string, rpcResp *response.RPC) {
+	commonResponse := response.Response{
+		OdataType:    common.TaskType,
+		ID:           taskID,
+		Name:         "Task " + taskID,
+		OdataContext: "/redfish/v1/$metadata#Task.Task",
+		OdataID:      taskURI,
+	}
+	commonResponse.MessageArgs = []string{taskID}
+	commonResponse.CreateGenericResponse(rpcResp.StatusMessage)
+	rpcResp.Body = commonResponse
 }

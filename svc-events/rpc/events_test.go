@@ -31,28 +31,32 @@ import (
 )
 
 func getMockPluginContactInitializer() *Events {
-	connector := &events.PluginContact{
-		ContactClient:                    evcommon.MockContactClient,
-		Auth:                             evcommon.MockIsAuthorized,
-		CreateTask:                       evcommon.MockCreateTask,
-		CreateChildTask:                  evcommon.MockCreateChildTask,
-		UpdateTask:                       evcommon.MockUpdateTask,
-		GetSessionUserName:               evcommon.MockGetSessionUserName,
-		GetTarget:                        evcommon.MockGetTarget,
-		GetPluginData:                    evcommon.MockGetPluginData,
-		GetFabricData:                    evcommon.MockGetFabricData,
-		GetEvtSubscriptions:              evcommon.MockGetEvtSubscriptions,
-		GetDeviceSubscriptions:           evcommon.MockGetDeviceSubscriptions,
-		SaveEventSubscription:            evcommon.MockSaveEventSubscription,
-		UpdateEventSubscription:          evcommon.MockUpdateEventSubscription,
-		DeleteDeviceSubscription:         evcommon.MockDeleteDeviceSubscription,
-		DeleteEvtSubscription:            evcommon.MockDeleteEvtSubscription,
-		UpdateDeviceSubscriptionLocation: evcommon.MockUpdateDeviceSubscriptionLocation,
-		GetAllKeysFromTable:              evcommon.MockGetAllKeysFromTable,
-		GetAllFabrics:                    evcommon.MockGetAllFabrics,
-		GetAllMatchingDetails:            evcommon.MockGetAllMatchingDetails,
-		SaveDeviceSubscription:           evcommon.MockSaveDeviceSubscription,
-		SaveUndeliveredEvents:            evcommon.MockSaveUndeliveredEvents,
+	connector := &events.ExternalInterfaces{
+		External: events.External{
+			ContactClient:   evcommon.MockContactClient,
+			Auth:            evcommon.MockIsAuthorized,
+			CreateTask:      evcommon.MockCreateTask,
+			CreateChildTask: evcommon.MockCreateChildTask,
+			UpdateTask:      evcommon.MockUpdateTask,
+		},
+		DB: events.DB{
+			GetSessionUserName:               evcommon.MockGetSessionUserName,
+			GetTarget:                        evcommon.MockGetTarget,
+			GetPluginData:                    evcommon.MockGetPluginData,
+			GetFabricData:                    evcommon.MockGetFabricData,
+			GetEvtSubscriptions:              evcommon.MockGetEvtSubscriptions,
+			GetDeviceSubscriptions:           evcommon.MockGetDeviceSubscriptions,
+			SaveEventSubscription:            evcommon.MockSaveEventSubscription,
+			UpdateEventSubscription:          evcommon.MockUpdateEventSubscription,
+			DeleteDeviceSubscription:         evcommon.MockDeleteDeviceSubscription,
+			DeleteEvtSubscription:            evcommon.MockDeleteEvtSubscription,
+			UpdateDeviceSubscriptionLocation: evcommon.MockUpdateDeviceSubscriptionLocation,
+			GetAllKeysFromTable:              evcommon.MockGetAllKeysFromTable,
+			GetAllFabrics:                    evcommon.MockGetAllFabrics,
+			GetAllMatchingDetails:            evcommon.MockGetAllMatchingDetails,
+			SaveDeviceSubscription:           evcommon.MockSaveDeviceSubscription,
+			SaveUndeliveredEvents:            evcommon.MockSaveUndeliveredEvents,
+		},
 	}
 	return &Events{
 		Connector: connector,
@@ -77,6 +81,8 @@ func TestGetEventService(t *testing.T) {
 	assert.True(t, eventServiceResp.ServiceEnabled, "Service should be Enabled ")
 	assert.Equal(t, eventServiceResp.Status.State, "Enabled", "serviceState should be Enabled.")
 	assert.Equal(t, eventServiceResp.Status.Health, "OK", "Health Status should be OK.")
+	assert.Equal(t, eventServiceResp.EventFormatTypes, []string{"Event", "MetricReport"},
+		"EventFormatTypes: Possible values are Event and MetricReport")
 
 	req = &eventsproto.EventSubRequest{
 		SessionToken: "InValidToken",
@@ -92,7 +98,7 @@ func TestCreateEventSubscription(t *testing.T) {
 	events := getMockPluginContactInitializer()
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://10.10.10.24:8070/Destination1",
+		"Destination":          "https://localhost:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",

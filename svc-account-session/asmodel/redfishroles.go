@@ -30,7 +30,7 @@ type RedfishRoles struct {
 //GetRedfishRoles retrives the privileges from database
 func GetRedfishRoles() (RedfishRoles, *errors.Error) {
 	var redfishRoles RedfishRoles
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return redfishRoles, err
 	}
@@ -47,7 +47,7 @@ func GetRedfishRoles() (RedfishRoles, *errors.Error) {
 // Create method is to insert the privileges list to database
 func (r *RedfishRoles) Create() *errors.Error {
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return err
 	}

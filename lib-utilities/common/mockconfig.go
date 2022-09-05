@@ -16,9 +16,10 @@
 package common
 
 import (
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"os"
 	"strings"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
 const localhost = "127.0.0.1"
@@ -38,13 +39,15 @@ func SetUpMockConfig() error {
 	}
 	config.Data.RegistryStorePath = basePath + "/lib-utilities/etc/"
 	config.Data.DBConf = &config.DBConf{
-		InMemoryPort:   "6379",
-		OnDiskPort:     "6380",
-		Protocol:       "tcp",
-		OnDiskHost:     localhost,
-		InMemoryHost:   localhost,
-		MaxIdleConns:   10,
-		MaxActiveConns: 120,
+		InMemoryPort:          "6379",
+		OnDiskPort:            "6380",
+		Protocol:              "tcp",
+		OnDiskHost:            localhost,
+		InMemoryHost:          localhost,
+		MaxIdleConns:          10,
+		MaxActiveConns:        120,
+		RedisInMemoryPassword: []byte("redis_password"),
+		RedisOnDiskPassword:   []byte("redis_password"),
 	}
 	config.Data.AuthConf = &config.AuthConf{
 		SessionTimeOutInMins:            30,

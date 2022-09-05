@@ -15,6 +15,7 @@ package main
 
 import (
 	"os"
+	"sync"
 
 	"github.com/sirupsen/logrus"
 
@@ -77,6 +78,10 @@ func main() {
 	task.PersistTaskModel = tmodel.PersistTask
 	task.ValidateTaskUserNameModel = tmodel.ValidateTaskUserName
 	task.PublishToMessageBus = tmessagebus.Publish
+	thandle.TaskCollection = thandle.TaskCollectionData{
+		TaskCollection: make(map[string]int32),
+		Lock:           sync.Mutex{},
+	}
 	taskproto.RegisterGetTaskServiceServer(services.ODIMService.Server(), task)
 
 	// Run server

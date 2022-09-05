@@ -63,7 +63,26 @@ var SupportedConnectionMethodTypes = map[string]bool{
 	"IPMI15":  false,
 	"IPMI20":  false,
 }
-
+var (
+	//GetResourceDetailsFunc function pointer for the agmodel.GetResourceDetails
+	GetResourceDetailsFunc = agmodel.GetResourceDetails
+	// GetAllKeysFromTableFunc function pointer for the agmodel.GetAllKeysFromTable
+	GetAllKeysFromTableFunc = agmodel.GetAllKeysFromTable
+	//GetAllSystemsFunc function pointer for the agmodel.GetAllSystems
+	GetAllSystemsFunc = agmodel.GetAllSystems
+	//GetDeviceSubscriptionsFunc  function pointer for the  agmodel.GetDeviceSubscriptions
+	GetDeviceSubscriptionsFunc = agmodel.GetDeviceSubscriptions
+	// UpdateDeviceSubscriptionFunc function pointer for the agmodel.UpdateDeviceSubscription
+	UpdateDeviceSubscriptionFunc = agmodel.UpdateDeviceSubscription
+	// GetEventSubscriptionsFunc function pointer for the agmodel.GetEventSubscriptions
+	GetEventSubscriptionsFunc = agmodel.GetEventSubscriptions
+	// JSONUnMarshalFunc function pointer for the json.Unmarshal
+	JSONUnMarshalFunc = json.Unmarshal
+	//LookupIPfunc  function pointer for the  net.LookupIP
+	LookupIPfunc = net.LookupIP
+	//SplitHostPortfunc  function pointer for the net.SplitHostPort
+	SplitHostPortfunc = net.SplitHostPort
+)
 var (
 	// ConfigFilePath holds the value of odim config file path
 	ConfigFilePath string
@@ -79,20 +98,21 @@ func init() {
 	}
 }
 
-// GetStorageResources will get the resource details from the database for teh given odata id
+// GetStorageResources will get the resource details from the database for the given odata id
 func GetStorageResources(oid string) map[string]interface{} {
 	resourceData := make(map[string]interface{})
-	data, dbErr := agmodel.GetResourceDetails(oid)
+	data, dbErr := GetResourceDetailsFunc(oid)
 	if dbErr != nil {
 		log.Error("Unable to get system data : " + dbErr.Error())
 		return resourceData
 	}
 	// unmarshall the resourceData
-	err := json.Unmarshal([]byte(data), &resourceData)
+	err := JSONUnMarshalFunc([]byte(data), &resourceData)
 	if err != nil {
 		log.Error("Unable to unmarshall  the data: " + err.Error())
 		return resourceData
 	}
+
 	return resourceData
 }
 
@@ -210,13 +230,13 @@ func GetPluginStatus(plugin agmodel.Plugin) bool {
 
 // LookupHost - look up the ip from the host address
 func LookupHost(addr string) (ip, host, port string, err error) {
-	host, port, err = net.SplitHostPort(addr)
+	host, port, err = SplitHostPortfunc(addr)
 	if err != nil {
 		log.Warn("splitting host address failed with " + err.Error())
 		host = addr
 	}
 
-	ips, errs := net.LookupIP(host)
+	ips, errs := LookupIPfunc(host)
 	switch {
 	case errs != nil:
 		err = errs
@@ -254,7 +274,7 @@ func LookupPlugin(addr string) (agmodel.Plugin, error) {
 
 // GetAllPlugins is for fetching all the plugins added andn stored in db.
 func GetAllPlugins() ([]agmodel.Plugin, error) {
-	keys, err := agmodel.GetAllKeysFromTable("Plugin")
+	keys, err := GetAllKeysFromTableFunc("Plugin")
 	if err != nil {
 		return nil, err
 	}
@@ -308,7 +328,7 @@ func (phc *PluginHealthCheckInterface) GetPluginManagedServers(plugin agmodel.Pl
 // getAllServers is for fetching the list of all servers added.
 func (phc *PluginHealthCheckInterface) getAllServers(pluginID string) ([]agmodel.Target, error) {
 	var matchedServers []agmodel.Target
-	allServers, err := agmodel.GetAllSystems()
+	allServers, err := GetAllSystemsFunc()
 	if err != nil {
 		log.Error("failed to get the list of all managed servers " + err.Error())
 		return matchedServers, err
@@ -400,14 +420,14 @@ func GetSearchKey(key, index string) string {
 
 // GetSubscribedEvtTypes is to get event subscription details
 func GetSubscribedEvtTypes(searchKey string) ([]string, error) {
-	subscriptions, err := agmodel.GetEventSubscriptions("*" + searchKey + "*")
+	subscriptions, err := GetEventSubscriptionsFunc("*" + searchKey + "*")
 	if err != nil {
 		return nil, err
 	}
 	var eventTypes []string
 	for _, sub := range subscriptions {
 		var subscription map[string]interface{}
-		if err := json.Unmarshal([]byte(sub), &subscription); err != nil {
+		if err := JSONUnMarshalFunc([]byte(sub), &subscription); err != nil {
 			return nil, fmt.Errorf("error while unmarshalling event subscription: %v", err.Error())
 		}
 		for _, evtTyps := range subscription["EventTypes"].([]interface{}) {
@@ -427,14 +447,14 @@ func UpdateDeviceSubscriptionDetails(subsData map[string]string) {
 				continue
 			}
 			searchKey := GetSearchKey(deviceIPAddress, common.DeviceSubscriptionIndex)
-			deviceSubscription, err := agmodel.GetDeviceSubscriptions(searchKey)
+			deviceSubscription, err := GetDeviceSubscriptionsFunc(searchKey)
 			if err != nil {
 				log.Error("Error getting the device event subscription from DB " +
 					" for server address : " + serverAddress + err.Error())
 				continue
 			}
 			deviceSubscription.Location = location
-			if err = agmodel.UpdateDeviceSubscription(*deviceSubscription); err != nil {
+			if err = UpdateDeviceSubscriptionFunc(*deviceSubscription); err != nil {
 				log.Error("Error updating the subscription location in to DB for " +
 					"server address : " + serverAddress + err.Error())
 				continue

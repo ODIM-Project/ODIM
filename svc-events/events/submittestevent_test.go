@@ -41,7 +41,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		"EventGroupID":      1,
 		"MessageArgs":       []string{"message"},
 		"Severity":          "OK",
-		"EventTimestamp":    "",
+		"EventTimestamp":    "2022-02-01T16:40:35Z",
 		"Message":           "IndicatorChanged",
 		"MessageId":         "IndicatorChanged",
 		"OriginOfCondition": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",

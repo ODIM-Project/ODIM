@@ -36,6 +36,7 @@ func TestResponse(t *testing.T) {
 	var result = &MutexLock{
 		Response: make(map[string]EventResponse),
 		Lock:     &sync.Mutex{},
+		Hosts:    make(map[string]string),
 	}
 	for i, origin := range originResource {
 		wg.Add(1)

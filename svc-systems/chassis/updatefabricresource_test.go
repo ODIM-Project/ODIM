@@ -16,6 +16,7 @@ package chassis
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"reflect"
 	"testing"
@@ -75,4 +76,20 @@ func Test_fabricFactory_updateFabricChassisResource(t *testing.T) {
 			}
 		})
 	}
+
+}
+
+func Test_validateReqParamsCase(t *testing.T) {
+	// config.SetUpMockConfig(t)
+
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error { return nil }
+
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return "", errors.New("")
+	}
+	validateReqParamsCase(&json.RawMessage{})
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return "dummy", nil
+	}
+	validateReqParamsCase(&json.RawMessage{})
 }

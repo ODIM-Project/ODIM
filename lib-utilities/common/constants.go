@@ -117,36 +117,47 @@ const (
 	DeviceSubscriptionIndex = "DeviceSubscription"
 
 	// ManagerAccountType has schema version to be returned with manager account
-	ManagerAccountType = "#ManagerAccount.v1_8_0.ManagerAccount"
+	ManagerAccountType = "#ManagerAccount.v1_9_0.ManagerAccount"
 	// AccountServiceType has schema version to be returned with accountservice
-	AccountServiceType = "#AccountService.v1_10_0.AccountService"
+	AccountServiceType = "#AccountService.v1_11_0.AccountService"
 	// RoleType has schema version to be returned with Role
 	RoleType = "#Role.v1_3_1.Role"
 	// SessionServiceType has schema version to be returned with sessionservice
 	SessionServiceType = "#SessionService.v1_1_8.SessionService"
 	// SessionType has schema version to be returned with session
-	SessionType = "#Session.v1_3_0.Session"
+	SessionType = "#Session.v1_4_0.Session"
 	// EventType has schema version to be returned with event
 	EventType = "#Event.v1_7_0.Event"
 	// AggregationServiceType has schema version to be returned with Aggregationservice
 	AggregationServiceType = "#AggregationService.v1_0_1.AggregationService"
 	// TaskType has schema version to be returned with Task
-	TaskType = "#Task.v1_5_1.Task"
+	TaskType = "#Task.v1_6_0.Task"
 	// EventDestinationType has schema version to be returned with EventDestination
-	EventDestinationType = "#EventDestination.v1_11_0.EventDestination"
+	EventDestinationType = "#EventDestination.v1_12_0.EventDestination"
 	// EventServiceType has schema version to be returned with Event Service Type
-	EventServiceType = "#EventService.v1_7_2.EventService"
+	EventServiceType = "#EventService.v1_8_0.EventService"
 	// ManagerType has schema version to be returned with Manager
-	ManagerType = "#Manager.v1_13_0.Manager"
+	ManagerType = "#Manager.v1_15_0.Manager"
 	// TaskEventType has schema version to be returned with TaskEvent
 	TaskEventType = "TaskEvent.1.0.3"
 	// UpdateServiceType has schema version to be returned with UpdateService
-	UpdateServiceType = "#UpdateService.v1_10_0.UpdateService"
+	UpdateServiceType = "#UpdateService.v1_11_0.UpdateService"
 	// SettingsType has schema version to be returned with Settings in update service
 	SettingsType = "#Settings.v1_3_3.OperationApplyTimeSupport"
 	// TelemetryServiceType has version to be returned with Telemetry Service
 	TelemetryServiceType = "#TelemetryService.v1_3_1.TelemetryService"
+	//AggregationSourceType has version to be returned with AggregationSource Service
+	AggregationSourceType = "#AggregationSource.v1_2_0.AggregationSource"
+	//ChassisType has version to be returned with Chassis Service
+	ChassisType = "#Chassis.v1_20_0.Chassis"
+	// AggregateSubscriptionIndex is a index name which required for indexing
+	// subscription of aggregate
+	AggregateSubscriptionIndex = "AggregateToHost"
 )
+
+var Types = map[string]string{
+	"EthernetInterfaces": "#EthernetInterface.v1_8_0.EthernetInterface",
+}
 
 // RediscoverResources contains to get only these resource from the device when
 // reset flag is set when device is restarted.
@@ -205,6 +216,7 @@ var ManagersResource = map[string]string{
 	"VirtualMedia":       "VirtualMediaCollection",
 	"LogServices":        "LogServicesCollection",
 	"SerialInterfaces":   "SerialInterfaceCollection",
+	"Entries":            "EntriesCollection",
 }
 
 // ResourceTypes specifies the map  of valid resource types that can be used for an event subscription
@@ -321,5 +333,7 @@ var URIWithNoAuth = []string{
 	"/redfish/v1/$metadata",
 	"/redfish/v1/odata",
 	"/redfish/v1/SessionService",
-	"/redfish/v1/SesssionService/Sessions",
+	"/redfish/v1/SessionService/Sessions",
 }
+
+var SessionURI = "/redfish/v1/SessionService/Sessions"

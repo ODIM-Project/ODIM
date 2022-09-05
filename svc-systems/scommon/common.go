@@ -18,16 +18,24 @@ package scommon
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
+)
+
+var (
+	//IOReadAll  function pointer for the ioutil.ReadAll
+	IOReadAll = ioutil.ReadAll
+	//JSONUnmarshalFunc function pointer for the json.Unmarshal
+	JSONUnmarshalFunc = json.Unmarshal
 )
 
 // Schema is used to define the allowed values for search/filter
@@ -131,7 +139,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 	}
 
 	var resourceData map[string]interface{}
-	err = json.Unmarshal(body, &resourceData)
+	err = JSONUnmarshalFunc(body, &resourceData)
 	if err != nil {
 		return "", err
 	}
@@ -218,7 +226,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		}
 	}
 	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := IOReadAll(response.Body)
 	if err != nil {
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -227,8 +235,9 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 	log.Info("Response" + string(body))
-	log.Info("response.StatusCode" + string(rune(response.StatusCode)))
-	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
+	log.Info("response.StatusCode: " + fmt.Sprintf("%d", response.StatusCode))
+	resp.StatusCode = int32(response.StatusCode)
+	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted {
 		resp.StatusCode = int32(response.StatusCode)
 		log.Println(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
@@ -238,6 +247,9 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 	//replacing the resposne with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
+	}
+	if response.StatusCode == http.StatusAccepted {
+		return []byte(data), response.Header.Get("Location"), resp, nil
 	}
 	return []byte(data), response.Header.Get("X-Auth-Token"), resp, nil
 }

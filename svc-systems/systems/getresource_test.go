@@ -24,11 +24,13 @@ import (
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
+	"github.com/stretchr/testify/assert"
 )
 
 func mockSystemIndex(table, uuid string, indexData map[string]interface{}) error {
@@ -454,6 +456,15 @@ func TestGetAllSystems(t *testing.T) {
 			}
 		})
 	}
+	req := systemsproto.GetSystemsRequest{
+		URL: "/redfish/v1/Systems",
+	}
+	GetAllKeysFromTableFunc = func(table string) ([]string, error) {
+		return nil, &errors.Error{}
+	}
+	resp := GetSystemsCollection(&req)
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
+
 }
 
 func TestGetSystems(t *testing.T) {
@@ -566,6 +577,27 @@ func TestGetSystems(t *testing.T) {
 			}
 		})
 	}
+	req := systemsproto.GetSystemsRequest{
+		RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+		URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+	}
+	GetSystemResetInfoFunc = func(systemURI string) (map[string]string, *errors.Error) {
+		return nil, nil
+	}
+	GetResourceInfoFromDeviceFunc = func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+		return "", &errors.Error{}
+	}
+
+	resp := pluginContact.GetSystems(&req)
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusNotFound")
+
+	GetSystemResetInfoFunc = func(systemURI string) (map[string]string, *errors.Error) {
+		return smodel.GetSystemResetInfo(systemURI)
+	}
+	GetResourceInfoFromDeviceFunc = func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+		return scommon.GetResourceInfoFromDevice(req, saveRequired)
+	}
+
 }
 
 func TestPluginContact_GetSystemResource(t *testing.T) {
@@ -678,6 +710,21 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 			}
 		})
 	}
+
+	req := &systemsproto.GetSystemsRequest{
+		RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+		URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot",
+	}
+	GetDeviceLoadInfoFunc = func(URL, systemID string) bool {
+		return true
+	}
+	resp := pluginContact.GetSystemResource(req)
+	assert.NotNil(t, resp, "Response should have error")
+
+	GetDeviceLoadInfoFunc = func(URL, systemID string) bool {
+		return getDeviceLoadInfo(URL, systemID)
+	}
+
 }
 func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 	t.Skip("skipping test")
@@ -991,4 +1038,59 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 			}
 		})
 	}
+
+}
+
+func Test_getRangeData(t *testing.T) {
+	data, _ := getRangeData("le", "le", 0, true)
+	assert.Equal(t, 0, len(data), "Invalid request ")
+
+	data, _ = getRangeData("le", "eq", 1, true)
+	assert.Equal(t, 0, len(data), "Invalid request ")
+
+	data, _ = getRangeData("le", "ne", 0, true)
+	assert.Equal(t, 0, len(data), "Invalid request ")
+
+	data, _ = getRangeData("le", "ne", 1, true)
+	assert.Equal(t, 0, len(data), "Invalid request ")
+
+}
+
+func Test_rediscoverStorageInventory(t *testing.T) {
+	errorResp("", response.RPC{})
+	validate("and", response.RPC{})
+	validate("or", response.RPC{})
+	validateLastParameter([]string{})
+	GetMembers(map[string]map[string]bool{}, []string{}, response.RPC{})
+
+	SearchAndFilter([]string{"", "dummy"}, response.RPC{})
+	SearchAndFilter([]string{"", "dummy=0"}, response.RPC{})
+}
+
+func Test_getAllSystemIDs(t *testing.T) {
+	GetAllKeysFromTableFunc = func(table string) ([]string, error) {
+		return nil, &errors.Error{}
+	}
+	getAllSystemIDs(response.RPC{})
+}
+
+func Test_getDeviceLoadInfo(t *testing.T) {
+	GetSystemResetInfoFunc = func(systemURI string) (map[string]string, *errors.Error) {
+		return make(map[string]string), nil
+	}
+	resp := getDeviceLoadInfo("", "")
+	assert.Equal(t, false, resp, "Status should be false")
+}
+
+func Test_getStringData(t *testing.T) {
+	GetStringFunc = func(index, match string, regexFlag bool) ([]string, error) {
+		return []string{}, &errors.Error{}
+	}
+	data, _ := getStringData("", "", "lt", false)
+	assert.True(t, true, data)
+	GetStringFunc = func(index, match string, regexFlag bool) ([]string, error) {
+		return []string{"test", "test"}, nil
+	}
+	data, _ = getStringData("", "", "lt", false)
+	assert.True(t, true, data)
 }

@@ -17,8 +17,10 @@ package rpc
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -30,8 +32,11 @@ import (
 
 // Systems struct helps to register service
 type Systems struct {
-	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) response.RPC
-	EI              *systems.ExternalInterface
+	IsAuthorizedRPC    func(sessionToken string, privileges, oemPrivileges []string) response.RPC
+	GetSessionUserName func(string) (string, error)
+	CreateTask         func(string) (string, error)
+	UpdateTask         func(common.TaskData) error
+	EI                 *systems.ExternalInterface
 }
 
 //GetSystemResource defines the operations which handles the RPC request response
@@ -114,12 +119,40 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 		fillSystemProtoResponse(&resp, authResp)
 		return &resp, nil
 	}
+	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillSystemProtoResponse(&resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		log.Error(errMsg)
+		return &resp, nil
+	}
+
+	// Task Service using RPC and get the taskID
+	taskURI, err := s.CreateTask(sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillSystemProtoResponse(&resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		log.Error(errMsg)
+		return &resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	fillSystemProtoResponse(&resp, rpcResp)
 	var pc = systems.PluginContact{
 		ContactClient:  pmbhandle.ContactPlugin,
 		DevicePassword: common.DecryptWithPrivateKey,
+		UpdateTask:     s.UpdateTask,
 	}
-	data := pc.ComputerSystemReset(req)
-	fillSystemProtoResponse(&resp, data)
+	go pc.ComputerSystemReset(req, taskID, sessionUserName)
+
 	return &resp, nil
 }
 

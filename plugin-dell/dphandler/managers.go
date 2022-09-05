@@ -17,6 +17,11 @@ package dphandler
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strings"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
@@ -24,9 +29,6 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
 //GetManagersCollection  Fetches details of the given resource from the device
@@ -97,7 +99,7 @@ func GetManagersInfo(ctx iris.Context) {
 			OdataContext: "/ODIM/v1/$metadata#Manager.Manager",
 			//Etag:            "W/\"AA6D42B0\"",
 			OdataID:         uri,
-			OdataType:       "#Manager.v1_13_0.Manager",
+			OdataType:       common.ManagerType,
 			Name:            pluginConfig.Data.PluginConf.ID,
 			ManagerType:     "Service",
 			ID:              pluginConfig.Data.RootServiceUUID,

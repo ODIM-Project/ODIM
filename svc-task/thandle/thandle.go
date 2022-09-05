@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -58,6 +59,34 @@ type TasksRPC struct {
 	ValidateTaskUserNameModel        func(userName string) error
 	PublishToMessageBus              func(taskURI string, taskEvenMessageID string, eventType string, taskMessage string)
 }
+
+//TaskCollectionData ....
+type TaskCollectionData struct {
+	TaskCollection map[string]int32
+	Lock           sync.Mutex
+}
+
+func (t *TaskCollectionData) getTaskFromCollectionData(taskID string, percentComplete int) bool {
+	t.Lock.Lock()
+	defer t.Lock.Unlock()
+	if prevComplete, ok := t.TaskCollection[fmt.Sprintf("%s:%v", taskID, percentComplete)]; ok {
+		if prevComplete == int32(percentComplete) {
+			return true
+		} else if percentComplete == 100 {
+			delete(t.TaskCollection, taskID)
+			return false
+		}
+
+	}
+	t.TaskCollection[taskID] = int32(percentComplete)
+
+	return false
+}
+
+var (
+	// TaskCollection ...
+	TaskCollection TaskCollectionData
+)
 
 //CreateTask is a rpc handler which intern call actual CreatTask to create new task
 func (ts *TasksRPC) CreateTask(ctx context.Context, req *taskproto.CreateTaskRequest) (*taskproto.CreateTaskResponse, error) {
@@ -128,7 +157,7 @@ func (ts *TasksRPC) deleteCompletedTask(taskID string) error {
 		return err
 	}
 	err = ts.DeleteTaskIndex(taskID)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "no data with ID found") {
 		log.Error("error while deleting the main task: " + err.Error())
 		return err
 	}
@@ -217,7 +246,7 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_5_1.Task",
+		OdataType:    common.TaskType,
 		ID:           task.ID,
 		Name:         task.Name,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",
@@ -404,15 +433,13 @@ func (ts *TasksRPC) GetSubTasks(ctx context.Context, req *taskproto.GetTaskReque
 	commonResponse := response.Response{
 		OdataContext: "/redfish/v1/$metadata#SubTasks.SubTasks",
 		OdataID:      "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks/",
-		OdataType:    "#SubTasks.SubTasks",
+		OdataType:    "#TaskCollection.TaskCollection",
 		Name:         "SubTasks",
 		Description:  "SubTasks",
 	}
 
 	rsp.StatusCode = http.StatusOK
 	rsp.StatusMessage = response.Success
-	commonResponse.MessageArgs = []string{task.ID}
-	commonResponse.CreateGenericResponse(rsp.StatusMessage)
 
 	//Frame the Response to send it back as response body
 	taskResp := tresponse.TaskCollectionResponse{
@@ -635,7 +662,7 @@ func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest)
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_5_1.Task",
+		OdataType:    common.TaskType,
 		ID:           task.ID,
 		Name:         task.Name,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",
@@ -1102,6 +1129,8 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 	// Notify the user about task state change by sending statuschange event
 	//	notifyTaskStateChange(task.URI, taskEvenMessageID)
 	eventType := "StatusChange"
-	ts.PublishToMessageBus(task.URI, taskEvenMessageID, eventType, taskMessage)
+	if !TaskCollection.getTaskFromCollectionData(taskID, int(percentComplete)) {
+		ts.PublishToMessageBus(task.URI, taskEvenMessageID, eventType, taskMessage)
+	}
 	return err
 }

@@ -17,6 +17,12 @@
 package config
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha512"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"net/url"
@@ -31,24 +37,26 @@ import (
 
 // PluginConfig struct holds configuration of URP plugin
 type PluginConfig struct {
-	Host               string   `yaml:"Host" envconfig:"HOST"`
-	Port               string   `yaml:"Port" envconfig:"PORT"`
-	UserName           string   `yaml:"UserName" envconfig:"BASIC_AUTH_USERNAME"`
-	Password           string   `yaml:"Password" envconfig:"BASIC_AUTH_PASSWORD"`
-	RootServiceUUID    string   `yaml:"RootServiceUUID" envconfig:"SERVICE_ROOT_UUID"`
-	OdimURL            string   `yaml:"OdimURL" envconfig:"ODIM_URL"`
-	OdimUserName       string   `yaml:"OdimUserName" envconfig:"ODIM_USERNAME"`
-	OdimPassword       string   `yaml:"OdimPassword" envconfig:"ODIM_PASSWORD"`
-	FirmwareVersion    string   `yaml:"FirmwareVersion" envconfig:"FIRMWARE_VERSION"`
-	TLSConf            *TLSConf `yaml:"TLSConf"`
-	RSAPrivateKeyPath  string   `yaml:"RSAPrivateKeyPath" envconfig:"RSA_PRIVATE_KEY_PATH"`
-	RSAPublicKeyPath   string   `yaml:"RSAPublicKeyPath" envconfig:"RSA_PUBLIC_KEY_PATH"`
-	PKIRootCAPath      string   `yaml:"PKIRootCACertificatePath" envconfig:"PKI_ROOT_CA_PATH"`
-	PKIPrivateKeyPath  string   `yaml:"PKIPrivateKeyPath" envconfig:"PKI_PRIVATE_KEY_PATH"`
-	PKICertificatePath string   `yaml:"PKICertificatePath" envconfig:"PKI_CERTIFICATE_PATH_PATH"`
-	LogLevel           string   `yaml:"LogLevel" envconfig:"LOG_LEVEL"`
-	RedisAddress       string   `yaml:"RedisAddress" envconfig:"REDIS_ADDRESS"`
-	SentinelMasterName string   `yaml:"SentinelMasterName" envconfig:"SENTINEL_MASTER_NAME"`
+	Host                        string   `yaml:"Host" envconfig:"HOST"`
+	Port                        string   `yaml:"Port" envconfig:"PORT"`
+	UserName                    string   `yaml:"UserName" envconfig:"BASIC_AUTH_USERNAME"`
+	Password                    string   `yaml:"Password" envconfig:"BASIC_AUTH_PASSWORD"`
+	RootServiceUUID             string   `yaml:"RootServiceUUID" envconfig:"SERVICE_ROOT_UUID"`
+	OdimURL                     string   `yaml:"OdimURL" envconfig:"ODIM_URL"`
+	OdimUserName                string   `yaml:"OdimUserName" envconfig:"ODIM_USERNAME"`
+	OdimPassword                string   `yaml:"OdimPassword" envconfig:"ODIM_PASSWORD"`
+	FirmwareVersion             string   `yaml:"FirmwareVersion" envconfig:"FIRMWARE_VERSION"`
+	TLSConf                     *TLSConf `yaml:"TLSConf"`
+	RSAPrivateKeyPath           string   `yaml:"RSAPrivateKeyPath" envconfig:"RSA_PRIVATE_KEY_PATH"`
+	RSAPublicKeyPath            string   `yaml:"RSAPublicKeyPath" envconfig:"RSA_PUBLIC_KEY_PATH"`
+	PKIRootCAPath               string   `yaml:"PKIRootCACertificatePath" envconfig:"PKI_ROOT_CA_PATH"`
+	PKIPrivateKeyPath           string   `yaml:"PKIPrivateKeyPath" envconfig:"PKI_PRIVATE_KEY_PATH"`
+	PKICertificatePath          string   `yaml:"PKICertificatePath" envconfig:"PKI_CERTIFICATE_PATH_PATH"`
+	LogLevel                    string   `yaml:"LogLevel" envconfig:"LOG_LEVEL"`
+	RedisAddress                string   `yaml:"RedisAddress" envconfig:"REDIS_ADDRESS"`
+	SentinelMasterName          string   `yaml:"SentinelMasterName" envconfig:"SENTINEL_MASTER_NAME"`
+	RedisOnDiskPasswordFilePath string   `yaml:"RedisOnDiskPasswordFilePath" envconfig:"REDIS_ONDISK_PASSWORD_FILE_PATH"`
+	RedisOnDiskPassword         []byte
 }
 
 // TLSConf holds details related with URP's NB interface TLS configuration
@@ -135,5 +143,48 @@ func validate(pc *PluginConfig) error {
 	if pc.TLSConf.MaxVersion == 0 || pc.TLSConf.MaxVersion == 0x0301 || pc.TLSConf.MaxVersion == 0x0302 {
 		return fmt.Errorf("configured TLSConf.{MaxVersion} is wrong")
 	}
+	var err error
+	if pc.RedisOnDiskPasswordFilePath != "" && pc.RSAPrivateKeyPath != "" {
+		if pc.RedisOnDiskPassword, err = decryptRSAOAEPEncryptedPasswords(pc.RedisOnDiskPasswordFilePath, pc.RSAPrivateKeyPath); err != nil {
+			return fmt.Errorf("error: while decrypting password from the passwordFilePath:%s with %v", pc.RedisOnDiskPasswordFilePath, err)
+		}
+	}
 	return nil
+}
+
+func decryptRSAOAEPEncryptedPasswords(passwordFilePath, RSAPrivateKeyPath string) ([]byte, error) {
+	privateKeyStr, err := ioutil.ReadFile(RSAPrivateKeyPath)
+	if err != nil {
+		return nil, fmt.Errorf("value check failed for RSAPrivateKeyPath:%s with %v", RSAPrivateKeyPath, err)
+	}
+
+	block, _ := pem.Decode(privateKeyStr)
+	if block == nil {
+		return nil, fmt.Errorf("failed to parse PEM block containing the public key for the RSAPrivateKeyPath:%s",
+			RSAPrivateKeyPath)
+	}
+
+	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse DER encoded public key for the RSAPrivateKeyPath:%s with %v",
+			RSAPrivateKeyPath, err)
+	}
+
+	cipherText, err := ioutil.ReadFile(passwordFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("value check failed for passwordFilePath:%s with %v", passwordFilePath, err)
+	}
+
+	ct, err := base64.StdEncoding.DecodeString(string(cipherText))
+	if err != nil {
+		return nil, fmt.Errorf("value check failed for passwordFilePath:%s with %v", passwordFilePath, err)
+	}
+
+	rng := rand.Reader
+	password, err := rsa.DecryptOAEP(sha512.New(), rng, privateKey, ct, nil)
+	if err != nil {
+		return nil, fmt.Errorf("password decryption failed for the passwordFilePath:%s with %v", passwordFilePath, err)
+	}
+
+	return password, nil
 }

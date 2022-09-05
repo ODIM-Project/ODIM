@@ -47,6 +47,8 @@ type AggregatorRPCs struct {
 	SetDefaultBootOrderAggregateElementsRPC func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 	GetAllConnectionMethodsRPC              func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 	GetConnectionMethodRPC                  func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetResetActionInfoServiceRPC            func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetSetDefaultBootOrderActionInfoRPC     func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 }
 
 // GetAggregationService is the handler for getting AggregationService details
@@ -787,4 +789,68 @@ func (a *AggregatorRPCs) GetConnectionMethod(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+}
+
+// GetResetActionInfoService is the handler for getting GetResetActionInfoService details
+func (a *AggregatorRPCs) GetResetActionInfoService(ctx iris.Context) {
+	defer ctx.Next()
+	req := aggregatorproto.AggregatorRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+	}
+	if req.SessionToken == "" {
+		errorMessage := "no X-Auth-Token found in request header"
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := a.GetResetActionInfoServiceRPC(req)
+	if err != nil {
+		errorMessage := "RPC call error: " + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
+
+}
+
+// GetSetDefaultBootOrderActionInfo is the handler for getting GetSetDefaultBootOrderActionInfo details
+func (a *AggregatorRPCs) GetSetDefaultBootOrderActionInfo(ctx iris.Context) {
+	defer ctx.Next()
+	req := aggregatorproto.AggregatorRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+	}
+	if req.SessionToken == "" {
+		errorMessage := "no X-Auth-Token found in request header"
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := a.GetSetDefaultBootOrderActionInfoRPC(req)
+	if err != nil {
+		errorMessage := "RPC call error: " + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
+
 }

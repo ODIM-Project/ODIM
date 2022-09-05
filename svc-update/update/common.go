@@ -29,6 +29,12 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
+	log "github.com/sirupsen/logrus"
+)
+
+var (
+	//ServicesUpdateTaskFunc ...
+	ServicesUpdateTaskFunc = services.UpdateTask
 )
 
 //Device struct to define the response from plugin for UUID
@@ -82,14 +88,27 @@ type DB struct {
 	GetResource         func(string, string, common.DbType) (string, *errors.Error)
 }
 
-// UpdateRequestBody struct defines the request body for update action
-type UpdateRequestBody struct {
+// SimpleUpdateRequest struct defines the request body for update action
+type SimpleUpdateRequest struct {
 	ImageURI                  string   `json:"ImageURI"`
 	Password                  string   `json:"Password,omitempty"`
 	Targets                   []string `json:"Targets"`
 	TransferProtocol          string   `json:"TransferProtocol,omitempty"`
 	Username                  string   `json:"Username,omitempty"`
 	RedfishOperationApplyTime string   `json:"@Redfish.OperationApplyTime,omitempty"`
+}
+
+// monitorTaskRequest hold values required monitorTask function
+type monitorTaskRequest struct {
+	respBody          []byte
+	subTaskID         string
+	serverURI         string
+	updateRequestBody string
+	getResponse       ucommon.ResponseStatus
+	location          string
+	taskInfo          *common.TaskUpdateInfo
+	pluginRequest     ucommon.PluginContactRequest
+	resp              response.RPC
 }
 
 // GetExternalInterface retrieves all the external connections update package functions uses
@@ -127,11 +146,11 @@ func TaskData(taskData common.TaskData) error {
 		ResponseBody:  respBody,
 	}
 
-	err := services.UpdateTask(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	err := ServicesUpdateTaskFunc(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
-		services.UpdateTask(taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+		ServicesUpdateTaskFunc(taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 		if taskData.PercentComplete == 0 {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}
@@ -151,4 +170,41 @@ func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskStat
 		PercentComplete: percentComplete,
 		HTTPMethod:      httpMethod,
 	}
+}
+
+func (e *ExternalInterface) monitorPluginTask(subTaskChannel chan<- int32, monitorTaskData *monitorTaskRequest) (ucommon.ResponseStatus, error) {
+	for {
+
+		var task common.TaskData
+		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {
+			subTaskChannel <- http.StatusInternalServerError
+			errMsg := "Unable to parse the simple update respone" + err.Error()
+			log.Warn(errMsg)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
+			return monitorTaskData.getResponse, err
+		}
+		var updatetask = fillTaskData(monitorTaskData.subTaskID, monitorTaskData.serverURI, monitorTaskData.updateRequestBody, monitorTaskData.resp, task.TaskState, task.TaskStatus, task.PercentComplete, http.MethodPost)
+		err := e.External.UpdateTask(updatetask)
+		if err != nil && err.Error() == common.Cancelling {
+			var updatetask = fillTaskData(monitorTaskData.subTaskID, monitorTaskData.serverURI, monitorTaskData.updateRequestBody, monitorTaskData.resp, common.Cancelled, common.Critical, 100, http.MethodPost)
+			subTaskChannel <- http.StatusInternalServerError
+			e.External.UpdateTask(updatetask)
+			return monitorTaskData.getResponse, err
+		}
+		time.Sleep(time.Second * 5)
+		monitorTaskData.pluginRequest.OID = monitorTaskData.location
+		monitorTaskData.pluginRequest.HTTPMethodType = http.MethodGet
+		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = e.External.ContactPlugin(monitorTaskData.pluginRequest, "error while performing simple update action: ")
+		if err != nil {
+			subTaskChannel <- monitorTaskData.getResponse.StatusCode
+			errMsg := err.Error()
+			log.Warn(errMsg)
+			common.GeneralError(monitorTaskData.getResponse.StatusCode, monitorTaskData.getResponse.StatusMessage, errMsg, monitorTaskData.getResponse.MsgArgs, monitorTaskData.taskInfo)
+			return monitorTaskData.getResponse, err
+		}
+		if monitorTaskData.getResponse.StatusCode == http.StatusOK {
+			break
+		}
+	}
+	return monitorTaskData.getResponse, nil
 }

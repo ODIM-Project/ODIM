@@ -924,6 +924,7 @@ func getMockExternalInterface() *ExternalInterface {
 		CreateSubcription:       EventFunctionsForTesting,
 		PublishEvent:            PostEventFunctionForTesting,
 		GetPluginStatus:         GetPluginStatusForTesting,
+		PublishEventMB:          mockPublishEventMB,
 		SubscribeToEMB:          mockSubscribeEMB,
 		EncryptPassword:         stubDevicePassword,
 		DecryptPassword:         stubDevicePassword,

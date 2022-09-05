@@ -20,8 +20,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"regexp"
 	"strconv"
@@ -38,6 +39,19 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
+)
+
+var (
+	// GetSystemResetInfoFunc function pointer for the smodel.GetSystemResetInfo
+	GetSystemResetInfoFunc = smodel.GetSystemResetInfo
+	// GetResourceInfoFromDeviceFunc function pointer for the scommon.GetResourceInfoFromDevice
+	GetResourceInfoFromDeviceFunc = scommon.GetResourceInfoFromDevice
+	// GetAllKeysFromTableFunc function pointer for the smodel.GetAllKeysFromTable
+	GetAllKeysFromTableFunc = smodel.GetAllKeysFromTable
+	// GetDeviceLoadInfoFunc function pointer for the getDeviceLoadInfo
+	GetDeviceLoadInfoFunc = getDeviceLoadInfo
+	// GetStringFunc function pointer for the smodel.GetString
+	GetStringFunc = smodel.GetString
 )
 
 func setRegexFlag(val string) bool {
@@ -241,7 +255,7 @@ func GetMembers(allowed map[string]map[string]bool, expression []string, resp re
 //getAllSystemIDs will fetch all the document ID's present in the DB
 func getAllSystemIDs(resp response.RPC) ([]dmtf.Link, response.RPC, error) {
 	var mems []dmtf.Link
-	systemKeys, err := smodel.GetAllKeysFromTable("ComputerSystem")
+	systemKeys, err := GetAllKeysFromTableFunc("ComputerSystem")
 	if err != nil {
 		log.Error("error getting all keys of systemcollection table : " + err.Error())
 		errorMessage := err.Error()
@@ -542,7 +556,6 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) response.RPC {
-	log.Debug("Entering the GetSystemResource with URL : ", req.URL)
 	var resp response.RPC
 	// Splitting the SystemID to get UUID
 	requestData := strings.SplitN(req.RequestParam, ".", 2)
@@ -555,7 +568,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 	var respData string
 	var saveRequired bool
 	// Getting the reset flag details for the requested URL
-	deviceLoadFlag := getDeviceLoadInfo(req.URL, req.RequestParam)
+	deviceLoadFlag := GetDeviceLoadInfoFunc(req.URL, req.RequestParam)
 	// deviceLoadFlag is true means flag is set for requested URL or the SystemID URL, load from device
 	// deviceLoadFlag is false indicates flag is not set, load from DB
 	if deviceLoadFlag {
@@ -613,13 +626,47 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		}
 		respData = data
 	}
+
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(respData), &resource)
+	if strings.Contains(req.URL, "/Volumes/Capabilities") {
+		var result map[string]interface{}
+
+		body := fillCapabilitiesResponse(resource, req.URL)
+		json.Unmarshal(body, &result)
+		delete(result, "MembersCount")
+		delete(result, "Members")
+		resp.Body = result
+		resp.StatusCode = http.StatusOK
+		resp.StatusMessage = response.Success
+		log.Debug("Exiting the GetSystemResource with response ", resp)
+		return resp
+
+	}
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	log.Debug("Exiting the GetSystemResource with response ", resp)
 	return resp
+
+}
+func fillCapabilitiesResponse(respMap map[string]interface{}, oid string) (body []byte) {
+	if _, ok := respMap["RAIDType@Redfish.AllowableValues"]; !ok {
+		respMap["RAIDType@Redfish.AllowableValues"] = []string{"RAID0", "RAID1", "RAID3", "RAID4", "RAID5", "RAID6", "RAID10", "RAID01", "RAID6TP", "RAID1E", "RAID50", "RAID60", "RAID00", "RAID10E", "RAID1Triple", "RAID10Triple", "None"}
+	}
+	collectionCapabilitiesObject := make(map[string]interface{})
+	collectionCapabilitiesObject["@odata.id"] = oid
+	collectionCapabilitiesObject["@odata.type"] = "#Volume.v1_6_2.Volume"
+	collectionCapabilitiesObject["Id"] = "Capabilities"
+	collectionCapabilitiesObject["Name"] = "Capabilities for the volume collection"
+	collectionCapabilitiesObject["RAIDType@Redfish.RequiredOnCreate"] = true
+	collectionCapabilitiesObject["RAIDType@Redfish.AllowableValues"] = respMap["RAIDType@Redfish.AllowableValues"]
+	collectionCapabilitiesObject["Links@Redfish.RequiredOnCreate"] = true
+	collectionCapabilitiesObject["Links"] = dmtf.LinkValues{
+		Drives: true,
+	}
+	body, _ = json.Marshal(collectionCapabilitiesObject)
+	return
 }
 
 // getDeviceLoadInfo accepts URL and System ID as parameters and returns int
@@ -629,7 +676,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 func getDeviceLoadInfo(URL, systemID string) bool {
 	systemURL := "/redfish/v1/Systems/" + systemID
 	var resetFlag bool
-	if _, err := smodel.GetSystemResetInfo(URL); err == nil {
+	if _, err := GetSystemResetInfoFunc(URL); err == nil {
 		resetFlag = true
 	} else if _, err := smodel.GetSystemResetInfo(systemURL); err == nil {
 		resetFlag = true
@@ -674,6 +721,7 @@ func rediscoverStorageInventory(systemID, systemURL string) {
 // GetSystemsCollection is to fetch all the Systems uri's and retruns with created collection
 // of systems data from odimra
 func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
+
 	allowed := make(map[string]map[string]bool)
 	allowed["searchKeys"] = make(map[string]bool)
 	allowed["conditionKeys"] = make(map[string]bool)
@@ -698,7 +746,8 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 		}
 		return resp
 	}
-	systemKeys, err := smodel.GetAllKeysFromTable("ComputerSystem")
+
+	systemKeys, err := GetAllKeysFromTableFunc("ComputerSystem")
 	if err != nil {
 		log.Error("error getting all keys of systemcollection table : " + err.Error())
 		errorMessage := err.Error()
@@ -746,7 +795,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 	var data string
 	var err *errors.Error
 	// check the whether SystemResetInfo available in db. If it is available, then get the data from device
-	_, err = smodel.GetSystemResetInfo(req.URL)
+	_, err = GetSystemResetInfoFunc(req.URL)
 	if err == nil {
 		var getDeviceInfoRequest = scommon.ResourceInfoRequest{
 			URL:             req.URL,
@@ -758,7 +807,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 			ResourceName:    "ComputerSystem",
 		}
 		var err error
-		if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true); err != nil {
+		if data, err = GetResourceInfoFromDeviceFunc(getDeviceInfoRequest, true); err != nil {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 		}
 	} else {
@@ -788,12 +837,12 @@ func getStringData(key, match, expr string, regexFlag bool) ([]string, error) {
 		return smodel.GetString(key, match, regexFlag)
 	}
 	// get all data
-	allKeys, err := smodel.GetString(key, "", regexFlag)
+	allKeys, err := GetStringFunc(key, "", regexFlag)
 	if err != nil {
 		return []string{}, err
 	}
 	// get matching data
-	matchedKeys, err := smodel.GetString(key, match, regexFlag)
+	matchedKeys, err := GetStringFunc(key, match, regexFlag)
 	if err != nil {
 		return []string{}, err
 	}

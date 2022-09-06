@@ -173,12 +173,12 @@ func TestSubmitTestEvent(t *testing.T) {
 	resp, errTest := events.SubmitTestEvent(ctx, req)
 	assert.Nil(t, errTest, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
-	JsonMarshal = func(v interface{}) ([]byte, error) {
+	JSONMarshal = func(v interface{}) ([]byte, error) {
 		return nil, fmt.Errorf("")
 	}
 	_, errTest = events.SubmitTestEvent(ctx, req)
 	assert.NotNil(t, errTest, "There should be an error")
-	JsonMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
+	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
 
 }
 
@@ -199,11 +199,11 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 	json.Unmarshal(resp.Body, evResp)
 	assert.Equal(t, 1, evResp.MembersCount, "MembersCount should be 1")
 
-	JsonMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
+	JSONMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
 	resp, err = events.GetEventSubscriptionsCollection(ctx, req)
 	assert.Nil(t, err, "There should be an error")
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "Status code should be StatusInternalServerError.")
-	JsonMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
+	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
 }
 
 func TestGetEventSubscriptions(t *testing.T) {
@@ -229,11 +229,11 @@ func TestGetEventSubscriptions(t *testing.T) {
 	resp, _ := events.GetEventSubscription(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "Status code should be StatusNotFound.")
 
-	JsonMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
+	JSONMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
 	resp, err = events.GetEventSubscription(ctx, req)
 	assert.Nil(t, err, "There should be an error")
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "Status code should be StatusInternalServerError.")
-	JsonMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
+	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
 }
 
 func TestDeleteEventSubscription(t *testing.T) {
@@ -255,11 +255,11 @@ func TestDeleteEventSubscription(t *testing.T) {
 	delResp, _ := events.DeleteEventSubscription(ctx, req)
 	assert.Equal(t, int(delResp.StatusCode), http.StatusNotFound, "Status code should be StatusNotFound.")
 
-	JsonMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
+	JSONMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
 	resp, err = events.DeleteEventSubscription(ctx, req)
 	assert.Nil(t, err, "There should be an error")
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "Status code should be StatusInternalServerError.")
-	JsonMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
+	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
 
 }
 

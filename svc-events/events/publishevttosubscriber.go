@@ -546,7 +546,7 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 
 func callPluginStartUp(event common.Events) {
 	var message common.PluginStatusEvent
-	if err := JsonUnmarshal([]byte(event.Request), &message); err != nil {
+	if err := JSONUnmarshal([]byte(event.Request), &message); err != nil {
 		log.Error("failed to unmarshal the plugin startup event from "+event.IP+
 			" with the error: ", err.Error())
 		return

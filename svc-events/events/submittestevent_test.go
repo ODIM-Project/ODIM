@@ -191,7 +191,7 @@ func TestSubmitTestEvent(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// Invalid JSON
-	JsonUnmarshal = func(data []byte, v interface{}) error { return errors.New("") }
+	JSONUnmarshal = func(data []byte, v interface{}) error { return errors.New("") }
 	p = getMockMethods()
 	req = &eventsproto.EventSubRequest{
 		SessionToken: "validToken",
@@ -199,7 +199,7 @@ func TestSubmitTestEvent(t *testing.T) {
 	}
 	resp = p.SubmitTestEvent(req)
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status Code should be StatusInternalServerError")
-	JsonUnmarshal = func(data []byte, v interface{}) error { return json.Unmarshal(data, v) }
+	JSONUnmarshal = func(data []byte, v interface{}) error { return json.Unmarshal(data, v) }
 
 	// Invalid Subscription
 	p = getMockMethods()

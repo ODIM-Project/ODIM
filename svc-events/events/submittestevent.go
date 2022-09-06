@@ -36,8 +36,8 @@ import (
 )
 
 var (
-	//JsonUnmarshal function  pointer for calling the files
-	JsonUnmarshal = json.Unmarshal
+	//JSONUnmarshal function  pointer for calling the files
+	JSONUnmarshal = json.Unmarshal
 	//RequestParamsCaseValidatorFunc function  pointer for calling the files
 	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
 )
@@ -68,7 +68,7 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 
 	// parsing the event
 	var eventObj interface{}
-	err = JsonUnmarshal(req.PostBody, &eventObj)
+	err = JSONUnmarshal(req.PostBody, &eventObj)
 	if err != nil {
 		errMsg := "unable to parse the event request" + err.Error()
 		log.Error(errMsg)

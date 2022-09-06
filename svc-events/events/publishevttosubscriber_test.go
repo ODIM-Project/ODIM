@@ -225,12 +225,12 @@ func Test_callPluginStartUp(t *testing.T) {
 		}}, nil
 	}
 	pc.publishMetricReport("")
-	JsonUnmarshal = func(data []byte, v interface{}) error {
+	JSONUnmarshal = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	callPluginStartUp(common.Events{})
 
-	JsonUnmarshal = func(data []byte, v interface{}) error {
+	JSONUnmarshal = func(data []byte, v interface{}) error {
 		return nil
 	}
 	updateSystemPowerState("3bd1f589-117a-4cf9-89f2-da44ee8e012b.1", "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1", "ServerPoweredOn")

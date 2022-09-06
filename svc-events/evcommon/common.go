@@ -51,6 +51,11 @@ type StartUpInteraface struct {
 	UpdateDeviceSubscriptionLocation func(evmodel.DeviceSubscription) error
 }
 
+//GetAllPluginsFunc ...
+var (
+	GetAllPluginsFunc = evmodel.GetAllPlugins
+)
+
 // EmbTopic hold the list all consuming topics after
 type EmbTopic struct {
 	TopicsList map[string]bool
@@ -516,8 +521,6 @@ func ProcessCtrlMsg(data interface{}) bool {
 	}
 	return true
 }
-
-var GetAllPluginsFunc = evmodel.GetAllPlugins
 
 // SubscribePluginEMB is for subscribing to plugin EMB
 func (st *StartUpInteraface) SubscribePluginEMB() {

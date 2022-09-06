@@ -42,8 +42,8 @@ type Events struct {
 }
 
 var (
-	//JsonMarshal alias func of  json.Marshal
-	JsonMarshal = json.Marshal
+	//JSONMarshal ...
+	JSONMarshal = json.Marshal
 )
 
 // GetPluginContactInitializer intializes all the required connection functions for the events execution
@@ -255,7 +255,7 @@ func (e *Events) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubR
 	var resp eventsproto.EventSubResponse
 	var err error
 	data := e.Connector.SubmitTestEvent(req)
-	resp.Body, err = JsonMarshal(data.Body)
+	resp.Body, err = JSONMarshal(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body for submit test event: " + err.Error()
@@ -276,7 +276,7 @@ func (e *Events) GetEventSubscriptionsCollection(ctx context.Context, req *event
 	var resp eventsproto.EventSubResponse
 	var err error
 	data := e.Connector.GetEventSubscriptionsCollection(req)
-	resp.Body, err = JsonMarshal(data.Body)
+	resp.Body, err = JSONMarshal(data.Body)
 	if err != nil {
 		errorMessage := "error while trying marshal the response body for get event subsciption : " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -299,7 +299,7 @@ func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.Even
 	var resp eventsproto.EventSubResponse
 	var err error
 	data := e.Connector.GetEventSubscriptionsDetails(req)
-	resp.Body, err = JsonMarshal(data.Body)
+	resp.Body, err = JSONMarshal(data.Body)
 	if err != nil {
 		errorMessage := "error while trying marshal the response body for get event subsciption : " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -329,7 +329,7 @@ func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.E
 		// Delete Event Subscription to Device when Server get Deleted
 		data = e.Connector.DeleteEventSubscriptions(req)
 	}
-	resp.Body, err = JsonMarshal(data.Body)
+	resp.Body, err = JSONMarshal(data.Body)
 	if err != nil {
 		errorMessage := "error while trying marshal the response body for delete event subsciption : " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError

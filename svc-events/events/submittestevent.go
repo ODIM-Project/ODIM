@@ -35,6 +35,13 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
+var (
+	//JSONUnmarshal function  pointer for calling the files
+	JSONUnmarshal = json.Unmarshal
+	//RequestParamsCaseValidatorFunc function  pointer for calling the files
+	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
+)
+
 // SubmitTestEvent is a helper method to handle the submit test event request.
 func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) response.RPC {
 	var resp response.RPC
@@ -61,7 +68,7 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 
 	// parsing the event
 	var eventObj interface{}
-	err = json.Unmarshal(req.PostBody, &eventObj)
+	err = JSONUnmarshal(req.PostBody, &eventObj)
 	if err != nil {
 		errMsg := "unable to parse the event request" + err.Error()
 		log.Error(errMsg)
@@ -69,7 +76,7 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.PostBody, eventObj)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(req.PostBody, eventObj)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
 		log.Error(errMsg)

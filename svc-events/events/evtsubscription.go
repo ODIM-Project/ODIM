@@ -736,7 +736,7 @@ func (e *ExternalInterfaces) getTargetDetails(origin string) (*evmodel.Target, e
 		log.Error(errorMessage)
 		return nil, resp, err
 	}
-	decryptedPasswordByte, err := common.DecryptWithPrivateKey(target.Password)
+	decryptedPasswordByte, err := DecryptWithPrivateKeyFunc(target.Password)
 	if err != nil {
 		// Frame the RPC response body and response Header below
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
@@ -1052,7 +1052,7 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 	if len(subscriptionPost.ResourceTypes) == 0 {
 		subscriptionPost.ResourceTypes = emptySlice
 	}
-	deviceIPAddress, errorMessage := evcommon.GetIPFromHostName(plugin.IP)
+	deviceIPAddress, errorMessage := GetIPFromHostNameFunc(plugin.IP)
 	if errorMessage != "" {
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusBadRequest,
 			&resp, []interface{}{"ManagerAddress", plugin.IP})
@@ -1310,7 +1310,7 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 		host = collectionName
 		searchKey = collectionName
 	} else {
-		host1, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
+		host1, errorMessage := GetIPFromHostNameFunc(target.ManagerAddress)
 		host = host1
 		if errorMessage != "" {
 			evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,

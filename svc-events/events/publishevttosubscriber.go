@@ -43,6 +43,13 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+var (
+	// SendEventFunc function  pointer for calling the files
+	SendEventFunc = sendEvent
+	//ServeiceDiscoveryFunc func pointer for calling the files
+	ServeiceDiscoveryFunc = services.ODIMService.Client
+)
+
 // addFabric will add the new fabric resource to db when an event is ResourceAdded and
 // originofcondition has fabrics odataid.
 func (e *ExternalInterfaces) addFabric(requestData, host string) {
@@ -315,6 +322,7 @@ func isResourceTypeSubscribed(resourceTypes []string, originOfCondition string, 
 			// child resource type would be processors (index-2)
 			// collection resource type would be Systems (index-4)
 			resType := originCond[len(originCond)-2]
+			fmt.Println("Test ", res, resType)
 			if strings.Contains(res, resType) {
 				return true
 			}
@@ -350,7 +358,7 @@ func isStringPresentInSlice(slice []string, str, message string) bool {
 
 // postEvent will post the event to destination
 func (e *ExternalInterfaces) postEvent(destination, eventUniqueID string, event []byte) {
-	resp, err := sendEvent(destination, event)
+	resp, err := SendEventFunc(destination, event)
 	if err == nil {
 		resp.Body.Close()
 		log.Info("Event is successfully forwarded")
@@ -401,7 +409,7 @@ func (e *ExternalInterfaces) reAttemptEvents(destination, undeliveredEventID str
 			log.Info("Event is forwarded to destination")
 			return
 		}
-		resp, err = sendEvent(destination, event)
+		resp, err = SendEventFunc(destination, event)
 		if err == nil {
 			resp.Body.Close()
 			log.Info("Event is successfully forwarded")
@@ -427,7 +435,7 @@ func (e *ExternalInterfaces) reAttemptEvents(destination, undeliveredEventID str
 func rediscoverSystemInventory(systemID, systemURL string) {
 	systemURL = strings.TrimSuffix(systemURL, "/")
 
-	conn, err := services.ODIMService.Client(services.Aggregator)
+	conn, err := ServeiceDiscoveryFunc(services.Aggregator)
 	if err != nil {
 		log.Error("failed to get client connection object for aggregator service")
 		return
@@ -451,7 +459,7 @@ func (e *ExternalInterfaces) addFabricRPCCall(origin, address string) {
 	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
 		return
 	}
-	conn, err := services.ODIMService.Client(services.Fabrics)
+	conn, err := ServeiceDiscoveryFunc(services.Fabrics)
 	if err != nil {
 		log.Error("Error while AddFabric ", err.Error())
 		return
@@ -474,7 +482,7 @@ func (e *ExternalInterfaces) removeFabricRPCCall(origin, address string) {
 	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
 		return
 	}
-	conn, err := services.ODIMService.Client(services.Fabrics)
+	conn, err := ServeiceDiscoveryFunc(services.Fabrics)
 	if err != nil {
 		log.Error("Error while Remove Fabric ", err.Error())
 		return
@@ -513,7 +521,7 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 		state = "Off"
 	}
 
-	conn, err := services.ODIMService.Client(services.Aggregator)
+	conn, err := ServeiceDiscoveryFunc(services.Aggregator)
 	if err != nil {
 		log.Error("failed to get client connection object for aggregator service")
 		return
@@ -538,13 +546,13 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 
 func callPluginStartUp(event common.Events) {
 	var message common.PluginStatusEvent
-	if err := json.Unmarshal([]byte(event.Request), &message); err != nil {
+	if err := JSONUnmarshal([]byte(event.Request), &message); err != nil {
 		log.Error("failed to unmarshal the plugin startup event from "+event.IP+
 			" with the error: ", err.Error())
 		return
 	}
 
-	conn, err := services.ODIMService.Client(services.Aggregator)
+	conn, err := ServeiceDiscoveryFunc(services.Aggregator)
 	if err != nil {
 		log.Error("failed to get client connection object for aggregator service")
 		return
@@ -582,7 +590,7 @@ func (e *ExternalInterfaces) checkUndeliveredEvents(destination string) {
 			event = strings.Replace(event, "\\", "", -1)
 			event = strings.TrimPrefix(event, "\"")
 			event = strings.TrimSuffix(event, "\"")
-			resp, err := sendEvent(destination, []byte(event))
+			resp, err := SendEventFunc(destination, []byte(event))
 			if err != nil {
 				log.Error("error while make https call to send the event: ", err.Error())
 				resp.Body.Close()

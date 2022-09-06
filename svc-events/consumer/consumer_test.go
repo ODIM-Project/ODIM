@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
 func TestKafkaSubscriber(t *testing.T) {
@@ -62,5 +63,76 @@ func TestKafkaSubscriber(t *testing.T) {
 
 	if currentData != 1 {
 		t.Errorf("error: expected count is 1 but got %v", currentData)
+	}
+	EventSubscriber("invalidJson")
+}
+
+func TestConsume(t *testing.T) {
+	config.SetUpMockConfig(t)
+	type args struct {
+		topicName string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "Positive Test",
+			args: args{
+				topicName: "demo",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			Consume(tt.args.topicName)
+		})
+	}
+}
+
+func TestSubscribeCtrlMsgQueue(t *testing.T) {
+	config.SetUpMockConfig(t)
+	type args struct {
+		topicName string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "Positive Test",
+			args: args{
+				topicName: "demo",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SubscribeCtrlMsgQueue(tt.args.topicName)
+		})
+	}
+}
+
+func Test_consumeCtrlMsg(t *testing.T) {
+	config.SetUpMockConfig(t)
+
+	type args struct {
+		event interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "Empty Test",
+			args: args{
+				event: "",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			consumeCtrlMsg(tt.args.event)
+		})
 	}
 }

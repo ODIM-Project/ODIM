@@ -22,11 +22,14 @@ package events
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -177,4 +180,51 @@ func TestSubmitTestEvent(t *testing.T) {
 	}
 	resp = p.SubmitTestEvent(req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
+
+	// with invalid session Name
+	req = &eventsproto.EventSubRequest{
+		SessionToken: "validToken",
+		PostBody:     []byte(`{"MessageId": "123", "Severity": "123"}`),
+	}
+	p.DB.GetSessionUserName = func(sessionToken string) (string, error) { return "", errors.New("Invalid") }
+	resp = p.SubmitTestEvent(req)
+	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusBadRequest")
+
+	// Invalid JSON
+	JsonUnmarshal = func(data []byte, v interface{}) error { return errors.New("") }
+	p = getMockMethods()
+	req = &eventsproto.EventSubRequest{
+		SessionToken: "validToken",
+		PostBody:     message,
+	}
+	resp = p.SubmitTestEvent(req)
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status Code should be StatusInternalServerError")
+	JsonUnmarshal = func(data []byte, v interface{}) error { return json.Unmarshal(data, v) }
+
+	// Invalid Subscription
+	p = getMockMethods()
+	req = &eventsproto.EventSubRequest{
+		SessionToken: "validToken",
+		PostBody:     message,
+	}
+	p.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+		return nil, errors.New("")
+	}
+	resp = p.SubmitTestEvent(req)
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status Code should be StatusInternalServerError")
+
+	// Invalid Case
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) { return "dummy", nil }
+	p = getMockMethods()
+	resp = p.SubmitTestEvent(req)
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
+
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) { return "", errors.New("") }
+	p = getMockMethods()
+	resp = p.SubmitTestEvent(req)
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status Code should be StatusInternalServerError")
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
+	}
+
 }

@@ -69,12 +69,6 @@ func (e *ExternalInterfaces) GetEventSubscriptionsDetails(req *eventsproto.Event
 			evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
 			return resp
 		}
-		// if requested subscription id not matched with stored subscription id then return error
-		if req.EventSubscriptionID != evtSubscription.SubscriptionID {
-			log.Printf("Subscription details not found for ID: %v", req.EventSubscriptionID)
-			errorMessage := fmt.Sprintf("Subscription details not found for ID: %v", req.EventSubscriptionID)
-			return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
-		}
 		commonResponse := response.Response{
 			OdataType:    common.EventDestinationType,
 			ID:           evtSubscription.SubscriptionID,

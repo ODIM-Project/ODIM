@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"reflect"
 	"runtime"
 	"strings"
 	"time"
@@ -35,6 +34,13 @@ type ExternalInterfaces struct {
 	External
 	DB
 }
+
+var (
+	// UpdateTaskServie function  pointer for calling the files
+	UpdateTaskServie = services.UpdateTask
+	// IOUtilReadAllFunc function  pointer for calling the files
+	IOUtilReadAllFunc = ioutil.ReadAll
+)
 
 // External struct to inject the contact external function into the handlers
 type External struct {
@@ -101,11 +107,11 @@ func UpdateTaskData(taskData common.TaskData) error {
 		ResponseBody:  respBody,
 	}
 
-	err := services.UpdateTask(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	err := UpdateTaskServie(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
-		services.UpdateTask(taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+		UpdateTaskServie(taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 		if taskData.PercentComplete == 0 {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}
@@ -158,31 +164,6 @@ func removeElement(slice []string, element string) []string {
 	return elements
 }
 
-// getTypes is to split the string to array
-func getTypes(subscription string) []string {
-	// array stored in db in string("[alert statuschange]")
-	// to convert into an array removing "[" ,"]" and splitting
-	events := strings.Replace(subscription, "[", "", -1)
-	events = strings.Replace(events, "]", "", -1)
-	if len(events) < 1 {
-		return []string{}
-	}
-	return strings.Split(events, " ")
-}
-
-//checkequal is to check the previous and new event types are equal
-func checkEqual(newEventTypes, prevEventTypes []string) (errResponse.RPC, error) {
-	var resp errResponse.RPC
-	// if the subscribed events are same as wants to subscribe then return as resource in use
-	if reflect.DeepEqual(newEventTypes, prevEventTypes) {
-		errorMessage := "Resource already in use"
-		evcommon.GenErrorResponse(errorMessage, errResponse.ResourceInUse, http.StatusConflict,
-			[]interface{}{}, &resp)
-		return resp, fmt.Errorf(errorMessage)
-	}
-	return resp, nil
-}
-
 // PluginCall method is to call to given url and method
 // and validate the response and return
 func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
@@ -201,7 +182,7 @@ func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errR
 		}
 	}
 	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := IOUtilReadAllFunc(response.Body)
 	if err != nil {
 		errorMessage := "error while trying to read response body: " + err.Error()
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,

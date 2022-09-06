@@ -517,10 +517,12 @@ func ProcessCtrlMsg(data interface{}) bool {
 	return true
 }
 
+var GetAllPluginsFunc = evmodel.GetAllPlugins
+
 // SubscribePluginEMB is for subscribing to plugin EMB
 func (st *StartUpInteraface) SubscribePluginEMB() {
 	time.Sleep(time.Second * 2)
-	pluginList, err := evmodel.GetAllPlugins()
+	pluginList, err := GetAllPluginsFunc()
 	if err != nil {
 		log.Error(err.Error())
 		return

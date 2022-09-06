@@ -17,15 +17,19 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
 // AggregationResetRequest struct for reset the BMC
@@ -111,7 +115,6 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 							resp.StatusCode = statusCode
 						}
 					}
-
 					if i < len(resetRequest.TargetURIs)-1 {
 						percentComplete = int32(((i + 1) / len(resetRequest.TargetURIs)) * 100)
 						var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
@@ -137,9 +140,12 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 		// if batch size is 0 then reset all the systems without any kind of batch and ignore the DelayBetweenBatchesInSeconds
 		tempIndex = tempIndex + 1
 		if resetRequest.BatchSize == 0 || tempIndex <= resetRequest.BatchSize {
-			go e.resetSystem(taskID, string(req.RequestBody), subTaskChan, sessionUserName, resource, resetRequest.ResetType, &wg)
+			if strings.Contains(resource, "/AggregationService/Aggregates") {
+				e.aggregateSystems(resetRequest.ResetType, resource, taskID, string(req.RequestBody), subTaskChan, sessionUserName, resource, resetRequest.ResetType, &wg)
+			} else {
+				go e.resetSystem(taskID, string(req.RequestBody), subTaskChan, sessionUserName, resource, resetRequest.ResetType, &wg)
+			}
 		}
-
 		if tempIndex == resetRequest.BatchSize && resetRequest.BatchSize != 0 {
 			tempIndex = 0
 			time.Sleep(time.Second * time.Duration(resetRequest.DelayBetweenBatchesInSeconds))
@@ -176,4 +182,112 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 		runtime.Goexit()
 	}
 	return resp
+}
+func (e *ExternalInterface) aggregateSystems(requestType, url, taskID, reqBody string, subTaskChan chan<- int32, sessionUserName, element, resetType string, wg *sync.WaitGroup) {
+	var resp response.RPC
+	var percentComplete int32
+	defer wg.Done()
+	subTaskURI, err := e.CreateChildTask(sessionUserName, taskID)
+	if err != nil {
+		subTaskChan <- http.StatusInternalServerError
+		log.Error("error while trying to create sub task")
+		return
+	}
+	var subTaskID string
+	strArray := strings.Split(subTaskURI, "/")
+	if strings.HasSuffix(subTaskURI, "/") {
+		subTaskID = strArray[len(strArray)-2]
+	} else {
+		subTaskID = strArray[len(strArray)-1]
+	}
+	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: url, UpdateTask: e.UpdateTask, TaskRequest: reqBody}
+	aggregate, err1 := agmodel.GetAggregate(url)
+	if err1 != nil {
+		percentComplete = 100
+		errorMessage := err1.Error()
+		log.Error("error getting aggregate : " + errorMessage)
+		if errors.DBKeyNotFound == err1.ErrNo() {
+			subTaskChan <- http.StatusNotFound
+			resp.StatusCode = http.StatusNotFound
+			common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Aggregate", url}, taskInfo)
+			return
+		}
+
+		subTaskChan <- http.StatusInternalServerError
+		resp.StatusCode = http.StatusInternalServerError
+		common.GeneralError(http.StatusInternalServerError, response.ResourceNotFound, errorMessage, []interface{}{"Aggregate", url}, taskInfo)
+		return
+	}
+
+	// subTaskChan is a buffered channel with buffer size equal to total number of elements.
+	// this also helps while cancelling the task. even if the reader is not available for reading
+	// the channel buffer will collect them and allows gracefull exit for already spanned goroutines.
+
+	subTaskChan1 := make(chan int32, len(aggregate.Elements))
+	resp.StatusCode = http.StatusOK
+	var cancelled, partialResultFlag bool
+	var wg1, writeWG sync.WaitGroup
+	go func() {
+		for i := 0; i < len(aggregate.Elements); i++ {
+			if !cancelled { // task cancelled check to determine whether to collect status codes.
+				select {
+				case statusCode := <-subTaskChan1:
+					if statusCode != http.StatusOK {
+						partialResultFlag = true
+						if resp.StatusCode < statusCode {
+							resp.StatusCode = statusCode
+						}
+					}
+					if i < len(aggregate.Elements)-1 {
+						percentComplete = int32(((i + 1) / len(aggregate.Elements)) * 100)
+						var task = fillTaskData(subTaskID, url, reqBody, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+						err := e.UpdateTask(task)
+						if err != nil && err.Error() == common.Cancelling {
+							task = fillTaskData(subTaskID, url, reqBody, resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
+							e.UpdateTask(task)
+							cancelled = true
+						}
+					}
+				}
+			}
+			writeWG.Done()
+		}
+	}()
+
+	for _, element := range aggregate.Elements {
+		wg1.Add(1)
+		writeWG.Add(1)
+		go e.resetSystem(subTaskID, reqBody, subTaskChan1, sessionUserName, element.OdataID, requestType, &wg1)
+	}
+
+	wg1.Wait()
+	writeWG.Wait()
+	subTaskChan <- int32(resp.StatusCode)
+	taskStatus := common.OK
+	if partialResultFlag {
+		taskStatus = common.Warning
+	}
+	percentComplete = 100
+	var args response.Args
+	if resp.StatusCode != http.StatusOK {
+		subTaskChan <- resp.StatusCode
+		common.GeneralError(resp.StatusCode, resp.StatusMessage, "", []interface{}{"Aggregate", url}, taskInfo)
+		return
+	}
+
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	args = response.Args{
+		Code:    resp.StatusMessage,
+		Message: "Request completed successfully",
+	}
+	resp.Body = args.CreateGenericErrorResponse()
+	var task = fillTaskData(subTaskID, url, reqBody, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
+	err = e.UpdateTask(task)
+	if err != nil && err.Error() == common.Cancelling {
+		common.GeneralError(http.StatusNotFound, common.Cancelled, "", []interface{}{"Aggregate", url}, taskInfo)
+		return
+
+	}
+	return
 }

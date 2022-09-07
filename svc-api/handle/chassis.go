@@ -21,10 +21,10 @@ import (
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 )
 
 // ChassisRPCs defines all the RPC methods in system service
@@ -44,7 +44,7 @@ func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
 	e := ctx.ReadJSON(requestBody)
 	if e != nil {
 		errorMessage := "error while trying to read obligatory json body: " + e.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -60,7 +60,7 @@ func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
 	)
 
 	if rpcErr != nil {
-		log.Error("RPC error:" + rpcErr.Error())
+		l.Log.Error("RPC error:" + rpcErr.Error())
 		re := common.GeneralError(http.StatusInternalServerError, response.InternalError, rpcErr.Error(), nil, nil)
 		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
 		return
@@ -97,7 +97,7 @@ func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 	resp, err := chassis.GetChassisCollectionRPC(req)
 	if err != nil {
 		errorMessage := " RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -133,7 +133,7 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 	resp, err := chassis.GetChassisResourceRPC(req)
 	if err != nil {
 		errorMessage := " RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -168,7 +168,7 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 	resp, err := chassis.GetChassisRPC(req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -188,7 +188,7 @@ func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
 	e := ctx.ReadJSON(requestBody)
 	if e != nil {
 		errorMessage := "error while trying to read obligatory json body: " + e.Error()
-		log.Println(errorMessage)
+		l.Log.Println(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -202,7 +202,7 @@ func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
 	})
 
 	if rerr != nil {
-		log.Println("RPC error:" + rerr.Error())
+		l.Log.Println("RPC error:" + rerr.Error())
 		re := common.GeneralError(http.StatusInternalServerError, response.InternalError, rerr.Error(), nil, nil)
 		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
 		return
@@ -221,7 +221,7 @@ func (chassis *ChassisRPCs) DeleteChassis(ctx iris.Context) {
 	})
 
 	if rpcErr != nil {
-		log.Println("RPC error:" + rpcErr.Error())
+		l.Log.Println("RPC error:" + rpcErr.Error())
 		re := common.GeneralError(http.StatusInternalServerError, response.InternalError, rpcErr.Error(), nil, nil)
 		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
 		return

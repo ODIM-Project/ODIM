@@ -24,12 +24,12 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -179,7 +179,7 @@ func (e *ExternalInterface) monitorPluginTask(subTaskChannel chan<- int32, monit
 		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {
 			subTaskChannel <- http.StatusInternalServerError
 			errMsg := "Unable to parse the simple update respone" + err.Error()
-			log.Warn(errMsg)
+			l.Log.Warn(errMsg)
 			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
 			return monitorTaskData.getResponse, err
 		}
@@ -198,7 +198,7 @@ func (e *ExternalInterface) monitorPluginTask(subTaskChannel chan<- int32, monit
 		if err != nil {
 			subTaskChannel <- monitorTaskData.getResponse.StatusCode
 			errMsg := err.Error()
-			log.Warn(errMsg)
+			l.Log.Warn(errMsg)
 			common.GeneralError(monitorTaskData.getResponse.StatusCode, monitorTaskData.getResponse.StatusMessage, errMsg, monitorTaskData.getResponse.MsgArgs, monitorTaskData.taskInfo)
 			return monitorTaskData.getResponse, err
 		}

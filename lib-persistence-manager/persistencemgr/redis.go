@@ -1208,7 +1208,7 @@ func (p *ConnPool) GetDeviceSubscription(index string, match string) ([]string, 
 				if len(data) < 1 {
 					return []string{}, fmt.Errorf("No data found for the key: %v", match)
 				}
-				return data, nil
+				break
 			}
 		} else {
 			currentCursor, getErr = strconv.ParseFloat(stringCursor, 64)

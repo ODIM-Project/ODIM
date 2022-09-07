@@ -24,13 +24,11 @@ import (
 	licenseproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/licenses"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-licenses/rpc"
-	"github.com/google/martian/log"
 
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
-
 	// setting up the logging framework
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
@@ -75,6 +73,7 @@ func main() {
 }
 
 func registerHandlers() {
+	log := logs.Log
 	if err := services.InitializeService(services.Licenses); err != nil {
 		log.Error("fatal: error while trying to initialize service: " + err.Error())
 	}

@@ -14,20 +14,39 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	teleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-telemetry/rpc"
 	"github.com/sirupsen/logrus"
 )
 
-var log = logrus.New()
-
 func main() {
-	//log.SetFormatter(&log.TextFormatter{})
+	// setting up the logging framework
+	hostName := os.Getenv("HOST_NAME")
+	podName := os.Getenv("POD_NAME")
+	pid := os.Getpid()
+	logs.Log = logrus.NewEntry(logrus.New())
+	log := logs.Log
+	logs.Adorn(logrus.Fields{
+		"host":   hostName,
+		"procid": podName + fmt.Sprintf("_%d", pid),
+	})
+
+	if err := config.SetConfiguration(); err != nil {
+		log.Logger.SetFormatter(&logs.SysLogFormatter{})
+		log.Error("fatal: error while trying set up configuration: " + err.Error())
+	}
+
+	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	log.Logger.SetOutput(os.Stdout)
+	log.Logger.SetLevel(logrus.DebugLevel)
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Error("Telemetry Service should not be run as the root user")
@@ -58,6 +77,7 @@ func main() {
 }
 
 func registerHandlers() {
+	log := logs.Log
 	err := services.InitializeService(services.Telemetry)
 	if err != nil {
 		log.Error("fatal: error while trying to initialize service: " + err.Error())

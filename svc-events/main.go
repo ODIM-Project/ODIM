@@ -29,8 +29,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var log = logrus.New()
-
 func main() {
 	// setting up the logging framework
 	hostName := os.Getenv("HOST_NAME")

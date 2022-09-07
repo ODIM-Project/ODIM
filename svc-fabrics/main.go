@@ -14,6 +14,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -21,23 +22,37 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabrics"
 	"github.com/ODIM-Project/ODIM/svc-fabrics/rpc"
 )
 
-var log = logrus.New()
-
 func main() {
+	// setting up the logging framework
+	hostName := os.Getenv("HOST_NAME")
+	podName := os.Getenv("POD_NAME")
+	pid := os.Getpid()
+	logs.Log = logrus.NewEntry(logrus.New())
+	log := logs.Log
+	logs.Adorn(logrus.Fields{
+		"host":   hostName,
+		"procid": podName + fmt.Sprintf("_%d", pid),
+	})
+
+	if err := config.SetConfiguration(); err != nil {
+		log.Logger.SetFormatter(&logs.SysLogFormatter{})
+		log.Fatal("Error while trying set up configuration: " + err.Error())
+	}
+
+	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	log.Logger.SetOutput(os.Stdout)
+	log.Logger.SetLevel(logrus.DebugLevel)
 
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Fabric Service should not be run as the root user")
-	}
-
-	if err := config.SetConfiguration(); err != nil {
-		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
 
 	config.CollectCLArgs()

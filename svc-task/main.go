@@ -14,6 +14,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"sync"
 
@@ -22,6 +23,7 @@ import (
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	auth "github.com/ODIM-Project/ODIM/svc-task/tauth"
@@ -30,16 +32,30 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 )
 
-var log = logrus.New()
-
 func main() {
+	// setting up the logging framework
+	hostName := os.Getenv("HOST_NAME")
+	podName := os.Getenv("POD_NAME")
+	pid := os.Getpid()
+	logs.Log = logrus.NewEntry(logrus.New())
+	log := logs.Log
+	logs.Adorn(logrus.Fields{
+		"host":   hostName,
+		"procid": podName + fmt.Sprintf("_%d", pid),
+	})
+
+	if err := config.SetConfiguration(); err != nil {
+		log.Logger.SetFormatter(&logs.SysLogFormatter{})
+		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
+	}
+
+	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	log.Logger.SetOutput(os.Stdout)
+	log.Logger.SetLevel(logrus.DebugLevel)
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Task Service should not be run as the root user")
-	}
-
-	if err := config.SetConfiguration(); err != nil {
-		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
 	}
 
 	config.CollectCLArgs()

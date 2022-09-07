@@ -1177,8 +1177,8 @@ func (p *ConnPool) GetDeviceSubscription(index string, match string) ([]string, 
 	var data []string
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
-	const cursor float64 = 0
-	currentCursor := cursor
+	//const cursor float64 = 0
+	currentCursor := float64(0)
 	for {
 		d, getErr := readConn.Do("ZSCAN", index, currentCursor, "MATCH", match, "COUNT", count)
 		if getErr != nil {
@@ -1212,6 +1212,7 @@ func (p *ConnPool) GetDeviceSubscription(index string, match string) ([]string, 
 			}
 		} else {
 			currentCursor, getErr = strconv.ParseFloat(stringCursor, 64)
+			log.Info("Current cursor ", currentCursor)
 			if getErr != nil {
 				return []string{}, getErr
 			}

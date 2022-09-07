@@ -235,7 +235,7 @@ func Test_callPluginStartUp(t *testing.T) {
 	}
 	updateSystemPowerState("3bd1f589-117a-4cf9-89f2-da44ee8e012b.1", "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1", "ServerPoweredOn")
 	updateSystemPowerState("3bd1f589-117a-4cf9-89f2-da44ee8e012b.1", "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1", "ServerPoweredOff")
-	ServeiceDiscoveryFunc = func(clientName string) (*grpc.ClientConn, error) {
+	ServiceDiscoveryFunc = func(clientName string) (*grpc.ClientConn, error) {
 		return nil, &errors.Error{}
 	}
 	updateSystemPowerState("3bd1f589-117a-4cf9-89f2-da44ee8e012b.1", "/redfish/v1/UpdateService/FirmwareInentory/valid.1", "ServerPoweredOff")

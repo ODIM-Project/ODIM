@@ -30,17 +30,17 @@ func TestUpdateTaskData(t *testing.T) {
 		taskData common.TaskData
 	}
 	tests := []struct {
-		name             string
-		args             args
-		UpdateTaskServie func(taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error
-		wantErr          error
+		name              string
+		args              args
+		UpdateTaskService func(taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error
+		wantErr           error
 	}{
 		{
-			name: "Update Task Servie",
+			name: "Update Task Service",
 			args: args{
 				taskData: common.TaskData{},
 			},
-			UpdateTaskServie: func(taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error {
+			UpdateTaskService: func(taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error {
 				return errors.New(common.Cancelling)
 			},
 			wantErr: errors.New(common.Cancelling),
@@ -48,7 +48,7 @@ func TestUpdateTaskData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			UpdateTaskServie = tt.UpdateTaskServie
+			UpdateTaskService = tt.UpdateTaskService
 			if err := UpdateTaskData(tt.args.taskData); errors.Is(err, tt.wantErr) {
 				t.Errorf("UpdateTaskData() error = %v, wantErr %v", err, tt.wantErr)
 			}

@@ -36,8 +36,8 @@ type ExternalInterfaces struct {
 }
 
 var (
-	// UpdateTaskServie function  pointer for calling the files
-	UpdateTaskServie = services.UpdateTask
+	// UpdateTaskService function  pointer for calling the files
+	UpdateTaskService = services.UpdateTask
 	// IOUtilReadAllFunc function  pointer for calling the files
 	IOUtilReadAllFunc = ioutil.ReadAll
 )
@@ -107,11 +107,11 @@ func UpdateTaskData(taskData common.TaskData) error {
 		ResponseBody:  respBody,
 	}
 
-	err := UpdateTaskServie(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	err := UpdateTaskService(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
-		UpdateTaskServie(taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+		UpdateTaskService(taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 		if taskData.PercentComplete == 0 {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}
@@ -135,17 +135,17 @@ func removeOdataIDfromOriginResources(originResources []evmodel.OdataIDLink) []s
 func removeDuplicatesFromSlice(slc *[]string, slcLen *int) {
 	if *slcLen > 1 {
 		uniqueElementsDs := make(map[string]bool)
-		var uniqueElemenstsList []string
+		var uniqueElementsList []string
 		for _, element := range *slc {
 			if exist := uniqueElementsDs[element]; !exist {
-				uniqueElemenstsList = append(uniqueElemenstsList, element)
+				uniqueElementsList = append(uniqueElementsList, element)
 				uniqueElementsDs[element] = true
 			}
 		}
-		// length of uniqueElemenstsList will be less than passed string slice,
+		// length of uniqueElementsList will be less than passed string slice,
 		// only if duplicates existed, so will assign slc with modified list and update length
-		if len(uniqueElemenstsList) < *slcLen {
-			*slc = uniqueElemenstsList
+		if len(uniqueElementsList) < *slcLen {
+			*slc = uniqueElementsList
 			*slcLen = len(*slc)
 		}
 	}

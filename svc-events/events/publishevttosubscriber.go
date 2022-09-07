@@ -46,8 +46,8 @@ import (
 var (
 	// SendEventFunc function  pointer for calling the files
 	SendEventFunc = sendEvent
-	//ServeiceDiscoveryFunc func pointer for calling the files
-	ServeiceDiscoveryFunc = services.ODIMService.Client
+	//ServiceDiscoveryFunc func pointer for calling the files
+	ServiceDiscoveryFunc = services.ODIMService.Client
 )
 
 // addFabric will add the new fabric resource to db when an event is ResourceAdded and
@@ -322,7 +322,6 @@ func isResourceTypeSubscribed(resourceTypes []string, originOfCondition string, 
 			// child resource type would be processors (index-2)
 			// collection resource type would be Systems (index-4)
 			resType := originCond[len(originCond)-2]
-			fmt.Println("Test ", res, resType)
 			if strings.Contains(res, resType) {
 				return true
 			}
@@ -435,7 +434,7 @@ func (e *ExternalInterfaces) reAttemptEvents(destination, undeliveredEventID str
 func rediscoverSystemInventory(systemID, systemURL string) {
 	systemURL = strings.TrimSuffix(systemURL, "/")
 
-	conn, err := ServeiceDiscoveryFunc(services.Aggregator)
+	conn, err := ServiceDiscoveryFunc(services.Aggregator)
 	if err != nil {
 		log.Error("failed to get client connection object for aggregator service")
 		return
@@ -459,7 +458,7 @@ func (e *ExternalInterfaces) addFabricRPCCall(origin, address string) {
 	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
 		return
 	}
-	conn, err := ServeiceDiscoveryFunc(services.Fabrics)
+	conn, err := ServiceDiscoveryFunc(services.Fabrics)
 	if err != nil {
 		log.Error("Error while AddFabric ", err.Error())
 		return
@@ -482,7 +481,7 @@ func (e *ExternalInterfaces) removeFabricRPCCall(origin, address string) {
 	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
 		return
 	}
-	conn, err := ServeiceDiscoveryFunc(services.Fabrics)
+	conn, err := ServiceDiscoveryFunc(services.Fabrics)
 	if err != nil {
 		log.Error("Error while Remove Fabric ", err.Error())
 		return
@@ -521,7 +520,7 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 		state = "Off"
 	}
 
-	conn, err := ServeiceDiscoveryFunc(services.Aggregator)
+	conn, err := ServiceDiscoveryFunc(services.Aggregator)
 	if err != nil {
 		log.Error("failed to get client connection object for aggregator service")
 		return
@@ -552,7 +551,7 @@ func callPluginStartUp(event common.Events) {
 		return
 	}
 
-	conn, err := ServeiceDiscoveryFunc(services.Aggregator)
+	conn, err := ServiceDiscoveryFunc(services.Aggregator)
 	if err != nil {
 		log.Error("failed to get client connection object for aggregator service")
 		return

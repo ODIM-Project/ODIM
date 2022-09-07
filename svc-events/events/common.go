@@ -18,6 +18,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -25,7 +26,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
-	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
 )
 
@@ -115,7 +115,7 @@ func UpdateTaskData(taskData common.TaskData) error {
 		if taskData.PercentComplete == 0 {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}
-		log.Error("error: task update for " + taskData.TaskID + " failed with err: " + err.Error())
+		l.Log.Error("error: task update for " + taskData.TaskID + " failed with err: " + err.Error())
 		runtime.Goexit()
 	}
 	return nil
@@ -177,7 +177,7 @@ func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errR
 			errorMessage := "Error : " + err.Error()
 			evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				[]interface{}{}, &resp)
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			return resp, "", "", err
 		}
 	}
@@ -187,7 +187,7 @@ func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errR
 		errorMessage := "error while trying to read response body: " + err.Error()
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			[]interface{}{}, &resp)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp, "", "", err
 	}
 	if !(response.StatusCode == http.StatusCreated || response.StatusCode == http.StatusOK) {
@@ -330,7 +330,7 @@ func (e *ExternalInterfaces) createToken(plugin *evmodel.Plugin) string {
 	contactRequest.URL = "/ODIM/v1/Sessions"
 	_, _, token, err := e.PluginCall(contactRequest)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 	}
 	pluginToken := evcommon.PluginToken{
 		Tokens: make(map[string]string),
@@ -368,7 +368,7 @@ func (e *ExternalInterfaces) retryEventSubscriptionOperation(req evcommon.Plugin
 		errorMessage := "error while unmarshaling the body : " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			&resp, []interface{}{})
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return nil, resp, err
 	}
 	return response, resp, err

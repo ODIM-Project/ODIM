@@ -31,7 +31,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -167,7 +166,7 @@ func startTestServer() *httptest.Server {
 	// create a listener with the desired port.
 	l, err := net.Listen("tcp", "localhost:1234")
 	if err != nil {
-		log.Fatal(err.Error())
+		l.Log.Fatal(err.Error())
 	}
 
 	respBody := make(map[string]string)
@@ -211,14 +210,14 @@ func startTestServer() *httptest.Server {
 
 	cert, err := tls.X509KeyPair(hostCert, hostPrivKey)
 	if err != nil {
-		log.Fatal("error: failed to load key pair: " + err.Error())
+		l.Log.Fatal("error: failed to load key pair: " + err.Error())
 	}
 	tlsConfig.Certificates = []tls.Certificate{cert}
 	tlsConfig.BuildNameToCertificate()
 
 	capool := x509.NewCertPool()
 	if !capool.AppendCertsFromPEM(hostCA) {
-		log.Fatal("error: failed to load CA certificate")
+		l.Log.Fatal("error: failed to load CA certificate")
 	}
 	tlsConfig.RootCAs = capool
 	tlsConfig.ClientCAs = capool

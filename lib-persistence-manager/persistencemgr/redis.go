@@ -1198,12 +1198,27 @@ func (p *ConnPool) GetDeviceSubscription(index string, match string) ([]string, 
 		}
 		stringCursor := string(d.([]interface{})[0].([]uint8))
 		if stringCursor == "0" {
+			if len(d.([]interface{})) > 1 {
+				var err error
+				data, err = redis.Strings(d.([]interface{})[1], getErr)
+				if err != nil {
+					return []string{}, err
+				}
+				log.Info("No of data records for get device subscription query : " + strconv.Itoa(len(data)))
+				if len(data) < 1 {
+					return []string{}, fmt.Errorf("No data found for the key: %v", match)
+				}
+				return data, nil
+			}
 			break
+		} else {
+			currentCursor, getErr = strconv.ParseFloat(stringCursor, 64)
+			if getErr != nil {
+				return []string{}, getErr
+			}
+
 		}
-		currentCursor, getErr = strconv.ParseFloat(stringCursor, 64)
-		if getErr != nil {
-			return []string{}, getErr
-		}
+
 	}
 	return data, nil
 }

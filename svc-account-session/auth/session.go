@@ -17,12 +17,12 @@ package auth
 
 import (
 	"encoding/base64"
-	log "github.com/sirupsen/logrus"
 	"sync"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"golang.org/x/crypto/sha3"
 )
@@ -77,21 +77,21 @@ func expiredSessionCleanUp() {
 	if time.Since(lastExpiredSessionCleanUpTime).Minutes() > config.Data.AuthConf.ExpiredSessionCleanUpTimeInMins {
 		sessionTokens, err := asmodel.GetAllSessionKeys()
 		if err != nil {
-			log.Error("Unable to get all session tokens from DB: %v" + err.Error())
+			l.Log.Error("Unable to get all session tokens from DB: %v" + err.Error())
 			return
 		}
 
 		for _, token := range sessionTokens {
 			session, err := asmodel.GetSession(token)
 			if err != nil {
-				log.Error("Unable to get session details with the token " + token + ": " + err.Error())
+				l.Log.Error("Unable to get session details with the token " + token + ": " + err.Error())
 				continue
 			}
 			// checking for the timed out sessions
 			if time.Since(session.LastUsedTime).Minutes() > config.Data.AuthConf.SessionTimeOutInMins {
 				err = session.Delete()
 				if err != nil {
-					log.Printf("Unable to delete expired session with token " + token + ": " + err.Error())
+					l.Log.Printf("Unable to delete expired session with token " + token + ": " + err.Error())
 					continue
 				}
 			}

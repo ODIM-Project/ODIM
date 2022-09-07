@@ -21,16 +21,17 @@ package account
 import (
 	"encoding/base64"
 	"encoding/json"
+	"net/http"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
-	"net/http"
 )
 
 // Update defines the updation of the account details. Every account details can be
@@ -60,7 +61,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	err = json.Unmarshal(req.RequestBody, &updateAccount)
 	if err != nil {
 		errMsg := "unable to parse the update account request" + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
@@ -74,7 +75,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	//empty request check
 	if isEmptyRequest(req.RequestBody) {
 		errMsg := "empty request can not be processed"
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"request body"}, nil)
 	}
 
@@ -88,7 +89,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 			Message: errorMessage,
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp
 	}
 
@@ -96,11 +97,11 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, updateAccount)
 	if err != nil {
 		errMsg := "Request parameters validaton failed: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
 	}
@@ -126,7 +127,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 							},
 						}
 						resp.Body = args.CreateGenericErrorResponse()
-						log.Error(errorMessage)
+						l.Log.Error(errorMessage)
 						return resp
 					}
 				}
@@ -156,7 +157,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp
 	}
 
@@ -245,7 +246,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			return resp
 		}
 		hash := sha3.New512()
@@ -258,7 +259,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	if uerr := e.UpdateUserDetails(user, requestUser); uerr != nil {
 		errorMessage := "Unable to update user: " + uerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp
 	}
 

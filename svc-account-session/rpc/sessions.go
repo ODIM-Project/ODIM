@@ -18,12 +18,13 @@ package rpc
 import (
 	"context"
 	"encoding/json"
+
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/session"
 
-	"log"
 	"net/http"
 )
 
@@ -52,7 +53,7 @@ func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCr
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for create account: " + err.Error()
-		log.Printf(resp.StatusMessage)
+		l.Log.Printf(resp.StatusMessage)
 		return &resp, nil
 	}
 	resp.SessionId = sessionID
@@ -73,7 +74,7 @@ func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRe
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for delete : " + err.Error()
-		log.Printf(response.StatusMessage)
+		l.Log.Printf(response.StatusMessage)
 		return &resp, nil
 	}
 	resp.StatusCode = response.StatusCode
@@ -92,7 +93,7 @@ func (s *Session) GetSession(ctx context.Context, req *sessionproto.SessionReque
 	body, err := MarshalFunc(response.Body)
 	if err != nil {
 		resp.StatusMessage = "error while trying marshal the response body for get session: " + err.Error()
-		log.Printf(response.StatusMessage)
+		l.Log.Printf(response.StatusMessage)
 		return &resp, nil
 	}
 	resp.StatusCode = response.StatusCode
@@ -127,7 +128,7 @@ func (s *Session) GetAllActiveSessions(ctx context.Context, req *sessionproto.Se
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for get all active session: " + err.Error()
-		log.Printf(response.StatusMessage)
+		l.Log.Printf(response.StatusMessage)
 		return &resp, nil
 	}
 	resp.StatusCode = response.StatusCode
@@ -147,7 +148,7 @@ func (s *Session) GetSessionService(ctx context.Context, req *sessionproto.Sessi
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for get session service: " + err.Error()
-		log.Printf(response.StatusMessage)
+		l.Log.Printf(response.StatusMessage)
 		return &resp, nil
 	}
 	resp.StatusCode = response.StatusCode

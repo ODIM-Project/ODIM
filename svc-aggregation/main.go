@@ -58,6 +58,7 @@ func main() {
 	}
 
 	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(logrus.DebugLevel)
 
 	// verifying the uid of the user

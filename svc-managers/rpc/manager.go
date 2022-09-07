@@ -19,9 +19,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-managers/managers"
@@ -153,7 +152,7 @@ func (m *Managers) VirtualMediaEject(ctx context.Context, req *managersproto.Man
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Error("error in unmarshalling response object from util-libs" + err.Error())
+		l.Log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
 }

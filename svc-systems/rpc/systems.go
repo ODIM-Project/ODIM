@@ -20,10 +20,9 @@ import (
 	"net/http"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
@@ -50,7 +49,7 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
+		l.Log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(&resp, authResp)
 		return &resp, nil
 	}
@@ -123,7 +122,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		fillSystemProtoResponse(&resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return &resp, nil
 	}
 
@@ -132,7 +131,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		fillSystemProtoResponse(&resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return &resp, nil
 	}
 	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")

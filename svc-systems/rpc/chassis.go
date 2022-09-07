@@ -23,12 +23,11 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -180,7 +179,7 @@ func jsonMarshal(input interface{}) []byte {
 	}
 	bytes, err := JSONMarshalFunc(input)
 	if err != nil {
-		log.Println("error in unmarshalling response object from util-libs", err.Error())
+		l.Log.Println("error in unmarshalling response object from util-libs", err.Error())
 	}
 	return bytes
 }
@@ -191,7 +190,7 @@ func generateResponse(input interface{}) []byte {
 	}
 	bytes, err := JSONMarshalFunc(input)
 	if err != nil {
-		log.Error("error in unmarshalling response object from util-libs" + err.Error())
+		l.Log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
 }

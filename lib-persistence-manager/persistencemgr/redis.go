@@ -1210,7 +1210,6 @@ func (p *ConnPool) GetDeviceSubscription(index string, match string) ([]string, 
 				}
 				return data, nil
 			}
-			break
 		} else {
 			currentCursor, getErr = strconv.ParseFloat(stringCursor, 64)
 			if getErr != nil {

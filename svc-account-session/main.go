@@ -35,7 +35,6 @@ func main() {
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
-	logs.Log = logrus.NewEntry(logrus.New())
 	log := logs.Log
 	logs.Adorn(logrus.Fields{
 		"host":   hostName,

@@ -15,9 +15,8 @@
 package smodel
 
 import (
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 // Fabric is the model to collect fabric plugin id from DB
@@ -45,16 +44,16 @@ func GetFabricManagers() ([]Plugin, error) {
 		var fabric Fabric
 		fabricData, err := conn.Read("Fabric", key)
 		if err != nil {
-			log.Warn("while trying to read DB contents for " + key + " in Fabric table, got " + err.Error())
+			l.Log.Warn("while trying to read DB contents for " + key + " in Fabric table, got " + err.Error())
 			continue
 		}
 		if errs := JSONUnmarshalFunc([]byte(fabricData), &fabric); errs != nil {
-			log.Warn("while trying to unmarshal DB contents for " + key + " in Fabric table, got " + err.Error())
+			l.Log.Warn("while trying to unmarshal DB contents for " + key + " in Fabric table, got " + err.Error())
 			continue
 		}
 		manager, err := GetPluginDataFunc(fabric.PluginID)
 		if err != nil {
-			log.Warn("while trying to collect DB contents for " + fabric.PluginID + " in Plugin table, got " + err.Error())
+			l.Log.Warn("while trying to collect DB contents for " + fabric.PluginID + " in Plugin table, got " + err.Error())
 			continue
 		}
 		managers = append(managers, manager)

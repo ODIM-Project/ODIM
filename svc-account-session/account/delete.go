@@ -19,11 +19,11 @@ package account
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
@@ -56,7 +56,7 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp
 	}
 
@@ -100,7 +100,7 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp
 	}
 

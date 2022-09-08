@@ -19,15 +19,16 @@ package account
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
+	"net/http"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
-	log "github.com/sirupsen/logrus"
-	"net/http"
 )
 
 // GetAllAccounts defines the admin functionality of listing of all accounts.
@@ -71,7 +72,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 	if err != nil {
 		errorMessage := "Unable to get users: " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp
 	}
 	//Build response body and headers
@@ -167,7 +168,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp
 	}
 

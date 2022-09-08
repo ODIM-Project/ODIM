@@ -23,12 +23,12 @@ package events
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
@@ -41,19 +41,19 @@ func (e *ExternalInterfaces) GetEventSubscriptionsDetails(req *eventsproto.Event
 	var resp response.RPC
 	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		l.Log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		return authResp
 	}
 	var subscriptions *evresponse.SubscriptionResponse
 
 	subscriptionDetails, err := e.GetEvtSubscriptions(req.EventSubscriptionID)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
-		log.Printf("error getting eventsubscription details : %v", err)
+		l.Log.Printf("error getting eventsubscription details : %v", err)
 		errorMessage := err.Error()
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
 	}
 	if len(subscriptionDetails) < 1 {
-		log.Printf("Subscription details not found for ID: %v", req.EventSubscriptionID)
+		l.Log.Printf("Subscription details not found for ID: %v", req.EventSubscriptionID)
 		errorMessage := fmt.Sprintf("Subscription details not found for ID: %v", req.EventSubscriptionID)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
 	}
@@ -64,7 +64,7 @@ func (e *ExternalInterfaces) GetEventSubscriptionsDetails(req *eventsproto.Event
 		// we need to match the subscripton id
 		if evtSubscription.SubscriptionID != req.EventSubscriptionID {
 			errorMessage := fmt.Sprintf("Subscription details not found for subscription id: %s", req.EventSubscriptionID)
-			log.Println(errorMessage)
+			l.Log.Println(errorMessage)
 			var msgArgs = []interface{}{"SubscriptionID", req.EventSubscriptionID}
 			evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
 			return resp
@@ -101,7 +101,7 @@ func (e *ExternalInterfaces) GetEventSubscriptionsCollection(req *eventsproto.Ev
 	var resp response.RPC
 	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		l.Log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		return authResp
 	}
 	listMembers := []evresponse.ListMember{}
@@ -109,7 +109,7 @@ func (e *ExternalInterfaces) GetEventSubscriptionsCollection(req *eventsproto.Ev
 
 	subscriptionDetails, err := e.GetEvtSubscriptions(searchKey)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
-		log.Printf("error getting eventsubscription details : %v", err)
+		l.Log.Printf("error getting eventsubscription details : %v", err)
 		errorMessage := err.Error()
 		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil)
 	}
@@ -145,7 +145,7 @@ func (e *ExternalInterfaces) GetEventSubscriptionsCollection(req *eventsproto.Ev
 func (e *ExternalInterfaces) IsAggregateHaveSubscription(req *eventsproto.EventUpdateRequest) bool {
 	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		l.Log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		return false
 	}
 	searchKey := evcommon.GetSearchKey(req.AggregateId, evmodel.SubscriptionIndex)

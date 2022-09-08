@@ -23,10 +23,9 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
@@ -75,13 +74,13 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 	var resetRequest AggregationResetRequest
 	if err := json.Unmarshal(req.RequestBody, &resetRequest); err != nil {
 		errMsg := "Unable to validate request fields: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, taskInfo)
 	}
 	missedProperty, err := resetRequest.validateResetRequestFields(req.RequestBody)
 	if err != nil {
 		errMsg := "Unable to validate request fields: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{missedProperty}, taskInfo)
 	}
 
@@ -89,11 +88,11 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, resetRequest)
 	if err != nil {
 		errMsg := "Unable to validate request fields: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	} else if invalidProperties != "" {
 		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
 		return resp
 	}
@@ -162,11 +161,11 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 	var args response.Args
 	if resp.StatusCode != http.StatusOK {
 		errMsg := "one or more of the reset actions failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(resp.StatusCode, resp.StatusMessage, errMsg, nil, taskInfo)
 	}
 
-	log.Info("All reset actions are successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
+	l.Log.Info("All reset actions are successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	args = response.Args{
@@ -190,7 +189,7 @@ func (e *ExternalInterface) aggregateSystems(requestType, url, taskID, reqBody s
 	subTaskURI, err := e.CreateChildTask(sessionUserName, taskID)
 	if err != nil {
 		subTaskChan <- http.StatusInternalServerError
-		log.Error("error while trying to create sub task")
+		l.Log.Error("error while trying to create sub task")
 		return
 	}
 	var subTaskID string
@@ -205,7 +204,7 @@ func (e *ExternalInterface) aggregateSystems(requestType, url, taskID, reqBody s
 	if err1 != nil {
 		percentComplete = 100
 		errorMessage := err1.Error()
-		log.Error("error getting aggregate : " + errorMessage)
+		l.Log.Error("error getting aggregate : " + errorMessage)
 		if errors.DBKeyNotFound == err1.ErrNo() {
 			subTaskChan <- http.StatusNotFound
 			resp.StatusCode = http.StatusNotFound

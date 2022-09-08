@@ -22,15 +22,16 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/sha3"
 	"net/http"
 	"regexp"
 	"strings"
 
+	"golang.org/x/crypto/sha3"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -53,7 +54,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	err := json.Unmarshal(req.RequestBody, &createAccount)
 	if err != nil {
 		errMsg := "Unable to parse the create account request" + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	}
 
@@ -70,11 +71,11 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createAccount)
 	if err != nil {
 		errMsg := "While validating request parameters: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	} else if invalidProperties != "" {
 		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp, fmt.Errorf(errorMessage)
 	}
@@ -121,12 +122,12 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
 	if _, gerr := e.GetRoleDetailsByID(user.RoleID); gerr != nil {
 		errorMessage := "Invalid RoleID present " + gerr.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Role", user.RoleID}, nil), fmt.Errorf(errorMessage)
 	}
 	if err := validatePassword(user.UserName, user.Password); err != nil {
@@ -145,7 +146,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp, err
 
 	}
@@ -175,7 +176,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
 

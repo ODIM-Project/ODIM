@@ -22,12 +22,11 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-
-	log "github.com/sirupsen/logrus"
 )
 
 //PluginContact struct to inject the pmb client function into the handlers
@@ -63,7 +62,7 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 	}
 	data, gerr := smodel.GetResource(tableName, req.URL)
 	if gerr != nil {
-		log.Error("error getting system details : " + gerr.Error())
+		l.Log.Error("error getting system details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = scommon.ResourceInfoRequest{
@@ -74,15 +73,15 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 				DevicePassword:  p.DecryptPassword,
 				GetPluginStatus: p.GetPluginStatus,
 			}
-			log.Info("Request Url" + req.URL)
+			l.Log.Info("Request Url" + req.URL)
 			var err error
 			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true); err != nil {
-				log.Error("error while getting resource: " + err.Error())
+				l.Log.Error("error while getting resource: " + err.Error())
 				errorMsg := err.Error()
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMsg, []interface{}{tableName, req.URL}, nil), nil
 			}
 		} else {
-			log.Error("error while getting resource: " + errorMessage)
+			l.Log.Error("error while getting resource: " + errorMessage)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil), nil
 		}
 	}

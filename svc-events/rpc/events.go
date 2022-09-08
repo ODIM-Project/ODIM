@@ -22,11 +22,10 @@ import (
 	"net/http"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
@@ -92,7 +91,7 @@ func GetPluginContactInitializer() *Events {
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Error("error in unmarshalling response object from util-libs" + err.Error())
+		l.Log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
 }
@@ -215,7 +214,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		errorMessage := "error while trying to get the session username: " + err.Error()
 		resp.Body = generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil))
 		resp.StatusCode = http.StatusUnauthorized
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return &resp, err
 	}
 	// Create the task and get the taskID
@@ -227,7 +226,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
 	strArray := strings.Split(taskURI, "/")
@@ -259,7 +258,7 @@ func (e *Events) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubR
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body for submit test event: " + err.Error()
-		log.Error(resp.StatusMessage)
+		l.Log.Error(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
 	resp.StatusCode = data.StatusCode
@@ -282,7 +281,7 @@ func (e *Events) GetEventSubscriptionsCollection(ctx context.Context, req *event
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		log.Error(resp.StatusMessage)
+		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
@@ -305,7 +304,7 @@ func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.Even
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		log.Error(resp.StatusMessage)
+		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
@@ -335,7 +334,7 @@ func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.E
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		log.Error(resp.StatusMessage)
+		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
@@ -356,7 +355,7 @@ func (e *Events) CreateDefaultEventSubscription(ctx context.Context, req *events
 // it subscribe to the given event message bus queues
 func (e *Events) SubsribeEMB(ctx context.Context, req *eventsproto.SubscribeEMBRequest) (*eventsproto.SubscribeEMBResponse, error) {
 	var resp eventsproto.SubscribeEMBResponse
-	log.Info("Subscribing on emb for plugin " + req.PluginID)
+	l.Log.Info("Subscribing on emb for plugin " + req.PluginID)
 	for i := 0; i < len(req.EMBQueueName); i++ {
 		evcommon.EMBTopics.ConsumeTopic(req.EMBQueueName[i])
 	}

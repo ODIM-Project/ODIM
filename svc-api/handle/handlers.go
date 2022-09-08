@@ -22,10 +22,9 @@ import (
 	"net/http"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/models"
@@ -829,7 +828,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authorize token")
+		l.Log.Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
 		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -845,7 +844,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	registryStore := config.Data.RegistryStorePath
 	regFiles, err := ioutil.ReadDir(registryStore)
 	if err != nil {
-		log.Fatal(err.Error())
+		l.Log.Fatal(err.Error())
 	}
 	//Construct the Response body
 	var listMembers []response.ListMember
@@ -915,7 +914,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authorize token")
+		l.Log.Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
 		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -931,7 +930,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 
 	reqRegistryFileName := regFileID + ".json"
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 	}
 	// Constuct the registry file names slice
 	var regFileNames []string
@@ -943,7 +942,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	regFileKeys, err := models.GetAllRegistryFileNamesFromDB("Registries")
 	if err != nil {
 		// log Critical message but proceed
-		log.Error("error: while trying to get the Registry files (Keys/FileNames only)from DB")
+		l.Log.Error("error: while trying to get the Registry files (Keys/FileNames only)from DB")
 	}
 	regFileNames = append(regFileNames, regFileKeys...)
 	for _, regFile := range regFileNames {
@@ -954,7 +953,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	}
 	if locationURI == "" {
 		errorMessage := "error: resource not found"
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusNotFound, errResponse.ResourceNotFound, errorMessage, []interface{}{"RegistryFile", regFileID}, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusNotFound)
@@ -1009,7 +1008,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authorize token")
+		l.Log.Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
 		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -1030,9 +1029,9 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		content, err = models.GetRegistryFile("Registries", regFileID)
 		if content == nil {
 			// file Not found, send 404 error
-			log.Error("got error while retreiving fom DB")
+			l.Log.Error("got error while retreiving fom DB")
 			errorMessage := "error: Resource not found"
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			response := common.GeneralError(http.StatusNotFound, errResponse.ResourceNotFound, errorMessage, []interface{}{"RegistryFile", regFileID}, nil)
 			common.SetResponseHeader(ctx, response.Header)
 			ctx.StatusCode(http.StatusNotFound)
@@ -1041,13 +1040,13 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		}
 	}
 	var data interface{}
-	log.Error("Before Unmarshalling Data")
+	l.Log.Error("Before Unmarshalling Data")
 	err = json.Unmarshal(content, &data)
 	if err != nil {
 		//return fmt.Errorf("error while trying to unmarshal the config data: %v", err)
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		errorMessage := "error: Resource not found"
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

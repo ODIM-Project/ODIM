@@ -49,7 +49,7 @@ func main() {
 
 	log.Logger.SetFormatter(&logs.SysLogFormatter{})
 	log.Logger.SetOutput(os.Stdout)
-	log.Logger.SetLevel(logrus.DebugLevel)
+	log.Logger.SetLevel(logrus.WarnLevel)
 
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {

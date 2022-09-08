@@ -23,11 +23,10 @@ import (
 	"strings"
 	"sync"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 )
@@ -233,7 +232,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 			errorMessage = errorMessage + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = errors.InternalError
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
@@ -243,13 +242,13 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
 	if !(response.StatusCode == http.StatusOK || response.StatusCode == http.StatusCreated) {
 		resp.StatusCode = int32(response.StatusCode)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 	data := string(body)
@@ -279,10 +278,10 @@ func getPluginStatus(plugin mgrmodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
+		l.Log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	log.Error("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	l.Log.Error("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -320,7 +319,7 @@ func createToken(req PluginContactRequest) string {
 	contactRequest.OID = "/ODIM/v1/Sessions"
 	_, token, _, err := ContactPlugin(contactRequest, "error while logging in to plugin: ")
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 	}
 	if token != "" {
 		Token.StoreToken(req.Plugin.ID, token)
@@ -365,7 +364,7 @@ func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface) {
 		config.TLSConfMutex.RUnlock()
 		err := dbInterface.AddManagertoDBInterface(mgr)
 		if err != nil {
-			log.Error(err)
+			l.Log.Error(err)
 		}
 	}
 }

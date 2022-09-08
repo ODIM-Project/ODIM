@@ -21,9 +21,9 @@ import (
 
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -41,7 +41,7 @@ func (f *fabricFactory) updateFabricChassisResource(url string, body *json.RawMe
 
 	managers, err := f.getFabricManagers()
 	if err != nil {
-		log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
+		l.Log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", url}, nil)
 	}
 
@@ -63,7 +63,7 @@ func (f *fabricFactory) updateFabricChassisResource(url string, body *json.RawMe
 func (f *fabricFactory) updateResource(plugin smodel.Plugin, url string, body *json.RawMessage, ch chan response.RPC) {
 	req, errResp, err := f.createChassisRequest(plugin, url, http.MethodPatch, body)
 	if errResp != nil {
-		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
+		l.Log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		ch <- *errResp
 		return
 	}

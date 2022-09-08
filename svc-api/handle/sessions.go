@@ -20,9 +20,8 @@ import (
 	"net/http"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
@@ -47,7 +46,7 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the session create request body: %v" + err.Error()
-		log.Printf(errorMessage)
+		l.Log.Printf(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -72,7 +71,7 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 			return
 		}
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -109,7 +108,7 @@ func (s *SessionRPCs) DeleteSession(ctx iris.Context) {
 	resp, err := s.DeleteSessionRPC(sessionID, sessionToken)
 	if err != nil && resp == nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -134,7 +133,7 @@ func (s *SessionRPCs) GetSession(ctx iris.Context) {
 	resp, err := s.GetSessionRPC(sessionID, sessionToken)
 	if err != nil && resp == nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -163,7 +162,7 @@ func (s *SessionRPCs) GetAllActiveSessions(ctx iris.Context) {
 	resp, err := s.GetAllActiveSessionsRPC(sessionID, sessionToken)
 	if err != nil && resp == nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -183,7 +182,7 @@ func (s *SessionRPCs) GetSessionService(ctx iris.Context) {
 	resp, err := s.GetSessionServiceRPC()
 	if err != nil && resp == nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

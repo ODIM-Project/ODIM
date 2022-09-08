@@ -18,9 +18,8 @@ package handle
 import (
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	telemetryproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
@@ -57,7 +56,7 @@ func (a *TelemetryRPCs) GetTelemetryService(ctx iris.Context) {
 	resp, err := a.GetTelemetryServiceRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -90,7 +89,7 @@ func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
 	resp, err := a.GetMetricDefinitionCollectionRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -123,7 +122,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
 	resp, err := a.GetMetricReportDefinitionCollectionRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -156,7 +155,7 @@ func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
 	resp, err := a.GetMetricReportCollectionRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -189,7 +188,7 @@ func (a *TelemetryRPCs) GetTriggerCollection(ctx iris.Context) {
 	resp, err := a.GetTriggerCollectionRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -222,7 +221,7 @@ func (a *TelemetryRPCs) GetMetricDefinition(ctx iris.Context) {
 	resp, err := a.GetMetricDefinitionRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -254,7 +253,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinition(ctx iris.Context) {
 	resp, err := a.GetMetricReportDefinitionRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -286,7 +285,7 @@ func (a *TelemetryRPCs) GetMetricReport(ctx iris.Context) {
 	resp, err := a.GetMetricReportRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -318,7 +317,7 @@ func (a *TelemetryRPCs) GetTrigger(ctx iris.Context) {
 	resp, err := a.GetTriggerRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -349,7 +348,7 @@ func (a *TelemetryRPCs) UpdateTrigger(ctx iris.Context) {
 	resp, err := a.UpdateTriggerRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

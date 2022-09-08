@@ -20,11 +20,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
@@ -113,7 +112,7 @@ type managedChassisProvider struct {
 func (m *managedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
 	keys, e := m.inMemoryKeysProvider("Chassis")
 	if e != nil {
-		log.Error("while getting all keys of ChassisCollection table, got " + e.Error())
+		l.Log.Error("while getting all keys of ChassisCollection table, got " + e.Error())
 		ge := common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 		return nil, &ge
 	}

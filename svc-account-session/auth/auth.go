@@ -16,11 +16,11 @@
 package auth
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 
 	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
@@ -45,14 +45,14 @@ func Auth(req *authproto.AuthRequest) (int32, string) {
 		if status == http.StatusUnauthorized {
 			CustomAuthLog("", "Received invalid session token "+req.SessionToken, http.StatusUnauthorized)
 		} else {
-			log.Error("SessionToken validation failed, unable to proceed " + err.Error())
+			l.Log.Error("SessionToken validation failed, unable to proceed " + err.Error())
 		}
 		return status, message
 	}
 	session.LastUsedTime = time.Now()
 	// Update Session
 	if err = session.Update(); err != nil {
-		log.Error("SessionToken update failed with error: " + err.Error())
+		l.Log.Error("SessionToken update failed with error: " + err.Error())
 		return err.GetAuthStatusCodeAndMessage()
 	}
 

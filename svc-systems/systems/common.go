@@ -24,11 +24,11 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
-	log "github.com/sirupsen/logrus"
 )
 
 // BiosSetting structure for checking request body case
@@ -78,7 +78,7 @@ type monitorTaskRequest struct {
 func UpdateTaskData(taskData common.TaskData) error {
 	var res map[string]interface{}
 	if err := json.Unmarshal([]byte(taskData.TaskRequest), &res); err != nil {
-		log.Error(err)
+		l.Log.Error(err)
 	}
 	reqStr := logs.MaskRequestBody(res)
 
@@ -124,7 +124,7 @@ func (e *PluginContact) monitorPluginTask(monitorTaskData *monitorTaskRequest) (
 		var task common.TaskData
 		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {
 			errMsg := "Unable to parse the reset respone" + err.Error()
-			log.Warn(errMsg)
+			l.Log.Warn(errMsg)
 			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
 			return monitorTaskData.respBody, err
 		}
@@ -141,7 +141,7 @@ func (e *PluginContact) monitorPluginTask(monitorTaskData *monitorTaskRequest) (
 		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = ContactPluginFunc(monitorTaskData.pluginRequest, "error while reseting the computer system: ")
 		if err != nil {
 			errMsg := err.Error()
-			log.Warn(errMsg)
+			l.Log.Warn(errMsg)
 			common.GeneralError(monitorTaskData.getResponse.StatusCode, monitorTaskData.getResponse.StatusMessage, errMsg, nil, monitorTaskData.taskInfo)
 			return monitorTaskData.respBody, err
 		}

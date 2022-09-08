@@ -15,23 +15,24 @@
 package system
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
-	log "github.com/sirupsen/logrus"
-	"net/http"
-	"strings"
 )
 
 // GetAllConnectionMethods is the handler for getting the connection methods collection
 func (e *ExternalInterface) GetAllConnectionMethods(req *aggregatorproto.AggregatorRequest) response.RPC {
 	connectionMethods, err := e.GetAllKeysFromTable("ConnectionMethod")
 	if err != nil {
-		log.Error("error getting connection methods : " + err.Error())
+		l.Log.Error("error getting connection methods : " + err.Error())
 		errorMessage := err.Error()
 		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errorMessage, []interface{}{config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, nil)
 	}
@@ -64,7 +65,7 @@ func (e *ExternalInterface) GetAllConnectionMethods(req *aggregatorproto.Aggrega
 func (e *ExternalInterface) GetConnectionMethodInfo(req *aggregatorproto.AggregatorRequest) response.RPC {
 	connectionmethod, err := e.GetConnectionMethod(req.URL)
 	if err != nil {
-		log.Error("error getting  connectionmethod : " + err.Error())
+		l.Log.Error("error getting  connectionmethod : " + err.Error())
 		errorMessage := err.Error()
 		if errors.DBKeyNotFound == err.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ConnectionMethod", req.URL}, nil)

@@ -21,11 +21,10 @@ import (
 	"net/http"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
@@ -110,7 +109,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 		if StringContain(err.Error(), "smodel.OdataIDLink") {
 			errorMessage = "Error processing create volume request: @odata.id key(s) is missing in Drives list"
 		}
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
 		return resp
 	}
@@ -119,11 +118,11 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, volume)
 	if err != nil {
 		errMsg := "error while validating request parameters for volume creation: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response
 	}
@@ -131,7 +130,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	statuscode, statusMessage, messageArgs, err := e.validateProperties(&volume, req.SystemID)
 	if err != nil {
 		errorMessage := "error: request payload validation failed: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
 		return resp
 	}
@@ -235,7 +234,7 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID 
 			}
 			_, err := e.DB.GetResource("Drives", driveURI)
 			if err != nil {
-				log.Error(err.Error())
+				l.Log.Error(err.Error())
 				if errors.DBKeyNotFound == err.ErrNo() {
 					requestData := strings.SplitN(systemID, ".", 2)
 					var getDeviceInfoRequest = scommon.ResourceInfoRequest{
@@ -258,7 +257,7 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID 
 			driveURISplit := strings.Split(driveURI, "/")
 			if len(driveURISplit) > 5 && driveURISplit[4] != systemID {
 				errMsg := "Drive URI contains incorrect system id"
-				log.Error(errMsg)
+				l.Log.Error(errMsg)
 				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf(errMsg)
 			}
 		}
@@ -270,7 +269,7 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID 
 			}
 			_, err := e.DB.GetResource("Drives", driveURI)
 			if err != nil {
-				log.Error(err.Error())
+				l.Log.Error(err.Error())
 				if errors.DBKeyNotFound == err.ErrNo() {
 					requestData := strings.SplitN(systemID, ".", 2)
 					var getDeviceInfoRequest = scommon.ResourceInfoRequest{
@@ -293,7 +292,7 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID 
 			driveURISplit := strings.Split(driveURI, "/")
 			if len(driveURISplit) > 5 && driveURISplit[4] != systemID {
 				errMsg := "Drive URI contains incorrect system id"
-				log.Error(errMsg)
+				l.Log.Error(errMsg)
 				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf(errMsg)
 			}
 		}
@@ -362,7 +361,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	err := JSONUnmarshalFunc(req.RequestBody, &volume)
 	if err != nil {
 		errorMessage := "Error while unmarshaling the create volume request: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
 		return resp
 	}
@@ -388,18 +387,18 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, volume)
 	if err != nil {
 		errMsg := "error while validating request parameters for volume creation: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response
 	}
 	key := fmt.Sprintf("/redfish/v1/Systems/%s/Storage/%s/Volumes/%s", req.SystemID, req.StorageInstance, req.VolumeID)
 	_, dbErr := e.DB.GetResource("Volumes", key)
 	if dbErr != nil {
-		log.Error("error getting volumes details : " + dbErr.Error())
+		l.Log.Error("error getting volumes details : " + dbErr.Error())
 		errorMessage := dbErr.Error()
 		if errors.DBKeyNotFound == dbErr.ErrNo() {
 			var getDeviceInfoRequest = scommon.ResourceInfoRequest{
@@ -477,7 +476,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	// delete a volume in db
 	if derr := e.DB.DeleteVolume(key); derr != nil {
 		errMsg := "error while trying to delete volume: " + derr.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Volumes", key}, nil)
 		}

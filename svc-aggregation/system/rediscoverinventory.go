@@ -139,12 +139,14 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	req.UpdateTask = e.UpdateTask
 	var h respHolder
 	h.TraversedLinks = make(map[string]bool)
+	h.InventoryData = make(map[string]interface{})
 	progress := int32(100)
 	systemsEstimatedWork := int32(75)
 	if strings.Contains(systemURL, "/Storage") {
 		_, progress, _ = h.getStorageInfo(progress, systemsEstimatedWork, req)
 	} else {
 		_, _, progress, _ = h.getSystemInfo("", progress, systemsEstimatedWork, req)
+		h.InventoryData = make(map[string]interface{})
 		//rediscovering the Chassis Information
 		req.OID = "/redfish/v1/Chassis"
 		chassisEstimatedWork := int32(15)
@@ -154,6 +156,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 		req.OID = "/redfish/v1/Managers"
 		managerEstimatedWork := int32(15)
 		progress = h.getAllRootInfo("", progress, managerEstimatedWork, req, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
+		agmodel.SaveBMCInventory(h.InventoryData)
 	}
 
 	var responseBody = map[string]string{

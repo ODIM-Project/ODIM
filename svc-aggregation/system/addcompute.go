@@ -123,6 +123,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 
 	var h respHolder
 	h.TraversedLinks = make(map[string]bool)
+	h.InventoryData = make(map[string]interface{})
 	progress := percentComplete
 	systemsEstimatedWork := int32(60)
 	var computeSystemID, resourceURI string
@@ -149,6 +150,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
+	h.InventoryData = make(map[string]interface{})
 
 	// Populate the resource Firmware inventory for update service
 	pluginContactRequest.DeviceInfo = getSystemBody
@@ -254,6 +256,14 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	progress = h.getAllRootInfo(taskID, progress, managerEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
 
 	percentComplete = progress
+
+	err = agmodel.SaveBMCInventory(h.InventoryData)
+	if err != nil {
+		errorMessage := "GenericSave : error while trying to add resource date to DB: " + err.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil), "", nil
+	}
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && (err.Error() == common.Cancelling) {

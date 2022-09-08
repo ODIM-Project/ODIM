@@ -633,6 +633,38 @@ func isDbConnectError(err error) (*errors.Error, bool) {
 	return nil, false
 }
 
+// SaveBMCInventory function save all bmc inventory data togeter using the transaction model
+func (p *ConnPool) SaveBMCInventory(data map[string]interface{}) *errors.Error {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	if writePool == nil {
+		return errors.PackError(errors.UndefinedErrorType, "error while trying to Write Transaction data: WritePool is nil")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+	writeConn.Send("MULTI")
+	for key, val := range data {
+		jsondata, err := json.Marshal(val)
+		if err != nil {
+			writeConn.Send("DISCARD")
+			return errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
+		}
+		_, createErr := writeConn.Do("SET", key, jsondata)
+		if createErr != nil {
+			writeConn.Send("DISCARD")
+			atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+
+			return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
+		}
+
+	}
+	_, err := writeConn.Do("EXEC")
+	if err != nil {
+		return errors.PackError(errors.UndefinedErrorType, err)
+	}
+	return nil
+
+}
+
 //GetResourceDetails will fetch the key and also fetch the data
 func (p *ConnPool) GetResourceDetails(key string) (string, *errors.Error) {
 	readConn := p.ReadPool.Get()

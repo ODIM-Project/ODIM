@@ -19,9 +19,8 @@ import (
 	"net/http"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
@@ -93,14 +92,14 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 	if err != nil {
 		errMsg := "error while trying to get the session username: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Warn(errMsg)
+		l.Log.Warn(errMsg)
 		return resp, nil
 	}
 	taskURI, err := a.connector.External.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "error while trying to create task: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Warn(errMsg)
+		l.Log.Warn(errMsg)
 		return resp, nil
 	}
 	strArray := strings.Split(taskURI, "/")
@@ -119,7 +118,7 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 		HTTPMethod:      http.MethodPost,
 	})
 	if err != nil {
-		log.Warn("error while contacting task-service with UpdateTask RPC : " + err.Error())
+		l.Log.Warn("error while contacting task-service with UpdateTask RPC : " + err.Error())
 	}
 	go a.connector.SimpleUpdate(taskID, sessionUserName, req)
 	// return 202 Accepted
@@ -150,14 +149,14 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 	if err != nil {
 		errMsg := "error while trying to get the session username: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Warn(errMsg)
+		l.Log.Warn(errMsg)
 		return resp, nil
 	}
 	taskURI, err := a.connector.External.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "error while trying to create task: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Warn(errMsg)
+		l.Log.Warn(errMsg)
 		return resp, nil
 	}
 	strArray := strings.Split(taskURI, "/")
@@ -177,7 +176,7 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 	})
 	if err != nil {
 		// print error as we are unable to communicate with svc-task and then return
-		log.Warn("error while contacting task-service with UpdateTask RPC : " + err.Error())
+		l.Log.Warn("error while contacting task-service with UpdateTask RPC : " + err.Error())
 	}
 	go a.connector.StartUpdate(taskID, sessionUserName, req)
 	// return 202 Accepted

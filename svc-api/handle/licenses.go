@@ -20,10 +20,10 @@ import (
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	licenseproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/licenses"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 )
 
 // LicenseRPCs defines all the RPC methods in license service
@@ -34,7 +34,7 @@ type LicenseRPCs struct {
 	InstallLicenseServiceRPC func(req licenseproto.InstallLicenseRequest) (*licenseproto.GetLicenseResponse, error)
 }
 
-func (l *LicenseRPCs) GetLicenseService(ctx iris.Context) {
+func (lcns *LicenseRPCs) GetLicenseService(ctx iris.Context) {
 	defer ctx.Next()
 	req := licenseproto.GetLicenseServiceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -42,16 +42,16 @@ func (l *LicenseRPCs) GetLicenseService(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := l.GetLicenseServiceRPC(req)
+	resp, err := lcns.GetLicenseServiceRPC(req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -65,7 +65,7 @@ func (l *LicenseRPCs) GetLicenseService(ctx iris.Context) {
 }
 
 //GetLicenseCollection fetches all licenses
-func (l *LicenseRPCs) GetLicenseCollection(ctx iris.Context) {
+func (lcns *LicenseRPCs) GetLicenseCollection(ctx iris.Context) {
 	defer ctx.Next()
 	req := licenseproto.GetLicenseRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -73,16 +73,16 @@ func (l *LicenseRPCs) GetLicenseCollection(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := l.GetLicenseCollectionRPC(req)
+	resp, err := lcns.GetLicenseCollectionRPC(req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -96,7 +96,7 @@ func (l *LicenseRPCs) GetLicenseCollection(ctx iris.Context) {
 }
 
 //GetLicenseResource fetches license resource
-func (l *LicenseRPCs) GetLicenseResource(ctx iris.Context) {
+func (lcns *LicenseRPCs) GetLicenseResource(ctx iris.Context) {
 	defer ctx.Next()
 	req := licenseproto.GetLicenseResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -104,16 +104,16 @@ func (l *LicenseRPCs) GetLicenseResource(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := l.GetLicenseResourceRPC(req)
+	resp, err := lcns.GetLicenseResourceRPC(req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -127,13 +127,13 @@ func (l *LicenseRPCs) GetLicenseResource(ctx iris.Context) {
 }
 
 // InstallLicenseService installs license
-func (l *LicenseRPCs) InstallLicenseService(ctx iris.Context) {
+func (lcns *LicenseRPCs) InstallLicenseService(ctx iris.Context) {
 	defer ctx.Next()
 	var reqIn interface{}
 	err := ctx.ReadJSON(&reqIn)
 	if err != nil {
 		errorMessage := "Error while trying to get JSON body from request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -143,7 +143,7 @@ func (l *LicenseRPCs) InstallLicenseService(ctx iris.Context) {
 	request, err := json.Marshal(reqIn)
 	if err != nil {
 		errorMessage := "while trying to create JSON request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -157,16 +157,16 @@ func (l *LicenseRPCs) InstallLicenseService(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := l.InstallLicenseServiceRPC(req)
+	resp, err := lcns.InstallLicenseServiceRPC(req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)

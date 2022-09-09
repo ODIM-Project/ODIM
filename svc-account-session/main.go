@@ -14,11 +14,14 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
+	"fmt"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
@@ -27,16 +30,29 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/rpc"
 )
 
-var log = logrus.New()
-
 func main() {
+	// setting up the logging framework
+	hostName := os.Getenv("HOST_NAME")
+	podName := os.Getenv("POD_NAME")
+	pid := os.Getpid()
+	log := logs.Log
+	logs.Adorn(logrus.Fields{
+		"host":   hostName,
+		"procid": podName + fmt.Sprintf("_%d", pid),
+	})
+
+	if err := config.SetConfiguration(); err != nil {
+		log.Logger.SetFormatter(&logs.SysLogFormatter{})
+		log.Fatal(err.Error())
+	}
+
+	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	log.Logger.SetOutput(os.Stdout)
+	log.Logger.SetLevel(logrus.WarnLevel)
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("AccountSession Service should not be run as the root user")
-	}
-
-	if err := config.SetConfiguration(); err != nil {
-		log.Fatal(err.Error())
 	}
 
 	config.CollectCLArgs()

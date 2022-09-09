@@ -20,10 +20,10 @@ import (
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 )
 
 // RoleRPCs defines all the RPC methods in role
@@ -53,7 +53,7 @@ func (r *RoleRPCs) GetAllRoles(ctx iris.Context) {
 	resp, err := r.GetAllRolesRPC(req)
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -88,7 +88,7 @@ func (r *RoleRPCs) GetRole(ctx iris.Context) {
 	resp, err := r.GetRoleRPC(req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -119,7 +119,7 @@ func (r *RoleRPCs) UpdateRole(ctx iris.Context) {
 	var roleReq interface{}
 	err := ctx.ReadJSON(&roleReq)
 	if err != nil {
-		log.Error("Error while trying to collect data from request: " + err.Error())
+		l.Log.Error("Error while trying to collect data from request: " + err.Error())
 		errorMessage := "error while trying to get JSON body from the role update request body: " + err.Error()
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
@@ -142,7 +142,7 @@ func (r *RoleRPCs) UpdateRole(ctx iris.Context) {
 	resp, err := r.UpdateRoleRPC(req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -175,7 +175,7 @@ func (r *RoleRPCs) DeleteRole(ctx iris.Context) {
 	resp, err := r.DeleteRoleRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

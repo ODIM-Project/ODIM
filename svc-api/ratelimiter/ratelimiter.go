@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -39,7 +39,7 @@ func RequestRateLimiter(sessionToken string) error {
 		if count > config.Data.RequestLimitCountPerSession {
 			DecrementCounter(sessionToken, SessionRateLimit)
 			errorMessage := "too many requests, retry after some time"
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			return fmt.Errorf(errorMessage)
 		}
 	}
@@ -57,7 +57,7 @@ func SessionRateLimiter(userid string) error {
 		if count > config.Data.SessionLimitCountPerUser {
 			DecrementCounter(userid, UserRateLimit)
 			errorMessage := "too many requests, retry after some time"
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			return fmt.Errorf(errorMessage)
 		}
 		//IncrementCounter(userid, UserRateLimit)
@@ -77,7 +77,7 @@ func ResourceRateLimiter(ctx iris.Context) {
 			if regex.MatchString(uri) {
 				conn, err := common.GetDBConnection(common.InMemory)
 				if err != nil {
-					log.Error(err.Error())
+					l.Log.Error(err.Error())
 					response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 					common.SetResponseHeader(ctx, response.Header)
 					ctx.StatusCode(http.StatusInternalServerError)
@@ -88,7 +88,7 @@ func ResourceRateLimiter(ctx iris.Context) {
 				expiretime := rLimit / 1000
 				if err = conn.SetExpire("ResourceRateLimit", uri, "", expiretime); err != nil {
 					errorMessage := "too many requests, retry after some time"
-					log.Error(errorMessage)
+					l.Log.Error(errorMessage)
 					response := common.GeneralError(http.StatusServiceUnavailable, response.RateLimitExceeded, errorMessage, nil, nil)
 					remainTime, _ := conn.TTL(ResourceRateLimit, uri)
 					if remainTime > 0 {

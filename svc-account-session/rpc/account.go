@@ -19,11 +19,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/account"
@@ -67,7 +67,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
@@ -82,7 +82,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return &resp, nil
 	}
 
@@ -93,7 +93,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 	if jsonErr != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for create account: " + jsonErr.Error()
-		log.Error(resp.StatusMessage)
+		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
@@ -129,7 +129,7 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
@@ -145,7 +145,7 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return &resp, nil
 	}
 
@@ -154,7 +154,7 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for get all accounts: " + err.Error()
-		log.Error(resp.StatusMessage)
+		l.Log.Error(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
 	resp.StatusCode = data.StatusCode
@@ -190,7 +190,7 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
@@ -206,7 +206,7 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return &resp, nil
 	}
 
@@ -215,7 +215,7 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for get account details: " + err.Error()
-		log.Error(resp.StatusMessage)
+		l.Log.Error(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
 	resp.StatusCode = data.StatusCode
@@ -251,7 +251,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
@@ -267,7 +267,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		log.Printf(errorMessage)
+		l.Log.Printf(errorMessage)
 		return &resp, nil
 	}
 
@@ -276,7 +276,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for get account details: " + err.Error()
-		log.Printf(resp.StatusMessage)
+		l.Log.Printf(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
 	resp.StatusCode = data.StatusCode
@@ -312,7 +312,7 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
@@ -328,7 +328,7 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return &resp, nil
 	}
 
@@ -339,7 +339,7 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body for create account: " + err.Error()
-		log.Printf(resp.StatusMessage)
+		l.Log.Printf(resp.StatusMessage)
 		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
@@ -375,7 +375,7 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
@@ -391,7 +391,7 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return &resp, nil
 	}
 
@@ -401,7 +401,7 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 	if jsonErr != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for delete account: " + jsonErr.Error()
-		log.Error(resp.StatusMessage)
+		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode

@@ -30,10 +30,10 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -169,7 +169,7 @@ func (m *multiTargetClient) Get(uri string, opts ...CallOption) response.RPC {
 		resp := client.Get(uri)
 		err := m.call.collector.Collect(resp)
 		if err != nil {
-			log.Warn("execution of GET " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
+			l.Log.Warn("execution of GET " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
 		}
 	}
 	// Checking whether the struct passed as the interface has a ReqURI field.
@@ -198,7 +198,7 @@ func (m *multiTargetClient) Post(uri string, body *json.RawMessage) response.RPC
 func (m *multiTargetClient) Patch(uri string, body *json.RawMessage) response.RPC {
 	for _, target := range m.targets {
 		client := m.createClient(target)
-		log.Info("Request received to patch chassis to rack, URI: ", uri)
+		l.Log.Info("Request received to patch chassis to rack, URI: ", uri)
 		resp := client.Patch(uri, body)
 		switch {
 		case resp.StatusCode == http.StatusNotFound:
@@ -208,7 +208,7 @@ func (m *multiTargetClient) Patch(uri string, body *json.RawMessage) response.RP
 		case is4xx(int(resp.StatusCode)):
 			return resp
 		default:
-			log.Warn("execution of PATCH " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
+			l.Log.Warn("execution of PATCH " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
 		}
 	}
 	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
@@ -226,7 +226,7 @@ func (m *multiTargetClient) Delete(uri string) response.RPC {
 		case is4xx(int(resp.StatusCode)):
 			return resp
 		default:
-			log.Warn("execution of DELETE " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
+			l.Log.Warn("execution of DELETE " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
 		}
 	}
 	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
@@ -303,7 +303,7 @@ func (c *client) extractResp(httpResponse *http.Response, err error) response.RP
 		ce := new(response.CommonError)
 		err := dec.Decode(ce)
 		if err != nil {
-			log.Error("Cannot decode CommonError: " + err.Error())
+			l.Log.Error("Cannot decode CommonError: " + err.Error())
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, string(body), nil, nil)
 		}
 	}
@@ -392,7 +392,7 @@ func findAllPlugins(key string) (res []*smodel.Plugin, err error) {
 func convertToString(data interface{}) string {
 	byteData, err := JSONMarshalFunc(data)
 	if err != nil {
-		log.Error("converting interface to string type failed: " + err.Error())
+		l.Log.Error("converting interface to string type failed: " + err.Error())
 		return ""
 	}
 

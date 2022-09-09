@@ -20,10 +20,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
@@ -43,7 +42,7 @@ func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
 	body := new(json.RawMessage)
 	ue := json.Unmarshal(req.RequestBody, body)
 	if ue != nil {
-		log.Error("while trying to unmarshal, got " + ue.Error())
+		l.Log.Error("while trying to unmarshal, got " + ue.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, "Cannot deserialize request body", nil, nil)
 	}
 

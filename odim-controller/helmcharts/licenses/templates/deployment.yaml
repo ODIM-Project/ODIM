@@ -14,6 +14,7 @@ spec:
     metadata:
       labels:
         app: licenses
+      name: dapi-envars-fieldref
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
@@ -87,6 +88,14 @@ spec:
               value: {{ .Values.odimra.haDeploymentEnabled | quote }}
             - name: ODIM_NAMESPACE
               value: {{ .Values.odimra.namespace | quote }}
+            - name: HOST_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           image: licenses:{{ .Values.odimra.licensesImageTag }}
           imagePullPolicy: IfNotPresent
           ports:

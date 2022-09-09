@@ -20,13 +20,13 @@ package telemetry
 // ---------------------------------------------------------------------------------------
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	teleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-telemetry/tcommon"
@@ -212,7 +212,7 @@ func (e *ExternalInterface) GetMetricReportDefinition(req *teleproto.TelemetryRe
 	var resp response.RPC
 	data, gerr := e.DB.GetResource("MetricReportDefinitions", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Warn("Unable to get MetricReportDefinition details : " + gerr.Error())
+		l.Log.Warn("Unable to get MetricReportDefinition details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"MetricReportDefinition", req.URL}, nil)
@@ -244,7 +244,7 @@ func (e *ExternalInterface) GetMetricReport(req *teleproto.TelemetryRequest) res
 	}
 	data, err := tcommon.GetResourceInfoFromDevice(getDeviceInfoRequest)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"MetricReport", req.URL}, nil)
 	}
 	var resource map[string]interface{}
@@ -262,7 +262,7 @@ func (e *ExternalInterface) GetMetricDefinition(req *teleproto.TelemetryRequest)
 	var resp response.RPC
 	data, gerr := e.DB.GetResource("MetricDefinitions", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Warn("Unable to get MetricDefinition details : " + gerr.Error())
+		l.Log.Warn("Unable to get MetricDefinition details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"MetricDefinition", req.URL}, nil)
@@ -284,7 +284,7 @@ func (e *ExternalInterface) GetTrigger(req *teleproto.TelemetryRequest) response
 	var resp response.RPC
 	data, gerr := e.DB.GetResource("Triggers", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Warn("Unable to get Triggers details `: " + gerr.Error())
+		l.Log.Warn("Unable to get Triggers details `: " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Triggers", req.URL}, nil)

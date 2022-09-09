@@ -18,6 +18,7 @@ package rpc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -137,6 +138,12 @@ func TestCreateEventSubscription(t *testing.T) {
 
 	esRespTest2, _ := events.CreateEventSubscription(ctx, req)
 	assert.Equal(t, int(esRespTest2.StatusCode), http.StatusInternalServerError, "Status code should be StatusUnauthorized.")
+	events.Connector.GetSessionUserName = func(sessionToken string) (string, error) {
+		return "", fmt.Errorf("")
+	}
+	esRespTest3, _ := events.CreateEventSubscription(ctx, req)
+	assert.Equal(t, int(esRespTest3.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
+
 }
 
 func TestSubmitTestEvent(t *testing.T) {
@@ -166,6 +173,13 @@ func TestSubmitTestEvent(t *testing.T) {
 	resp, errTest := events.SubmitTestEvent(ctx, req)
 	assert.Nil(t, errTest, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
+	JSONMarshal = func(v interface{}) ([]byte, error) {
+		return nil, fmt.Errorf("")
+	}
+	_, errTest = events.SubmitTestEvent(ctx, req)
+	assert.NotNil(t, errTest, "There should be an error")
+	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
+
 }
 
 func TestGetEventSubscriptionsCollection(t *testing.T) {
@@ -185,6 +199,11 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 	json.Unmarshal(resp.Body, evResp)
 	assert.Equal(t, 1, evResp.MembersCount, "MembersCount should be 1")
 
+	JSONMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
+	resp, err = events.GetEventSubscriptionsCollection(ctx, req)
+	assert.Nil(t, err, "There should be an error")
+	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "Status code should be StatusInternalServerError.")
+	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
 }
 
 func TestGetEventSubscriptions(t *testing.T) {
@@ -209,6 +228,12 @@ func TestGetEventSubscriptions(t *testing.T) {
 	//resp := &eventsproto.EventSubResponse{}
 	resp, _ := events.GetEventSubscription(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "Status code should be StatusNotFound.")
+
+	JSONMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
+	resp, err = events.GetEventSubscription(ctx, req)
+	assert.Nil(t, err, "There should be an error")
+	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "Status code should be StatusInternalServerError.")
+	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
 }
 
 func TestDeleteEventSubscription(t *testing.T) {
@@ -229,6 +254,13 @@ func TestDeleteEventSubscription(t *testing.T) {
 
 	delResp, _ := events.DeleteEventSubscription(ctx, req)
 	assert.Equal(t, int(delResp.StatusCode), http.StatusNotFound, "Status code should be StatusNotFound.")
+
+	JSONMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
+	resp, err = events.DeleteEventSubscription(ctx, req)
+	assert.Nil(t, err, "There should be an error")
+	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "Status code should be StatusInternalServerError.")
+	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
+
 }
 
 func TestDeleteEventSubscriptionwithUUID(t *testing.T) {
@@ -281,4 +313,18 @@ func TestSubscribeEMB(t *testing.T) {
 	resp, err := events.SubsribeEMB(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 	assert.True(t, resp.Status, "status should be true")
+}
+
+func TestEvents_RemoveEventSubscriptionsRPC(t *testing.T) {
+	events := getMockPluginContactInitializer()
+
+	_, err := events.RemoveEventSubscriptionsRPC(context.Background(), &eventsproto.EventUpdateRequest{})
+	assert.NotNil(t, "There should be an error ", err)
+	_, err = events.UpdateEventSubscriptionsRPC(context.Background(), &eventsproto.EventUpdateRequest{})
+	assert.NotNil(t, "There should be an error ", err)
+	_, err = events.IsAggregateHaveSubscription(context.Background(), &eventsproto.EventUpdateRequest{})
+	assert.NotNil(t, "There should be an error ", err)
+	_, err = events.DeleteAggregateSubscriptionsRPC(context.Background(), &eventsproto.EventUpdateRequest{})
+	assert.NotNil(t, "There should be an error ", err)
+	GetPluginContactInitializer()
 }

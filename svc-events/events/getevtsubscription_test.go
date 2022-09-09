@@ -21,12 +21,16 @@
 package events
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
+	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 	"github.com/stretchr/testify/assert"
 )
@@ -90,6 +94,11 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 	resp = pc.GetEventSubscriptionsCollection(req1)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusUnauthorized")
 
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+		return []evmodel.Subscription{}, errors.New("")
+	}
+	resp = pc.GetEventSubscriptionsCollection(req)
+
 }
 
 func TestGetEventSubscription(t *testing.T) {
@@ -124,4 +133,37 @@ func TestGetEventSubscription(t *testing.T) {
 	resp = pc.GetEventSubscriptionsDetails(req)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusNotFound")
 
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+		return []evmodel.Subscription{}, errors.New("")
+	}
+	resp = pc.GetEventSubscriptionsDetails(req)
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusOK")
+
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+		return []evmodel.Subscription{{UserName: "Admin", SubscriptionID: "test"}}, nil
+	}
+	resp = pc.GetEventSubscriptionsDetails(req)
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusOK")
+
+}
+
+func TestExternalInterfaces_IsAggregateHaveSubscription(t *testing.T) {
+	config.SetUpMockConfig(t)
+	pc := getMockMethods()
+	pc.Auth = func(s1 string, s2, s3 []string) response.RPC {
+		return response.RPC{
+			StatusCode: 400,
+		}
+	}
+	pc.IsAggregateHaveSubscription(&eventsproto.EventUpdateRequest{})
+	pc.Auth = func(s1 string, s2, s3 []string) response.RPC {
+		return response.RPC{
+			StatusCode: 200,
+		}
+	}
+	pc.IsAggregateHaveSubscription(&eventsproto.EventUpdateRequest{})
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+		return []evmodel.Subscription{{UserName: "admin"}}, nil
+	}
+	pc.IsAggregateHaveSubscription(&eventsproto.EventUpdateRequest{})
 }

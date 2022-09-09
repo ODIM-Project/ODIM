@@ -16,12 +16,12 @@
 package role
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -70,7 +70,7 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 	role, err := asmodel.GetRoleDetailsByID(req.Id)
 	if err != nil {
 		errorMessage := "Error while getting the role : " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
@@ -147,7 +147,7 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 	}
 	roles, rerr := asmodel.GetAllRoles()
 	if rerr != nil {
-		log.Error("error getting role : " + rerr.Error())
+		l.Log.Error("error getting role : " + rerr.Error())
 		errorMessage := rerr.Error()
 		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errorMessage, []interface{}{config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, nil)
 	}

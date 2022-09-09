@@ -19,13 +19,13 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	"github.com/ODIM-Project/ODIM/svc-account-session/session"
 
-	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -36,7 +36,7 @@ func doSessionAuthAndUpdate(resp *response.RPC, sessionToken string) (*asmodel.S
 		resp.StatusCode, resp.StatusMessage = err.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
 			auth.CustomAuthLog(sessionToken, "Invalid session token", resp.StatusCode)
@@ -46,7 +46,7 @@ func doSessionAuthAndUpdate(resp *response.RPC, sessionToken string) (*asmodel.S
 	if errs := session.UpdateLastUsedTime(sessionToken); errs != nil {
 		errorMessage := "Unable to update last used time of session with token " + sessionToken + ": " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return nil, errs
 	}
 	return sess, nil
@@ -82,7 +82,7 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 	users, uerr := asmodel.GetAllUsers()
 	if uerr != nil {
 		errorMessage := "Unable to get users list: " + uerr.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		resp.CreateInternalErrorResponse(errorMessage)
 		return &resp
 	}
@@ -103,7 +103,7 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			return &resp
 		}
 	}
@@ -129,7 +129,7 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return &resp
 	}
 	if role.IsPredefined {
@@ -148,14 +148,14 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return &resp
 	}
 
 	if derr := role.Delete(); derr != nil {
 		errorMessage := "Unable to delete role: " + derr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return &resp
 	}
 

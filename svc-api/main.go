@@ -16,6 +16,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -24,6 +25,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
@@ -32,9 +34,27 @@ import (
 	iris "github.com/kataras/iris/v12"
 )
 
-var log = logrus.New()
-
 func main() {
+	// setting up the logging framework
+	hostName := os.Getenv("HOST_NAME")
+	podName := os.Getenv("POD_NAME")
+	pid := os.Getpid()
+	log := logs.Log
+	logs.Adorn(logrus.Fields{
+		"host":   hostName,
+		"procid": podName + fmt.Sprintf("_%d", pid),
+	})
+
+	err := config.SetConfiguration()
+	if err != nil {
+		log.Logger.SetFormatter(&logs.SysLogFormatter{})
+		log.Fatal(err.Error())
+	}
+
+	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	log.Logger.SetOutput(os.Stdout)
+	log.Logger.SetLevel(logrus.WarnLevel)
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Api Service should not be run as the root user")
@@ -148,11 +168,6 @@ func main() {
 		// r.URL.Path = strings.ToLower(path)
 		next(w, r)
 	})
-
-	err := config.SetConfiguration()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
 
 	// TODO: uncomment the following line after the migration
 	config.CollectCLArgs()

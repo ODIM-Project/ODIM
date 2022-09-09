@@ -22,9 +22,8 @@ import (
 	"net/url"
 	"reflect"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
@@ -58,7 +57,7 @@ func (a *UpdateRPCs) GetUpdateService(ctx iris.Context) {
 	resp, err := a.GetUpdateServiceRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -90,7 +89,7 @@ func (a *UpdateRPCs) GetFirmwareInventoryCollection(ctx iris.Context) {
 	resp, err := a.GetFirmwareInventoryCollectionRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -121,7 +120,7 @@ func (a *UpdateRPCs) GetSoftwareInventoryCollection(ctx iris.Context) {
 	resp, err := a.GetSoftwareInventoryCollectionRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -154,7 +153,7 @@ func (a *UpdateRPCs) GetFirmwareInventory(ctx iris.Context) {
 	resp, err := a.GetFirmwareInventoryRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -187,7 +186,7 @@ func (a *UpdateRPCs) GetSoftwareInventory(ctx iris.Context) {
 	resp, err := a.GetSoftwareInventoryRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -208,7 +207,7 @@ func (a *UpdateRPCs) SimpleUpdate(ctx iris.Context) {
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the simple update request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -240,7 +239,7 @@ func (a *UpdateRPCs) SimpleUpdate(ctx iris.Context) {
 	resp, err := a.SimpleUpdateRPC(updateRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -258,32 +257,32 @@ func validateSimpleUpdateRequest(requestBody []byte) response.RPC {
 	err := json.Unmarshal(requestBody, &request)
 	if err != nil {
 		errMsg := "Unable to parse the simple update request" + err.Error()
-		log.Warn(errMsg)
+		l.Log.Warn(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, nil)
 	}
 	if request["Targets"] != nil {
 		if reflect.TypeOf(request["Targets"]).Kind() != reflect.Slice {
 			errMsg := "'Targets' parameter should be of type string array"
-			log.Warn(errMsg)
+			l.Log.Warn(errMsg)
 			return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{"", "Targets"}, nil)
 		}
 		target := request["Targets"].([]interface{})
 		for _, k := range target {
 			if reflect.TypeOf(k).Kind() != reflect.String {
 				errMsg := "'Targets' parameter should be of type string array"
-				log.Warn(errMsg)
+				l.Log.Warn(errMsg)
 				return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{fmt.Sprintf("%v", k), "Targets"}, nil)
 			}
 		}
 	}
 	if request["ImageURI"] == nil {
 		errMsg := "'ImageURI' parameter cannot be empty"
-		log.Warn(errMsg)
+		l.Log.Warn(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"ImageURI"}, nil)
 	}
 	if reflect.TypeOf(request["ImageURI"]).Kind() != reflect.String {
 		errMsg := "'ImageURI' parameter should be of type string"
-		log.Warn(errMsg)
+		l.Log.Warn(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{"", "ImageURI"}, nil)
 	}
 	if request["ImageURI"] != nil {
@@ -291,7 +290,7 @@ func validateSimpleUpdateRequest(requestBody []byte) response.RPC {
 		_, err = url.ParseRequestURI(URI.(string))
 		if err != nil {
 			errMsg := "Provided ImageURI is Invalid"
-			log.Warn(errMsg)
+			l.Log.Warn(errMsg)
 			return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{fmt.Sprintf("%v", err), "ImageURI"}, nil)
 		}
 	}
@@ -316,7 +315,7 @@ func (a *UpdateRPCs) StartUpdate(ctx iris.Context) {
 	resp, err := a.StartUpdateRPC(updateRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

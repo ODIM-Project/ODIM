@@ -727,7 +727,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(req *managersproto.Manage
 	data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1],nil)
 	if err != nil {
 		errorMessage := "unable to get resource details from device: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		errArgs := []interface{}{"RemoteAccounts", requestData[1]}
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
 	}

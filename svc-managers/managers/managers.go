@@ -736,8 +736,12 @@ func (e *ExternalInterface) UpdateRemoteAccountService(req *managersproto.Manage
 	if err != nil {
 		panic(err)
 	}
-	username := dataMap["UserName"]
-	bmcCreds := mgrcommon.BmcUpdatedCreds{UserName: username.(string), UpdatedPassword: bmcAccReq.Password}
+
+	var username string
+	if dataMap["UserName"] != nil {
+		username = dataMap["UserName"].(string)
+	}
+	bmcCreds := mgrcommon.BmcUpdatedCreds{UserName: username, UpdatedPassword: bmcAccReq.Password}
 	requestBody, err := json.Marshal(bmcAccReq)
 	if err != nil {
 		log.Error("while marshalling the update BMC account request: " + err.Error())

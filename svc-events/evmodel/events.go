@@ -20,10 +20,9 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 const (
@@ -57,6 +56,11 @@ const (
 	// AggregateSubscriptionIndex is a index name which required for indexing
 	// subscription of device
 	AggregateSubscriptionIndex = common.AggregateSubscriptionIndex
+)
+
+var (
+	//GetDbConnection alies for common.GetDBConnection
+	GetDbConnection = common.GetDBConnection
 )
 
 // OdataIDLink containes link to a resource
@@ -168,7 +172,7 @@ type Aggregate struct {
 
 //GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
-	conn, err := common.GetDBConnection(common.InMemory)
+	conn, err := GetDbConnection(common.InMemory)
 	if err != nil {
 		return "", errors.PackError(err.ErrNo(), err)
 	}
@@ -186,7 +190,7 @@ func GetResource(Table, key string) (string, *errors.Error) {
 //GetTarget fetches the System(Target Device Credentials) table details
 func GetTarget(deviceUUID string) (*Target, error) {
 	var target Target
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +210,7 @@ func GetTarget(deviceUUID string) (*Target, error) {
 func GetPluginData(pluginID string) (*Plugin, *errors.Error) {
 	var plugin Plugin
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +235,7 @@ func GetPluginData(pluginID string) (*Plugin, *errors.Error) {
 
 //GetAllPlugins gets all the Plugin from the db
 func GetAllPlugins() ([]Plugin, *errors.Error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
@@ -265,7 +269,7 @@ func GetAllPlugins() ([]Plugin, *errors.Error) {
 
 //GetAllKeysFromTable retrun all matching data give table name
 func GetAllKeysFromTable(table string) ([]string, error) {
-	conn, err := common.GetDBConnection(common.InMemory)
+	conn, err := GetDbConnection(common.InMemory)
 	if err != nil {
 		return nil, err
 	}
@@ -278,7 +282,7 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 
 //GetAllSystems retrives all the compute systems in odimra
 func GetAllSystems() ([]string, error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
@@ -291,7 +295,7 @@ func GetAllSystems() ([]string, error) {
 
 //GetSingleSystem retrives specific compute system in odimra based on the ID
 func GetSingleSystem(id string) (string, error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, err)
 	}
@@ -307,7 +311,7 @@ func GetSingleSystem(id string) (string, error) {
 func GetFabricData(fabricID string) (Fabric, error) {
 	var fabric Fabric
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return fabric, err
 	}
@@ -327,7 +331,7 @@ func GetFabricData(fabricID string) (Fabric, error) {
 // GetAggregateData  will fetch aggregate details
 func GetAggregateData(aggreagetKey string) (Aggregate, error) {
 	var aggregate Aggregate
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return aggregate, err
 	}
@@ -344,7 +348,7 @@ func GetAggregateData(aggreagetKey string) (Aggregate, error) {
 
 //GetAllFabrics retrun all Fabrics
 func GetAllFabrics() ([]string, error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
@@ -361,7 +365,7 @@ func GetAllFabrics() ([]string, error) {
 // GetDeviceSubscriptions is to get subscription details of device
 func GetDeviceSubscriptions(hostIP string) (*DeviceSubscription, error) {
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
@@ -381,7 +385,7 @@ func GetDeviceSubscriptions(hostIP string) (*DeviceSubscription, error) {
 
 // UpdateDeviceSubscriptionLocation is to update subscription details of device
 func UpdateDeviceSubscriptionLocation(devSubscription DeviceSubscription) error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
@@ -394,7 +398,7 @@ func UpdateDeviceSubscriptionLocation(devSubscription DeviceSubscription) error 
 
 // SaveDeviceSubscription is to save subscription details of device
 func SaveDeviceSubscription(devSubscription DeviceSubscription) error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
@@ -407,7 +411,7 @@ func SaveDeviceSubscription(devSubscription DeviceSubscription) error {
 
 // DeleteDeviceSubscription is to delete subscription details of device
 func DeleteDeviceSubscription(hostIP string) error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
@@ -432,7 +436,7 @@ func getSliceFromString(sliceString string) []string {
 
 // SaveEventSubscription is to save event subscription details
 func SaveEventSubscription(evtSubscription Subscription) error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
@@ -449,7 +453,7 @@ func SaveEventSubscription(evtSubscription Subscription) error {
 
 // GetEvtSubscriptions is to get event subscription details
 func GetEvtSubscriptions(searchKey string) ([]Subscription, error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
@@ -471,7 +475,7 @@ func GetEvtSubscriptions(searchKey string) ([]Subscription, error) {
 
 // DeleteEvtSubscription is to delete event subscription details
 func DeleteEvtSubscription(key string) error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
@@ -484,7 +488,7 @@ func DeleteEvtSubscription(key string) error {
 
 // UpdateEventSubscription is to update event subscription details
 func UpdateEventSubscription(evtSubscription Subscription) error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
@@ -501,7 +505,7 @@ func UpdateEventSubscription(evtSubscription Subscription) error {
 
 //GetAllMatchingDetails accepts the table name ,pattern and DB type and return all the keys which mathces the pattern
 func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
-	conn, err := common.GetDBConnection(dbtype)
+	conn, err := GetDbConnection(dbtype)
 	if err != nil {
 		return []string{}, err
 	}
@@ -510,13 +514,13 @@ func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]strin
 
 // SaveUndeliveredEvents accepts the undelivered event and destination with unique eventid and saves it
 func SaveUndeliveredEvents(key string, event []byte) error {
-	connPool, err := common.GetDBConnection(common.OnDisk)
+	connPool, err := GetDbConnection(common.OnDisk)
 	if err != nil {
-		log.Error("While trying to get DB Connection : " + err.Error())
+		l.Log.Error("While trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 	if err = connPool.AddResourceData(UndeliveredEvents, key, string(event)); err != nil {
-		log.Error(" while trying to add Undelivered Events to DB: " + err.Error())
+		l.Log.Error(" while trying to add Undelivered Events to DB: " + err.Error())
 		return fmt.Errorf("error while trying to add Undelivered Events to DB: %v", err.Error())
 	}
 	return nil
@@ -524,7 +528,7 @@ func SaveUndeliveredEvents(key string, event []byte) error {
 
 // GetUndeliveredEvents read the undelivered events for the destination
 func GetUndeliveredEvents(destination string) (string, error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return "", fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
@@ -539,7 +543,7 @@ func GetUndeliveredEvents(destination string) (string, error) {
 
 // DeleteUndeliveredEvents deletes the undelivered events for the destination
 func DeleteUndeliveredEvents(destination string) error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
@@ -552,7 +556,7 @@ func DeleteUndeliveredEvents(destination string) error {
 // SetUndeliveredEventsFlag will set the flag to maintain one instance already picked up
 // the undelivered events for the destination
 func SetUndeliveredEventsFlag(destination string) error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
@@ -570,7 +574,7 @@ func SetUndeliveredEventsFlag(destination string) error {
 // GetUndeliveredEventsFlag will get the flag to maintain one instance already picked up
 // the undelivered events for the destination
 func GetUndeliveredEventsFlag(destination string) (bool, error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return false, fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
@@ -583,7 +587,7 @@ func GetUndeliveredEventsFlag(destination string) (bool, error) {
 
 // DeleteUndeliveredEventsFlag deletes the PickUpUndeliveredEventsFlag key from the DB, return error if any
 func DeleteUndeliveredEventsFlag(destination string) error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
@@ -595,7 +599,7 @@ func DeleteUndeliveredEventsFlag(destination string) error {
 
 // SaveAggregateSubscription is to save subscription details of device
 func SaveAggregateSubscription(aggregateID string, hostIP []string) error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
@@ -608,7 +612,7 @@ func SaveAggregateSubscription(aggregateID string, hostIP []string) error {
 
 // UpdateAggregateHosts is to update aggregate hosts details of device
 func UpdateAggregateHosts(aggregateID string, hostIP []string) error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
@@ -620,13 +624,13 @@ func UpdateAggregateHosts(aggregateID string, hostIP []string) error {
 }
 
 // GetAggregateHosts is to get subscription details of device
-func GetAggregateHosts(aggregateIP string) ([]string, error) {
+func GetAggregateHosts(aggregateID string) ([]string, error) {
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
-	aggregateList, gerr := conn.GetAggregateHosts(AggregateSubscriptionIndex, aggregateIP+"[^0-9]*")
+	aggregateList, gerr := conn.GetAggregateHosts(AggregateSubscriptionIndex, aggregateID+"[^0-9]*")
 	if gerr != nil {
 		return nil, fmt.Errorf("error while trying to get aggregate host of device %v", gerr.Error())
 	}
@@ -637,7 +641,7 @@ func GetAggregateHosts(aggregateIP string) ([]string, error) {
 
 // GetAggregateList  will fetch aggregate list
 func GetAggregateList(hostIP string) ([]string, error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}

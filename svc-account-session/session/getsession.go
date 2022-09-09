@@ -19,10 +19,9 @@ import (
 	"net/http"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -42,7 +41,7 @@ func GetSessionUserName(req *sessionproto.SessionRequest) (*sessionproto.Session
 
 	if errs := UpdateLastUsedTime(req.SessionToken); errs != nil {
 		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return &resp, errs
 	}
 	resp.UserName = currentSession.UserName
@@ -61,7 +60,7 @@ func GetSessionUserRoleID(req *sessionproto.SessionRequest) (*sessionproto.Sessi
 
 	if errs := UpdateLastUsedTime(req.SessionToken); errs != nil {
 		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return &resp, errs
 	}
 	resp.RoleID = currentSession.RoleID
@@ -101,7 +100,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 		resp.StatusCode, resp.StatusMessage = err.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
 			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
@@ -112,7 +111,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	if errs := UpdateLastUsedTime(req.SessionToken); errs != nil {
 		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp
 	}
 	auth.CustomAuthLog(req.SessionToken, "Authorization is successful", http.StatusOK)
@@ -120,7 +119,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	if errs != nil {
 		errorMessage := "Unable to get all session keys while deleting session: " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp
 	}
 	for _, token := range sessionTokens {
@@ -160,7 +159,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	}
 	sessionTokens = nil
 	errorMessage := "No session with id " + req.SessionId + " found."
-	log.Error(errorMessage)
+	l.Log.Error(errorMessage)
 	resp.StatusCode = http.StatusNotFound
 	resp.StatusMessage = response.ResourceNotFound
 	errorArgs[0].ErrorMessage = errorMessage
@@ -204,7 +203,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 		resp.StatusCode, resp.StatusMessage = gerr.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
 			auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
@@ -216,7 +215,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 	if err != nil {
 		errorMessage := "Unable to update last used time of session with token " + req.SessionToken + ": " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp
 	}
 	auth.CustomAuthLog(req.SessionToken, "Authorization is successful", http.StatusOK)
@@ -235,7 +234,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 	if errs != nil {
 		errorMessage := "Unable to get all session keys in delete session: " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp
 	}
 
@@ -243,7 +242,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 	for _, token := range sessionTokens {
 		session, err := auth.CheckSessionTimeOut(token)
 		if err != nil {
-			log.Error("Unable to get session details with the token " + token + ": " + err.Error())
+			l.Log.Error("Unable to get session details with the token " + token + ": " + err.Error())
 			continue
 		}
 

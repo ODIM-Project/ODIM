@@ -22,10 +22,10 @@ import (
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
-	log "github.com/sirupsen/logrus"
 )
 
 //AddFabric holds the logic for Adding fabric
@@ -38,7 +38,7 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 
 	pluginDetails, err := fabmodel.GetAllFabricPluginDetails()
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
 	}
@@ -47,7 +47,7 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 
 		plugin, errs := fabmodel.GetPluginData(pluginkey)
 		if errs != nil {
-			log.Error(errs.Error())
+			l.Log.Error(errs.Error())
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errs.Error(),
 				[]interface{}{}, nil)
 		}
@@ -59,7 +59,7 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 			if err != nil {
 				errorMessage = "Can't lookup the ip from host name" + err.Error()
 			}
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errs.Error(),
 				[]interface{}{"IP Address", plugin.IP}, nil)
 		}
@@ -75,7 +75,7 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 		}
 	}
 	if pluginID == "" {
-		log.Error("error: plugin ID is empty")
+		l.Log.Error("error: plugin ID is empty")
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error: no match found for plugin ID",
 			[]interface{}{"IP Address", address}, nil)
 	}
@@ -86,11 +86,11 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 
 	err = fab.AddFabricData(uuid)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
 	}
-	log.Info("Fabric Added")
+	l.Log.Info("Fabric Added")
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp

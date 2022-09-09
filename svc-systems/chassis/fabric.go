@@ -27,10 +27,10 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
-	log "github.com/sirupsen/logrus"
 )
 
 type fabricFactory struct {
@@ -77,7 +77,7 @@ func (c *sourceProviderImpl) findFabricChassis(collection *sresponse.Collection)
 	f := c.getFabricFactory(collection)
 	managers, err := f.getFabricManagers()
 	if err != nil {
-		log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
+		l.Log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
 		return
 	}
 	for _, manager := range managers {
@@ -93,12 +93,12 @@ func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
 	defer f.wg.Done()
 	req, errResp, err := f.createChassisRequest(plugin, collectionURL, http.MethodGet, nil)
 	if errResp != nil {
-		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
+		l.Log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
 	}
 	links, err := collectChassisCollection(f, req)
 	if err != nil {
-		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
+		l.Log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
 	}
 	for _, link := range links {
@@ -239,10 +239,10 @@ func getPluginStatus(plugin smodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Warn("while getting the status for plugin " + plugin.ID + err.Error())
+		l.Log.Warn("while getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	l.Log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -267,7 +267,7 @@ func (f *fabricFactory) createToken(plugin smodel.Plugin) string {
 	contactRequest.URL = "/ODIM/v1/Sessions"
 	_, token, _, _, err := contactPlugin(&contactRequest)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 	}
 	if token != "" {
 		Token.storeToken(plugin.ID, token)

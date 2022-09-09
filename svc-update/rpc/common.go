@@ -16,11 +16,12 @@ package rpc
 
 import (
 	"encoding/json"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/update"
-	log "github.com/sirupsen/logrus"
 )
 
 // Updater struct helps to register service
@@ -38,7 +39,7 @@ func GetUpdater() *Updater {
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Warn("Unable to unmarshall response object from util-libs " + err.Error())
+		l.Log.Warn("Unable to unmarshall response object from util-libs " + err.Error())
 	}
 	return bytes
 }

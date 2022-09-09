@@ -20,9 +20,8 @@ import (
 	"net/http"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
@@ -54,7 +53,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 
 	if err != nil {
 		errMsg := "error while starting the task: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	percentComplete = 10
@@ -65,7 +64,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	err = JSONUnMarshal(req.RequestBody, &resetCompSys)
 	if err != nil {
 		errMsg := "error: unable to parse the computer system reset request" + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 
@@ -73,11 +72,11 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, resetCompSys)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
 		return resp
 	}
@@ -152,7 +151,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 		err = p.UpdateTask(task)
 		if err != nil {
 			errMsg := "error while starting the task: " + err.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		}
 

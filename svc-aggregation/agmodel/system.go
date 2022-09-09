@@ -26,7 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	log "github.com/sirupsen/logrus"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 const (
@@ -193,14 +193,14 @@ func (system *SaveSystem) Create(systemID string) *errors.Error {
 
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
-		log.Error("error while trying to get Db connection : " + err.Error())
+		l.Log.Error("error while trying to get Db connection : " + err.Error())
 		return err
 	}
 	//Create a header for data entry
 	const table string = "System"
 	//Save data into Database
 	if err = conn.Create(table, systemID, system); err != nil {
-		log.Error("error while trying to save system data in DB : " + err.Error())
+		l.Log.Error("error while trying to save system data in DB : " + err.Error())
 		return err
 	}
 	return nil
@@ -239,7 +239,7 @@ func GetComputeSystem(deviceUUID string) (dmtfmodel.ComputerSystem, error) {
 
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
-		log.Error("GetComputeSystem : error while trying to get db conenction : " + err.Error())
+		l.Log.Error("GetComputeSystem : error while trying to get db conenction : " + err.Error())
 		return compute, err
 	}
 
@@ -249,7 +249,7 @@ func GetComputeSystem(deviceUUID string) (dmtfmodel.ComputerSystem, error) {
 	}
 
 	if err := json.Unmarshal([]byte(computeData), &compute); err != nil {
-		log.Error("GetComputeSystem : error while Unmarshaling data : " + err.Error())
+		l.Log.Error("GetComputeSystem : error while Unmarshaling data : " + err.Error())
 		return compute, err
 	}
 	return compute, nil
@@ -259,10 +259,10 @@ func GetComputeSystem(deviceUUID string) (dmtfmodel.ComputerSystem, error) {
 //SaveComputeSystem will save the compute server complete details into the database
 func SaveComputeSystem(computeServer dmtfmodel.ComputerSystem, deviceUUID string) error {
 	//use dmtf logic to save data into database
-	log.Info("Saving server details into database")
+	l.Log.Info("Saving server details into database")
 	err := computeServer.SaveInMemory(deviceUUID)
 	if err != nil {
-		log.Error("error while trying to save server details in DB : " + err.Error())
+		l.Log.Error("error while trying to save server details in DB : " + err.Error())
 		return err
 	}
 	return nil
@@ -271,10 +271,10 @@ func SaveComputeSystem(computeServer dmtfmodel.ComputerSystem, deviceUUID string
 //SaveChassis will save the chassis details into the database
 func SaveChassis(chassis dmtfmodel.Chassis, deviceUUID string) error {
 	//use dmtf logic to save data into database
-	log.Info("Saving chassis details into database")
+	l.Log.Info("Saving chassis details into database")
 	err := chassis.SaveInMemory(deviceUUID)
 	if err != nil {
-		log.Error("error while trying to save chassis details in DB : " + err.Error())
+		l.Log.Error("error while trying to save chassis details in DB : " + err.Error())
 		return err
 	}
 	return nil
@@ -285,12 +285,12 @@ func GenericSave(body []byte, table string, key string) error {
 
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
-		log.Error("GenericSave : error while trying to get DB Connection : " + err.Error())
+		l.Log.Error("GenericSave : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 
 	if err = connPool.AddResourceData(table, key, string(body)); err != nil {
-		log.Error("GenericSave : error while trying to add resource date to DB: " + err.Error())
+		l.Log.Error("GenericSave : error while trying to add resource date to DB: " + err.Error())
 		return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 	}
 	return nil
@@ -307,7 +307,7 @@ func SaveRegistryFile(body []byte, table string, key string) error {
 		if errors.DBKeyAlreadyExist != err.ErrNo() {
 			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 		}
-		log.Warn("Skipped saving of duplicate data with key " + key)
+		l.Log.Warn("Skipped saving of duplicate data with key " + key)
 		return nil
 	}
 	return nil
@@ -482,7 +482,7 @@ func SaveIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err)
 	}
-	log.Info("Creating index")
+	l.Log.Info("Creating index")
 	searchForm["UUID"] = uuid
 	searchForm["BMCAddress"] = bmcAddress
 	if err := conn.CreateIndex(searchForm, table); err != nil {

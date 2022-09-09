@@ -26,12 +26,11 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/consumer"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
@@ -50,6 +49,11 @@ type StartUpInteraface struct {
 	GetDeviceSubscriptions           func(string) (*evmodel.DeviceSubscription, error)
 	UpdateDeviceSubscriptionLocation func(evmodel.DeviceSubscription) error
 }
+
+//GetAllPluginsFunc ...
+var (
+	GetAllPluginsFunc = evmodel.GetAllPlugins
+)
 
 // EmbTopic hold the list all consuming topics after
 type EmbTopic struct {
@@ -130,7 +134,7 @@ func (st *StartUpInteraface) GetAllPluginStatus() {
 	for {
 		pluginList, err := evmodel.GetAllPlugins()
 		if err != nil {
-			log.Error(err.Error())
+			l.Log.Error(err.Error())
 			return
 		}
 		for i := 0; i < len(pluginList); i++ {
@@ -168,24 +172,24 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 	status, _, topicsList, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
 		PluginStartUp = false
-		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
+		l.Log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return
 	}
-	log.Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
+	l.Log.Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
 	PluginsMap[plugin.ID] = status
 	var allServers []SavedSystems
 	for pluginID, status := range PluginsMap {
 		if status && !PluginStartUp {
 			allServers, err = st.getAllServers(pluginID)
 			if err != nil {
-				log.Error("Error While getting the servers" + pluginID + err.Error())
+				l.Log.Error("Error While getting the servers" + pluginID + err.Error())
 				continue
 			}
 			for {
 				if len(allServers) < StartUpResourceBatchSize {
 					err = st.callPluginStartUp(allServers, pluginID)
 					if err != nil {
-						log.Error("Error While trying call plugin startup" +
+						l.Log.Error("Error While trying call plugin startup" +
 							pluginID + err.Error())
 					}
 					break
@@ -193,7 +197,7 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 				batchServers := allServers[:StartUpResourceBatchSize]
 				err = st.callPluginStartUp(batchServers, pluginID)
 				if err != nil {
-					log.Error("Error While trying call plugin startup" + pluginID + err.Error())
+					l.Log.Error("Error While trying call plugin startup" + pluginID + err.Error())
 					continue
 				}
 				allServers = allServers[StartUpResourceBatchSize:]
@@ -230,7 +234,7 @@ func (st *StartUpInteraface) getAllServers(pluginID string) ([]SavedSystems, err
 			if err != nil {
 				// Frame the RPC response body and response Header below
 				errorMessage := "error while trying to decrypt device password for the host: " + s.ManagerAddress + ":" + err.Error()
-				log.Error(errorMessage)
+				l.Log.Error(errorMessage)
 				continue
 			}
 			s.Password = decryptedPasswordByte
@@ -259,10 +263,10 @@ func GetPluginStatus(plugin *evmodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
+		l.Log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	l.Log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -277,7 +281,7 @@ func (st *StartUpInteraface) callPluginStartUp(servers []SavedSystems, pluginID 
 		var err error
 		s.Location, s.EventTypes, err = st.getSubscribedEventsDetails(server.ManagerAddress)
 		if err != nil {
-			log.Error("Error while retrieving the Subsction details from DB for device: " +
+			l.Log.Error("Error while retrieving the Subsction details from DB for device: " +
 				server.ManagerAddress + err.Error())
 			continue
 		}
@@ -318,7 +322,7 @@ func (st *StartUpInteraface) callPluginStartUp(servers []SavedSystems, pluginID 
 	//return updateDeviceSubscriptionLocation(startUpMap[0].Device.ManagerAddress, response.Header.Get("location"))
 	bodyBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		return err
 	}
 	var r map[string]string
@@ -410,7 +414,7 @@ func updateDeviceSubscriptionLocation(r map[string]string) error {
 			searchKey := GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
 			deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
 			if err != nil {
-				log.Error("Error getting the device event subscription from DB " +
+				l.Log.Error("Error getting the device event subscription from DB " +
 					" for server address : " + serverAddress + err.Error())
 				continue
 			}
@@ -421,7 +425,7 @@ func updateDeviceSubscriptionLocation(r map[string]string) error {
 			updatedDeviceSubscription.OriginResources = deviceSubscription.OriginResources
 			err = evmodel.UpdateDeviceSubscriptionLocation(updatedDeviceSubscription)
 			if err != nil {
-				log.Error("Error updating the subscription location in to DB for " +
+				l.Log.Error("Error updating the subscription location in to DB for " +
 					"server address : " + serverAddress + err.Error())
 				continue
 			}
@@ -499,12 +503,12 @@ func GetSearchKey(key, index string) string {
 // and to perform required action
 func ProcessCtrlMsg(data interface{}) bool {
 	if data == nil {
-		log.Warn("received control message event with empty data")
+		l.Log.Warn("received control message event with empty data")
 		return false
 	}
 	event := data.(common.ControlMessageData)
 	msg, _ := json.Marshal(event.Data)
-	log.Info("received control message event of type:", event.MessageType)
+	l.Log.Info("received control message event of type:", event.MessageType)
 	if event.MessageType == common.SubscribeEMB {
 		var message common.SubscribeEMBData
 		if err := json.Unmarshal([]byte(msg), &message); err != nil {
@@ -520,9 +524,9 @@ func ProcessCtrlMsg(data interface{}) bool {
 // SubscribePluginEMB is for subscribing to plugin EMB
 func (st *StartUpInteraface) SubscribePluginEMB() {
 	time.Sleep(time.Second * 2)
-	pluginList, err := evmodel.GetAllPlugins()
+	pluginList, err := GetAllPluginsFunc()
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		return
 	}
 	for i := 0; i < len(pluginList); i++ {
@@ -550,7 +554,7 @@ func (st *StartUpInteraface) getPluginEMB(plugin evmodel.Plugin) {
 	config.TLSConfMutex.RUnlock()
 	status, _, topicsList, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Error("status check of plugin " + plugin.ID + " failed: " + err.Error())
+		l.Log.Error("status check of plugin " + plugin.ID + " failed: " + err.Error())
 		return
 	}
 	EMBTopics.lock.Lock()

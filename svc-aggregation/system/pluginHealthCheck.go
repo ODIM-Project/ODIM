@@ -24,11 +24,11 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -47,11 +47,11 @@ func (e *ExternalInterface) SendStartUpData(startUpReq *aggregatorproto.SendStar
 	resp := response.RPC{}
 	plugin, err := LookupPlugin(startUpReq.PluginAddr)
 	if err != nil {
-		log.Error("failed to find plugin with address " + startUpReq.PluginAddr + ": " + err.Error())
+		l.Log.Error("failed to find plugin with address " + startUpReq.PluginAddr + ": " + err.Error())
 		return resp
 	}
 
-	log.Infof("received plugin start up event from %s(%s)", plugin.ID, plugin.PluginType)
+	l.Log.Infof("received plugin start up event from %s(%s)", plugin.ID, plugin.PluginType)
 
 	// for plugins managing resources of non Compute type, at present
 	// there is no usecase to share inventory, so subscribing to
@@ -67,7 +67,7 @@ func (e *ExternalInterface) SendStartUpData(startUpReq *aggregatorproto.SendStar
 		if !exist || (active && count != 0) {
 			agcommon.SetPluginStatusRecord(plugin.ID, 0)
 			PublishPluginStatusOKEvent(plugin.ID, topics)
-			log.Infof("subscribing to %s message bus topics of plugin %s", topics, plugin.ID)
+			l.Log.Infof("subscribing to %s message bus topics of plugin %s", topics, plugin.ID)
 		} else {
 			agcommon.SetPluginStatusRecord(plugin.ID, count+1)
 		}
@@ -81,14 +81,14 @@ func (e *ExternalInterface) SendStartUpData(startUpReq *aggregatorproto.SendStar
 // PerformPluginHealthCheck is for checking the status of
 // all the plugins continuously over a configured interval
 func PerformPluginHealthCheck() {
-	log.Info("plugins health check routine started")
+	l.Log.Info("plugins health check routine started")
 	phc := agcommon.PluginHealthCheckInterface{
 		DecryptPassword: DecryptWithPrivateKey,
 	}
 	for {
 		phc.DupPluginConf()
 		if pluginList, err := GetAllPluginfunc(); err != nil {
-			log.Error("failed to get list of all plugins:", err.Error())
+			l.Log.Error("failed to get list of all plugins:", err.Error())
 		} else {
 			for _, plugin := range pluginList {
 				go checkPluginStatus(&phc, plugin)
@@ -108,13 +108,13 @@ func checkPluginStatus(phc *agcommon.PluginHealthCheckInterface, plugin agmodel.
 			agcommon.SetPluginStatusRecord(plugin.ID, 0)
 			if plugin.PluginType == "Compute" {
 				if err := sharePluginInventory(plugin, true, plugin.IP); err != nil {
-					log.Error("failed to update server inventory of plugin " +
+					l.Log.Error("failed to update server inventory of plugin " +
 						plugin.ID + ": " + err.Error())
 					agcommon.SetPluginStatusRecord(plugin.ID, count+1)
 				}
 			}
 			PublishPluginStatusOKEvent(plugin.ID, topics)
-			log.Infof("subscribing to %s message bus topics of plugin %s", topics, plugin.ID)
+			l.Log.Infof("subscribing to %s message bus topics of plugin %s", topics, plugin.ID)
 		case !active:
 			agcommon.SetPluginStatusRecord(plugin.ID, count+1)
 		}
@@ -144,7 +144,7 @@ func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool, server
 	managedServers := phc.GetPluginManagedServers(plugin)
 	managedServersCount := len(managedServers)
 	if managedServersCount == 0 {
-		log.Info("plugin " + plugin.ID + " is not managing any server")
+		l.Log.Info("plugin " + plugin.ID + " is not managing any server")
 		return
 	}
 	pluginStartUpData := agmodel.PluginStartUpData{
@@ -165,7 +165,7 @@ func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool, server
 			evtSubsInfo := &agmodel.EventSubscriptionInfo{}
 			subsID, evtTypes, err := agcommon.GetDeviceSubscriptionDetails(server.ManagerAddress)
 			if err != nil {
-				log.Error("failed to get event subscription details for " + server.ManagerAddress + ": " + err.Error())
+				l.Log.Error("failed to get event subscription details for " + server.ManagerAddress + ": " + err.Error())
 			} else {
 				evtSubsInfo.Location = subsID
 				evtSubsInfo.EventTypes = append(evtSubsInfo.EventTypes, evtTypes...)
@@ -231,10 +231,10 @@ func sendPluginStartupRequest(plugin agmodel.Plugin, startupData interface{}, se
 	contactRequest.PostBody = startupData
 	response, err := agcommon.ContactPlugin(contactRequest, serverName)
 	if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
-		log.Errorf("failed to send startup data to %s(%s): %s: %+v", plugin.ID, plugin.IP, err, response)
+		l.Log.Errorf("failed to send startup data to %s(%s): %s: %+v", plugin.ID, plugin.IP, err, response)
 		return nil, err
 	}
-	log.Infof("Successfully sent startup data to %s(%s)", plugin.ID, plugin.IP)
+	l.Log.Infof("Successfully sent startup data to %s(%s)", plugin.ID, plugin.IP)
 	return response, nil
 }
 
@@ -254,7 +254,7 @@ func sendFullPluginInventory(pluginIP string, plugin agmodel.Plugin) error {
 	}
 
 	if err := sharePluginInventory(plugin, reSubsEvent, serverName); err != nil {
-		log.Errorf("failed to update server inventory of plugin %s(%s): %s", plugin.ID, plugin.IP, err.Error())
+		l.Log.Errorf("failed to update server inventory of plugin %s(%s): %s", plugin.ID, plugin.IP, err.Error())
 		agcommon.SetPluginStatusRecord(plugin.ID, count+1)
 		return err
 	}

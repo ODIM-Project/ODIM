@@ -18,17 +18,18 @@ package session
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	uuid "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
 
 	"net/http"
 	"time"
@@ -53,7 +54,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	genErr := json.Unmarshal(req.RequestBody, &createSession)
 	if genErr != nil {
 		errMsg := "Unable to parse the create session request" + genErr.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), ""
 	}
 
@@ -61,11 +62,11 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	invalidProperties, genErr := common.RequestParamsCaseValidator(req.RequestBody, createSession)
 	if genErr != nil {
 		errMsg := "Unable to validate request parameters: " + genErr.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), ""
 	} else if invalidProperties != "" {
 		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp, ""
 	}
@@ -91,7 +92,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	if err != nil {
 		errorMessage := "Unable to get role privileges for session creation: " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp, ""
 	}
 	rolePrivilege := make(map[string]bool)
@@ -130,7 +131,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 		} else {
 			resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 		}
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, ""
 	}
 

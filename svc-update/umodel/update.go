@@ -18,10 +18,10 @@ package umodel
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 //Target is for sending the requst to south bound/plugin
@@ -85,7 +85,7 @@ func GenericSave(body []byte, table string, key string) error {
 		if errors.DBKeyAlreadyExist == err.ErrNo() {
 			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 		}
-		log.Warn("skipped saving of duplicate data with key " + key)
+		l.Log.Warn("skipped saving of duplicate data with key " + key)
 	}
 	return nil
 }

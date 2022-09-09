@@ -19,9 +19,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
@@ -55,7 +54,7 @@ func (f *FabricRPCs) GetFabricCollection(ctx iris.Context) {
 	resp, err := f.GetFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -91,7 +90,7 @@ func (f *FabricRPCs) GetFabric(ctx iris.Context) {
 	resp, err := f.GetFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -127,7 +126,7 @@ func (f *FabricRPCs) GetFabricSwitchCollection(ctx iris.Context) {
 	resp, err := f.GetFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -163,7 +162,7 @@ func (f *FabricRPCs) GetFabricSwitch(ctx iris.Context) {
 	resp, err := f.GetFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -199,7 +198,7 @@ func (f *FabricRPCs) GetSwitchPortCollection(ctx iris.Context) {
 	resp, err := f.GetFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -235,7 +234,7 @@ func (f *FabricRPCs) GetSwitchPort(ctx iris.Context) {
 	resp, err := f.GetFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -271,7 +270,7 @@ func (f *FabricRPCs) GetFabricZoneCollection(ctx iris.Context) {
 	resp, err := f.GetFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -307,7 +306,7 @@ func (f *FabricRPCs) GetFabricZone(ctx iris.Context) {
 	resp, err := f.GetFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -343,7 +342,7 @@ func (f *FabricRPCs) GetFabricEndPointCollection(ctx iris.Context) {
 	resp, err := f.GetFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -379,7 +378,7 @@ func (f *FabricRPCs) GetFabricEndPoints(ctx iris.Context) {
 	resp, err := f.GetFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -415,7 +414,7 @@ func (f *FabricRPCs) GetFabricAddressPoolCollection(ctx iris.Context) {
 	resp, err := f.GetFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -451,7 +450,7 @@ func (f *FabricRPCs) GetFabricAddressPool(ctx iris.Context) {
 	resp, err := f.GetFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -488,7 +487,7 @@ func (f *FabricRPCs) UpdateFabricResource(ctx iris.Context) {
 	err := ctx.ReadJSON(&createReq)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the  request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -501,7 +500,7 @@ func (f *FabricRPCs) UpdateFabricResource(ctx iris.Context) {
 	request, err := json.Marshal(createReq)
 	if err != nil {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -512,7 +511,7 @@ func (f *FabricRPCs) UpdateFabricResource(ctx iris.Context) {
 	resp, err := f.UpdateFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -546,7 +545,7 @@ func (f *FabricRPCs) DeleteFabricResource(ctx iris.Context) {
 	resp, err := f.DeleteFabricResourceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

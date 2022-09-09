@@ -26,10 +26,9 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-licenses/model"
-
-	log "github.com/sirupsen/logrus"
 )
 
 //GetAllKeysFromTable fetches all keys in a given table
@@ -129,7 +128,7 @@ func ContactPlugin(req model.PluginContactRequest, errorMessage string) ([]byte,
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		log.Warn(errorMessage)
+		l.Log.Warn(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -139,13 +138,13 @@ func ContactPlugin(req model.PluginContactRequest, errorMessage string) ([]byte,
 			resp.StatusCode = int32(pluginResponse.StatusCode)
 			resp.StatusMessage = response.ResourceAtURIUnauthorized
 			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
-			log.Warn(errorMessage)
+			l.Log.Warn(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 		errorMessage += string(body)
 		resp.StatusCode = int32(pluginResponse.StatusCode)
 		resp.StatusMessage = response.InternalError
-		log.Warn(errorMessage)
+		l.Log.Warn(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -176,10 +175,10 @@ func getPluginStatus(plugin model.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Warn("Error While getting the status for plugin " + plugin.ID + " " + err.Error())
+		l.Log.Warn("Error While getting the status for plugin " + plugin.ID + " " + err.Error())
 		return status
 	}
-	log.Info("Status of plugin " + plugin.ID + " " + strconv.FormatBool(status))
+	l.Log.Info("Status of plugin " + plugin.ID + " " + strconv.FormatBool(status))
 	return status
 }
 
@@ -205,7 +204,7 @@ func GenericSave(body []byte, table string, key string) error {
 		if errors.DBKeyAlreadyExist == err.ErrNo() {
 			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 		}
-		log.Warn("skipped saving of duplicate data with key " + key)
+		l.Log.Warn("skipped saving of duplicate data with key " + key)
 	}
 	return nil
 }

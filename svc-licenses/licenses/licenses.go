@@ -23,12 +23,11 @@ import (
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	licenseproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/licenses"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	lcommon "github.com/ODIM-Project/ODIM/svc-licenses/lcommon"
 	"github.com/ODIM-Project/ODIM/svc-licenses/model"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -69,11 +68,11 @@ func (e *ExternalInterface) GetLicenseCollection(req *licenseproto.GetLicenseReq
 
 	licenseCollectionKeysArray, err := e.DB.GetAllKeysFromTable("Licenses", persistencemgr.InMemory)
 	if err != nil {
-		log.Error("error while getting license collection details from db")
+		l.Log.Error("error while getting license collection details from db")
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 	if len(licenseCollectionKeysArray) == 0 {
-		log.Error("odimra doesnt have Licenses")
+		l.Log.Error("odimra doesnt have Licenses")
 	}
 
 	for _, key := range licenseCollectionKeysArray {
@@ -95,14 +94,14 @@ func (e *ExternalInterface) GetLicenseResource(req *licenseproto.GetLicenseResou
 
 	data, dbErr := e.DB.GetResource("Licenses", uri, persistencemgr.InMemory)
 	if dbErr != nil {
-		log.Error("Unable to get license data : " + dbErr.Error())
+		l.Log.Error("Unable to get license data : " + dbErr.Error())
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, dbErr.Error(), nil, nil)
 	}
 
 	if data != "" {
 		err := json.Unmarshal([]byte(data.(string)), &licenseResp)
 		if err != nil {
-			log.Error("Unable to unmarshall  the data: " + err.Error())
+			l.Log.Error("Unable to unmarshall  the data: " + err.Error())
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		}
 	}
@@ -125,23 +124,23 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 	genErr := JsonUnMarshalFunc(req.RequestBody, &installreq)
 	if genErr != nil {
 		errMsg := "Unable to unmarshal the install license request" + genErr.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, nil)
 	}
 
 	if installreq.Links == nil {
 		errMsg := "Invalid request,mandatory field Links missing"
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Links"}, nil)
 	} else if installreq.LicenseString == "" {
 		errMsg := "Invalid request, mandatory field LicenseString is missing"
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"LicenseString"}, nil)
 
 	} else if len(installreq.Links.Link) == 0 {
 		errMsg := "Invalid request, mandatory field AuthorizedDevices links is missing"
-		log.Error(errMsg)
-	return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"LicenseString"}, nil)
+		l.Log.Error(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"LicenseString"}, nil)
 
 	}
 	var serverURI string
@@ -155,7 +154,7 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 			managerLink, err = e.getManagerURL(serverURI)
 			if err != nil {
 				errMsg := "Unable to get manager link"
-				log.Error(errMsg)
+				l.Log.Error(errMsg)
 				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 			}
 			for _, link := range managerLink {
@@ -167,7 +166,7 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 			managerLink, err = e.getDetailsFromAggregate(serverURI)
 			if err != nil {
 				errMsg := "Unable to get manager link from aggregates"
-				log.Error(errMsg)
+				l.Log.Error(errMsg)
 				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 			}
 			for _, link := range managerLink {
@@ -175,31 +174,31 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 			}
 		default:
 			errMsg := "Invalid AuthorizedDevices links"
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, nil)
 		}
 	}
-	log.Info("Map with manager Links: ", linksMap)
+	l.Log.Info("Map with manager Links: ", linksMap)
 
 	for serverURI := range linksMap {
 		uuid, managerID, err := lcommon.GetIDsFromURI(serverURI)
 		if err != nil {
 			errMsg := "error while trying to get system ID from " + serverURI + ": " + err.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"SystemID", serverURI}, nil)
 		}
 		// Get target device Credentials from using device UUID
 		target, targetErr := e.External.GetTarget(uuid)
 		if targetErr != nil {
 			errMsg := targetErr.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"target", uuid}, nil)
 		}
 
 		decryptedPasswordByte, err := e.External.DevicePassword(target.Password)
 		if err != nil {
 			errMsg := "error while trying to decrypt device password: " + err.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 		}
 		target.Password = decryptedPasswordByte
@@ -208,10 +207,10 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 		plugin, errs := e.External.GetPluginData(target.PluginID)
 		if errs != nil {
 			errMsg := "error while getting plugin data: " + errs.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, nil)
 		}
-		log.Info("Plugin info: ", plugin)
+		l.Log.Info("Plugin info: ", plugin)
 
 		encodedKey := base64.StdEncoding.EncodeToString([]byte(installreq.LicenseString))
 		managerURI := "/redfish/v1/Managers/" + managerID
@@ -232,7 +231,7 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 			_, token, getResponse, err := lcommon.ContactPlugin(contactRequest, "error while logging in to plugin: ")
 			if err != nil {
 				errMsg := err.Error()
-				log.Error(errMsg)
+				l.Log.Error(errMsg)
 				return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil)
 			}
 			contactRequest.Token = token
@@ -250,10 +249,10 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 		_, _, getResponse, err := e.External.ContactPlugin(contactRequest, "error while installing license: ")
 		if err != nil {
 			errMsg := err.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil)
 		}
-		log.Info("Install license response: ", getResponse)
+		l.Log.Info("Install license response: ", getResponse)
 	}
 
 	resp.StatusCode = http.StatusNoContent
@@ -275,18 +274,18 @@ func (e *ExternalInterface) getDetailsFromAggregate(aggregateURI string) ([]stri
 	if jerr != nil {
 		return nil, jerr
 	}
-	log.Info("System URL's from agrregate: ", resource)
+	l.Log.Info("System URL's from agrregate: ", resource)
 
 	for _, key := range resource.Elements {
 		res, err := e.getManagerURL(key.OdataID)
 		if err != nil {
 			errMsg := "Unable to get manager link"
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return nil, err
 		}
 		links = append(links, res...)
 	}
-	log.Info("manager links: ", links)
+	l.Log.Info("manager links: ", links)
 	return links, nil
 }
 

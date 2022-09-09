@@ -22,9 +22,9 @@ import (
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -40,7 +40,7 @@ func (f *fabricFactory) getFabricChassisResource(rID string) response.RPC {
 
 	managers, err := f.getFabricManagers()
 	if err != nil {
-		log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
+		l.Log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
 	}
 
@@ -63,7 +63,7 @@ func (f *fabricFactory) getFabricChassisResource(rID string) response.RPC {
 func (f *fabricFactory) getResource(plugin smodel.Plugin, rID string, ch chan response.RPC) {
 	req, errResp, err := f.createChassisRequest(plugin, fmt.Sprintf("%s/%s", collectionURL, rID), http.MethodGet, nil)
 	if errResp != nil {
-		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
+		l.Log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		ch <- *errResp
 		return
 	}

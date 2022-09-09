@@ -16,10 +16,10 @@
 package session
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -47,7 +47,7 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 	currentSession, serr := asmodel.GetSession(req.SessionToken)
 	if serr != nil {
 		errorMessage := "Unable to delete session: " + serr.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 	}
 
@@ -55,13 +55,13 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 	if err != nil {
 		errorMessage := "Unable to get all session keys while deleting session: " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp
 	}
 	for _, token := range sessionTokens {
 		session, err := auth.CheckSessionTimeOut(token)
 		if err != nil {
-			log.Error("Unable to get session details with the token " + token + ": " + err.Error())
+			l.Log.Error("Unable to get session details with the token " + token + ": " + err.Error())
 			continue
 		}
 		if session.ID == req.SessionId {
@@ -72,17 +72,17 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 					if err != nil {
 						errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + err.Error()
 						resp.CreateInternalErrorResponse(errorMessage)
-						log.Error(errorMessage)
+						l.Log.Error(errorMessage)
 						return resp
 					}
 				}
 				if err := session.Delete(); err != nil {
 					errorMessage := "Unable to get all session keys while deleting session: " + err.Error()
 					resp.CreateInternalErrorResponse(errorMessage)
-					log.Error(errorMessage)
+					l.Log.Error(errorMessage)
 					return resp
 				}
-				log.Info("Successfully Deleted: ")
+				l.Log.Info("Successfully Deleted: ")
 				resp.StatusCode = http.StatusNoContent
 				resp.StatusMessage = response.ResourceRemoved
 				return resp
@@ -98,7 +98,7 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 		}
 	}
 	sessionTokens = nil
-	log.Error("error: Status Not Found")
+	l.Log.Error("error: Status Not Found")
 	errorMessage := "error: Session ID not found"
 	resp.StatusCode = http.StatusNotFound
 	resp.StatusMessage = response.ResourceNotFound

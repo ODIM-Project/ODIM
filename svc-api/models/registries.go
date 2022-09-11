@@ -17,9 +17,10 @@ package models
 
 import (
 	"encoding/json"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	log "github.com/sirupsen/logrus"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 //GetRegistryFile fetches a resource from database using table and key
@@ -29,7 +30,7 @@ func GetRegistryFile(Table, key string) ([]byte, *errors.Error) {
 		return nil, errors.PackError(err.ErrNo(), err)
 	}
 	resourceData, err := conn.Read(Table, key)
-	log.Info("Table Name: " + Table + ", Key : " + key)
+	l.Log.Info("Table Name: " + Table + ", Key : " + key)
 	if err != nil {
 		return nil, errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
 	}

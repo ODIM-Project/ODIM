@@ -24,10 +24,9 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
@@ -141,7 +140,7 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 
@@ -150,7 +149,7 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
@@ -217,14 +216,14 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	taskURI, err := a.connector.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	strArray := strings.Split(taskURI, "/")
@@ -244,7 +243,7 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 	})
 	if err != nil {
 		// print error as we are unable to communicate with svc-task and then return
-		log.Error("Unable to contact task-service with UpdateTask RPC : " + err.Error())
+		l.Log.Error("Unable to contact task-service with UpdateTask RPC : " + err.Error())
 	}
 	go a.connector.SetDefaultBootOrder(taskID, sessionUserName, req)
 	// return 202 Accepted
@@ -300,7 +299,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 
@@ -310,7 +309,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	if err != nil {
 		errMsg := "Unable to parse the add request" + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 
@@ -319,14 +318,14 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	if invalidParam != "" {
 		errMsg := "Mandatory field " + invalidParam + " Missing"
 		generateResponse(common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{invalidParam}, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	managerAddress := addRequest.HostName
 	err = validateManagerAddress(managerAddress)
 	if err != nil {
 		generateResponse(common.GeneralError(http.StatusBadRequest, response.PropertyValueFormatError, err.Error(), []interface{}{managerAddress, "ManagerAddress"}, nil), resp)
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		return resp, nil
 	}
 
@@ -335,7 +334,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	if err != nil {
 		errMsg := "Unable to create the task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	strArray := strings.Split(taskURI, "/")
@@ -486,7 +485,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 
@@ -495,7 +494,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	var taskID string
@@ -718,7 +717,7 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 
@@ -727,7 +726,7 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
@@ -793,14 +792,14 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	taskURI, err := a.connector.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	strArray := strings.Split(taskURI, "/")
@@ -820,7 +819,7 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 	})
 	if err != nil {
 		// print error as we are unable to communicate with svc-task and then return
-		log.Error("Unable to contact task-service with UpdateTask RPC : " + err.Error())
+		l.Log.Error("Unable to contact task-service with UpdateTask RPC : " + err.Error())
 	}
 	go a.connector.SetDefaultBootOrderElementsOfAggregate(taskID, sessionUserName, req)
 	// return 202 Accepted

@@ -23,11 +23,11 @@ import (
 	"strconv"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -85,7 +85,7 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	unmarshalErr := JSONUnmarshalFunc1([]byte(managingManager), &managingMgrData)
 	if unmarshalErr != nil {
 		errorMessage := "error unmarshalling managing manager details: " + unmarshalErr.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
@@ -94,7 +94,7 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	data, jerr := GetResourceFunc("Managers", managerURI.(string))
 	if jerr != nil {
 		errorMessage := "error while getting manager details: " + jerr.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
@@ -102,7 +102,7 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	err := JSONUnmarshalFunc2([]byte(data), &managerData)
 	if err != nil {
 		errorMessage := "error unmarshalling manager details: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
@@ -144,14 +144,14 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	if err != nil {
 		fmt.Println("Error occured ", managerData)
 		errorMessage := "unable to marshal data for updating: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
 	err = GenericSaveFunc([]byte(mgrData), "Managers", managerURI.(string))
 	if err != nil {
 		errorMessage := "GenericSave : error while trying to add resource date to DB: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}

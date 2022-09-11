@@ -21,11 +21,10 @@ import (
 	"net/http"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
@@ -33,7 +32,7 @@ import (
 // RediscoverSystemInventory  is the handler for redicovering system whenever the restrat event detected in event service
 //It deletes old data and  Discovers Computersystem & Chassis and its top level odata.ID links and store them in inmemory db.
 func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL string, updateFlag bool) {
-	log.Info("Rediscovery of the BMC with ID " + deviceUUID + " is started.")
+	l.Log.Info("Rediscovery of the BMC with ID " + deviceUUID + " is started.")
 
 	var resp response.RPC
 	systemURL = strings.TrimSuffix(systemURL, "/")
@@ -52,7 +51,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 		genError(err.Error(), &resp, http.StatusBadRequest, errors.ResourceNotFound, map[string]string{
 			"Content-type": "application/json; charset=utf-8",
 		})
-		log.Error("Unable to unmarshal data: " + err.Error())
+		l.Log.Error("Unable to unmarshal data: " + err.Error())
 		return
 	}
 	decryptedPasswordByte, err := e.DecryptPassword(target.Password)
@@ -60,7 +59,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 		genError("error while trying to decrypt device password: "+err.Error(), &resp, http.StatusInternalServerError, errors.InternalError, map[string]string{
 			"Content-type": "application/json; charset=utf-8",
 		})
-		log.Error("Unable to unmarshal data: " + err.Error())
+		l.Log.Error("Unable to unmarshal data: " + err.Error())
 		return
 	}
 	target.Password = decryptedPasswordByte
@@ -71,7 +70,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 		genError(errs.Error(), &resp, http.StatusBadRequest, errors.ResourceNotFound, map[string]string{
 			"Content-type": "application/json; charset=utf-8",
 		})
-		log.Error(errs.Error())
+		l.Log.Error(errs.Error())
 		return
 	}
 
@@ -91,7 +90,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 		req.OID = "/ODIM/v1/Sessions"
 		_, token, _, err := contactPlugin(req, "error while getting the details "+req.OID+": ")
 		if err != nil {
-			log.Error(err.Error())
+			l.Log.Error(err.Error())
 			return
 		}
 		req.Token = token
@@ -108,11 +107,11 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	}
 	systemOperation, dbErr := agmodel.GetSystemOperationInfo(systemURL)
 	if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
-		log.Error("Rediscovery for system: " + systemURL + " can't be processed " + dbErr.Error())
+		l.Log.Error("Rediscovery for system: " + systemURL + " can't be processed " + dbErr.Error())
 		return
 	}
 	if systemOperation.Operation == "Delete" {
-		log.Error("Rediscovery for system: " + systemURL + " can't be processed," +
+		l.Log.Error("Rediscovery for system: " + systemURL + " can't be processed," +
 			systemOperation.Operation + " operation is under progress")
 		return
 	}
@@ -121,7 +120,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	systemOperation.Operation = "InventoryRediscovery"
 	dbErr = systemOperation.AddSystemOperationInfo(systemURL)
 	if dbErr != nil {
-		log.Error("Rediscovery for system: " + systemURL + " can't be processed " + dbErr.Error())
+		l.Log.Error("Rediscovery for system: " + systemURL + " can't be processed " + dbErr.Error())
 		return
 	}
 	defer func() {
@@ -163,7 +162,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	resp.StatusCode = http.StatusCreated
 	resp.Body = responseBody
 
-	log.Info("Rediscovery of the BMC with ID " + deviceUUID + " is now complete.")
+	l.Log.Info("Rediscovery of the BMC with ID " + deviceUUID + " is now complete.")
 }
 
 //RediscoverResources is a function to rediscover the server inventory,
@@ -185,7 +184,7 @@ func (e *ExternalInterface) RediscoverResources() error {
 	targets, err := agmodel.GetAllSystems()
 	if err != nil || len(targets) == 0 {
 		// nothing to re-discover
-		log.Info("Nothing to re-discover.")
+		l.Log.Info("Nothing to re-discover.")
 		return nil
 	}
 
@@ -203,13 +202,13 @@ func (e *ExternalInterface) RediscoverResources() error {
 			// Call the plugin to get the systems collection for this target first
 			systemCollectionResponse, err := e.getTargetSystemCollection(target)
 			if err != nil {
-				log.Error("Failed to discover the server: " + err.Error())
+				l.Log.Error("Failed to discover the server: " + err.Error())
 				return
 			}
 			systemsCollection := make(map[string]interface{})
 			err = json.Unmarshal(systemCollectionResponse, &systemsCollection)
 			if err != nil {
-				log.Error("Failed to discover the server: " + err.Error())
+				l.Log.Error("Failed to discover the server: " + err.Error())
 				return
 			}
 			members := systemsCollection["Members"]
@@ -238,7 +237,7 @@ func (e *ExternalInterface) getTargetSystemCollection(target agmodel.Target) ([]
 	// get the plugin information
 	plugin, errs := agmodel.GetPluginData(target.PluginID)
 	if errs != nil {
-		log.Error(errs.Error())
+		l.Log.Error(errs.Error())
 		return nil, errs
 	}
 
@@ -257,7 +256,7 @@ func (e *ExternalInterface) getTargetSystemCollection(target agmodel.Target) ([]
 		req.OID = "/ODIM/v1/Sessions"
 		_, token, _, err := contactPlugin(req, "error while getting the details "+req.OID+": ")
 		if err != nil {
-			log.Error(err.Error())
+			l.Log.Error(err.Error())
 			return nil, err
 		}
 		req.Token = token
@@ -288,8 +287,8 @@ func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, syste
 	key := systemKey + sysID
 	_, err := agmodel.GetResource("ComputerSystem", key)
 	if err != nil {
-		log.Error(err.Error())
-		log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
+		l.Log.Error(err.Error())
+		l.Log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		return true
 
 	}
@@ -297,13 +296,13 @@ func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, syste
 	key = strings.Replace(systemKey, "Systems", "Chassis", -1)
 	keys, err := agmodel.GetAllMatchingDetails("Chassis", key, common.InMemory)
 	if err != nil || len(keys) == 0 {
-		log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
+		l.Log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		return true
 	}
 	for _, chassiskey := range keys {
 		if _, err = agmodel.GetResource("Chassis", chassiskey); err != nil {
-			log.Error(err.Error())
-			log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
+			l.Log.Error(err.Error())
+			l.Log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 			return true
 		}
 	}
@@ -311,17 +310,17 @@ func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, syste
 	key = strings.Replace(systemKey, "Systems", "Managers", -1)
 	keys, err = agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
 	if err != nil || len(keys) == 0 {
-		log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
+		l.Log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		return true
 	}
 	for _, managerKey := range keys {
 		if _, err = agmodel.GetResource("Managers", managerKey); err != nil {
-			log.Error(err.Error())
-			log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
+			l.Log.Error(err.Error())
+			l.Log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 			return true
 		}
 	}
-	log.Info("Rediscovery not required for the server with UUID: " + deviceUUID)
+	l.Log.Info("Rediscovery not required for the server with UUID: " + deviceUUID)
 	return false
 }
 
@@ -335,7 +334,7 @@ func (e *ExternalInterface) publishResourceUpdatedEvent(systemIDs []string, coll
 func deleteResourceResetInfo(pattern string) {
 	keys, err := agmodel.GetAllMatchingDetails("SystemReset", pattern, common.InMemory)
 	if err != nil {
-		log.Error("Unable to fetch all matching keys from system reset table: " + err.Error())
+		l.Log.Error("Unable to fetch all matching keys from system reset table: " + err.Error())
 	}
 	for _, key := range keys {
 		agmodel.DeleteSystemResetInfo(key)
@@ -344,11 +343,11 @@ func deleteResourceResetInfo(pattern string) {
 
 // deleteSubordinateResource will delete all the subordinate resources assosiated with the pattern
 func deleteSubordinateResource(deviceUUID string) {
-	log.Info("Initiated removal of subordinate resource for the BMC with ID " +
+	l.Log.Info("Initiated removal of subordinate resource for the BMC with ID " +
 		deviceUUID + " from the in-memory DB")
 	keys, err := agmodel.GetAllMatchingDetails("*", deviceUUID, common.InMemory)
 	if err != nil {
-		log.Error("Unable to fetch all matching keys from system reset table: " + err.Error())
+		l.Log.Error("Unable to fetch all matching keys from system reset table: " + err.Error())
 		return
 	}
 	for _, key := range keys {
@@ -358,10 +357,10 @@ func deleteSubordinateResource(deviceUUID string) {
 			continue
 		default:
 			if err = agmodel.Delete(resourceDetails[0], resourceDetails[1], common.InMemory); err != nil {
-				log.Error("Delete of " + resourceDetails[1] + " from " + resourceDetails[0] + " in " +
+				l.Log.Error("Delete of " + resourceDetails[1] + " from " + resourceDetails[0] + " in " +
 					string(common.InMemory) + " DB failed due to the error: " + err.Error())
 			}
 		}
 	}
-	log.Info("Removal of subordinate resources for the BMC with ID " + deviceUUID + " from the in-memory DB is now complete.")
+	l.Log.Info("Removal of subordinate resources for the BMC with ID " + deviceUUID + " from the in-memory DB is now complete.")
 }

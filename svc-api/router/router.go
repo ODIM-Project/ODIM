@@ -27,6 +27,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
@@ -34,7 +35,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-api/ratelimiter"
 	"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	"github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 )
 
 //Router method to register API handlers.
@@ -204,7 +204,7 @@ func Router() *iris.Application {
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {
 			errMessage := "while trying to parse the URL: " + err.Error()
-			log.Error(errMessage)
+			l.Log.Error(errMessage)
 			return
 		}
 		path := strings.Replace(rawURI, parsedURI.EscapedPath(), parsedURI.Path, -1)
@@ -237,14 +237,14 @@ func Router() *iris.Application {
 		if r.Body != nil {
 			body, err := ioutil.ReadAll(r.Body)
 			if err != nil {
-				log.Error("while reading request body ", err.Error())
+				l.Log.Error("while reading request body ", err.Error())
 			}
 			r.Body = ioutil.NopCloser(bytes.NewReader(body))
 
 			if len(body) > 0 {
 				err = json.Unmarshal(body, &reqBody)
 				if err != nil {
-					log.Error("while unmarshalling request body", err.Error())
+					l.Log.Error("while unmarshalling request body", err.Error())
 				}
 			}
 		}

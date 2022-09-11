@@ -20,10 +20,10 @@ import (
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 )
 
 // AccountRPCs defines all the RPC methods in account service
@@ -58,7 +58,7 @@ func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
 	resp, err := a.GetServiceRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -84,7 +84,7 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the account create request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -114,7 +114,7 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 	resp, err := a.CreateRPC(createRequest)
 	if err != nil && resp == nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -150,7 +150,7 @@ func (a *AccountRPCs) GetAllAccounts(ctx iris.Context) {
 	resp, err := a.GetAllAccountsRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -189,7 +189,7 @@ func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 	resp, err := a.GetAccountRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -216,7 +216,7 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the account update request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -248,7 +248,7 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 	resp, err := a.UpdateRPC(updateRequest)
 	if err != nil && resp == nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -286,7 +286,7 @@ func (a *AccountRPCs) DeleteAccount(ctx iris.Context) {
 	resp, err := a.DeleteRPC(req)
 	if err != nil && resp == nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

@@ -176,9 +176,8 @@ def perform_checks(skip_opt_param_check=False):
 		exit(1)
 	DEPLOYMENT_ID = CONTROLLER_CONF_DATA['deploymentID']
 	if 'logLevel' not in CONTROLLER_CONF_DATA or CONTROLLER_CONF_DATA['logLevel'] == None or CONTROLLER_CONF_DATA['logLevel'] == "": 
-		logger.critical("Log level is not set, Setting default value info")
-		CONTROLLER_CONF_DATA['logLevel']="info"
-		exit(1)
+		logger.critical("Log level is not set, Setting default value warn")
+		CONTROLLER_CONF_DATA['logLevel']="warn"
 	else :
 		log_levels = ['panic', 'fatal', 'error', 'warn','info','debug','trace']
 		if CONTROLLER_CONF_DATA['logLevel'] not in log_levels:

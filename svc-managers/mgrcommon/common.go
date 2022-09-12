@@ -65,6 +65,12 @@ type ResourceInfoRequest struct {
 	DecryptDevicePassword func([]byte) ([]byte, error)
 	HTTPMethod            string
 	RequestBody           []byte
+	BmcUpdatedCreds       *BmcUpdatedCreds
+}
+
+type BmcUpdatedCreds struct {
+	UserName        string
+	UpdatedPassword string
 }
 
 // PluginToken interface to hold the token
@@ -129,6 +135,7 @@ func DeviceCommunication(req ResourceInfoRequest) response.RPC {
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
 	}
+
 	contactRequest.DeviceInfo = map[string]interface{}{
 		"ManagerAddress": target.ManagerAddress,
 		"UserName":       target.UserName,
@@ -190,11 +197,23 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
 		return "", fmt.Errorf(errorMessage)
 	}
+
 	contactRequest.DeviceInfo = map[string]interface{}{
 		"ManagerAddress": target.ManagerAddress,
 		"UserName":       target.UserName,
 		"Password":       decryptedPasswordByte,
 	}
+	if req.BmcUpdatedCreds != nil {
+		if req.BmcUpdatedCreds.UserName == target.UserName && req.BmcUpdatedCreds.UpdatedPassword != string(decryptedPasswordByte) {
+			contactRequest.DeviceInfo = map[string]interface{}{
+				"ManagerAddress": target.ManagerAddress,
+				"UserName":       target.UserName,
+				"Password":       []byte(req.BmcUpdatedCreds.UpdatedPassword),
+			}
+		}
+
+	}
+	
 	//replace the uuid:system id with the system to the @odata.id from request url
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet

@@ -1247,11 +1247,9 @@ func DeleteAggregateHostIndex(uuid string) error {
 func SaveBMCInventory(data map[string]interface{}) error {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
-		log.Error("GenericSave : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 	if err = connPool.SaveBMCInventory(data); err != nil {
-		log.Error("SaveBMCInventory : error while trying to add resource date to DB: " + err.Error())
 		return fmt.Errorf("error while trying to save BMC inventory: %v", err.Error())
 	}
 	return nil

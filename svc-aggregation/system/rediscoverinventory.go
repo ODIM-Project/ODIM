@@ -134,7 +134,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	req.DeviceUUID = deviceUUID
 	req.DeviceInfo = target
 	req.OID = strings.Replace(systemURL, "/redfish/v1/Systems/"+deviceUUID+".", "/redfish/v1/Systems/", -1)
-	log.Info("Request oid for rediscovery," + req.OID)
+	l.Log.Info("Request oid for rediscovery," + req.OID)
 	req.UpdateFlag = updateFlag
 	req.UpdateTask = e.UpdateTask
 	var h respHolder

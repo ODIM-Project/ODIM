@@ -35,7 +35,9 @@
 	   "InMemorySentinelPort": "26379",
 	   "OnDiskSentinelPort": "26379",
 	   "InMemoryPrimarySet": "redisSentinel",
-	   "OnDiskPrimarySet": "redisSentinel"
+	   "OnDiskPrimarySet": "redisSentinel",
+	   "RedisInMemoryPasswordFilePath": "",
+	   "RedisOnDiskPasswordFilePath": ""
 	},
 	"TLSConf": {
 	   "MinVersion": "TLS_1.2",

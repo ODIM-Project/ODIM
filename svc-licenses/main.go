@@ -45,7 +45,7 @@ func main() {
 	}
 	log.Logger.SetFormatter(&logs.SysLogFormatter{})
 	log.Logger.SetOutput(os.Stdout)
-	log.Logger.SetLevel(logrus.WarnLevel)
+	log.Logger.SetLevel(config.Data.LogLevel)
 
 	if uid := os.Geteuid(); uid == 0 {
 		log.Error("Licenses Service should not be run as the root user")

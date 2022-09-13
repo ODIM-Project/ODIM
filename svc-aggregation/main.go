@@ -58,7 +58,7 @@ func main() {
 
 	log.Logger.SetFormatter(&logs.SysLogFormatter{})
 	log.Logger.SetOutput(os.Stdout)
-	log.Logger.SetLevel(logrus.WarnLevel)
+	log.Logger.SetLevel(config.Data.LogLevel)
 
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
@@ -68,12 +68,11 @@ func main() {
 	config.CollectCLArgs()
 
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
-		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
+		log.Fatal("error while trying to set message bus configuration: " + err.Error())
 	}
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
-
 	var connectionMethodInterface = agcommon.DBInterface{
 		GetAllKeysFromTableInterface: agmodel.GetAllKeysFromTable,
 		GetConnectionMethodInterface: agmodel.GetConnectionMethod,

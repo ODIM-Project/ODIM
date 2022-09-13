@@ -175,7 +175,16 @@ def perform_checks(skip_opt_param_check=False):
 		logger.critical("deployment ID not configured, exiting!!!")
 		exit(1)
 	DEPLOYMENT_ID = CONTROLLER_CONF_DATA['deploymentID']
-
+	if 'logLevel' not in CONTROLLER_CONF_DATA or CONTROLLER_CONF_DATA['logLevel'] == None or CONTROLLER_CONF_DATA['logLevel'] == "": 
+		logger.critical("Log level is not set, Setting default value warn")
+		CONTROLLER_CONF_DATA['logLevel']="warn"
+	else :
+		log_levels = ['panic', 'fatal', 'error', 'warn','info','debug','trace']
+		if CONTROLLER_CONF_DATA['logLevel'] not in log_levels:
+			logger.info("Log level value is invalid, allowed values are 'panic', 'fatal', 'error', 'warn','info','debug','trace'")
+			exit(1)
+		logger.critical("Log level is %s ",CONTROLLER_CONF_DATA['logLevel'])
+		
 	if not skip_opt_param_check:
 		logger.debug("Checking if the local user matches with the configured nodes user")
 		cur_user = os.getenv('USER')

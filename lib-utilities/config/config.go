@@ -64,6 +64,7 @@ type configModel struct {
 	ResourceRateLimit              []string                 `json:"ResourceRateLimit"`
 	RequestLimitCountPerSession    int                      `json:"RequestLimitCountPerSession"`
 	SessionLimitCountPerUser       int                      `json:"SessionLimitCountPerUser"`
+	LogLevel                       log.Level                `json:"LogLevel"`
 }
 
 // DBConf holds all DB related configurations
@@ -195,7 +196,6 @@ func SetConfiguration() error {
 	if err != nil {
 		return fmt.Errorf("Failed to unmarshal config data: %v", err)
 	}
-
 	return ValidateConfiguration()
 }
 

@@ -54,7 +54,7 @@ func (e *ExternalInterface) GetLicenseService(req *licenseproto.GetLicenseServic
 	return resp
 }
 
-// GetLicenseCollection to get license collection details
+// GetLicenseCollection to get license collection details 
 func (e *ExternalInterface) GetLicenseCollection(req *licenseproto.GetLicenseRequest) response.RPC {
 	var resp response.RPC
 	licenseCollection := dmtf.LicenseCollection{

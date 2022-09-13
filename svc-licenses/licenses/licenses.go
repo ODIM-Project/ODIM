@@ -60,7 +60,7 @@ func (e *ExternalInterface) GetLicenseCollection(req *licenseproto.GetLicenseReq
 	licenseCollection := dmtf.LicenseCollection{
 		OdataContext: "/redfish/v1/$metadata#LicenseCollection.LicenseCollection",
 		OdataID:      "/redfish/v1/LicenseService/Licenses",
-		OdataType:    "#LicenseCollection.v1_0_0.LicenseCollection",
+		OdataType:    "#LicenseCollection.LicenseCollection",
 		Description:  "License Collection",
 		Name:         "License Collection",
 	}

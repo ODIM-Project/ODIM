@@ -181,7 +181,7 @@ def perform_checks(skip_opt_param_check=False):
 	else :
 		log_levels = ['panic', 'fatal', 'error', 'warn','info','debug','trace']
 		if CONTROLLER_CONF_DATA['logLevel'] not in log_levels:
-			logger.info("Log level value is invalid, allow values are 'panic', 'fatal', 'error', 'warn','info','debug','trace'")
+			logger.info("Log level value is invalid, allowed values are 'panic', 'fatal', 'error', 'warn','info','debug','trace'")
 			exit(1)
 		logger.critical("Log level is %s ",CONTROLLER_CONF_DATA['logLevel'])
 		

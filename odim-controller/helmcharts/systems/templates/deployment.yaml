@@ -99,13 +99,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          image: systems:{{ .Values.odimra.systemsImageTag }}
-=======
-          image: image-registry.openshift-image-registry.svc:5000/odim/systems:{{ .Values.odimra.systemsImageTag }}
->>>>>>> 8ba4723d (adding changes to related rhocp deployment)
-=======
           image: 10.24.1.61:5000/odim/systems:{{ .Values.odimra.systemsImageTag }}
->>>>>>> 5cd0a891 (updatign the image registry name)
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45104

@@ -396,7 +396,7 @@ func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.
 	}
 	writeConn := writePool.Get()
 	defer writeConn.Close()
-	_, createErr := writeConn.Do("SETEX", saveID, jsondata)
+	_, createErr := writeConn.Do("SET", saveID, jsondata)
 	if createErr != nil {
 		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
 		return "", errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())

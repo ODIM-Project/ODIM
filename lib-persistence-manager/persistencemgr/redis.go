@@ -1093,32 +1093,31 @@ func (p *ConnPool) GetEvtSubscriptions(index, searchKey string) ([]string, error
 	defer readConn.Close()
 	const cursor float64 = 0
 	currentCursor := cursor
+	d, getErr := readConn.Do("ZCOUNT", index, 0, 0)
+	if getErr != nil {
+		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
+	}
+	countData, err := redis.Ints(d.([]interface{})[0], getErr)
+	if err != nil {
+		return []string{}, err
+	}
 
-	for {
-		d, getErr := readConn.Do("ZSCAN", index, currentCursor, "MATCH", searchKey, "COUNT", count)
-		if getErr != nil {
-			return []string{}, fmt.Errorf("error while trying to get data: " + getErr.Error())
+	d, getErr = readConn.Do("ZSCAN", index, currentCursor, "MATCH", searchKey, "COUNT", countData)
+	if getErr != nil {
+		return []string{}, fmt.Errorf("error while trying to get data: " + getErr.Error())
+	}
+	if len(d.([]interface{})) > 1 {
+		data, err := redis.Strings(d.([]interface{})[1], getErr)
+		if err != nil {
+			return []string{}, fmt.Errorf("error while trying to get data: " + err.Error())
 		}
-		if len(d.([]interface{})) > 1 {
-			data, err := redis.Strings(d.([]interface{})[1], getErr)
-			if err != nil {
-				return []string{}, fmt.Errorf("error while trying to get data: " + err.Error())
+		for i := 0; i < len(data); i++ {
+			if data[i] != "0" {
+				getList = append(getList, data[i])
 			}
-			for i := 0; i < len(data); i++ {
-				if data[i] != "0" {
-					getList = append(getList, data[i])
-				}
-			}
-		}
-		stringCursor := string(d.([]interface{})[0].([]uint8))
-		if stringCursor == "0" {
-			break
-		}
-		currentCursor, getErr = strconv.ParseFloat(stringCursor, 64)
-		if getErr != nil {
-			return []string{}, getErr
 		}
 	}
+
 	return getList, nil
 }
 
@@ -1211,45 +1210,28 @@ func (p *ConnPool) GetDeviceSubscription(index string, match string) ([]string, 
 	defer readConn.Close()
 	const cursor float64 = 0
 	currentCursor := cursor
-	for {
-		d, getErr := readConn.Do("ZSCAN", index, currentCursor, "MATCH", match, "COUNT", count)
-		if getErr != nil {
-			return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
+	d, getErr := readConn.Do("ZCOUNT", index, 0, 0)
+	if getErr != nil {
+		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
+	}
+	countData, err := redis.Ints(d.([]interface{})[0], getErr)
+	if err != nil {
+		return []string{}, err
+	}
+	d, getErr = readConn.Do("ZSCAN", index, currentCursor, "MATCH", match, "COUNT", countData)
+	if getErr != nil {
+		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
+	}
+	if len(d.([]interface{})) > 1 {
+		var err error
+		data, err = redis.Strings(d.([]interface{})[1], getErr)
+		if err != nil {
+			return []string{}, err
 		}
-		if len(d.([]interface{})) > 1 {
-			var err error
-			data, err = redis.Strings(d.([]interface{})[1], getErr)
-			if err != nil {
-				return []string{}, err
-			}
-			l.Log.Info("No of data records for get device subscription query : " + strconv.Itoa(len(data)))
-			if len(data) < 1 {
-				return []string{}, fmt.Errorf("No data found for the key: %v", match)
-			}
-			return data, nil
+		l.Log.Info("No of data records for get device subscription query : " + strconv.Itoa(len(data)))
+		if len(data) < 1 {
+			return []string{}, fmt.Errorf("No data found for the key: %v", match)
 		}
-		stringCursor := string(d.([]interface{})[0].([]uint8))
-		if stringCursor == "0" {
-			if len(d.([]interface{})) > 1 {
-				var err error
-				data, err = redis.Strings(d.([]interface{})[1], getErr)
-				if err != nil {
-					return []string{}, err
-				}
-				log.Info("No of data records for get device subscription query : " + strconv.Itoa(len(data)))
-				if len(data) < 1 {
-					return []string{}, fmt.Errorf("No data found for the key: %v", match)
-				}
-				break
-			}
-		} else {
-			currentCursor, getErr = strconv.ParseFloat(stringCursor, 64)
-			if getErr != nil {
-				return []string{}, getErr
-			}
-
-		}
-
 	}
 	return data, nil
 }

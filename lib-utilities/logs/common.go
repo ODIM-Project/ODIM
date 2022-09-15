@@ -16,10 +16,15 @@
 package logs
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
+	"net/http"
+
+	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
+
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	log "github.com/sirupsen/logrus"
-	"net/http"
 )
 
 // getUserDetails function
@@ -43,6 +48,27 @@ func getUserDetails(sessionToken string) (string, string) {
 		}
 	}
 	return sessionUserName, sessionRoleID
+}
+
+// GetSessionUserName will get user name from the session token by rpc call to account-session service
+func GetSessionUserName(sessionToken string) (string, error) {
+	conn, err := srv.ODIMService.Client("")
+	if err != nil {
+		return "", fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	asService := sessionproto.NewSessionClient(conn)
+	response, err := asService.GetSessionUserName(
+		context.TODO(),
+		&sessionproto.SessionRequest{
+			SessionToken: sessionToken,
+		},
+	)
+	if err != nil && response == nil {
+		log.Error("something went wrong with rpc call: " + err.Error())
+		return "", err
+	}
+	return response.UserName, err
 }
 
 // MaskRequestBody function

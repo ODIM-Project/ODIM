@@ -27,8 +27,8 @@ import (
 	"sync"
 	"time"
 
+	log "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/segmentio/kafka-go"
-	log "github.com/sirupsen/logrus"
 )
 
 // KafkaPacket defines the KAFKA Message Object. This one conains all the required
@@ -139,7 +139,7 @@ func kafkaConnect(kp *KafkaPacket) error {
 	// Creation of TLS Config and Dialer
 	tls, e := TLS(MQ.KafkaF.KAFKACertFile, MQ.KafkaF.KAFKAKeyFile, MQ.KafkaF.KAFKACAFile)
 	if e != nil {
-		log.Error(e.Error())
+		log.Log.Error(e.Error())
 		return e
 	}
 	kp.DialerConn = &kafka.Dialer{
@@ -193,7 +193,7 @@ func (kp *KafkaPacket) Distribute(d interface{}) error {
 	// Encode the message before appending into KAFKA Message struct
 	b, e := Encode(d)
 	if e != nil {
-		log.Error(e.Error())
+		log.Log.Error(e.Error())
 		return e
 	}
 
@@ -205,7 +205,7 @@ func (kp *KafkaPacket) Distribute(d interface{}) error {
 
 	// Write the messgae in the specified Pipe.
 	if e = writer.WriteMessages(context.Background(), km); e != nil {
-		log.Error(e.Error())
+		log.Log.Error(e.Error())
 		return e
 	}
 
@@ -272,13 +272,13 @@ func (kp *KafkaPacket) Read(fn MsgProcess) error {
 		// explicitly committing the messages
 		m, e := reader.ReadMessage(c)
 		if e != nil {
-			log.Error(e.Error())
+			log.Log.Error(e.Error())
 			return e
 		}
 
 		// Decode the message before passing it to Callback
 		if e = Decode(m.Value, &d); e != nil {
-			log.Error(e.Error())
+			log.Log.Error(e.Error())
 			return e
 		}
 		// Callback Function call.

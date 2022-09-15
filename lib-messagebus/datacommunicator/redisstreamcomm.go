@@ -21,9 +21,9 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/go-redis/redis/v8"
 	uuid "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -42,7 +42,7 @@ func getDBConnection() *redis.Client {
 
 	tlsConfig, e := TLS(MQ.RedisStreams.RedisCertFile, MQ.RedisStreams.RedisKeyFile, MQ.RedisStreams.RedisCAFile)
 	if e != nil {
-		log.Error(e.Error())
+		log.Log.Error(e.Error())
 		return nil
 	}
 
@@ -77,7 +77,7 @@ func (rp *RedisStreamsPacket) Distribute(data interface{}) error {
 	// Encode the message before appending into Redis Message struct
 	b, e := Encode(data)
 	if e != nil {
-		log.Error(e.Error())
+		log.Log.Error(e.Error())
 		return e
 	}
 	redisClient := getDBConnection()
@@ -88,7 +88,7 @@ func (rp *RedisStreamsPacket) Distribute(data interface{}) error {
 	}).Result()
 
 	if rerr != nil {
-		log.Error("Unable to publish event to redis, got: " + rerr.Error())
+		log.Log.Error("Unable to publish event to redis, got: " + rerr.Error())
 		if rerr != nil {
 			if strings.Contains(rerr.Error(), " connection timed out") {
 				redisClient = getDBConnection()
@@ -111,7 +111,7 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 	rerr := redisClient.XGroupCreateMkStream(context.Background(),
 		rp.pipe, EVENTREADERGROUPNAME, "$").Err()
 	if rerr != nil {
-		log.Error("Unable to create the group ", rerr)
+		log.Log.Error("Unable to create the group ", rerr)
 		if strings.Contains(rerr.Error(), " connection timed out") {
 			redisClient = getDBConnection()
 		}
@@ -130,7 +130,7 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 					Streams:  []string{rp.pipe, ">"},
 				}).Result()
 			if err != nil {
-				log.Error("Unable to get data from the group ", err)
+				log.Log.Error("Unable to get data from the group ", err)
 				if strings.Contains(err.Error(), " connection timed out") {
 					redisClient = getDBConnection()
 				}

@@ -18,14 +18,13 @@ package services
 import (
 	"context"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
+	log "github.com/sirupsen/logrus"
 )
 
 // IsAuthorized is used to authorize the services using svc-account-session.
@@ -37,7 +36,7 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errRe
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to create client connection: %v", err)
 		log.Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil, nil)
+		return GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil)
 	}
 	defer conn.Close()
 	asService := authproto.NewAuthorizationClient(conn)
@@ -52,13 +51,13 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errRe
 	if err != nil && response == nil {
 		errMsg := fmt.Sprintf("rpc call failed: %v", err)
 		log.Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil, nil)
+		return GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil)
 	}
 	var msgArgs []interface{}
 	if response.StatusCode == http.StatusServiceUnavailable {
-		msgArgs = append(msgArgs, fmt.Sprintf("%v:%v", config.Data.DBConf.InMemoryHost, config.Data.DBConf.InMemoryPort))
+		msgArgs = append(msgArgs, fmt.Sprintf("%v:%v", "", ""))
 	}
-	return common.GeneralError(response.StatusCode, response.StatusMessage, "while checking the authorization", msgArgs, nil)
+	return GeneralError(response.StatusCode, response.StatusMessage, "while checking the authorization", msgArgs)
 }
 
 // GetSessionUserName will get user name from the session token by rpc call to account-session service
@@ -123,4 +122,28 @@ func GetUserDetails(sessionToken string) (string, string) {
 		}
 	}
 	return sessionUserName, sessionRoleID
+}
+
+// GeneralError will create the error response
+// This function can be used only if the expected response have only
+// one extended info object. Error code for the response will be GeneralError
+
+func GeneralError(statusCode int32, statusMsg, errMsg string, msgArgs []interface{}) response.RPC {
+	var resp response.RPC
+	resp.StatusCode = statusCode
+	resp.StatusMessage = statusMsg
+	args := response.Args{
+		Code:    response.GeneralError,
+		Message: "",
+		ErrorArgs: []response.ErrArgs{
+			response.ErrArgs{
+				StatusMessage: resp.StatusMessage,
+				ErrorMessage:  errMsg,
+				MessageArgs:   msgArgs,
+			},
+		},
+	}
+	resp.Body = args.CreateGenericErrorResponse()
+
+	return resp
 }

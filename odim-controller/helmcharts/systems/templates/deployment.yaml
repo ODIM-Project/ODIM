@@ -89,8 +89,6 @@ spec:
               value: {{ .Values.odimra.haDeploymentEnabled | quote }}
             - name: ODIM_NAMESPACE
               value: {{ .Values.odimra.namespace | quote }}
-<<<<<<< HEAD
-<<<<<<< HEAD
             - name: HOST_NAME
               valueFrom:
                 fieldRef:

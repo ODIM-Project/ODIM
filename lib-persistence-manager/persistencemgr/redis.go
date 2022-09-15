@@ -1097,11 +1097,7 @@ func (p *ConnPool) GetEvtSubscriptions(index, searchKey string) ([]string, error
 	if getErr != nil {
 		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
 	}
-	countData, err := redis.Ints(d.([]interface{})[0], getErr)
-	if err != nil {
-		return []string{}, err
-	}
-
+	countData := d.(int64)
 	d, getErr = readConn.Do("ZSCAN", index, currentCursor, "MATCH", searchKey, "COUNT", countData)
 	if getErr != nil {
 		return []string{}, fmt.Errorf("error while trying to get data: " + getErr.Error())
@@ -1214,10 +1210,7 @@ func (p *ConnPool) GetDeviceSubscription(index string, match string) ([]string, 
 	if getErr != nil {
 		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
 	}
-	countData, err := redis.Ints(d.([]interface{})[0], getErr)
-	if err != nil {
-		return []string{}, err
-	}
+	countData := d.(int64)
 	d, getErr = readConn.Do("ZSCAN", index, currentCursor, "MATCH", match, "COUNT", countData)
 	if getErr != nil {
 		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())

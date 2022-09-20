@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	log "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
@@ -33,7 +33,7 @@ func ContactPlugin(url, method, token string, odataID string, body interface{}, 
 	}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		log.Log.Error(err.Error())
+		l.Log.Error(err.Error())
 		return nil, err
 	}
 
@@ -67,7 +67,7 @@ func ContactPlugin(url, method, token string, odataID string, body interface{}, 
 	}
 
 	if resp.StatusCode >= 300 {
-		log.Log.Warn("got " + resp.Status + " while fetching " + url + " with method " + method)
+		l.Log.Warn("got " + resp.Status + " while fetching " + url + " with method " + method)
 	}
 
 	return resp, nil

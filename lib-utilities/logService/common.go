@@ -16,7 +16,7 @@
 package logService
 
 import (
-	log "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
@@ -30,13 +30,13 @@ func GetUserDetails(sessionToken string) (string, string) {
 		sessionUserName, err = srv.GetSessionUserName(sessionToken)
 		if err != nil {
 			errMsg := "while trying to get session details: " + err.Error()
-			log.Log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return "null", "null"
 		}
 		sessionRoleID, err = srv.GetSessionUserRoleID(sessionToken)
 		if err != nil {
 			errMsg := "while trying to get session details: " + err.Error()
-			log.Log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return sessionUserName, "null"
 		}
 	}

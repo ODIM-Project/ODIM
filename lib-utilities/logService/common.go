@@ -13,18 +13,16 @@
 // under the License.
 
 // Package logs ...
-package logs
+package logService
 
 import (
-	"encoding/json"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
-	log "github.com/sirupsen/logrus"
-	"net/http"
 )
 
-// getUserDetails function
+// GetUserDetails function
 // getting the session user id and role id for a given session token
-func getUserDetails(sessionToken string) (string, string) {
+func GetUserDetails(sessionToken string) (string, string) {
 	var err error
 	sessionUserName := "null"
 	sessionRoleID := "null"
@@ -32,49 +30,15 @@ func getUserDetails(sessionToken string) (string, string) {
 		sessionUserName, err = srv.GetSessionUserName(sessionToken)
 		if err != nil {
 			errMsg := "while trying to get session details: " + err.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return "null", "null"
 		}
 		sessionRoleID, err = srv.GetSessionUserRoleID(sessionToken)
 		if err != nil {
 			errMsg := "while trying to get session details: " + err.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return sessionUserName, "null"
 		}
 	}
 	return sessionUserName, sessionRoleID
-}
-
-// MaskRequestBody function
-// masking the request body, making password as null
-func MaskRequestBody(reqBody map[string]interface{}) string {
-	var jsonStr []byte
-	var err error
-	if len(reqBody) > 0 {
-		reqBody["Password"] = "null"
-		jsonStr, err = json.Marshal(reqBody)
-		if err != nil {
-			log.Error("while marshalling request body", err.Error())
-		}
-	}
-	reqStr := string(jsonStr)
-	// adding null to requestbody property if no payload is sent
-	if reqStr == "" {
-		reqStr = "null"
-	}
-	return reqStr
-}
-
-// getResponseStatus function
-// setting operation status flag based on the response code
-func getResponseStatus(respStatusCode int32) bool {
-	operationStatus := false
-	successStatusCodes := []int32{http.StatusOK, http.StatusCreated, http.StatusAccepted, http.StatusNoContent}
-	for _, statusCode := range successStatusCodes {
-		if statusCode == respStatusCode {
-			operationStatus = true
-			break
-		}
-	}
-	return operationStatus
 }

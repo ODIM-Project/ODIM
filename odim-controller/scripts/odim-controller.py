@@ -1722,6 +1722,16 @@ def deploy_plugin(plugin_name):
 				else:
 					logger.critical("ServiceUUID parameter missing in Config file")
 					exit(1)
+				if 'logLevel' not in pluginConf[plugin_name] or pluginConf[plugin_name]['logLevel'] == None or pluginConf[plugin_name]['logLevel'] == "":
+					logger.critical("Log level is not set for %s, Setting default value warn",plugin_name)
+					pluginConf[plugin_name]['logLevel']="warn"
+				else:
+					log_levels = ['panic', 'fatal', 'error', 'warn','info','debug','trace']
+					if pluginConf[plugin_name]['logLevel'] not in log_levels:
+						logger.info("Log level value is invalid, allowed values are 'panic', 'fatal', 'error', 'warn','info','debug','trace'")
+						exit(1)
+				logger.critical("Log levelfor %s is %s ",plugin_name,pluginConf[plugin_name]['logLevel'])
+
 			except yaml.YAMLError as exc:
 				logger.error(exc)
 				exit(1)

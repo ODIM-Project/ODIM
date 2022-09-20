@@ -22,7 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 // BrokerType defines the underline MQ platform to be selected for the
@@ -97,7 +97,7 @@ func Encode(d interface{}) ([]byte, error) {
 
 	data, err := json.Marshal(d)
 	if err != nil {
-		log.Error("Failed to encode the given event data: " + err.Error())
+		l.Log.Error("Failed to encode the given event data: " + err.Error())
 		return nil, err
 	}
 	return data, nil
@@ -108,7 +108,7 @@ func Encode(d interface{}) ([]byte, error) {
 func Decode(d []byte, a interface{}) error {
 	err := json.Unmarshal(d, &a)
 	if err != nil {
-		log.Error("error: Failed to decode the event data: " + err.Error())
+		l.Log.Error("error: Failed to decode the event data: " + err.Error())
 		return err
 	}
 	return nil

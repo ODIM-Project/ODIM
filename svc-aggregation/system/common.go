@@ -404,6 +404,7 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 	for _, object := range systemMembers.([]interface{}) {
 		estimatedWork := alottedWork / int32(len(systemMembers.([]interface{})))
 		oDataID := object.(map[string]interface{})["@odata.id"].(string)
+		oDataID = strings.TrimSuffix(oDataID, "/")
 		req.OID = oDataID
 		if computeSystemID, resourceURI, progress, err = h.getSystemInfo(taskID, progress, estimatedWork, req); err != nil {
 			errorMessage += oDataID + ":err-" + err.Error() + "; "
@@ -626,6 +627,7 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 		for _, object := range resourceMembers.([]interface{}) {
 			estimatedWork := alottedWork / int32(len(resourceMembers.([]interface{})))
 			oDataID := object.(map[string]interface{})["@odata.id"].(string)
+			oDataID = strings.TrimSuffix(oDataID, "/")
 			req.OID = oDataID
 			progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req, resourceList)
 		}
@@ -709,6 +711,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
 		estimatedWork := alottedWork / int32(len(retrievalLinks))
+		resourceOID = strings.TrimSuffix(resourceOID, "/")
 		req.OID = resourceOID
 		req.OemFlag = oemFlag
 		progress = h.getResourceDetails(taskID, progress, estimatedWork, req)
@@ -953,6 +956,7 @@ func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
 		estimatedWork := alottedWork / int32(len(retrievalLinks))
+		resourceOID = strings.TrimSuffix(resourceOID, "/")
 		req.OID = resourceOID
 		req.OemFlag = oemFlag
 		progress = h.getResourceDetails(taskID, progress, estimatedWork, req)
@@ -1045,6 +1049,7 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		if checkRetrieval(oid, req.OID, h.TraversedLinks) {
 			estimatedWork := alottedWork / int32(len(retrievalLinks))
 			childReq := req
+			oid = strings.TrimSuffix(oid, "/")
 			childReq.OID = oid
 			childReq.ParentOID = req.OID
 			childReq.OemFlag = oemFlag

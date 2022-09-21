@@ -17,8 +17,9 @@ package services
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"time"
+
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/golang/protobuf/ptypes"
@@ -28,7 +29,7 @@ import (
 func CreateTask(sessionUserName string) (string, error) {
 	conn, errConn := ODIMService.Client(Tasks)
 	if errConn != nil {
-		log.Error("Failed to create client connection: " + errConn.Error())
+		l.Log.Error("Failed to create client connection: " + errConn.Error())
 	}
 	defer conn.Close()
 	taskService := taskproto.NewGetTaskServiceClient(conn)
@@ -39,7 +40,7 @@ func CreateTask(sessionUserName string) (string, error) {
 		},
 	)
 	if err != nil && response == nil {
-		log.Error("rpc error while creating the task: " + err.Error())
+		l.Log.Error("rpc error while creating the task: " + err.Error())
 		return "", err
 	}
 	return response.TaskURI, err
@@ -49,7 +50,7 @@ func CreateTask(sessionUserName string) (string, error) {
 func CreateChildTask(sessionUserName string, parentTaskID string) (string, error) {
 	conn, errConn := ODIMService.Client(Tasks)
 	if errConn != nil {
-		log.Error("Failed to create client connection: " + errConn.Error())
+		l.Log.Error("Failed to create client connection: " + errConn.Error())
 	}
 	defer conn.Close()
 	taskService := taskproto.NewGetTaskServiceClient(conn)
@@ -61,7 +62,7 @@ func CreateChildTask(sessionUserName string, parentTaskID string) (string, error
 		},
 	)
 	if err != nil && response == nil {
-		log.Error("rpc error while creating the child task: " + err.Error())
+		l.Log.Error("rpc error while creating the child task: " + err.Error())
 		return "", err
 	}
 	return response.TaskURI, err
@@ -71,12 +72,12 @@ func CreateChildTask(sessionUserName string, parentTaskID string) (string, error
 func UpdateTask(taskID string, taskState string, taskStatus string, percentComplete int32, payLoad *taskproto.Payload, endTime time.Time) error {
 	tspb, err := ptypes.TimestampProto(endTime)
 	if err != nil {
-		log.Error("Failed to convert the time to protobuff timestamp: " + err.Error())
+		l.Log.Error("Failed to convert the time to protobuff timestamp: " + err.Error())
 		return err
 	}
 	conn, errConn := ODIMService.Client(Tasks)
 	if errConn != nil {
-		log.Error("Failed to create client connection: " + errConn.Error())
+		l.Log.Error("Failed to create client connection: " + errConn.Error())
 	}
 	defer conn.Close()
 	taskService := taskproto.NewGetTaskServiceClient(conn)

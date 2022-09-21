@@ -26,6 +26,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	loggingService "github.com/ODIM-Project/ODIM/lib-utilities/logService"
 	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -191,6 +192,9 @@ func Router() *iris.Application {
 	registryFile := handle.Registry{
 		Auth: srv.IsAuthorized,
 	}
+	logService := l.Logging{
+		GetUserDetails: loggingService.GetUserDetails,
+	}
 
 	serviceRoot := handle.InitServiceRoot()
 
@@ -262,7 +266,7 @@ func Router() *iris.Application {
 
 	})
 	router.Done(func(ctx iris.Context) {
-		customLogs.AuditLog(ctx, reqBody)
+		logService.AuditLog(ctx, reqBody)
 		reqBody = make(map[string]interface{})
 		// before returning response, decrement the session limit counter
 		sessionToken := ctx.Request().Header.Get("X-Auth-Token")

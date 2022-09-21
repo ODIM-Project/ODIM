@@ -28,8 +28,8 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	uuid "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -292,9 +292,9 @@ func (s *odimService) intiateSignalHandler() {
 		syscall.SIGQUIT)
 	go func() {
 		sig := <-sigs
-		log.Infof("Received signal: %v", sig)
+		l.Log.Infof("Received signal: %v", sig)
 		err := s.deregisterService()
-		log.Error(err)
+		l.Log.Error(err)
 	}()
 
 }

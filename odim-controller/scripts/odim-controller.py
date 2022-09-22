@@ -1389,6 +1389,9 @@ def update_helm_charts(config_map_name):
 		"redis":"upgrade_thirdparty",
 		"etcd":"upgrade_thirdparty"
 	}
+	if config_map_name =='composition-service':
+		logger.warning("%s upgrade is not supported!!!", config_map_name)
+		exit(1)
 
 	if config_map_name not in optionHelmChartInfo:
 		logger.critical("%s upgrade is not supported!!!", config_map_name)

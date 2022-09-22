@@ -143,7 +143,7 @@ data:
                  "DeliveryRetryIntervalSeconds" : 60
       },
       "ResourceRateLimit": {{ .Values.odimra.resourceRateLimit | toJson }},
-      "LogLevel": {{ .Values.logLevel | quote }},
+      "LogLevel": {{ .Values.odimra.logLevel | quote }},
       "RequestLimitCountPerSession": {{ .Values.odimra.requestLimitPerSession | default 0 }},
       "SessionLimitCountPerUser": {{ .Values.odimra.sessionLimitPerUser | default 0 }}
     }

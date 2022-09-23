@@ -381,12 +381,6 @@ func (p *ConnPool) Create(table, key string, data interface{}) *errors.Error {
 */
 func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.Error) {
 
-	//if _, readErr := p.Read(table, key); readErr != nil {
-	//	if errors.DBKeyNotFound == readErr.ErrNo() {
-	//		return "", errors.PackError(readErr.ErrNo(), "error: data with key ", key, " does not exist")
-	//	}
-	//	return "", readErr
-	//}
 	saveID := table + ":" + key
 
 	jsondata, err := json.Marshal(data)

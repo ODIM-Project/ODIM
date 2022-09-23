@@ -564,16 +564,6 @@ func (h *respHolder) getRegistryFile(registryName string, req getResourceRequest
 		return
 	}
 
-	// Store the file in DB
-	//err = agmodel.SaveRegistryFile(body, "Registries", registryName+".json")
-	//if err != nil {
-	//	h.lock.Lock()
-	//	h.ErrorMessage = "error while trying to save data: " + err.Error()
-	//	h.StatusMessage = response.InternalError
-	//	h.StatusCode = http.StatusInternalServerError
-	//	h.lock.Unlock()
-	//	return
-	//}
 	h.InventoryData["Registries:"+registryName+".json"] = string(body)
 }
 
@@ -688,18 +678,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 
 	}
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
-	// persist the response with table ComputerSystem  and key as system UUID + Oid Needs relook TODO
-	/*
-		err = agmodel.GenericSave([]byte(updatedResourceData), "ComputerSystem", oidKey)
-		if err != nil {
-			h.lock.Lock()
-			h.ErrorMessage = "error while trying to save data: " + err.Error()
-			h.StatusMessage = response.InternalError
-			h.StatusCode = http.StatusInternalServerError
-			h.lock.Unlock()
-			return computeSystemID, oidKey, progress, err
-		}
-	*/
+
 	h.InventoryData["ComputerSystem:"+oidKey] = updatedResourceData
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
@@ -936,16 +915,6 @@ func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork
 
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
-	// persist the response with table resource and key as system UUID + Oid Needs relook TODO
-	//err = agmodel.GenericSave([]byte(updatedResourceData), resourceName, oidKey)
-	//if err != nil {
-	//	h.lock.Lock()
-	//	h.ErrorMessage = "error while trying to save data: " + err.Error()
-	//	h.StatusMessage = response.InternalError
-	//	h.StatusCode = http.StatusInternalServerError
-	//	h.lock.Unlock()
-	//	return progress
-	//}
 	h.InventoryData[resourceName+":"+oidKey] = updatedResourceData
 	h.TraversedLinks[req.OID] = true
 	var retrievalLinks = make(map[string]bool)
@@ -1024,21 +993,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
 
-	// persist the response with table resourceName and key as system UUID + Oid Needs relook TODO
-
-	//err = agmodel.GenericSave([]byte(updatedResourceData), resourceName, oidKey)
-	//if err != nil {
-	//	if strings.Contains(err.Error(), "duplicate") {
-	//		return progress
-	//	}
-	//	h.lock.Lock()
-	//	h.ErrorMessage = "error while trying to save data: " + err.Error()
-	//	h.StatusCode = http.StatusInternalServerError
-	//	h.StatusMessage = response.InternalError
-	//	l.Log.Error(h.ErrorMessage)
-	//	h.lock.Unlock()
-	//	return progress
-	//}
 	h.InventoryData[resourceName+":"+oidKey] = updatedResourceData
 	var retrievalLinks = make(map[string]bool)
 

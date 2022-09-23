@@ -359,10 +359,16 @@ func (p *ConnPool) Create(table, key string, data interface{}) *errors.Error {
 	if err != nil {
 		return errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
 	}
-	_, createErr := writeConn.Do("SETNX", saveID, jsondata)
+	value, createErr := writeConn.Do("SETNX", saveID, jsondata)
 	if createErr != nil {
 		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
 		return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
+	}
+
+	if value != nil {
+		if value.(int64) == 0 {
+			return errors.PackError(errors.DBKeyAlreadyExist, "error: data with key ", key, " already exists")
+		}
 	}
 
 	return nil

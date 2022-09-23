@@ -53,7 +53,7 @@ reloader:
       group: com.stakater.platform
       version: v0.0.76
     image:
-      name: 10.24.1.61:5000/odim/reloader
+      name: {{ .Values.odimra.imageRegistryAddress| default  }}reloader
       tag: "v0.0.76"
       pullPolicy: IfNotPresent
     # Support for extra environment variables.

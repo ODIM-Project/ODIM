@@ -79,7 +79,7 @@ spec:
             claimName: odimra-log-claim
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
-        runAsUser: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       containers:
         - name: managers
           env:
@@ -97,7 +97,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          image: 10.24.1.61:5000/odim/managers:{{ .Values.odimra.managersImageTag }}
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}managers:{{ .Values.odimra.managersImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45107

@@ -266,7 +266,7 @@ func Router() *iris.Application {
 
 	})
 	router.Done(func(ctx iris.Context) {
-		var reqBody interface{}
+		var reqBody map[string]interface{}
 		ctx.ReadJSON(&reqBody)
 		logService.AuditLog(ctx, reqBody)
 		// before returning response, decrement the session limit counter

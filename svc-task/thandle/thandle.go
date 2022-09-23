@@ -1129,8 +1129,8 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 	//	notifyTaskStateChange(task.URI, taskEvenMessageID)
 	eventType := "StatusChange"
 
-	//if ok := TaskCollection.getTaskFromCollectionData(taskID, int(percentComplete)); !ok {
-	ts.PublishToMessageBus(task.URI, taskEvenMessageID, eventType, taskMessage)
-	//}
+	if !TaskCollection.getTaskFromCollectionData(taskID, int(percentComplete)) {
+		ts.PublishToMessageBus(task.URI, taskEvenMessageID, eventType, taskMessage)
+	}
 	return err
 }

@@ -79,7 +79,7 @@ spec:
             claimName: odimra-log-claim
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
-        runAsUser: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       serviceAccountName: odimra
       containers:
         - name: aggregation
@@ -98,7 +98,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          image: 10.24.1.61:5000/odim/aggregation:{{ .Values.odimra.aggregationImageTag }}
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}aggregation:{{ .Values.odimra.aggregationImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45102

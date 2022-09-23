@@ -29,7 +29,7 @@ spec:
       subdomain: etcd
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
-        runAsUser: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -40,7 +40,7 @@ spec:
                 values: [ {{ index .Values.hostname 0 }} ]
       containers:
         - name: etcd1
-          image: 10.24.1.61:5000/odim/etcd:{{ .Values.odimra.etcdImageTag }}
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}etcd:{{ .Values.odimra.etcdImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - name: etcd-server
@@ -134,7 +134,7 @@ spec:
       subdomain: etcd
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
-        runAsUser: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -145,7 +145,7 @@ spec:
                 values: [ {{ index .Values.hostname 1 }} ]
       containers:
         - name: etcd2
-          image: 10.24.1.61:5000/odim/etcd:{{ .Values.odimra.etcdImageTag }}
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}etcd:{{ .Values.odimra.etcdImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - name: etcd-server
@@ -239,7 +239,7 @@ spec:
       subdomain: etcd
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
-        runAsUser: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -250,7 +250,7 @@ spec:
                 values: [ {{ index .Values.hostname 2 }} ]
       containers:
         - name: etcd3
-          image: 10.24.1.61:5000/odim/etcd:{{ .Values.odimra.etcdImageTag }}
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}etcd:{{ .Values.odimra.etcdImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - name: etcd-server

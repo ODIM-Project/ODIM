@@ -346,13 +346,6 @@ func (p *ConnPool) Create(table, key string, data interface{}) *errors.Error {
 	writeConn := writePool.Get()
 	defer writeConn.Close()
 
-	//value, readErr := p.Read(table, key)
-	//if readErr != nil && readErr.ErrNo() == errors.DBConnFailed {
-	//	return errors.PackError(readErr.ErrNo(), "error: db connection failed")
-	//}
-	//if value != "" {
-	//	return errors.PackError(errors.DBKeyAlreadyExist, "error: data with key ", key, " already exists")
-	//}
 	saveID := table + ":" + key
 
 	jsondata, err := json.Marshal(data)
@@ -381,6 +374,12 @@ func (p *ConnPool) Create(table, key string, data interface{}) *errors.Error {
 */
 func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.Error) {
 
+	if _, readErr := p.Read(table, key); readErr != nil {
+		if errors.DBKeyNotFound == readErr.ErrNo() {
+			return "", errors.PackError(readErr.ErrNo(), "error: data with key ", key, " does not exist")
+		}
+		return "", readErr
+	}
 	saveID := table + ":" + key
 
 	jsondata, err := json.Marshal(data)

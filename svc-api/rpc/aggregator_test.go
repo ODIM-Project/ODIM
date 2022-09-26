@@ -897,12 +897,12 @@ func TestDoGetSetDefaultBootOrderActionInfo(t *testing.T) {
 		req aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
+		name                    string
+		args                    args
 		ClientFunc              func(clientName string) (*grpc.ClientConn, error)
 		NewAggregatorClientFunc func(cc *grpc.ClientConn) aggregatorproto.AggregatorClient
-		want    *aggregatorproto.AggregatorResponse
-		wantErr bool
+		want                    *aggregatorproto.AggregatorResponse
+		wantErr                 bool
 	}{
 		{
 			name:                    "Client func error",

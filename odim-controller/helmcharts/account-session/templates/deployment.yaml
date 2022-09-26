@@ -79,6 +79,7 @@ spec:
             claimName: odimra-log-claim
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       containers:
         - name: account-session
           env:
@@ -96,7 +97,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          image: account-session:{{ .Values.odimra.accountSessionImageTag }}
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}account-session:{{ .Values.odimra.accountSessionImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45101

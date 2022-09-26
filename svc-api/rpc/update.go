@@ -23,9 +23,10 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
-var(
+var (
 	NewUpdateClientFunc = updateproto.NewUpdateClient
 )
+
 // DoGetUpdateService defines the RPC call function for
 // the GetUpdateService from update micro service
 func DoGetUpdateService(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
@@ -34,7 +35,7 @@ func DoGetUpdateService(req updateproto.UpdateRequest) (*updateproto.UpdateRespo
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	update := NewUpdateClientFunc(conn)
 
 	resp, err := update.GetUpdateService(context.TODO(), &req)
@@ -53,7 +54,7 @@ func DoGetFirmwareInventory(req updateproto.UpdateRequest) (*updateproto.UpdateR
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	update := NewUpdateClientFunc(conn)
 
 	resp, err := update.GetFirmwareInventory(context.TODO(), &req)
@@ -72,7 +73,7 @@ func DoGetSoftwareInventory(req updateproto.UpdateRequest) (*updateproto.UpdateR
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	update := NewUpdateClientFunc(conn)
 
 	resp, err := update.GetSoftwareInventory(context.TODO(), &req)
@@ -91,7 +92,7 @@ func DoGetFirmwareInventoryCollection(req updateproto.UpdateRequest) (*updatepro
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	update := NewUpdateClientFunc(conn)
 
 	resp, err := update.GetFirmwareInventoryCollection(context.TODO(), &req)
@@ -110,7 +111,7 @@ func DoGetSoftwareInventoryCollection(req updateproto.UpdateRequest) (*updatepro
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	update := NewUpdateClientFunc(conn)
 
 	resp, err := update.GetSoftwareInventoryCollection(context.TODO(), &req)
@@ -129,7 +130,7 @@ func DoSimpleUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse,
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	update := NewUpdateClientFunc(conn)
 
 	resp, err := update.SimepleUpdate(context.TODO(), &req)
@@ -148,7 +149,7 @@ func DoStartUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, 
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	update := NewUpdateClientFunc(conn)
 
 	resp, err := update.StartUpdate(context.TODO(), &req)

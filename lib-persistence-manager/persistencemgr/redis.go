@@ -112,49 +112,48 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 func resetDBWriteConection(dbFlag DbType) {
 	switch dbFlag {
 	case InMemory:
-		if config.Data.DBConf.RedisHAEnabled {
-			config := getInMemoryDBConfig()
-			inMemDBConnPool.Mux.Lock()
-			defer inMemDBConnPool.Mux.Unlock()
-			if inMemDBConnPool.WritePool != nil {
-				return
-			}
-			err := inMemDBConnPool.setWritePool(config)
-			if err != nil {
-				l.Log.Error("Reset of inMemory write pool failed: " + err.Error())
-				return
-			}
-			l.Log.Info("New inMemory connection pool created")
+		config := getInMemoryDBConfig()
+		inMemDBConnPool.Mux.Lock()
+		defer inMemDBConnPool.Mux.Unlock()
+		if inMemDBConnPool.WritePool != nil {
+			return
 		}
+		err := inMemDBConnPool.setWritePool(config)
+		if err != nil {
+			l.Log.Error("Reset of inMemory write pool failed: " + err.Error())
+			return
+		}
+		l.Log.Info("New inMemory connection pool created")
 		return
 	case OnDisk:
-		if config.Data.DBConf.RedisHAEnabled {
-			config := getOnDiskDBConfig()
-			onDiskDBConnPool.Mux.Lock()
-			defer onDiskDBConnPool.Mux.Unlock()
-			if onDiskDBConnPool.WritePool != nil {
-				return
-			}
-			err := onDiskDBConnPool.setWritePool(config)
-			if err != nil {
-				l.Log.Error("Reset of onDisk write pool failed: " + err.Error())
-				return
-			}
-			l.Log.Info("New onDisk connection pool created")
+		config := getOnDiskDBConfig()
+		onDiskDBConnPool.Mux.Lock()
+		defer onDiskDBConnPool.Mux.Unlock()
+		if onDiskDBConnPool.WritePool != nil {
+			return
 		}
+		err := onDiskDBConnPool.setWritePool(config)
+		if err != nil {
+			l.Log.Error("Reset of onDisk write pool failed: " + err.Error())
+			return
+		}
+		l.Log.Info("New onDisk connection pool created")
 		return
 	default:
 		return
 	}
 }
-
-func (p *ConnPool) setWritePool(config *Config) error {
-	currentMasterIP, currentMasterPort := retryForMasterIP(p, config)
+func (p *ConnPool) setWritePool(c *Config) error {
+	currentMasterIP := c.Host
+	currentMasterPort := c.Port
+	if config.Data.DBConf.RedisHAEnabled {
+		currentMasterIP, currentMasterPort = retryForMasterIP(p, c)
+	}
 	if currentMasterIP == "" {
 		return fmt.Errorf("unable to retrieve master ip from sentinel master election")
 	}
 	l.Log.Info("new write pool master IP found: " + currentMasterIP)
-	writePool, _ := getPool(currentMasterIP, currentMasterPort, config.Password)
+	writePool, _ := getPool(currentMasterIP, currentMasterPort, c.Password)
 	if writePool == nil {
 		return fmt.Errorf("write pool creation failed")
 	}
@@ -346,23 +345,22 @@ func (p *ConnPool) Create(table, key string, data interface{}) *errors.Error {
 	writeConn := writePool.Get()
 	defer writeConn.Close()
 
-	value, readErr := p.Read(table, key)
-	if readErr != nil && readErr.ErrNo() == errors.DBConnFailed {
-		return errors.PackError(readErr.ErrNo(), "error: db connection failed")
-	}
-	if value != "" {
-		return errors.PackError(errors.DBKeyAlreadyExist, "error: data with key ", key, " already exists")
-	}
 	saveID := table + ":" + key
 
 	jsondata, err := json.Marshal(data)
 	if err != nil {
 		return errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
 	}
-	_, createErr := writeConn.Do("SET", saveID, jsondata)
+	value, createErr := writeConn.Do("SETNX", saveID, jsondata)
 	if createErr != nil {
 		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
 		return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
+	}
+
+	if value != nil {
+		if value.(int64) == 0 {
+			return errors.PackError(errors.DBKeyAlreadyExist, "error: data with key ", key, " already exists")
+		}
 	}
 
 	return nil
@@ -631,6 +629,38 @@ func isDbConnectError(err error) (*errors.Error, bool) {
 		return errors.PackError(errors.DBConnFailed, err), true
 	}
 	return nil, false
+}
+
+// SaveBMCInventory function save all bmc inventory data togeter using the transaction model
+func (p *ConnPool) SaveBMCInventory(data map[string]interface{}) *errors.Error {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	if writePool == nil {
+		return errors.PackError(errors.UndefinedErrorType, "error while trying to Write Transaction data: WritePool is nil")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+	writeConn.Send("MULTI")
+	for key, val := range data {
+		jsondata, err := json.Marshal(val)
+		if err != nil {
+			writeConn.Send("DISCARD")
+			return errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
+		}
+		_, createErr := writeConn.Do("SET", key, jsondata)
+		if createErr != nil {
+			writeConn.Send("DISCARD")
+			atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+
+			return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
+		}
+
+	}
+	_, err := writeConn.Do("EXEC")
+	if err != nil {
+		return errors.PackError(errors.UndefinedErrorType, err)
+	}
+	return nil
+
 }
 
 //GetResourceDetails will fetch the key and also fetch the data
@@ -1061,32 +1091,27 @@ func (p *ConnPool) GetEvtSubscriptions(index, searchKey string) ([]string, error
 	defer readConn.Close()
 	const cursor float64 = 0
 	currentCursor := cursor
-
-	for {
-		d, getErr := readConn.Do("ZSCAN", index, currentCursor, "MATCH", searchKey, "COUNT", count)
-		if getErr != nil {
-			return []string{}, fmt.Errorf("error while trying to get data: " + getErr.Error())
+	d, getErr := readConn.Do("ZCOUNT", index, 0, 0)
+	if getErr != nil {
+		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
+	}
+	countData := d.(int64)
+	d, getErr = readConn.Do("ZSCAN", index, currentCursor, "MATCH", searchKey, "COUNT", countData)
+	if getErr != nil {
+		return []string{}, fmt.Errorf("error while trying to get data: " + getErr.Error())
+	}
+	if len(d.([]interface{})) > 1 {
+		data, err := redis.Strings(d.([]interface{})[1], getErr)
+		if err != nil {
+			return []string{}, fmt.Errorf("error while trying to get data: " + err.Error())
 		}
-		if len(d.([]interface{})) > 1 {
-			data, err := redis.Strings(d.([]interface{})[1], getErr)
-			if err != nil {
-				return []string{}, fmt.Errorf("error while trying to get data: " + err.Error())
+		for i := 0; i < len(data); i++ {
+			if data[i] != "0" {
+				getList = append(getList, data[i])
 			}
-			for i := 0; i < len(data); i++ {
-				if data[i] != "0" {
-					getList = append(getList, data[i])
-				}
-			}
-		}
-		stringCursor := string(d.([]interface{})[0].([]uint8))
-		if stringCursor == "0" {
-			break
-		}
-		currentCursor, getErr = strconv.ParseFloat(stringCursor, 64)
-		if getErr != nil {
-			return []string{}, getErr
 		}
 	}
+
 	return getList, nil
 }
 
@@ -1179,30 +1204,24 @@ func (p *ConnPool) GetDeviceSubscription(index string, match string) ([]string, 
 	defer readConn.Close()
 	const cursor float64 = 0
 	currentCursor := cursor
-	for {
-		d, getErr := readConn.Do("ZSCAN", index, currentCursor, "MATCH", match, "COUNT", count)
-		if getErr != nil {
-			return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
+	d, getErr := readConn.Do("ZCOUNT", index, 0, 0)
+	if getErr != nil {
+		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
+	}
+	countData := d.(int64)
+	d, getErr = readConn.Do("ZSCAN", index, currentCursor, "MATCH", match, "COUNT", countData)
+	if getErr != nil {
+		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
+	}
+	if len(d.([]interface{})) > 1 {
+		var err error
+		data, err = redis.Strings(d.([]interface{})[1], getErr)
+		if err != nil {
+			return []string{}, err
 		}
-		if len(d.([]interface{})) > 1 {
-			var err error
-			data, err = redis.Strings(d.([]interface{})[1], getErr)
-			if err != nil {
-				return []string{}, err
-			}
-			l.Log.Info("No of data records for get device subscription query : " + strconv.Itoa(len(data)))
-			if len(data) < 1 {
-				return []string{}, fmt.Errorf("No data found for the key: %v", match)
-			}
-			return data, nil
-		}
-		stringCursor := string(d.([]interface{})[0].([]uint8))
-		if stringCursor == "0" {
-			break
-		}
-		currentCursor, getErr = strconv.ParseFloat(stringCursor, 64)
-		if getErr != nil {
-			return []string{}, getErr
+		l.Log.Info("No of data records for get device subscription query : " + strconv.Itoa(len(data)))
+		if len(data) < 1 {
+			return []string{}, fmt.Errorf("No data found for the key: %v", match)
 		}
 	}
 	return data, nil

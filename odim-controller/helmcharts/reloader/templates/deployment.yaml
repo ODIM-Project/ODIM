@@ -53,7 +53,7 @@ spec:
 {{ toYaml .Values.reloader.deployment.tolerations | indent 8 }}
       {{- end }}
       containers:
-      - image: "{{ .Values.reloader.deployment.image.name }}:{{ .Values.reloader.deployment.image.tag }}"
+      - image: "{{ .Values.odimra.imageRegistryAddress | default }}{{ .Values.reloader.deployment.image.name }}:{{ .Values.reloader.deployment.image.tag }}"
         imagePullPolicy: {{ .Values.reloader.deployment.image.pullPolicy }}
         name: {{ template "reloader-fullname" . }}
       {{- if or (.Values.reloader.deployment.env.open) (.Values.reloader.deployment.env.secret) (.Values.reloader.deployment.env.field) (eq .Values.reloader.watchGlobally false) }}

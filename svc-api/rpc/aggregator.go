@@ -23,7 +23,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
-var(
+var (
 	NewAggregatorClientFunc = aggregatorproto.NewAggregatorClient
 )
 
@@ -34,7 +34,7 @@ func DoGetAggregationService(req aggregatorproto.AggregatorRequest) (*aggregator
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.GetAggregationService(context.TODO(), &req)
@@ -52,7 +52,7 @@ func DoResetRequest(req aggregatorproto.AggregatorRequest) (*aggregatorproto.Agg
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.Reset(context.TODO(), &req)
@@ -70,7 +70,7 @@ func DoSetDefaultBootOrderRequest(req aggregatorproto.AggregatorRequest) (*aggre
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.SetDefaultBootOrder(context.TODO(), &req)
@@ -89,7 +89,7 @@ func DoAddAggregationSource(req aggregatorproto.AggregatorRequest) (*aggregatorp
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.AddAggregationSource(context.TODO(), &req)
@@ -108,7 +108,7 @@ func DoGetAllAggregationSource(req aggregatorproto.AggregatorRequest) (*aggregat
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.GetAllAggregationSource(context.TODO(), &req)
@@ -127,7 +127,7 @@ func DoGetAggregationSource(req aggregatorproto.AggregatorRequest) (*aggregatorp
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.GetAggregationSource(context.TODO(), &req)
@@ -146,7 +146,7 @@ func DoUpdateAggregationSource(req aggregatorproto.AggregatorRequest) (*aggregat
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.UpdateAggregationSource(context.TODO(), &req)
@@ -165,7 +165,7 @@ func DoDeleteAggregationSource(req aggregatorproto.AggregatorRequest) (*aggregat
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.DeleteAggregationSource(context.TODO(), &req)
@@ -184,7 +184,7 @@ func DoCreateAggregate(req aggregatorproto.AggregatorRequest) (*aggregatorproto.
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.CreateAggregate(context.TODO(), &req)
@@ -203,7 +203,7 @@ func DoGetAggregateCollection(req aggregatorproto.AggregatorRequest) (*aggregato
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.GetAllAggregates(context.TODO(), &req)
@@ -222,7 +222,7 @@ func DoGeteAggregate(req aggregatorproto.AggregatorRequest) (*aggregatorproto.Ag
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.GetAggregate(context.TODO(), &req)
@@ -241,7 +241,7 @@ func DoDeleteAggregate(req aggregatorproto.AggregatorRequest) (*aggregatorproto.
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.DeleteAggregate(context.TODO(), &req)
@@ -260,7 +260,7 @@ func DoAddElementsToAggregate(req aggregatorproto.AggregatorRequest) (*aggregato
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.AddElementsToAggregate(context.TODO(), &req)
@@ -279,7 +279,7 @@ func DoRemoveElementsFromAggregate(req aggregatorproto.AggregatorRequest) (*aggr
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.RemoveElementsFromAggregate(context.TODO(), &req)
@@ -298,7 +298,7 @@ func DoResetAggregateElements(req aggregatorproto.AggregatorRequest) (*aggregato
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.ResetElementsOfAggregate(context.TODO(), &req)
@@ -317,7 +317,7 @@ func DoSetDefaultBootOrderAggregateElements(req aggregatorproto.AggregatorReques
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.SetDefaultBootOrderElementsOfAggregate(context.TODO(), &req)
@@ -336,7 +336,7 @@ func DoGetAllConnectionMethods(req aggregatorproto.AggregatorRequest) (*aggregat
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.GetAllConnectionMethods(context.TODO(), &req)
@@ -355,7 +355,7 @@ func DoGetConnectionMethod(req aggregatorproto.AggregatorRequest) (*aggregatorpr
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.GetConnectionMethod(context.TODO(), &req)
@@ -373,7 +373,7 @@ func DoGetResetActionInfoService(req aggregatorproto.AggregatorRequest) (*aggreg
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.GetResetActionInfoService(context.TODO(), &req)
@@ -391,7 +391,7 @@ func DoGetSetDefaultBootOrderActionInfo(req aggregatorproto.AggregatorRequest) (
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.GetSetDefaultBootOrderActionInfo(context.TODO(), &req)

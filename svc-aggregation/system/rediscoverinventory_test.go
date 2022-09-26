@@ -366,7 +366,7 @@ func TestExternalInterface_isServerRediscoveryRequired(t *testing.T) {
 				systemKey:  "/redfish/v1/Systems/1",
 				updateFlag: true,
 			},
-			want: false,
+			want: true,
 		},
 	}
 	for _, tt := range tests {

@@ -134,16 +134,19 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	req.DeviceUUID = deviceUUID
 	req.DeviceInfo = target
 	req.OID = strings.Replace(systemURL, "/redfish/v1/Systems/"+deviceUUID+".", "/redfish/v1/Systems/", -1)
+	l.Log.Info("Request oid for rediscovery," + req.OID)
 	req.UpdateFlag = updateFlag
 	req.UpdateTask = e.UpdateTask
 	var h respHolder
 	h.TraversedLinks = make(map[string]bool)
+	h.InventoryData = make(map[string]interface{})
 	progress := int32(100)
 	systemsEstimatedWork := int32(75)
 	if strings.Contains(systemURL, "/Storage") {
 		_, progress, _ = h.getStorageInfo(progress, systemsEstimatedWork, req)
 	} else {
 		_, _, progress, _ = h.getSystemInfo("", progress, systemsEstimatedWork, req)
+		h.InventoryData = make(map[string]interface{})
 		//rediscovering the Chassis Information
 		req.OID = "/redfish/v1/Chassis"
 		chassisEstimatedWork := int32(15)
@@ -153,6 +156,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 		req.OID = "/redfish/v1/Managers"
 		managerEstimatedWork := int32(15)
 		progress = h.getAllRootInfo("", progress, managerEstimatedWork, req, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
+		agmodel.SaveBMCInventory(h.InventoryData)
 	}
 
 	var responseBody = map[string]string{
@@ -216,11 +220,11 @@ func (e *ExternalInterface) RediscoverResources() error {
 			for _, member := range members.([]interface{}) {
 				systemURL := member.(map[string]interface{})["@odata.id"].(string)
 				if e.isServerRediscoveryRequired(target.DeviceUUID, systemURL) == true {
-					e.RediscoverSystemInventory(target.DeviceUUID, systemURL, false)
+					e.RediscoverSystemInventory(target.DeviceUUID, systemURL, true)
 					systemURLArray = append(systemURLArray, systemURL)
 				}
 			}
-			e.publishResourceUpdatedEvent(systemURLArray, "systemsCollection")
+			e.publishResourceUpdatedEvent(systemURLArray, "SystemsCollection")
 		}(targets[index])
 	}
 	// if everything is OK return success
@@ -281,10 +285,8 @@ func (e *ExternalInterface) getTargetSystemCollection(target agmodel.Target) ([]
 }
 
 func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, systemKey string) bool {
-	strArray := strings.Split(systemKey, "/")
-	sysID := strArray[len(strArray)-1]
-	systemKey = strings.Replace(systemKey, "/"+sysID, "/"+deviceUUID+".", -1)
-	key := systemKey + sysID
+	systemKey = strings.TrimSuffix(systemKey, "/")
+	key := strings.Replace(systemKey, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+deviceUUID+".", -1)
 	_, err := agmodel.GetResource("ComputerSystem", key)
 	if err != nil {
 		l.Log.Error(err.Error())

@@ -1128,6 +1128,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 	// Notify the user about task state change by sending statuschange event
 	//	notifyTaskStateChange(task.URI, taskEvenMessageID)
 	eventType := "StatusChange"
+
 	if !TaskCollection.getTaskFromCollectionData(taskID, int(percentComplete)) {
 		ts.PublishToMessageBus(task.URI, taskEvenMessageID, eventType, taskMessage)
 	}

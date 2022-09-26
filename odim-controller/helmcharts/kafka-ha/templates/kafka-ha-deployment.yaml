@@ -21,9 +21,12 @@ spec:
     spec:
       hostname: kafka1
       subdomain: kafka
+      securityContext:
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       initContainers:
         - name: init-kafka1
-          image: busybox:1.33
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}busybox:1.33
           command: ['sh', '-c', 'sleep 3']
       affinity:
         nodeAffinity:
@@ -42,7 +45,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: kafka1
-          image: kafka:{{ .Values.odimra.kafkaImageTag }}
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}kafka:{{ .Values.odimra.kafkaImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9092
@@ -117,9 +120,12 @@ spec:
     spec:
       hostname: kafka2
       subdomain: kafka
+      securityContext:
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       initContainers:
         - name: init-kafka2
-          image: busybox:1.33
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}busybox:1.33
           command: ['sh', '-c', 'sleep 5']
       affinity:
         nodeAffinity:
@@ -138,7 +144,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: kafka2
-          image: kafka:{{ .Values.odimra.kafkaImageTag }}
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}kafka:{{ .Values.odimra.kafkaImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9092
@@ -213,9 +219,12 @@ spec:
     spec:
       hostname: kafka3
       subdomain: kafka
+      securityContext:
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       initContainers:
         - name: init-kafka3
-          image: busybox:1.33
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}busybox:1.33
           command: ['sh', '-c', 'sleep 7']
       affinity:
         nodeAffinity:
@@ -234,7 +243,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: kafka3
-          image: kafka:{{ .Values.odimra.kafkaImageTag }}
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}kafka:{{ .Values.odimra.kafkaImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9092

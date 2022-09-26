@@ -1242,3 +1242,15 @@ func DeleteAggregateHostIndex(uuid string) error {
 	}
 	return nil
 }
+
+// SaveBMCInventory function save all bmc inventory data togeter using the transaction model
+func SaveBMCInventory(data map[string]interface{}) error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.SaveBMCInventory(data); err != nil {
+		return fmt.Errorf("error while trying to save BMC inventory: %v", err.Error())
+	}
+	return nil
+}

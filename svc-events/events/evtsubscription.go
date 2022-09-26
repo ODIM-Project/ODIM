@@ -626,26 +626,24 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 	}
 	var host string
 	bubbleUpStatusCode := http.StatusCreated
-	for i := 0; i < len(originResources); i++ {
-		var postRequest evmodel.RequestBody
-		postRequest.Destination = ""
-		postRequest.EventTypes = eventTypes
-		postRequest.MessageIds = messageIDs
-		postRequest.ResourceTypes = resourceTypes
-		postRequest.Context = "Creating the Default Event Subscription"
-		postRequest.Protocol = protocol
-		postRequest.SubscriptionType = evmodel.SubscriptionType
-		postRequest.SubordinateResources = true
-		host, response = e.eventSubscription(postRequest, originResources[i], "", false)
-		e.checkCollectionSubscription(originResources[i], protocol)
-		if response.StatusCode != http.StatusCreated {
-			partialResultFlag = true
-			if response.StatusCode > bubbleUpStatusCode {
-				bubbleUpStatusCode = response.StatusCode
-			}
+	var postRequest evmodel.RequestBody
+	postRequest.Destination = ""
+	postRequest.EventTypes = eventTypes
+	postRequest.MessageIds = messageIDs
+	postRequest.ResourceTypes = resourceTypes
+	postRequest.Context = "Creating the Default Event Subscription"
+	postRequest.Protocol = protocol
+	postRequest.SubscriptionType = evmodel.SubscriptionType
+	postRequest.SubordinateResources = true
+	host, response = e.eventSubscription(postRequest, originResources[0], "", false)
+	e.checkCollectionSubscription(originResources[0], protocol)
+	if response.StatusCode != http.StatusCreated {
+		partialResultFlag = true
+		if response.StatusCode > bubbleUpStatusCode {
+			bubbleUpStatusCode = response.StatusCode
 		}
-
 	}
+
 	if !partialResultFlag || len(originResources) == 1 {
 		resp.StatusCode = int32(response.StatusCode)
 	} else {

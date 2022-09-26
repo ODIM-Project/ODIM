@@ -17,15 +17,20 @@
 package chassis
 
 import (
+	"encoding/json"
 	"net/http"
+	"strings"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
+	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
+	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 )
 
 // Handle is used to fetch resource data. The function is supposed to be used as part of RPC
@@ -40,10 +45,37 @@ func (h *Get) Handle(req *chassisproto.GetChassisRequest) response.RPC {
 	e := h.findInMemoryDB("Chassis", req.URL, managedChassis)
 	managedChassis.ID = req.RequestParam
 	if e == nil {
+		requestData := strings.SplitN(req.RequestParam, ".", 2)
+		if len(requestData) <= 1 {
+			errorMessage := "error: SystemUUID not found"
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
+		}
+		uuid := requestData[0]
+
+		var pc = systems.PluginContact{
+			ContactClient:   pmbhandle.ContactPlugin,
+			DevicePassword:  common.DecryptWithPrivateKey,
+			GetPluginStatus: scommon.GetPluginStatus,
+		}
+		var getDeviceInfoRequest = scommon.ResourceInfoRequest{
+			URL:             req.URL,
+			UUID:            uuid,
+			SystemID:        requestData[1],
+			ContactClient:   pc.ContactClient,
+			DevicePassword:  pc.DevicePassword,
+			GetPluginStatus: pc.GetPluginStatus,
+			ResourceName:    "ComputerSystem",
+		}
+		data, err := scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true)
+		if err != nil {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
+		}
+		var resource map[string]interface{}
+		json.Unmarshal([]byte(data), &resource)
 		return response.RPC{
 			StatusMessage: response.Success,
 			StatusCode:    http.StatusOK,
-			Body:          *managedChassis,
+			Body:          resource,
 		}
 	}
 

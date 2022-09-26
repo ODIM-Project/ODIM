@@ -1216,7 +1216,7 @@ func RemoveNewIPToAggregateHostIndex(aggregateID string, hostIP string) error {
 	ips = removeIps(ips, hostIP)
 	err1 = conn.UpdateAggregateHosts(aggregateHostIndex, aggregateID, ips)
 	if err1 != nil {
-		return errors.PackError(err.ErrNo(), "error: while trying to add aggregate: ", err.Error())
+		return errors.PackError(err.ErrNo(), "error: while trying to remove aggregate: ", err.Error())
 	}
 	return nil
 }

@@ -781,7 +781,7 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 // For getting system resource information,  parameters need to be passed GetSystemsRequest .
 // GetSystemsRequest holds the  Uuid,Url,
 // Url will be parsed from that search key will created
-// There will be two return values for the fuction. One is the RPC response, which contains the
+// There will be two return values for the function. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response.RPC {
 	var resp response.RPC
@@ -792,33 +792,20 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 	}
 	uuid := requestData[0]
 	var data string
-	var err *errors.Error
+	// var err *errors.Error
 	// check the whether SystemResetInfo available in db. If it is available, then get the data from device
-	_, err = GetSystemResetInfoFunc(req.URL)
-	if err == nil {
-		var getDeviceInfoRequest = scommon.ResourceInfoRequest{
-			URL:             req.URL,
-			UUID:            uuid,
-			SystemID:        requestData[1],
-			ContactClient:   p.ContactClient,
-			DevicePassword:  p.DevicePassword,
-			GetPluginStatus: p.GetPluginStatus,
-			ResourceName:    "ComputerSystem",
-		}
-		var err error
-		if data, err = GetResourceInfoFromDeviceFunc(getDeviceInfoRequest, true); err != nil {
-			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
-		}
-	} else {
-		data, err = smodel.GetSystemByUUID(req.URL)
-		if err != nil {
-			l.Log.Error("error getting system details : " + err.Error())
-			errorMessage := err.Error()
-			if errors.DBKeyNotFound == err.ErrNo() {
-				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
-			}
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		}
+	var getDeviceInfoRequest = scommon.ResourceInfoRequest{
+		URL:             req.URL,
+		UUID:            uuid,
+		SystemID:        requestData[1],
+		ContactClient:   p.ContactClient,
+		DevicePassword:  p.DevicePassword,
+		GetPluginStatus: p.GetPluginStatus,
+		ResourceName:    "ComputerSystem",
+	}
+	data, err1 := GetResourceInfoFromDeviceFunc(getDeviceInfoRequest, true)
+	if err1 != nil {
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err1.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 	}
 	data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`.`, -1)
 	var resource map[string]interface{}
@@ -919,7 +906,7 @@ func parseRegexData(data []string, regex string) ([]string, error) {
 
 // this function checks query has open bracket["("] as prefix to ignore the brackets inside the string
 // for e.g if query is ProcessorSummary/Model eq Intel(R) Xeon(R) Gold 6152 CPU @ 2.10GHz
-// here Inter(R) has bracket inbetween the string, so ignore this string for the first if search criteria
+// here Inter(R) has bracket in between the string, so ignore this string for the first if search criteria
 func checkParentheses(strPara string) bool {
 	for _, val := range strings.Split(strPara, " ") {
 		if strings.HasPrefix(val, "(") {

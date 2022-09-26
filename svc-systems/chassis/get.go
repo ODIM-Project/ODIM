@@ -33,6 +33,11 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 )
 
+var (
+	// GetResourceInfoFromDeviceFunc function pointer for the scommon.GetResourceInfoFromDevice
+	GetResourceInfoFromDeviceFunc = scommon.GetResourceInfoFromDevice
+)
+
 // Handle is used to fetch resource data. The function is supposed to be used as part of RPC
 // For getting chassis resource information, parameters need to be passed Request .
 // Request holds the Uuid and Url ,
@@ -66,11 +71,12 @@ func (h *Get) Handle(req *chassisproto.GetChassisRequest) response.RPC {
 			GetPluginStatus: pc.GetPluginStatus,
 			ResourceName:    "ComputerSystem",
 		}
-		data, err := scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true)
+		data, err := GetResourceInfoFromDeviceFunc(getDeviceInfoRequest, true)
 		if err != nil {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 		}
-		var resource map[string]interface{}
+		data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`.`, -1)
+		var resource dmtf.Chassis
 		json.Unmarshal([]byte(data), &resource)
 		return response.RPC{
 			StatusMessage: response.Success,

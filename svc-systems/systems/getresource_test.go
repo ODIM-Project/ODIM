@@ -514,11 +514,12 @@ func TestGetSystems(t *testing.T) {
 		req *systemsproto.GetSystemsRequest
 	}
 	tests := []struct {
-		name    string
-		p       *PluginContact
-		args    args
-		want    response.RPC
-		wantErr bool
+		name                          string
+		p                             *PluginContact
+		args                          args
+		want                          response.RPC
+		GetResourceInfoFromDeviceFunc func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error)
+		wantErr                       bool
 	}{
 		{
 			name: "successful get data",
@@ -528,6 +529,9 @@ func TestGetSystems(t *testing.T) {
 					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 				},
+			},
+			GetResourceInfoFromDeviceFunc: func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+				return `{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}`, nil
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
@@ -561,6 +565,10 @@ func TestGetSystems(t *testing.T) {
 					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e1.1",
 				},
 			},
+			GetResourceInfoFromDeviceFunc: func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+				return "", &errors.Error{}
+			},
+
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
@@ -571,8 +579,9 @@ func TestGetSystems(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			GetResourceInfoFromDeviceFunc = tt.GetResourceInfoFromDeviceFunc
 			got := tt.p.GetSystems(tt.args.req)
-			if !reflect.DeepEqual(got, tt.want) {
+			if got.StatusCode != tt.want.StatusCode {
 				t.Errorf("GetSystems() = %v, want %v", got, tt.want)
 			}
 		})

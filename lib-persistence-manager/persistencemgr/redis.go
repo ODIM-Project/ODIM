@@ -109,7 +109,6 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 }
 
 //resetDBWriteConection is used to reset the WriteConnection Pool (inmemory / OnDisk).
-//resetDBWriteConection is used to reset the WriteConnection Pool (inmemory / OnDisk).
 func resetDBWriteConection(dbFlag DbType) {
 	switch dbFlag {
 	case InMemory:

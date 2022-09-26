@@ -109,52 +109,52 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 }
 
 //resetDBWriteConection is used to reset the WriteConnection Pool (inmemory / OnDisk).
+//resetDBWriteConection is used to reset the WriteConnection Pool (inmemory / OnDisk).
 func resetDBWriteConection(dbFlag DbType) {
 	switch dbFlag {
 	case InMemory:
-		if config.Data.DBConf.RedisHAEnabled {
-			config := getInMemoryDBConfig()
-			inMemDBConnPool.Mux.Lock()
-			defer inMemDBConnPool.Mux.Unlock()
-			if inMemDBConnPool.WritePool != nil {
-				return
-			}
-			err := inMemDBConnPool.setWritePool(config)
-			if err != nil {
-				l.Log.Error("Reset of inMemory write pool failed: " + err.Error())
-				return
-			}
-			l.Log.Info("New inMemory connection pool created")
+		config := getInMemoryDBConfig()
+		inMemDBConnPool.Mux.Lock()
+		defer inMemDBConnPool.Mux.Unlock()
+		if inMemDBConnPool.WritePool != nil {
+			return
 		}
+		err := inMemDBConnPool.setWritePool(config)
+		if err != nil {
+			l.Log.Error("Reset of inMemory write pool failed: " + err.Error())
+			return
+		}
+		l.Log.Info("New inMemory connection pool created")
 		return
 	case OnDisk:
-		if config.Data.DBConf.RedisHAEnabled {
-			config := getOnDiskDBConfig()
-			onDiskDBConnPool.Mux.Lock()
-			defer onDiskDBConnPool.Mux.Unlock()
-			if onDiskDBConnPool.WritePool != nil {
-				return
-			}
-			err := onDiskDBConnPool.setWritePool(config)
-			if err != nil {
-				l.Log.Error("Reset of onDisk write pool failed: " + err.Error())
-				return
-			}
-			l.Log.Info("New onDisk connection pool created")
+		config := getOnDiskDBConfig()
+		onDiskDBConnPool.Mux.Lock()
+		defer onDiskDBConnPool.Mux.Unlock()
+		if onDiskDBConnPool.WritePool != nil {
+			return
 		}
+		err := onDiskDBConnPool.setWritePool(config)
+		if err != nil {
+			l.Log.Error("Reset of onDisk write pool failed: " + err.Error())
+			return
+		}
+		l.Log.Info("New onDisk connection pool created")
 		return
 	default:
 		return
 	}
 }
-
-func (p *ConnPool) setWritePool(config *Config) error {
-	currentMasterIP, currentMasterPort := retryForMasterIP(p, config)
+func (p *ConnPool) setWritePool(c *Config) error {
+	currentMasterIP := c.Host
+	currentMasterPort := c.Port
+	if config.Data.DBConf.RedisHAEnabled {
+		currentMasterIP, currentMasterPort = retryForMasterIP(p, c)
+	}
 	if currentMasterIP == "" {
 		return fmt.Errorf("unable to retrieve master ip from sentinel master election")
 	}
 	l.Log.Info("new write pool master IP found: " + currentMasterIP)
-	writePool, _ := getPool(currentMasterIP, currentMasterPort, config.Password)
+	writePool, _ := getPool(currentMasterIP, currentMasterPort, c.Password)
 	if writePool == nil {
 		return fmt.Errorf("write pool creation failed")
 	}

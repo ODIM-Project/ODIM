@@ -488,7 +488,7 @@ func TestGetSystems(t *testing.T) {
 		Code:    response.GeneralError,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
+			{
 				StatusMessage: response.ResourceNotFound,
 				ErrorMessage:  "error: SystemUUID not found",
 				MessageArgs:   []interface{}{"ComputerSystem", "6d4a0a66-7efa-578e-83cf-44dc68d2874e"},
@@ -499,9 +499,9 @@ func TestGetSystems(t *testing.T) {
 		Code:    response.GeneralError,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
+			{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error while trying to get system details: no data with the with key /redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e1.1 found",
+				ErrorMessage:  "error while trying to get compute details: no data with the with key 6d4a0a66-7efa-578e-83cf-44dc68d2874e1 found",
 				MessageArgs:   []interface{}{"ComputerSystem", "6d4a0a66-7efa-578e-83cf-44dc68d2874e1.1"},
 			},
 		},
@@ -554,6 +554,10 @@ func TestGetSystems(t *testing.T) {
 				StatusMessage: response.ResourceNotFound,
 				Body:          errArgs.CreateGenericErrorResponse(),
 			},
+			GetResourceInfoFromDeviceFunc: func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+				return scommon.GetResourceInfoFromDevice(req, saveRequired)
+			},
+
 			wantErr: true,
 		},
 		{
@@ -566,7 +570,7 @@ func TestGetSystems(t *testing.T) {
 				},
 			},
 			GetResourceInfoFromDeviceFunc: func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
-				return "", &errors.Error{}
+				return scommon.GetResourceInfoFromDevice(req, saveRequired)
 			},
 
 			want: response.RPC{
@@ -581,7 +585,7 @@ func TestGetSystems(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			GetResourceInfoFromDeviceFunc = tt.GetResourceInfoFromDeviceFunc
 			got := tt.p.GetSystems(tt.args.req)
-			if got.StatusCode != tt.want.StatusCode {
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSystems() = %v, want %v", got, tt.want)
 			}
 		})

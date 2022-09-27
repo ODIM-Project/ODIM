@@ -803,9 +803,9 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 		GetPluginStatus: p.GetPluginStatus,
 		ResourceName:    "ComputerSystem",
 	}
-	data, err1 := GetResourceInfoFromDeviceFunc(getDeviceInfoRequest, true)
-	if err1 != nil {
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err1.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
+	data, err := GetResourceInfoFromDeviceFunc(getDeviceInfoRequest, true)
+	if err != nil {
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.RequestParam}, nil)
 	}
 	data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`.`, -1)
 	var resource map[string]interface{}

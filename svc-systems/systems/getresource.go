@@ -792,7 +792,6 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 	}
 	uuid := requestData[0]
 	var data string
-	// var err *errors.Error
 	// check the whether SystemResetInfo available in db. If it is available, then get the data from device
 	var getDeviceInfoRequest = scommon.ResourceInfoRequest{
 		URL:             req.URL,

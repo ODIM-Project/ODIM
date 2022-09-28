@@ -24,9 +24,10 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
-var(
+var (
 	NewChassisClientFunc = chassisproto.NewChassisClient
 )
+
 //GetChassisCollection will do the rpc call to collect all chassis
 func GetChassisCollection(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	conn, err := ClientFunc(services.Systems)
@@ -81,7 +82,7 @@ func CreateChassis(req chassisproto.CreateChassisRequest) (*chassisproto.GetChas
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	service := NewChassisClientFunc(conn)
 	resp, err := service.CreateChassis(context.TODO(), &req)
 	if err != nil {

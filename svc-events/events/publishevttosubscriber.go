@@ -589,12 +589,13 @@ func (e *ExternalInterfaces) checkUndeliveredEvents(destination string) {
 			event = strings.TrimPrefix(event, "\"")
 			event = strings.TrimSuffix(event, "\"")
 			resp, err := SendEventFunc(destination, []byte(event))
+			if resp != nil {
+				defer resp.Body.Close()
+			}
 			if err != nil {
 				l.Log.Error("error while make https call to send the event: ", err.Error())
-				resp.Body.Close()
 				continue
 			}
-			resp.Body.Close()
 			l.Log.Info("Event is successfully forwarded")
 			err = e.DeleteUndeliveredEvents(dest)
 			if err != nil {

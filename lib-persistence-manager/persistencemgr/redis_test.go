@@ -218,22 +218,6 @@ func TestUpdate_invalidData(t *testing.T) {
 	}()
 }
 
-func TestUpdate_nonExistingData(t *testing.T) {
-
-	c, err := MockDBConnection(t)
-	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
-	}
-
-	data := sample{Data1: "Value5", Data2: "Value6", Data3: "Value4"}
-
-	_, uerr := c.Update("table", "nonExistingKey", data)
-
-	if uerr.ErrNo() != errors.DBKeyNotFound {
-		t.Errorf("Error while updating data: %v\n", uerr.Error())
-	}
-}
-
 func TestGetall(t *testing.T) {
 
 	c, err := MockDBConnection(t)

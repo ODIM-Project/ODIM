@@ -69,7 +69,7 @@ func (h *Get) Handle(req *chassisproto.GetChassisRequest) response.RPC {
 			ContactClient:   pc.ContactClient,
 			DevicePassword:  pc.DevicePassword,
 			GetPluginStatus: pc.GetPluginStatus,
-			ResourceName:    "ComputerSystem",
+			ResourceName:    "Chassis",
 		}
 		data, err := GetResourceInfoFromDeviceFunc(getDeviceInfoRequest, true)
 		if err != nil {

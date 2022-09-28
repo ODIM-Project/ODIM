@@ -79,6 +79,7 @@ spec:
             claimName: odimra-log-claim
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       containers:
         - name: fabrics
           env:
@@ -96,7 +97,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          image: fabrics:{{ .Values.odimra.fabricsImageTag }}
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}fabrics:{{ .Values.odimra.fabricsImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45106

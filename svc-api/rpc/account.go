@@ -85,7 +85,7 @@ func DoGetAccountRequest(req accountproto.GetAccountRequest) (*accountproto.Acco
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	account := NewAccountClientFunc(conn)
 
 	resp, err := account.GetAccount(context.TODO(), &req)

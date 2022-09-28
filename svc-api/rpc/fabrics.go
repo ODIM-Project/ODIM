@@ -23,7 +23,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
-var(
+var (
 	NewFabricsClientFunc = fabricsproto.NewFabricsClient
 )
 
@@ -35,7 +35,7 @@ func GetFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricResp
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	fab := NewFabricsClientFunc(conn)
 	resp, err := fab.GetFabricResource(context.TODO(), &req)
 	if err != nil && resp == nil {
@@ -53,7 +53,7 @@ func UpdateFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricR
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	fab := NewFabricsClientFunc(conn)
 
 	resp, err := fab.UpdateFabricResource(context.TODO(), &req)
@@ -72,7 +72,7 @@ func DeleteFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricR
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	fab := NewFabricsClientFunc(conn)
 
 	resp, err := fab.DeleteFabricResource(context.TODO(), &req)

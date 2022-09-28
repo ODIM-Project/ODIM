@@ -23,9 +23,10 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
-var(
+var (
 	NewRolesClientFunc = roleproto.NewRolesClient
 )
+
 // GetRole defines the RPC call function for
 // the GetRole from account-session micro service
 func GetRole(req roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
@@ -33,7 +34,7 @@ func GetRole(req roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	asService := NewRolesClientFunc(conn)
 	resp, err := asService.GetRole(context.TODO(), &req)
 	if err != nil {

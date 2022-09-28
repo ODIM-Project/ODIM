@@ -28,7 +28,7 @@
   include_vars: "{{ helm_config_file }}"
 
 - name: Install secrets reloader
-  command: "{{ helm_bin_path }} install {{ odim_secret_reloader_chart }} {{ helm_charts_path }}/{{ odim_secret_reloader_chart }}.tgz -n {{ helm_name_space }} --set fullnameOverride=reloader --set reloader.watchGlobally=false --set reloader.ignoreConfigMaps=true --create-namespace"
+  command: "{{ helm_bin_path }} install {{ odim_secret_reloader_chart }} {{ helm_charts_path }}/{{ odim_secret_reloader_chart }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }} --set fullnameOverride=reloader --set reloader.watchGlobally=false --set reloader.ignoreConfigMaps=true --create-namespace"
 
 - name: Create PV, PVC, Secrets required by ODIM-RA services
   command: "{{ helm_bin_path }} install {{ item.key }} {{ helm_charts_path }}/{{ item.value }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"

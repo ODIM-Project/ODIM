@@ -87,12 +87,12 @@ func TestGetAllRoles(t *testing.T) {
 		req roleproto.GetRoleRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
+		name               string
+		args               args
 		ClientFunc         func(clientName string) (*grpc.ClientConn, error)
 		NewRolesClientFunc func(cc *grpc.ClientConn) roleproto.RolesClient
-		want    *roleproto.RoleResponse
-		wantErr bool
+		want               *roleproto.RoleResponse
+		wantErr            bool
 	}{
 		{
 			name:               "Client func error",
@@ -132,12 +132,12 @@ func TestUpdateRole(t *testing.T) {
 		req roleproto.UpdateRoleRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
+		name               string
+		args               args
 		ClientFunc         func(clientName string) (*grpc.ClientConn, error)
 		NewRolesClientFunc func(cc *grpc.ClientConn) roleproto.RolesClient
-		want    *roleproto.RoleResponse
-		wantErr bool
+		want               *roleproto.RoleResponse
+		wantErr            bool
 	}{
 		{
 			name:               "Client func error",
@@ -177,12 +177,12 @@ func TestDeleteRole(t *testing.T) {
 		req roleproto.DeleteRoleRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
+		name               string
+		args               args
 		ClientFunc         func(clientName string) (*grpc.ClientConn, error)
 		NewRolesClientFunc func(cc *grpc.ClientConn) roleproto.RolesClient
-		want    *roleproto.RoleResponse
-		wantErr bool
+		want               *roleproto.RoleResponse
+		wantErr            bool
 	}{
 		{
 			name:               "Client func error",

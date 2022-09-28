@@ -175,15 +175,15 @@ def perform_checks(skip_opt_param_check=False):
 		logger.critical("deployment ID not configured, exiting!!!")
 		exit(1)
 	DEPLOYMENT_ID = CONTROLLER_CONF_DATA['deploymentID']
-	if 'logLevel' not in CONTROLLER_CONF_DATA or CONTROLLER_CONF_DATA['logLevel'] == None or CONTROLLER_CONF_DATA['logLevel'] == "": 
+	if 'logLevel' not in CONTROLLER_CONF_DATA['odimra'] or CONTROLLER_CONF_DATA['odimra']['logLevel'] == None or CONTROLLER_CONF_DATA['odimra']['logLevel'] == "": 
 		logger.critical("Log level is not set, Setting default value warn")
 		CONTROLLER_CONF_DATA['logLevel']="warn"
 	else :
 		log_levels = ['panic', 'fatal', 'error', 'warn','info','debug','trace']
-		if CONTROLLER_CONF_DATA['logLevel'] not in log_levels:
+		if CONTROLLER_CONF_DATA['odimra']['logLevel'] not in log_levels:
 			logger.info("Log level value is invalid, allowed values are 'panic', 'fatal', 'error', 'warn','info','debug','trace'")
 			exit(1)
-		logger.critical("Log level is %s ",CONTROLLER_CONF_DATA['logLevel'])
+		logger.critical("Log level is %s ",CONTROLLER_CONF_DATA['odimra']['logLevel'])
 		
 	if not skip_opt_param_check:
 		logger.debug("Checking if the local user matches with the configured nodes user")
@@ -1289,7 +1289,7 @@ def read_groupvar():
 
 # upgrade_config_map update the config maps
 def upgrade_config_map(config_map_name):
-	logger.info("Upgrading config map"+config_map_name)
+	logger.info("Upgrading config map "+config_map_name)
 	# Parse the conf file passed
 	read_conf()
 	# Validate conf parameters passed
@@ -1340,7 +1340,7 @@ def upgrade_config_map(config_map_name):
 # update_helm_charts is for upgrading the deployed
 # helm releases
 def update_helm_charts(config_map_name):
-	
+
 	optionHelmChartInfo = {
 		"odimra-config":"odim_pv_pvc_secrets_helmcharts",
 		"odimra-platformconfig":"odim_pv_pvc_secrets_helmcharts",
@@ -1389,6 +1389,9 @@ def update_helm_charts(config_map_name):
 		"redis":"upgrade_thirdparty",
 		"etcd":"upgrade_thirdparty"
 	}
+	if config_map_name =='composition-service':
+		logger.warning("%s upgrade is not supported!!!", config_map_name)
+		exit(1)
 
 	if config_map_name not in optionHelmChartInfo:
 		logger.critical("%s upgrade is not supported!!!", config_map_name)
@@ -1730,7 +1733,7 @@ def deploy_plugin(plugin_name):
 					if pluginConf[plugin_name]['logLevel'] not in log_levels:
 						logger.info("Log level value is invalid, allowed values are 'panic', 'fatal', 'error', 'warn','info','debug','trace'")
 						exit(1)
-				logger.critical("Log levelfor %s is %s ",plugin_name,pluginConf[plugin_name]['logLevel'])
+				logger.critical("Log level for %s is %s ",plugin_name,pluginConf[plugin_name]['logLevel'])
 
 			except yaml.YAMLError as exc:
 				logger.error(exc)

@@ -17,15 +17,17 @@
 package chassis
 
 import (
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"net/http"
 	"testing"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
+	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -34,7 +36,9 @@ var internalError = common.GeneralError(http.StatusInternalServerError, response
 
 func TestNewGetHandler(t *testing.T) {
 	managedChassis := dmtf.Chassis{}
-
+	GetResourceInfoFromDeviceFunc = func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+		return `{"@odata.id": ""}`, nil
+	}
 	sut := NewGetHandler(
 		nil,
 		func(table, key string, r interface{}) *errors.Error {
@@ -43,7 +47,10 @@ func TestNewGetHandler(t *testing.T) {
 		},
 	)
 
-	getChassisRPCRequest := chassisproto.GetChassisRequest{}
+	getChassisRPCRequest := chassisproto.GetChassisRequest{
+		RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+		URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+	}
 	r := sut.Handle(&getChassisRPCRequest)
 	require.EqualValues(t, http.StatusOK, r.StatusCode)
 	require.Equal(t, managedChassis, r.Body)

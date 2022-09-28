@@ -157,7 +157,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 
 // SetDefaultBootOrder defines the operations which handles the RPC request response
 // for the SetDefaultBootOrder service of systems micro service.
-// The functionality retrives the request and return backs the response to
+// The functionality retrieves the request and return backs the response to
 // RPC according to the protoc file defined in the lib-utilities package.
 // The function also checks for the session time out of the token
 // which is present in the request.

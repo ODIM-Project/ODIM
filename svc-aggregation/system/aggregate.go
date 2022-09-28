@@ -922,7 +922,7 @@ func removeSubscription(aggragateID string, systemID []agmodel.OdataID, session 
 		SessionToken: session,
 	})
 	if err != nil {
-		l.Log.Info("Error while checking aggragte subscription ", err)
+		l.Log.Info("Error while checking aggregate subscription ", err)
 		return err
 	}
 	for _, system := range systemID {

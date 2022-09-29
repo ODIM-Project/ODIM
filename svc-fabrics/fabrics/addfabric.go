@@ -36,7 +36,7 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 	address := req.Address
 	uuid := origin[strings.LastIndexByte(origin, '/')+1:]
 
-	pluginDetails, err := fabmodel.GetAllFabricPluginDetails()
+	pluginDetails, err := GetAllFabricPluginDetailsFunc()
 	if err != nil {
 		l.Log.Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),

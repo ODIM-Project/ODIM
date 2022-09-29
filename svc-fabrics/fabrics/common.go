@@ -35,6 +35,13 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
 )
 
+var (
+	//RequestParamsCaseValidatorFunc ...
+	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
+	//GetAllFabricPluginDetailsFunc ...
+	GetAllFabricPluginDetailsFunc = fabmodel.GetAllFabricPluginDetails
+)
+
 // Fabrics struct helps to hold the behaviours
 type Fabrics struct {
 	Auth          func(sessionToken string, privileges []string, oemPrivileges []string) response.RPC
@@ -427,7 +434,7 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, fabricRequest)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, fabricRequest)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
 		l.Log.Error(errMsg)

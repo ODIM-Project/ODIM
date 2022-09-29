@@ -72,7 +72,7 @@ type Chassis struct {
 	SparePartNumber             string            `json:"SparePartNumber,omitempty"`
 	ThermalSubsystem            *Link             `json:"ThermalSubsystem,omitempty"`
 	ThermalDirection            string            `json:"ThermalDirection,omitempty"`
-	ThermalManagedByParent      bool              `json:"ThermalManagedByParent.omitempty"`
+	ThermalManagedByParent      bool              `json:"ThermalManagedByParent,omitempty"`
 	PoweredByParent             bool              `json:"PoweredByParent,omitempty"`
 	Fans                        []*Link           `json:"Fans,omitempty"`
 	PowerSupplies               []*Link           `json:"PowerSupplies,omitempty"`

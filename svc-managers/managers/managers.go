@@ -139,7 +139,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 			managerData["PowerState"] = "On"
 		}
 		if managerType != common.ManagerTypeService && managerType != "" {
-			deviceData, err := e.getResourceInfoFromDevice(req.URL, uuid, requestData[1],nil)
+			deviceData, err := e.getResourceInfoFromDevice(req.URL, uuid, requestData[1], nil)
 			if err != nil {
 				l.Log.Error("Device " + req.URL + " is unreachable: " + err.Error())
 				// Updating the state
@@ -305,7 +305,7 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 	if err != nil {
 		if errors.DBKeyNotFound == err.ErrNo() {
 			var err error
-			if data, err = e.getResourceInfoFromDevice(req.URL, uuid, requestData[1],nil); err != nil {
+			if data, err = e.getResourceInfoFromDevice(req.URL, uuid, requestData[1], nil); err != nil {
 				errorMessage := "unable to get resource details from device: " + err.Error()
 				l.Log.Error(errorMessage)
 				errArgs := []interface{}{tableName, req.ManagerID}
@@ -386,7 +386,7 @@ func (e *ExternalInterface) VirtualMediaActions(req *managersproto.ManagerReques
 	if resp.StatusCode == http.StatusOK {
 		vmURI := strings.Replace(req.URL, "/Actions/VirtualMedia.InsertMedia", "", -1)
 		vmURI = strings.Replace(vmURI, "/Actions/VirtualMedia.EjectMedia", "", -1)
-		deviceData, err := e.getResourceInfoFromDevice(vmURI, uuid, requestData[1],nil)
+		deviceData, err := e.getResourceInfoFromDevice(vmURI, uuid, requestData[1], nil)
 		if err != nil {
 			l.Log.Error("while trying get on URI " + vmURI + " : " + err.Error())
 		} else {
@@ -555,7 +555,7 @@ func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRe
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
 	uri := replaceBMCAccReq(req.URL, req.ManagerID)
-	data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1],nil)
+	data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1], nil)
 	if err != nil {
 		return handleRemoteAccountServiceError(req.URL, req.ManagerID, err)
 	}
@@ -724,7 +724,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(req *managersproto.Manage
 	uri := replaceBMCAccReq(req.URL, req.ManagerID)
 
 	//do get call with
-	data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1],nil)
+	data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1], nil)
 	if err != nil {
 		errorMessage := "unable to get resource details from device: " + err.Error()
 		l.Log.Error(errorMessage)

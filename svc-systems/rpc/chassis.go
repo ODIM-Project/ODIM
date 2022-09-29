@@ -114,7 +114,7 @@ func (cha *ChassisRPC) CreateChassis(_ context.Context, req *chassisproto.Create
 
 // GetChassisResource defines the operations which handles the RPC request response
 // for the getting the system resource of systems micro service.
-// The functionality retrives the request and return backs the response to
+// The functionality retrieves the request and return backs the response to
 // RPC according to the protoc file defined in the util-lib package.
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.

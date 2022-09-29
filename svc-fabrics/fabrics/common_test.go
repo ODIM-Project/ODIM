@@ -18,12 +18,13 @@ package fabrics
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"testing"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"testing"
 )
 
 func mockFabricData(fabricID, pluginID string) error {
@@ -281,4 +282,34 @@ func TestGetFabricID(t *testing.T) {
 	url = "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da/Zones/Zone1"
 	fabID = getFabricID(url)
 	assert.Equal(t, "d72dade0-c35a-984c-4859-1108132d72da", fabID, "fabric id should be d72dade0-c35a-984c-4859-1108132d72da")
+}
+
+func Test_validateReqParamsCase(t *testing.T) {
+	req := fabricsproto.FabricRequest{}
+	_, err := validateReqParamsCase(&req)
+	assert.NotNil(t, err, "There should be an error ")
+
+	req.URL = "/Zones"
+	_, err = validateReqParamsCase(&req)
+	assert.NotNil(t, err, "There should be an error ")
+	req.URL = "/AddressPools"
+	_, err = validateReqParamsCase(&req)
+
+	assert.NotNil(t, err, "There should be an error ")
+	req.URL = "/Endpoints"
+	_, err = validateReqParamsCase(&req)
+	assert.NotNil(t, err, "There should be an error ")
+
+	req.RequestBody = []byte(`{"UserName":"admin"}`)
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) { return "", fmt.Errorf("") }
+	_, err = validateReqParamsCase(&req)
+	assert.NotNil(t, err, "There should be an error ")
+
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) { return "error", nil }
+	_, err = validateReqParamsCase(&req)
+	assert.NotNil(t, err, "There should be an error ")
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
+	}
+
 }

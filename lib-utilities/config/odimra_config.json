@@ -144,5 +144,6 @@
   "ResourceRateLimit": [],
   "RequestLimitPerSession":0,
   "SessionLimitPerUser":0,
-  "LogLevel":"warn"
+  "LogLevel":"warn",
+  "ImageRegistryAddress":""
 }

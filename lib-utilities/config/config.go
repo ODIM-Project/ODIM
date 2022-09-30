@@ -65,6 +65,7 @@ type configModel struct {
 	RequestLimitCountPerSession    int                      `json:"RequestLimitCountPerSession"`
 	SessionLimitCountPerUser       int                      `json:"SessionLimitCountPerUser"`
 	LogLevel                       log.Level                `json:"LogLevel"`
+	ImageRegistryAddress           string                   `json:"ImageRegistryAddress,omitempty"`
 }
 
 // DBConf holds all DB related configurations

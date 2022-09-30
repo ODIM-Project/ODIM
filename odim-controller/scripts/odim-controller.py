@@ -177,7 +177,7 @@ def perform_checks(skip_opt_param_check=False):
 	DEPLOYMENT_ID = CONTROLLER_CONF_DATA['deploymentID']
 	if 'logLevel' not in CONTROLLER_CONF_DATA['odimra'] or CONTROLLER_CONF_DATA['odimra']['logLevel'] == None or CONTROLLER_CONF_DATA['odimra']['logLevel'] == "": 
 		logger.critical("Log level is not set, Setting default value warn")
-		CONTROLLER_CONF_DATA['logLevel']="warn"
+		CONTROLLER_CONF_DATA['odimra']['logLevel']="warn"
 	else :
 		log_levels = ['panic', 'fatal', 'error', 'warn','info','debug','trace']
 		if CONTROLLER_CONF_DATA['odimra']['logLevel'] not in log_levels:

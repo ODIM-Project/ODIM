@@ -1,5 +1,4 @@
 //(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-//(C) Copyright 2020 Intel Corporation
 //
 //Licensed under the Apache License, Version 2.0 (the "License"); you may
 //not use this file except in compliance with the License. You may obtain
@@ -46,9 +45,14 @@ type Plugin struct {
 	PreferredAuthType string
 }
 
+var (
+	// GetDBConnectionFunc is pointer func for common.GetDBConnection
+	GetDBConnectionFunc = common.GetDBConnection
+)
+
 //GetResource fetches a resource from database using table and key
 func GetResource(Table, key string, dbtype common.DbType) (string, *errors.Error) {
-	conn, err := common.GetDBConnection(common.InMemory)
+	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return "", err
 	}
@@ -65,7 +69,7 @@ func GetResource(Table, key string, dbtype common.DbType) (string, *errors.Error
 
 //GetAllKeysFromTable fetches all keys in a given table
 func GetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
-	conn, err := common.GetDBConnection(dbtype)
+	conn, err := GetDBConnectionFunc(dbtype)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +84,7 @@ func GetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
 func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	var plugin Plugin
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return plugin, err
 	}
@@ -106,7 +110,7 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 //GetTarget fetches the System(Target Device Credentials) table details
 func GetTarget(deviceUUID string) (*Target, *errors.Error) {
 	var target Target
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +126,7 @@ func GetTarget(deviceUUID string) (*Target, *errors.Error) {
 
 //GenericSave will save any resource data into the database
 func GenericSave(body []byte, table string, key string) error {
-	connPool, err := common.GetDBConnection(common.InMemory)
+	connPool, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}

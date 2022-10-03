@@ -17,14 +17,15 @@ package tcommon
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"testing"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-telemetry/tmodel"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"net/http"
-	"testing"
 )
 
 func stubDevicePassword(password []byte) ([]byte, error) {
@@ -151,6 +152,22 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 	req.URL = "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1"
 	_, err = GetResourceInfoFromDevice(req)
 	assert.Nil(t, err, "There should be no error getting data")
+	req.GetPluginData = func(s string) (tmodel.Plugin, *errors.Error) {
+		var t *testing.T
+		password := getEncryptedKey(t, []byte("$2a$10$OgSUYvuYdI/7dLL5KkYNp.RCXISefftdj.MjbBTr6vWyNwAvht6ci"))
+		plugin := tmodel.Plugin{
+			IP:                "localhost",
+			Port:              "9091",
+			Username:          "admin",
+			Password:          password,
+			ID:                "Dummy",
+			PreferredAuthType: "XAuthToken",
+			PluginType:        "Compute",
+		}
+		return plugin, nil
+	}
+	_, err = GetResourceInfoFromDevice(req)
+	assert.Nil(t, err, "There should be no error getting data")
 }
 
 func TestContactPlugin(t *testing.T) {
@@ -163,4 +180,24 @@ func TestContactPlugin(t *testing.T) {
 	contactRequest.GetPluginStatus = mockPluginStatus
 	_, _, _, err := ContactPlugin(contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
+
+}
+
+func TestGetPluginStatus(t *testing.T) {
+	config.SetUpMockConfig(t)
+	res := GetPluginStatus(tmodel.Plugin{})
+	assert.False(t, res)
+	var req ResourceInfoRequest
+	req.GenericSave = mockGenericSave
+	req.GetResource = mockGetResource
+	removeNonExistingID(req)
+}
+
+func Test_callPlugin(t *testing.T) {
+	var req PluginContactRequest
+	config.SetUpMockConfig(t)
+	req.Plugin = tmodel.Plugin{PreferredAuthType: "BasicAuth"}
+	req.ContactClient = mockContactClient
+	callPlugin(req)
+
 }

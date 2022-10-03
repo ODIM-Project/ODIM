@@ -1178,11 +1178,14 @@ func AddNewHostToAggregateHostIndex(aggregateID string, hostIP string) error {
 	if err != nil {
 		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
 	}
-	aggreagtes, err1 := conn.GetAggregateHosts(aggregateHostIndex, aggregateID+"[^0-9]*")
+	aggregates, err1 := conn.GetAggregateHosts(aggregateHostIndex, aggregateID+"[^0-9]*")
 	if err != nil {
 		return err1
 	}
-	devSub := strings.Split(aggreagtes[0], "||")
+	if len(aggregates) < 1 {
+		return fmt.Errorf("error: no aggregate found aggregateHostIndex : %s", aggregateID)
+	}
+	devSub := strings.Split(aggregates[0], "||")
 	ips := getSliceFromString(devSub[1])
 	isUpdate := true
 	for _, ip := range ips {
@@ -1207,11 +1210,14 @@ func RemoveNewIPToAggregateHostIndex(aggregateID string, hostIP string) error {
 	if err != nil {
 		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
 	}
-	aggreagtes, err1 := conn.GetAggregateHosts(aggregateHostIndex, aggregateID+"[^0-9]*")
+	aggregates, err1 := conn.GetAggregateHosts(aggregateHostIndex, aggregateID+"[^0-9]*")
 	if err != nil {
 		return err1
 	}
-	devSub := strings.Split(aggreagtes[0], "||")
+	if len(aggregates) < 1 {
+		return fmt.Errorf("error: no aggregate found aggregateHostIndex : %s", aggregateID)
+	}
+	devSub := strings.Split(aggregates[0], "||")
 	ips := getSliceFromString(devSub[1])
 	ips = removeIps(ips, hostIP)
 	err1 = conn.UpdateAggregateHosts(aggregateHostIndex, aggregateID, ips)

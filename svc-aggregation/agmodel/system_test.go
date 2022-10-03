@@ -21,12 +21,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 func getEncryptedKey(t *testing.T, key []byte) []byte {

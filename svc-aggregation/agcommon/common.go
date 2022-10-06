@@ -202,6 +202,10 @@ func TrackConfigFileChanges(dbInterface DBInterface) {
 			l.Log.Error("error while trying to Add connection methods:" + err.Error())
 		}
 		config.TLSConfMutex.RUnlock()
+		if l.Log.Level != config.Data.LogLevel {
+			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		}
 	}
 }
 

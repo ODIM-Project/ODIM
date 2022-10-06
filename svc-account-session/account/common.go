@@ -15,12 +15,20 @@
 package account
 
 import (
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 )
 
 const (
 	defaultAdminAccount = "admin"
+)
+
+var (
+	// ConfigFilePath holds the value of odim config file path
+	ConfigFilePath string
 )
 
 // ExternalInterface holds all the external connections account package functions uses
@@ -38,5 +46,17 @@ func GetExternalInterface() *ExternalInterface {
 		GetUserDetails:     asmodel.GetUserDetails,
 		GetRoleDetailsByID: asmodel.GetRoleDetailsByID,
 		UpdateUserDetails:  asmodel.UpdateUserDetails,
+	}
+}
+func TrackConfigFileChanges() {
+	eventChan := make(chan interface{})
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	for {
+		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
+		if l.Log.Level != config.Data.LogLevel {
+			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		}
+
 	}
 }

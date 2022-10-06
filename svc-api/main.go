@@ -29,6 +29,7 @@ import (
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-api/apicommon"
 	"github.com/ODIM-Project/ODIM/svc-api/router"
 	"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	iris "github.com/kataras/iris/v12"
@@ -189,13 +190,13 @@ func main() {
 		log.Fatal("service initialisation failed: " + err.Error())
 	}
 
-	configFilePath := os.Getenv("CONFIG_FILE_PATH")
-	if configFilePath == "" {
+	apicommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
+	if apicommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	eventChan := make(chan interface{})
+
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	go apicommon.TrackConfigFileChanges()
 
 	router.Run(iris.Server(apiServer))
 }

@@ -23,6 +23,8 @@ import (
 	teleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-telemetry/rpc"
+	"github.com/ODIM-Project/ODIM/svc-telemetry/tcommon"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -59,13 +61,12 @@ func main() {
 	if err := common.CheckDBConnection(); err != nil {
 		log.Error("error while trying to check DB connection health: " + err.Error())
 	}
-	configFilePath := os.Getenv("CONFIG_FILE_PATH")
-	if configFilePath == "" {
+	tcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
+	if tcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	eventChan := make(chan interface{})
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	go tcommon.TrackConfigFileChanges()
 
 	registerHandlers()
 	// Run server

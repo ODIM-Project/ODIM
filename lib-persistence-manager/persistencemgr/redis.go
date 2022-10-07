@@ -253,6 +253,7 @@ func getPool(host, port, password string) (*redis.Pool, error) {
 		MaxActive: config.Data.DBConf.MaxActiveConns,
 		// Dial is an application supplied function for creating and
 		// configuring a connection.
+		Wait: true,
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial(protocol, host+":"+port,
 				redis.DialUseTLS(true),
@@ -373,12 +374,6 @@ func (p *ConnPool) Create(table, key string, data interface{}) *errors.Error {
 */
 func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.Error) {
 
-	if _, readErr := p.Read(table, key); readErr != nil {
-		if errors.DBKeyNotFound == readErr.ErrNo() {
-			return "", errors.PackError(readErr.ErrNo(), "error: data with key ", key, " does not exist")
-		}
-		return "", readErr
-	}
 	saveID := table + ":" + key
 
 	jsondata, err := json.Marshal(data)
@@ -394,7 +389,7 @@ func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.
 	}
 	writeConn := writePool.Get()
 	defer writeConn.Close()
-	_, createErr := writeConn.Do("SET", saveID, jsondata)
+	_, createErr := writeConn.Do("SETNX", saveID, jsondata)
 	if createErr != nil {
 		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
 		return "", errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())

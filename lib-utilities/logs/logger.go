@@ -70,7 +70,7 @@ func Adorn(m logrus.Fields) {
 func (f *SysLogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	level := entry.Level.String()
 	priorityNumber := findSysLogPriorityNumeric(level)
-	sysLogMsg := fmt.Sprintf("<%d> %s %s ", priorityNumber, entry.Time.UTC().Format(time.RFC3339), level)
+	sysLogMsg := fmt.Sprintf("<%d> %s ", priorityNumber, entry.Time.UTC().Format(time.RFC3339))
 	sysLogMsg = formatPriorityFields(entry, sysLogMsg)
 	for k, v := range logFields {
 		if accountLog, present := formatSyslog(k, v, entry); present {

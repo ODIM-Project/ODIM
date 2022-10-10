@@ -308,7 +308,7 @@ jobs:
           echo `redis-cli -p 6380 --tls --cert /etc/redis/redis.crt --key /etc/redis/redis.key --cacert /etc/redis/ca.crt << HERE
           keys *
           HERE`
-          LIST="plugin-redfish plugin-dell plugin-lenovo svc-aggregation svc-events svc-fabrics svc-telemetry svc-managers svc-task svc-systems svc-api svc-account-session svc-update svc-composition-service svc-licenses lib-utilities lib-messagebus"
+          LIST="plugin-redfish plugin-dell plugin-lenovo svc-aggregation svc-events svc-fabrics svc-telemetry svc-managers svc-task svc-systems svc-api svc-account-session svc-update svc-licenses lib-utilities lib-messagebus"
           echo $LIST
           for i in $LIST; do
             echo "Testing $i"

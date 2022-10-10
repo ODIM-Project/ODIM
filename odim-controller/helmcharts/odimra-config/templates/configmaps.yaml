@@ -133,7 +133,6 @@ data:
     		"Managers",
     		"UpdateService",
     		"TelemetryService",
-        "CompositionService",
         "LicenseService"
     	],
       "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},

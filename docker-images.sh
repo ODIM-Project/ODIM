@@ -30,7 +30,6 @@ declare -A images_list=(\
 		["telemetry"]="2.1"\
 		["update"]="3.1" \
 		["zookeeper"]="2.0" \
-		["composition-service"]="1.0" \
 		["licenses"]="1.0" \
 		)
 

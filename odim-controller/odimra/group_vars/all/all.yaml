@@ -52,7 +52,7 @@ odim_svc_helmcharts:
    update: update-3.1.0
    telemetry: telemetry-2.1.0
    licenses: licenses-1.0.0
-   composition-service: composition-service-1.0.0
+   #composition-service: composition-service-1.0.0
 odim_docker_images:
    account-session: account-session
    aggregation: aggregation
@@ -71,7 +71,7 @@ odim_docker_images:
    stakater_reloader: stakater/reloader
    busybox: busybox
    licenses: licenses   
-   composition-service: composition-service
+   #composition-service: composition-service
 
 kubernetes_images:
    quay.io/calico/cni: quay.io_calico_cni

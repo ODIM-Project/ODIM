@@ -31,6 +31,11 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-licenses/model"
 )
 
+var (
+	// ConfigFilePath holds the value of odim config file path
+	ConfigFilePath string
+)
+
 //GetAllKeysFromTable fetches all keys in a given table
 func GetAllKeysFromTable(table string, dbtype persistencemgr.DbType) ([]string, error) {
 	conn, err := persistencemgr.GetDBConnection(dbtype)
@@ -220,4 +225,17 @@ func GetIDsFromURI(uri string) (string, string, error) {
 		return "", "", fmt.Errorf("error: no id is found in %v", uri)
 	}
 	return ids[0], ids[1], nil
+}
+
+func TrackConfigFileChanges() {
+	eventChan := make(chan interface{})
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	for {
+		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
+		if l.Log.Level != config.Data.LogLevel {
+			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		}
+
+	}
 }

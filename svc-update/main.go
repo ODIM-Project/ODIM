@@ -23,6 +23,7 @@ import (
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-update/rpc"
+	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/sirupsen/logrus"
 )
 
@@ -56,13 +57,12 @@ func main() {
 	if err := common.CheckDBConnection(); err != nil {
 		log.Error("error while trying to check DB connection health: " + err.Error())
 	}
-	configFilePath := os.Getenv("CONFIG_FILE_PATH")
-	if configFilePath == "" {
+	ucommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
+	if ucommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	eventChan := make(chan interface{})
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	go ucommon.TrackConfigFileChanges()
 
 	registerHandlers()
 	// Run server

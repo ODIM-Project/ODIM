@@ -92,13 +92,13 @@ func main() {
 	// which is passed to it as ProcessCtrlMsg method after reading the data from the channel.
 	common.RunReadWorkers(consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 1)
 
-	configFilePath := os.Getenv("CONFIG_FILE_PATH")
-	if configFilePath == "" {
+	evcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
+	if evcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	eventChan := make(chan interface{})
+
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	go evcommon.TrackConfigFileChanges()
 
 	// Subscribe to intercomm messagebus queue
 	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.MessageBusQueue[0])

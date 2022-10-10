@@ -50,9 +50,11 @@ type StartUpInteraface struct {
 	UpdateDeviceSubscriptionLocation func(evmodel.DeviceSubscription) error
 }
 
-//GetAllPluginsFunc ...
 var (
+	//GetAllPluginsFunc is pointer function evmodel.GetAllPlugins
 	GetAllPluginsFunc = evmodel.GetAllPlugins
+	// ConfigFilePath holds the value of odim config file path
+	ConfigFilePath string
 )
 
 // EmbTopic hold the list all consuming topics after
@@ -564,4 +566,17 @@ func (st *StartUpInteraface) getPluginEMB(plugin evmodel.Plugin) {
 		EMBTopics.ConsumeTopic(topicsList[j])
 	}
 	return
+}
+
+func TrackConfigFileChanges() {
+	eventChan := make(chan interface{})
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	for {
+		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
+		if l.Log.Level != config.Data.LogLevel {
+			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		}
+
+	}
 }

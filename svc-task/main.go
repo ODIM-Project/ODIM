@@ -27,6 +27,7 @@ import (
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	auth "github.com/ODIM-Project/ODIM/svc-task/tauth"
+	"github.com/ODIM-Project/ODIM/svc-task/tcommon"
 	"github.com/ODIM-Project/ODIM/svc-task/thandle"
 	"github.com/ODIM-Project/ODIM/svc-task/tmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
@@ -65,13 +66,12 @@ func main() {
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
-	configFilePath := os.Getenv("CONFIG_FILE_PATH")
-	if configFilePath == "" {
+	tcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
+	if tcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	eventChan := make(chan interface{})
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	go tcommon.TrackConfigFileChanges()
 
 	if err := services.InitializeService(services.Tasks); err != nil {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())

@@ -163,7 +163,7 @@ func Test_sendFullPluginInventory(t *testing.T) {
 		ID: "localhost",
 	}
 
-	go mockPlugins(t)
+	mockPlugins(t)
 	err = sendFullPluginInventory("", plugin)
 	assert.Nil(t, err, "There should be no error")
 
@@ -214,7 +214,7 @@ func TestSendPluginStartUpData(t *testing.T) {
 		PluginType:        "GRF",
 	}
 
-	go mockPlugins(t)
+	mockPlugins(t)
 	err := SendPluginStartUpData("", agmodel.Plugin{})
 	assert.Nil(t, err, "There should be no error")
 	err = SendPluginStartUpData("", plugin)

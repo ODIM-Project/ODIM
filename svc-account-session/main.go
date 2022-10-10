@@ -27,6 +27,7 @@ import (
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/rpc"
 )
 
@@ -61,13 +62,12 @@ func main() {
 		log.Fatal("Error while trying to check DB connection health: " + err.Error())
 	}
 
-	configFilePath := os.Getenv("CONFIG_FILE_PATH")
-	if configFilePath == "" {
+	account.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
+	if account.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	eventChan := make(chan interface{})
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	go account.TrackConfigFileChanges()
 
 	if err := services.InitializeService(services.AccountSession); err != nil {
 		log.Fatal("Error while trying to initialize the service: " + err.Error())

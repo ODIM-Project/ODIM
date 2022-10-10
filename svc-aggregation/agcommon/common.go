@@ -197,11 +197,17 @@ func TrackConfigFileChanges(dbInterface DBInterface) {
 	for {
 		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
 		config.TLSConfMutex.RLock()
+		l.Log.Info("Updating connection method ")
 		err := dbInterface.AddConnectionMethods(config.Data.ConnectionMethodConf)
 		if err != nil {
 			l.Log.Error("error while trying to Add connection methods:" + err.Error())
 		}
 		config.TLSConfMutex.RUnlock()
+		l.Log.Info("Update connection method completed")
+		if l.Log.Level != config.Data.LogLevel {
+			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		}
 	}
 }
 

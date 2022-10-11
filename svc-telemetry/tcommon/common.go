@@ -64,6 +64,11 @@ type ResourceInfoRequest struct {
 	GenericSave         func([]byte, string, string) error
 }
 
+var (
+	// ConfigFilePath holds the value of odim config file path
+	ConfigFilePath string
+)
+
 // GetResourceInfoFromDevice will contact to the southbound client and gets the Particual resource info from device
 func GetResourceInfoFromDevice(req ResourceInfoRequest) ([]byte, error) {
 	var metricReportData dmtf.MetricReports
@@ -251,5 +256,18 @@ func removeNonExistingID(req ResourceInfoRequest) {
 			return
 		}
 		req.GenericSave(reportCollection, "MetricReportsCollection", collectionURL)
+	}
+}
+
+func TrackConfigFileChanges() {
+	eventChan := make(chan interface{})
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	for {
+		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
+		if l.Log.Level != config.Data.LogLevel {
+			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		}
+
 	}
 }

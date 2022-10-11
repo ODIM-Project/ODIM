@@ -65,13 +65,12 @@ func main() {
 	}
 	fabrics.Token.Tokens = make(map[string]string)
 
-	configFilePath := os.Getenv("CONFIG_FILE_PATH")
-	if configFilePath == "" {
+	fabrics.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
+	if fabrics.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	eventChan := make(chan interface{})
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	go fabrics.TrackConfigFileChanges()
 
 	registerHandlers()
 	if err := services.ODIMService.Run(); err != nil {

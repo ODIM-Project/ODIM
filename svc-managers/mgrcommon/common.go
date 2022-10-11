@@ -213,7 +213,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 		}
 
 	}
-	
+
 	//replace the uuid:system id with the system to the @odata.id from request url
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet
@@ -384,6 +384,10 @@ func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface) {
 		err := dbInterface.AddManagertoDBInterface(mgr)
 		if err != nil {
 			l.Log.Error(err)
+		}
+		if l.Log.Level != config.Data.LogLevel {
+			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+			l.Log.Logger.SetLevel(config.Data.LogLevel)
 		}
 	}
 }

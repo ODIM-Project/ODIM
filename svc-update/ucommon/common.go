@@ -67,6 +67,11 @@ type CommonInterface struct {
 	ContactPlugin func(PluginContactRequest, string) ([]byte, string, ResponseStatus, error)
 }
 
+var (
+	// ConfigFilePath holds the value of odim config file path
+	ConfigFilePath string
+)
+
 //GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
 func (i *CommonInterface) GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 	target, gerr := i.GetTarget(req.UUID)
@@ -297,4 +302,16 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
 	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+}
+func TrackConfigFileChanges() {
+	eventChan := make(chan interface{})
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	for {
+		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
+		if l.Log.Level != config.Data.LogLevel {
+			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		}
+
+	}
 }

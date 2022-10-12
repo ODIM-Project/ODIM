@@ -239,7 +239,7 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 	}
 }
 
-//getPool is used is utility function to get the Connection Pool from DB.
+//getPool is used as an utility function to get the Connection Pool from DB.
 func getPool(host, port, password string) (*redis.Pool, error) {
 	protocol := config.Data.DBConf.Protocol
 	tlsConfig, err := getTLSConfig()
@@ -398,7 +398,7 @@ func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.
 }
 
 //Read is for getting singular data
-// Read takes "key" sting as input which acts as a unique ID to fetch specific data from DB
+// Read takes "key" string as input which acts as a unique ID to fetch specific data from DB
 func (p *ConnPool) Read(table, key string) (string, *errors.Error) {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
@@ -465,7 +465,7 @@ func (p *ConnPool) GetAllDetails(table string) ([]string, *errors.Error) {
 }
 
 //Delete data entry
-// Read takes "key" sting as input which acts as a unique ID to delete specific data from DB
+// Read takes "key" string as input which acts as a unique ID to delete specific data from DB
 func (p *ConnPool) Delete(table, key string) *errors.Error {
 
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
@@ -510,28 +510,8 @@ func (p *ConnPool) CleanUpDB() *errors.Error {
 	return nil
 }
 
-/*
-//FilterSearch to search resource with given filter
-func (p *ConnPool) FilterSearch(table, key, path string) (interface{}, *errors.Error) {
-    c := p.pool.Get()
-    defer c.Close()
-    rh := rejson.NewReJSONHandler()
-    rh.SetRedigoClient(c)
-    value, err := redis.Bytes(rh.JSONGet(table+":"+key, path))
-
-    if err != nil {
-        if errs, aye := isDbConnectError(err); aye {
-            return "", errs
-        }
-        return "", errors.PackError(errors.UndefinedErrorType, errorCollectingData, err)
-    }
-    return value, nil
-}
-
-*/
-
 //DeleteServer data entry without table
-// Read takes "key" sting as input which acts as a unique ID to delete specific data from DB
+// Read takes "key" string as input which acts as a unique ID to delete specific data from DB
 func (p *ConnPool) DeleteServer(key string) *errors.Error {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
@@ -1048,7 +1028,7 @@ func (p *ConnPool) Del(index string, k string) error {
 }
 
 // CreateEvtSubscriptionIndex is used to create and save secondary index
-/* CreateSubscriptionIndex take the following keys are input:
+/* CreateEvtSubscriptionIndex takes the following keys as inputs:
 1. index is the name of the index to be created
 2. key and value are the key value pair for the index
 */
@@ -1158,7 +1138,7 @@ func (p *ConnPool) UpdateEvtSubscriptions(index, subscritionID string, key inter
 }
 
 // CreateDeviceSubscriptionIndex is used to create and save secondary index
-/* CreateDeviceSubscriptionIndex take the following keys are input:
+/* CreateDeviceSubscriptionIndex takes the following keys as input:
 1. index is the name of the index to be created
 2. key is for the index
 */
@@ -1402,7 +1382,7 @@ func (p *ConnPool) SetExpire(table, key string, data interface{}, expiretime int
 }
 
 //TTL is for getting singular data
-// TTL takes "key" sting as input which acts as a unique ID to fetch time left
+// TTL takes "key" string as input which acts as a unique ID to fetch time left
 func (p *ConnPool) TTL(table, key string) (int, *errors.Error) {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
@@ -1426,7 +1406,7 @@ func (p *ConnPool) TTL(table, key string) (int, *errors.Error) {
 }
 
 // CreateAggregateHostIndex is used to create and save secondary index
-/* CreateAggregateHostIndex take the following keys are input:
+/* CreateAggregateHostIndex take the following keys as an input:
 1. index is the name of the index to be created
 2. key is for the index
 */

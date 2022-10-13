@@ -3,7 +3,7 @@ module github.com/ODIM-Project/ODIM/lib-persistence-manager
 go 1.17
 
 require (
-	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201201072448-9772421f1b55
+	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-00010101000000-000000000000
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gomodule/redigo v2.0.0+incompatible
 )
@@ -34,7 +34,8 @@ require (
 	github.com/kataras/sitemap v0.0.5 // indirect
 	github.com/kataras/tunnel v0.0.3 // indirect
 	github.com/klauspost/compress v1.14.4 // indirect
-	github.com/kr/pretty v0.1.0 // indirect
+	github.com/kr/pretty v0.2.1 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.18 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -65,4 +66,6 @@ replace (
 	github.com/ODIM-Project/ODIM/lib-persistence-manager => ../lib-persistence-manager
 	github.com/ODIM-Project/ODIM/lib-rest-client => ../lib-rest-client
 	github.com/ODIM-Project/ODIM/lib-utilities => ../lib-utilities
+	github.com/gomodule/redigo => github.com/gomodule/redigo v1.8.9
+
 )

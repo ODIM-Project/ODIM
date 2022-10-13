@@ -253,6 +253,7 @@ func getPool(host, port, password string) (*redis.Pool, error) {
 		MaxActive: config.Data.DBConf.MaxActiveConns,
 		// Dial is an application supplied function for creating and
 		// configuring a connection.
+		Wait: true,
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial(protocol, host+":"+port,
 				redis.DialUseTLS(true),
@@ -261,6 +262,7 @@ func getPool(host, port, password string) (*redis.Pool, error) {
 			)
 			return c, err
 		},
+
 		/*TestOnBorrow is an optional application supplied function to
 		  check the health of an idle connection before the connection is
 		  used again by the application. Argument t is the time that the
@@ -362,6 +364,8 @@ func (p *ConnPool) Create(table, key string, data interface{}) *errors.Error {
 			return errors.PackError(errors.DBKeyAlreadyExist, "error: data with key ", key, " already exists")
 		}
 	}
+	l.Log.Debugf("Connection pools count creation for write and read are %d and %d", p.WritePool.Stats().WaitCount, p.ReadPool.Stats().WaitCount)
+	l.Log.Debugf("connection pools waited duration for creation write and read are %d and %d", p.WritePool.Stats().WaitDuration, p.ReadPool.Stats().WaitDuration)
 
 	return nil
 }
@@ -393,7 +397,8 @@ func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.
 		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
 		return "", errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+updateErr.Error())
 	}
-
+	l.Log.Debugf("Connection pools count updation for write and read are %d and %d", p.WritePool.Stats().WaitCount, p.ReadPool.Stats().WaitCount)
+	l.Log.Debugf("connection pools waited duration for updation write and read are %d and %d", p.WritePool.Stats().WaitDuration, p.ReadPool.Stats().WaitDuration)
 	return saveID, nil
 }
 

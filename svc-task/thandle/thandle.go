@@ -53,7 +53,7 @@ type TasksRPC struct {
 	GetCompletedTasksIndexModel      func(userName string) ([]string, error)
 	DeleteTaskFromDBModel            func(t *tmodel.Task) error
 	DeleteTaskIndex                  func(taskID string) error
-	UpdateTaskStatusModel            func(t *tmodel.Task, db common.DbType) error
+	UpdateTaskStatusModel            func(t *tmodel.Task)
 	PersistTaskModel                 func(t *tmodel.Task, db common.DbType) error
 	ValidateTaskUserNameModel        func(userName string) error
 	PublishToMessageBus              func(taskURI string, taskEvenMessageID string, eventType string, taskMessage string)
@@ -365,22 +365,14 @@ func (ts *TasksRPC) taskCancelCallBack(taskID string) error {
 			ts.DeleteTaskFromDBModel(subTask)
 		} else if subTask.TaskState != common.Cancelling {
 			subTask.TaskState = common.Cancelling
-			err := ts.UpdateTaskStatusModel(subTask, common.InMemory)
-			if err != nil {
-				l.Log.Error("error while updating the task: " + err.Error())
-				return err
-			}
+			ts.UpdateTaskStatusModel(subTask)
 			go ts.asyncTaskDelete(subTaskID)
 		}
 	}
 	// Delete the parent task
 	if task.TaskState != common.Cancelling {
 		task.TaskState = common.Cancelling
-		err := ts.UpdateTaskStatusModel(task, common.InMemory)
-		if err != nil {
-			l.Log.Error("error while updating the task: " + err.Error())
-			return err
-		}
+		ts.UpdateTaskStatusModel(task)
 		go ts.asyncTaskDelete(taskID)
 	}
 
@@ -885,19 +877,11 @@ func (ts *TasksRPC) CreateChildTaskUtil(userName string, parentTaskID string) (s
 	childTask.ParentID = parentTaskID
 	childTask.URI = "/redfish/v1/TaskService/Tasks/" + parentTaskID + "/" + childTaskID
 	// Store the updated task in to In Memory DB
-	err = ts.UpdateTaskStatusModel(childTask, common.InMemory)
-	if err != nil {
-		l.Log.Error("error while updating the child/sub task details in to DB: " + err.Error())
-		return "", fmt.Errorf("error while updating the child/sub task details: " + err.Error())
-	}
+	ts.UpdateTaskStatusModel(childTask)
 	// Add the child/sub task id in to ChildTaskIDs(array) of the parent task
 	parentTask.ChildTaskIDs = append(parentTask.ChildTaskIDs, childTaskID)
 	// Update the parent task in to In Memory DB
-	err = ts.UpdateTaskStatusModel(parentTask, common.InMemory)
-	if err != nil {
-		l.Log.Error("error while updating the task details in to DB: " + err.Error())
-		return "", fmt.Errorf("error while trying to update the task details in InMemory DB: " + err.Error())
-	}
+	ts.UpdateTaskStatusModel(parentTask)
 	return "/redfish/v1/TaskService/Tasks/" + childTaskID, err
 }
 
@@ -1120,11 +1104,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		return fmt.Errorf("error invalid input argument for taskState")
 	}
 	// Update the task data in the InMemory DB
-	err = ts.UpdateTaskStatusModel(task, common.InMemory)
-	if err != nil {
-		l.Log.Error("error while updating the task in to In-memory DB: " + err.Error())
-		return fmt.Errorf("error while updating the task in to In-memory DB: " + err.Error())
-	}
+	ts.UpdateTaskStatusModel(task)
 	// Notify the user about task state change by sending statuschange event
 	//	notifyTaskStateChange(task.URI, taskEvenMessageID)
 	eventType := "StatusChange"

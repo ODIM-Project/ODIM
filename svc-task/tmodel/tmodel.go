@@ -86,22 +86,6 @@ type Message struct {
 	Severity          string   `json:"Severity"`
 }
 
-//BuildCompletedTaskIndex is used to build the index for Completed Task
-func BuildCompletedTaskIndex(completedTask *Task, table string) error {
-	conn, err := common.GetDBConnection(common.InMemory)
-	if err != nil {
-		l.Log.Error("BuildCompletedTaskIndex : error while trying to get DB Connection : " + err.Error())
-		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
-	}
-	key := completedTask.UserName + "::" + completedTask.EndTime.String() + "::" + completedTask.ID
-	createError := conn.CreateTaskIndex(CompletedTaskIndex, completedTask.EndTime.UnixNano(), key)
-	if createError != nil {
-		l.Log.Error("BuildCompletedTaskIndex : error while trying to CreateTaskIndex : " + createError.Error())
-		return fmt.Errorf("error while trying to create task index: %v", err)
-	}
-	return nil
-}
-
 // GetCompletedTasksIndex Searches Complete Tasks in the db using secondary index with provided search Key
 func GetCompletedTasksIndex(searchKey string) ([]string, error) {
 	var taskData []string
@@ -136,35 +120,6 @@ func PersistTask(t *Task, db common.DbType) error {
 	if err = connPool.Create("task", t.ID, t); err != nil {
 		l.Log.Error("PersistTask : error while trying to create task : " + err.Error())
 		return fmt.Errorf("error while trying to create new task: %v", err.Error())
-	}
-	return nil
-}
-
-// UpdateTaskStatus is to update the task data already present in db
-// Takes:
-//	db of type common.DbType(int32)
-//	t of type *Task
-// Returns:
-//	err of type error
-//	On Success - return nil value
-//	On Failure - return non nill value
-func UpdateTaskStatus(t *Task, db common.DbType) error {
-	connPool, err := common.GetDBConnection(db)
-	if err != nil {
-		l.Log.Error("UpdateTaskStatus : error while trying to get DB Connection : " + err.Error())
-		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
-	}
-	if _, err = connPool.Update("task", t.ID, t); err != nil {
-		l.Log.Error("UpdateTaskStatus : error while trying to updating task status : " + err.Error())
-		return fmt.Errorf("error while trying to update task: %v", err.Error())
-	}
-	// Build Redis Index here if we dont do it in thandle
-	if (t.TaskState == "Completed" || t.TaskState == "Exception") && t.ParentID == "" {
-		taskIndexErr := BuildCompletedTaskIndex(t, CompletedTaskTable)
-		if taskIndexErr != nil {
-			l.Log.Error("UpdateTaskStatus : error in creating index for task : " + taskIndexErr.Error())
-			return taskIndexErr
-		}
 	}
 	return nil
 }
@@ -281,6 +236,48 @@ func ValidateTaskUserName(userName string) error {
 	if _, err = connPool.Read("User", userName); err != nil {
 		l.Log.Error("ValidateTaskUserName : error while trying to read from the db : " + err.Error())
 		return fmt.Errorf("error while trying to read from DB: %v", err.Error())
+	}
+	return nil
+}
+
+// UpdateTaskProgress is to update the tasks data already present in db
+// Takes:
+//	db of type common.DbType(int32)
+//	tasks of type map[string]interface{}
+// Returns:
+//	err of type error
+//	On Success - return nil value
+//	On Failure - return non nill value
+func UpdateTaskProgress(tasks map[string]interface{}, db common.DbType) error {
+	connPool, err := common.GetDBConnection(db)
+	if err != nil {
+		l.Log.Error("UpdateTaskProgress : error while trying to get DB Connection : " + err.Error())
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.UpdateTasks(tasks); err != nil {
+		l.Log.Error("UpdateTaskProgress : error while trying to updating task status : " + err.Error())
+		return fmt.Errorf("error while trying to update task: %v", err.Error())
+	}
+	return nil
+}
+
+// BuildCompletedTaskIndices is to create index for the tasks which are completed
+// Takes:
+//	db of type common.DbType(int32)
+//	tasks of type map[string][2]interface{}
+// Returns:
+//	err of type error
+//	On Success - return nil value
+//	On Failure - return non nill value
+func CreateCompletedTasksIndices(tasks map[string][2]interface{}, db common.DbType) error {
+	connPool, err := common.GetDBConnection(db)
+	if err != nil {
+		l.Log.Error("BuildCompletedTaskIndices : error while trying to get DB Connection : " + err.Error())
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.CreateTaskIndices(tasks); err != nil {
+		l.Log.Error("BuildCompletedTaskIndices : error while trying to updating task status : " + err.Error())
+		return fmt.Errorf("error while trying to update task: %v", err.Error())
 	}
 	return nil
 }

@@ -61,7 +61,7 @@ func Publish(taskURI, messageID, eventType, taskMessage string) {
 
 	if err := k.Distribute(mbevent); err != nil {
 		l.Log.Error("unable to publish the event to message bus: " + err.Error())
+		l.Log.Error("info: TaskURI:" + taskURI + ", EventID:" + eventID + ", MessageID:" + messageID)
 		return
 	}
-	l.Log.Error("info: TaskURI:" + taskURI + ", EventID:" + eventID + ", MessageID:" + messageID)
 }

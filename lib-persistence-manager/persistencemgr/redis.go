@@ -663,6 +663,61 @@ func (p *ConnPool) SaveBMCInventory(data map[string]interface{}) *errors.Error {
 
 }
 
+// UpdateTasks function update tasks which are received together using the redis pipeline
+func (p *ConnPool) UpdateTasks(data map[string]interface{}) *errors.Error {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	if writePool == nil {
+		return errors.PackError(errors.UndefinedErrorType, "error while trying to Write Transaction data: WritePool is nil")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+	writeConn.Send("MULTI")
+	for key, val := range data {
+		jsondata, err := json.Marshal(val)
+		if err != nil {
+			writeConn.Send("DISCARD")
+			return errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
+		}
+		_, createErr := writeConn.Do("SET", key, jsondata)
+		if createErr != nil {
+			writeConn.Send("DISCARD")
+			atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+			return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
+		}
+	}
+	_, err := writeConn.Do("EXEC")
+	if err != nil {
+		return errors.PackError(errors.UndefinedErrorType, err)
+	}
+	return nil
+}
+
+// CreateTaskIndices function create index for the tasks which are received together using the redis pipeline
+func (p *ConnPool) CreateTaskIndices(data map[string][2]interface{}) *errors.Error {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	if writePool == nil {
+		return errors.PackError(errors.UndefinedErrorType, "error while trying to Write Transaction data: WritePool is nil")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+	writeConn.Send("MULTI")
+	for key, val := range data {
+		index := val[0].(string)
+		value := val[1].(int64)
+		_, createErr := writeConn.Do("ZADD", index, value, key)
+		if createErr != nil {
+			writeConn.Send("DISCARD")
+			atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+			return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
+		}
+	}
+	_, err := writeConn.Do("EXEC")
+	if err != nil {
+		return errors.PackError(errors.UndefinedErrorType, err)
+	}
+	return nil
+}
+
 //GetResourceDetails will fetch the key and also fetch the data
 func (p *ConnPool) GetResourceDetails(key string) (string, *errors.Error) {
 	readConn := p.ReadPool.Get()

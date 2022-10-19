@@ -126,14 +126,7 @@ func mockDeleteTaskIndex(task string) error {
 	return nil
 }
 
-func mockUpdateTaskStatusModel(task *tmodel.Task, db common.DbType) error {
-	if db != common.InMemory {
-		return fmt.Errorf("error while trying to update task")
-	}
-	if task.ID == "invalidTaskID" {
-		return fmt.Errorf("error while trying to update task")
-	}
-	return nil
+func mockUpdateTaskStatusModel(task *tmodel.Task) {
 }
 
 func mockPublishToMessageBus(taskURI, taskEvenMessageID, eventType, taskMessage string) {

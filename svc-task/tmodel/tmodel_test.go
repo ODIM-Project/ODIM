@@ -85,7 +85,7 @@ func TestPersistTask(t *testing.T) {
 	}
 }
 
-func TestUpdateTaskStatus(t *testing.T) {
+func TestUpdateTaskProgress(t *testing.T) {
 	common.SetUpMockConfig()
 	defer flushDB(t)
 	task := Task{
@@ -99,7 +99,7 @@ func TestUpdateTaskStatus(t *testing.T) {
 		EndTime:      time.Time{},
 	}
 	task.Name = "Task " + task.ID
-	// Persist in the in-memory DB
+
 	err := PersistTask(&task, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while trying to insert the task details: %v", err)
@@ -111,25 +111,132 @@ func TestUpdateTaskStatus(t *testing.T) {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
 	}
-	// Positive Test Case
-	task1.TaskState = "Running"
-	err = UpdateTaskStatus(task1, common.InMemory)
+
+	type args struct {
+		tasks     map[string]interface{}
+		taskState string
+		db        common.DbType
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "update task state as running",
+			args: args{
+				tasks:     make(map[string]interface{}),
+				taskState: "Running",
+				db:        common.InMemory,
+			},
+			wantErr: false,
+		},
+		{
+			name: "update task state with invalid db",
+			args: args{
+				tasks:     make(map[string]interface{}),
+				taskState: "Running",
+				db:        23,
+			},
+			wantErr: true,
+		},
+		{
+			name: "update task state as completed",
+			args: args{
+				tasks:     make(map[string]interface{}),
+				taskState: "Completed",
+				db:        common.InMemory,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			task1.TaskState = tt.args.taskState
+			tt.args.tasks[task1.ID] = task1
+			if err := UpdateTaskProgress(tt.args.tasks, tt.args.db); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateTaskProgress() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestCreateCompletedTasksIndices(t *testing.T) {
+	common.SetUpMockConfig()
+	defer flushDB(t)
+	task := Task{
+		UserName:     "admin",
+		ParentID:     "",
+		ChildTaskIDs: nil,
+		ID:           "task" + uuid.NewV4().String(),
+		TaskState:    "New",
+		TaskStatus:   "OK",
+		StartTime:    time.Now(),
+		EndTime:      time.Time{},
+	}
+	task.Name = "Task " + task.ID
+
+	err := PersistTask(&task, common.InMemory)
 	if err != nil {
-		t.Fatalf("error while updating the task details in the db: %v", err)
+		t.Fatalf("error while trying to insert the task details: %v", err)
+		return
+	}
+	task1, err := GetTaskStatus(task.ID, common.InMemory)
+	if err != nil {
+		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
 	}
 	task1.TaskState = "Completed"
-	// Negetive test case
-	err = UpdateTaskStatus(task1, 23)
-	if err == nil {
-		t.Fatalf("error: expected error here but got no error ")
+	task1Map := map[string]interface{}{
+		task1.ID: task1,
+	}
+	err = UpdateTaskProgress(task1Map, common.InMemory)
+	if err != nil {
+		t.Fatalf("error while updating the Task details: %v", err)
 		return
 	}
-	// Positive Test case
-	err = UpdateTaskStatus(task1, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while updating the task details in the db: %v", err)
-		return
+
+	saveID := task1.UserName + "::" + task1.EndTime.String() + "::" + task1.ID
+	value := [2]interface{}{
+		CompletedTaskIndex,
+		task1.EndTime.UnixNano(),
+	}
+	completedTask := map[string][2]interface{}{
+		saveID: value,
+	}
+
+	type args struct {
+		tasks map[string][2]interface{}
+		db    common.DbType
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "create index for completed task",
+			args: args{
+				tasks: completedTask,
+				db:    common.InMemory,
+			},
+			wantErr: false,
+		},
+		{
+			name: "create index for completed task with invalid db",
+			args: args{
+				tasks: completedTask,
+				db:    23,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := CreateCompletedTasksIndices(tt.args.tasks, tt.args.db); (err != nil) != tt.wantErr {
+				t.Errorf("CreateCompletedTasksIndices() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
 	}
 }
 
@@ -169,9 +276,12 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
 	}
-	err = UpdateTaskStatus(task1, common.InMemory)
+	task1Map := map[string]interface{}{
+		task1.ID: task1,
+	}
+	err = UpdateTaskProgress(task1Map, common.InMemory)
 	if err != nil {
-		t.Fatalf("error while retreving the Task details with Get: %v", err)
+		t.Fatalf("error while updating the Task details: %v", err)
 		return
 	}
 	_, err = GetCompletedTasksIndex("task1")
@@ -203,7 +313,10 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
 	}
-	err = UpdateTaskStatus(task3, common.InMemory)
+	task3Map := map[string]interface{}{
+		task3.ID: task3,
+	}
+	err = UpdateTaskProgress(task3Map, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
@@ -317,9 +430,25 @@ func TestDeleteTaskIndex(t *testing.T) {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
 	}
-	err = UpdateTaskStatus(task1, common.InMemory)
+	task1Map := map[string]interface{}{
+		task1.ID: task1,
+	}
+	err = UpdateTaskProgress(task1Map, common.InMemory)
 	if err != nil {
-		t.Fatalf("error while retreving the Task details with Get: %v", err)
+		t.Fatalf("error while updating the Task details: %v", err)
+		return
+	}
+	saveID := task1.UserName + "::" + task1.EndTime.String() + "::" + task1.ID
+	value := [2]interface{}{
+		CompletedTaskIndex,
+		task1.EndTime.UnixNano(),
+	}
+	completedTask := map[string][2]interface{}{
+		saveID: value,
+	}
+	err = CreateCompletedTasksIndices(completedTask, common.InMemory)
+	if err != nil {
+		t.Fatalf("error while creating the index for task: %v", err)
 		return
 	}
 	// Positive Test case

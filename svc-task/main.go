@@ -95,7 +95,7 @@ func main() {
 
 	task.DeleteTaskFromDBModel = tmodel.DeleteTaskFromDB
 	task.DeleteTaskIndex = tmodel.DeleteTaskIndex
-	task.UpdateTaskStatusModel = tqueue.EnqueueTasks
+	task.UpdateTaskStatusModel = tqueue.EnqueueTask
 	task.PersistTaskModel = tmodel.PersistTask
 	task.ValidateTaskUserNameModel = tmodel.ValidateTaskUserName
 	task.PublishToMessageBus = tmessagebus.Publish
@@ -106,7 +106,6 @@ func main() {
 	taskproto.RegisterGetTaskServiceServer(services.ODIMService.Server(), task)
 
 	go tqueue.UpdateTasksStatus(queueSize, commitInDBInterval)
-	go tqueue.BuildCompletedTaskIndex(queueSize, commitInDBInterval)
 
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {

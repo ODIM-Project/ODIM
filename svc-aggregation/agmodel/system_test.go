@@ -428,7 +428,7 @@ func TestGetRegistryFile(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	mockData(t, common.OnDisk, "someTable", "someKey", "someData")
+	mockData(t, common.InMemory, "someTable", "someKey", "someData")
 	type args struct {
 		Table string
 		key   string

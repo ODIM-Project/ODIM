@@ -25,7 +25,7 @@ import (
 
 //GetRegistryFile fetches a resource from database using table and key
 func GetRegistryFile(Table, key string) ([]byte, *errors.Error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return nil, errors.PackError(err.ErrNo(), err)
 	}

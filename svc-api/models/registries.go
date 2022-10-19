@@ -45,7 +45,7 @@ func GetRegistryFile(Table, key string) ([]byte, *errors.Error) {
 //GetAllRegistryFileNamesFromDB return all key in given table
 func GetAllRegistryFileNamesFromDB(table string) ([]string, *errors.Error) {
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return nil, err
 	}

@@ -17,6 +17,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -85,7 +86,9 @@ func TestPersistTask(t *testing.T) {
 	}
 }
 
-func TestUpdateTaskProgress(t *testing.T) {
+func TestProcessTaskQueue(t *testing.T) {
+	queue := make(chan *Task, 10)
+	var wg sync.WaitGroup
 	common.SetUpMockConfig()
 	defer flushDB(t)
 	task := Task{
@@ -105,10 +108,13 @@ func TestUpdateTaskProgress(t *testing.T) {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
 	}
-	task1 := new(Task)
-	task1, err = GetTaskStatus(task.ID, common.InMemory)
+
+	signal := new(Task)
+	signal.Name = SignalTaskName
+
+	task1, err := GetTaskStatus(task.ID, common.InMemory)
 	if err != nil {
-		t.Fatalf("error while retreving the Task details with Get: %v", err)
+		t.Fatalf("error while retrieving the Task details with Get: %v", err)
 		return
 	}
 
@@ -132,15 +138,6 @@ func TestUpdateTaskProgress(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "update task state with invalid db",
-			args: args{
-				tasks:     make(map[string]interface{}),
-				taskState: "Running",
-				db:        23,
-			},
-			wantErr: true,
-		},
-		{
 			name: "update task state as completed",
 			args: args{
 				tasks:     make(map[string]interface{}),
@@ -153,94 +150,37 @@ func TestUpdateTaskProgress(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			task1.TaskState = tt.args.taskState
-			tt.args.tasks[task1.ID] = task1
-			if err := UpdateTaskProgress(tt.args.tasks, tt.args.db); (err != nil) != tt.wantErr {
-				t.Errorf("UpdateTaskProgress() error = %v, wantErr %v", err, tt.wantErr)
+			queue <- task1
+			queue <- signal
+			wg.Add(1)
+			go ProcessTaskQueue(&queue, &wg)
+			wg.Wait()
+			task1, err := GetTaskStatus(task.ID, common.InMemory)
+			if err != nil {
+				t.Fatalf("error while retrieving the Task details with Get: %v", err)
+				return
 			}
-		})
-	}
-}
+			if task1.TaskState != tt.args.taskState {
+				t.Fatalf("ProcessTaskQueue: Update TaskState failed: want %v, Got : %v", tt.args.taskState, task1.TaskState)
+			}
 
-func TestCreateCompletedTasksIndices(t *testing.T) {
-	common.SetUpMockConfig()
-	defer flushDB(t)
-	task := Task{
-		UserName:     "admin",
-		ParentID:     "",
-		ChildTaskIDs: nil,
-		ID:           "task" + uuid.NewV4().String(),
-		TaskState:    "New",
-		TaskStatus:   "OK",
-		StartTime:    time.Now(),
-		EndTime:      time.Time{},
-	}
-	task.Name = "Task " + task.ID
-
-	err := PersistTask(&task, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while trying to insert the task details: %v", err)
-		return
-	}
-	task1, err := GetTaskStatus(task.ID, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while retreving the Task details with Get: %v", err)
-		return
-	}
-	task1.TaskState = "Completed"
-	task1Map := map[string]interface{}{
-		task1.ID: task1,
-	}
-	err = UpdateTaskProgress(task1Map, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while updating the Task details: %v", err)
-		return
-	}
-
-	saveID := task1.UserName + "::" + task1.EndTime.String() + "::" + task1.ID
-	value := [2]interface{}{
-		CompletedTaskIndex,
-		task1.EndTime.UnixNano(),
-	}
-	completedTask := map[string][2]interface{}{
-		saveID: value,
-	}
-
-	type args struct {
-		tasks map[string][2]interface{}
-		db    common.DbType
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "create index for completed task",
-			args: args{
-				tasks: completedTask,
-				db:    common.InMemory,
-			},
-			wantErr: false,
-		},
-		{
-			name: "create index for completed task with invalid db",
-			args: args{
-				tasks: completedTask,
-				db:    23,
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := CreateCompletedTasksIndices(tt.args.tasks, tt.args.db); (err != nil) != tt.wantErr {
-				t.Errorf("CreateCompletedTasksIndices() error = %v, wantErr %v", err, tt.wantErr)
+			if task1.TaskState == "Completed" {
+				tasks, err := GetCompletedTasksIndex("task1")
+				if err != nil {
+					t.Fatalf("error while retrieving the completed tasks details with Get: %v", err)
+					return
+				}
+				if len(tasks) != 1 {
+					t.Fatalf("Index is not created for completed tasks")
+				}
 			}
 		})
 	}
 }
 
 func TestGetCompletedTasksIndex(t *testing.T) {
+	queue := make(chan *Task, 10)
+	var wg sync.WaitGroup
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
@@ -262,6 +202,10 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		StartTime:    time.Now(),
 		EndTime:      time.Time{},
 	}
+
+	signal := new(Task)
+	signal.Name = SignalTaskName
+
 	task.Name = "Task " + task.ID
 	// Persist in the in-memory DB
 	err := PersistTask(&task, common.InMemory)
@@ -270,20 +214,18 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		return
 	}
 
-	task1 := new(Task)
-	task1, err = GetTaskStatus(task.ID, common.InMemory)
+	task1, err := GetTaskStatus(task.ID, common.InMemory)
 	if err != nil {
-		t.Fatalf("error while retreving the Task details with Get: %v", err)
+		t.Fatalf("error while retrieving the Task details with Get: %v", err)
 		return
 	}
-	task1Map := map[string]interface{}{
-		task1.ID: task1,
-	}
-	err = UpdateTaskProgress(task1Map, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while updating the Task details: %v", err)
-		return
-	}
+
+	queue <- task1
+	queue <- signal
+	wg.Add(1)
+	go ProcessTaskQueue(&queue, &wg)
+	wg.Wait()
+
 	_, err = GetCompletedTasksIndex("task1")
 	if err != nil {
 		t.Fatalf("error while getting the task details in the db: %v", err)
@@ -307,20 +249,18 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		return
 	}
 
-	task3 := new(Task)
-	task3, err = GetTaskStatus(task.ID, common.InMemory)
+	task3, err := GetTaskStatus(task.ID, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
 	}
-	task3Map := map[string]interface{}{
-		task3.ID: task3,
-	}
-	err = UpdateTaskProgress(task3Map, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while retreving the Task details with Get: %v", err)
-		return
-	}
+
+	queue <- task3
+	queue <- signal
+	wg.Add(1)
+	go ProcessTaskQueue(&queue, &wg)
+	wg.Wait()
+
 	_, err = GetCompletedTasksIndex("task3")
 	if err != nil {
 		t.Fatalf("error while getting the task details in the db: %v", err)
@@ -357,8 +297,8 @@ func TestDeleteTaskFromDB(t *testing.T) {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
 	}
-	task1 := new(Task)
-	task1, err = GetTaskStatus(task.ID, common.InMemory)
+
+	task1, err := GetTaskStatus(task.ID, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
@@ -379,6 +319,8 @@ func TestDeleteTaskFromDB(t *testing.T) {
 }
 
 func TestDeleteTaskIndex(t *testing.T) {
+	queue := make(chan *Task, 10)
+	var wg sync.WaitGroup
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
@@ -400,6 +342,10 @@ func TestDeleteTaskIndex(t *testing.T) {
 		StartTime:    time.Now(),
 		EndTime:      time.Time{},
 	}
+
+	signal := new(Task)
+	signal.Name = SignalTaskName
+
 	task.Name = "Task " + task.ID
 	// Persist in the in-memory DB
 	err := PersistTask(&task, common.InMemory)
@@ -424,33 +370,19 @@ func TestDeleteTaskIndex(t *testing.T) {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
 	}
-	task1 := new(Task)
-	task1, err = GetTaskStatus(task.ID, common.InMemory)
+
+	task1, err := GetTaskStatus(task.ID, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
 	}
-	task1Map := map[string]interface{}{
-		task1.ID: task1,
-	}
-	err = UpdateTaskProgress(task1Map, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while updating the Task details: %v", err)
-		return
-	}
-	saveID := task1.UserName + "::" + task1.EndTime.String() + "::" + task1.ID
-	value := [2]interface{}{
-		CompletedTaskIndex,
-		task1.EndTime.UnixNano(),
-	}
-	completedTask := map[string][2]interface{}{
-		saveID: value,
-	}
-	err = CreateCompletedTasksIndices(completedTask, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while creating the index for task: %v", err)
-		return
-	}
+
+	queue <- task1
+	queue <- signal
+	wg.Add(1)
+	go ProcessTaskQueue(&queue, &wg)
+	wg.Wait()
+
 	// Positive Test case
 	err = DeleteTaskIndex(task1.ID)
 	if err != nil {

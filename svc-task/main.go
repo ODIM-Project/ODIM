@@ -80,7 +80,7 @@ func main() {
 	}
 
 	queueSize := 1000
-	commitInDBInterval := time.Millisecond
+	dbCommitInterval := time.Millisecond
 	tqueue.NewTaskQueue(queueSize)
 
 	task := new(thandle.TasksRPC)
@@ -105,7 +105,7 @@ func main() {
 	}
 	taskproto.RegisterGetTaskServiceServer(services.ODIMService.Server(), task)
 
-	go tqueue.UpdateTasksStatus(queueSize, commitInDBInterval)
+	go tqueue.UpdateTasksWorker(dbCommitInterval)
 
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {

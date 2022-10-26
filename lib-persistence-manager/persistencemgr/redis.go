@@ -53,6 +53,13 @@ const (
 	OnDisk
 )
 
+// Conn contains the write connection instance retrieved from the connection pool
+// it also contains address of write connection pool which is used to close the pool if any db issues happened
+type Conn struct {
+	WritePool **redis.Pool
+	WriteConn redis.Conn
+}
+
 //RedisExternalCalls containes the methods to make calls to external client libraries of Redis DB
 type RedisExternalCalls interface {
 	newSentinelClient(opt *redisSentinel.Options) *redisSentinel.SentinelClient
@@ -663,57 +670,95 @@ func (p *ConnPool) SaveBMCInventory(data map[string]interface{}) *errors.Error {
 
 }
 
-// UpdateTasks function update tasks which are received together using the redis pipeline
-func (p *ConnPool) UpdateTasks(data map[string]interface{}) *errors.Error {
+// GetWriteConnection retrieve a write connection from the connection pool
+func (p *ConnPool) GetWriteConnection() (*Conn, *errors.Error) {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		return errors.PackError(errors.UndefinedErrorType, "error while trying to Write Transaction data: WritePool is nil")
+		return nil, errors.PackError(errors.UndefinedErrorType, "error while trying to Write Transaction data: WritePool is nil")
 	}
 	writeConn := writePool.Get()
-	defer writeConn.Close()
-	writeConn.Send("MULTI")
-	for key, val := range data {
-		jsondata, err := json.Marshal(val)
-		if err != nil {
-			writeConn.Send("DISCARD")
-			return errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
-		}
-		_, createErr := writeConn.Do("SET", key, jsondata)
-		if createErr != nil {
-			writeConn.Send("DISCARD")
-			atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
-			return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
-		}
+	return &Conn{
+		WritePool: &p.WritePool,
+		WriteConn: writeConn,
+	}, nil
+}
+
+// Close closes the write connection retrieved from the connection pool
+func (c *Conn) Close() {
+	if c.WriteConn != nil {
+		c.WriteConn.Close()
 	}
-	_, err := writeConn.Do("EXEC")
+}
+
+// InitRedisPipeline starts a pipelined transaction
+func (c *Conn) InitRedisPipeline() error {
+	if c.WriteConn == nil || c.WritePool == nil {
+		return errors.PackError(errors.UndefinedErrorType, "InitRedisPipeline :  WriteConn OR WritePool is nil")
+	}
+	err := c.WriteConn.Send("MULTI")
 	if err != nil {
-		return errors.PackError(errors.UndefinedErrorType, err)
+		c.Close()
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(c.WritePool)), nil)
+		return errors.PackError(errors.UndefinedErrorType, "InitRedisPipeline : Redis pipeline initialization failed : "+err.Error())
 	}
 	return nil
 }
 
-// CreateTaskIndices function create index for the tasks which are received together using the redis pipeline
-func (p *ConnPool) CreateTaskIndices(data map[string][2]interface{}) *errors.Error {
-	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
-	if writePool == nil {
-		return errors.PackError(errors.UndefinedErrorType, "error while trying to Write Transaction data: WritePool is nil")
+// PipeUpdateRequest pipes the SET operation to the redis pipeline
+/* PipeUpdateRequest takes the following keys as input:
+1."key" is a string which acts as a unique ID to the data entry.
+2."val" is of type interface and is the user data sent to be stored in DB.
+*/
+func (c *Conn) PipeUpdateRequest(key string, val interface{}) *errors.Error {
+	if c.WriteConn == nil || c.WritePool == nil {
+		return errors.PackError(errors.UndefinedErrorType, "InitRedisPipeline :  WriteConn OR WritePool is nil")
 	}
-	writeConn := writePool.Get()
-	defer writeConn.Close()
-	writeConn.Send("MULTI")
-	for key, val := range data {
-		index := val[0].(string)
-		value := val[1].(int64)
-		_, createErr := writeConn.Do("ZADD", index, value, key)
-		if createErr != nil {
-			writeConn.Send("DISCARD")
-			atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
-			return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
-		}
+	jsondata, marshalErr := json.Marshal(val)
+	if marshalErr != nil {
+		c.WriteConn.Send("DISCARD")
+		c.Close()
+		return errors.PackError(errors.UndefinedErrorType, "PipeUpdateRequest : error while marshaling value : "+marshalErr.Error())
 	}
-	_, err := writeConn.Do("EXEC")
+	_, createErr := c.WriteConn.Do("SET", key, jsondata)
+	if createErr != nil {
+		c.WriteConn.Send("DISCARD")
+		c.Close()
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(c.WritePool)), nil)
+		return errors.PackError(errors.UndefinedErrorType, "PipeUpdateRequest : Redis SET operation failed : "+createErr.Error())
+	}
+	return nil
+}
+
+// PipeCreateIndex pipes the create index operation to the redis pipeline
+/* PipeUpdateRequest takes the following keys as input:
+1."index" index name
+2. "value" takes an integer value for sorting with range
+3. "key" is a string data that would be added to the sorted set
+*/
+func (c *Conn) PipeCreateIndex(index string, value int64, key string) *errors.Error {
+	if c.WriteConn == nil || c.WritePool == nil {
+		return errors.PackError(errors.UndefinedErrorType, "InitRedisPipeline :  WriteConn OR WritePool is nil")
+	}
+	_, createErr := c.WriteConn.Do("ZADD", index, value, key)
+	if createErr != nil {
+		c.WriteConn.Send("DISCARD")
+		c.Close()
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(c.WritePool)), nil)
+		return errors.PackError(errors.UndefinedErrorType, "PipeCreateIndex : create index operation failed : "+createErr.Error())
+	}
+	return nil
+}
+
+// CommitRedisPipeline commits a pipelined transaction
+func (c *Conn) CommitRedisPipeline() *errors.Error {
+	if c.WriteConn == nil || c.WritePool == nil {
+		return errors.PackError(errors.UndefinedErrorType, "InitRedisPipeline :  WriteConn OR WritePool is nil")
+	}
+	defer c.Close()
+	_, err := c.WriteConn.Do("EXEC")
 	if err != nil {
-		return errors.PackError(errors.UndefinedErrorType, err)
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(c.WritePool)), nil)
+		return errors.PackError(errors.UndefinedErrorType, "CommitRedisPipeline : committing  pipelined operations failed : "+err.Error())
 	}
 	return nil
 }

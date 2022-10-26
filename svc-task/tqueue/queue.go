@@ -1,11 +1,9 @@
 package tqueue
 
 import (
-	"fmt"
+	"sync"
 	"time"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 )
 
@@ -33,57 +31,29 @@ func EnqueueTask(task *tmodel.Task) {
 
 }
 
-// dequeueTasksInProgress return the task first in and which are in progress
-func dequeueTask() (task *tmodel.Task) {
-	if len(TaskQueue.queue) <= 0 {
-		return nil
-	}
-	return <-TaskQueue.queue
-}
-
-// UpdateTasksStatus will get the task data which needs to be updated in DB from the queue and will update the DB once in an interval.
-func UpdateTasksStatus(size int, d time.Duration) {
-	table := "task"
-	tasks := make(map[string]interface{}, size)
-	completedTasks := make(map[string][2]interface{}, size)
+// UpdateTasksWorker is a goroutine which always listens to the queue for the task update requests.
+// UpdateTasksWorker starts the process of updating DB using pipelined transaction and
+// it enqueue a task to the queue once in a millisecond which acts as a signal to the process that transaction should be committed.
+/* UpdateTasksWorker takes the following keys as input:
+1."d" is time duration in which the transaction should be committed. Currently it set as 1 millisecond.
+*/
+func UpdateTasksWorker(d time.Duration) {
+	startBatch := true
+	var wg sync.WaitGroup
 	ticker := time.NewTicker(d)
-
 	for {
 		select {
 		case <-ticker.C:
-			if len(tasks) > 0 {
-				err := tmodel.UpdateTaskProgress(tasks, common.InMemory)
-				if err != nil {
-					l.Log.Error(fmt.Sprintf("error : updating tasks failed - %s", err.Error()))
-					break
-				}
-				for k := range tasks {
-					delete(tasks, k)
-				}
-			}
-			if len(completedTasks) > 0 {
-				err := tmodel.CreateCompletedTasksIndices(completedTasks, common.InMemory)
-				if err != nil {
-					l.Log.Error(fmt.Sprintf("error : creating indices for completed tasks failed - %s", err.Error()))
-					break
-				}
-				for k := range tasks {
-					delete(tasks, k)
-				}
-			}
+			signal := new(tmodel.Task)
+			signal.Name = tmodel.SignalTaskName
+			TaskQueue.queue <- signal
+			wg.Wait()
+			startBatch = true
 		default:
-			task := dequeueTask()
-			if task != nil {
-				saveID := table + ":" + task.ID
-				tasks[saveID] = task
-				if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
-					key := task.UserName + "::" + task.EndTime.String() + "::" + task.ID
-					value := [2]interface{}{
-						tmodel.CompletedTaskIndex,
-						task.EndTime.UnixNano(),
-					}
-					completedTasks[key] = value
-				}
+			if startBatch {
+				wg.Add(1)
+				go tmodel.ProcessTaskQueue(&TaskQueue.queue, &wg)
+				startBatch = false
 			}
 		}
 	}

@@ -21,7 +21,7 @@ func flushDB(t *testing.T) {
 	}
 }
 
-func TestUpdateTasksStatus(t *testing.T) {
+func TestUpdateTasksWorker(t *testing.T) {
 	config.SetUpMockConfig(t)
 	defer flushDB(t)
 	task := tmodel.Task{
@@ -51,7 +51,7 @@ func TestUpdateTasksStatus(t *testing.T) {
 	NewTaskQueue(10)
 
 	type args struct {
-		size            int
+		delay           time.Duration
 		d               time.Duration
 		taskState       string
 		percentComplete int32
@@ -63,7 +63,7 @@ func TestUpdateTasksStatus(t *testing.T) {
 		{
 			name: "update task progress",
 			args: args{
-				size:            10,
+				delay:           10 * time.Millisecond,
 				d:               time.Millisecond,
 				taskState:       "Completed",
 				percentComplete: 100,
@@ -75,8 +75,8 @@ func TestUpdateTasksStatus(t *testing.T) {
 			task1.TaskState = tt.args.taskState
 			task1.PercentComplete = tt.args.percentComplete
 			EnqueueTask(task1)
-			go UpdateTasksStatus(tt.args.size, tt.args.d)
-			time.Sleep(time.Second)
+			go UpdateTasksWorker(tt.args.d)
+			time.Sleep(tt.args.delay)
 			task2, err := tmodel.GetTaskStatus(task.ID, common.InMemory)
 			if err != nil {
 				t.Fatalf("error while retrieving the Task details with Get: %v", err)
@@ -97,7 +97,7 @@ func TestUpdateTasksStatus(t *testing.T) {
 					return
 				}
 				key := task2.UserName + "::" + task2.EndTime.String() + "::" + task2.ID
-				if len(tasks) != 1 && tasks[0] != key {
+				if (len(tasks) == 1 && tasks[0] != key) || len(tasks) < 1 {
 					t.Fatalf("index for completed task is not created")
 				}
 			}

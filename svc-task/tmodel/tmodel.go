@@ -18,8 +18,10 @@ package tmodel
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
+	db "github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
@@ -30,6 +32,7 @@ const (
 	CompletedTaskIndex = "CompletedTaskIndex"
 	//CompletedTaskTable is a Table name for Completed Task
 	CompletedTaskTable = "CompletedTask"
+	SignalTaskName     = "SignalTask"
 )
 
 //CompletedTask is used to build index for redis
@@ -240,44 +243,95 @@ func ValidateTaskUserName(userName string) error {
 	return nil
 }
 
-// UpdateTaskProgress is to update the tasks data already present in db
-// Takes:
-//	db of type common.DbType(int32)
-//	tasks of type map[string]interface{}
-// Returns:
-//	err of type error
-//	On Success - return nil value
-//	On Failure - return non nill value
-func UpdateTaskProgress(tasks map[string]interface{}, db common.DbType) error {
-	connPool, err := common.GetDBConnection(db)
-	if err != nil {
-		l.Log.Error("UpdateTaskProgress : error while trying to get DB Connection : " + err.Error())
-		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+// ProcessTaskQueue dequeue the tasks details from queue and update DB using pipelined transaction
+// the pipeline is committed when signal task is dequeued from the queue
+// a signal task is enqueued by the caller once in a millisecond
+/* ProcessTaskQueue takes the following keys as input:
+1."queue" is a pointer to the channel which acts as the task queue
+2."wg" is of type wait group which acknowledges the caller that process is finished
+*/
+func ProcessTaskQueue(queue *chan *Task, wg *sync.WaitGroup) {
+	// validate if queue is empty. check the first item is signal task. Stops the process if it is.
+	task, yes := isEmptyQueue(queue)
+	if yes {
+		wg.Done()
+		return
 	}
-	if err = connPool.UpdateTasks(tasks); err != nil {
-		l.Log.Error("UpdateTaskProgress : error while trying to updating task status : " + err.Error())
-		return fmt.Errorf("error while trying to update task: %v", err.Error())
+
+	connPool, err := db.GetDBConnection(db.InMemory)
+	if err != nil {
+		l.Log.Error("ProcessTaskQueue : error while trying to get DB Connection : " + err.Error())
+		wg.Done()
+		return
+	}
+	conn, connErr := connPool.GetWriteConnection()
+	if connErr != nil {
+		l.Log.Error("ProcessTaskQueue : error while trying to get DB write Connection : " + err.Error())
+		wg.Done()
+		return
+	}
+
+	conn.InitRedisPipeline()
+	pipeErr := pipeRequests(conn, task)
+	if pipeErr != nil {
+		l.Log.Error(pipeErr)
+		wg.Done()
+		return
+	}
+
+	for task := range *queue {
+		if task.Name == SignalTaskName {
+			break
+		}
+
+		err := pipeRequests(conn, task)
+		if err != nil {
+			l.Log.Error(err)
+			wg.Done()
+			return
+		}
+	}
+
+	commitErr := conn.CommitRedisPipeline()
+	if err != nil {
+		l.Log.Error("ProcessTaskQueue : error while trying to send task data into pipe : " + commitErr.Error())
+		wg.Done()
+		return
+	}
+	wg.Done()
+}
+
+// pipeRequests pipes the update task operation and create index operation to pipeline
+/* pipeRequests takes the following keys as input:
+1."conn" is an instance of Conn struct from persistance manager library
+2."task" is task data dequeued
+*/
+func pipeRequests(conn *db.Conn, task *Task) error {
+	table := "task"
+	key := table + ":" + task.ID
+	err := conn.PipeUpdateRequest(key, task)
+	if err != nil {
+		return fmt.Errorf("ProcessTaskQueue : error while trying to send task data into update task pipe : " + err.Error())
+	}
+
+	if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
+		key := task.UserName + "::" + task.EndTime.String() + "::" + task.ID
+		err := conn.PipeCreateIndex(CompletedTaskIndex, task.EndTime.UnixNano(), key)
+		if err != nil {
+			return fmt.Errorf("ProcessTaskQueue : error while trying to send task data into create task index pipe : " + err.Error())
+		}
 	}
 	return nil
 }
 
-// BuildCompletedTaskIndices is to create index for the tasks which are completed
-// Takes:
-//	db of type common.DbType(int32)
-//	tasks of type map[string][2]interface{}
-// Returns:
-//	err of type error
-//	On Success - return nil value
-//	On Failure - return non nill value
-func CreateCompletedTasksIndices(tasks map[string][2]interface{}, db common.DbType) error {
-	connPool, err := common.GetDBConnection(db)
-	if err != nil {
-		l.Log.Error("BuildCompletedTaskIndices : error while trying to get DB Connection : " + err.Error())
-		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+// isEmptyQueue validates the queue is empty by checking the first value in queue is signal task
+/* isEmptyQueue takes the following keys as input:
+1."queue" is a pointer to the channel which acts as the task queue
+*/
+func isEmptyQueue(queue *chan *Task) (*Task, bool) {
+	task := <-*queue
+	if task.Name == SignalTaskName {
+		return nil, true
 	}
-	if err = connPool.CreateTaskIndices(tasks); err != nil {
-		l.Log.Error("BuildCompletedTaskIndices : error while trying to updating task status : " + err.Error())
-		return fmt.Errorf("error while trying to update task: %v", err.Error())
-	}
-	return nil
+	return task, false
 }

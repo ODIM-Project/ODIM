@@ -67,6 +67,26 @@ type Task struct {
 	EndTime         time.Time
 }
 
+// Tick struct is used to help the goroutines that process the task queue to communicate effectively
+// Tick contains the following attributes
+/*
+1. Ticker is of type Ticker in time package. it is used to acknowledge
+the function that process task queue that it is time to commit the current
+pipelined transaction to redis DB
+2. M is of type Mutex in sync package. It ensures only one goroutine access
+the Commit and Executing flags at the same time.
+3. Commit is a flag which is made true when ticker "ticks". when it is made true,
+"ProcessTaskQueue" commit the current pipeline to redis.
+4. Executing is a flag which is made true when the "ProcessTaskQueue" function is invoked
+and made false when it is finished.
+*/
+type Tick struct {
+	Ticker    *time.Ticker
+	M         sync.Mutex
+	Commit    bool
+	Executing bool
+}
+
 // Payload contain information detailing the HTTP and JSON payload
 //information for executing the task.
 //This object shall not be included in the response if the HidePayload property
@@ -248,57 +268,72 @@ func ValidateTaskUserName(userName string) error {
 // a signal task is enqueued by the caller once in a millisecond
 /* ProcessTaskQueue takes the following keys as input:
 1."queue" is a pointer to the channel which acts as the task queue
-2."wg" is of type wait group which acknowledges the caller that process is finished
+2."tick" is of type Tick struct.
 */
-func ProcessTaskQueue(queue *chan *Task, wg *sync.WaitGroup) {
-	// validate if queue is empty. check the first item is signal task. Stops the process if it is.
-	task, yes := isEmptyQueue(queue)
-	if yes {
-		wg.Done()
+func ProcessTaskQueue(queue *chan *Task, tick *Tick) {
+
+	defer func() {
+		tick.M.Lock()
+		tick.Commit = false
+		tick.Executing = false
+		tick.M.Unlock()
+	}()
+
+	if len(*queue) <= 0 {
 		return
 	}
+
+	tick.M.Lock()
+	tick.Executing = true
+	tick.M.Unlock()
 
 	connPool, err := db.GetDBConnection(db.InMemory)
 	if err != nil {
 		l.Log.Error("ProcessTaskQueue : error while trying to get DB Connection : " + err.Error())
-		wg.Done()
 		return
 	}
+
 	conn, connErr := connPool.GetWriteConnection()
 	if connErr != nil {
-		l.Log.Error("ProcessTaskQueue : error while trying to get DB write Connection : " + err.Error())
-		wg.Done()
+		l.Log.Error("ProcessTaskQueue : error while trying to get DB write Connection : " + connErr.Error())
 		return
 	}
 
-	conn.InitRedisPipeline()
-	pipeErr := pipeRequests(conn, task)
-	if pipeErr != nil {
-		l.Log.Error(pipeErr)
-		wg.Done()
+	initErr := conn.InitRedisPipeline()
+	if initErr != nil {
+		l.Log.Error("ProcessTaskQueue : error while trying to start redis pipelined transaction : " + initErr.Error())
 		return
 	}
 
-	for task := range *queue {
-		if task.Name == SignalTaskName {
-			break
+	for {
+		task := dequeueTask(queue)
+
+		if task != nil {
+			err := pipeRequests(conn, task)
+			if err != nil {
+				l.Log.Error("ProcessTaskQueue : redis pipelined transaction failed : " + err.Error())
+				return
+			}
 		}
 
-		err := pipeRequests(conn, task)
-		if err != nil {
-			l.Log.Error(err)
-			wg.Done()
-			return
+		if tick.Commit {
+			break
 		}
 	}
 
 	commitErr := conn.CommitRedisPipeline()
-	if err != nil {
-		l.Log.Error("ProcessTaskQueue : error while trying to send task data into pipe : " + commitErr.Error())
-		wg.Done()
+	if commitErr != nil {
+		l.Log.Error("ProcessTaskQueue : redis pipelined transaction failed : " + commitErr.Error())
 		return
 	}
-	wg.Done()
+}
+
+// dequeueTask dequeue a task from channel and returns. If no elements is present in the queue it returns nil.
+func dequeueTask(queue *chan *Task) *Task {
+	if len(*queue) <= 0 {
+		return nil
+	}
+	return <-*queue
 }
 
 // pipeRequests pipes the update task operation and create index operation to pipeline
@@ -322,16 +357,4 @@ func pipeRequests(conn *db.Conn, task *Task) error {
 		}
 	}
 	return nil
-}
-
-// isEmptyQueue validates the queue is empty by checking the first value in queue is signal task
-/* isEmptyQueue takes the following keys as input:
-1."queue" is a pointer to the channel which acts as the task queue
-*/
-func isEmptyQueue(queue *chan *Task) (*Task, bool) {
-	task := <-*queue
-	if task.Name == SignalTaskName {
-		return nil, true
-	}
-	return task, false
 }

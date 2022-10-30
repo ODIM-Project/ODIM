@@ -17,7 +17,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"reflect"
-	"sync"
 	"testing"
 	"time"
 
@@ -88,7 +87,6 @@ func TestPersistTask(t *testing.T) {
 
 func TestProcessTaskQueue(t *testing.T) {
 	queue := make(chan *Task, 10)
-	var wg sync.WaitGroup
 	common.SetUpMockConfig()
 	defer flushDB(t)
 	task := Task{
@@ -151,10 +149,16 @@ func TestProcessTaskQueue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			task1.TaskState = tt.args.taskState
 			queue <- task1
-			queue <- signal
-			wg.Add(1)
-			go ProcessTaskQueue(&queue, &wg)
-			wg.Wait()
+			tick := &Tick{
+				Executing: true,
+				Commit:    true,
+			}
+			go ProcessTaskQueue(&queue, tick)
+			for {
+				if !tick.Executing {
+					break
+				}
+			}
 			task1, err := GetTaskStatus(task.ID, common.InMemory)
 			if err != nil {
 				t.Fatalf("error while retrieving the Task details with Get: %v", err)
@@ -180,7 +184,6 @@ func TestProcessTaskQueue(t *testing.T) {
 
 func TestGetCompletedTasksIndex(t *testing.T) {
 	queue := make(chan *Task, 10)
-	var wg sync.WaitGroup
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
@@ -221,10 +224,16 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 	}
 
 	queue <- task1
-	queue <- signal
-	wg.Add(1)
-	go ProcessTaskQueue(&queue, &wg)
-	wg.Wait()
+	tick1 := &Tick{
+		Executing: true,
+		Commit:    true,
+	}
+	go ProcessTaskQueue(&queue, tick1)
+	for {
+		if !tick1.Executing {
+			break
+		}
+	}
 
 	_, err = GetCompletedTasksIndex("task1")
 	if err != nil {
@@ -256,10 +265,16 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 	}
 
 	queue <- task3
-	queue <- signal
-	wg.Add(1)
-	go ProcessTaskQueue(&queue, &wg)
-	wg.Wait()
+	tick2 := &Tick{
+		Executing: true,
+		Commit:    true,
+	}
+	go ProcessTaskQueue(&queue, tick2)
+	for {
+		if !tick2.Executing {
+			break
+		}
+	}
 
 	_, err = GetCompletedTasksIndex("task3")
 	if err != nil {
@@ -320,7 +335,6 @@ func TestDeleteTaskFromDB(t *testing.T) {
 
 func TestDeleteTaskIndex(t *testing.T) {
 	queue := make(chan *Task, 10)
-	var wg sync.WaitGroup
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
@@ -378,10 +392,16 @@ func TestDeleteTaskIndex(t *testing.T) {
 	}
 
 	queue <- task1
-	queue <- signal
-	wg.Add(1)
-	go ProcessTaskQueue(&queue, &wg)
-	wg.Wait()
+	tick := &Tick{
+		Executing: true,
+		Commit:    true,
+	}
+	go ProcessTaskQueue(&queue, tick)
+	for {
+		if !tick.Executing {
+			break
+		}
+	}
 
 	// Positive Test case
 	err = DeleteTaskIndex(task1.ID)

@@ -1,7 +1,6 @@
 package tqueue
 
 import (
-	"sync"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
@@ -38,23 +37,24 @@ func EnqueueTask(task *tmodel.Task) {
 1."d" is time duration in which the transaction should be committed. Currently it set as 1 millisecond.
 */
 func UpdateTasksWorker(d time.Duration) {
-	startBatch := true
-	var wg sync.WaitGroup
-	ticker := time.NewTicker(d)
+	tick := &tmodel.Tick{
+		Ticker: time.NewTicker(d),
+	}
+
+	go Ticker(tick)
+
 	for {
-		select {
-		case <-ticker.C:
-			signal := new(tmodel.Task)
-			signal.Name = tmodel.SignalTaskName
-			TaskQueue.queue <- signal
-			wg.Wait()
-			startBatch = true
-		default:
-			if startBatch {
-				wg.Add(1)
-				go tmodel.ProcessTaskQueue(&TaskQueue.queue, &wg)
-				startBatch = false
-			}
+		if !tick.Executing {
+			tmodel.ProcessTaskQueue(&TaskQueue.queue, tick)
 		}
+	}
+}
+
+// Ticker is executed as a goroutine. It makes the Commit flag true when the ticker ticks.
+func Ticker(tick *tmodel.Tick) {
+	for range tick.Ticker.C {
+		tick.M.Lock()
+		tick.Commit = true
+		tick.M.Unlock()
 	}
 }

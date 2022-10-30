@@ -63,7 +63,7 @@ func TestUpdateTasksWorker(t *testing.T) {
 		{
 			name: "update task progress",
 			args: args{
-				delay:           10 * time.Millisecond,
+				delay:           10 * time.Second,
 				d:               time.Millisecond,
 				taskState:       "Completed",
 				percentComplete: 100,

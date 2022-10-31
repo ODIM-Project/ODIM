@@ -7,8 +7,8 @@ odimra:
   redisSecondayReplicaCount: 2
   redisMasterSet: primaryset
   redisQuorum: 2
-  redisDownAfterMilliseconds: 1000
-  redisFailoverTimeout: 3000
+  redisDownAfterMilliseconds: 60000
+  redisFailoverTimeout: 60000
   redisParallelSyncs: 1
   redisInMemoryPassword:
   redisOnDiskPassword:

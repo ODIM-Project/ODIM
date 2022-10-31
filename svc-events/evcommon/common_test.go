@@ -300,7 +300,7 @@ func TestCallPluginStartUp(t *testing.T) {
 	ts.StartTLS()
 	defer ts.Close()
 	servers := []SavedSystems{
-		SavedSystems{
+		{
 			ManagerAddress: "100.100.100.100",
 			Password:       []byte("password"),
 			UserName:       "admin",

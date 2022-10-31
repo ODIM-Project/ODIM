@@ -223,7 +223,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			},
 		},
 		{
-			name: "Positive case: All is well, Need redicovery of the resource",
+			name: "Positive case: All is well, Need rediscovery of the resource",
 			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "7a2c6100-67da-5fd6-ab82-6870d29c7279",
@@ -232,7 +232,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			},
 		},
 		{
-			name: "Positive case: All is well, Need redicovery of storage",
+			name: "Positive case: All is well, Need rediscovery of storage",
 			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "7a2c6100-67da-5fd6-ab82-6870d29c7279",
@@ -241,7 +241,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			},
 		},
 		{
-			name: "Positive case: All is well, dont need redicovery of the resource",
+			name: "Positive case: All is well, don't need rediscovery of the resource",
 			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "24b243cf-f1e3-5318-92d9-2d6737d6b0b9",

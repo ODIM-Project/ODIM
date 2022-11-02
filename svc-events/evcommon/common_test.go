@@ -405,7 +405,7 @@ func TestStartUpInteraface_SubscribePluginEMB(t *testing.T) {
 	pc.SubscribePluginEMB()
 
 	GetAllPluginsFunc = func() ([]evmodel.Plugin, *errors.Error) {
-		return []evmodel.Plugin{evmodel.Plugin{IP: ""}}, &errors.Error{}
+		return []evmodel.Plugin{{IP: ""}}, nil
 	}
 	pc.SubscribePluginEMB()
 	getTypes("[alert statuschange]")

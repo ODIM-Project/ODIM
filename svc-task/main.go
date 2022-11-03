@@ -16,7 +16,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"sync"
 	"time"
 
@@ -80,31 +79,7 @@ func main() {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
 
-	queueSizeEnv := os.Getenv("QUEUE_SIZE")
-	queueSize, err := strconv.Atoi(queueSizeEnv)
-	if err != nil || queueSize <= 0 {
-		var errMessage string
-		if err != nil {
-			errMessage = err.Error()
-		} else {
-			errMessage = "QUEUE_SIZE should be greater than 0"
-		}
-		log.Fatal("fatal: invalid value given for the environment variable QUEUE_SIZE : " + errMessage)
-	}
-
-	dbCommitIntervalEnv := os.Getenv("DB_COMMIT_INTERVAL")
-	dbCommitInterval, err := strconv.Atoi(dbCommitIntervalEnv)
-	if err != nil || dbCommitInterval <= 0 {
-		var errMessage string
-		if err != nil {
-			errMessage = err.Error()
-		} else {
-			errMessage = "DB_COMMIT_INTERVAL should be greater than 0"
-		}
-		log.Fatal("fatal: invalid value given for the environment variable DB_COMMIT_INTERVAL: " + errMessage)
-	}
-
-	tqueue.NewTaskQueue(queueSize)
+	tqueue.NewTaskQueue(config.Data.TaskQueueConf.QueueSize)
 
 	task := new(thandle.TasksRPC)
 	task.AuthenticationRPC = auth.Authentication
@@ -129,7 +104,7 @@ func main() {
 	taskproto.RegisterGetTaskServiceServer(services.ODIMService.Server(), task)
 
 	tick := &tmodel.Tick{
-		Ticker: time.NewTicker(time.Duration(dbCommitInterval) * time.Microsecond),
+		Ticker: time.NewTicker(time.Duration(config.Data.TaskQueueConf.DBCommitInterval) * time.Microsecond),
 	}
 	go tqueue.UpdateTasksWorker(tick)
 

@@ -23,6 +23,7 @@ import (
 
 	db "github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
@@ -301,10 +302,11 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 		table        string = "task"
 		updatedTasks bool   = false
 		createdIndex bool   = false
+		mapSize      int    = config.Data.TaskQueueConf.QueueSize
 	)
 
-	tasks := make(map[string]interface{})
-	completedTasks := make(map[string][2]interface{})
+	tasks := make(map[string]interface{}, mapSize)
+	completedTasks := make(map[string][2]interface{}, mapSize)
 
 	if len(*queue) <= 0 {
 		return
@@ -381,6 +383,13 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 				l.Log.Errorf("Failed to create index for the task : %s", task)
 			}
 		}
+	}
+
+	for k := range tasks {
+		delete(tasks, k)
+	}
+	for k := range completedTasks {
+		delete(completedTasks, k)
 	}
 }
 

@@ -4,103 +4,87 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
-	"github.com/satori/uuid"
 )
 
-func flushDB(t *testing.T) {
-	err := common.TruncateDB(common.OnDisk)
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-	err = common.TruncateDB(common.InMemory)
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-}
-
-func TestUpdateTasksWorker(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer flushDB(t)
-	task := tmodel.Task{
-		UserName:        "admin",
-		ParentID:        "",
-		ChildTaskIDs:    nil,
-		ID:              "task" + uuid.NewV4().String(),
-		TaskState:       "New",
-		TaskStatus:      "OK",
-		PercentComplete: 0,
-		StartTime:       time.Now(),
-		EndTime:         time.Time{},
-	}
-	task.Name = "Task " + task.ID
-
-	err := tmodel.PersistTask(&task, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while trying to insert the task details: %v", err)
-		return
-	}
-	task1, err := tmodel.GetTaskStatus(task.ID, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while retreving the Task details with Get: %v", err)
-		return
-	}
-	// creating channels
-	NewTaskQueue(10)
-
+func TestTicker(t *testing.T) {
 	type args struct {
-		delay           time.Duration
-		d               time.Duration
-		taskState       string
-		percentComplete int32
+		tick  *tmodel.Tick
+		delay time.Duration
 	}
 	tests := []struct {
 		name string
 		args args
 	}{
 		{
-			name: "update task progress",
+			name: "ticker is ticking successfully",
 			args: args{
-				delay:           10 * time.Second,
-				d:               time.Millisecond,
-				taskState:       "Completed",
-				percentComplete: 100,
+				tick: &tmodel.Tick{
+					Ticker: time.NewTicker(time.Millisecond),
+				},
+				delay: 2 * time.Millisecond,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			task1.TaskState = tt.args.taskState
-			task1.PercentComplete = tt.args.percentComplete
-			EnqueueTask(task1)
-			go UpdateTasksWorker(tt.args.d)
+			go Ticker(tt.args.tick)
 			time.Sleep(tt.args.delay)
-			task2, err := tmodel.GetTaskStatus(task.ID, common.InMemory)
-			if err != nil {
-				t.Fatalf("error while retrieving the Task details with Get: %v", err)
-				return
+			if tt.args.tick.Commit != true {
+				t.Errorf("Ticker() failed to update commit")
 			}
-			if task2.TaskState != tt.args.taskState {
-				t.Errorf("UpdateTasksStatus() TaskState:  got = %v, want = %v", task2.TaskState, tt.args.taskState)
-				return
-			}
-			if task2.PercentComplete != tt.args.percentComplete {
-				t.Errorf("UpdateTasksStatus() PercentComplete:  got = %v, want = %v", task2.PercentComplete, tt.args.percentComplete)
-				return
-			}
-			if task2.TaskState == "Completed" {
-				tasks, err := tmodel.GetCompletedTasksIndex(task2.UserName)
-				if err != nil {
-					t.Fatalf("error while retrieving the completed Task index with Get: %v", err)
-					return
+		})
+	}
+}
+
+func TestUpdateTasksWorker(t *testing.T) {
+	config.SetUpMockConfig(t)
+	type args struct {
+		tick  *tmodel.Tick
+		delay time.Duration
+		try   int
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "UpdateTasksWorker update commit and executing flags properly",
+			args: args{
+				tick: &tmodel.Tick{
+					Ticker: time.NewTicker(time.Millisecond),
+				},
+				delay: time.Millisecond,
+				try:   1000,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var (
+				commit    bool
+				executing bool
+			)
+			go UpdateTasksWorker(tt.args.tick)
+			time.Sleep(tt.args.delay)
+			for i := 0; i < tt.args.try; i++ {
+				if tt.args.tick.Commit == true {
+					commit = true
 				}
-				key := task2.UserName + "::" + task2.EndTime.String() + "::" + task2.ID
-				if (len(tasks) == 1 && tasks[0] != key) || len(tasks) < 1 {
-					t.Fatalf("index for completed task is not created")
+				if tt.args.tick.Executing == true {
+					executing = true
+				}
+
+				if commit && executing {
+					break
 				}
 			}
+
+			if commit && executing {
+				t.Errorf("UpdateTasksWorker() failed to update commit and executing flags")
+			}
+
 		})
 	}
 }

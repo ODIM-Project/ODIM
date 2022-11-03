@@ -128,7 +128,10 @@ func main() {
 	}
 	taskproto.RegisterGetTaskServiceServer(services.ODIMService.Server(), task)
 
-	go tqueue.UpdateTasksWorker(time.Duration(dbCommitInterval) * time.Microsecond)
+	tick := &tmodel.Tick{
+		Ticker: time.NewTicker(time.Duration(dbCommitInterval) * time.Microsecond),
+	}
+	go tqueue.UpdateTasksWorker(tick)
 
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {

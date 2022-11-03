@@ -1,8 +1,6 @@
 package tqueue
 
 import (
-	"time"
-
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 )
 
@@ -34,13 +32,9 @@ func EnqueueTask(task *tmodel.Task) {
 // UpdateTasksWorker starts the process of updating DB using pipelined transaction and
 // it enqueue a task to the queue once in a millisecond which acts as a signal to the process that transaction should be committed.
 /* UpdateTasksWorker takes the following keys as input:
-1."d" is time duration in which the transaction should be committed. Currently it set as 1 millisecond.
+1."tick" is of type Tick struct in tmodel package
 */
-func UpdateTasksWorker(d time.Duration) {
-	tick := &tmodel.Tick{
-		Ticker: time.NewTicker(d),
-	}
-
+func UpdateTasksWorker(tick *tmodel.Tick) {
 	go Ticker(tick)
 
 	conn := tmodel.GetWriteConnection()

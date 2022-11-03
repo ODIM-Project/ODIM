@@ -126,9 +126,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 		l.Log.Info("no origin resources found in device subscriptions")
 		return false
 	}
-
-	requestData, deviceUUID = formatEvent(requestData, deviceSubscription.OriginResources[0], host)
-
+	message, deviceUUID = formatEvent(rawMessage, deviceSubscription.OriginResources[0], host)
 	searchKey = evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
 	subscriptions, err := e.GetEvtSubscriptions(searchKey)
 	if err != nil {
@@ -147,12 +145,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 		subscription, _ := e.GetEvtSubscriptions(searchKeyAgg)
 		aggregateSubscriptionList = append(aggregateSubscriptionList, subscription...)
 	}
-	if err = json.Unmarshal([]byte(requestData), &message); err != nil {
-		l.Log.Error("failed to unmarshal the incoming event: ", requestData, " with the error: ", err.Error())
-		return false
-	}
 	eventUniqueID := uuid.NewV4().String()
-
 	eventMap := make(map[string][]common.Event)
 	for index, inEvent := range message.Events {
 		if inEvent.OriginOfCondition == nil || len(inEvent.OriginOfCondition.Oid) < 1 {
@@ -274,17 +267,23 @@ func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.E
 
 // formatEvent will format the event string according to the odimra
 // add uuid:systemid/chassisid inplace of systemid/chassisid
-func formatEvent(event, originResource, hostIP string) (string, string) {
+func formatEvent(event common.MessageData, originResource, hostIP string) (common.MessageData, string) {
 	deviceUUID, _ := getUUID(originResource)
 	if !strings.Contains(hostIP, "Collection") {
-		str := "/redfish/v1/Systems/" + deviceUUID + "."
-		event = strings.Replace(event, "/redfish/v1/Systems/", str, -1)
-		str = "/redfish/v1/systems/" + deviceUUID + "."
-		event = strings.Replace(event, "/redfish/v1/systems/", str, -1)
-		str = "/redfish/v1/Chassis/" + deviceUUID + "."
-		event = strings.Replace(event, "/redfish/v1/Chassis/", str, -1)
-		str = "/redfish/v1/Managers/" + deviceUUID + "."
-		event = strings.Replace(event, "/redfish/v1/Managers/", str, -1)
+		for _, event := range event.Events {
+			if event.OriginOfCondition == nil || len(event.OriginOfCondition.Oid) < 1 {
+				continue
+			}
+			str := "/redfish/v1/Systems/" + deviceUUID + "."
+			event.OriginOfCondition.Oid = strings.Replace(event.OriginOfCondition.Oid, "/redfish/v1/Systems/", str, -1)
+			str = "/redfish/v1/systems/" + deviceUUID + "."
+			event.OriginOfCondition.Oid = strings.Replace(event.OriginOfCondition.Oid, "/redfish/v1/systems/", str, -1)
+			str = "/redfish/v1/Chassis/" + deviceUUID + "."
+			event.OriginOfCondition.Oid = strings.Replace(event.OriginOfCondition.Oid, "/redfish/v1/Chassis/", str, -1)
+			str = "/redfish/v1/Managers/" + deviceUUID + "."
+			event.OriginOfCondition.Oid = strings.Replace(event.OriginOfCondition.Oid, "/redfish/v1/Managers/", str, -1)
+		}
+
 	}
 	return event, deviceUUID
 }

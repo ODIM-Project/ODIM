@@ -53,7 +53,7 @@ type TasksRPC struct {
 	GetCompletedTasksIndexModel      func(userName string) ([]string, error)
 	DeleteTaskFromDBModel            func(t *tmodel.Task) error
 	DeleteTaskIndex                  func(taskID string) error
-	UpdateTaskStatusModel            func(t *tmodel.Task)
+	UpdateTaskQueue                  func(t *tmodel.Task)
 	PersistTaskModel                 func(t *tmodel.Task, db common.DbType) error
 	ValidateTaskUserNameModel        func(userName string) error
 	PublishToMessageBus              func(taskURI string, taskEvenMessageID string, eventType string, taskMessage string)
@@ -365,14 +365,14 @@ func (ts *TasksRPC) taskCancelCallBack(taskID string) error {
 			ts.DeleteTaskFromDBModel(subTask)
 		} else if subTask.TaskState != common.Cancelling {
 			subTask.TaskState = common.Cancelling
-			ts.UpdateTaskStatusModel(subTask)
+			ts.UpdateTaskQueue(subTask)
 			go ts.asyncTaskDelete(subTaskID)
 		}
 	}
 	// Delete the parent task
 	if task.TaskState != common.Cancelling {
 		task.TaskState = common.Cancelling
-		ts.UpdateTaskStatusModel(task)
+		ts.UpdateTaskQueue(task)
 		go ts.asyncTaskDelete(taskID)
 	}
 
@@ -877,11 +877,11 @@ func (ts *TasksRPC) CreateChildTaskUtil(userName string, parentTaskID string) (s
 	childTask.ParentID = parentTaskID
 	childTask.URI = "/redfish/v1/TaskService/Tasks/" + parentTaskID + "/" + childTaskID
 	// Store the updated task in to In Memory DB
-	ts.UpdateTaskStatusModel(childTask)
+	ts.UpdateTaskQueue(childTask)
 	// Add the child/sub task id in to ChildTaskIDs(array) of the parent task
 	parentTask.ChildTaskIDs = append(parentTask.ChildTaskIDs, childTaskID)
 	// Update the parent task in to In Memory DB
-	ts.UpdateTaskStatusModel(parentTask)
+	ts.UpdateTaskQueue(parentTask)
 	return "/redfish/v1/TaskService/Tasks/" + childTaskID, err
 }
 
@@ -1104,7 +1104,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		return fmt.Errorf("error invalid input argument for taskState")
 	}
 	// Update the task data in the InMemory DB
-	ts.UpdateTaskStatusModel(task)
+	ts.UpdateTaskQueue(task)
 	// Notify the user about task state change by sending statuschange event
 	//	notifyTaskStateChange(task.URI, taskEvenMessageID)
 	eventType := "StatusChange"

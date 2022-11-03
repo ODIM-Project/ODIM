@@ -34,7 +34,6 @@ const (
 	CompletedTaskIndex = "CompletedTaskIndex"
 	//CompletedTaskTable is a Table name for Completed Task
 	CompletedTaskTable = "CompletedTask"
-	SignalTaskName     = "SignalTask"
 )
 
 //CompletedTask is used to build index for redis
@@ -111,6 +110,7 @@ type Message struct {
 	Severity          string   `json:"Severity"`
 }
 
+// GetWriteConnection returns write connection retrieved from the connection pool.
 func GetWriteConnection() *db.Conn {
 	connPool, err := db.GetDBConnection(db.InMemory)
 	if err != nil {

@@ -284,6 +284,7 @@ func getPool(host, port, password string) (*redis.Pool, error) {
 	return p, nil
 }
 
+// GetWritePool return instance of redis write pool
 func (p *ConnPool) GetWritePool() (*redis.Pool, *errors.Error) {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {

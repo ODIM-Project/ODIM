@@ -32,7 +32,7 @@ func MockDBConnection(t *testing.T) (*ConnPool, *errors.Error) {
 	return cfg.Connection()
 }
 
-// MockDBConnection provides a mock db write connection for unit testing
+// MockDBWriteConnection provides a mock db write connection for unit testing
 func MockDBWriteConnection(t *testing.T) (*Conn, *errors.Error) {
 	connPool, err := MockDBConnection(t)
 	if err != nil {

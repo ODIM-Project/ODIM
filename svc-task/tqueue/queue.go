@@ -9,6 +9,7 @@ type taskQueue struct {
 	queue chan *tmodel.Task
 }
 
+// TaskQueue is an instance of taskQueue struct which act as the queue for update task requests
 var TaskQueue *taskQueue
 
 // NewTaskQueue creates an instance of taskQueue if it is not already created.
@@ -21,8 +22,7 @@ func NewTaskQueue(size int) {
 	}
 }
 
-// EnqueueTasks enqueue the update task requests in the channel which act as a queue.
-// if the task status is completed or exception it is also added to the completed tasks queue
+// EnqueueTask enqueue the update task requests in the channel which act as a queue.
 func EnqueueTask(task *tmodel.Task) {
 	TaskQueue.queue <- task
 

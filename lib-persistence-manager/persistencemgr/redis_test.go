@@ -1505,7 +1505,6 @@ func TestConn_UpdateTransaction(t *testing.T) {
 		{
 			name: "failure while db update operation",
 			c: &Conn{
-				WritePool: c.WritePool,
 				WriteConn: MockConn{
 					MockDo: func(s string, i ...interface{}) (interface{}, error) {
 						return nil, fmt.Errorf("DB ERROR")
@@ -1549,7 +1548,6 @@ func TestConn_CreateIndexTransaction(t *testing.T) {
 		{
 			name: "failure while create index operation",
 			c: &Conn{
-				WritePool: c.WritePool,
 				WriteConn: MockConn{
 					MockDo: func(s string, i ...interface{}) (interface{}, error) {
 						return nil, fmt.Errorf("DB ERROR")

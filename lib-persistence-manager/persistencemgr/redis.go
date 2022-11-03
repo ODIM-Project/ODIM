@@ -54,9 +54,7 @@ const (
 )
 
 // Conn contains the write connection instance retrieved from the connection pool
-// it also contains address of write connection pool which is used to close the pool if any db issues happened
 type Conn struct {
-	WritePool **redis.Pool
 	WriteConn redis.Conn
 }
 
@@ -302,7 +300,6 @@ func (p *ConnPool) GetWriteConnection() (*Conn, *errors.Error) {
 	}
 	writeConn := writePool.Get()
 	return &Conn{
-		WritePool: &p.WritePool,
 		WriteConn: writeConn,
 	}, nil
 }
@@ -695,9 +692,6 @@ func (p *ConnPool) SaveBMCInventory(data map[string]interface{}) *errors.Error {
 func (c *Conn) Close() {
 	if c.WriteConn != nil {
 		c.WriteConn.Close()
-	}
-	if c.WritePool != nil {
-		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(c.WritePool)), nil)
 	}
 }
 

@@ -23,6 +23,7 @@ import (
 
 	db "github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
@@ -107,6 +108,21 @@ type Message struct {
 	RelatedProperties []string `json:"RelatedProperties"`
 	Resolution        string   `json:"Resolution"`
 	Severity          string   `json:"Severity"`
+}
+
+func GetWriteConnection() *db.Conn {
+	connPool, err := db.GetDBConnection(db.InMemory)
+	if err != nil {
+		l.Log.Error(err.Error())
+		return nil
+	}
+
+	conn, connErr := connPool.GetWriteConnection()
+	if connErr != nil {
+		l.Log.Error("ProcessTaskQueue : error while trying to get DB write Connection : " + connErr.Error())
+		return nil
+	}
+	return conn
 }
 
 // GetCompletedTasksIndex Searches Complete Tasks in the db using secondary index with provided search Key
@@ -268,9 +284,9 @@ func ValidateTaskUserName(userName string) error {
 // a signal task is enqueued by the caller once in a millisecond
 /* ProcessTaskQueue takes the following keys as input:
 1."queue" is a pointer to the channel which acts as the task queue
-2."tick" is of type Tick struct.
+2."conn" is an instance of Conn struct in persistence manager library
 */
-func ProcessTaskQueue(queue *chan *Task, tick *Tick) {
+func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 
 	defer func() {
 		tick.M.Lock()
@@ -278,6 +294,17 @@ func ProcessTaskQueue(queue *chan *Task, tick *Tick) {
 		tick.Executing = false
 		tick.M.Unlock()
 	}()
+
+	var (
+		i            int    = 0
+		maxRetry     int    = 3
+		table        string = "task"
+		updatedTasks bool   = false
+		createdIndex bool   = false
+	)
+
+	tasks := make(map[string]interface{})
+	completedTasks := make(map[string][2]interface{})
 
 	if len(*queue) <= 0 {
 		return
@@ -287,32 +314,24 @@ func ProcessTaskQueue(queue *chan *Task, tick *Tick) {
 	tick.Executing = true
 	tick.M.Unlock()
 
-	connPool, err := db.GetDBConnection(db.InMemory)
-	if err != nil {
-		l.Log.Error("ProcessTaskQueue : error while trying to get DB Connection : " + err.Error())
-		return
-	}
-
-	conn, connErr := connPool.GetWriteConnection()
-	if connErr != nil {
-		l.Log.Error("ProcessTaskQueue : error while trying to get DB write Connection : " + connErr.Error())
-		return
-	}
-
-	initErr := conn.InitRedisPipeline()
-	if initErr != nil {
-		l.Log.Error("ProcessTaskQueue : error while trying to start redis pipelined transaction : " + initErr.Error())
-		return
+	if err := conn.Ping(); err != nil {
+		conn.Close()
+		conn = GetWriteConnection()
 	}
 
 	for {
 		task := dequeueTask(queue)
 
 		if task != nil {
-			err := pipeRequests(conn, task)
-			if err != nil {
-				l.Log.Error("ProcessTaskQueue : redis pipelined transaction failed : " + err.Error())
-				return
+			saveID := table + ":" + task.ID
+			tasks[saveID] = task
+			if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
+				key := task.UserName + "::" + task.EndTime.String() + "::" + task.ID
+				value := [2]interface{}{
+					CompletedTaskIndex,
+					task.EndTime.UnixNano(),
+				}
+				completedTasks[key] = value
 			}
 		}
 
@@ -321,10 +340,47 @@ func ProcessTaskQueue(queue *chan *Task, tick *Tick) {
 		}
 	}
 
-	commitErr := conn.CommitRedisPipeline()
-	if commitErr != nil {
-		l.Log.Error("ProcessTaskQueue : redis pipelined transaction failed : " + commitErr.Error())
-		return
+	if len(tasks) > 0 {
+		for i < maxRetry {
+			if err := conn.UpdateTransaction(tasks); err != nil {
+				if err.ErrNo() == errors.DBUpdateFailed {
+					conn.Close()
+					conn = GetWriteConnection()
+				}
+				i++
+			} else {
+				updatedTasks = true
+				break
+			}
+		}
+
+		if !updatedTasks {
+			for task := range tasks {
+				l.Log.Errorf("Failed to update the task : %s", task)
+			}
+		}
+	}
+
+	if len(completedTasks) > 0 {
+		i = 0
+		for i < maxRetry {
+			if err := conn.CreateIndexTransaction(completedTasks); err != nil {
+				if err.ErrNo() == errors.DBUpdateFailed {
+					conn.Close()
+					conn = GetWriteConnection()
+				}
+				i++
+			} else {
+				createdIndex = true
+				break
+			}
+		}
+
+		if !createdIndex {
+			for task := range completedTasks {
+				l.Log.Errorf("Failed to create index for the task : %s", task)
+			}
+		}
 	}
 }
 
@@ -334,27 +390,4 @@ func dequeueTask(queue *chan *Task) *Task {
 		return nil
 	}
 	return <-*queue
-}
-
-// pipeRequests pipes the update task operation and create index operation to pipeline
-/* pipeRequests takes the following keys as input:
-1."conn" is an instance of Conn struct from persistance manager library
-2."task" is task data dequeued
-*/
-func pipeRequests(conn *db.Conn, task *Task) error {
-	table := "task"
-	key := table + ":" + task.ID
-	err := conn.PipeUpdateRequest(key, task)
-	if err != nil {
-		return fmt.Errorf("ProcessTaskQueue : error while trying to send task data into update task pipe : " + err.Error())
-	}
-
-	if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
-		key := task.UserName + "::" + task.EndTime.String() + "::" + task.ID
-		err := conn.PipeCreateIndex(CompletedTaskIndex, task.EndTime.UnixNano(), key)
-		if err != nil {
-			return fmt.Errorf("ProcessTaskQueue : error while trying to send task data into create task index pipe : " + err.Error())
-		}
-	}
-	return nil
 }

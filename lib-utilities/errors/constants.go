@@ -68,6 +68,8 @@ const (
 	JSONUnmarshalFailed
 	// DecryptionFailed indicates decryption of data failed
 	DecryptionFailed
+	// DBUpdateFailed indicates failure in updating DB
+	DBUpdateFailed
 )
 
 // constants defined for matching partial strings in error returned

@@ -153,7 +153,8 @@ func TestProcessTaskQueue(t *testing.T) {
 				Executing: true,
 				Commit:    true,
 			}
-			go ProcessTaskQueue(&queue, tick)
+			conn := GetWriteConnection()
+			go tick.ProcessTaskQueue(&queue, conn)
 			for {
 				if !tick.Executing {
 					break
@@ -228,7 +229,8 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		Executing: true,
 		Commit:    true,
 	}
-	go ProcessTaskQueue(&queue, tick1)
+	conn := GetWriteConnection()
+	go tick1.ProcessTaskQueue(&queue, conn)
 	for {
 		if !tick1.Executing {
 			break
@@ -269,7 +271,8 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		Executing: true,
 		Commit:    true,
 	}
-	go ProcessTaskQueue(&queue, tick2)
+	conn = GetWriteConnection()
+	go tick2.ProcessTaskQueue(&queue, conn)
 	for {
 		if !tick2.Executing {
 			break
@@ -396,7 +399,8 @@ func TestDeleteTaskIndex(t *testing.T) {
 		Executing: true,
 		Commit:    true,
 	}
-	go ProcessTaskQueue(&queue, tick)
+	conn := GetWriteConnection()
+	go tick.ProcessTaskQueue(&queue, conn)
 	for {
 		if !tick.Executing {
 			break

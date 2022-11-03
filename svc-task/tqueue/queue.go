@@ -43,9 +43,10 @@ func UpdateTasksWorker(d time.Duration) {
 
 	go Ticker(tick)
 
+	conn := tmodel.GetWriteConnection()
 	for {
 		if !tick.Executing {
-			tmodel.ProcessTaskQueue(&TaskQueue.queue, tick)
+			tick.ProcessTaskQueue(&TaskQueue.queue, conn)
 		}
 	}
 }

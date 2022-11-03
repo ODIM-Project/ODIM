@@ -1483,54 +1483,13 @@ func TestConnPool_GetWriteConnection(t *testing.T) {
 	}
 }
 
-func TestConn_InitRedisPipeline(t *testing.T) {
-	c, err := MockDBWriteConnection(t)
-	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
-	}
-	tests := []struct {
-		name    string
-		c       *Conn
-		wantErr bool
-	}{
-		{
-			name:    "Initialize redis pipeline",
-			c:       c,
-			wantErr: false,
-		},
-		{
-			name: "fail while initializing redis pipeline if write connection is nil",
-			c: &Conn{
-				WritePool: c.WritePool,
-				WriteConn: MockConn{
-					MockSend: func(s string, i ...interface{}) error {
-						return fmt.Errorf("DB ERROR")
-					},
-					MockClose: func() error {
-						return nil
-					},
-				},
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.c.InitRedisPipeline(); (err != nil) != tt.wantErr {
-				t.Errorf("Conn.InitRedisPipeline() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestConn_PipeUpdateRequest(t *testing.T) {
+func TestConn_UpdateTransaction(t *testing.T) {
 	c, err := MockDBWriteConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
 	type args struct {
-		key string
-		val interface{}
+		data map[string]interface{}
 	}
 	tests := []struct {
 		name    string
@@ -1539,16 +1498,12 @@ func TestConn_PipeUpdateRequest(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "pipe an update request",
-			c:    c,
-			args: args{
-				key: "key",
-				val: "value",
-			},
+			name:    "db update operation using pipelined transaction",
+			c:       c,
 			wantErr: false,
 		},
 		{
-			name: "fail while piping an update request",
+			name: "failure while db update operation",
 			c: &Conn{
 				WritePool: c.WritePool,
 				WriteConn: MockConn{
@@ -1558,37 +1513,27 @@ func TestConn_PipeUpdateRequest(t *testing.T) {
 					MockSend: func(s string, i ...interface{}) error {
 						return nil
 					},
-					MockClose: func() error {
-						return nil
-					},
 				},
-			},
-			args: args{
-				key: "key",
-				val: "value",
 			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.c.PipeUpdateRequest(tt.args.key, tt.args.val); (err != nil) != tt.wantErr {
-				t.Errorf("Conn.PipeUpdateRequest() = %v, want %v", err, tt.wantErr)
+			if err := tt.c.UpdateTransaction(tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateTransaction() = %v, want %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestConn_PipeCreateIndex(t *testing.T) {
-	CompletedTaskIndex := "CompletedTaskIndex"
+func TestConn_CreateIndexTransaction(t *testing.T) {
 	c, err := MockDBWriteConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
 	type args struct {
-		index string
-		value int64
-		key   string
+		data map[string][2]interface{}
 	}
 	tests := []struct {
 		name    string
@@ -1597,65 +1542,12 @@ func TestConn_PipeCreateIndex(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "pipe an create index request",
-			c:    c,
-			args: args{
-				index: CompletedTaskIndex,
-				value: 123,
-				key:   "key",
-			},
-			wantErr: false,
-		},
-		{
-			name: "fail while piping an create index request",
-			c: &Conn{
-				WritePool: c.WritePool,
-				WriteConn: MockConn{
-					MockDo: func(s string, i ...interface{}) (interface{}, error) {
-						return nil, fmt.Errorf("DB ERROR")
-					},
-					MockSend: func(s string, i ...interface{}) error {
-						return nil
-					},
-					MockClose: func() error {
-						return nil
-					},
-				},
-			},
-			args: args{
-				index: CompletedTaskIndex,
-				value: 123,
-				key:   "key",
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.c.PipeCreateIndex(tt.args.index, tt.args.value, tt.args.key); (err != nil) != tt.wantErr {
-				t.Errorf("Conn.PipeUpdateRequest() = %v, want %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestConn_CommitRedisPipeline(t *testing.T) {
-	c, err := MockDBWriteConnection(t)
-	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
-	}
-	tests := []struct {
-		name    string
-		c       *Conn
-		wantErr bool
-	}{
-		{
-			name:    "commit a redis pipeline",
+			name:    "create index operation using pipelined transaction",
 			c:       c,
 			wantErr: false,
 		},
 		{
-			name: "fail while committing a redis pipeline",
+			name: "failure while create index operation",
 			c: &Conn{
 				WritePool: c.WritePool,
 				WriteConn: MockConn{
@@ -1665,9 +1557,6 @@ func TestConn_CommitRedisPipeline(t *testing.T) {
 					MockSend: func(s string, i ...interface{}) error {
 						return nil
 					},
-					MockClose: func() error {
-						return nil
-					},
 				},
 			},
 			wantErr: true,
@@ -1675,9 +1564,8 @@ func TestConn_CommitRedisPipeline(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.c.WriteConn.Send("MULTI")
-			if err := tt.c.CommitRedisPipeline(); (err != nil) != tt.wantErr {
-				t.Errorf("Conn.PipeUpdateRequest() = %v, want %v", err, tt.wantErr)
+			if err := tt.c.CreateIndexTransaction(tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("CreateIndexTransaction() = %v, want %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -704,6 +704,11 @@ func (c *Conn) Ping() *errors.Error {
 	return nil
 }
 
+// UpdateTransaction will update the database using pipelined transaction
+/* UpdateTransaction takes the following keys as input:
+1."data" is of type map[string]interface{} and is the user data sent to be updated in DB.
+key of map should be the key in database.
+*/
 func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 	c.WriteConn.Send("MULTI")
 	for key, val := range data {
@@ -725,6 +730,12 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 	return nil
 }
 
+// CreateIndexTransaction will create the indices using pipelined transaction
+/* CreateIndexTransaction takes the following keys as input:
+1."data" is of type map[string][2]interface{} and is the user data sent to be updated in DB.
+key of map should be the key in database. the first value of interface array should be the index group
+and second value is score of that key
+*/
 func (c *Conn) CreateIndexTransaction(data map[string][2]interface{}) *errors.Error {
 	c.WriteConn.Send("MULTI")
 	for key, val := range data {

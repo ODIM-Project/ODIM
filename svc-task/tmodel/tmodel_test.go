@@ -107,9 +107,6 @@ func TestProcessTaskQueue(t *testing.T) {
 		return
 	}
 
-	signal := new(Task)
-	signal.Name = SignalTaskName
-
 	task1, err := GetTaskStatus(task.ID, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retrieving the Task details with Get: %v", err)
@@ -206,9 +203,6 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		StartTime:    time.Now(),
 		EndTime:      time.Time{},
 	}
-
-	signal := new(Task)
-	signal.Name = SignalTaskName
 
 	task.Name = "Task " + task.ID
 	// Persist in the in-memory DB
@@ -359,9 +353,6 @@ func TestDeleteTaskIndex(t *testing.T) {
 		StartTime:    time.Now(),
 		EndTime:      time.Time{},
 	}
-
-	signal := new(Task)
-	signal.Name = SignalTaskName
 
 	task.Name = "Task " + task.ID
 	// Persist in the in-memory DB

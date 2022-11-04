@@ -283,7 +283,7 @@ func TestExternalInterfaces_postEvent(t *testing.T) {
 	isStringPresentInSlice([]string{"data1"}, "", "data2")
 	isStringPresentInSlice([]string{"data1"}, "data1", "data2")
 	isStringPresentInSlice([]string{"data1"}, "data3", "data2")
-	pc.addFabric("dummy", "dummy")
+	pc.addFabric(common.MessageData{}, "dummy")
 
 }
 

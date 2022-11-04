@@ -87,7 +87,7 @@ func TestPersistTask(t *testing.T) {
 
 func TestProcessTaskQueue(t *testing.T) {
 	queue := make(chan *Task, 10)
-	common.SetUpMockConfig()
+	config.SetUpMockConfig(t)
 	defer flushDB(t)
 	task := Task{
 		UserName:     "admin",

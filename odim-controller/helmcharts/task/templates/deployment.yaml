@@ -97,10 +97,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            - name: QUEUE_SIZE
-              value: "1000"
-            - name: DB_COMMIT_INTERVAL
-              value: "1000"
           image: {{ .Values.odimra.imageRegistryAddress| default  }}task:{{ .Values.odimra.taskImageTag }}
           imagePullPolicy: IfNotPresent
           ports:

@@ -143,6 +143,10 @@ func TestSetConfiguration(t *testing.T) {
 	                "MessageBusType": "Kafka",
       			"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
 	      },
+		"TaskQueueConf" : {
+			"QueueSize": 20000,
+			"DBCommitInterval": 1000
+		},
         "FirmwareVersion": "1.0",
         "SouthBoundRequestTimeoutInSecs": 10,
         "ServerRediscoveryBatchSize": 30,
@@ -521,6 +525,10 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 		},
 	}
 	for num, tt := range tests {
+		Data.TaskQueueConf = &TaskQueueConf{
+			QueueSize:        1000,
+			DBCommitInterval: 1000,
+		}
 		switch num {
 		case 0:
 			Data.AuthConf = &AuthConf{

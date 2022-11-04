@@ -385,12 +385,8 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 		}
 	}
 
-	for k := range tasks {
-		delete(tasks, k)
-	}
-	for k := range completedTasks {
-		delete(completedTasks, k)
-	}
+	tasks = nil
+	completedTasks = nil
 }
 
 // dequeueTask dequeue a task from channel and returns. If no elements is present in the queue it returns nil.

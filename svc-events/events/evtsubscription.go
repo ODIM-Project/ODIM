@@ -36,7 +36,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
@@ -73,7 +72,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
 		l.Log.Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 		l.Log.Error(errorMessage)
@@ -187,18 +186,18 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 			collection, collectionName, collectionFlag, aggregateResource, isAggregate, _ := e.checkCollection(origin)
 			wg.Add(1)
 			// for origin is collection
-			go e.createEventSubscrption(taskID, subTaskChan, sessionUserName, targetURI, postRequest, origin, result, &wg, collectionFlag, collectionName, aggregateResource, isAggregate)
+			go e.createEventSubscription(taskID, subTaskChan, sessionUserName, targetURI, postRequest, origin, result, &wg, collectionFlag, collectionName, aggregateResource, isAggregate)
 			for i := 0; i < len(collection); i++ {
 				wg.Add(1)
 				// for suboridinate origin
-				go e.createEventSubscrption("", subTaskChan, sessionUserName, targetURI, postRequest, collection[i], result, &wg, false, "", aggregateResource, isAggregate)
+				go e.createEventSubscription("", subTaskChan, sessionUserName, targetURI, postRequest, collection[i], result, &wg, false, "", aggregateResource, isAggregate)
 			}
 			if !isAggregate {
 				collectionList = append(collectionList, collection...)
 			}
 		} else {
 			wg.Add(1)
-			go e.createEventSubscrption(taskID, subTaskChan, sessionUserName, targetURI, postRequest, origin, result, &wg, false, "", "", false)
+			go e.createEventSubscription(taskID, subTaskChan, sessionUserName, targetURI, postRequest, origin, result, &wg, false, "", "", false)
 		}
 	}
 
@@ -236,7 +235,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	result.Response = successfulResponses
 	successOriginResourceCount := len(successfulSubscriptionList)
 	result.Lock.Unlock()
-	// remove the underlaying resource uri's from successfulSubscriptionList
+	// remove the underlying resource uri's from successfulSubscriptionList
 	for i := 0; i < len(collectionList); i++ {
 		for j := 0; j < len(successfulSubscriptionList); j++ {
 			if collectionList[i] == successfulSubscriptionList[j] {
@@ -292,8 +291,8 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	if originResourceProcessedCount == successOriginResourceCount {
 		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost))
 	} else {
-		args := response.Args{
-			Code:    response.GeneralError,
+		args := errResponse.Args{
+			Code:    errResponse.GeneralError,
 			Message: "event subscription for one or more origin resource(s) failed, check sub tasks for more info.",
 		}
 		resp.Body = args.CreateGenericErrorResponse()
@@ -529,11 +528,11 @@ func (e *ExternalInterfaces) IsEventsSubscribed(token, origin string, subscripti
 		searchKey = evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
 	}
 	// uniqueMap is to ignore duplicate eventTypes
-	// evevntTypes from request  and eventTypes from the all destinations stored in the DB
+	// eventTypes from request  and eventTypes from the all destinations stored in the DB
 	uniqueMap := make(map[string]string)
 
 	// add all events to map to remove duplicate eventTypes
-	// this need to be remove after the desination uniquness check added
+	// this need to be remove after the designation uniqueness check added
 	for _, eventType := range subscription.EventTypes {
 		uniqueMap[eventType] = eventType
 	}
@@ -600,7 +599,7 @@ func (e *ExternalInterfaces) IsEventsSubscribed(token, origin string, subscripti
 			}
 		}
 	}
-	// updating the subscritpion information
+	// updating the subscription information
 
 	eventTypesCount := len(eventTypes)
 	messageIDsCount := len(messageIDs)
@@ -624,7 +623,7 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 	if protocol == "" {
 		protocol = "Redfish"
 	}
-	var host string
+	// var host string
 	bubbleUpStatusCode := http.StatusCreated
 	var postRequest evmodel.RequestBody
 	postRequest.Destination = ""
@@ -635,7 +634,7 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 	postRequest.Protocol = protocol
 	postRequest.SubscriptionType = evmodel.SubscriptionType
 	postRequest.SubordinateResources = true
-	host, response = e.eventSubscription(postRequest, originResources[0], "", false)
+	_, response = e.eventSubscription(postRequest, originResources[0], "", false)
 	e.checkCollectionSubscription(originResources[0], protocol)
 	if response.StatusCode != http.StatusCreated {
 		partialResultFlag = true
@@ -649,26 +648,29 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 	} else {
 		resp.StatusCode = int32(bubbleUpStatusCode)
 	}
-	subscriptionID := uuid.New().String()
-	evtSubscription := evmodel.Subscription{
-		SubscriptionID:       subscriptionID,
-		EventTypes:           eventTypes,
-		MessageIds:           messageIDs,
-		ResourceTypes:        resourceTypes,
-		OriginResources:      originResources,
-		Hosts:                []string{host},
-		Protocol:             protocol,
-		SubscriptionType:     evmodel.SubscriptionType,
-		SubordinateResources: true,
-	}
-	err := e.SaveEventSubscription(evtSubscription)
-	if err != nil {
-		errorMessage := "error while trying to save event subscription data: " + err.Error()
-		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
-			[]interface{}{}, &resp)
-		l.Log.Error(errorMessage)
-		return resp
-	}
+
+	// Removed creation of default subscription for each server add, adding only single default subscription at time of deployment with subscriptionID 0
+
+	// subscriptionID := uuid.New().String()
+	// evtSubscription := evmodel.Subscription{
+	// 	SubscriptionID:       subscriptionID,
+	// 	EventTypes:           eventTypes,
+	// 	MessageIds:           messageIDs,
+	// 	ResourceTypes:        resourceTypes,
+	// 	OriginResources:      originResources,
+	// 	Hosts:                []string{host},
+	// 	Protocol:             protocol,
+	// 	SubscriptionType:     evmodel.SubscriptionType,
+	// 	SubordinateResources: true,
+	// }
+	// err := e.SaveEventSubscription(evtSubscription)
+	// if err != nil {
+	// 	errorMessage := "error while trying to save event subscription data: " + err.Error()
+	// 	evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
+	// 		[]interface{}{}, &resp)
+	// 	l.Log.Error(errorMessage)
+	// 	return resp
+	// }
 
 	resp.Body = response.Response
 	resp.StatusCode = http.StatusCreated
@@ -808,7 +810,7 @@ func (e *ExternalInterfaces) DeleteSubscriptions(originResource, token string, p
 	return resp, nil
 }
 
-func (e *ExternalInterfaces) createEventSubscrption(taskID string, subTaskChan chan<- int32, reqSessionToken string, targetURI string, request evmodel.RequestBody, originResource string, result *evresponse.MutexLock, wg *sync.WaitGroup, collectionFlag bool, collectionName string, aggrgateResouce string, isAggragateCollection bool) {
+func (e *ExternalInterfaces) createEventSubscription(taskID string, subTaskChan chan<- int32, reqSessionToken string, targetURI string, request evmodel.RequestBody, originResource string, result *evresponse.MutexLock, wg *sync.WaitGroup, collectionFlag bool, collectionName string, aggregateResource string, isAggregateCollection bool) {
 	var (
 		subTaskURI      string
 		subTaskID       string
@@ -839,11 +841,11 @@ func (e *ExternalInterfaces) createEventSubscrption(taskID string, subTaskChan c
 	host, response := e.eventSubscription(request, originResource, collectionName, collectionFlag)
 	resp.Body = response.Response
 	resp.StatusCode = int32(response.StatusCode)
-	if isAggragateCollection {
+	if isAggregateCollection {
 		if resp.StatusCode == http.StatusConflict {
 			response.StatusCode = http.StatusCreated
 		}
-		result.AddResponse(aggrgateResouce, getAggregateID(aggrgateResouce), response)
+		result.AddResponse(aggregateResource, getAggregateID(aggregateResource), response)
 	} else {
 		result.AddResponse(originResource, host, response)
 	}
@@ -858,7 +860,7 @@ func (e *ExternalInterfaces) createEventSubscrption(taskID string, subTaskChan c
 	}
 }
 
-// checkCollectionSubscription checks if any collcetion based subscription exists
+// checkCollectionSubscription checks if any collection based subscription exists
 // If its' exists it will  update the existing subscription information with newly added server origin
 func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string) {
 	//Creating key to get all the System Collection subscription
@@ -973,8 +975,6 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 			l.Log.Error("Error while Updating Device subscription : " + err.Error())
 		}
 	}
-
-	return
 }
 
 func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.RequestBody, origin, collectionName string, collectionFlag bool) (string, evresponse.EventResponse) {
@@ -1032,7 +1032,7 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 		HTTPHeaders:          httpHeadersSlice,
 		Context:              postRequest.Context,
 		OriginResources: []evmodel.OdataIDLink{
-			evmodel.OdataIDLink{
+			{
 				OdataID: origin,
 			},
 		},
@@ -1319,11 +1319,11 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 		searchKey = evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
 	}
 	// uniqueMap is to ignore duplicate eventTypes
-	// evevntTypes from request  and eventTypes from the all destinations stored in the DB
+	// eventTypes from request  and eventTypes from the all destinations stored in the DB
 	uniqueMap := make(map[string]string)
 
 	// add all events to map to remove duplicate eventTypes
-	// this need to be remove after the desination uniquness check added
+	// this need to be remove after the designation uniqueness check added
 	for _, eventType := range subscription.EventTypes {
 		uniqueMap[eventType] = eventType
 	}
@@ -1341,8 +1341,8 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 		l.Log.Error(errorMessage)
 		return resp, err
 	}
-	var subscriptionPresent, isAggregateSubsctionPresent bool
-	var aggragteSubscriptionDetails []evmodel.Subscription
+	var subscriptionPresent, isAggregateSubscriptionPresent bool
+	var aggregateSubscriptionDetails []evmodel.Subscription
 	// get all aggregate subscription
 	if isAggregate {
 		searchKeyAgg := evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
@@ -1357,14 +1357,14 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 				}
 			}
 			searchKey = evcommon.GetSearchKey(id, evmodel.SubscriptionIndex)
-			aggragteSubscriptionDetails, err = e.GetEvtSubscriptions(searchKey)
+			aggregateSubscriptionDetails, err = e.GetEvtSubscriptions(searchKey)
 
 			if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
-				l.Log.Info("Error while get aggragteSubscriptionDetails details: " + err.Error())
+				l.Log.Info("Error while get aggregateSubscriptionDetails details: " + err.Error())
 			}
-			for index, evtSubscriptions := range aggragteSubscriptionDetails {
+			for index, evtSubscriptions := range aggregateSubscriptionDetails {
 				if isHostPresent(evtSubscriptions.Hosts, aggregateID) {
-					isAggregateSubsctionPresent = true
+					isAggregateSubscriptionPresent = true
 					if len(evtSubscriptions.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
 						eventTypes = append(eventTypes, evtSubscriptions.EventTypes...)
 					}
@@ -1382,7 +1382,7 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 
 	// if there is no subscription happened then create event subscription
 
-	if len(subscriptionDetails) < 1 && len(aggragteSubscriptionDetails) < 1 {
+	if len(subscriptionDetails) < 1 && len(aggregateSubscriptionDetails) < 1 {
 		return resp, nil
 	}
 	for index, evtSubscriptions := range subscriptionDetails {
@@ -1401,7 +1401,7 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 
 		}
 	}
-	if !subscriptionPresent && !isAggregateSubsctionPresent {
+	if !subscriptionPresent && !isAggregateSubscriptionPresent {
 		return resp, nil
 	}
 	if !collectionFlag {
@@ -1418,7 +1418,7 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 			}
 		}
 	}
-	// updating the subscritpion information
+	// updating the subscription information
 	eventTypesCount := len(eventTypes)
 	messageIDsCount := len(messageIDs)
 	resourceTypesCount := len(resourceTypes)

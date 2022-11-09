@@ -625,6 +625,10 @@ func (e *ExternalInterfaces) getCollectionSubscriptionInfoForOID(oid, host strin
 	}
 
 	searchKey := evcommon.GetSearchKey(key, evmodel.SubscriptionIndex)
+
 	subscriptions, _ := e.GetEvtSubscriptions(searchKey)
+	var empty = "\\\"Hosts\\\":\\[\\]"
+	globalSubscriber, _ := e.GetEvtSubscriptions(empty)
+	subscriptions = append(subscriptions, globalSubscriber...)
 	return subscriptions
 }

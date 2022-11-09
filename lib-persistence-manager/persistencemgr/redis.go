@@ -1096,6 +1096,7 @@ func (p *ConnPool) GetEvtSubscriptions(index, searchKey string) ([]string, error
 		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
 	}
 	countData := d.(int64)
+	fmt.Println("Search key is ", searchKey)
 	d, getErr = readConn.Do("ZSCAN", index, currentCursor, "MATCH", searchKey, "COUNT", countData)
 	if getErr != nil {
 		return []string{}, fmt.Errorf("error while trying to get data: " + getErr.Error())

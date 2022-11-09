@@ -145,7 +145,9 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	removeDuplicatesFromSlice(&originResources, &originResourcesCount)
 
 	// If origin resource is nil then subscribe to all collection
+	isDefaultOriginResource := false
 	if originResourcesCount == 0 {
+		isDefaultOriginResource = true
 		originResources = []string{
 			"/redfish/v1/Systems",
 			"/redfish/v1/Chassis",
@@ -160,7 +162,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	taskCollectionWG.Add(1)
 	bubbleUpStatusCode := int32(http.StatusCreated)
 	go func() {
-		// Collect the channels and update perentComplete in Task
+		// Collect the channels and update percentComplete in Task
 		for i := 1; ; i++ {
 			statusCode, chanActive := <-subTaskChan
 			if !chanActive {
@@ -189,7 +191,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 			go e.createEventSubscription(taskID, subTaskChan, sessionUserName, targetURI, postRequest, origin, result, &wg, collectionFlag, collectionName, aggregateResource, isAggregate)
 			for i := 0; i < len(collection); i++ {
 				wg.Add(1)
-				// for suboridinate origin
+				// for subordinate origin
 				go e.createEventSubscription("", subTaskChan, sessionUserName, targetURI, postRequest, collection[i], result, &wg, false, "", aggregateResource, isAggregate)
 			}
 			if !isAggregate {
@@ -233,7 +235,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 		}
 	}
 	result.Response = successfulResponses
-	successOriginResourceCount := len(successfulSubscriptionList)
+
 	result.Lock.Unlock()
 	// remove the underlying resource uri's from successfulSubscriptionList
 	for i := 0; i < len(collectionList); i++ {
@@ -249,11 +251,16 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	if postRequest.Name == "" {
 		postRequest.Name = evmodel.SubscriptionName
 	}
-	successOriginResourceCount = len(successfulSubscriptionList)
+
+	successOriginResourceCount := len(successfulSubscriptionList)
 	if successOriginResourceCount > 0 {
 		subscriptionID := uuid.New().String()
 		var hosts []string
 		resp, hosts = result.ReadResponse(subscriptionID)
+		if isDefaultOriginResource {
+			successfulSubscriptionList = []string{}
+			hosts = []string{}
+		}
 		evtSubscription := evmodel.Subscription{
 			UserName:             sessionUserName,
 			SubscriptionID:       subscriptionID,
@@ -286,7 +293,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 		locationHeader = resp.Header["Location"]
 	}
 	l.Log.Info("Process Count," + strconv.Itoa(originResourceProcessedCount) +
-		"successOriginResourceCount" + strconv.Itoa(successOriginResourceCount))
+		" successOriginResourceCount " + strconv.Itoa(successOriginResourceCount))
 	percentComplete = 100
 	if originResourceProcessedCount == successOriginResourceCount {
 		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost))
@@ -395,7 +402,7 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 
 	postBody, _ := json.Marshal(subscriptionPost)
 	var reqData string
-	//replacing the reruest url with south bound translation URL
+	//replacing the request url with south bound translation URL
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		reqData = strings.Replace(string(postBody), key, value, -1)
 	}
@@ -405,14 +412,14 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.PostBody = target
 
-	l.Log.Info("Subscription Request: " + reqData)
+	l.Log.Debug("Subscription Request: " + reqData)
 	response, err := e.callPlugin(contactRequest)
 	if err != nil {
 		if evcommon.GetPluginStatus(plugin) {
 			response, err = e.callPlugin(contactRequest)
 		}
 		if err != nil {
-			errorMessage := "error while unmarshaling the body : " + err.Error()
+			errorMessage := "error while unmarshal the body : " + err.Error()
 			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				&resp, []interface{}{})
 			l.Log.Error(errorMessage)
@@ -420,7 +427,7 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 		}
 	}
 	defer response.Body.Close()
-	l.Log.Info("Subscription Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
+	l.Log.Debug("Subscription Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
@@ -434,7 +441,7 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 		var res interface{}
 		err = json.Unmarshal(body, &res)
 		if err != nil {
-			errorMessage := "error while unmarshaling the body : " + err.Error()
+			errorMessage := "error while unmarshal the body : " + err.Error()
 			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				&resp, []interface{}{})
 			l.Log.Error(errorMessage)
@@ -464,7 +471,7 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 		l.Log.Error(errorMessage)
 		return "", resp
 	}
-	l.Log.Info("Saving device subscription details : ", deviceIPAddress)
+	l.Log.Debug("Saving device subscription details : ", deviceIPAddress)
 	evtSubscription := evmodel.Subscription{
 		Location:       locationHdr,
 		EventHostIP:    deviceIPAddress,
@@ -488,9 +495,18 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 	}
 	var outBody interface{}
 	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		if err != nil {
+			errorMessage := "error while reading body  : " + err.Error()
+			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
+				&resp, []interface{}{})
+			l.Log.Error(errorMessage)
+			return "", resp
+		}
+	}
 	err = json.Unmarshal(body, &outBody)
 	if err != nil {
-		errorMessage := "error while unmarshaling the body : " + err.Error()
+		errorMessage := "error while unmarshal the body : " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			&resp, []interface{}{})
 		l.Log.Error(errorMessage)
@@ -689,12 +705,12 @@ func (e *ExternalInterfaces) saveDeviceSubscriptionDetails(evtSubscription evmod
 		Location:        evtSubscription.Location,
 		OriginResources: []string{evtSubscription.OriginResource},
 	}
-	// if device subscriptions details for the device is present in db then dont add again
+	// if device subscriptions details for the device is present in db then don't add again
 	var save = true
 	if deviceSubscription != nil {
 
 		save = true
-		// if the origin resource is present in device subscription details then dont add
+		// if the origin resource is present in device subscription details then don't add
 		for _, originResource := range deviceSubscription.OriginResources {
 			if evtSubscription.OriginResource == originResource {
 				save = false
@@ -1068,7 +1084,7 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 
 	postBody, _ := json.Marshal(subscriptionPost)
 	var reqData string
-	//replacing the reruest url with south bound translation URL
+	//replacing the request url with south bound translation URL
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		reqData = strings.Replace(string(postBody), key, value, -1)
 	}
@@ -1097,7 +1113,7 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 		}
 	}
 
-	l.Log.Info("Subscription Response Status Code: " + string(rune(response.StatusCode)))
+	l.Log.Debug("Subscription Response Status Code: " + string(rune(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
@@ -1112,7 +1128,7 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 		l.Log.Error("Subscription Response " + string(body))
 		err = json.Unmarshal(body, &res)
 		if err != nil {
-			errorMessage := "error while unmarshaling the body : " + err.Error()
+			errorMessage := "error while unmarshal the body : " + err.Error()
 			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				&resp, []interface{}{})
 			l.Log.Error(errorMessage)
@@ -1212,7 +1228,7 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpda
 	}
 	postBody, _ := json.Marshal(subscriptionPost)
 	var reqData string
-	//replacing the reruest url with south bound translation URL
+	//replacing the request url with south bound translation URL
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		reqData = strings.Replace(string(postBody), key, value, -1)
 	}
@@ -1222,20 +1238,20 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpda
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.PostBody = target
 
-	l.Log.Info("Subscription Request: " + reqData)
+	l.Log.Debug("Subscription Request: " + reqData)
 	response, err := e.callPlugin(contactRequest)
 	if err != nil {
 		if evcommon.GetPluginStatus(plugin) {
 			response, err = e.callPlugin(contactRequest)
 		}
 		if err != nil {
-			errorMessage := "error while unmarshaling the body : " + err.Error()
+			errorMessage := "error while unmarshal the body : " + err.Error()
 			l.Log.Info(errorMessage)
 			return err
 		}
 	}
 	defer response.Body.Close()
-	l.Log.Info("Subscription Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
+	l.Log.Debug("Subscription Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
@@ -1247,7 +1263,7 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpda
 		var res interface{}
 		err = json.Unmarshal(body, &res)
 		if err != nil {
-			errorMessage := "error while unmarshaling the body : " + err.Error()
+			errorMessage := "error while unmarshal the body : " + err.Error()
 			l.Log.Error(errorMessage)
 			return nil
 		}

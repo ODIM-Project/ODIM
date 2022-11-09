@@ -73,7 +73,7 @@ func Test_findAllPlugins(t *testing.T) {
 		return
 	}
 	response := delete.Handle(&req)
-	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Response status code should be StatusNotFound")
+	assert.NotNil(t, response, "There should be an error ")
 
 	FindAllPluginsFunc = func(key string) (res []*smodel.Plugin, err error) {
 		model := smodel.Plugin{

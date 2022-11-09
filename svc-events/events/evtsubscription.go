@@ -36,7 +36,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
@@ -73,7 +72,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
 		l.Log.Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 		l.Log.Error(errorMessage)
@@ -299,8 +298,8 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	if originResourceProcessedCount == successOriginResourceCount {
 		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost))
 	} else {
-		args := response.Args{
-			Code:    response.GeneralError,
+		args := errResponse.Args{
+			Code:    errResponse.GeneralError,
 			Message: "event subscription for one or more origin resource(s) failed, check sub tasks for more info.",
 		}
 		resp.Body = args.CreateGenericErrorResponse()
@@ -545,11 +544,11 @@ func (e *ExternalInterfaces) IsEventsSubscribed(token, origin string, subscripti
 		searchKey = evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
 	}
 	// uniqueMap is to ignore duplicate eventTypes
-	// evevntTypes from request  and eventTypes from the all destinations stored in the DB
+	// eventTypes from request  and eventTypes from the all destinations stored in the DB
 	uniqueMap := make(map[string]string)
 
 	// add all events to map to remove duplicate eventTypes
-	// this need to be remove after the desination uniquness check added
+	// this need to be remove after the designation uniqueness check added
 	for _, eventType := range subscription.EventTypes {
 		uniqueMap[eventType] = eventType
 	}
@@ -640,7 +639,7 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 	if protocol == "" {
 		protocol = "Redfish"
 	}
-	var host string
+	// var host string
 	bubbleUpStatusCode := http.StatusCreated
 	var postRequest evmodel.RequestBody
 	postRequest.Destination = ""
@@ -651,7 +650,7 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 	postRequest.Protocol = protocol
 	postRequest.SubscriptionType = evmodel.SubscriptionType
 	postRequest.SubordinateResources = true
-	host, response = e.eventSubscription(postRequest, originResources[0], "", false)
+	_, response = e.eventSubscription(postRequest, originResources[0], "", false)
 	e.checkCollectionSubscription(originResources[0], protocol)
 	if response.StatusCode != http.StatusCreated {
 		partialResultFlag = true
@@ -665,26 +664,29 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 	} else {
 		resp.StatusCode = int32(bubbleUpStatusCode)
 	}
-	subscriptionID := uuid.New().String()
-	evtSubscription := evmodel.Subscription{
-		SubscriptionID:       subscriptionID,
-		EventTypes:           eventTypes,
-		MessageIds:           messageIDs,
-		ResourceTypes:        resourceTypes,
-		OriginResources:      originResources,
-		Hosts:                []string{host},
-		Protocol:             protocol,
-		SubscriptionType:     evmodel.SubscriptionType,
-		SubordinateResources: true,
-	}
-	err := e.SaveEventSubscription(evtSubscription)
-	if err != nil {
-		errorMessage := "error while trying to save event subscription data: " + err.Error()
-		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
-			[]interface{}{}, &resp)
-		l.Log.Error(errorMessage)
-		return resp
-	}
+
+	// Removed creation of default subscription for each server add, adding only single default subscription at time of deployment with subscriptionID 0
+
+	// subscriptionID := uuid.New().String()
+	// evtSubscription := evmodel.Subscription{
+	// 	SubscriptionID:       subscriptionID,
+	// 	EventTypes:           eventTypes,
+	// 	MessageIds:           messageIDs,
+	// 	ResourceTypes:        resourceTypes,
+	// 	OriginResources:      originResources,
+	// 	Hosts:                []string{host},
+	// 	Protocol:             protocol,
+	// 	SubscriptionType:     evmodel.SubscriptionType,
+	// 	SubordinateResources: true,
+	// }
+	// err := e.SaveEventSubscription(evtSubscription)
+	// if err != nil {
+	// 	errorMessage := "error while trying to save event subscription data: " + err.Error()
+	// 	evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
+	// 		[]interface{}{}, &resp)
+	// 	l.Log.Error(errorMessage)
+	// 	return resp
+	// }
 
 	resp.Body = response.Response
 	resp.StatusCode = http.StatusCreated
@@ -989,7 +991,6 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 			l.Log.Error("Error while Updating Device subscription : " + err.Error())
 		}
 	}
-
 }
 
 func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.RequestBody, origin, collectionName string, collectionFlag bool) (string, evresponse.EventResponse) {

@@ -24,8 +24,6 @@ import (
 	"reflect"
 	"testing"
 
-	"bou.ke/monkey"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -407,12 +405,6 @@ func TestLookupPlugin(t *testing.T) {
 
 func TestGetDeviceSubscriptionDetails(t *testing.T) {
 	config.SetUpMockConfig(t)
-	monkey.Patch(LookupHost, func(string) (ip string, host string, port string, err error) { return "10.0.0.0", "", "", nil })
-	defer monkey.Unpatch(LookupHost)
-	monkey.Patch(GetSearchKey, func(string, string) string { return "10.0.0.0" })
-	defer monkey.Unpatch(GetSearchKey)
-	monkey.Patch(agmodel.GetDeviceSubscriptions, func(string) (*common.DeviceSubscription, error) { return &common.DeviceSubscription{}, nil })
-	defer monkey.Unpatch(agmodel.GetDeviceSubscriptions)
 	var data = ""
 	res, _, _ := GetDeviceSubscriptionDetails("10.0.0.0")
 	assert.Equal(t, res, data, "It should be same")
@@ -475,12 +467,6 @@ func TestUpdateDeviceSubscriptionDetails(t *testing.T) {
 	config.SetUpMockConfig(t)
 	var data = make(map[string]string)
 	data["100.100.100.100"] = "location"
-	monkey.Patch(LookupHost, func(string) (ip string, host string, port string, err error) { return "10.0.0.0", "", "", nil })
-	defer monkey.Unpatch(LookupHost)
-	monkey.Patch(GetSearchKey, func(string, string) string { return "10.0.0.0" })
-	defer monkey.Unpatch(GetSearchKey)
-	monkey.Patch(agmodel.GetDeviceSubscriptions, func(string) (*common.DeviceSubscription, error) { return &common.DeviceSubscription{}, nil })
-	defer monkey.Unpatch(agmodel.GetDeviceSubscriptions)
 	UpdateDeviceSubscriptionDetails(data)
 }
 
@@ -711,12 +697,6 @@ func TestGetAllServers(t *testing.T) {
 		GetAllSystems:   MockGetAllSystems,
 		GetSingleSystem: MockGetSingleSystem,
 	}
-	monkey.Patch(GetAllSystemsFunc, func() ([]agmodel.Target, *errors.Error) {
-		return []agmodel.Target{agmodel.Target{PluginID: "ILO"}}, nil
-	})
-	monkey.Patch(st.DecryptPassword, func([]byte) ([]byte, error) { return []byte{}, nil })
-	defer monkey.Unpatch(GetAllSystemsFunc)
-	defer monkey.Unpatch(st.DecryptPassword)
 	servers, err := st.getAllServers("ILO")
 	assert.Nil(t, err, "Error Should be nil")
 	assert.Equal(t, 2, len(servers), "there should be 2 server")

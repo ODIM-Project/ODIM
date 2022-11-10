@@ -794,14 +794,14 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 			return errors.PackError(errors.TimeoutError, err.Error())
 		}
 		return errors.PackError(errors.DBUpdateFailed, err.Error())
-	} else {
-		for i, key := range keys {
-			res, ok := result[i].(string)
-			if ok && res == "OK" {
-				delete(data, key)
-			} else {
-				partialFailure = true
-			}
+	}
+
+	for i, key := range keys {
+		res, ok := result[i].(string)
+		if ok && res == "OK" {
+			delete(data, key)
+		} else {
+			partialFailure = true
 		}
 	}
 
@@ -838,16 +838,17 @@ func (c *Conn) CreateIndexTransaction(key string, scores map[string]int64) *erro
 			return errors.PackError(errors.TimeoutError, err.Error())
 		}
 		return errors.PackError(errors.DBUpdateFailed, err.Error())
-	} else {
-		for i, member := range members {
-			res, ok := result[i].(int64)
-			if ok && res == 1 {
-				delete(scores, member)
-			} else {
-				partialFailure = true
-			}
+	}
+
+	for i, member := range members {
+		res, ok := result[i].(int64)
+		if ok && res == 1 {
+			delete(scores, member)
+		} else {
+			partialFailure = true
 		}
 	}
+
 	if partialFailure {
 		return errors.PackError(errors.TransactionPartiallyFailed, "TransactionPartiallyFailed : All indices for the key are not created in DB")
 	}

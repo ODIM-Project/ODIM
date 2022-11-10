@@ -176,6 +176,7 @@ type TLSConf struct {
 type TaskQueueConf struct {
 	QueueSize        int `json:"QueueSize"`
 	DBCommitInterval int `json:"DBCommitInterval"`
+	RetryInterval    int `json:"RetryInterval"`
 }
 
 // ConnectionMethodConf is for connection method type and variant
@@ -686,6 +687,9 @@ func checkTaskQueueConfiguration() error {
 	}
 	if Data.TaskQueueConf.DBCommitInterval <= 0 {
 		return fmt.Errorf("task db commit interval should be greater than 0")
+	}
+	if Data.TaskQueueConf.RetryInterval <= 0 {
+		return fmt.Errorf("retry interval should be greater than 0")
 	}
 	return nil
 }

@@ -1498,8 +1498,14 @@ func TestConn_UpdateTransaction(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "db update operation using pipelined transaction",
-			c:       c,
+			name: "db update operation using pipelined transaction",
+			c:    c,
+			args: args{
+				data: map[string]interface{}{
+					"TASK:1": "progress",
+					"TASK:2": "completed",
+				},
+			},
 			wantErr: false,
 		},
 		{
@@ -1532,7 +1538,8 @@ func TestConn_CreateIndexTransaction(t *testing.T) {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
 	type args struct {
-		data map[string][2]interface{}
+		key  string
+		data map[string]int64
 	}
 	tests := []struct {
 		name    string
@@ -1541,8 +1548,14 @@ func TestConn_CreateIndexTransaction(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "create index operation using pipelined transaction",
-			c:       c,
+			name: "create index operation using pipelined transaction",
+			c:    c,
+			args: args{
+				key: "key",
+				data: map[string]int64{
+					"TASK:2": 123,
+				},
+			},
 			wantErr: false,
 		},
 		{
@@ -1562,8 +1575,195 @@ func TestConn_CreateIndexTransaction(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.c.CreateIndexTransaction(tt.args.data); (err != nil) != tt.wantErr {
+			if err := tt.c.CreateIndexTransaction(tt.args.key, tt.args.data); (err != nil) != tt.wantErr {
 				t.Errorf("CreateIndexTransaction() = %v, want %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_getSortedMapKeys(t *testing.T) {
+	type args struct {
+		m interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "success case 1",
+			args: args{
+				m: map[string]interface{}{
+					"TASK:1": "task1",
+					"TASK:2": "task1",
+					"TASK:3": "task1",
+				},
+			},
+			want: []string{"TASK:1", "TASK:2", "TASK:3"},
+		},
+		{
+			name: "success case 2",
+			args: args{
+				m: map[string]int64{
+					"TASK:1": 1,
+					"TASK:2": 2,
+					"TASK:3": 3,
+				},
+			},
+			want: []string{"TASK:1", "TASK:2", "TASK:3"},
+		},
+		{
+			name: "invalid case",
+			args: args{
+				m: map[string]string{
+					"TASK:1": "task1",
+					"TASK:2": "task1",
+					"TASK:3": "task1",
+				},
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getSortedMapKeys(tt.args.m); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getSortedMapKeys() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_removeFailedKeys(t *testing.T) {
+	type args struct {
+		keys    []string
+		indices []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "success case",
+			args: args{
+				keys:    []string{"apple", "bat", "cat"},
+				indices: []int{1},
+			},
+			want: []string{"apple", "cat"},
+		},
+		{
+			name: "invalid case",
+			args: args{
+				keys:    []string{"apple", "bat", "cat"},
+				indices: []int{-1, 6},
+			},
+			want: []string{"apple", "bat", "cat"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := removeFailedKeys(tt.args.keys, tt.args.indices); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("removeFailedKeys() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestShouldRetry(t *testing.T) {
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "success case 1",
+			args: args{
+				err: fmt.Errorf("EOF"),
+			},
+			want: true,
+		},
+		{
+			name: "success case 2",
+			args: args{
+				err: fmt.Errorf("LOADING error"),
+			},
+			want: true,
+		},
+		{
+			name: "success case 3",
+			args: args{
+				err: fmt.Errorf("ERR max number of clients reached"),
+			},
+			want: true,
+		},
+		{
+			name: "failure case",
+			args: args{
+				err: fmt.Errorf("unexpected error"),
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ShouldRetry(tt.args.err); got != tt.want {
+				t.Errorf("ShouldRetry() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+type timeOutError struct {
+	error
+}
+
+func (e timeOutError) Timeout() bool {
+	return true
+}
+
+func (e timeOutError) Temporary() bool {
+	return true
+}
+
+func (e timeOutError) Error() string {
+	return ""
+}
+
+func Test_isTimeOutError(t *testing.T) {
+
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "success case",
+			args: args{
+				err: &timeOutError{
+					error: fmt.Errorf("timeout error"),
+				},
+			},
+			want: true,
+		},
+		{
+			name: "failure case",
+			args: args{
+				err: fmt.Errorf("db error"),
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isTimeOutError(tt.args.err); got != tt.want {
+				t.Errorf("isTimeOutError() = %v, want %v", got, tt.want)
 			}
 		})
 	}

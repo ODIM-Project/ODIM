@@ -145,7 +145,8 @@ func TestSetConfiguration(t *testing.T) {
 	      },
 		"TaskQueueConf" : {
 			"QueueSize": 20000,
-			"DBCommitInterval": 1000
+			"DBCommitInterval": 1000,
+			"RetryInterval": 5000
 		},
         "FirmwareVersion": "1.0",
         "SouthBoundRequestTimeoutInSecs": 10,
@@ -528,6 +529,7 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 		Data.TaskQueueConf = &TaskQueueConf{
 			QueueSize:        1000,
 			DBCommitInterval: 1000,
+			RetryInterval:    5000,
 		}
 		switch num {
 		case 0:

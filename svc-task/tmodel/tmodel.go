@@ -43,6 +43,7 @@ type CompletedTask struct {
 	EndTime  int64
 }
 
+// to be moved to dmtf
 // Task Model
 type Task struct {
 	ParentID     string
@@ -297,16 +298,17 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	}()
 
 	var (
-		i            int    = 0
-		maxRetry     int    = 3
-		table        string = "task"
-		updatedTasks bool   = false
-		createdIndex bool   = false
-		mapSize      int    = config.Data.TaskQueueConf.QueueSize
+		i             int           = 0
+		maxRetry      int           = 3
+		table         string        = "task"
+		updatedTasks  bool          = false
+		createdIndex  bool          = false
+		mapSize       int           = config.Data.TaskQueueConf.QueueSize
+		retryInterval time.Duration = time.Duration(config.Data.TaskQueueConf.RetryInterval) * time.Millisecond
 	)
 
 	tasks := make(map[string]interface{}, mapSize)
-	completedTasks := make(map[string][2]interface{}, mapSize)
+	completedTasks := make(map[string]int64, mapSize)
 
 	if len(*queue) <= 0 {
 		return
@@ -316,7 +318,7 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	tick.Executing = true
 	tick.M.Unlock()
 
-	if err := conn.Ping(); err != nil {
+	if conn.IsBadConn() {
 		conn.Close()
 		conn = GetWriteConnection()
 	}
@@ -329,11 +331,7 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 			tasks[saveID] = task
 			if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
 				key := task.UserName + "::" + task.EndTime.String() + "::" + task.ID
-				value := [2]interface{}{
-					CompletedTaskIndex,
-					task.EndTime.UnixNano(),
-				}
-				completedTasks[key] = value
+				completedTasks[key] = task.EndTime.UnixNano()
 			}
 		}
 
@@ -345,9 +343,15 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	if len(tasks) > 0 {
 		for i < maxRetry {
 			if err := conn.UpdateTransaction(tasks); err != nil {
-				if err.ErrNo() == errors.DBUpdateFailed {
-					conn.Close()
-					conn = GetWriteConnection()
+				if err.ErrNo() == errors.TimeoutError || db.ShouldRetry(err) {
+					time.Sleep(retryInterval)
+					if conn.IsBadConn() {
+						conn.Close()
+						conn = GetWriteConnection()
+					}
+				} else {
+					l.Log.Error("ProcessTaskQueue() : task update transaction failed : " + err.Error())
+					break
 				}
 				i++
 			} else {
@@ -366,10 +370,16 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	if len(completedTasks) > 0 {
 		i = 0
 		for i < maxRetry {
-			if err := conn.CreateIndexTransaction(completedTasks); err != nil {
-				if err.ErrNo() == errors.DBUpdateFailed {
-					conn.Close()
-					conn = GetWriteConnection()
+			if err := conn.CreateIndexTransaction(CompletedTaskIndex, completedTasks); err != nil {
+				if err.ErrNo() == errors.TimeoutError || db.ShouldRetry(err) {
+					time.Sleep(retryInterval)
+					if conn.IsBadConn() {
+						conn.Close()
+						conn = GetWriteConnection()
+					}
+				} else {
+					l.Log.Error("ProcessTaskQueue() : create index transaction failed : " + err.Error())
+					break
 				}
 				i++
 			} else {

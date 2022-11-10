@@ -53,7 +53,8 @@
 	},
 	"TaskQueueConf" : {
 		"QueueSize": 20000,
-		"DBCommitInterval": 1000
+		"DBCommitInterval": 1000,
+		"RetryInterval": 5000
 	},
 	"FirmwareVersion": "1.0",
 	"SouthBoundRequestTimeoutInSecs": 300,

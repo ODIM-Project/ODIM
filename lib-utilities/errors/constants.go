@@ -70,6 +70,10 @@ const (
 	DecryptionFailed
 	// DBUpdateFailed indicates failure in updating DB
 	DBUpdateFailed
+	// TransactionPartialFailure indicates some of the operations in transaction failed
+	TransactionPartiallyFailed
+	// TimeoutError indicates that the operation is canceled as timeout error occurred.
+	TimeoutError
 )
 
 // constants defined for matching partial strings in error returned

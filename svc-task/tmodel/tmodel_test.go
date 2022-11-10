@@ -20,11 +20,45 @@ import (
 	"testing"
 	"time"
 
+	db "github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/satori/uuid"
 	"golang.org/x/crypto/sha3"
 )
+
+type MockRedisConn struct {
+	MockClose   func() error
+	MockErr     func() error
+	MockDo      func(string, ...interface{}) (interface{}, error)
+	MockSend    func(string, ...interface{}) error
+	MockFlush   func() error
+	MockReceive func() (interface{}, error)
+}
+
+func (mc MockRedisConn) Close() error {
+	return mc.MockClose()
+}
+
+func (mc MockRedisConn) Err() error {
+	return mc.MockErr()
+}
+
+func (mc MockRedisConn) Do(commandName string, args ...interface{}) (interface{}, error) {
+	return mc.MockDo(commandName, args...)
+}
+
+func (mc MockRedisConn) Send(commandName string, args ...interface{}) error {
+	return mc.MockSend(commandName, args...)
+}
+
+func (mc MockRedisConn) Flush() error {
+	return mc.MockFlush()
+}
+
+func (mc MockRedisConn) Receive() (interface{}, error) {
+	return mc.MockReceive()
+}
 
 type user struct {
 	UserName string `json:"UserName"`
@@ -114,66 +148,101 @@ func TestProcessTaskQueue(t *testing.T) {
 	}
 
 	type args struct {
-		tasks     map[string]interface{}
-		taskState string
-		db        common.DbType
+		tasks map[string]interface{}
+		conn  *db.Conn
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name string
+		args args
 	}{
 		{
-			name: "update task state as running",
+			name: "success case",
 			args: args{
-				tasks:     make(map[string]interface{}),
-				taskState: "Running",
-				db:        common.InMemory,
+				tasks: make(map[string]interface{}),
+				conn: &db.Conn{
+					WriteConn: &MockRedisConn{
+						MockClose: func() error {
+							return nil
+						},
+						MockSend: func(s string, i ...interface{}) error {
+							return nil
+						},
+						MockDo: func(s string, i ...interface{}) (interface{}, error) {
+							return []interface{}{"OK"}, nil
+						},
+					},
+				},
 			},
-			wantErr: false,
 		},
 		{
-			name: "update task state as completed",
+			name: "error case 1: no retry",
 			args: args{
-				tasks:     make(map[string]interface{}),
-				taskState: "Completed",
-				db:        common.InMemory,
+				tasks: make(map[string]interface{}),
+				conn: &db.Conn{
+					WriteConn: &MockRedisConn{
+						MockClose: func() error {
+							return nil
+						},
+						MockSend: func(s string, i ...interface{}) error {
+							return fmt.Errorf("DB ERROR")
+						},
+						MockDo: func(s string, i ...interface{}) (interface{}, error) {
+							return nil, nil
+						},
+					},
+				},
 			},
-			wantErr: false,
+		},
+		{
+			name: "error case 2 : retry",
+			args: args{
+				tasks: make(map[string]interface{}),
+				conn: &db.Conn{
+					WriteConn: &MockRedisConn{
+						MockClose: func() error {
+							return nil
+						},
+						MockSend: func(s string, i ...interface{}) error {
+							return fmt.Errorf("LOADING error")
+						},
+						MockDo: func(s string, i ...interface{}) (interface{}, error) {
+							return nil, nil
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "error case 3 : bad connection",
+			args: args{
+				tasks: make(map[string]interface{}),
+				conn: &db.Conn{
+					WriteConn: &MockRedisConn{
+						MockClose: func() error {
+							return nil
+						},
+						MockSend: func(s string, i ...interface{}) error {
+							return nil
+						},
+						MockDo: func(s string, i ...interface{}) (interface{}, error) {
+							return nil, fmt.Errorf("bad connection")
+						},
+					},
+				},
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			task1.TaskState = tt.args.taskState
 			queue <- task1
 			tick := &Tick{
 				Executing: true,
 				Commit:    true,
 			}
-			conn := GetWriteConnection()
-			go tick.ProcessTaskQueue(&queue, conn)
+			go tick.ProcessTaskQueue(&queue, tt.args.conn)
 			for {
 				if !tick.Executing {
 					break
-				}
-			}
-			task1, err := GetTaskStatus(task.ID, common.InMemory)
-			if err != nil {
-				t.Fatalf("error while retrieving the Task details with Get: %v", err)
-				return
-			}
-			if task1.TaskState != tt.args.taskState {
-				t.Fatalf("ProcessTaskQueue: Update TaskState failed: want %v, Got : %v", tt.args.taskState, task1.TaskState)
-			}
-
-			if task1.TaskState == "Completed" {
-				tasks, err := GetCompletedTasksIndex("task1")
-				if err != nil {
-					t.Fatalf("error while retrieving the completed tasks details with Get: %v", err)
-					return
-				}
-				if len(tasks) != 1 {
-					t.Fatalf("Index is not created for completed tasks")
 				}
 			}
 		})

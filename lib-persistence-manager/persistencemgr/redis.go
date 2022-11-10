@@ -20,7 +20,10 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io"
 	"math/big"
+	"net"
+	"sort"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -705,55 +708,190 @@ func (c *Conn) Ping() *errors.Error {
 	return nil
 }
 
+// IsBadConn checks if the connection to DB is active or not
+func (c *Conn) IsBadConn() bool {
+	if c.WriteConn != nil && c.Ping() == nil {
+		return false
+	}
+	return true
+}
+
+func getSortedMapKeys(m interface{}) []string {
+	var keys []string
+	switch m := m.(type) {
+	case map[string]interface{}:
+		keys = make([]string, 0, len(m))
+		for k := range m {
+			keys = append(keys, k)
+		}
+	case map[string]int64:
+		keys = make([]string, 0, len(m))
+		for k := range m {
+			keys = append(keys, k)
+		}
+	default:
+		l.Log.Error("mapKeys(): Type of map is unexpected")
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+func removeFailedKeys(keys []string, indices []int) []string {
+	if len(indices) <= 0 {
+		return keys
+	}
+	indicesMap := make(map[int]string, len(keys))
+	for i, key := range keys {
+		indicesMap[i] = key
+	}
+
+	for _, index := range indices {
+		delete(indicesMap, index)
+	}
+
+	newKeys := make([]string, 0, len(keys)-len(indices))
+	for _, key := range indicesMap {
+		newKeys = append(newKeys, key)
+	}
+	sort.Strings(newKeys)
+	return newKeys
+}
+
 // UpdateTransaction will update the database using pipelined transaction
 /* UpdateTransaction takes the following keys as input:
 1."data" is of type map[string]interface{} and is the user data sent to be updated in DB.
 key of map should be the key in database.
 */
 func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
+	var partialFailure bool = false
+	failedIndices := make([]int, 0, len(data))
+	keys := getSortedMapKeys(data)
 	c.WriteConn.Send("MULTI")
-	for key, val := range data {
-		jsondata, err := json.Marshal(val)
+	for i, key := range keys {
+		jsondata, err := json.Marshal(data[key])
 		if err != nil {
-			l.Log.Error(errors.PackError(errors.JSONUnmarshalFailed, "Write to DB in json form failed: "+err.Error()))
+			delete(data, key)
+			failedIndices = append(failedIndices, i)
+			l.Log.Error(errors.PackError(errors.JSONUnmarshalFailed,
+				fmt.Sprintf("update db: JSON Unmarshal failed: error : %s, key: %s, json: %v", err.Error(), key, data[key])))
+			continue
 		}
-		_, createErr := c.WriteConn.Do("SET", key, jsondata)
-		if createErr != nil {
+		updateErr := c.WriteConn.Send("SET", key, jsondata)
+		if updateErr != nil {
 			c.WriteConn.Send("DISCARD")
-			return errors.PackError(errors.DBUpdateFailed, "Write to DB failed : "+createErr.Error())
+			if isTimeOutError(updateErr) {
+				return errors.PackError(errors.TimeoutError, updateErr.Error())
+			}
+			return errors.PackError(errors.DBUpdateFailed, updateErr.Error())
 		}
 	}
-	_, err := c.WriteConn.Do("EXEC")
+
+	keys = removeFailedKeys(keys, failedIndices)
+	result, err := redis.Values(c.WriteConn.Do("EXEC"))
 	if err != nil {
 		c.WriteConn.Send("DISCARD")
-		return errors.PackError(errors.DBUpdateFailed, err)
+		if isTimeOutError(err) {
+			return errors.PackError(errors.TimeoutError, err.Error())
+		}
+		return errors.PackError(errors.DBUpdateFailed, err.Error())
+	} else {
+		for i, key := range keys {
+			res, ok := result[i].(string)
+			if ok && res == "OK" {
+				delete(data, key)
+			} else {
+				partialFailure = true
+			}
+		}
+	}
+
+	if partialFailure {
+		return errors.PackError(errors.TransactionPartiallyFailed, "TransactionPartiallyFailed : All keys in transaction are not updated in DB")
 	}
 	return nil
 }
 
 // CreateIndexTransaction will create the indices using pipelined transaction
 /* CreateIndexTransaction takes the following keys as input:
-1."data" is of type map[string][2]interface{} and is the user data sent to be updated in DB.
-key of map should be the key in database. the first value of interface array should be the index group
-and second value is score of that key
+1. "key" is the key of the sorted set.
+2."scores" is of type map[string]int64 and is the user data sent to be updated in DB.
+key of map should be the member for which we create the index. the value is score of that member
 */
-func (c *Conn) CreateIndexTransaction(data map[string][2]interface{}) *errors.Error {
+func (c *Conn) CreateIndexTransaction(key string, scores map[string]int64) *errors.Error {
+	var partialFailure bool = false
+	members := getSortedMapKeys(scores)
 	c.WriteConn.Send("MULTI")
-	for key, val := range data {
-		index := val[0].(string)
-		value := val[1].(int64)
-		_, createErr := c.WriteConn.Do("ZADD", index, value, key)
+	for _, member := range members {
+		createErr := c.WriteConn.Send("ZADD", key, scores[member], member)
 		if createErr != nil {
 			c.WriteConn.Send("DISCARD")
-			return errors.PackError(errors.DBUpdateFailed, "Write to DB failed : "+createErr.Error())
+			if isTimeOutError(createErr) {
+				return errors.PackError(errors.TimeoutError, createErr.Error())
+			}
+			return errors.PackError(errors.DBUpdateFailed, createErr.Error())
 		}
 	}
-	_, err := c.WriteConn.Do("EXEC")
+	result, err := redis.Values(c.WriteConn.Do("EXEC"))
 	if err != nil {
 		c.WriteConn.Send("DISCARD")
-		return errors.PackError(errors.DBUpdateFailed, err)
+		if isTimeOutError(err) {
+			return errors.PackError(errors.TimeoutError, err.Error())
+		}
+		return errors.PackError(errors.DBUpdateFailed, err.Error())
+	} else {
+		for i, member := range members {
+			res, ok := result[i].(int64)
+			if ok && res == 1 {
+				delete(scores, member)
+			} else {
+				partialFailure = true
+			}
+		}
+	}
+	if partialFailure {
+		return errors.PackError(errors.TransactionPartiallyFailed, "TransactionPartiallyFailed : All indices for the key are not created in DB")
 	}
 	return nil
+}
+
+// ShouldRetry checks fi the redis db operation can be retried or not by validating the error returned by redis
+func ShouldRetry(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	e := err.Error()
+	redisErrorPrefixes := []string{
+		"LOADING ",
+		"READONLY ",
+		"MOVED ",
+		"TRYAGAIN ",
+	}
+
+	switch e {
+	case io.EOF.Error(), io.ErrUnexpectedEOF.Error():
+		return true
+	case "ERR max number of clients reached":
+		return true
+	}
+
+	for _, prefix := range redisErrorPrefixes {
+		if strings.HasPrefix(e, prefix) {
+			return true
+		}
+	}
+
+	// if instance of Error struct in errors package of lib-utilities is passed as the error,
+	// conversion to timeout error would not be possible
+	// So actual error should be passed to check if it is timeout
+	return isTimeOutError(err)
+}
+
+func isTimeOutError(err error) bool {
+	if err, ok := err.(net.Error); ok && err.Timeout() {
+		return true
+	}
+	return false
 }
 
 //GetResourceDetails will fetch the key and also fetch the data

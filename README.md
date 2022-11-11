@@ -55,6 +55,7 @@
    - [Odim-controller configuration parameters](#odim-controller-configuration-parameters)
    - [Running curl commands on a different server](#Running-curl-commands-on-a-different-server)
    - [Plugin configuration parameters](#plugin-configuration-parameters)
+   - [Log levels](#log-levels)
    - [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names)
    - [Using protoc compiler](#using-protoc-compiler)
    - [Using your own CA certificates and keys](#using-your-own-ca-certificates-and-keys)
@@ -209,6 +210,7 @@ The following table lists the software components and versions that are compatib
 |Stakater/Reloader|v0.0.76|
 |Redfish Schema|2022.1|
 |Redfish Specification|1.15.1|
+
 
 
 # Resource Aggregator for ODIM pre-deployment operations
@@ -2470,8 +2472,8 @@ This procedure shows how to set up time synchronization across all the nodes (de
    
 ```
    sudo systemctl enable chrony
-   ```
-   
+```
+
    
 
 ## Downloading and installing Go language
@@ -2888,6 +2890,47 @@ The following table lists all the configuration parameters required to deploy a 
 | lbPort                                  | If it is a one-cluster configuration, the lbPort must be same as eventListenerNodePort. <br>If there is more than one cluster node (`haDeploymentEnabled` is true), lbport must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as nginx proxy port for the plugin. |
 | logPath                                 | The path where the plugin logs are stored. Default path is `/var/log/<plugin_name>_logs`<br>**Example**: `/var/log/grfplugin_logs` |
 
+## Log levels
+
+Every operation in Resource Aggregator for ODIM is logged in `var/log/odimra`. Resource Aggregator for ODIM supports logs in syslog format. These logs can be of different levels and are useful in diagnosing issues. 
+You can filter the log levels you want to view on your system by specifying the `logLevel` parameter in your `kube_deploy_nodes.yaml` configuration file. Supported values for the parameter are `panic`, `fatal`, `error`, `warn`, `info`, `debug`, `trace`.
+
+> **NOTE**: The default value for `logLevel` is `warn`.
+
+For a log level filter you specify, the relevant logs as well as the logs with its preceding priority values are displayed. For example, if you specify the `logLevel` parameter as `error`, all the `errors`, `fatals`, and `panics` are logged.
+
+| Log level | Priority value | Description                                                  |
+| --------- | -------------- | ------------------------------------------------------------ |
+| panic     | 8              | Highest level of severity.                                   |
+| fatal     | 9              | Exits even if the `logLevel` parameter is set to `panic`.    |
+| error     | 11             | Used for errors that should definitely be noted.             |
+| warn      | 12             | Non-critical entries.                                        |
+| info      | 14             | General operational entries about what's happening in the application. |
+| debug     | 15             | Usually only enabled when debugging. Verbose logging.        |
+| trace     | 15             | Designates finer-grained informational events than the debug logs. |
+
+> **Sample log**
+
+Each log consists of a priority value of the log level, date and time of the log, log level, user account details, and the log message.
+
+```
+<11> 2022-09-12T15:27:48Z error clustervm task-86c45f76df-2ht9j_8
+GetTaskStatus : Unable to read taskdata from DB: no data with the key found
+```
+
+#### Updating log levels
+
+To update an existing log level after Resource Aggregator for ODIM is installed, perform the following steps:
+
+1. Update the `logLevel` parameter in your `kube_deploy_nodes.yaml` configuration file.
+
+2. Run the following command to update log levels for all Resource Aggregator for ODIM services:
+
+   ```
+   python3 odim-controller.py --config /home/${USER}/R4H60-11016/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra
+   ```
+
+   
 
 
 ## Resource Aggregator for ODIM deployment names

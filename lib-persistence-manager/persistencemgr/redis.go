@@ -856,7 +856,7 @@ func (c *Conn) CreateIndexTransaction(key string, scores map[string]int64) *erro
 }
 
 // ShouldRetry checks fi the redis db operation can be retried or not by validating the error returned by redis
-func ShouldRetry(err error) bool {
+func IsRetriable(err error) bool {
 	if err == nil {
 		return false
 	}

@@ -343,7 +343,7 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	if len(tasks) > 0 {
 		for i < maxRetry {
 			if err := conn.UpdateTransaction(tasks); err != nil {
-				if err.ErrNo() == errors.TimeoutError || db.ShouldRetry(err) {
+				if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
 					time.Sleep(retryInterval)
 					if conn.IsBadConn() {
 						conn.Close()
@@ -371,7 +371,7 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 		i = 0
 		for i < maxRetry {
 			if err := conn.CreateIndexTransaction(CompletedTaskIndex, completedTasks); err != nil {
-				if err.ErrNo() == errors.TimeoutError || db.ShouldRetry(err) {
+				if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
 					time.Sleep(retryInterval)
 					if conn.IsBadConn() {
 						conn.Close()

@@ -736,27 +736,6 @@ func getSortedMapKeys(m interface{}) []string {
 	return keys
 }
 
-func removeFailedKeys(keys []string, indices []int) []string {
-	if len(indices) <= 0 {
-		return keys
-	}
-	indicesMap := make(map[int]string, len(keys))
-	for i, key := range keys {
-		indicesMap[i] = key
-	}
-
-	for _, index := range indices {
-		delete(indicesMap, index)
-	}
-
-	newKeys := make([]string, 0, len(keys)-len(indices))
-	for _, key := range indicesMap {
-		newKeys = append(newKeys, key)
-	}
-	sort.Strings(newKeys)
-	return newKeys
-}
-
 // UpdateTransaction will update the database using pipelined transaction
 /* UpdateTransaction takes the following keys as input:
 1."data" is of type map[string]interface{} and is the user data sent to be updated in DB.
@@ -764,14 +743,12 @@ key of map should be the key in database.
 */
 func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 	var partialFailure bool = false
-	failedIndices := make([]int, 0, len(data))
 	keys := getSortedMapKeys(data)
 	c.WriteConn.Send("MULTI")
-	for i, key := range keys {
+	for _, key := range keys {
 		jsondata, err := json.Marshal(data[key])
 		if err != nil {
 			delete(data, key)
-			failedIndices = append(failedIndices, i)
 			l.Log.Error(errors.PackError(errors.JSONUnmarshalFailed,
 				fmt.Sprintf("update db: JSON Unmarshal failed: error : %s, key: %s, json: %v", err.Error(), key, data[key])))
 			continue
@@ -786,7 +763,7 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 		}
 	}
 
-	keys = removeFailedKeys(keys, failedIndices)
+	keys = getSortedMapKeys(data)
 	result, err := redis.Values(c.WriteConn.Do("EXEC"))
 	if err != nil {
 		c.WriteConn.Send("DISCARD")
@@ -877,7 +854,7 @@ func IsRetriable(err error) bool {
 	}
 
 	for _, prefix := range redisErrorPrefixes {
-		if strings.HasPrefix(e, prefix) {
+		if strings.Contains(e, prefix) {
 			return true
 		}
 	}

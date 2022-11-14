@@ -1634,43 +1634,7 @@ func Test_getSortedMapKeys(t *testing.T) {
 	}
 }
 
-func Test_removeFailedKeys(t *testing.T) {
-	type args struct {
-		keys    []string
-		indices []int
-	}
-	tests := []struct {
-		name string
-		args args
-		want []string
-	}{
-		{
-			name: "success case",
-			args: args{
-				keys:    []string{"apple", "bat", "cat"},
-				indices: []int{1},
-			},
-			want: []string{"apple", "cat"},
-		},
-		{
-			name: "invalid case",
-			args: args{
-				keys:    []string{"apple", "bat", "cat"},
-				indices: []int{-1, 6},
-			},
-			want: []string{"apple", "bat", "cat"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := removeFailedKeys(tt.args.keys, tt.args.indices); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("removeFailedKeys() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestShouldRetry(t *testing.T) {
+func TestIsRetriable(t *testing.T) {
 	type args struct {
 		err error
 	}
@@ -1689,7 +1653,7 @@ func TestShouldRetry(t *testing.T) {
 		{
 			name: "success case 2",
 			args: args{
-				err: fmt.Errorf("LOADING error"),
+				err: fmt.Errorf("error LOADING redis"),
 			},
 			want: true,
 		},
@@ -1710,8 +1674,8 @@ func TestShouldRetry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ShouldRetry(tt.args.err); got != tt.want {
-				t.Errorf("ShouldRetry() = %v, want %v", got, tt.want)
+			if got := IsRetriable(tt.args.err); got != tt.want {
+				t.Errorf("IsRetriable() = %v, want %v", got, tt.want)
 			}
 		})
 	}

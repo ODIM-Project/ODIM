@@ -127,6 +127,14 @@ func GetWriteConnection() *db.Conn {
 	return conn
 }
 
+func validateDBConnection(conn *db.Conn) *db.Conn {
+	if conn.IsBadConn() {
+		conn.Close()
+		return GetWriteConnection()
+	}
+	return conn
+}
+
 // GetCompletedTasksIndex Searches Complete Tasks in the db using secondary index with provided search Key
 func GetCompletedTasksIndex(searchKey string) ([]string, error) {
 	var taskData []string
@@ -297,10 +305,13 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 		tick.M.Unlock()
 	}()
 
+	const (
+		MaxRetry int    = 3
+		Table    string = "task"
+	)
+
 	var (
 		i             int           = 0
-		maxRetry      int           = 3
-		table         string        = "task"
 		updatedTasks  bool          = false
 		createdIndex  bool          = false
 		mapSize       int           = config.Data.TaskQueueConf.QueueSize
@@ -318,16 +329,13 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	tick.Executing = true
 	tick.M.Unlock()
 
-	if conn.IsBadConn() {
-		conn.Close()
-		conn = GetWriteConnection()
-	}
+	conn = validateDBConnection(conn)
 
 	for {
 		task := dequeueTask(queue)
 
 		if task != nil {
-			saveID := table + ":" + task.ID
+			saveID := Table + ":" + task.ID
 			tasks[saveID] = task
 			if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
 				key := task.UserName + "::" + task.EndTime.String() + "::" + task.ID
@@ -341,14 +349,11 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	}
 
 	if len(tasks) > 0 {
-		for i < maxRetry {
+		for i < MaxRetry {
 			if err := conn.UpdateTransaction(tasks); err != nil {
 				if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
 					time.Sleep(retryInterval)
-					if conn.IsBadConn() {
-						conn.Close()
-						conn = GetWriteConnection()
-					}
+					conn = validateDBConnection(conn)
 				} else {
 					l.Log.Error("ProcessTaskQueue() : task update transaction failed : " + err.Error())
 					break
@@ -369,14 +374,11 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 
 	if len(completedTasks) > 0 {
 		i = 0
-		for i < maxRetry {
+		for i < MaxRetry {
 			if err := conn.CreateIndexTransaction(CompletedTaskIndex, completedTasks); err != nil {
 				if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
 					time.Sleep(retryInterval)
-					if conn.IsBadConn() {
-						conn.Close()
-						conn = GetWriteConnection()
-					}
+					conn = validateDBConnection(conn)
 				} else {
 					l.Log.Error("ProcessTaskQueue() : create index transaction failed : " + err.Error())
 					break

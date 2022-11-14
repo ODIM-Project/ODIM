@@ -128,6 +128,7 @@ func SubscribeCtrlMsgQueue(topicName string) {
 
 // consumeCtrlMsg consume control messages
 func consumeCtrlMsg(event interface{}) {
+	l.Log.Info("Consume controlel hit")
 	var ctrlMessage common.ControlMessageData
 	done := make(chan bool)
 	data, _ := json.Marshal(&event)

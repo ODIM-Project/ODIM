@@ -313,9 +313,9 @@ func SaveRegistryFile(body []byte, table string, key string) error {
 	return nil
 }
 
-//GetRegistryFile from Onisk DB
+//GetRegistryFile from InMemory DB
 func GetRegistryFile(Table, key string) (string, *errors.Error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return "", errors.PackError(err.ErrNo(), err)
 	}

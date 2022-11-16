@@ -79,7 +79,7 @@ func CreateVolume(ctx iris.Context) {
 	systemID := ctx.Params().Get("id")
 	storageInstance := ctx.Params().Get("id2")
 
-	driveURI := reqBody.Drives[0].OdataID
+	driveURI := reqBody.Links.Drives[0].Oid
 	s := strings.Split(driveURI, "/")
 	driveSystemID := s[4]
 	reqPostBody = strings.Replace(reqPostBody, driveSystemID, systemID, -1)
@@ -163,7 +163,7 @@ func CreateVolume(ctx iris.Context) {
 						Severity:       "Critical",
 						EventTimestamp: time.Now().String(),
 						Message:        "Volume is created successfully",
-						MessageID:      "ResourceEvent.1.0.3.ResourceCreated",
+						MessageID:      "ResourceEvent.1.2.1.ResourceCreated",
 						OriginOfCondition: &common.Link{
 							Oid: oriOfCondition,
 						},
@@ -288,7 +288,7 @@ func DeleteVolume(ctx iris.Context) {
 					Severity:       "Critical",
 					EventTimestamp: time.Now().String(),
 					Message:        "Volume is deleted successfully",
-					MessageID:      "ResourceEvent.1.0.3.ResourceRemoved",
+					MessageID:      "ResourceEvent.1.2.1.ResourceRemoved",
 					OriginOfCondition: &common.Link{
 						Oid: uri,
 					},

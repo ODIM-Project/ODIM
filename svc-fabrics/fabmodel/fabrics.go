@@ -23,6 +23,11 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
+var (
+	//GetDBConnectionFunc is pointer for common.GetDBConnection func
+	GetDBConnectionFunc = common.GetDBConnection
+)
+
 // Plugin is the model for plugin information
 type Plugin struct {
 	IP                string
@@ -44,7 +49,7 @@ type Fabric struct {
 func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	var plugin Plugin
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return plugin, err
 	}
@@ -69,7 +74,7 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 
 //GetAllFabricPluginDetails fetches all fabric plugin information from plugin table
 func GetAllFabricPluginDetails() ([]string, error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +88,7 @@ func GetAllFabricPluginDetails() ([]string, error) {
 // AddFabricData will add the fabric uuid and pluginid details into ondisk
 func (fabric *Fabric) AddFabricData(fabuuid string) error {
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return errors.PackError(errors.UndefinedErrorType, err)
 	}
@@ -100,10 +105,25 @@ func (fabric *Fabric) AddFabricData(fabuuid string) error {
 	return nil
 }
 
+// RemoveFabricData will remove the fabric uuid and pluginid details into ondisk
+func (fabric *Fabric) RemoveFabricData(fabuuid string) error {
+	conn, err := GetDBConnectionFunc(common.OnDisk)
+	if err != nil {
+		return errors.PackError(errors.UndefinedErrorType, err)
+	}
+	//Create a header for data entry
+	const table string = "Fabric"
+	//Save data into Database
+	if cerr := conn.Delete(table, fabuuid); cerr != nil {
+		return cerr
+	}
+	return nil
+}
+
 //GetManagingPluginIDForFabricID fetches the fabric details
 func GetManagingPluginIDForFabricID(fabID string) (Fabric, error) {
 	var fabric Fabric
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return fabric, err
 	}
@@ -122,7 +142,7 @@ func GetManagingPluginIDForFabricID(fabID string) (Fabric, error) {
 
 //GetAllTheFabrics fetches all the fabrics details
 func GetAllTheFabrics() ([]Fabric, error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}

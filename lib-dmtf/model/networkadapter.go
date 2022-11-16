@@ -32,7 +32,7 @@ type NetworkAdapter struct {
 	Location               *Location              `json:"Location,omitempty"`
 	LLDPEnabled            bool                   `json:"LLDPEnabled,omitempty"`
 	Manufacturer           interface{}            `json:"Manufacturer"`
-	Measurements           []*Link                `json:"Measurements,omitempty"`
+	Measurements           []*Link                `json:"Measurements,omitempty"` // Deprecated in version v1.9.0
 	Metrics                *Link                  `json:"Metrics,omitempty"`
 	Model                  interface{}            `json:"Model"`
 	NetworkDeviceFunctions *Link                  `json:"NetworkDeviceFunctions,omitempty"`

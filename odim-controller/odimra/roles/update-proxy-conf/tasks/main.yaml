@@ -18,7 +18,7 @@
         server: "server {{ hostvars[item].ansible_host }}:{{ odimra.apiNodePort }} max_fails=2 fail_timeout=10s backup;"
       when: hostvars[item].ansible_host != cur_host_ip
     
-    - name: Update API proxy service conf
+    - name: Update API proxy service conf for ipv4
       template:
         src: "roles/configure-proxy/templates/api_proxy_server.conf.j2"
         dest: /opt/nginx/servers/api_proxy_server.conf
@@ -27,7 +27,28 @@
           virtualIP: "{{ odimra.virtualIP }}"
           apiProxyPort: "{{ odimra.apiProxyPort }}"
           apiServerList: "{{ serverlist|join('\n')|indent(8, True) }}"
+          virtualIPv6: ""
+          apiNodePort: "{{ odimra.apiNodePort }}"
+          selfNodeIPv6: ""
+          dualStack: "False"
       delegate_to: "{{ host_item }}"
+      when: nwPreference == 'ipv4'    
+
+    - name: Update API proxy service conf for dualStack
+      template:
+        src: "roles/configure-proxy/templates/api_proxy_server.conf.j2"
+        dest: /opt/nginx/servers/api_proxy_server.conf
+      with_items:
+        - selfNodeIP: "{{ cur_host_ip }}"
+          virtualIP: "{{ odimra.virtualIP }}"
+          apiProxyPort: "{{ odimra.apiProxyPort }}"
+          apiServerList: "{{ serverlist|join('\n')|indent(8, True) }}"
+          virtualIPv6: "{{ odimra.virtualIPv6 }}"
+          apiNodePort: "{{ odimra.apiNodePort }}"
+          selfNodeIPv6: "{{ hostvars[inventory_hostname].ipv6 }}"
+          dualStack: "True"
+      delegate_to: "{{ host_item }}"
+      when: nwPreference == 'dualStack'    
 
     - name: Get list of plugins under plugin helm charts path
       find:

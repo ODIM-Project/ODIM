@@ -18,9 +18,8 @@ package handle
 import (
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
@@ -51,7 +50,7 @@ func (task *TaskRPCs) DeleteTask(ctx iris.Context) {
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -78,7 +77,7 @@ func (task *TaskRPCs) GetTaskStatus(ctx iris.Context) {
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -107,7 +106,7 @@ func (task *TaskRPCs) GetSubTasks(ctx iris.Context) {
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -137,7 +136,7 @@ func (task *TaskRPCs) GetSubTask(ctx iris.Context) {
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -166,7 +165,7 @@ func (task *TaskRPCs) GetTaskMonitor(ctx iris.Context) {
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -201,7 +200,7 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -229,7 +228,7 @@ func (task *TaskRPCs) GetTaskService(ctx iris.Context) {
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)

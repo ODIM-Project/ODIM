@@ -14,11 +14,13 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/consumer"
@@ -27,16 +29,29 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var log = logrus.New()
-
 func main() {
+	// setting up the logging framework
+	hostName := os.Getenv("HOST_NAME")
+	podName := os.Getenv("POD_NAME")
+	pid := os.Getpid()
+	log := logs.Log
+	logs.Adorn(logrus.Fields{
+		"host":   hostName,
+		"procid": podName + fmt.Sprintf("_%d", pid),
+	})
+
+	if err := config.SetConfiguration(); err != nil {
+		log.Logger.SetFormatter(&logs.SysLogFormatter{})
+		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
+	}
+
+	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	log.Logger.SetOutput(os.Stdout)
+	log.Logger.SetLevel(config.Data.LogLevel)
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Event Service should not be run as the root user")
-	}
-
-	if err := config.SetConfiguration(); err != nil {
-		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
 	}
 
 	config.CollectCLArgs()
@@ -77,13 +92,13 @@ func main() {
 	// which is passed to it as ProcessCtrlMsg method after reading the data from the channel.
 	common.RunReadWorkers(consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 1)
 
-	configFilePath := os.Getenv("CONFIG_FILE_PATH")
-	if configFilePath == "" {
+	evcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
+	if evcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	eventChan := make(chan interface{})
+
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	go evcommon.TrackConfigFileChanges()
 
 	// Subscribe to intercomm messagebus queue
 	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.MessageBusQueue[0])

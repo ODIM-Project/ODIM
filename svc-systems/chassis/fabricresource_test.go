@@ -15,6 +15,7 @@
 package chassis
 
 import (
+	"errors"
 	"net/http"
 	"reflect"
 	"testing"
@@ -23,12 +24,17 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
 
 func Test_fabricFactory_getFabricChassisResource(t *testing.T) {
 	Token.Tokens = make(map[string]string)
 	config.SetUpMockConfig(t)
 	f := getFabricFactoryMock(nil)
+	ferr := getFabricFactoryMock(nil)
+	ferr.getFabricManagers = func() ([]smodel.Plugin, error) {
+		return nil, errors.New("")
+	}
 	var r response.RPC
 	initializeRPCResponse(
 		&r,
@@ -62,6 +68,14 @@ func Test_fabricFactory_getFabricChassisResource(t *testing.T) {
 			},
 			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", "invalid"}, nil),
 		},
+		{
+			name: "GET with invalid resource manager",
+			f:    ferr,
+			args: args{
+				rID: "valid",
+			},
+			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", "valid"}, nil),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -70,4 +84,15 @@ func Test_fabricFactory_getFabricChassisResource(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_collectChassisResource(t *testing.T) {
+	Token.Tokens = make(map[string]string)
+	config.SetUpMockConfig(t)
+	f := getFabricFactoryMock(nil)
+	ContactPluginFunc = func(req *pluginContactRequest) ([]byte, string, int, string, error) {
+		return nil, "", 401, "", errors.New("")
+	}
+	collectChassisResource(f, &pluginContactRequest{URL: "test"})
+
 }

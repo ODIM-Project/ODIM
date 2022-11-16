@@ -58,7 +58,7 @@ func mockContactClientForDuplicate(url, method, token string, odataID string, bo
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	} else if url == "https://localhost:9091/ODIM/v1/Registries/Base" {
-		body := `{"@odata.context":"/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile","@odata.etag":"W/\"0DCA67A0\"","@odata.id":"/redfish/v1/Registries/Base","@odata.type":"#MessageRegistryFile.v1_1_3.MessageRegistryFile","Id":"Base","Description":"Registry Definition File for Base","Languages":["en"],"Location":[{"Language":"en","Uri":"/redfish/v1/RegistryStore/registries/en/Base.json"}],"Name":"Base Message Registry File","Registry":"Base.1.11.0"}`
+		body := `{"@odata.context":"/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile","@odata.etag":"W/\"0DCA67A0\"","@odata.id":"/redfish/v1/Registries/Base","@odata.type":"#MessageRegistryFile.v1_1_3.MessageRegistryFile","Id":"Base","Description":"Registry Definition File for Base","Languages":["en"],"Location":[{"Language":"en","Uri":"/redfish/v1/RegistryStore/registries/en/Base.json"}],"Name":"Base Message Registry File","Registry":"Base.1.13.0"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -178,6 +178,13 @@ func mockContactClientForDuplicate(url, method, token string, odataID string, bo
 
 	} else if url == host+"/ODIM/v1/Managers/1" {
 		body := `{"@odata.id":"/ODIM/v1/Managers/1", "UUID": "1s7sda8asd-asdas8as0", "Id": "1"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+
+	} else if url == host+"/ODIM/v1/LicenseService/Licenses/" {
+		body := `{"@odata.id":"","@odata.type":"","Name":"","Members":[{"@odata.id":"/redfish/v1/LicenseService/Licenses/1.1"}],"Members@odata.count":1}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),

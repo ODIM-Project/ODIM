@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "kafka-2.5.0.name" -}}
+{{- define "kafka-3.1.0.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "kafka-2.5.0.fullname" -}}
+{{- define "kafka-3.1.0.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "kafka-2.5.0.chart" -}}
+{{- define "kafka-3.1.0.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "kafka-2.5.0.labels" -}}
-helm.sh/chart: {{ include "kafka-2.5.0.chart" . }}
-{{ include "kafka-2.5.0.selectorLabels" . }}
+{{- define "kafka-3.1.0.labels" -}}
+helm.sh/chart: {{ include "kafka-3.1.0.chart" . }}
+{{ include "kafka-3.1.0.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "kafka-2.5.0.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "kafka-2.5.0.name" . }}
+{{- define "kafka-3.1.0.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "kafka-3.1.0.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "kafka-2.5.0.serviceAccountName" -}}
+{{- define "kafka-3.1.0.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "kafka-2.5.0.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "kafka-3.1.0.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

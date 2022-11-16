@@ -22,10 +22,9 @@ import (
 	"net/http"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/models"
@@ -59,10 +58,10 @@ func InitServiceRoot() ServiceRoot {
 //getService method takes list of string as parameter and returns Serviceroot struct with assigned values
 func getService(microServices []string, uuid string) models.ServiceRoot {
 	serviceRoot := models.ServiceRoot{
-		OdataType:      "#ServiceRoot.v1_11_0.ServiceRoot",
+		OdataType:      "#ServiceRoot.v1_14_0.ServiceRoot",
 		ID:             "RootService",
 		Name:           "Root Service",
-		RedfishVersion: "1.14.0",
+		RedfishVersion: "1.15.1",
 		UUID:           uuid, //TODO: persistence of the uuid should be discussed.
 		OdataContext:   "/redfish/v1/$metadata#ServiceRoot.ServiceRoot",
 		OdataID:        "/redfish/v1/",
@@ -106,6 +105,12 @@ func getService(microServices []string, uuid string) models.ServiceRoot {
 
 		case "TelemetryService":
 			serviceRoot.TelemetryService = &models.Service{OdataID: servicePath}
+
+		case "CompositionService":
+			serviceRoot.CompositionService = &models.Service{OdataID: servicePath}
+
+		case "LicenseService":
+			serviceRoot.LicenseService = &models.Service{OdataID: servicePath}
 
 		}
 	}
@@ -151,7 +156,6 @@ func GetOdata(ctx iris.Context) {
 			Odata.Value = append(Odata.Value, &models.Value{Name: service, Kind: "Singleton", URL: serviceURL})
 		}
 	}
-	ctx.Gzip(true)
 	var odataheaders = map[string]string{
 		"Allow": "GET",
 	}
@@ -169,7 +173,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AccountService_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "AccountService"},
-					models.Include{Namespace: "AccountService.v1_10_0"},
+					models.Include{Namespace: "AccountService.v1_11_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AddressPool_v1.xml",
@@ -203,7 +207,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AggregationSource_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "AggregationSource"},
-					models.Include{Namespace: "AggregationSource.v1_1_0"},
+					models.Include{Namespace: "AggregationSource.v1_2_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AggregationSourceCollection_v1.xml",
@@ -237,7 +241,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Chassis_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Chassis"},
-					models.Include{Namespace: "Chassis.v1_17_0"},
+					models.Include{Namespace: "Chassis.v1_20_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ChassisCollection_v1.xml",
@@ -245,10 +249,16 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "ChassisCollection"},
 				},
 			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/CompositionService_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "CompositionService"},
+					models.Include{Namespace: "CompositionService.v1_2_0"},
+				},
+			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ComputerSystem_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "ComputerSystem"},
-					models.Include{Namespace: "ComputerSystem.v1_16_0"},
+					models.Include{Namespace: "ComputerSystem.v1_18_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ComputerSystemCollection_v1.xml",
@@ -270,13 +280,13 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Drive_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Drive"},
-					models.Include{Namespace: "Drive.v1_13_0"},
+					models.Include{Namespace: "Drive.v1_15_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Endpoint_v1.xml",
 				TopInclude: []models.Include{
-					models.Include{Namespace: "Endpoint.v1_0_0"},
-					models.Include{Namespace: "Endpoint.v1_6_1"},
+					models.Include{Namespace: "Endpoint"},
+					models.Include{Namespace: "Endpoint.v1_7_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/EndpointCollection_v1.xml",
@@ -287,7 +297,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/EthernetInterface_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "EthernetInterface"},
-					models.Include{Namespace: "EthernetInterface.v1_7_0"},
+					models.Include{Namespace: "EthernetInterface.v1_8_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/EthernetInterfaceCollection_v1.xml",
@@ -298,7 +308,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/EventDestination_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "EventDestination"},
-					models.Include{Namespace: "EventDestination.v1_11_0"},
+					models.Include{Namespace: "EventDestination.v1_12_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/EventDestinationCollection_v1.xml",
@@ -309,13 +319,13 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/EventService_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "EventService"},
-					models.Include{Namespace: "EventService.v1_7_2"},
+					models.Include{Namespace: "EventService.v1_8_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Fabric_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Fabric.v1_0_0"},
-					models.Include{Namespace: "Fabric.v1_2_2"},
+					models.Include{Namespace: "Fabric.v1_3_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/FabricCollection_v1.xml",
@@ -342,7 +352,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/LogEntry_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "LogEntry"},
-					models.Include{Namespace: "LogEntry.v1_9_0"},
+					models.Include{Namespace: "LogEntry.v1_11_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/LogEntryCollection_v1.xml",
@@ -359,13 +369,13 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Manager_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Manager"},
-					models.Include{Namespace: "Manager.v1_13_0"},
+					models.Include{Namespace: "Manager.v1_15_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ManagerAccount_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "ManagerAccount"},
-					models.Include{Namespace: "ManagerAccount.v1_8_0"},
+					models.Include{Namespace: "ManagerAccount.v1_9_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ManagerAccountCollection_v1.xml",
@@ -387,7 +397,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Memory_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Memory"},
-					models.Include{Namespace: "Memory.v1_13_0"},
+					models.Include{Namespace: "Memory.v1_15_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MemoryCollection_v1.xml",
@@ -408,7 +418,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MessageRegistry_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "MessageRegistry"},
-					models.Include{Namespace: "MessageRegistry.v1_4_2"},
+					models.Include{Namespace: "MessageRegistry.v1_5_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MessageRegistryCollection_v1.xml",
@@ -430,7 +440,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/NetworkAdapter_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "NetworkAdapter"},
-					models.Include{Namespace: "NetworkAdapter.v1_8_0"},
+					models.Include{Namespace: "NetworkAdapter.v1_9_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/NetworkAdapterCollection_v1.xml",
@@ -452,13 +462,19 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/PCIeDevice_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "PCIeDevice"},
-					models.Include{Namespace: "PCIeDevice.v1_7_0"},
+					models.Include{Namespace: "PCIeDevice.v1_9_0"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/PCIeFunction_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "PCIeFunction"},
+					models.Include{Namespace: "PCIeFunction.v1_2_3"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Port_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Port"},
-					models.Include{Namespace: "Port.v1_5_0"},
+					models.Include{Namespace: "Port.v1_6_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/PortCollection_v1.xml",
@@ -481,7 +497,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Processor_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Processor"},
-					models.Include{Namespace: "Processor.v1_13_0"},
+					models.Include{Namespace: "Processor.v1_15_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ProcessorCollection_v1.xml",
@@ -499,10 +515,21 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "Redundancy"},
 				},
 			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ResourceBlock_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "ResourceBlock"},
+					models.Include{Namespace: "ResourceBlock.v1_4_0"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ResourceBlockCollection_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "ResourceBlockCollection"},
+				},
+			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Resource_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Resource"},
-					models.Include{Namespace: "Resource.v1_13_0"},
+					models.Include{Namespace: "Resource.v1_14_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Role_v1.xml",
@@ -525,13 +552,13 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ServiceRoot_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "ServiceRoot"},
-					models.Include{Namespace: "ServiceRoot.v1_11_0"},
+					models.Include{Namespace: "ServiceRoot.v1_14_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Session_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Session"},
-					models.Include{Namespace: "Session.v1_3_0"},
+					models.Include{Namespace: "Session.v1_4_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/SessionCollection_v1.xml",
@@ -548,7 +575,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Settings_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Settings"},
-					models.Include{Namespace: "Settings.v1_3_3"},
+					models.Include{Namespace: "Settings.v1_3_4"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/SoftwareInventoryCollection_v1.xml",
@@ -559,7 +586,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Storage_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Storage"},
-					models.Include{Namespace: "Storage.v1_11_0"},
+					models.Include{Namespace: "Storage.v1_13_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/StorageCollection_v1.xml",
@@ -567,10 +594,21 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "StorageCollection"},
 				},
 			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/StorageController_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "StorageController"},
+					models.Include{Namespace: "StorageController.v1_6_0"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/StorageControllerCollection_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "StorageControllerCollection"},
+				},
+			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Switch_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Switch"},
-					models.Include{Namespace: "Switch.v1_6_0"},
+					models.Include{Namespace: "Switch.v1_8_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/SwitchCollection_v1.xml",
@@ -581,7 +619,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Task_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Task"},
-					models.Include{Namespace: "Task.v1_5_1"},
+					models.Include{Namespace: "Task.v1_6_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/TaskCollection_v1.xml",
@@ -604,13 +642,13 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/UpdateService_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "UpdateService"},
-					models.Include{Namespace: "UpdateService.v1_10_0"},
+					models.Include{Namespace: "UpdateService.v1_11_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/VirtualMedia_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "VirtualMedia"},
-					models.Include{Namespace: "VirtualMedia.v1_5_0"},
+					models.Include{Namespace: "VirtualMedia.v1_5_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/VirtualMediaCollection_v1.xml",
@@ -659,7 +697,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/PCIeSlots_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "PCIeSlots"},
-					models.Include{Namespace: "PCIeSlots.v1_4_1"},
+					models.Include{Namespace: "PCIeSlots.v1_5_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/NetworkPortCollection_v1.xml",
@@ -740,9 +778,25 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "MetricReport.v1_4_2"},
 				},
 			},
+			models.Reference{URI: "https://redfish.dmtf.org/schemas/v1/LicenseCollection_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "LicenseCollection"},
+				},
+			},
+			models.Reference{URI: "https://redfish.dmtf.org/schemas/v1/LicenseService_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "LicenseService"},
+					models.Include{Namespace: "LicenseService.v1_0_0"},
+				},
+			},
+			models.Reference{URI: "https://redfish.dmtf.org/schemas/v1/License_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "License"},
+					models.Include{Namespace: "License.v1_0_0"},
+				},
+			},
 		},
 	}
-	ctx.Gzip(true)
 
 	var headers = map[string]string{
 		"Allow":        "GET",
@@ -774,7 +828,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authorize token")
+		l.Log.Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
 		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -790,7 +844,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	registryStore := config.Data.RegistryStorePath
 	regFiles, err := ioutil.ReadDir(registryStore)
 	if err != nil {
-		log.Fatal(err.Error())
+		l.Log.Fatal(err.Error())
 	}
 	//Construct the Response body
 	var listMembers []response.ListMember
@@ -849,7 +903,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 			regFileID = strArray[len(strArray)-1]
 		}
 	}
-
+	regFileID = strings.Replace(regFileID, "#", "%23", -1)
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
@@ -860,7 +914,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authorize token")
+		l.Log.Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
 		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -876,7 +930,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 
 	reqRegistryFileName := regFileID + ".json"
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 	}
 	// Constuct the registry file names slice
 	var regFileNames []string
@@ -888,7 +942,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	regFileKeys, err := models.GetAllRegistryFileNamesFromDB("Registries")
 	if err != nil {
 		// log Critical message but proceed
-		log.Error("error: while trying to get the Registry files (Keys/FileNames only)from DB")
+		l.Log.Error("error: while trying to get the Registry files (Keys/FileNames only)from DB")
 	}
 	regFileNames = append(regFileNames, regFileKeys...)
 	for _, regFile := range regFileNames {
@@ -899,7 +953,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	}
 	if locationURI == "" {
 		errorMessage := "error: resource not found"
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusNotFound, errResponse.ResourceNotFound, errorMessage, []interface{}{"RegistryFile", regFileID}, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusNotFound)
@@ -943,6 +997,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 			regFileID = strArray[len(strArray)-1]
 		}
 	}
+	regFileID = strings.Replace(regFileID, "#", "%23", -1)
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
@@ -953,7 +1008,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authorize token")
+		l.Log.Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
 		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -974,9 +1029,9 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		content, err = models.GetRegistryFile("Registries", regFileID)
 		if content == nil {
 			// file Not found, send 404 error
-			log.Error("got error while retreiving fom DB")
+			l.Log.Error("got error while retreiving fom DB")
 			errorMessage := "error: Resource not found"
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			response := common.GeneralError(http.StatusNotFound, errResponse.ResourceNotFound, errorMessage, []interface{}{"RegistryFile", regFileID}, nil)
 			common.SetResponseHeader(ctx, response.Header)
 			ctx.StatusCode(http.StatusNotFound)
@@ -985,13 +1040,13 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		}
 	}
 	var data interface{}
-	log.Error("Before Unmarshalling Data")
+	l.Log.Error("Before Unmarshalling Data")
 	err = json.Unmarshal(content, &data)
 	if err != nil {
 		//return fmt.Errorf("error while trying to unmarshal the config data: %v", err)
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		errorMessage := "error: Resource not found"
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -1095,6 +1150,72 @@ func SystemsMethodNotAllowed(ctx iris.Context) {
 	return
 }
 
+// SystemsMethodInvalidURI holds builds reponse for the invalid url operation on Systems URLs and returns 404 error.
+func SystemsMethodInvalidURI(ctx iris.Context) {
+	defer ctx.Next()
+	url := ctx.Request().URL
+	ctx.StatusCode(http.StatusNotFound)
+	errArgs := &errResponse.Args{
+		Code: errResponse.GeneralError,
+		ErrorArgs: []errResponse.ErrArgs{
+			errResponse.ErrArgs{
+				StatusMessage: errResponse.InvalidURI,
+				MessageArgs:   []interface{}{url},
+			},
+		},
+	}
+	common.SetResponseHeader(ctx, nil)
+	ctx.JSON(errArgs.CreateGenericErrorResponse())
+	return
+}
+
+// CompositionServiceMethodNotAllowed holds builds reponse for the unallowed http operation on Systems URLs and returns 405 error.
+func CompositionServiceMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
+	url := ctx.Request().URL
+	path := url.Path
+	resourceID := ctx.Params().Get("id")
+	// Extend switch case, when each path, requires different handling
+	switch path {
+	case "/redfish/v1/CompositionService/ResourceBlocks":
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	case "/redfish/v1/CompositionServie/ResourceBlocks/" + resourceID:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
+	case "/redfish/v1/CompositionService/ResourceZones":
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	case "/redfish/v1/CompositionService/ResourceZones/" + resourceID:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
+	default:
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	}
+
+	// Set Allow header for search and filter queries
+	if strings.Contains(path, "?") {
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	}
+
+	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}
+
+// LicenseMethodNotAllowed holds builds reponse for the unallowed http operation on License URLs and returns 405 error.
+func LicenseMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
+	url := ctx.Request().URL
+	path := url.Path
+
+	// Extend switch case, when each path, requires different handling
+	switch path {
+	case "/redfish/v1/LicenseService/Licenses":
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	default:
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	}
+
+	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}
+
 // ManagersMethodNotAllowed holds builds reponse for the unallowed http operation on Managers URLs and returns 405 error.
 func ManagersMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
@@ -1123,6 +1244,20 @@ func ManagersMethodNotAllowed(ctx iris.Context) {
 
 // TsMethodNotAllowed holds builds reponse for the unallowed http operation on Task Service URLs and returns 405 error.
 func TsMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}
+
+// UpdateServiceMethodNotAllowed holds builds reponse for the unallowed http operation on Update Service URLs and returns 405 error.
+func UpdateServiceMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}
+func MethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)

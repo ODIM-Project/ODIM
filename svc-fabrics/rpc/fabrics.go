@@ -21,8 +21,7 @@ import (
 
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabrics"
@@ -76,9 +75,19 @@ func (f *Fabrics) AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequ
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(data.Body)
-
 	return resp, nil
 
+}
+
+// RemoveFabric defines  the operation which handles the RPC request response for Remove fabric
+func (f *Fabrics) RemoveFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) (*fabricsproto.FabricResponse, error) {
+	resp := &fabricsproto.FabricResponse{}
+	data := fabrics.RemoveFabric(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	return resp, nil
 }
 
 // DeleteFabricResource defines the operation which handled the RPC request response
@@ -94,14 +103,13 @@ func (f *Fabrics) DeleteFabricResource(ctx context.Context, req *fabricsproto.Fa
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(data.Body)
-
 	return resp, nil
 }
 
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Error("error in unmarshalling response object from util-libs" + err.Error())
+		l.Log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
 }

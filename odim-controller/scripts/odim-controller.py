@@ -18,6 +18,12 @@ import argparse, yaml, logging, traceback
 import os, sys, subprocess, grp, time
 import glob, shutil, copy, getpass, socket
 
+import base64
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
+
 from yaml import SafeDumper
 from Crypto.PublicKey import RSA
 from os import path
@@ -32,18 +38,21 @@ lock = None
 CONTROLLER_CONF_DATA = None
 CONTROLLER_CONF_FILE = ""
 CONTROLLER_LOG_FILE = "odim-controller.log"
-CONTROLLER_LOCK_FILE = "/tmp/odim-controller.lock"
+CONTROLLER_LOCK_FILE = "odim-controller.lock"
 DEPLOYMENT_SRC_DIR = ""
 KUBESPRAY_SRC_PATH = ""
 CONTROLLER_SRC_PATH = ""
 CONTROLLER_BASE_PATH = ""
 DRY_RUN_SET = False
+IS_ODIMRA_DEPLOYMENT = False
 NO_PROMPT_SET = False
 IGNORE_ERRORS_SET = False
 K8S_INVENTORY_DATA = None
 K8S_INVENTORY_FILE = ""
 ODIMRA_VAULT_KEY_FILE = ""
 ANSIBLE_SUDO_PW_FILE = ""
+REDIS_INMEMORY_PW_FILE = ""
+REDIS_ONDISK_PW_FILE = ""
 ANSIBLE_BECOME_PASS = ""
 DEPLOYMENT_ID = ""
 ODIMRA_SRC_PATH = ""
@@ -160,12 +169,22 @@ def perform_checks(skip_opt_param_check=False):
 	global CONTROLLER_BASE_PATH, ANSIBLE_SUDO_PW_FILE, DEPLOYMENT_SRC_DIR, ODIMRA_SRC_PATH
 	global ODIMRA_VAULT_BIN, ODIMRA_VAULT_KEY_FILE
 	global KUBERNETES_IMAGE_PATH, ODIMRA_IMAGE_PATH
+	global REDIS_INMEMORY_PW_FILE, REDIS_ONDISK_PW_FILE
 
 	if 'deploymentID' not in CONTROLLER_CONF_DATA or CONTROLLER_CONF_DATA['deploymentID'] == None or CONTROLLER_CONF_DATA['deploymentID'] == "":
 		logger.critical("deployment ID not configured, exiting!!!")
 		exit(1)
 	DEPLOYMENT_ID = CONTROLLER_CONF_DATA['deploymentID']
-
+	if 'logLevel' not in CONTROLLER_CONF_DATA['odimra'] or CONTROLLER_CONF_DATA['odimra']['logLevel'] == None or CONTROLLER_CONF_DATA['odimra']['logLevel'] == "": 
+		logger.info("Log level is not set, Setting default value warn")
+		CONTROLLER_CONF_DATA['odimra']['logLevel']="warn"
+	else :
+		log_levels = ['panic', 'fatal', 'error', 'warn','info','debug','trace']
+		if CONTROLLER_CONF_DATA['odimra']['logLevel'] not in log_levels:
+			logger.critical("Log level value is invalid, allowed values are 'panic', 'fatal', 'error', 'warn','info','debug','trace'")
+			exit(1)
+		logger.info("Log level is %s ",CONTROLLER_CONF_DATA['odimra']['logLevel'])
+		
 	if not skip_opt_param_check:
 		logger.debug("Checking if the local user matches with the configured nodes user")
 		cur_user = os.getenv('USER')
@@ -226,6 +245,29 @@ def perform_checks(skip_opt_param_check=False):
 		if not os.path.exists(ANSIBLE_SUDO_PW_FILE):
 			logger.critical("%s does not exist, exiting!!!", ANSIBLE_SUDO_PW_FILE)
 
+	if IS_ODIMRA_DEPLOYMENT == True:
+		if 'redisInMemoryPasswordFilePath' not in CONTROLLER_CONF_DATA or \
+		CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] == "":
+			REDIS_INMEMORY_PW_FILE = os.path.join(CONTROLLER_SRC_PATH, '.redis_in_memory_pw.dat')
+			CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath'] = REDIS_INMEMORY_PW_FILE
+			if not os.path.exists(REDIS_INMEMORY_PW_FILE):
+				store_redis_password_in_vault(REDIS_INMEMORY_PW_FILE, "in_memory")
+		else:
+			REDIS_INMEMORY_PW_FILE = CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath']
+			if not os.path.exists(REDIS_INMEMORY_PW_FILE):
+				logger.critical("%s does not exist, exiting!!!", REDIS_INMEMORY_PW_FILE)
+
+		if 'redisOnDiskPasswordFilePath' not in CONTROLLER_CONF_DATA or \
+		CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == "":
+			REDIS_ONDISK_PW_FILE = os.path.join(CONTROLLER_SRC_PATH, '.redis_on_disk_pw.dat')
+			CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] = REDIS_ONDISK_PW_FILE
+			if not os.path.exists(REDIS_ONDISK_PW_FILE):
+				store_redis_password_in_vault(REDIS_ONDISK_PW_FILE, "on_disk")
+		else:
+			REDIS_ONDISK_PW_FILE = CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath']
+			if not os.path.exists(REDIS_ONDISK_PW_FILE):
+				logger.critical("%s does not exist, exiting!!!", REDIS_ONDISK_PW_FILE)
+
 	cert_dir = os.path.join(CONTROLLER_SRC_PATH, 'certs')
 	if not os.path.exists(cert_dir):
 		os.mkdir(cert_dir, 0o700)
@@ -237,7 +279,7 @@ def perform_checks(skip_opt_param_check=False):
 	else:
 		KUBERNETES_IMAGE_PATH =  CONTROLLER_CONF_DATA['kubernetesImagePath']
 		if not os.path.exists(KUBERNETES_IMAGE_PATH):
-                        logger.warning("%s does not exist, required images will be downloaded!!!", KUBERNETES_IMAGE_PATH)
+						logger.warning("%s does not exist, required images will be downloaded!!!", KUBERNETES_IMAGE_PATH)
         
 	if 'odimraImagePath' not in CONTROLLER_CONF_DATA or \
                 CONTROLLER_CONF_DATA['odimraImagePath'] == None or \
@@ -523,6 +565,8 @@ def scale_out_k8s():
 			new_nodes += '{hostname}\n'.format(hostname=node)
 			nodes_list += '{hostname},'.format(hostname=node)
 			temp_dict = {node : {'ansible_host': attrs['ip'], 'ip':attrs['ip'], 'access_ip':attrs['ip']}}
+			if  CONTROLLER_CONF_DATA['nwPreference']=='dualStack':
+				temp_dict[node].update({"ip6":attrs['ipv6']})
 			K8S_INVENTORY_DATA['all']['hosts'].update(temp_dict)
 			temp_dict = {node: None}
 			K8S_INVENTORY_DATA['all']['children']['kube_node']['hosts'].update(temp_dict)
@@ -679,9 +723,9 @@ def copy_k8_images(host_file,nodes_list):
 		k8s_image_deploy_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root --extra-vars "host={nodes}" k8_copy_image.yaml'.format(host_conf_file=host_file, nodes=nodes_list)
 		ret = exec(k8s_image_deploy_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
 		if ret != 0:
-		    logger.critical("k8s image deployment failed")
-		    os.chdir(cur_dir)
-		    exit(1)
+			logger.critical("k8s image deployment failed")
+			os.chdir(cur_dir)
+			exit(1)
 		os.remove(helm_config_file)
 		os.chdir(KUBESPRAY_SRC_PATH)
 
@@ -699,6 +743,10 @@ def deploy_k8s():
 	node_ip_list = ""
 	nodes_list = ""
 	for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
+		if CONTROLLER_CONF_DATA['nwPreference']=='dualStack':
+							if attrs['ipv6']=="":
+								logger.critical("ipV6 address is not provided in configuarion")
+								exit(1)
 		node_ip_list += "%s,%s,%s " %(node, attrs['ip'], attrs['ip'])
 		nodes_list += '{hostname},'.format(hostname=node)
 	nodes_list = nodes_list.rstrip(',')
@@ -718,7 +766,8 @@ def deploy_k8s():
 
 		logger.info("Generating hosts file required for k8s cluster deployment")
 		host_file_gen_cmd = 'CONFIG_FILE={host_conf_file} python3 contrib/inventory_builder/inventory.py {node_details_list}'.format( \
-				host_conf_file=host_file, node_details_list=node_ip_list)
+			host_conf_file=host_file, node_details_list=node_ip_list)
+
 
 		ret = exec(host_file_gen_cmd, {'KUBE_MASTERS': '3'})
 		if ret != 0:
@@ -728,7 +777,7 @@ def deploy_k8s():
 
 		# update proxy info in ansible conf
 		update_ansible_conf()
-                # Copy K8 images if absolute path for images is provided
+        # Copy K8 images if absolute path for images is provided
 		copy_k8_images(host_file,nodes_list)
 
 		k8s_deploy_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root cluster.yml'.format(host_conf_file=host_file)
@@ -737,6 +786,15 @@ def deploy_k8s():
 			logger.critical("k8s cluster deployment failed")
 			os.chdir(cur_dir)
 			exit(1)
+		if CONTROLLER_CONF_DATA['nwPreference']=='dualStack':
+		# load existing hosts.yaml created for the deployment_id
+			load_k8s_host_conf()
+		#update the ipv6 address in hosts.yaml
+			for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
+				K8S_INVENTORY_DATA['all']['hosts'][node].update({"ip6":attrs['ipv6']})
+			SafeDumper.add_representer(type(None),lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:null', ''))
+			with open(K8S_INVENTORY_FILE, 'w') as f:
+				yaml.safe_dump(K8S_INVENTORY_DATA, f, default_flow_style=False)
 
 	os.chdir(cur_dir)
 	logger.info("Completed k8s cluster deployment")
@@ -785,13 +843,13 @@ def load_odimra_certs(isUpgrade):
 	CONTROLLER_CONF_DATA['odimra']['odimraServerCert'] = read_file(os.path.join(cert_dir, 'odimra_server.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraServerKey'] = read_file(os.path.join(cert_dir, 'odimra_server.key'))
 	if CONTROLLER_CONF_DATA['odimra']['messageBusType'] == 'RedisStreams':
-                logger.info("RedisStreams is selected as messageBusType")
+				logger.info("RedisStreams is selected as messageBusType")
 	else:
-                CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientCert'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.crt'))
+				CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientCert'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.crt'))
 	if CONTROLLER_CONF_DATA['odimra']['messageBusType'] == "RedisStreams":
-                logger.info("RedisStreams is selected as messageBusType")
+				logger.info("RedisStreams is selected as messageBusType")
 	else:
-                CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientKey'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.key'))
+				CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientKey'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.key'))
 	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerCert'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerKey'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.key'))
 
@@ -806,9 +864,33 @@ def load_odimra_certs(isUpgrade):
 	with open(CONTROLLER_CONF_FILE, 'w') as f:
 		yaml.safe_dump(CONTROLLER_CONF_DATA, f, default_flow_style=False)
 
+def load_redis_passwords(cur_dir):
+	redis_inmemory_pwd = get_password_from_vault(cur_dir, REDIS_INMEMORY_PW_FILE)
+	redis_ondisk_pwd = get_password_from_vault(cur_dir, REDIS_ONDISK_PW_FILE)
+	CONTROLLER_CONF_DATA['odimra']['redisInMemoryPassword'] = rsa_oaep_ecryption(redis_inmemory_pwd)
+	CONTROLLER_CONF_DATA['odimra']['redisOnDiskPassword'] = rsa_oaep_ecryption(redis_ondisk_pwd)
+
+def rsa_oaep_ecryption(password):
+	cert_dir = CONTROLLER_CONF_DATA['odimCertsPath']
+	PRIVATE_KEY = read_file(os.path.join(cert_dir, 'odimra_rsa.private'))
+	private_key_bytes = PRIVATE_KEY.encode("utf-8")
+	private_key: RSAPrivateKey = load_pem_private_key(private_key_bytes, None)
+
+	public_key = private_key.public_key()
+	password_bytes = bytes(password, "utf-8")
+	ciphertext = public_key.encrypt(
+            password_bytes,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA512()),
+                algorithm=hashes.SHA512(),
+                label=None
+            )
+        )
+	return base64.b64encode(ciphertext).decode("utf-8")
+
 # perform pre-requisites required for
 # deploying ODIM-RA services
-def perform_odimra_deploy_prereqs():
+def perform_odimra_deploy_prereqs(cur_dir):
 	if 'odimCertsPath' not in CONTROLLER_CONF_DATA or \
 	CONTROLLER_CONF_DATA['odimCertsPath'] == None or \
 	CONTROLLER_CONF_DATA['odimCertsPath'] == "":
@@ -827,7 +909,7 @@ def perform_odimra_deploy_prereqs():
 		if not os.path.isdir(CONTROLLER_CONF_DATA['odimCertsPath']):
 			logger.critical("ODIM-RA certificates path does not exist")
 			exit(1)
-
+	load_redis_passwords(cur_dir)
 	load_odimra_certs(False)
 
 # perform pre-requisites for HA deployment
@@ -887,7 +969,7 @@ def operation_odimra(operation):
 		if operation == "install":
 			helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/pre-install/files/helmcharts/helm_config_values.yaml')
 			odimra_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/odimra-copy-image/files/odimra_config_values.yaml')
-			perform_odimra_deploy_prereqs()
+			perform_odimra_deploy_prereqs(cur_dir)
 		elif operation == "uninstall":
 			helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/post-uninstall/files/odim_controller_config.yaml')
 			odimra_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/odimra-delete-image/files/odimra_config_values.yaml')
@@ -964,7 +1046,10 @@ def reset_k8s():
 
 # install_odimra is for performing all the necessary steps for installing ODIMRA
 def install_odimra():
+	global IS_ODIMRA_DEPLOYMENT
 	logger.info("Installing ODIMRA")
+	# Setting the flag to true for the redis password file path validation
+	IS_ODIMRA_DEPLOYMENT = True
 	# Parse the conf file passed
 	read_conf()
 	# Validate conf parameters passed
@@ -1082,6 +1167,25 @@ def store_password_in_vault():
 
 	ANSIBLE_BECOME_PASS = first_pw
 
+def store_redis_password_in_vault(REDIS_PW_FILE_PATH, redis_db_name):
+	print("\nProvide password of the redis " + redis_db_name + " db")
+	pw_from_prompt = lambda: (getpass.getpass('Enter Password: '), getpass.getpass('Confirm Password: '))
+	first_pw, second_pw = pw_from_prompt()
+	if first_pw != second_pw:
+		logger.critical("Passwords provided do not match")
+		exit(1)
+
+	fd = open(REDIS_PW_FILE_PATH, "wb")
+	fd.write(first_pw.encode('utf-8'))
+	fd.close()
+
+	encrypt_cmd = '{vault_bin} -key {key_file} -encrypt {data_file}'.format(vault_bin=ODIMRA_VAULT_BIN,
+			key_file=ODIMRA_VAULT_KEY_FILE, data_file=REDIS_PW_FILE_PATH)
+	ret = exec(encrypt_cmd, {})
+	if ret != 0:
+		logger.critical("storing node password failed")
+		exit(1)
+
 # load_password_from_vault loads the sudo password of nodes
 # of present cluster securely stored usign ansible vault
 def load_password_from_vault(cur_dir):
@@ -1110,18 +1214,67 @@ def load_password_from_vault(cur_dir):
 
 	ANSIBLE_BECOME_PASS = std_out.rstrip('\n')
 
+
+def get_password_from_vault(cur_dir, password_file_path):
+	decrypt_cmd = '{vault_bin} -key {key_file} -decrypt {data_file}'.format(vault_bin=ODIMRA_VAULT_BIN,
+			key_file=ODIMRA_VAULT_KEY_FILE, data_file=password_file_path)
+
+	execHdlr = subprocess.Popen(decrypt_cmd,
+			stdin=subprocess.PIPE,
+			stdout=subprocess.PIPE,
+			stderr=subprocess.STDOUT,
+			shell=True,
+			universal_newlines=True)
+
+	try:
+		std_out, std_err = execHdlr.communicate()
+	except TimeoutExpired:
+		execHdlr.kill()
+
+	if execHdlr.returncode != 0 or std_out == "":
+		print(std_out.strip())
+		logger.critical("failed to read the password from "+ password_file_path)
+		os.chdir(cur_dir)
+		exit(1)
+
+	return std_out.rstrip('\n')
+
 # check_extract_kubespray_src is used for invoking
 # a script, after checking and if not exists, to extract
 # kubespary source bundle
 def check_extract_kubespray_src():
+	global CONTROLLER_CONF_DATA
+	nwPreference= CONTROLLER_CONF_DATA['nwPreference']
+                
 	if not os.path.isdir(os.path.join(KUBESPRAY_SRC_PATH, "inventory")):
 		kubespray_extract_tool = os.path.join(KUBESPRAY_SRC_PATH, 'configure-kubespray.sh')
-		kubespray_extract_cmd = '/bin/bash {kubespray_extract_tool} {kubespray_src_path}'.format( \
-			kubespray_extract_tool=kubespray_extract_tool, kubespray_src_path=KUBESPRAY_SRC_PATH)
+		kubespray_extract_cmd = '/bin/bash {kubespray_extract_tool} {kubespray_src_path} {dualStatckEnabled}'.format( \
+			kubespray_extract_tool=kubespray_extract_tool, kubespray_src_path=KUBESPRAY_SRC_PATH, dualStatckEnabled=nwPreference)
 		ret = exec(kubespray_extract_cmd, {})
 		if ret != 0:
 			logger.critical("Extracting and configuring kubespray failed")
 			exit(1)
+	else:
+		with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml") as defaultMain:
+			data_loaded = yaml.safe_load(defaultMain)
+			if (data_loaded['enable_dual_stack_networks'] == False) and (nwPreference != 'ipv4'):
+				data_loaded['enable_dual_stack_networks'] = True
+				with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml", w) as defaultMainWrite:
+					yaml.dump(data_loaded, defaultMainWrite)
+			elif (data_loaded['enable_dual_stack_networks'] == True) and (nwPreference != 'dualStack'):
+				data_loaded['enable_dual_stack_networks'] = False
+				with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml", "w") as data_save:
+					yaml.dump(data_loaded, data_save)
+		with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml") as defaultMain:
+			data_loaded = yaml.safe_load(defaultMain)
+			if (data_loaded['enable_dual_stack_networks'] == False) and (nwPreference != 'ipv4'):
+				data_loaded['enable_dual_stack_networks'] = True
+				with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml", w) as defaultMainWrite:
+					yaml.dump(data_loaded, defaultMainWrite)
+			elif (data_loaded['enable_dual_stack_networks'] == True) and (nwPreference != 'dualStack'):
+				data_loaded['enable_dual_stack_networks'] = False
+				with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml", "w") as data_save:
+					yaml.dump(data_loaded, data_save)
 
 def read_groupvar():
 	global GROUP_VAR_DATA
@@ -1136,7 +1289,7 @@ def read_groupvar():
 
 # upgrade_config_map update the config maps
 def upgrade_config_map(config_map_name):
-	logger.info("Upgrading config map"+config_map_name)
+	logger.info("Upgrading config map "+config_map_name)
 	# Parse the conf file passed
 	read_conf()
 	# Validate conf parameters passed
@@ -1150,9 +1303,9 @@ def upgrade_config_map(config_map_name):
 		if data == "all":
 			odiraConfigHelmChartData= GROUP_VAR_DATA["odim_pv_pvc_secrets_helmcharts"]
 			for helm_chart_name  in odiraConfigHelmChartData:
-                                if 'pv-pvc' in helm_chart_name:
-                                        continue
-                                update_helm_charts(helm_chart_name)
+								if 'pv-pvc' in helm_chart_name:
+										continue
+								update_helm_charts(helm_chart_name)
 
 			odimHelmChartData= GROUP_VAR_DATA["odim_svc_helmcharts"]
 			for helm_chart_name  in odimHelmChartData:
@@ -1160,7 +1313,7 @@ def upgrade_config_map(config_map_name):
 
 			thirdPartyHelmCharts=GROUP_VAR_DATA["odim_third_party_helmcharts"]
 			for helm_chart_name  in thirdPartyHelmCharts:
-                                update_helm_charts(helm_chart_name)
+								update_helm_charts(helm_chart_name)
 
 			deploy_plugin('all')
 
@@ -1187,7 +1340,7 @@ def upgrade_config_map(config_map_name):
 # update_helm_charts is for upgrading the deployed
 # helm releases
 def update_helm_charts(config_map_name):
-	
+
 	optionHelmChartInfo = {
 		"odimra-config":"odim_pv_pvc_secrets_helmcharts",
 		"odimra-platformconfig":"odim_pv_pvc_secrets_helmcharts",
@@ -1206,6 +1359,7 @@ def update_helm_charts(config_map_name):
 		"systems":"odim_svc_helmcharts",
                 "task":"odim_svc_helmcharts",
 		"update":"odim_svc_helmcharts",
+		"licenses":"odim_svc_helmcharts",
 		"kafka":"odim_third_party_helmcharts",
 		"zookeeper":"odim_third_party_helmcharts",
 		"redis":"odim_third_party_helmcharts",
@@ -1229,11 +1383,15 @@ def update_helm_charts(config_map_name):
 		"systems":"upgrade-config",
                 "task":"upgrade-config",
 		"update":"upgrade-config",
+		"licenses":"upgrade-config",
 		"kafka":"upgrade_thirdparty",
 		"zookeeper":"upgrade_thirdparty",
 		"redis":"upgrade_thirdparty",
 		"etcd":"upgrade_thirdparty"
 	}
+	if config_map_name =='composition-service':
+		logger.warning("%s upgrade is not supported!!!", config_map_name)
+		exit(1)
 
 	if config_map_name not in optionHelmChartInfo:
 		logger.critical("%s upgrade is not supported!!!", config_map_name)
@@ -1548,6 +1706,38 @@ def deploy_plugin(plugin_name):
 	# load existing hosts.yaml created for the deployment_id
 	load_k8s_host_conf()
 
+	# Validation for mandatory parameters in config file
+	uid = "ServiceUUID"
+	pluginPackagePath = CONTROLLER_CONF_DATA['odimPluginPath'] + "/" + plugin_name
+	with open(pluginPackagePath + "/" + plugin_name + "-config.yaml", "r") as stream:
+			try:
+				pluginConf=yaml.safe_load(stream)
+				serviceUid = {key:val for key, val in pluginConf[plugin_name].items() if key.endswith(uid)}
+				if pluginConf[plugin_name]['logPath'] == None or \
+					pluginConf[plugin_name]['username'] == None or \
+					pluginConf[plugin_name]['password'] == None:
+					logger.critical("mandatory parameter missing in Config file")
+					exit(1)
+				if len(serviceUid) != 0:
+					if pluginConf[plugin_name][list(serviceUid.keys())[0]] == None:
+						logger.critical("ServiceUUID parameter missing in Config file")
+						exit(1)
+				else:
+					logger.critical("ServiceUUID parameter missing in Config file")
+					exit(1)
+				if 'logLevel' not in pluginConf[plugin_name] or pluginConf[plugin_name]['logLevel'] == None or pluginConf[plugin_name]['logLevel'] == "":
+					logger.info("Log level is not set for %s, Setting default value warn",plugin_name)
+					pluginConf[plugin_name]['logLevel']="warn"
+				else:
+					log_levels = ['panic', 'fatal', 'error', 'warn','info','debug','trace']
+					if pluginConf[plugin_name]['logLevel'] not in log_levels:
+						logger.critical("Log level value is invalid, allowed values are 'panic', 'fatal', 'error', 'warn','info','debug','trace'")
+						exit(1)
+				logger.info("Log level for %s is %s ",plugin_name,pluginConf[plugin_name]['logLevel'])
+
+			except yaml.YAMLError as exc:
+				logger.error(exc)
+				exit(1)
 	plugin_list = []
 	if plugin_name != 'all':
 		pluginPackagePath = CONTROLLER_CONF_DATA['odimPluginPath'] + "/" + plugin_name
@@ -1613,7 +1803,7 @@ def remove_plugin(plugin_name):
 	cur_dir = os.getcwd()
 	host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
 	pluginPackagePath = CONTROLLER_CONF_DATA['odimPluginPath'] + "/" + plugin_name
-	
+
 	if not(path.isdir(pluginPackagePath)):
 		logger.info("%s was not deployed via odim controller", plugin_name)
 		os.chdir(cur_dir)
@@ -1740,6 +1930,9 @@ def unlockControllerInvocation():
 
 # exit is for cleaning resouces and formal exit
 def exit(code):
+	lockPath = os.path.join(CONTROLLER_SRC_PATH, CONTROLLER_LOCK_FILE)
+	if os.path.exists(lockPath):
+		os.remove(lockPath)
 	unlockControllerInvocation()
 	logger_f.info ("--------- %-7s %s ---------\n", "Ended", time.strftime("%d-%m-%Y %H:%M:%S"))
 	sys.exit(code)
@@ -1764,9 +1957,9 @@ def main():
 	parser.add_argument('--dryrun', action='store_true', help='only check for configurations without deploying k8s')
 	parser.add_argument('--noprompt', action='store_true', help='do not prompt for confirmation')
 	parser.add_argument('--ignore-errors', action='store_true', help='ignore errors during odimra reset')
-	parser.add_argument("--upgrade", help='supported values:odimra-config,odimra-platformconfig,configure-hosts,odimra-k8s-access-config,odimra-secret,kafka-secret,zookeeper-secret,account-session,aggregation,api,events,fabrics,telemetry,managers,systems,task,update,kafka,zookeeper,redis,etcd,plugin,all,odimra,thirdparty')
+	parser.add_argument("--upgrade", help='supported values:odimra-config,odimra-platformconfig,configure-hosts,odimra-k8s-access-config,odimra-secret,kafka-secret,zookeeper-secret,account-session,aggregation,api,events,fabrics,telemetry,managers,systems,licenses,task,update,kafka,zookeeper,redis,etcd,plugin,all,odimra,thirdparty')
 	parser.add_argument("--scale", action='store_true', help='scale odimra services and plugins')
-	parser.add_argument("--svc", help='supported values:account-session,aggregation,api,events,fabrics,telemetry,managers,systems,task,update,all')
+	parser.add_argument("--svc", help='supported values:account-session,aggregation,api,events,fabrics,telemetry,managers,systems,task,update,licenses,all')
 	parser.add_argument("--plugin", help='release name of the plugin deployment to add,remove,upgrade or scale')
 	parser.add_argument('--add', help='supported values: plugin')
 	parser.add_argument('--remove', help='supported values: plugin')

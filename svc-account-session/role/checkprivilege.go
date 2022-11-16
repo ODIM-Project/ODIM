@@ -17,9 +17,9 @@ package role
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 )
@@ -37,7 +37,7 @@ func validateAssignedPrivileges(assignedPrivileges []string) (*Status, []interfa
 	//Get privilege registry from database
 	privilegeRegistry, err := asmodel.GetPrivilegeRegistry()
 	if err != nil {
-		log.Error("Unable to get Privileges: " + err.Error())
+		l.Log.Error("Unable to get Privileges: " + err.Error())
 		return &Status{
 			Code:    http.StatusInternalServerError,
 			Message: response.InternalError,
@@ -55,7 +55,7 @@ func validateAssignedPrivileges(assignedPrivileges []string) (*Status, []interfa
 				}
 			}
 			if !flag {
-				log.Error("Requested Redfish predefined privilege is not correct")
+				l.Log.Error("Requested Redfish predefined privilege is not correct")
 				return &Status{Code: http.StatusBadRequest, Message: response.PropertyValueNotInList}, []interface{}{userPrivilege, "AssignedPrivileges"}, fmt.Errorf("Requested Redfish predefined privilege is not correct")
 			}
 		}
@@ -70,7 +70,7 @@ func validateOEMPrivileges(oemPrivileges []string) (*Status, []interface{}, erro
 	//Get OEM privileges from database
 	oemPrivilegeRegistry, err := asmodel.GetOEMPrivileges()
 	if err != nil {
-		log.Error("error getting OEM Privileges: " + err.Error())
+		l.Log.Error("error getting OEM Privileges: " + err.Error())
 		return &Status{Code: http.StatusInternalServerError, Message: response.InternalError}, []interface{}{}, fmt.Errorf("error getting OEM Privileges: %v", err)
 	}
 
@@ -85,7 +85,7 @@ func validateOEMPrivileges(oemPrivileges []string) (*Status, []interface{}, erro
 				}
 			}
 			if !flag {
-				log.Error("Requested OEM privilege is not correct")
+				l.Log.Error("Requested OEM privilege is not correct")
 				return &Status{Code: http.StatusBadRequest, Message: response.PropertyValueNotInList}, []interface{}{userPrivilege, "OemPrivileges"}, fmt.Errorf("Requested OEM privilege is not correct")
 			}
 		}
@@ -98,9 +98,9 @@ func validateOEMPrivileges(oemPrivileges []string) (*Status, []interface{}, erro
 func checkForPrivilege(session *asmodel.Session, privilege string) (*Status, error) {
 	//Get session object
 	//check if user has ConfigureUsers privilege
-	//	log.Println(session)
+	//	l.Log.Println(session)
 	if !session.Privileges[privilege] {
-		log.Error("InsufficientPrivilege")
+		l.Log.Error("InsufficientPrivilege")
 		return &Status{Code: http.StatusForbidden, Message: response.InsufficientPrivilege}, fmt.Errorf("InsufficientPrivilege")
 	}
 	return nil, nil

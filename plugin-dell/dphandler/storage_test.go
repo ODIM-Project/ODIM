@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"testing"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
@@ -105,9 +106,10 @@ func TestCreateVolume(t *testing.T) {
 	e := httptest.New(t, mockApp)
 
 	reqPostBody := map[string]interface{}{
-		"Name":     "Volume_Test1",
 		"RAIDType": "RAID0",
-		"Drives":   []dpmodel.OdataIDLink{{OdataID: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931.1/Storage/ArrayControllers-0/Drives/0"}},
+		"Links": &dmtf.Links{
+			Drives: []*dmtf.Link{&dmtf.Link{Oid: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931.1/Storage/ArrayControllers-0/Drives/0"}},
+		},
 	}
 	reqBodyBytes, _ := json.Marshal(reqPostBody)
 	requestBody := map[string]interface{}{
@@ -129,9 +131,10 @@ func TestCreateVolume(t *testing.T) {
 
 	// Unit test for firmware version less than 4.40
 	reqPostBody = map[string]interface{}{
-		"Name":     "Volume_Test2",
 		"RAIDType": "RAID0",
-		"Drives":   []dpmodel.OdataIDLink{{OdataID: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931:2/Storage/ArrayControllers-0/Drives/0"}},
+		"Links": &dmtf.Links{
+			Drives: []*dmtf.Link{&dmtf.Link{Oid: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931:2/Storage/ArrayControllers-0/Drives/0"}},
+		},
 	}
 	reqBodyBytes, _ = json.Marshal(reqPostBody)
 	requestBody = map[string]interface{}{

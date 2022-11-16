@@ -37,6 +37,7 @@ type sample struct {
 }
 
 func TestConnection(t *testing.T) {
+	config.SetUpMockConfig(t)
 	persistConfig, err := GetMockDBConfig()
 	if err != nil {
 		t.Fatal("Error while initializing config:", err)
@@ -49,7 +50,7 @@ func TestConnection(t *testing.T) {
 }
 func TestCreate(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +69,7 @@ func TestCreate(t *testing.T) {
 
 func TestCreate_invalidData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -87,7 +88,7 @@ func TestCreate_invalidData(t *testing.T) {
 
 func TestCreate_existingData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB coonection:", err)
 	}
@@ -114,7 +115,7 @@ func TestCreate_existingData(t *testing.T) {
 
 func TestRead(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -144,7 +145,7 @@ func TestRead(t *testing.T) {
 
 func TestRead_nonExistingData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -160,7 +161,7 @@ func TestRead_nonExistingData(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -196,7 +197,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestUpdate_invalidData(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -217,25 +218,9 @@ func TestUpdate_invalidData(t *testing.T) {
 	}()
 }
 
-func TestUpdate_nonExistingData(t *testing.T) {
-
-	c, err := MockDBConnection()
-	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
-	}
-
-	data := sample{Data1: "Value5", Data2: "Value6", Data3: "Value4"}
-
-	_, uerr := c.Update("table", "nonExistingKey", data)
-
-	if uerr.ErrNo() != errors.DBKeyNotFound {
-		t.Errorf("Error while updating data: %v\n", uerr.Error())
-	}
-}
-
 func TestGetall(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -282,7 +267,7 @@ func TestGetall(t *testing.T) {
 }
 
 func TestGetall_nonExistingtable(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -295,7 +280,7 @@ func TestGetall_nonExistingtable(t *testing.T) {
 	}
 }
 func TestDelete(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -313,7 +298,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDelete_nonExistingKey(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -325,7 +310,7 @@ func TestDelete_nonExistingKey(t *testing.T) {
 }
 
 func TestCleanUpDB(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -375,7 +360,7 @@ func TestFilterSearch(t *testing.T) {
 */
 func TestGetAllMatchingDetails(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -419,7 +404,7 @@ func TestGetAllMatchingDetails(t *testing.T) {
 }
 
 func TestGetAllMatchingDetails_nonExistingtable(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -431,7 +416,7 @@ func TestGetAllMatchingDetails_nonExistingtable(t *testing.T) {
 
 func TestTransaction(t *testing.T) {
 	const threadCount = 10
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -480,7 +465,7 @@ func TestTransaction(t *testing.T) {
 		go func(status string, t *testing.T) {
 			defer wg.Done()
 			if err := updateTransaction("key", status); err != nil {
-				t.Fatal("error: update transaction failed")
+				t.Error("error: update transaction failed")
 
 			}
 		}(status, t)
@@ -495,7 +480,7 @@ func TestTransaction(t *testing.T) {
 
 func TestGetResourceDetails(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -525,7 +510,7 @@ func TestGetResourceDetails(t *testing.T) {
 
 func TestGetResourceDetails_nonExistingData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -541,7 +526,7 @@ func TestGetResourceDetails_nonExistingData(t *testing.T) {
 
 func TestAddResourceData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -560,7 +545,7 @@ func TestAddResourceData(t *testing.T) {
 
 func TestAddResourceData_invalidData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -578,7 +563,7 @@ func TestAddResourceData_invalidData(t *testing.T) {
 }
 
 func TestPing(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -589,7 +574,7 @@ func TestPing(t *testing.T) {
 
 func TestIndexCreate(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -619,7 +604,7 @@ func TestIndexCreate(t *testing.T) {
 }
 func TestCreateIndex_invalidData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -638,7 +623,7 @@ func TestCreateIndex_invalidData(t *testing.T) {
 
 func TestGet(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -678,7 +663,7 @@ func TestGet(t *testing.T) {
 
 func TestGetTaskList(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -701,7 +686,7 @@ func TestGetTaskList(t *testing.T) {
 }
 func TestGetRange(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -723,7 +708,7 @@ func TestGetRange(t *testing.T) {
 
 }
 func TestGetStorageList(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
@@ -775,7 +760,7 @@ func TestGetStorageList(t *testing.T) {
 }
 
 func TestCreateEvtSubscriptions(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -793,7 +778,7 @@ func TestCreateEvtSubscriptions(t *testing.T) {
 
 func TestCreateEvtSubscriptions_existingData(t *testing.T) {
 
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal("Error while making mock DB coonection:", err)
 	}
@@ -815,7 +800,7 @@ func TestCreateEvtSubscriptions_existingData(t *testing.T) {
 }
 
 func TestGetEvtSubscriptions(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -853,7 +838,7 @@ func TestGetEvtSubscriptions(t *testing.T) {
 }
 
 func TestDeleteEvtSubscriptions(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -870,7 +855,7 @@ func TestDeleteEvtSubscriptions(t *testing.T) {
 }
 
 func TestDeleteEvtSubscriptions_nonexisting_data(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -884,7 +869,7 @@ func TestDeleteEvtSubscriptions_nonexisting_data(t *testing.T) {
 }
 
 func TestUpdateEvtSubscriptions(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -904,7 +889,7 @@ func TestUpdateEvtSubscriptions(t *testing.T) {
 }
 
 func TestCreateDeviceSubscription(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -923,7 +908,7 @@ func TestCreateDeviceSubscription(t *testing.T) {
 }
 
 func TestCreateDeviceSubscription_existingData(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -945,7 +930,7 @@ func TestCreateDeviceSubscription_existingData(t *testing.T) {
 }
 
 func TestGetDeviceSubscription(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -968,7 +953,7 @@ func TestGetDeviceSubscription(t *testing.T) {
 	if len(subscriptions) < 1 {
 		t.Errorf("No data found for the host ip")
 	}
-	devSub := strings.Split(subscriptions[0], "::")
+	devSub := strings.Split(subscriptions[0], "||")
 
 	if devSub[0] != hostIP && devSub[1] != location {
 		t.Errorf("HostIP/Location didn't matched")
@@ -985,7 +970,7 @@ func TestGetDeviceSubscription(t *testing.T) {
 }
 
 func TestDeleteDeviceSubscription(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1002,7 +987,7 @@ func TestDeleteDeviceSubscription(t *testing.T) {
 }
 
 func TestDeleteDeviceSubscriptions_nonexisting_data(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1013,7 +998,7 @@ func TestDeleteDeviceSubscriptions_nonexisting_data(t *testing.T) {
 }
 
 func TestUpdateDeviceSubscriptions(t *testing.T) {
-	c, err := MockDBConnection()
+	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1269,4 +1254,164 @@ func TestGetDBConnection_HAEnabled(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestIncr(t *testing.T) {
+
+	c, err := MockDBConnection(t)
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+
+	got, rerr := c.Incr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	if got != 1 {
+		t.Errorf("Mismatch in fetched data")
+	}
+
+	got, rerr = c.Incr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	if got != 2 {
+		t.Errorf("Mismatch in fetched data")
+	}
+
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
+}
+
+func TestDecr(t *testing.T) {
+
+	c, err := MockDBConnection(t)
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+	_, rerr := c.Incr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	_, rerr = c.Incr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+
+	got, rerr := c.Decr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	if got != 1 {
+		t.Errorf("Mismatch in fetched data")
+	}
+
+	got, rerr = c.Decr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	if got != 0 {
+		t.Errorf("Mismatch in fetched data")
+	}
+
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
+}
+
+func TestSetExpire(t *testing.T) {
+
+	c, err := MockDBConnection(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
+	if cerr := c.SetExpire("table", "key", "sample", 1); cerr != nil {
+		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+	}
+
+}
+
+func TestSetExpire_invalidData(t *testing.T) {
+
+	c, err := MockDBConnection(t)
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+
+	defer func() {
+		c.Delete("table", "key")
+	}()
+
+	if cerr := c.SetExpire("table", "key", math.Inf(1), 1); cerr != nil {
+		if !(strings.Contains(cerr.Error(), "unsupported")) {
+			t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		}
+	}
+
+}
+
+func TestSetExpire_existingData(t *testing.T) {
+
+	c, err := MockDBConnection(t)
+	if err != nil {
+		t.Fatal("Error while making mock DB coonection:", err)
+	}
+	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
+	if cerr := c.SetExpire("table", "key", data, 1); cerr != nil {
+		if errors.DBKeyAlreadyExist != cerr.ErrNo() {
+			t.Errorf("Data already exists")
+		}
+	}
+
+	data = sample{Data1: "Value4", Data2: "Value5", Data3: "Value6"}
+	if cerr := c.SetExpire("table", "key", data, 1); cerr != nil {
+		if errors.DBKeyAlreadyExist != cerr.ErrNo() {
+			t.Errorf("Data already exists")
+		}
+	}
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
+}
+
+func TestTTL(t *testing.T) {
+	c, err := MockDBConnection(t)
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+
+	rerr := c.SetExpire("table", "key", "", 2)
+	if rerr != nil {
+		t.Errorf("Error while setting data: %v\n", rerr.Error())
+	}
+	time, rerr := c.TTL("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while TTL jey: %v\n", rerr.Error())
+	}
+	if time < 0 {
+		t.Errorf("Time should not be elapsed")
+	}
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
 }

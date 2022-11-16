@@ -20,16 +20,22 @@ package update
 //
 import (
 	"fmt"
+	"net/http"
+	"runtime"
+	"strings"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
-	log "github.com/sirupsen/logrus"
-	"net/http"
-	"runtime"
-	"strings"
+)
+
+var (
+	//GetAllKeysFromTableFunc ...
+	GetAllKeysFromTableFunc = umodel.GetAllKeysFromTable
 )
 
 // StartUpdate function handler for on start update process
@@ -40,10 +46,10 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
 	// Read all the requests from database
-	targetList, err := umodel.GetAllKeysFromTable("SimpleUpdate", common.OnDisk)
+	targetList, err := GetAllKeysFromTableFunc("SimpleUpdate", common.OnDisk)
 	if err != nil {
 		errMsg := "Unable to read SimpleUpdate requests from database: " + err.Error()
-		log.Warn(errMsg)
+		l.Log.Warn(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	partialResultFlag := false
@@ -71,7 +77,7 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 		data, gerr := e.DB.GetResource("SimpleUpdate", target, common.OnDisk)
 		if gerr != nil {
 			errMsg := "Unable to retrive the start update request" + gerr.Error()
-			log.Warn(errMsg)
+			l.Log.Warn(errMsg)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		}
 		go e.startRequest(target, taskID, data, subTaskChannel, sessionUserName)
@@ -106,7 +112,7 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 	percentComplete = 100
 	if resp.StatusCode != http.StatusOK {
 		errMsg := "One or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
-		log.Warn(errMsg)
+		l.Log.Warn(errMsg)
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
 			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{fmt.Sprintf("%v", targetList)}, taskInfo)
@@ -119,7 +125,7 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 		}
 	}
 
-	log.Info("All SimpleUpdate requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
+	l.Log.Info("All SimpleUpdate requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
 	resp.StatusMessage = response.Success
 	resp.StatusCode = http.StatusOK
 	args := response.Args{
@@ -143,7 +149,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	subTaskURI, err := e.External.CreateChildTask(sessionUserName, taskID)
 	if err != nil {
 		subTaskChannel <- http.StatusInternalServerError
-		log.Warn("Unable to create sub task")
+		l.Log.Warn("Unable to create sub task")
 		return
 	}
 	var subTaskID string
@@ -166,7 +172,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	if gerr != nil {
 		subTaskChannel <- http.StatusBadRequest
 		errMsg := gerr.Error()
-		log.Warn(errMsg)
+		l.Log.Warn(errMsg)
 		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, taskInfo)
 		return
 	}
@@ -175,7 +181,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	if passwdErr != nil {
 		subTaskChannel <- http.StatusInternalServerError
 		errMsg := "Unable to decrypt device password: " + passwdErr.Error()
-		log.Warn(errMsg)
+		l.Log.Warn(errMsg)
 		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		return
 	}
@@ -186,7 +192,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	if gerr != nil {
 		subTaskChannel <- http.StatusNotFound
 		errMsg := "Unable to get plugin data: " + gerr.Error()
-		log.Warn(errMsg)
+		l.Log.Warn(errMsg)
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, taskInfo)
 		return
 	}
@@ -194,7 +200,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	contactRequest.ContactClient = e.External.ContactClient
 	contactRequest.Plugin = plugin
 
-	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+	if StringsEqualFoldFunc(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
 		contactRequest.DeviceInfo = map[string]interface{}{
@@ -207,7 +213,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 		if err != nil {
 			subTaskChannel <- getResponse.StatusCode
 			errMsg := err.Error()
-			log.Info(errMsg)
+			l.Log.Info(errMsg)
 			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 			return
 		}
@@ -224,13 +230,29 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.StartUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost
-	_, _, getResponse, contactErr := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
+	respBody, location, getResponse, contactErr := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
 	if contactErr != nil {
 		subTaskChannel <- getResponse.StatusCode
-		errMsg := err.Error()
-		log.Info(errMsg)
+		errMsg := contactErr.Error()
+		l.Log.Info(errMsg)
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 		return
+	}
+	if getResponse.StatusCode == http.StatusAccepted {
+		getResponse, err = e.monitorPluginTask(subTaskChannel, &monitorTaskRequest{
+			subTaskID:         subTaskID,
+			serverURI:         uuid,
+			updateRequestBody: data,
+			respBody:          respBody,
+			getResponse:       getResponse,
+			taskInfo:          taskInfo,
+			location:          location,
+			pluginRequest:     contactRequest,
+			resp:              resp,
+		})
+		if err != nil {
+			return
+		}
 	}
 
 	resp.StatusCode = http.StatusOK

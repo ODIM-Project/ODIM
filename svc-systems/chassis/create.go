@@ -23,13 +23,35 @@ import (
 	"strconv"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-	log "github.com/sirupsen/logrus"
 )
 
+var (
+	//GetDbConnectFunc ...
+	GetDbConnectFunc = common.GetDBConnection
+	//GenericSaveFunc ...
+	GenericSaveFunc = smodel.GenericSave
+	//JSONUnmarshalFunc1  ...
+	JSONUnmarshalFunc1 = json.Unmarshal
+	//JSONUnmarshalFunc2  ...
+	JSONUnmarshalFunc2 = json.Unmarshal
+	//JSONUnmarshalFunc3  ...
+	JSONUnmarshalFunc3 = json.Unmarshal
+	//JSONUnmarshalFunc4  ...
+	JSONUnmarshalFunc4 = json.Unmarshal
+	//StrconvUnquote ...
+	StrconvUnquote = strconv.Unquote
+	//JSONMarshalFunc ...
+	JSONMarshalFunc = json.Marshal
+	//GetResourceFunc  ...
+	GetResourceFunc = smodel.GetResource
+)
+
+// Handle defines the operations which handle the RPC request-response for creating a chassis
 func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	mbc := new(linksManagedByCollection)
 	e := json.Unmarshal(req.RequestBody, mbc)
@@ -41,11 +63,10 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, "", []interface{}{"Links.ManagedBy[0]"}, nil)
 	}
 
-	inMemoryConn, dbErr := common.GetDBConnection(common.InMemory)
+	inMemoryConn, dbErr := GetDbConnectFunc(common.InMemory)
 	if dbErr != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("cannot acquire database connection: %v", dbErr), nil, nil)
 	}
-
 	managingManager, e := inMemoryConn.FindOrNull("Managers", mbc.Links.ManagedBy[0].Oid)
 	if e != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("error occured during database access: %v", e), nil, nil)
@@ -56,48 +77,46 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	}
 
 	//todo: not sure why manager in redis is quoted
-	managingManager, e = strconv.Unquote(managingManager)
+	managingManager, e = StrconvUnquote(managingManager)
 	if e != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 	var managingMgrData map[string]interface{}
-	unmarshalErr := json.Unmarshal([]byte(managingManager), &managingMgrData)
+	unmarshalErr := JSONUnmarshalFunc1([]byte(managingManager), &managingMgrData)
 	if unmarshalErr != nil {
 		errorMessage := "error unmarshalling managing manager details: " + unmarshalErr.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
 	managerURI := managingMgrData["@odata.id"]
 	var managerData map[string]interface{}
-	data, jerr := smodel.GetResource("Managers", managerURI.(string))
+	data, jerr := GetResourceFunc("Managers", managerURI.(string))
 	if jerr != nil {
 		errorMessage := "error while getting manager details: " + jerr.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
 
-	err := json.Unmarshal([]byte(data), &managerData)
+	err := JSONUnmarshalFunc2([]byte(data), &managerData)
 	if err != nil {
 		errorMessage := "error unmarshalling manager details: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
-
 	pluginManagingManager := new(nameCarrier)
-	e = json.Unmarshal([]byte(managingManager), pluginManagingManager)
+	e = JSONUnmarshalFunc4([]byte(managingManager), pluginManagingManager)
 	if e != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
 	body := new(json.RawMessage)
-	e = json.Unmarshal(req.RequestBody, body)
+	e = JSONUnmarshalFunc3(req.RequestBody, body)
 	if e != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
-
 	pc, pe := h.createPluginClient(pluginManagingManager.Name)
 	if pe != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, pe.Error(), nil, nil)
@@ -121,17 +140,18 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 		managerLinks["ManagerForChassis"] = chassisLink
 		managerData["Links"] = managerLinks
 	}
-	mgrData, err := json.Marshal(managerData)
+	mgrData, err := JSONMarshalFunc(managerData)
 	if err != nil {
+		fmt.Println("Error occured ", managerData)
 		errorMessage := "unable to marshal data for updating: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
-	err = smodel.GenericSave([]byte(mgrData), "Managers", managerURI.(string))
+	err = GenericSaveFunc([]byte(mgrData), "Managers", managerURI.(string))
 	if err != nil {
 		errorMessage := "GenericSave : error while trying to add resource date to DB: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
@@ -139,10 +159,12 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	return resp
 }
 
+// Create struct helps to create chassis
 type Create struct {
 	createPluginClient plugin.ClientFactory
 }
 
+// NewCreateHandler returns an instance of Create struct
 func NewCreateHandler(createPluginClient plugin.ClientFactory) *Create {
 	return &Create{
 		createPluginClient: createPluginClient,

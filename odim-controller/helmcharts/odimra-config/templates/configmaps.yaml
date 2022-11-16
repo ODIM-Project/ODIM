@@ -19,7 +19,7 @@ data:
     		"RSAPrivateKeyPath": "/etc/odimra_certs/odimra_rsa.private"
     	},
     	"APIGatewayConf": {
-    		"Host": {{ .Values.odimra.apiGatewayHost | quote }},
+    		"Host": "",
     		"Port": "45000",
     		"PrivateKeyPath": "/etc/odimra_certs/odimra_server.key",
     		"CertificatePath": "/etc/odimra_certs/odimra_server.crt"
@@ -31,6 +31,8 @@ data:
       },
     	"DBConf": {
                 "Protocol": "tcp",
+                "RedisInMemoryPasswordFilePath": "/etc/odimra_certs/redis_inmemory_password",
+                "RedisOnDiskPasswordFilePath": "/etc/odimra_certs/redis_ondisk_password",
                 {{ if eq .Values.odimra.haDeploymentEnabled false }}
                 "InMemoryHost": "redis-inmemory",
                 "OnDiskHost": "redis-ondisk",
@@ -126,17 +128,22 @@ data:
     		"Systems",
     		"Chassis",
     		"TaskService",
-    		"EventService",
+        "EventService",
     		"Fabrics",
     		"Managers",
     		"UpdateService",
-    		"TelemetryService"
+    		"TelemetryService",
+        "LicenseService"
     	],
       "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},
     	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"],
       "EventConf": {
                  "DeliveryRetryAttempts" : 3,
-                 "DeliveryRetryIntervalSeconds" : 60,
-                 "RetentionOfUndeliveredEventsInMinutes" : 10
-      }
+                 "DeliveryRetryIntervalSeconds" : 60
+      },
+      "ResourceRateLimit": {{ .Values.odimra.resourceRateLimit | toJson }},
+      "LogLevel": {{ .Values.odimra.logLevel | quote }},
+      "ImageRegistryAddress": {{ .Values.odimra.imageRegistryAddress | quote }},
+      "RequestLimitCountPerSession": {{ .Values.odimra.requestLimitPerSession | default 0 }},
+      "SessionLimitCountPerUser": {{ .Values.odimra.sessionLimitPerUser | default 0 }}
     }

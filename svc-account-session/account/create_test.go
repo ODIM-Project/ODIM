@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -40,6 +41,7 @@ func createMockRole(roleID string, privileges []string, oemPrivileges []string, 
 	return nil
 }
 func TestCreate(t *testing.T) {
+	config.SetUpMockConfig(t)
 	acc := getMockExternalInterface()
 	common.SetUpMockConfig()
 	errArgs := response.Args{

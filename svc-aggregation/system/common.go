@@ -28,12 +28,12 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -48,6 +48,16 @@ const (
 	SystemUUID = "SystemID"
 	// ChassisUUID is used to replace with chassis id in wildcard property
 	ChassisUUID = "ChassisID"
+	// ManagersTable is used to replace with table id Managers
+	ManagersTable = "Managers"
+	// PluginTable is used to replace with table id PluginTable
+	PluginTable = "Plugin"
+	//LogServiceCollection is used to replace with table id LogServicesCollection
+	LogServiceCollection = "LogServicesCollection"
+	//LogServices is used to replace with table id LogServices
+	LogServices = "LogServices"
+	//EntriesCollection is used to replace with table id EntriesCollection
+	EntriesCollection = "EntriesCollection"
 )
 
 // WildCard is used to reduce the size the of list of metric properties
@@ -138,6 +148,7 @@ type respHolder struct {
 	SystemURL      []string
 	PluginResponse string
 	TraversedLinks map[string]bool
+	InventoryData  map[string]interface{}
 }
 
 //AddResourceRequest is payload of adding a  resource
@@ -195,6 +206,19 @@ type connectionMethodVariants struct {
 	FirmwareVersion   string
 }
 
+// monitorTaskRequest hold values required monitorTask function
+type monitorTaskRequest struct {
+	respBody          []byte
+	subTaskID         string
+	serverURI         string
+	updateRequestBody string
+	getResponse       responseStatus
+	location          string
+	taskInfo          *common.TaskUpdateInfo
+	pluginRequest     getResourceRequest
+	resp              response.RPC
+}
+
 func getIPAndPortFromAddress(address string) (string, string) {
 	ip, port, err := net.SplitHostPort(address)
 	if err != nil {
@@ -233,16 +257,22 @@ func genError(errorMessage string, respPtr *response.RPC, httpStatusCode int32, 
 	respPtr.StatusMessage = StatusMessage
 	respPtr.Body = errors.CreateErrorResponse(respPtr.StatusMessage, errorMessage)
 	respPtr.Header = header
-	log.Error(errorMessage)
+	l.Log.Error(errorMessage)
 }
 
 // UpdateTaskData update the task with the given data
 func UpdateTaskData(taskData common.TaskData) error {
+	var res map[string]interface{}
+	if err := json.Unmarshal([]byte(taskData.TaskRequest), &res); err != nil {
+		l.Log.Error(err)
+	}
+	reqStr := logs.MaskRequestBody(res)
+
 	respBody, _ := json.Marshal(taskData.Response.Body)
 	payLoad := &taskproto.Payload{
 		HTTPHeaders:   taskData.Response.Header,
 		HTTPOperation: taskData.HTTPMethod,
-		JSONBody:      taskData.TaskRequest,
+		JSONBody:      reqStr,
 		StatusCode:    taskData.Response.StatusCode,
 		TargetURI:     taskData.TargetURI,
 		ResponseBody:  respBody,
@@ -289,19 +319,19 @@ func contactPlugin(req getResourceRequest, errorMessage string) ([]byte, string,
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
-	if pluginResp.StatusCode != http.StatusCreated && pluginResp.StatusCode != http.StatusOK {
+	if pluginResp.StatusCode != http.StatusCreated && pluginResp.StatusCode != http.StatusOK && pluginResp.StatusCode != http.StatusAccepted {
 		if pluginResp.StatusCode == http.StatusUnauthorized {
 			errorMessage += "error: invalid resource username/password"
 			resp.StatusCode = int32(pluginResp.StatusCode)
 			resp.StatusMessage = response.ResourceAtURIUnauthorized
 			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 		errorMessage += string(body)
 		resp.StatusCode = int32(pluginResp.StatusCode)
 		resp.StatusMessage = response.InternalError
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -310,6 +340,11 @@ func contactPlugin(req getResourceRequest, errorMessage string) ([]byte, string,
 	for key, value := range getTranslationURL(northBoundURL) {
 		data = strings.Replace(data, key, value, -1)
 	}
+	// Get location from the header if status code is status accepted
+	if pluginResp.StatusCode == http.StatusAccepted {
+		return []byte(data), pluginResp.Header.Get("Location"), resp, nil
+	}
+
 	resp.StatusCode = int32(pluginResp.StatusCode)
 	return []byte(data), pluginResp.Header.Get("X-Auth-Token"), resp, nil
 }
@@ -323,6 +358,10 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	var key []string
 	for i, id := range str {
 		if id == systemID && (strings.EqualFold(str[i-1], "Systems") || strings.EqualFold(str[i-1], "Chassis") || strings.EqualFold(str[i-1], "Managers") || strings.EqualFold(str[i-1], "FirmwareInventory") || strings.EqualFold(str[i-1], "SoftwareInventory")) {
+			key = append(key, DeviceUUID+"."+id)
+			continue
+		}
+		if i != 0 && strings.EqualFold(str[i-1], "Licenses") {
 			key = append(key, DeviceUUID+"."+id)
 			continue
 		}
@@ -342,7 +381,7 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		h.StatusCode = getResponse.StatusCode
 		h.MsgArgs = getResponse.MsgArgs
 		h.lock.Unlock()
-		log.Error(err)
+		l.Log.Error(err)
 		return computeSystemID, resourceURI, progress, err
 	}
 	h.SystemURL = make([]string, 0)
@@ -355,7 +394,7 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		log.Error("error while trying unmarshal systems collection: " + err.Error())
+		l.Log.Error("error while trying unmarshal systems collection: " + err.Error())
 		return computeSystemID, resourceURI, progress, err
 	}
 	systemMembers := systemsMap["Members"]
@@ -365,6 +404,7 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 	for _, object := range systemMembers.([]interface{}) {
 		estimatedWork := alottedWork / int32(len(systemMembers.([]interface{})))
 		oDataID := object.(map[string]interface{})["@odata.id"].(string)
+		oDataID = strings.TrimSuffix(oDataID, "/")
 		req.OID = oDataID
 		if computeSystemID, resourceURI, progress, err = h.getSystemInfo(taskID, progress, estimatedWork, req); err != nil {
 			errorMessage += oDataID + ":err-" + err.Error() + "; "
@@ -384,8 +424,8 @@ func (h *respHolder) getAllRegistries(taskID string, progress int32, alottedWork
 	registryStore := config.Data.RegistryStorePath
 	regFiles, err := ioutil.ReadDir(registryStore)
 	if err != nil {
-		log.Error("error while reading the files from directory " + registryStore + ": " + err.Error())
-		log.Fatal(err)
+		l.Log.Error("error while reading the files from directory " + registryStore + ": " + err.Error())
+		l.Log.Fatal(err)
 	}
 	//Construct the list of file names available
 	var standardFiles []string
@@ -400,7 +440,7 @@ func (h *respHolder) getAllRegistries(taskID string, progress int32, alottedWork
 		h.StatusMessage = getResponse.StatusMessage
 		h.StatusCode = getResponse.StatusCode
 		h.lock.Unlock()
-		log.Error(err)
+		l.Log.Error(err)
 		return progress
 	}
 	registriesMap := make(map[string]interface{})
@@ -411,7 +451,7 @@ func (h *respHolder) getAllRegistries(taskID string, progress int32, alottedWork
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		log.Error("error while trying to unmarshal Registries collection: " + err.Error())
+		l.Log.Error("error while trying to unmarshal Registries collection: " + err.Error())
 		return progress
 
 	}
@@ -524,16 +564,7 @@ func (h *respHolder) getRegistryFile(registryName string, req getResourceRequest
 		return
 	}
 
-	// Store the file in DB
-	err = agmodel.SaveRegistryFile(body, "Registries", registryName+".json")
-	if err != nil {
-		h.lock.Lock()
-		h.ErrorMessage = "error while trying to save data: " + err.Error()
-		h.StatusMessage = response.InternalError
-		h.StatusCode = http.StatusInternalServerError
-		h.lock.Unlock()
-		return
-	}
+	h.InventoryData["Registries:"+registryName+".json"] = string(body)
 }
 
 func isFileExist(existingFiles []string, substr string) bool {
@@ -563,7 +594,7 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 		h.StatusCode = getResponse.StatusCode
 		h.MsgArgs = getResponse.MsgArgs
 		h.lock.Unlock()
-		log.Error(err)
+		l.Log.Error(err)
 		return progress
 	}
 
@@ -575,18 +606,21 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		log.Error("error while trying to unmarshal " + resourceName + ": " + err.Error())
+		l.Log.Error("error while trying to unmarshal " + resourceName + ": " + err.Error())
 		return progress
 
 	}
 
 	resourceMembers := resourceMap["Members"]
-	// Loop through all the resource members collection and discover all of them
-	for _, object := range resourceMembers.([]interface{}) {
-		estimatedWork := alottedWork / int32(len(resourceMembers.([]interface{})))
-		oDataID := object.(map[string]interface{})["@odata.id"].(string)
-		req.OID = oDataID
-		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req, resourceList)
+	if resourceMembers != nil {
+		// Loop through all the resource members collection and discover all of them
+		for _, object := range resourceMembers.([]interface{}) {
+			estimatedWork := alottedWork / int32(len(resourceMembers.([]interface{})))
+			oDataID := object.(map[string]interface{})["@odata.id"].(string)
+			oDataID = strings.TrimSuffix(oDataID, "/")
+			req.OID = oDataID
+			progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req, resourceList)
+		}
 	}
 	return progress
 }
@@ -625,7 +659,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 	if !req.UpdateFlag {
 		indexList, err := agmodel.GetString("UUID", computeSystemUUID)
 		if err != nil {
-			log.Error(err.Error())
+			l.Log.Error(err.Error())
 			h.lock.Lock()
 			h.StatusCode = http.StatusInternalServerError
 			h.StatusMessage = response.InternalError
@@ -644,16 +678,8 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 
 	}
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
-	// persist the response with table ComputerSystem  and key as system UUID + Oid Needs relook TODO
-	err = agmodel.GenericSave([]byte(updatedResourceData), "ComputerSystem", oidKey)
-	if err != nil {
-		h.lock.Lock()
-		h.ErrorMessage = "error while trying to save data: " + err.Error()
-		h.StatusMessage = response.InternalError
-		h.StatusCode = http.StatusInternalServerError
-		h.lock.Unlock()
-		return computeSystemID, oidKey, progress, err
-	}
+
+	h.InventoryData["ComputerSystem:"+oidKey] = updatedResourceData
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
 	var retrievalLinks = make(map[string]bool)
@@ -664,11 +690,22 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
 		estimatedWork := alottedWork / int32(len(retrievalLinks))
+		resourceOID = strings.TrimSuffix(resourceOID, "/")
 		req.OID = resourceOID
 		req.OemFlag = oemFlag
 		progress = h.getResourceDetails(taskID, progress, estimatedWork, req)
 	}
 	json.Unmarshal([]byte(updatedResourceData), &computeSystem)
+	err = agmodel.SaveBMCInventory(h.InventoryData)
+	if err != nil {
+		h.lock.Lock()
+		h.ErrorMessage = "error while trying to save data: " + err.Error()
+		h.StatusMessage = response.InternalError
+		h.StatusCode = http.StatusInternalServerError
+		h.lock.Unlock()
+		return computeSystemID, oidKey, progress, err
+	}
+
 	searchForm := createServerSearchIndex(computeSystem, oidKey, req.DeviceUUID)
 	//save the final search form here
 	if req.UpdateFlag {
@@ -717,14 +754,14 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 	systemURI = strings.Replace(systemURI, "/Systems/", "/Systems/"+req.DeviceUUID+".", -1)
 	data, dbErr := agmodel.GetResource("ComputerSystem", systemURI)
 	if dbErr != nil {
-		log.Error("error while getting the systems data" + dbErr.Error())
+		l.Log.Error("error while getting the systems data" + dbErr.Error())
 		return "", progress, err
 	}
 	// unmarshall the systems data
 	var systemData map[string]interface{}
 	err = json.Unmarshal([]byte(data), &systemData)
 	if err != nil {
-		log.Error("Error while unmarshaling system's data" + err.Error())
+		l.Log.Error("Error while unmarshaling system's data" + err.Error())
 		return "", progress, err
 	}
 
@@ -878,16 +915,7 @@ func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork
 
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
-	// persist the response with table resource and key as system UUID + Oid Needs relook TODO
-	err = agmodel.GenericSave([]byte(updatedResourceData), resourceName, oidKey)
-	if err != nil {
-		h.lock.Lock()
-		h.ErrorMessage = "error while trying to save data: " + err.Error()
-		h.StatusMessage = response.InternalError
-		h.StatusCode = http.StatusInternalServerError
-		h.lock.Unlock()
-		return progress
-	}
+	h.InventoryData[resourceName+":"+oidKey] = updatedResourceData
 	h.TraversedLinks[req.OID] = true
 	var retrievalLinks = make(map[string]bool)
 
@@ -897,6 +925,7 @@ func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
 		estimatedWork := alottedWork / int32(len(retrievalLinks))
+		resourceOID = strings.TrimSuffix(resourceOID, "/")
 		req.OID = resourceOID
 		req.OemFlag = oemFlag
 		progress = h.getResourceDetails(taskID, progress, estimatedWork, req)
@@ -923,7 +952,7 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		h.ErrorMessage = "error while trying unmarshal : " + err.Error()
 		h.StatusCode = http.StatusInternalServerError
 		h.StatusMessage = response.InternalError
-		log.Error(h.ErrorMessage)
+		l.Log.Error(h.ErrorMessage)
 		h.lock.Unlock()
 		return progress
 	}
@@ -940,23 +969,31 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		memberFlag = true
 	}
 	resourceName := getResourceName(req.OID, memberFlag)
+	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
+		CollectionCapabilities := dmtf.CollectionCapabilities{
+			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
+			Capabilities: []*dmtf.Capabilities{
+				&dmtf.Capabilities{
+					CapabilitiesObject: &dmtf.Link{
+						Oid: req.OID + "/Capabilities",
+					},
+					Links: dmtf.CapLinks{
+						TargetCollection: &dmtf.Link{
+							Oid: req.OID,
+						},
+					},
+					UseCase: "VolumeCreation",
+				},
+			},
+		}
+		resourceData["@Redfish.CollectionCapabilities"] = CollectionCapabilities
+		body, _ = json.Marshal(resourceData)
 
+	}
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
-	// persist the response with table resourceName and key as system UUID + Oid Needs relook TODO
-	err = agmodel.GenericSave([]byte(updatedResourceData), resourceName, oidKey)
-	if err != nil {
-		if strings.Contains(err.Error(), "duplicate") {
-			return progress
-		}
-		h.lock.Lock()
-		h.ErrorMessage = "error while trying to save data: " + err.Error()
-		h.StatusCode = http.StatusInternalServerError
-		h.StatusMessage = response.InternalError
-		log.Error(h.ErrorMessage)
-		h.lock.Unlock()
-		return progress
-	}
+
+	h.InventoryData[resourceName+":"+oidKey] = updatedResourceData
 	var retrievalLinks = make(map[string]bool)
 
 	getLinks(resourceData, retrievalLinks, req.OemFlag)
@@ -966,13 +1003,13 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		if checkRetrieval(oid, req.OID, h.TraversedLinks) {
 			estimatedWork := alottedWork / int32(len(retrievalLinks))
 			childReq := req
+			oid = strings.TrimSuffix(oid, "/")
 			childReq.OID = oid
 			childReq.ParentOID = req.OID
 			childReq.OemFlag = oemFlag
 			progress = h.getResourceDetails(taskID, progress, estimatedWork, childReq)
 		}
 	}
-
 	progress = progress + alottedWork
 	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
 	err = req.UpdateTask(task)
@@ -984,7 +1021,6 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	}
 	return progress
 }
-
 func getResourceName(oDataID string, memberFlag bool) string {
 	str := strings.Split(oDataID, "/")
 	if memberFlag {
@@ -1097,22 +1133,22 @@ func getFirmwareVersion(oid, deviceUUID string) string {
 	key = strings.Replace(key, "Systems", "Managers", -1)
 	keys, dberr := agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
 	if dberr != nil {
-		log.Error("while getting the managers data" + dberr.Error())
+		l.Log.Error("while getting the managers data" + dberr.Error())
 		return ""
 	} else if len(keys) == 0 {
-		log.Error("Manager data is not available")
+		l.Log.Error("Manager data is not available")
 		return ""
 	}
 	data, dberr := agmodel.GetResource("Managers", keys[0])
 	if dberr != nil {
-		log.Error("while getting the managers data: ", dberr.Error())
+		l.Log.Error("while getting the managers data: ", dberr.Error())
 		return ""
 	}
 	// unmarshall the managers data
 	var managersData map[string]interface{}
 	err := json.Unmarshal([]byte(data), &managersData)
 	if err != nil {
-		log.Error("Error while unmarshaling  the data" + err.Error())
+		l.Log.Error("Error while unmarshaling  the data" + err.Error())
 		return ""
 	}
 	var firmwareVersion string
@@ -1125,11 +1161,11 @@ func getFirmwareVersion(oid, deviceUUID string) string {
 
 // CreateDefaultEventSubscription will create default events subscriptions
 func CreateDefaultEventSubscription(systemID []string) {
-	log.Error("Creation of default subscriptions for " + strings.Join(systemID, ", ") + " are initiated.")
+	l.Log.Error("Creation of default subscriptions for " + strings.Join(systemID, ", ") + " are initiated.")
 
 	conn, connErr := services.ODIMService.Client(services.Events)
 	if connErr != nil {
-		log.Error("error while connecting: " + connErr.Error())
+		l.Log.Error("error while connecting: " + connErr.Error())
 		return
 	}
 	defer conn.Close()
@@ -1143,7 +1179,7 @@ func CreateDefaultEventSubscription(systemID []string) {
 		Protocol:      "Redfish",
 	})
 	if err != nil {
-		log.Error("error while creating default events: " + err.Error())
+		l.Log.Error("error while creating default events: " + err.Error())
 		return
 	}
 }
@@ -1163,10 +1199,10 @@ func PublishPluginStatusOKEvent(plugin string, msgQueues []string) {
 		EMBQueues: msgQueues,
 	}
 	if err := agmessagebus.PublishCtrlMsg(common.SubscribeEMB, data); err != nil {
-		log.Error("failed to publish resubscribe to " + plugin + " EMB event: " + err.Error())
+		l.Log.Error("failed to publish resubscribe to " + plugin + " EMB event: " + err.Error())
 		return
 	}
-	log.Info("Published event to resubscribe to " + plugin + " EMB")
+	l.Log.Info("Published event to resubscribe to " + plugin + " EMB")
 }
 
 func getIDsFromURI(uri string) (string, string, error) {
@@ -1228,11 +1264,22 @@ func getTranslationURL(translationURL string) map[string]string {
 func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest, cmVariants connectionMethodVariants, taskInfo *common.TaskUpdateInfo) (response.RPC, int32, []string) {
 
 	var queueList = make([]string, 0)
-	ipData := strings.Split(req.ManagerAddress, ":")
 	var ip, port string
-	ip = ipData[0]
-	if len(ipData) > 1 {
-		port = ipData[1]
+	if strings.Count(req.ManagerAddress, ":") > 2 {
+		if !strings.Contains(req.ManagerAddress, "[") {
+			ip = fmt.Sprintf("[%s]", req.ManagerAddress)
+
+		} else {
+			index := strings.LastIndex(req.ManagerAddress, ":")
+			ip = req.ManagerAddress[:index]
+			port = req.ManagerAddress[index+1:]
+		}
+	} else {
+		ipData := strings.Split(req.ManagerAddress, ":")
+		ip = ipData[0]
+		if len(ipData) > 1 {
+			port = ipData[1]
+		}
 	}
 	var plugin = agmodel.Plugin{
 		IP:                ip,
@@ -1255,7 +1302,7 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 		_, token, getResponse, err := contactPlugin(pluginContactRequest, "error while creating the session: ")
 		if err != nil {
 			errMsg := err.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), getResponse.StatusCode, queueList
 		}
 		pluginContactRequest.Token = token
@@ -1272,7 +1319,7 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 	body, _, getResponse, err := contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err != nil {
 		errMsg := err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		if getResponse.StatusCode == http.StatusNotFound {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil), getResponse.StatusCode, queueList
 		}
@@ -1283,7 +1330,7 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 	err = json.Unmarshal(body, &statusResponse)
 	if err != nil {
 		errMsg := err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		getResponse.StatusCode = http.StatusInternalServerError
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), getResponse.StatusCode, queueList
 	}
@@ -1291,7 +1338,7 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 	// check the firmware version of plugin is matched with connection method variant version
 	if statusResponse.Version != cmVariants.FirmwareVersion {
 		errMsg := fmt.Sprintf("Provided firmware version %s does not match supported firmware version %s of the plugin %s", cmVariants.FirmwareVersion, statusResponse.Version, cmVariants.PluginID)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		getResponse.StatusCode = http.StatusBadRequest
 		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"FirmwareVersion", statusResponse.Version}, taskInfo), getResponse.StatusCode, queueList
 	}
@@ -1333,7 +1380,7 @@ func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percen
 	progress := percentComplete
 	progress, err := e.storeTelemetryCollectionInfo("MetricDefinitionsCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
 	if err != nil {
-		log.Error(err)
+		l.Log.Error(err)
 	}
 	percentComplete = progress
 	task := fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
@@ -1344,7 +1391,7 @@ func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percen
 	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReportDefinitions"
 	progress, err = e.storeTelemetryCollectionInfo("MetricReportDefinitionsCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
 	if err != nil {
-		log.Error(err)
+		l.Log.Error(err)
 	}
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
@@ -1356,7 +1403,7 @@ func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percen
 	progress = percentComplete
 	progress, err = e.storeTelemetryCollectionInfo("MetricReportsCollection", taskID, progress, metricReportEstimatedWork, pluginContactRequest)
 	if err != nil {
-		log.Error(err)
+		l.Log.Error(err)
 	}
 	percentComplete = progress + metricReportEstimatedWork
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
@@ -1367,7 +1414,7 @@ func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percen
 	progress = percentComplete
 	progress, err = e.storeTelemetryCollectionInfo("TriggersCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
 	if err != nil {
-		log.Error(err)
+		l.Log.Error(err)
 	}
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
@@ -1466,24 +1513,24 @@ func (e *ExternalInterface) getTeleInfo(taskID string, progress, alottedWork int
 
 	exist, dErr := e.CheckMetricRequest(req.OID)
 	if dErr != nil {
-		log.Info("Unable to collect the active request details from DB: ", dErr.Error())
+		l.Log.Info("Unable to collect the active request details from DB: ", dErr.Error())
 		return progress
 	}
 	if exist {
-		log.Info("An active request already exists for metric request")
+		l.Log.Info("An active request already exists for metric request")
 		return progress
 	}
 	err = e.GenericSave(nil, "ActiveMetricRequest", req.OID)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to save the active request details from DB: %v", err.Error())
-		log.Println(errMsg)
+		l.Log.Println(errMsg)
 		return progress
 	}
 
 	defer func() {
 		err := e.DeleteMetricRequest(req.OID)
 		if err != nil {
-			log.Printf("Unable to collect the active request details from DB: %v", err.Error())
+			l.Log.Printf("Unable to collect the active request details from DB: %v", err.Error())
 		}
 	}()
 
@@ -1504,7 +1551,7 @@ func (e *ExternalInterface) createWildCard(resourceData, resourceName, oid strin
 	var resourceDataMap map[string]interface{}
 	err := json.Unmarshal([]byte(resourceData), &resourceDataMap)
 	if err != nil {
-		log.Error("Failed to unmarshal the resource data, got: " + err.Error())
+		l.Log.Error("Failed to unmarshal the resource data, got: " + err.Error())
 		return "", err
 	}
 	data, _ := e.GetResource(resourceName, oid)
@@ -1525,7 +1572,7 @@ func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string
 		var dbDataMap map[string]interface{}
 		err := json.Unmarshal([]byte(dbData), &dbDataMap)
 		if err != nil {
-			log.Error("Failed to unmarshal the resource data, got: " + err.Error())
+			l.Log.Error("Failed to unmarshal the resource data, got: " + err.Error())
 			return "", err
 		}
 		if dbDataMap["Wildcards"] == nil {
@@ -1645,4 +1692,41 @@ func getEmptyWildCard() []WildCard {
 	w.Values = []string{}
 	wildCards = append(wildCards, w)
 	return wildCards
+}
+
+func (e *ExternalInterface) monitorPluginTask(subTaskChannel chan<- int32, monitorTaskData *monitorTaskRequest) (responseStatus, error) {
+	for {
+
+		var task common.TaskData
+		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {
+			subTaskChannel <- http.StatusInternalServerError
+			errMsg := "Unable to parse the simple update respone" + err.Error()
+			l.Log.Warn(errMsg)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
+			return monitorTaskData.getResponse, err
+		}
+		var updatetask = fillTaskData(monitorTaskData.subTaskID, monitorTaskData.serverURI, monitorTaskData.updateRequestBody, monitorTaskData.resp, task.TaskState, task.TaskStatus, task.PercentComplete, http.MethodPost)
+		err := e.UpdateTask(updatetask)
+		if err != nil && err.Error() == common.Cancelling {
+			var updatetask = fillTaskData(monitorTaskData.subTaskID, monitorTaskData.serverURI, monitorTaskData.updateRequestBody, monitorTaskData.resp, common.Cancelled, common.Critical, 100, http.MethodPost)
+			subTaskChannel <- http.StatusInternalServerError
+			e.UpdateTask(updatetask)
+			return monitorTaskData.getResponse, err
+		}
+		time.Sleep(time.Second * 5)
+		monitorTaskData.pluginRequest.OID = monitorTaskData.location
+		monitorTaskData.pluginRequest.HTTPMethodType = http.MethodGet
+		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = contactPlugin(monitorTaskData.pluginRequest, "error while performing simple update action: ")
+		if err != nil {
+			subTaskChannel <- monitorTaskData.getResponse.StatusCode
+			errMsg := err.Error()
+			l.Log.Warn(errMsg)
+			common.GeneralError(monitorTaskData.getResponse.StatusCode, monitorTaskData.getResponse.StatusMessage, errMsg, monitorTaskData.getResponse.MsgArgs, monitorTaskData.taskInfo)
+			return monitorTaskData.getResponse, err
+		}
+		if monitorTaskData.getResponse.StatusCode == http.StatusOK {
+			break
+		}
+	}
+	return monitorTaskData.getResponse, nil
 }

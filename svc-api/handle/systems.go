@@ -19,9 +19,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
@@ -58,7 +57,7 @@ func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
 	resp, err := sys.GetSystemsCollectionRPC(req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -91,7 +90,7 @@ func (sys *SystemRPCs) GetSystem(ctx iris.Context) {
 	resp, err := sys.GetSystemRPC(req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -128,7 +127,7 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 	resp, err := sys.GetSystemResourceRPC(req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -159,7 +158,7 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the system reset request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -188,7 +187,7 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 	resp, err := sys.SystemResetRPC(resetRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -220,7 +219,7 @@ func (sys *SystemRPCs) SetDefaultBootOrder(ctx iris.Context) {
 	resp, err := sys.SetDefaultBootOrderRPC(req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -242,7 +241,7 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the system reset request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -252,7 +251,7 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 	request, err := json.Marshal(req)
 	if err != nil {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -277,7 +276,7 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 	resp, err := sys.ChangeBiosSettingsRPC(biosRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -299,7 +298,7 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the system reset request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -309,7 +308,7 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 	request, err := json.Marshal(req)
 	if err != nil {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -334,7 +333,7 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 	resp, err := sys.ChangeBootOrderSettingsRPC(bootOrderRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -356,7 +355,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the create volume request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -366,7 +365,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 	request, err := json.Marshal(req)
 	if err != nil {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -392,7 +391,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 	resp, err := sys.CreateVolumeRPC(volRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -415,7 +414,7 @@ func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 	request, err := json.Marshal(req)
 	if err != nil {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -442,7 +441,7 @@ func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 	resp, err := sys.DeleteVolumeRPC(volRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

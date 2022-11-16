@@ -14,6 +14,7 @@ spec:
     metadata:
       labels:
         app: aggregation
+      name: dapi-envars-fieldref
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
@@ -59,22 +60,29 @@ spec:
             - key: odimra_rsaprivate
               path: odimra_rsa.private
               mode: 0444
+            - key: redis_inmemory_password
+              path: redis_inmemory_password
+              mode: 0444
+            - key: redis_ondisk_password
+              path: redis_ondisk_password
+              mode: 0444
+            {{- if eq .Values.odimra.messageBusType "Kafka" }}
             - key: odimra_kafka_clientcrt
               path: odimra_kafka_client.crt
               mode: 0444
             - key: odimra_kafka_clientkey
               path: odimra_kafka_client.key
               mode: 0444
+            {{- end }}
         - name: odimra-log
           persistentVolumeClaim:
             claimName: odimra-log-claim
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       serviceAccountName: odimra
       containers:
         - name: aggregation
-          securityContext:
-            privileged: true
           env:
             - name: GET_HOSTS_FROM
               value: dns
@@ -82,7 +90,15 @@ spec:
               value: {{ .Values.odimra.haDeploymentEnabled | quote }}
             - name: ODIM_NAMESPACE
               value: {{ .Values.odimra.namespace | quote }}
-          image: aggregation:{{ .Values.odimra.aggregationImageTag }}
+            - name: HOST_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}aggregation:{{ .Values.odimra.aggregationImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45102

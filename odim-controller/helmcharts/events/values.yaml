@@ -2,4 +2,4 @@ odimra:
   namespace:
   groupID:
   haDeploymentEnabled:
-  eventImageTag: "3.0"
+  eventImageTag: "4.0"

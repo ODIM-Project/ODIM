@@ -20,11 +20,10 @@ import (
 	"net/http"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
@@ -36,7 +35,7 @@ import (
 // Upon successfull operation this api returns Systems root UUID in the response body with 200 OK.
 func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, percentComplete int32, addResourceRequest AddResourceRequest, pluginContactRequest getResourceRequest) (response.RPC, string, []byte) {
 	var resp response.RPC
-	log.Info("started adding system with manager address " + addResourceRequest.ManagerAddress +
+	l.Log.Info("started adding system with manager address " + addResourceRequest.ManagerAddress +
 		" using plugin id: " + pluginID)
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
@@ -46,12 +45,12 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	plugin, errs := agmodel.GetPluginData(pluginID)
 	if errs != nil {
 		errMsg := "error while getting plugin data: " + errs.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", pluginID}, taskInfo), "", nil
 	}
 
 	var saveSystem agmodel.SaveSystem
-	saveSystem.ManagerAddress = addResourceRequest.ManagerAddress
+	saveSystem.ManagerAddress = strings.ToLower(addResourceRequest.ManagerAddress)
 	saveSystem.UserName = addResourceRequest.UserName
 	//saveSystem.Password = ciphertext
 	saveSystem.Password = []byte(addResourceRequest.Password)
@@ -70,7 +69,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 		_, token, getResponse, err := contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 		if err != nil {
 			errMsg := err.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), "", nil
 		}
 		pluginContactRequest.Token = token
@@ -89,7 +88,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	body, _, getResponse, err := contactPlugin(pluginContactRequest, "error while trying to authenticate the compute server: ")
 	if err != nil {
 		errMsg := err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), "", nil
 	}
 
@@ -97,7 +96,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	err = json.Unmarshal(body, &commonError)
 	if err != nil {
 		errMsg := err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
 
@@ -124,12 +123,13 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 
 	var h respHolder
 	h.TraversedLinks = make(map[string]bool)
+	h.InventoryData = make(map[string]interface{})
 	progress := percentComplete
 	systemsEstimatedWork := int32(60)
 	var computeSystemID, resourceURI string
 	if computeSystemID, resourceURI, progress, err = h.getAllSystemInfo(taskID, progress, systemsEstimatedWork, pluginContactRequest); err != nil {
 		errMsg := "error while trying to add compute: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		var msgArg = make([]interface{}, 0)
 		var skipFlag bool
 		switch h.StatusMessage {
@@ -150,6 +150,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
+	h.InventoryData = make(map[string]interface{})
 
 	// Populate the resource Firmware inventory for update service
 	pluginContactRequest.DeviceInfo = getSystemBody
@@ -179,6 +180,19 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 
 	// Discover telemetry service
 	percentComplete = e.getTelemetryService(taskID, targetURI, percentComplete, pluginContactRequest, resp, saveSystem)
+
+	// Populate the data for license service
+	pluginContactRequest.DeviceInfo = getSystemBody
+	pluginContactRequest.OID = "/redfish/v1/LicenseService/Licenses/"
+	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+
+	progress = percentComplete
+	licenseEstimatedWork := int32(5)
+	progress = h.getAllRootInfo(taskID, progress, licenseEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderOthers)
+	percentComplete = progress
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
 
 	// Lets Discover/gather registry files of this server and store them in DB
 
@@ -242,6 +256,14 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	progress = h.getAllRootInfo(taskID, progress, managerEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
 
 	percentComplete = progress
+
+	err = agmodel.SaveBMCInventory(h.InventoryData)
+	if err != nil {
+		errorMessage := "GenericSave : error while trying to add resource date to DB: " + err.Error()
+		l.Log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil), "", nil
+	}
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && (err.Error() == common.Cancelling) {
@@ -250,7 +272,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	}
 	if h.ErrorMessage != "" && h.StatusCode != http.StatusServiceUnavailable && h.StatusCode != http.StatusNotFound && h.StatusCode != http.StatusInternalServerError && h.StatusCode != http.StatusBadRequest {
 		go e.rollbackInMemory(resourceURI)
-		log.Error(h.ErrorMessage)
+		l.Log.Error(h.ErrorMessage)
 		return common.GeneralError(h.StatusCode, h.StatusMessage, h.ErrorMessage, h.MsgArgs, taskInfo), "", nil
 	}
 
@@ -258,7 +280,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	if err != nil {
 		go e.rollbackInMemory(resourceURI)
 		errMsg := "error while trying to encrypt: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
 	saveSystem.Password = ciphertext
@@ -266,7 +288,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	if err := saveSystem.Create(saveSystem.DeviceUUID); err != nil {
 		go e.rollbackInMemory(resourceURI)
 		errMsg := "error while trying to add compute: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
 	aggSourceIDChassisAndManager := saveSystem.DeviceUUID + "."
@@ -287,13 +309,13 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	var list agresponse.List
 	err = json.Unmarshal([]byte(h.PluginResponse), &list)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 	}
 
 	resp.Header = map[string]string{
 		"Location": resourceURI,
 	}
-	log.Info("sucessfully added system with manager address " + addResourceRequest.ManagerAddress +
+	l.Log.Info("sucessfully added system with manager address " + addResourceRequest.ManagerAddress +
 		" using plugin id: " + pluginID)
 
 	pluginStartUpData := &agmodel.PluginStartUpData{
@@ -308,7 +330,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 		},
 	}
 	if err = PushPluginStartUpData(plugin, pluginStartUpData); err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 	}
 	managerURI := "/redfish/v1/Managers/" + plugin.ManagerUUID
 	var managerData map[string]interface{}
@@ -318,7 +340,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	data, jerr := agmodel.GetResource("Managers", managerURI)
 	if jerr != nil {
 		errorMessage := "error getting manager details: " + jerr.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil), "", nil
 	}
@@ -326,7 +348,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	err = json.Unmarshal([]byte(data), &managerData)
 	if err != nil {
 		errorMessage := "error unmarshalling manager details: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil), "", nil
 	}
@@ -359,14 +381,14 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	mgrData, err := json.Marshal(managerData)
 	if err != nil {
 		errorMessage := "unable to marshal data while updating managers detail: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil), "", nil
 	}
 	err = agmodel.GenericSave([]byte(mgrData), "Managers", managerURI)
 	if err != nil {
 		errorMessage := "GenericSave : error while trying to add resource date to DB: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil), "", nil
 	}

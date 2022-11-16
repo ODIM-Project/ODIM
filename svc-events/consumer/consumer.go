@@ -24,7 +24,7 @@ import (
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	log "github.com/sirupsen/logrus"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 var (
@@ -47,7 +47,7 @@ func EventSubscriber(event interface{}) {
 
 	err := json.Unmarshal(byteData, &message)
 	if err != nil {
-		log.Error("error while unmarshaling the event" + err.Error())
+		l.Log.Error("error while unmarshaling the event" + err.Error())
 		return
 	}
 	writeEventToJobQueue(message)
@@ -95,12 +95,12 @@ func Consume(topicName string) {
 	// connecting to kafka
 	k, err := dc.Communicator(messagebusType, MessageBusConfigFilePath, topicName)
 	if err != nil {
-		log.Error("Unable to connect to kafka" + err.Error())
+		l.Log.Error("Unable to connect to kafka" + err.Error())
 		return
 	}
 	// subscribe from message bus
 	if err := k.Accept(EventSubscriber); err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		return
 	}
 	return
@@ -115,12 +115,12 @@ func SubscribeCtrlMsgQueue(topicName string) {
 	// connecting to messagbus
 	k, err := dc.Communicator(messagebusType, MessageBusConfigFilePath, topicName)
 	if err != nil {
-		log.Error("Unable to connect to kafka" + err.Error())
+		l.Log.Error("Unable to connect to kafka" + err.Error())
 		return
 	}
 	// subscribe from message bus
 	if err := k.Accept(consumeCtrlMsg); err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		return
 	}
 	return
@@ -137,7 +137,7 @@ func consumeCtrlMsg(event interface{}) {
 		writeEventToJobQueue(redfishEvent)
 	} else {
 		if err := json.Unmarshal(data, &ctrlMessage); err != nil {
-			log.Error("error while unmarshaling the event" + err.Error())
+			l.Log.Error("error while unmarshaling the event" + err.Error())
 			return
 		}
 	}

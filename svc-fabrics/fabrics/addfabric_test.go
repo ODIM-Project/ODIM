@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"fmt"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
@@ -35,6 +36,8 @@ func TestAddFabric(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
+	resp := AddFabric(&fabricsproto.AddFabricRequest{})
+	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "should be same")
 	err := mockPlugin(t, "CFM", "XAuthToken", "9091")
 	if err != nil {
 		t.Fatalf("Error in creating mock DeviceData :%v", err)
@@ -44,7 +47,7 @@ func TestAddFabric(t *testing.T) {
 		Address:        "10.10.10.10",
 	}
 
-	resp := AddFabric(req)
+	resp = AddFabric(req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "should be same")
 
 	resp = AddFabric(req)
@@ -73,6 +76,16 @@ func TestAddFabricInvalidPluginID(t *testing.T) {
 
 	resp = AddFabric(req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "should be same")
+
+	GetAllFabricPluginDetailsFunc = func() ([]string, error) { return []string{}, fmt.Errorf("") }
+	resp = AddFabric(req)
+	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "should be same")
+
+	GetAllFabricPluginDetailsFunc = func() ([]string, error) { return []string{"dummy"}, nil }
+	resp = AddFabric(req)
+	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "should be same")
+	GetAllFabricPluginDetailsFunc = func() ([]string, error) { return fabmodel.GetAllFabricPluginDetails() }
+
 }
 
 func mockPlugin(t *testing.T, pluginID, PreferredAuthType, port string) error {

@@ -18,7 +18,6 @@ package tcommon
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -30,6 +29,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-telemetry/tmodel"
 )
 
@@ -63,6 +63,11 @@ type ResourceInfoRequest struct {
 	GetResource         func(string, string, common.DbType) (string, *errors.Error)
 	GenericSave         func([]byte, string, string) error
 }
+
+var (
+	// ConfigFilePath holds the value of odim config file path
+	ConfigFilePath string
+)
 
 // GetResourceInfoFromDevice will contact to the southbound client and gets the Particual resource info from device
 func GetResourceInfoFromDevice(req ResourceInfoRequest) ([]byte, error) {
@@ -158,7 +163,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 			errorMessage = errorMessage + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = errors.InternalError
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
@@ -168,13 +173,13 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
-	log.Info("Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
+	l.Log.Info("Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
 		resp.StatusCode = int32(response.StatusCode)
-		log.Println(errorMessage)
+		l.Log.Println(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -205,10 +210,10 @@ func GetPluginStatus(plugin tmodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Error("Error While getting the status for plugin " + plugin.ID + ": " + err.Error())
+		l.Log.Error("Error While getting the status for plugin " + plugin.ID + ": " + err.Error())
 		return status
 	}
-	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	l.Log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -251,5 +256,18 @@ func removeNonExistingID(req ResourceInfoRequest) {
 			return
 		}
 		req.GenericSave(reportCollection, "MetricReportsCollection", collectionURL)
+	}
+}
+
+func TrackConfigFileChanges() {
+	eventChan := make(chan interface{})
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	for {
+		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
+		if l.Log.Level != config.Data.LogLevel {
+			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		}
+
 	}
 }

@@ -27,9 +27,9 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	uuid "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
 )
 
 // DBInterface hold interface for db functions
@@ -63,7 +63,26 @@ var SupportedConnectionMethodTypes = map[string]bool{
 	"IPMI15":  false,
 	"IPMI20":  false,
 }
-
+var (
+	//GetResourceDetailsFunc function pointer for the agmodel.GetResourceDetails
+	GetResourceDetailsFunc = agmodel.GetResourceDetails
+	// GetAllKeysFromTableFunc function pointer for the agmodel.GetAllKeysFromTable
+	GetAllKeysFromTableFunc = agmodel.GetAllKeysFromTable
+	//GetAllSystemsFunc function pointer for the agmodel.GetAllSystems
+	GetAllSystemsFunc = agmodel.GetAllSystems
+	//GetDeviceSubscriptionsFunc  function pointer for the  agmodel.GetDeviceSubscriptions
+	GetDeviceSubscriptionsFunc = agmodel.GetDeviceSubscriptions
+	// UpdateDeviceSubscriptionFunc function pointer for the agmodel.UpdateDeviceSubscription
+	UpdateDeviceSubscriptionFunc = agmodel.UpdateDeviceSubscription
+	// GetEventSubscriptionsFunc function pointer for the agmodel.GetEventSubscriptions
+	GetEventSubscriptionsFunc = agmodel.GetEventSubscriptions
+	// JSONUnMarshalFunc function pointer for the json.Unmarshal
+	JSONUnMarshalFunc = json.Unmarshal
+	//LookupIPfunc  function pointer for the  net.LookupIP
+	LookupIPfunc = net.LookupIP
+	//SplitHostPortfunc  function pointer for the net.SplitHostPort
+	SplitHostPortfunc = net.SplitHostPort
+)
 var (
 	// ConfigFilePath holds the value of odim config file path
 	ConfigFilePath string
@@ -79,20 +98,21 @@ func init() {
 	}
 }
 
-// GetStorageResources will get the resource details from the database for teh given odata id
+// GetStorageResources will get the resource details from the database for the given odata id
 func GetStorageResources(oid string) map[string]interface{} {
 	resourceData := make(map[string]interface{})
-	data, dbErr := agmodel.GetResourceDetails(oid)
+	data, dbErr := GetResourceDetailsFunc(oid)
 	if dbErr != nil {
-		log.Error("Unable to get system data : " + dbErr.Error())
+		l.Log.Error("Unable to get system data : " + dbErr.Error())
 		return resourceData
 	}
 	// unmarshall the resourceData
-	err := json.Unmarshal([]byte(data), &resourceData)
+	err := JSONUnMarshalFunc([]byte(data), &resourceData)
 	if err != nil {
-		log.Error("Unable to unmarshall  the data: " + err.Error())
+		l.Log.Error("Unable to unmarshall  the data: " + err.Error())
 		return resourceData
 	}
+
 	return resourceData
 }
 
@@ -100,7 +120,7 @@ func GetStorageResources(oid string) map[string]interface{} {
 func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) error {
 	connectionMethodsKeys, err := e.GetAllKeysFromTableInterface("ConnectionMethod")
 	if err != nil {
-		log.Error("Unable to get connection methods : " + err.Error())
+		l.Log.Error("Unable to get connection methods : " + err.Error())
 		return err
 	}
 	var connectionMethodInfo = make(map[string]agmodel.ConnectionMethod)
@@ -109,7 +129,7 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 	for i := 0; i < len(connectionMethodsKeys); i++ {
 		connectionmethod, err := e.GetConnectionMethodInterface(connectionMethodsKeys[i])
 		if err != nil {
-			log.Error("Unable to get connection method : " + err.Error())
+			l.Log.Error("Unable to get connection method : " + err.Error())
 			return err
 		}
 		connectionMethodInfo[connectionMethodsKeys[i]] = connectionmethod
@@ -117,11 +137,11 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 	}
 	for i := 0; i < len(connectionMethodConf); i++ {
 		if !SupportedConnectionMethodTypes[connectionMethodConf[i].ConnectionMethodType] {
-			log.Error("Connection method type " + connectionMethodConf[i].ConnectionMethodType + " is not supported")
+			l.Log.Error("Connection method type " + connectionMethodConf[i].ConnectionMethodType + " is not supported")
 			continue
 		}
 		if connectionMethodID, present := connectionMehtodIDMap[connectionMethodConf[i].ConnectionMethodType+":"+connectionMethodConf[i].ConnectionMethodVariant]; present {
-			log.Error("Connection Method Info with Connection Method Type " +
+			l.Log.Error("Connection Method Info with Connection Method Type " +
 				connectionMethodConf[i].ConnectionMethodType + " and Connection Method Variant " +
 				connectionMethodConf[i].ConnectionMethodVariant + " already present in ODIM")
 			delete(connectionMehtodIDMap,
@@ -138,10 +158,10 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 			}
 			err := e.AddConnectionMethodInterface(connectionMethod, connectionMethodURI)
 			if err != nil {
-				log.Error("Unable to add connection method : " + err.Error())
+				l.Log.Error("Unable to add connection method : " + err.Error())
 				return err
 			}
-			log.Info(
+			l.Log.Info(
 				"Connection method info with connection method type " + connectionMethodConf[i].ConnectionMethodType +
 					" and connection method variant " + connectionMethodConf[i].ConnectionMethodVariant + " added to ODIM")
 		}
@@ -150,18 +170,18 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 	// delete the connection from ODIM if doesn't manage any aggreation source else log the error
 	for connectionMethodID, connectionMethodData := range connectionMethodInfo {
 		if len(connectionMethodData.Links.AggregationSources) > 0 {
-			log.Error("Connection Method ID: " + connectionMethodID + " with connection method type " +
+			l.Log.Error("Connection Method ID: " + connectionMethodID + " with connection method type " +
 				connectionMethodData.ConnectionMethodType + " and connection method variant " +
 				connectionMethodData.ConnectionMethodVariant + " managing " +
 				string(rune(len(connectionMethodData.Links.AggregationSources))) + " aggregation sources it can't be removed")
 
 		} else {
-			log.Info("Removing connection method id "+connectionMethodID+
+			l.Log.Info("Removing connection method id "+connectionMethodID+
 				" with Connection Method Type"+connectionMethodData.ConnectionMethodType+
 				" and Connection Method Variant", connectionMethodData.ConnectionMethodVariant)
 			err := e.DeleteInterface("ConnectionMethod", connectionMethodID, common.OnDisk)
 			if err != nil {
-				log.Error("Unable to removing connection method : " + err.Error())
+				l.Log.Error("Unable to removing connection method : " + err.Error())
 				return err
 			}
 		}
@@ -175,13 +195,19 @@ func TrackConfigFileChanges(dbInterface DBInterface) {
 	eventChan := make(chan interface{})
 	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
 	for {
-		log.Info(<-eventChan) // new data arrives through eventChan channel
+		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
 		config.TLSConfMutex.RLock()
+		l.Log.Info("Updating connection method ")
 		err := dbInterface.AddConnectionMethods(config.Data.ConnectionMethodConf)
 		if err != nil {
-			log.Error("error while trying to Add connection methods:" + err.Error())
+			l.Log.Error("error while trying to Add connection methods:" + err.Error())
 		}
 		config.TLSConfMutex.RUnlock()
+		l.Log.Info("Update connection method completed")
+		if l.Log.Level != config.Data.LogLevel {
+			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		}
 	}
 }
 
@@ -210,13 +236,13 @@ func GetPluginStatus(plugin agmodel.Plugin) bool {
 
 // LookupHost - look up the ip from the host address
 func LookupHost(addr string) (ip, host, port string, err error) {
-	host, port, err = net.SplitHostPort(addr)
+	host, port, err = SplitHostPortfunc(addr)
 	if err != nil {
-		log.Warn("splitting host address failed with " + err.Error())
+		l.Log.Warn("splitting host address failed with " + err.Error())
 		host = addr
 	}
 
-	ips, errs := net.LookupIP(host)
+	ips, errs := LookupIPfunc(host)
 	switch {
 	case errs != nil:
 		err = errs
@@ -241,7 +267,7 @@ func LookupPlugin(addr string) (agmodel.Plugin, error) {
 
 	resolvedAddr, host, port, err := LookupHost(addr)
 	if err != nil {
-		log.Warn("plugin address lookup failed with " + err.Error())
+		l.Log.Warn("plugin address lookup failed with " + err.Error())
 	}
 
 	for _, plugin := range plugins {
@@ -254,7 +280,7 @@ func LookupPlugin(addr string) (agmodel.Plugin, error) {
 
 // GetAllPlugins is for fetching all the plugins added andn stored in db.
 func GetAllPlugins() ([]agmodel.Plugin, error) {
-	keys, err := agmodel.GetAllKeysFromTable("Plugin")
+	keys, err := GetAllKeysFromTableFunc("Plugin")
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +288,7 @@ func GetAllPlugins() ([]agmodel.Plugin, error) {
 	for _, key := range keys {
 		plugin, err := agmodel.GetPluginData(key)
 		if err != nil {
-			log.Error("failed to get details of " + key + " plugin: " + err.Error())
+			l.Log.Error("failed to get details of " + key + " plugin: " + err.Error())
 			continue
 		}
 		plugins = append(plugins, plugin)
@@ -289,10 +315,10 @@ func (phc *PluginHealthCheckInterface) GetPluginStatus(plugin agmodel.Plugin) (b
 	}
 	status, _, topics, err := pluginStatus.CheckStatus()
 	if err != nil {
-		log.Error("failed to get the status of plugin " + plugin.ID + err.Error())
+		l.Log.Error("failed to get the status of plugin " + plugin.ID + err.Error())
 		return false, nil
 	}
-	log.Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
+	l.Log.Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
 	return status, topics
 }
 
@@ -300,7 +326,7 @@ func (phc *PluginHealthCheckInterface) GetPluginStatus(plugin agmodel.Plugin) (b
 func (phc *PluginHealthCheckInterface) GetPluginManagedServers(plugin agmodel.Plugin) []agmodel.Target {
 	serversList, err := phc.getAllServers(plugin.ID)
 	if err != nil {
-		log.Error("failed to get list of servers managed by " + plugin.ID + err.Error())
+		l.Log.Error("failed to get list of servers managed by " + plugin.ID + err.Error())
 	}
 	return serversList
 }
@@ -308,16 +334,16 @@ func (phc *PluginHealthCheckInterface) GetPluginManagedServers(plugin agmodel.Pl
 // getAllServers is for fetching the list of all servers added.
 func (phc *PluginHealthCheckInterface) getAllServers(pluginID string) ([]agmodel.Target, error) {
 	var matchedServers []agmodel.Target
-	allServers, err := agmodel.GetAllSystems()
+	allServers, err := GetAllSystemsFunc()
 	if err != nil {
-		log.Error("failed to get the list of all managed servers " + err.Error())
+		l.Log.Error("failed to get the list of all managed servers " + err.Error())
 		return matchedServers, err
 	}
 	for _, server := range allServers {
 		if server.PluginID == pluginID {
 			decryptedPasswordByte, err := phc.DecryptPassword(server.Password)
 			if err != nil {
-				log.Error("failed to decrypt device password of the host: " + server.ManagerAddress + ":" + err.Error())
+				l.Log.Error("failed to decrypt device password of the host: " + server.ManagerAddress + ":" + err.Error())
 				continue
 			}
 			server.Password = decryptedPasswordByte
@@ -400,14 +426,14 @@ func GetSearchKey(key, index string) string {
 
 // GetSubscribedEvtTypes is to get event subscription details
 func GetSubscribedEvtTypes(searchKey string) ([]string, error) {
-	subscriptions, err := agmodel.GetEventSubscriptions("*" + searchKey + "*")
+	subscriptions, err := GetEventSubscriptionsFunc("*" + searchKey + "*")
 	if err != nil {
 		return nil, err
 	}
 	var eventTypes []string
 	for _, sub := range subscriptions {
 		var subscription map[string]interface{}
-		if err := json.Unmarshal([]byte(sub), &subscription); err != nil {
+		if err := JSONUnMarshalFunc([]byte(sub), &subscription); err != nil {
 			return nil, fmt.Errorf("error while unmarshalling event subscription: %v", err.Error())
 		}
 		for _, evtTyps := range subscription["EventTypes"].([]interface{}) {
@@ -427,15 +453,15 @@ func UpdateDeviceSubscriptionDetails(subsData map[string]string) {
 				continue
 			}
 			searchKey := GetSearchKey(deviceIPAddress, common.DeviceSubscriptionIndex)
-			deviceSubscription, err := agmodel.GetDeviceSubscriptions(searchKey)
+			deviceSubscription, err := GetDeviceSubscriptionsFunc(searchKey)
 			if err != nil {
-				log.Error("Error getting the device event subscription from DB " +
+				l.Log.Error("Error getting the device event subscription from DB " +
 					" for server address : " + serverAddress + err.Error())
 				continue
 			}
 			deviceSubscription.Location = location
-			if err = agmodel.UpdateDeviceSubscription(*deviceSubscription); err != nil {
-				log.Error("Error updating the subscription location in to DB for " +
+			if err = UpdateDeviceSubscriptionFunc(*deviceSubscription); err != nil {
+				l.Log.Error("Error updating the subscription location in to DB for " +
 					"server address : " + serverAddress + err.Error())
 				continue
 			}

@@ -12,13 +12,13 @@
 package system
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 )
@@ -29,7 +29,7 @@ func (e *ExternalInterface) GetAggregationSourceCollection() response.RPC {
 	aggregationSourceKeys, err := e.GetAllKeysFromTable("AggregationSource")
 	if err != nil {
 		errorMessage := err.Error()
-		log.Error("Unable to get aggregation source : " + errorMessage)
+		l.Log.Error("Unable to get aggregation source : " + errorMessage)
 		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errorMessage, []interface{}{config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, nil)
 	}
 	var members = make([]agresponse.ListMember, 0)
@@ -68,7 +68,7 @@ func (e *ExternalInterface) GetAggregationSource(reqURI string) response.RPC {
 	aggregationSource, err := e.GetAggregationSourceInfo(reqURI)
 	if err != nil {
 		errorMessage := err.Error()
-		log.Error("Unable to get aggregation source : " + errorMessage)
+		l.Log.Error("Unable to get aggregation source : " + errorMessage)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"AggregationSource", reqURI}, nil)
 		}
@@ -81,7 +81,7 @@ func (e *ExternalInterface) GetAggregationSource(reqURI string) response.RPC {
 	connectionMethod, err := e.GetConnectionMethod(connectionMethodOdataID)
 	if err != nil {
 		errorMessage := err.Error()
-		log.Error("Unable to get connectionmethod : " + errorMessage)
+		l.Log.Error("Unable to get connectionmethod : " + errorMessage)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ConnectionMethod", connectionMethodOdataID}, nil)
 		}
@@ -90,7 +90,7 @@ func (e *ExternalInterface) GetAggregationSource(reqURI string) response.RPC {
 	name := connectionMethod.ConnectionMethodType + "-" + aggregationSource.HostName
 	var data = strings.Split(reqURI, "/redfish/v1/AggregationService/AggregationSources/")
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
+		OdataType:    common.AggregationSourceType,
 		OdataID:      reqURI,
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           data[1],

@@ -16,12 +16,21 @@
 package config
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha512"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
+	"strconv"
+	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/google/uuid"
 )
@@ -52,22 +61,31 @@ type configModel struct {
 	SupportedPluginTypes           []string                 `json:"SupportedPluginTypes"`
 	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
 	EventConf                      *EventConf               `json:"EventConf"`
+	ResourceRateLimit              []string                 `json:"ResourceRateLimit"`
+	RequestLimitCountPerSession    int                      `json:"RequestLimitCountPerSession"`
+	SessionLimitCountPerUser       int                      `json:"SessionLimitCountPerUser"`
+	LogLevel                       log.Level                `json:"LogLevel"`
+	ImageRegistryAddress           string                   `json:"ImageRegistryAddress,omitempty"`
 }
 
 // DBConf holds all DB related configurations
 type DBConf struct {
-	Protocol             string `json:"Protocol"`
-	InMemoryHost         string `json:"InMemoryHost"`
-	InMemoryPort         string `json:"InMemoryPort"`
-	OnDiskHost           string `json:"OnDiskHost"`
-	OnDiskPort           string `json:"OnDiskPort"`
-	MaxIdleConns         int    `json:"MaxIdleConns"`
-	MaxActiveConns       int    `json:"MaxActiveConns"`
-	RedisHAEnabled       bool   `json:"RedisHAEnabled"`
-	InMemorySentinelPort string `json:"InMemorySentinelPort"`
-	OnDiskSentinelPort   string `json:"OnDiskSentinelPort"`
-	InMemoryPrimarySet   string `json:"InMemoryPrimarySet"`
-	OnDiskPrimarySet     string `json:"OnDiskPrimarySet"`
+	Protocol                      string `json:"Protocol"`
+	InMemoryHost                  string `json:"InMemoryHost"`
+	InMemoryPort                  string `json:"InMemoryPort"`
+	OnDiskHost                    string `json:"OnDiskHost"`
+	OnDiskPort                    string `json:"OnDiskPort"`
+	MaxIdleConns                  int    `json:"MaxIdleConns"`
+	MaxActiveConns                int    `json:"MaxActiveConns"`
+	RedisHAEnabled                bool   `json:"RedisHAEnabled"`
+	InMemorySentinelPort          string `json:"InMemorySentinelPort"`
+	OnDiskSentinelPort            string `json:"OnDiskSentinelPort"`
+	InMemoryPrimarySet            string `json:"InMemoryPrimarySet"`
+	OnDiskPrimarySet              string `json:"OnDiskPrimarySet"`
+	RedisInMemoryPasswordFilePath string `json:"RedisInMemoryPasswordFilePath"`
+	RedisOnDiskPasswordFilePath   string `json:"RedisOnDiskPasswordFilePath"`
+	RedisInMemoryPassword         []byte
+	RedisOnDiskPassword           []byte
 }
 
 // MessageBusConf holds all message bus configurations
@@ -161,9 +179,8 @@ type ConnectionMethodConf struct {
 
 // EventConf stores all inforamtion related to event delivery configurations
 type EventConf struct {
-	DeliveryRetryAttempts                 int `json:"DeliveryRetryAttempts"`                 // holds value of retrying event posting to destination
-	DeliveryRetryIntervalSeconds          int `json:"DeliveryRetryIntervalSeconds"`          // holds value of retrying events posting in interval
-	RetentionOfUndeliveredEventsInMinutes int `json:"RetentionOfUndeliveredEventsInMinutes"` // holds value of how long we can retain the events
+	DeliveryRetryAttempts        int `json:"DeliveryRetryAttempts"`        // holds value of retrying event posting to destination
+	DeliveryRetryIntervalSeconds int `json:"DeliveryRetryIntervalSeconds"` // holds value of retrying events posting in interval
 }
 
 // SetConfiguration will extract the config data from file
@@ -180,7 +197,6 @@ func SetConfiguration() error {
 	if err != nil {
 		return fmt.Errorf("Failed to unmarshal config data: %v", err)
 	}
-
 	return ValidateConfiguration()
 }
 
@@ -212,6 +228,9 @@ func ValidateConfiguration() error {
 		return err
 	}
 	if err = checkEventConf(); err != nil {
+		return err
+	}
+	if err = checkResourceRateLimit(); err != nil {
 		return err
 	}
 	checkAuthConf()
@@ -285,7 +304,55 @@ func checkDBConf() error {
 			return err
 		}
 	}
+	var err error
+	if Data.DBConf.RedisInMemoryPasswordFilePath != "" && Data.KeyCertConf.RSAPrivateKeyPath != "" {
+		if Data.DBConf.RedisInMemoryPassword, err = decryptRSAOAEPEncryptedPasswords(Data.DBConf.RedisInMemoryPasswordFilePath); err != nil {
+			return fmt.Errorf("error: while decrypting password from the passwordFilePath:%s with %v", Data.DBConf.RedisInMemoryPasswordFilePath, err)
+		}
+	}
+	if Data.DBConf.RedisOnDiskPasswordFilePath != "" && Data.KeyCertConf.RSAPrivateKeyPath != "" {
+		if Data.DBConf.RedisOnDiskPassword, err = decryptRSAOAEPEncryptedPasswords(Data.DBConf.RedisOnDiskPasswordFilePath); err != nil {
+			return fmt.Errorf("error: while decrypting password from the passwordFilePath:%s with %v", Data.DBConf.RedisOnDiskPasswordFilePath, err)
+		}
+	}
 	return nil
+}
+
+func decryptRSAOAEPEncryptedPasswords(passwordFilePath string) ([]byte, error) {
+	privateKeyStr, err := ioutil.ReadFile(Data.KeyCertConf.RSAPrivateKeyPath)
+	if err != nil {
+		return nil, fmt.Errorf("value check failed for RSAPrivateKeyPath:%s with %v", Data.KeyCertConf.RSAPrivateKeyPath, err)
+	}
+
+	block, _ := pem.Decode(privateKeyStr)
+	if block == nil {
+		return nil, fmt.Errorf("failed to parse PEM block containing the public key for the RSAPrivateKeyPath:%s",
+			Data.KeyCertConf.RSAPrivateKeyPath)
+	}
+
+	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse DER encoded public key for the RSAPrivateKeyPath:%s with %v",
+			Data.KeyCertConf.RSAPrivateKeyPath, err)
+	}
+
+	cipherText, err := ioutil.ReadFile(passwordFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("value check failed for passwordFilePath:%s with %v", passwordFilePath, err)
+	}
+
+	ct, err := base64.StdEncoding.DecodeString(string(cipherText))
+	if err != nil {
+		return nil, fmt.Errorf("value check failed for passwordFilePath:%s with %v", passwordFilePath, err)
+	}
+
+	rng := rand.Reader
+	password, err := rsa.DecryptOAEP(sha512.New(), rng, privateKey, ct, nil)
+	if err != nil {
+		return nil, fmt.Errorf("password decryption failed for the passwordFilePath:%s with %v", passwordFilePath, err)
+	}
+
+	return password, nil
 }
 
 func checkMessageBusConf() error {
@@ -403,9 +470,6 @@ func checkAPIGatewayConf() error {
 	var err error
 	if Data.APIGatewayConf == nil {
 		return fmt.Errorf("error: APIGatewayConf is not provided")
-	}
-	if Data.APIGatewayConf.Host == "" {
-		return fmt.Errorf("error: no value set for GatewayHost")
 	}
 	if Data.APIGatewayConf.Port == "" {
 		return fmt.Errorf("error: no value set for GatewayPort")
@@ -589,6 +653,19 @@ func checkEventConf() error {
 	if Data.EventConf.DeliveryRetryIntervalSeconds <= 0 {
 		log.Warn("No value found for DeliveryRetryIntervalSeconds, setting default value")
 		Data.EventConf.DeliveryRetryIntervalSeconds = DefaultDeliveryRetryIntervalSeconds
+	}
+	return nil
+}
+
+func checkResourceRateLimit() error {
+	for _, val := range Data.ResourceRateLimit {
+		resourceLimit := strings.Split(val, ":")
+		if len(resourceLimit) > 1 && resourceLimit[1] != "" {
+			_, err := strconv.Atoi(resourceLimit[1])
+			if err != nil {
+				return fmt.Errorf("time should be in integer format: %v", err.Error())
+			}
+		}
 	}
 	return nil
 }

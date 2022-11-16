@@ -21,22 +21,38 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strings"
+
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
+	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
+var (
+	// JSONMarshalFunc function pointer for the json.Marshal
+	JSONMarshalFunc = json.Marshal
+	// DecryptWithPrivateKeyFunc function pointer for the common.DecryptWithPrivateKey
+	DecryptWithPrivateKeyFunc = common.DecryptWithPrivateKey
+	// JSONUnmarshalFunc function pointer for the  json.Unmarshal
+	JSONUnmarshalFunc = json.Unmarshal
+	// FindAllFunc function pointer for the smodel.FindAll
+	FindAllFunc = smodel.FindAll
+	// IoutilReadAllFunc function pointer for the ioutil.ReadAll
+	IoutilReadAllFunc = ioutil.ReadAll
+)
+
+// ClientFactory ...
 type ClientFactory func(name string) (Client, *errors.Error)
 
+// NewClientFactory returns function definition for ClientFactory type
 func NewClientFactory(t *config.URLTranslation) ClientFactory {
 
 	pluginClientCreator := func(plugin *smodel.Plugin) Client {
@@ -55,13 +71,12 @@ func NewClientFactory(t *config.URLTranslation) ClientFactory {
 				createClient: pluginClientCreator,
 				targets:      plugins,
 			}, nil
-		} else {
-			plugin, e := smodel.GetPluginData(name)
-			if e != nil {
-				return nil, e
-			}
-			return pluginClientCreator(&plugin), nil
 		}
+		plugin, e := smodel.GetPluginData(name)
+		if e != nil {
+			return nil, e
+		}
+		return pluginClientCreator(&plugin), nil
 	}
 }
 
@@ -71,12 +86,15 @@ type multiTargetClient struct {
 	targets      []*smodel.Plugin
 }
 
+// CallConfig ...
 type CallConfig struct {
 	collector Collector
 }
 
+// CallOption ...
 type CallOption func(*CallConfig)
 
+// Collector ...
 type Collector interface {
 	Collect(response.RPC) error
 	GetResult() response.RPC
@@ -99,11 +117,13 @@ func (c *returnFirst) GetResult() response.RPC {
 	return *c.resp
 }
 
+// ReturnFirstResponse returns instance of CallConfig struct
 func ReturnFirstResponse(c *CallConfig) *CallConfig {
 	c.collector = new(returnFirst)
 	return c
 }
 
+// AggregateResults ...
 func AggregateResults(c *CallConfig) {
 	c.collector = new(collectCollectionMembers)
 }
@@ -116,7 +136,7 @@ type collectCollectionMembers struct {
 func (c *collectCollectionMembers) Collect(r response.RPC) error {
 	if is2xx(int(r.StatusCode)) {
 		collection := new(sresponse.Collection)
-		err := json.Unmarshal(r.Body.([]byte), collection)
+		err := JSONUnmarshalFunc(r.Body.([]byte), collection)
 		if err != nil {
 			return err
 		}
@@ -130,7 +150,7 @@ func (c *collectCollectionMembers) Collect(r response.RPC) error {
 }
 
 func (c *collectCollectionMembers) GetResult() response.RPC {
-	collectionAsBytes, err := json.Marshal(c.collection)
+	collectionAsBytes, err := JSONMarshalFunc(c.collection)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("Unexpected error: %v", err), nil, nil)
 	}
@@ -149,7 +169,7 @@ func (m *multiTargetClient) Get(uri string, opts ...CallOption) response.RPC {
 		resp := client.Get(uri)
 		err := m.call.collector.Collect(resp)
 		if err != nil {
-			log.Warn("execution of GET " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
+			l.Log.Warn("execution of GET " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
 		}
 	}
 	// Checking whether the struct passed as the interface has a ReqURI field.
@@ -178,7 +198,7 @@ func (m *multiTargetClient) Post(uri string, body *json.RawMessage) response.RPC
 func (m *multiTargetClient) Patch(uri string, body *json.RawMessage) response.RPC {
 	for _, target := range m.targets {
 		client := m.createClient(target)
-		log.Info("Request received to patch chassis to rack, URI: ", uri)
+		l.Log.Info("Request received to patch chassis to rack, URI: ", uri)
 		resp := client.Patch(uri, body)
 		switch {
 		case resp.StatusCode == http.StatusNotFound:
@@ -188,7 +208,7 @@ func (m *multiTargetClient) Patch(uri string, body *json.RawMessage) response.RP
 		case is4xx(int(resp.StatusCode)):
 			return resp
 		default:
-			log.Warn("execution of PATCH " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
+			l.Log.Warn("execution of PATCH " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
 		}
 	}
 	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
@@ -206,12 +226,13 @@ func (m *multiTargetClient) Delete(uri string) response.RPC {
 		case is4xx(int(resp.StatusCode)):
 			return resp
 		default:
-			log.Warn("execution of DELETE " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
+			l.Log.Warn("execution of DELETE " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
 		}
 	}
 	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
 }
 
+// Client ...
 type Client interface {
 	Get(uri string, opts ...CallOption) response.RPC
 	Post(uri string, body *json.RawMessage) response.RPC
@@ -270,8 +291,7 @@ func (c *client) extractResp(httpResponse *http.Response, err error) response.RP
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
-
-	body, err := ioutil.ReadAll(httpResponse.Body)
+	body, err := IoutilReadAllFunc(httpResponse.Body)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("Cannot read response body: %v", err), nil, nil)
 	}
@@ -283,7 +303,7 @@ func (c *client) extractResp(httpResponse *http.Response, err error) response.RP
 		ce := new(response.CommonError)
 		err := dec.Decode(ce)
 		if err != nil {
-			log.Error("Cannot decode CommonError: " + err.Error())
+			l.Log.Error("Cannot decode CommonError: " + err.Error())
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, string(body), nil, nil)
 		}
 	}
@@ -344,18 +364,18 @@ func (u *uriTranslator) toNorthbound(data string) string {
 }
 
 func findAllPlugins(key string) (res []*smodel.Plugin, err error) {
-	pluginsAsBytesSlice, err := smodel.FindAll("Plugin", key)
+	pluginsAsBytesSlice, err := FindAllFunc("Plugin", key)
 	if err != nil {
 		return
 	}
 
 	for _, bytes := range pluginsAsBytesSlice {
 		plugin := new(smodel.Plugin)
-		err = json.Unmarshal(bytes, plugin)
+		err = JSONUnmarshalFunc(bytes, plugin)
 		if err != nil {
 			return nil, err
 		}
-		decryptedPass, err := common.DecryptWithPrivateKey(plugin.Password)
+		decryptedPass, err := DecryptWithPrivateKeyFunc(plugin.Password)
 		if err != nil {
 			return nil, errors.PackError(
 				errors.DecryptionFailed,
@@ -370,9 +390,9 @@ func findAllPlugins(key string) (res []*smodel.Plugin, err error) {
 }
 
 func convertToString(data interface{}) string {
-	byteData, err := json.Marshal(data)
+	byteData, err := JSONMarshalFunc(data)
 	if err != nil {
-		log.Error("converting interface to string type failed: " + err.Error())
+		l.Log.Error("converting interface to string type failed: " + err.Error())
 		return ""
 	}
 

@@ -20,11 +20,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
+	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 func mockSystemResourceData(body []byte, table, key string) error {
@@ -756,6 +756,7 @@ func TestSetUndeliveredEventsFlag(t *testing.T) {
 	if cerr := SetUndeliveredEventsFlag("destination"); cerr != nil {
 		t.Errorf("Error while making set undelivered events flag: %v\n", cerr.Error())
 	}
+
 }
 
 func TestGetUndeliveredEventsFlag(t *testing.T) {
@@ -792,4 +793,442 @@ func TestDeleteUndeliveredEventsFlag(t *testing.T) {
 	flag, err := GetUndeliveredEventsFlag("destination")
 	assert.NotNil(t, err, "error should be nil")
 	assert.False(t, flag, "flag should be false")
+
+	GetDbConnection = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) { return nil, &errors.Error{} }
+	_, err = GetUndeliveredEventsFlag("destination")
+	assert.NotNil(t, err, "error should be nil")
+	GetDbConnection = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
+
+}
+
+func TestGetAggregateList(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	type args struct {
+		hostIP string
+	}
+	tests := []struct {
+		name            string
+		args            args
+		want            []string
+		GetDbConnection func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+	}{
+		{
+			name: "Invalid Db Connections ",
+			args: args{
+				hostIP: "",
+			},
+			want: []string{},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+		},
+		{
+			name: "Valid Db Connections ",
+			args: args{
+				hostIP: "",
+			},
+			want: []string{},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+		{
+			name: "Valid Aggregate",
+			args: args{
+				hostIP: "10.10.10.10",
+			},
+			want: []string{"3bd1f589-117a-4cf9-89f2-da44ee8e012b"},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "Valid Aggregate" {
+				mockAggregateData(t, common.OnDisk, AggregateSubscriptionIndex, "3bd1f589-117a-4cf9-89f2-da44ee8e012b", []string{"10.10.10.10"})
+			}
+			GetDbConnection = tt.GetDbConnection
+			got, _ := GetAggregateList(tt.args.hostIP)
+			if !reflect.DeepEqual(len(got), len(tt.want)) {
+				t.Errorf("GetAggregateList() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+func mockAggregateData(t *testing.T, dbType common.DbType, table, id string, data []string) {
+	connPool, err := common.GetDBConnection(dbType)
+	if err != nil {
+		t.Fatalf("error: mockAggregateData() failed to DB connection: %v", err)
+	}
+	if err1 := connPool.CreateAggregateHostIndex(table, id, data); err != nil {
+		t.Fatalf("error: mockAggregateData() failed to create entry %s-%s: %v", table, id, err1)
+	}
+}
+
+func TestGetAggregateHosts(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	type args struct {
+		aggregateID string
+	}
+	tests := []struct {
+		name            string
+		args            args
+		want            []string
+		GetDbConnection func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+	}{
+		{
+			name: "Invalid Db Connections ",
+			args: args{
+				aggregateID: "",
+			},
+			want: []string{},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+		},
+		{
+			name: "Valid Db Connections ",
+			args: args{
+				aggregateID: "",
+			},
+			want: []string{},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+		{
+			name: "Valid Aggregate",
+			args: args{
+				aggregateID: "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
+			},
+			want: []string{"10.10.10.10"},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetDbConnection = tt.GetDbConnection
+			if tt.name == "Valid Aggregate" {
+				mockAggregateData(t, common.OnDisk, AggregateSubscriptionIndex, "3bd1f589-117a-4cf9-89f2-da44ee8e012b", []string{"10.10.10.10"})
+			}
+			got, _ := GetAggregateHosts(tt.args.aggregateID)
+			if !reflect.DeepEqual(len(got), len(tt.want)) {
+				t.Errorf("GetAggregateHosts() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUpdateAggregateHosts(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	mockAggregateData(t, common.OnDisk, AggregateSubscriptionIndex, "3bd1f589-117a-4cf9-89f2-da44ee8e012b", []string{"10.10.10.10"})
+	type args struct {
+		aggregateID string
+		hostIP      []string
+	}
+	tests := []struct {
+		name            string
+		args            args
+		GetDbConnection func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+		wantErr         bool
+	}{
+		{
+			name: "Invalid Db Connections ",
+			args: args{
+				aggregateID: "",
+			},
+			wantErr: true,
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+		},
+		{
+			name: "Valid Db Connections ",
+			args: args{
+				aggregateID: "",
+			},
+			wantErr: true,
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+		{
+			name: "Valid Aggregate",
+			args: args{
+				aggregateID: "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
+				hostIP:      []string{"20.20.20"},
+			},
+			wantErr: false,
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetDbConnection = tt.GetDbConnection
+			if err := UpdateAggregateHosts(tt.args.aggregateID, tt.args.hostIP); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateAggregateHosts() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestSaveAggregateSubscription(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	type args struct {
+		aggregateID string
+		hostIP      []string
+	}
+	tests := []struct {
+		name            string
+		args            args
+		GetDbConnection func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+		wantErr         bool
+	}{
+		{
+			name: "Invalid Db Connections ",
+			args: args{
+				aggregateID: "",
+			},
+			wantErr: true,
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+		},
+		{
+			name: "Valid Db Connections ",
+			args: args{
+				aggregateID: "",
+			},
+			wantErr: false,
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+		{
+			name: "Invalid data",
+			args: args{
+				aggregateID: "",
+				hostIP:      []string{""},
+			},
+			wantErr: false,
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+		{
+			name: "Valid Aggregate",
+			args: args{
+				aggregateID: "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
+				hostIP:      []string{"20.20.20"},
+			},
+			wantErr: false,
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetDbConnection = tt.GetDbConnection
+			if err := SaveAggregateSubscription(tt.args.aggregateID, tt.args.hostIP); (err != nil) != tt.wantErr {
+				t.Errorf("SaveAggregateSubscription() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestGetAllMatchingDetails(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	type args struct {
+		table   string
+		pattern string
+		dbtype  common.DbType
+	}
+	tests := []struct {
+		name            string
+		args            args
+		GetDbConnection func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+		want            []string
+	}{
+		{
+			name: "Positive Data ",
+			args: args{
+				table:   AggregateSubscriptionIndex,
+				pattern: "*",
+				dbtype:  common.OnDisk,
+			},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		}, {
+			name: "Invalid Db Connections ",
+			args: args{},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetDbConnection = tt.GetDbConnection
+			got, _ := GetAllMatchingDetails(tt.args.table, tt.args.pattern, tt.args.dbtype)
+			if len(got) != len(tt.want) {
+				t.Errorf("GetAllMatchingDetails() got = %v, want %v", got, tt.want)
+			}
+
+		})
+	}
+}
+
+func TestGetAggregateData(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	type args struct {
+		aggreagetKey string
+	}
+	var aggregate = Aggregate{
+		Elements: []OdataIDLink{
+			OdataIDLink{OdataID: "dummy"},
+		},
+	}
+	mockData(t, common.OnDisk, "Aggregate", "3bd1f589-117a-4cf9-89f2-da44ee8e012b", aggregate)
+	mockData(t, common.OnDisk, "Aggregate", "3bd1f589-117a-4cf9-89f2-da44ee8e012c", "")
+	tests := []struct {
+		name            string
+		args            args
+		want            Aggregate
+		GetDbConnection func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+		wantErr         bool
+	}{
+		{
+			name:    "Invalid DB connection",
+			args:    args{},
+			wantErr: true,
+			want: Aggregate{
+				Elements: []OdataIDLink{{OdataID: ""}},
+			},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+		},
+		{
+			name:    "invalid data ",
+			args:    args{aggreagetKey: ""},
+			wantErr: true,
+			want: Aggregate{
+				Elements: []OdataIDLink{{OdataID: ""}},
+			},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+		{
+			name:    "Valid data",
+			args:    args{aggreagetKey: "3bd1f589-117a-4cf9-89f2-da44ee8e012b"},
+			wantErr: false,
+			want: Aggregate{
+				Elements: []OdataIDLink{{OdataID: ""}},
+			},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+		{
+			name:    "Valid key",
+			args:    args{aggreagetKey: "3bd1f589-117a-4cf9-89f2-da44ee8e012c"},
+			wantErr: true,
+			want: Aggregate{
+				Elements: []OdataIDLink{{OdataID: ""}},
+			},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetDbConnection = tt.GetDbConnection
+			_, err := GetAggregateData(tt.args.aggreagetKey)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAggregateData() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+}
+func TestInvalidDbConnection(t *testing.T) {
+	GetDbConnection = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	cerr := SetUndeliveredEventsFlag("destination")
+	assert.NotNil(t, cerr)
+	_, cerr = GetUndeliveredEvents("destination")
+	assert.NotNil(t, cerr)
+	cerr = DeleteUndeliveredEvents("destination")
+	assert.NotNil(t, cerr)
+	_, err := GetResource("", "")
+	assert.NotNil(t, "there should be an error ", err)
+	_, err1 := GetTarget("")
+	assert.NotNil(t, "there should be an error ", err1)
+	_, err = GetPluginData("")
+	assert.NotNil(t, "there should be an error ", err)
+	_, err = GetAllPlugins()
+	assert.NotNil(t, "there should be an error ", err)
+	_, err1 = GetAllKeysFromTable("")
+	assert.NotNil(t, "there should be an error ", err1)
+	_, err1 = GetAllSystems()
+	assert.NotNil(t, "there should be an error ", err1)
+	_, err1 = GetSingleSystem("")
+	assert.NotNil(t, "there should be an error ", err1)
+	_, err1 = GetFabricData("")
+	assert.NotNil(t, "there should be an error ", err1)
+	_, err1 = GetAllFabrics()
+	assert.NotNil(t, "there should be an error ", err1)
+	_, err1 = GetDeviceSubscriptions("")
+	assert.NotNil(t, "there should be an error ", err1)
+	err1 = UpdateDeviceSubscriptionLocation(DeviceSubscription{})
+	assert.NotNil(t, "there should be an error ", err1)
+	err1 = SaveDeviceSubscription(DeviceSubscription{})
+	assert.NotNil(t, "there should be an error ", err1)
+	err1 = DeleteDeviceSubscription("")
+	assert.NotNil(t, "there should be an error ", err1)
+	err1 = SaveEventSubscription(Subscription{})
+	assert.NotNil(t, "there should be an error ", err1)
+	_, err1 = GetEvtSubscriptions("")
+	assert.NotNil(t, "there should be an error ", err1)
+	err1 = DeleteEvtSubscription("")
+	assert.NotNil(t, "there should be an error ", err1)
+	err1 = UpdateEventSubscription(Subscription{})
+	assert.NotNil(t, "there should be an error ", err1)
+	err1 = SaveUndeliveredEvents("", []byte{})
+	assert.NotNil(t, "there should be an error ", err1)
+	GetDbConnection = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 }

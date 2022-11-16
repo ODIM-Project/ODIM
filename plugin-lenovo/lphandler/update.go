@@ -17,15 +17,16 @@ package lphandler
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strings"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpresponse"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lputilities"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
 // SimpleUpdate updates the BMC resources
@@ -72,7 +73,7 @@ func SimpleUpdate(ctx iris.Context) {
 		operationApplyTime = requestBody["@Redfish.OperationApplyTime"].(string)
 	}
 	if operationApplyTime == "OnStartUpdateRequest" && urlList[1] == "SimpleUpdate" {
-		body := `{"error":{"code": Base.1.11.0.Success,"message": "See @Message.ExtendedInfo for more information.","@Message.ExtendedInfo":[{"MessageId": "Base.1.11.0.Success"}]}}`
+		body := `{"error":{"code": Base.1.13.0.Success,"message": "See @Message.ExtendedInfo for more information.","@Message.ExtendedInfo":[{"MessageId": "Base.1.13.0.Success"}]}}`
 		ctx.StatusCode(http.StatusOK)
 		ctx.WriteString(body)
 		return

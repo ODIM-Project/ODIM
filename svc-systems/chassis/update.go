@@ -20,16 +20,16 @@ import (
 	"encoding/json"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
+// Handle defines the operations which handle the RPC request-response for updating a chassis
 func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
 	pc, e := h.createPluginClient("URP*")
 	if e != nil && e.ErrNo() == errors.DBKeyNotFound {
@@ -42,7 +42,7 @@ func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
 	body := new(json.RawMessage)
 	ue := json.Unmarshal(req.RequestBody, body)
 	if ue != nil {
-		log.Error("while trying to unmarshal, got " + ue.Error())
+		l.Log.Error("while trying to unmarshal, got " + ue.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, "Cannot deserialize request body", nil, nil)
 	}
 
@@ -58,11 +58,13 @@ func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
 	return resp
 }
 
+// Update struct helps to update chassis
 type Update struct {
 	createPluginClient plugin.ClientFactory
 	getFabricFactory   func(collection *sresponse.Collection) *fabricFactory
 }
 
+// NewUpdateHandler returns an instance of Update struct
 func NewUpdateHandler(pluginClientFactory plugin.ClientFactory) *Update {
 	return &Update{
 		createPluginClient: pluginClientFactory,

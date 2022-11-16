@@ -21,12 +21,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 func getEncryptedKey(t *testing.T, key []byte) []byte {
@@ -429,7 +428,7 @@ func TestGetRegistryFile(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	mockData(t, common.OnDisk, "someTable", "someKey", "someData")
+	mockData(t, common.InMemory, "someTable", "someKey", "someData")
 	type args struct {
 		Table string
 		key   string
@@ -730,7 +729,7 @@ func TestDeletePluginData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := DeletePluginData(tt.args.key); !reflect.DeepEqual(got, tt.want) {
+			if got := DeletePluginData(tt.args.key, "Plugin"); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DeletePluginData() = %v, want %v", got, tt.want)
 			}
 		})
@@ -765,7 +764,7 @@ func TestDeleteManagersData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := DeleteManagersData(tt.args.key); !reflect.DeepEqual(got, tt.want) {
+			if got := DeleteManagersData(tt.args.key, "Managers"); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DeleteManagersData() = %v, want %v", got, tt.want)
 			}
 		})
@@ -1104,9 +1103,9 @@ func TestCreateAggregate(t *testing.T) {
 
 	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
 	req := Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []OdataID{
+			{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
 	err := CreateAggregate(req, aggregateURI)
@@ -1154,9 +1153,9 @@ func TestDeleteAggregate(t *testing.T) {
 
 	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
 	req := Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []OdataID{
+			{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
 	err := CreateAggregate(req, aggregateURI)
@@ -1180,17 +1179,17 @@ func TestAddElementsToAggregate(t *testing.T) {
 
 	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
 	req := Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []OdataID{
+			{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
 	err := CreateAggregate(req, aggregateURI)
 	assert.Nil(t, err, "err should be nil")
 
 	req1 := Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/9119e175-36ad-4b27-99a6-4c3a149fc7da.1",
+		Elements: []OdataID{
+			{"/redfish/v1/Systems/9119e175-36ad-4b27-99a6-4c3a149fc7da.1"},
 		},
 	}
 	err = AddElementsToAggregate(req1, aggregateURI)
@@ -1217,17 +1216,17 @@ func TestRemoveElementsFromAggregate(t *testing.T) {
 
 	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
 	req := Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []OdataID{
+			{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
 	err := CreateAggregate(req, aggregateURI)
 	assert.Nil(t, err, "err should be nil")
 
 	req1 := Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []OdataID{
+			{"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
 

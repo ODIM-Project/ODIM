@@ -17,11 +17,12 @@ package rpc
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
@@ -30,8 +31,11 @@ import (
 
 // Systems struct helps to register service
 type Systems struct {
-	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) response.RPC
-	EI              *systems.ExternalInterface
+	IsAuthorizedRPC    func(sessionToken string, privileges, oemPrivileges []string) response.RPC
+	GetSessionUserName func(string) (string, error)
+	CreateTask         func(string) (string, error)
+	UpdateTask         func(common.TaskData) error
+	EI                 *systems.ExternalInterface
 }
 
 //GetSystemResource defines the operations which handles the RPC request response
@@ -45,7 +49,7 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
+		l.Log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(&resp, authResp)
 		return &resp, nil
 	}
@@ -114,18 +118,46 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 		fillSystemProtoResponse(&resp, authResp)
 		return &resp, nil
 	}
+	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillSystemProtoResponse(&resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.Log.Error(errMsg)
+		return &resp, nil
+	}
+
+	// Task Service using RPC and get the taskID
+	taskURI, err := s.CreateTask(sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillSystemProtoResponse(&resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.Log.Error(errMsg)
+		return &resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	fillSystemProtoResponse(&resp, rpcResp)
 	var pc = systems.PluginContact{
 		ContactClient:  pmbhandle.ContactPlugin,
 		DevicePassword: common.DecryptWithPrivateKey,
+		UpdateTask:     s.UpdateTask,
 	}
-	data := pc.ComputerSystemReset(req)
-	fillSystemProtoResponse(&resp, data)
+	go pc.ComputerSystemReset(req, taskID, sessionUserName)
+
 	return &resp, nil
 }
 
 // SetDefaultBootOrder defines the operations which handles the RPC request response
 // for the SetDefaultBootOrder service of systems micro service.
-// The functionality retrives the request and return backs the response to
+// The functionality retrieves the request and return backs the response to
 // RPC according to the protoc file defined in the lib-utilities package.
 // The function also checks for the session time out of the token
 // which is present in the request.

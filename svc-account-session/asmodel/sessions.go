@@ -45,7 +45,7 @@ type CreateSession struct {
 
 // Persist will create a session in the DB
 func (s *Session) Persist() *errors.Error {
-	connPool, err := common.GetDBConnection(sessionStore)
+	connPool, err := GetDBConnectionFunc(sessionStore)
 	if err != nil {
 		return errors.PackError(err.ErrNo(), "error while trying to connecting to DB: ", err.Error())
 	}
@@ -57,7 +57,7 @@ func (s *Session) Persist() *errors.Error {
 
 // Update will update a session in the DB
 func (s *Session) Update() *errors.Error {
-	connPool, err := common.GetDBConnection(sessionStore)
+	connPool, err := GetDBConnectionFunc(sessionStore)
 	if err != nil {
 		return errors.PackError(err.ErrNo(), "error while trying to connecting to DB: ", err.Error())
 	}
@@ -70,7 +70,7 @@ func (s *Session) Update() *errors.Error {
 // GetSession will get the session details from db if available
 func GetSession(token string) (Session, *errors.Error) {
 	var session Session
-	connPool, err := common.GetDBConnection(sessionStore)
+	connPool, err := GetDBConnectionFunc(sessionStore)
 	if err != nil {
 		return session, errors.PackError(err.ErrNo(), "error while trying to connecting to DB: ", err.Error())
 	}
@@ -86,7 +86,7 @@ func GetSession(token string) (Session, *errors.Error) {
 
 // Delete will delete a session from the DB
 func (s *Session) Delete() *errors.Error {
-	connPool, err := common.GetDBConnection(sessionStore)
+	connPool, err := GetDBConnectionFunc(sessionStore)
 	if err != nil {
 		return errors.PackError(err.ErrNo(), "error while trying to connecting to DB: ", err.Error())
 	}
@@ -98,7 +98,7 @@ func (s *Session) Delete() *errors.Error {
 
 // GetAllSessionKeys will collect all session keys available in the DB
 func GetAllSessionKeys() ([]string, *errors.Error) {
-	connPool, err := common.GetDBConnection(sessionStore)
+	connPool, err := GetDBConnectionFunc(sessionStore)
 	if err != nil {
 		return nil, errors.PackError(err.ErrNo(), "error while trying to connecting to DB: ", err.Error())
 	}

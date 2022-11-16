@@ -15,9 +15,12 @@ package mgrmodel
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -39,6 +42,13 @@ func TestGenericSave(t *testing.T) {
 	data, err := GetResource(table, key)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, data, string(body), "should be same")
+
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	err = GenericSave(body, table, key)
+	fmt.Println("Eroor ", err)
+	assert.NotNil(t, err, "unable to connect DB")
 }
 
 func TestManager_Update(t *testing.T) {
@@ -53,6 +63,9 @@ func TestManager_Update(t *testing.T) {
 	body := []byte(`{"Status":{"State":"Enabled"}}`)
 	table := "Managers"
 	key := "xyz"
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 	err := GenericSave(body, table, key)
 	assert.Nil(t, err, "There should be no error while saving data")
 
@@ -60,6 +73,9 @@ func TestManager_Update(t *testing.T) {
 		"Status": map[string]string{
 			"State": "Absent",
 		},
+	}
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
 	}
 	err = UpdateData(key, m, "Managers")
 
@@ -95,6 +111,11 @@ func TestGetResourceNegativeTestCases(t *testing.T) {
 	_, err = GetResource(table, key)
 	assert.NotNil(t, err, "There should be an error")
 
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	_, err = GetResource(table, key)
+	assert.NotNil(t, err, "There should be an error")
 }
 
 func TestGetAllkeysFromTable(t *testing.T) {
@@ -109,12 +130,21 @@ func TestGetAllkeysFromTable(t *testing.T) {
 	body := []byte(`body`)
 	table := "EthernetInterfaces"
 	key := "/redfish/v1/Managers/uuid.1/EthernetInterfaces/1"
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 	err := GenericSave(body, table, key)
 	assert.Nil(t, err, "There should be no error")
 
 	allKeys, err := GetAllKeysFromTable(table)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, len(allKeys), 1, "There should be one entry in DB")
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	_, err = GetAllKeysFromTable(table)
+	assert.NotNil(t, err, "There should be no error")
+
 }
 
 func TestGetManagerByURL(t *testing.T) {
@@ -129,12 +159,22 @@ func TestGetManagerByURL(t *testing.T) {
 	body := []byte(`body`)
 	table := "Managers"
 	key := "/redfish/v1/Managers/uuid.1"
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 	err := GenericSave(body, table, key)
 	assert.Nil(t, err, "There should be no error")
 
 	data, err := GetManagerByURL(key)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, data, string(body), "should be same")
+
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	_, err1 := GetManagerByURL(key)
+	assert.NotNil(t, err1, "unable to connect DB")
+
 }
 
 func TestGetManagerByURLNegativeTestCase(t *testing.T) {
@@ -170,6 +210,13 @@ func TestAddManagertoDB(t *testing.T) {
 		UUID:            "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
 		State:           "Enabled",
 	}
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
+	MarshalFunc = func(v interface{}) ([]byte, error) {
+		return json.Marshal(v)
+	}
+
 	err := AddManagertoDB(mngr)
 	assert.Nil(t, err, "There should be no error")
 
@@ -183,4 +230,61 @@ func TestAddManagertoDB(t *testing.T) {
 	assert.Equal(t, manager.ID, "3bd1f589-117a-4cf9-89f2-da44ee8e012b", "managerid should be 3bd1f589-117a-4cf9-89f2-da44ee8e012b")
 	assert.Equal(t, manager.UUID, "3bd1f589-117a-4cf9-89f2-da44ee8e012b", "uuid should be 3bd1f589-117a-4cf9-89f2-da44ee8e012b")
 	assert.Equal(t, manager.State, "Enabled", "state should be Enabled")
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	err = AddManagertoDB(mngr)
+	assert.NotNil(t, err, "unable to marshal data for updating: %v")
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
+	MarshalFunc = func(v interface{}) ([]byte, error) {
+		return nil, &errors.Error{}
+	}
+	err = AddManagertoDB(mngr)
+	assert.NotNil(t, err, "unable to marshal data for updating: %v")
+
+}
+
+func TestUpdateData(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	err := UpdateData("test", nil, "Managers")
+	assert.NotNil(t, err, "unable to marshal data for updating: %v")
+	m := map[string]interface{}{
+		"Status": map[string]string{
+			"State": "Absent",
+		},
+	}
+	err = UpdateData("test", m, "Managers")
+	assert.NotNil(t, err, "unable to marshal data for updating: %v")
+
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	err = UpdateData("test", m, "Managers")
+	assert.NotNil(t, err, "unable to marshal data for updating: %v")
+
+}
+func Test_UpdateData(t *testing.T) {
+
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, nil
+	}
+	MarshalFunc = func(v interface{}) ([]byte, error) {
+		return nil, &errors.Error{}
+	}
+	m := map[string]interface{}{
+		"Status": map[string]string{
+			"State": "Absent",
+		},
+	}
+	err := UpdateData("test", m, "Managers")
+	assert.NotNil(t, err, "unable to marshal data for updating: %v")
 }

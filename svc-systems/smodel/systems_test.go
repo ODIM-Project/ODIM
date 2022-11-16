@@ -17,10 +17,12 @@
 package smodel
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -244,8 +246,30 @@ func TestGetSystemByUUID(t *testing.T) {
 	GenericSave([]byte(body), table, key)
 	data, _ := GetSystemByUUID("/redfish/v1/Systems/uuid.1")
 	assert.Equal(t, data, body, "should be same")
-	_, err := GetSystemByUUID("/redfish/v1/Systems/uuid")
+
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
+		return &errors.Error{}
+	}
+	_, err := GetSystemByUUID("/redfish/v1/Systems/uuid.1")
 	assert.NotNil(t, err, "There should be an error")
+
+	_, err = GetSystemByUUID("/redfish/v1/Systems/uuid")
+	assert.NotNil(t, err, "There should be an error")
+
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
+		return json.Unmarshal(data, v)
+	}
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+
+	}
+	_, err = GetSystemByUUID("/redfish/v1/Systems/uuid")
+	assert.NotNil(t, err, "There should be an error")
+
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+
+	}
 }
 
 func TestGetTarget(t *testing.T) {
@@ -303,6 +327,29 @@ func TestGenericSave(t *testing.T) {
 	key := "/redfish/v1/Managers/uuid.1/EthernetInterfaces/1"
 	err := GenericSave(body, table, key)
 	assert.Nil(t, err, "There should be no error")
+
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+
+	}
+	err = GenericSave(body, table, key)
+	assert.NotNil(t, err, "There should be an error")
+
+	_, err = GetResource(table, key)
+	assert.NotNil(t, err, "There should be an error")
+
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+
+	}
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
+		return &errors.Error{}
+	}
+	_, err = GetResource(table, key)
+	assert.NotNil(t, err, "There should be an error")
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
+		return json.Unmarshal(data, v)
+	}
 
 	data, err := GetResource(table, key)
 	assert.Nil(t, err, "There should be no error")
@@ -486,6 +533,105 @@ func TestDeleteVolume(t *testing.T) {
 				t.Errorf("DeleteVolume() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+
+}
+
+func TestFind(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.InMemory)
+	}()
+	mockData(t, common.InMemory, "Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1", "")
+
+	err := Find("Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1", "")
+	assert.NotNil(t, err, "should be an error ")
+
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
+		return &errors.Error{}
+	}
+	err = Find("Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1", "")
+	assert.NotNil(t, err, "should be an error ")
+
+	err = Find("Volumes", "", "")
+	assert.NotNil(t, err, "should be an error, Invalid ID ")
+
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
+		return json.Unmarshal(data, v)
+	}
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	err = Find("Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1", "")
+	assert.NotNil(t, err, "should be an error ")
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
+
+}
+
+func TestFindAll(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.InMemory)
+	}()
+	mockData(t, common.InMemory, "Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1", "")
+
+	_, err := FindAll("Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1")
+	assert.Nil(t, err, "should be no error ")
+
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	_, err = FindAll("Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1")
+	assert.NotNil(t, err, "should be an error ")
+
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
+	scanFunc = func(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {
+		return nil, &errors.Error{}
+	}
+	_, err = FindAll("Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1")
+	assert.NotNil(t, err, "should be an error ")
+
+	scanFunc = func(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {
+		return []interface{}{"dummy"}, nil
+	}
+	_, err = FindAll("Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1")
+	assert.Nil(t, err, "should be no error ")
+
+}
+
+func TestGetAllKeysFromTable(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.InMemory)
+	}()
+	mockData(t, common.InMemory, "Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1", "")
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	_, err := GetAllKeysFromTable("Volumes")
+	assert.NotNil(t, err, "should be an error ")
+	_, err = GetPluginData("Volumes")
+	assert.NotNil(t, err, "should be an error ")
+	_, err = GetTarget("Volumes")
+	assert.NotNil(t, err, "should be an error ")
+	_, err = GetStorageList("Volumes", "", 0.5, true)
+	assert.NotNil(t, err, "should be an error ")
+	_, err = GetString("Volumes", "", true)
+	assert.NotNil(t, err, "should be an error ")
+
+	_, err = GetRange("Volumes", 0, 100, true)
+	assert.NotNil(t, err, "should be an error ")
+
+	err = AddSystemResetInfo("Volumes", "rese")
+	assert.NotNil(t, err, "should be an error ")
+
+	_, err = GetSystemResetInfo("Volumes")
+	assert.NotNil(t, err, "should be an error ")
+	err = DeleteVolume("Volumes")
+	assert.NotNil(t, err, "should be an error ")
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
 	}
 
 }

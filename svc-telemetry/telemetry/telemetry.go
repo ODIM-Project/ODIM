@@ -20,13 +20,13 @@ package telemetry
 // ---------------------------------------------------------------------------------------
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	teleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-telemetry/tcommon"
@@ -104,7 +104,7 @@ func (e *ExternalInterface) GetMetricDefinitionCollection(req *teleproto.Telemet
 		// return empty collection response
 		metricDefinitionCollection := tlresp.Collection{
 			OdataContext: "/redfish/v1/$metadata#MetricDefinitionCollection.MetricDefinitionCollection",
-			OdataID:      "/redfish/v1/TelemetryService/MetricDefinitionCollection",
+			OdataID:      "/redfish/v1/TelemetryService/MetricDefinitions",
 			OdataType:    "#MetricDefinitionCollection.MetricDefinitionCollection",
 			Description:  "MetricDefinition Collection view",
 			Name:         "MetricDefinitionCollection",
@@ -132,7 +132,7 @@ func (e *ExternalInterface) GetMetricReportDefinitionCollection(req *teleproto.T
 		// return empty collection response
 		metricReportDefinitionCollection := tlresp.Collection{
 			OdataContext: "/redfish/v1/$metadata#MetricReportDefinitionCollection.MetricReportDefinitionCollection",
-			OdataID:      "/redfish/v1/TelemetryService/MetricReportDefinition",
+			OdataID:      "/redfish/v1/TelemetryService/MetricReportDefinitions",
 			OdataType:    "#MetricReportDefinitionCollection.MetricReportDefinitionCollection",
 			Description:  "MetricReportDefinition Collection view",
 			Name:         "MetricReportDefinitionCollection",
@@ -160,7 +160,7 @@ func (e *ExternalInterface) GetMetricReportCollection(req *teleproto.TelemetryRe
 		// return empty collection response
 		metricReportCollection := tlresp.Collection{
 			OdataContext: "/redfish/v1/$metadata#MetricReportCollection.MetricReportCollection",
-			OdataID:      "/redfish/v1/TelemetryService/MetricReport",
+			OdataID:      "/redfish/v1/TelemetryService/MetricReports",
 			OdataType:    "#MetricReportCollection.MetricReportCollection",
 			Description:  "MetricReport Collection view",
 			Name:         "MetricReportCollection",
@@ -187,9 +187,9 @@ func (e *ExternalInterface) GetTriggerCollection(req *teleproto.TelemetryRequest
 	if err != nil {
 		// return empty collection response
 		triggersCollection := tlresp.Collection{
-			OdataContext: "/redfish/v1/$metadata#TriggerCollection.TriggerCollection",
+			OdataContext: "/redfish/v1/$metadata#TriggersCollection.TriggersCollection",
 			OdataID:      "/redfish/v1/TelemetryService/Triggers",
-			OdataType:    "#TriggerCollection.TriggerCollection",
+			OdataType:    "#TriggersCollection.TriggersCollection",
 			Description:  "Triggers Collection view",
 			Name:         "Triggers",
 			Members:      []dmtf.Link{},
@@ -212,7 +212,7 @@ func (e *ExternalInterface) GetMetricReportDefinition(req *teleproto.TelemetryRe
 	var resp response.RPC
 	data, gerr := e.DB.GetResource("MetricReportDefinitions", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Warn("Unable to get MetricReportDefinition details : " + gerr.Error())
+		l.Log.Warn("Unable to get MetricReportDefinition details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"MetricReportDefinition", req.URL}, nil)
@@ -244,7 +244,7 @@ func (e *ExternalInterface) GetMetricReport(req *teleproto.TelemetryRequest) res
 	}
 	data, err := tcommon.GetResourceInfoFromDevice(getDeviceInfoRequest)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"MetricReport", req.URL}, nil)
 	}
 	var resource map[string]interface{}
@@ -262,7 +262,7 @@ func (e *ExternalInterface) GetMetricDefinition(req *teleproto.TelemetryRequest)
 	var resp response.RPC
 	data, gerr := e.DB.GetResource("MetricDefinitions", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Warn("Unable to get MetricDefinition details : " + gerr.Error())
+		l.Log.Warn("Unable to get MetricDefinition details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"MetricDefinition", req.URL}, nil)
@@ -284,7 +284,7 @@ func (e *ExternalInterface) GetTrigger(req *teleproto.TelemetryRequest) response
 	var resp response.RPC
 	data, gerr := e.DB.GetResource("Triggers", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Warn("Unable to get Triggers details `: " + gerr.Error())
+		l.Log.Warn("Unable to get Triggers details `: " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Triggers", req.URL}, nil)

@@ -18,11 +18,11 @@ package thandle
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-task/tresponse"
@@ -43,20 +43,20 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 	privileges := []string{common.PrivilegeLogin}
 	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf(authErrorMessage)
+		l.Log.Printf(authErrorMessage)
 		fillProtoResponse(&rsp, authResp)
 		return &rsp, nil
 	}
 	_, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
-		log.Printf(authErrorMessage)
+		l.Log.Printf(authErrorMessage)
 		fillProtoResponse(&rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		return &rsp, nil
 	}
 	// get task status from database using task id
 	task, err := ts.GetTaskStatusModel(req.TaskID, common.InMemory)
 	if err != nil {
-		log.Printf("error getting task status : %v", err)
+		l.Log.Printf("error getting task status : %v", err)
 		fillProtoResponse(&rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.TaskID}, nil))
 		return &rsp, nil
 	}
@@ -74,7 +74,7 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		/*
 			err := task.Delete()
 			if err != nil {
-				log.Printf("error while deleting the task from db: %v", err)
+				l.Log.Printf("error while deleting the task from db: %v", err)
 			}
 		*/
 		return &rsp, nil
@@ -94,7 +94,7 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_5_1.Task",
+		OdataType:    common.TaskType,
 		ID:           task.ID,
 		Name:         task.Name,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",

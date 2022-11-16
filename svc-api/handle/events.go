@@ -19,9 +19,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
@@ -53,7 +52,7 @@ func (e *EventsRPCs) GetEventService(ctx iris.Context) {
 	}
 	resp, err := e.GetEventServiceRPC(req)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -76,7 +75,7 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 	err := ctx.ReadJSON(&SubscriptionReq)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the event subscription request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -98,7 +97,7 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 
 	resp, err := e.CreateEventSubscriptionRPC(req)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -120,7 +119,7 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 	err := ctx.ReadJSON(&SubmitTestEventReq)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the SubmitTestEvent request body: " + err.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -142,7 +141,7 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 
 	resp, err := e.SubmitTestEventRPC(req)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -173,7 +172,7 @@ func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
 
 	resp, err := e.GetEventSubscriptionRPC(req)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -204,7 +203,7 @@ func (e *EventsRPCs) DeleteEventSubscription(ctx iris.Context) {
 
 	resp, err := e.DeleteEventSubscriptionRPC(req)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -234,7 +233,7 @@ func (e *EventsRPCs) GetEventSubscriptionsCollection(ctx iris.Context) {
 
 	resp, err := e.GetEventSubscriptionsCollectionRPC(req)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

@@ -14,29 +14,46 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
+	"fmt"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/rpc"
 )
 
-var log = logrus.New()
-
 func main() {
+	// setting up the logging framework
+	hostName := os.Getenv("HOST_NAME")
+	podName := os.Getenv("POD_NAME")
+	pid := os.Getpid()
+	log := logs.Log
+	logs.Adorn(logrus.Fields{
+		"host":   hostName,
+		"procid": podName + fmt.Sprintf("_%d", pid),
+	})
+
+	if err := config.SetConfiguration(); err != nil {
+		log.Logger.SetFormatter(&logs.SysLogFormatter{})
+		log.Fatal(err.Error())
+	}
+
+	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	log.Logger.SetOutput(os.Stdout)
+	log.Logger.SetLevel(config.Data.LogLevel)
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("AccountSession Service should not be run as the root user")
-	}
-
-	if err := config.SetConfiguration(); err != nil {
-		log.Fatal(err.Error())
 	}
 
 	config.CollectCLArgs()
@@ -45,13 +62,12 @@ func main() {
 		log.Fatal("Error while trying to check DB connection health: " + err.Error())
 	}
 
-	configFilePath := os.Getenv("CONFIG_FILE_PATH")
-	if configFilePath == "" {
+	account.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
+	if account.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	eventChan := make(chan interface{})
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	go account.TrackConfigFileChanges()
 
 	if err := services.InitializeService(services.AccountSession); err != nil {
 		log.Fatal("Error while trying to initialize the service: " + err.Error())

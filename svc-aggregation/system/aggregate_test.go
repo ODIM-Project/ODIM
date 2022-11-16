@@ -25,6 +25,7 @@ import (
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 )
 
 func mockSystemResourceData(body []byte, table, key string) error {
@@ -39,6 +40,7 @@ func mockSystemResourceData(body []byte, table, key string) error {
 }
 
 func TestExternalInterface_CreateAggregate(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -49,6 +51,10 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
+
+	mockData(t, common.OnDisk, "System", "6d4a0a66-7efa-578e-83cf-44dc68d2874e", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e"})
+	mockData(t, common.OnDisk, "System", "c14d91b5-3333-48bb-a7b7-75f74a137d48", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "c14d91b5-3333-48bb-a7b7-75f74a137d48"})
+
 	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"})
 	err := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
 	if err != nil {
@@ -62,17 +68,17 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 	}
 
 	successReq, _ := json.Marshal(agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	})
 	successReq1, _ := json.Marshal(agmodel.Aggregate{
-		Elements: []string{},
+		Elements: []agmodel.OdataID{},
 	})
 	invalidReqBody, _ := json.Marshal(agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/123456",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/123456"},
 		},
 	})
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
@@ -164,11 +170,14 @@ func TestExternalInterface_GetAllAggregates(t *testing.T) {
 	}()
 
 	req := agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
+	mockData(t, common.OnDisk, "System", "6d4a0a66-7efa-578e-83cf-44dc68d2874e", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e"})
+	mockData(t, common.OnDisk, "System", "c14d91b5-3333-48bb-a7b7-75f74a137d48", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "c14d91b5-3333-48bb-a7b7-75f74a137d48"})
+
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -212,11 +221,13 @@ func TestExternalInterface_GetAggregate(t *testing.T) {
 	}()
 
 	req := agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
+	mockData(t, common.OnDisk, "System", "6d4a0a66-7efa-578e-83cf-44dc68d2874e", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e"})
+	mockData(t, common.OnDisk, "System", "c14d91b5-3333-48bb-a7b7-75f74a137d48", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "c14d91b5-3333-48bb-a7b7-75f74a137d48"})
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -242,8 +253,26 @@ func TestExternalInterface_GetAggregate(t *testing.T) {
 			},
 			want: response.RPC{
 				StatusCode: http.StatusOK,
+				Body: agresponse.AggregateGetResponse{
+					ElementsCount: 2,
+					Actions: agresponse.AggregateActions{
+						AggregateReset: agresponse.Action{
+							Target: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+						},
+						AggregateSetDefaultBootOrder: agresponse.Action{
+							Target: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
+						},
+						AggregateAddElements: agresponse.Action{
+							Target: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
+						},
+						AggregateRemoveElements: agresponse.Action{
+							Target: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+						},
+					},
+				},
 			},
 		},
+
 		{
 			name: "Invalid aggregate id",
 			e:    p,
@@ -268,17 +297,24 @@ func TestExternalInterface_GetAggregate(t *testing.T) {
 }
 
 func TestExternalInterface_DeleteAggregate(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer func() {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-
+	DeleteAggregateSubscription = func(url, session string, systems []agmodel.OdataID) error {
+		return nil
+	}
 	req := agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []agmodel.OdataID{
+			{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
+	mockData(t, common.OnDisk, "System", "6d4a0a66-7efa-578e-83cf-44dc68d2874e", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e"})
+	mockData(t, common.OnDisk, "System", "c14d91b5-3333-48bb-a7b7-75f74a137d48", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "c14d91b5-3333-48bb-a7b7-75f74a137d48"})
+	mockAggregateHostIndexData(t, common.OnDisk, common.AggregateSubscriptionIndex, "7ff3bd97-c41c-5de0-937d-85d390691b73", []string{"10.10.0.1"})
+
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -336,11 +372,13 @@ func TestExternalInterface_AddElementsToAggregate(t *testing.T) {
 	}()
 
 	req := agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
+	mockData(t, common.OnDisk, "System", "6d4a0a66-7efa-578e-83cf-44dc68d2874e", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e"})
+	mockData(t, common.OnDisk, "System", "c14d91b5-3333-48bb-a7b7-75f74a137d48", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "c14d91b5-3333-48bb-a7b7-75f74a137d48"})
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -353,37 +391,40 @@ func TestExternalInterface_AddElementsToAggregate(t *testing.T) {
 	}
 
 	successReq, _ := json.Marshal(agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"},
 		},
 	})
 
 	badReq, _ := json.Marshal(agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"},
 		},
 	})
 
 	duplicateReq, _ := json.Marshal(agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1",
-			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"},
 		},
 	})
 
 	emptyReq, _ := json.Marshal(agmodel.Aggregate{
-		Elements: []string{},
+		Elements: []agmodel.OdataID{},
 	})
 
 	invalidReqBody, _ := json.Marshal(agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/123456",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/123456"},
 		},
 	})
 
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
 
 	p := getMockExternalInterface()
+	UpdateSubscription = func(aggragateID string, systemID []agmodel.OdataID, session string) error {
+		return nil
+	}
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}
@@ -490,46 +531,52 @@ func TestExternalInterface_RemoveElementsFromAggregate(t *testing.T) {
 	}()
 
 	req := agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
+	mockData(t, common.OnDisk, "System", "6d4a0a66-7efa-578e-83cf-44dc68d2874e", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e"})
+	mockData(t, common.OnDisk, "System", "c14d91b5-3333-48bb-a7b7-75f74a137d48", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "c14d91b5-3333-48bb-a7b7-75f74a137d48"})
+
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 
 	successReq, _ := json.Marshal(agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	})
 
 	badReq, _ := json.Marshal(agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"},
 		},
 	})
 
 	duplicateReq, _ := json.Marshal(agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+		},
 	})
 
 	emptyReq, _ := json.Marshal(agmodel.Aggregate{
-		Elements: []string{},
+		Elements: []agmodel.OdataID{},
 	})
 
 	invalidReqBody, _ := json.Marshal(agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/123456",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/123456"},
 		},
 	})
 
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
-
+	RemoveSubscription = func(aggragateID string, systemID []agmodel.OdataID, session string) error {
+		return nil
+	}
 	p := getMockExternalInterface()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
@@ -666,11 +713,14 @@ func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
 	mockPluginData(t, "GRF")
 
 	req := agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
+	// mockData(t, common.OnDisk, "System", "6d4a0a66-7efa-578e-83cf-44dc68d2874e", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e"})
+	// mockData(t, common.OnDisk, "System", "c14d91b5-3333-48bb-a7b7-75f74a137d48", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "c14d91b5-3333-48bb-a7b7-75f74a137d48"})
+
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -818,11 +868,14 @@ func TestExternalInterface_SetDefaultBootOrderElementsOfAggregate(t *testing.T) 
 	mockDeviceData("6d4a0a66-7efa-578e-83cf-44dc68d2874e", device1)
 
 	req := agmodel.Aggregate{
-		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
+		Elements: []agmodel.OdataID{
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
 		},
 	}
+	// mockData(t, common.OnDisk, "System", "6d4a0a66-7efa-578e-83cf-44dc68d2874e", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e"})
+	// mockData(t, common.OnDisk, "System", "c14d91b5-3333-48bb-a7b7-75f74a137d48", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "c14d91b5-3333-48bb-a7b7-75f74a137d48"})
+
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
 	if err != nil {
 		t.Fatalf("error: %v", err)

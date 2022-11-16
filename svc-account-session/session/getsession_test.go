@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -97,8 +98,9 @@ func TestGetSession(t *testing.T) {
 				StatusMessage: response.Success,
 				Header:        successHeader,
 				Body: asresponse.Session{
-					Response: commonResponse,
-					UserName: "admin",
+					Response:    commonResponse,
+					UserName:    "admin",
+					CreatedTime: time.Now().Format(time.RFC3339),
 				},
 			},
 		},

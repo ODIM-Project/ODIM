@@ -18,7 +18,6 @@ package scommon
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -27,7 +26,15 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
+)
+
+var (
+	//IOReadAll  function pointer for the ioutil.ReadAll
+	IOReadAll = ioutil.ReadAll
+	//JSONUnmarshalFunc function pointer for the json.Unmarshal
+	JSONUnmarshalFunc = json.Unmarshal
 )
 
 // Schema is used to define the allowed values for search/filter
@@ -131,7 +138,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 	}
 
 	var resourceData map[string]interface{}
-	err = json.Unmarshal(body, &resourceData)
+	err = JSONUnmarshalFunc(body, &resourceData)
 	if err != nil {
 		return "", err
 	}
@@ -213,24 +220,24 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 			errorMessage = errorMessage + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = errors.InternalError
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
 	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := IOReadAll(response.Body)
 	if err != nil {
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
-	log.Info("Response" + string(body))
-	log.Info("response.StatusCode" + string(rune(response.StatusCode)))
-	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
+	l.Log.Info("response.StatusCode: " + fmt.Sprintf("%d", response.StatusCode))
+	resp.StatusCode = int32(response.StatusCode)
+	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted {
 		resp.StatusCode = int32(response.StatusCode)
-		log.Println(errorMessage)
+		l.Log.Println(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -238,6 +245,9 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 	//replacing the resposne with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
+	}
+	if response.StatusCode == http.StatusAccepted {
+		return []byte(data), response.Header.Get("Location"), resp, nil
 	}
 	return []byte(data), response.Header.Get("X-Auth-Token"), resp, nil
 }
@@ -271,10 +281,10 @@ func GetPluginStatus(plugin smodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Error("Error While getting the status for plugin " + plugin.ID + ": " + err.Error())
+		l.Log.Error("Error While getting the status for plugin " + plugin.ID + ": " + err.Error())
 		return status
 	}
-	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	l.Log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -299,12 +309,16 @@ func TrackConfigFileChanges(configFilePath string) {
 		config.TLSConfMutex.RLock()
 		schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
 		if err != nil {
-			log.Error("error while trying to read search/filter schema json" + err.Error())
+			l.Log.Error("error while trying to read search/filter schema json" + err.Error())
 		}
 		config.TLSConfMutex.RUnlock()
 		err = json.Unmarshal(schemaFile, &SF)
 		if err != nil {
-			log.Error("error while trying to fetch search/filter schema json" + err.Error())
+			l.Log.Error("error while trying to fetch search/filter schema json" + err.Error())
+		}
+		if l.Log.Level != config.Data.LogLevel {
+			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+			l.Log.Logger.SetLevel(config.Data.LogLevel)
 		}
 	}
 }

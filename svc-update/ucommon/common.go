@@ -18,7 +18,6 @@ package ucommon
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -27,6 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 )
@@ -66,6 +66,11 @@ type CommonInterface struct {
 	GetPluginData func(string) (umodel.Plugin, *errors.Error)
 	ContactPlugin func(PluginContactRequest, string) ([]byte, string, ResponseStatus, error)
 }
+
+var (
+	// ConfigFilePath holds the value of odim config file path
+	ConfigFilePath string
+)
 
 //GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
 func (i *CommonInterface) GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
@@ -189,14 +194,21 @@ func getResourceName(oDataID string, memberFlag bool) string {
 	return str[len(str)-2]
 }
 
+var (
+	// CallPluginFunc function  pointer for calling the plugin
+	CallPluginFunc = callPlugin
+	// IOUtilReadAllFunc function  pointer for calling the files
+	IOUtilReadAllFunc = ioutil.ReadAll
+)
+
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
 func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
 	var resp ResponseStatus
 	var err error
-	pluginResponse, err := callPlugin(req)
+	pluginResponse, err := CallPluginFunc(req)
 	if err != nil {
 		if getPluginStatus(req.Plugin) {
-			pluginResponse, err = callPlugin(req)
+			pluginResponse, err = CallPluginFunc(req)
 		}
 		if err != nil {
 			errorMessage = errorMessage + err.Error()
@@ -207,28 +219,28 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		}
 	}
 	defer pluginResponse.Body.Close()
-	body, err := ioutil.ReadAll(pluginResponse.Body)
+	body, err := IOUtilReadAllFunc(pluginResponse.Body)
 	if err != nil {
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		log.Warn(errorMessage)
+		l.Log.Warn(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
-	if pluginResponse.StatusCode != http.StatusCreated && pluginResponse.StatusCode != http.StatusOK {
+	if pluginResponse.StatusCode != http.StatusCreated && pluginResponse.StatusCode != http.StatusOK && pluginResponse.StatusCode != http.StatusAccepted {
 		if pluginResponse.StatusCode == http.StatusUnauthorized {
 			errorMessage += "error: invalid resource username/password"
 			resp.StatusCode = int32(pluginResponse.StatusCode)
 			resp.StatusMessage = response.ResourceAtURIUnauthorized
 			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
-			log.Warn(errorMessage)
+			l.Log.Warn(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 		errorMessage += string(body)
 		resp.StatusCode = int32(pluginResponse.StatusCode)
 		resp.StatusMessage = response.InternalError
-		log.Warn(errorMessage)
+		l.Log.Warn(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -236,6 +248,10 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 	//replacing the resposne with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
+	}
+	// Get location from the header if status code is status accepted
+	if pluginResponse.StatusCode == http.StatusAccepted {
+		return []byte(data), pluginResponse.Header.Get("Location"), resp, nil
 	}
 	return []byte(data), pluginResponse.Header.Get("X-Auth-Token"), resp, nil
 }
@@ -269,10 +285,10 @@ func getPluginStatus(plugin umodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Warn("Error While getting the status for plugin " + plugin.ID + " " + err.Error())
+		l.Log.Warn("Error While getting the status for plugin " + plugin.ID + " " + err.Error())
 		return status
 	}
-	log.Info("Status of plugin " + plugin.ID + " " + strconv.FormatBool(status))
+	l.Log.Info("Status of plugin " + plugin.ID + " " + strconv.FormatBool(status))
 	return status
 }
 
@@ -286,4 +302,16 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
 	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+}
+func TrackConfigFileChanges() {
+	eventChan := make(chan interface{})
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	for {
+		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
+		if l.Log.Level != config.Data.LogLevel {
+			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		}
+
+	}
 }

@@ -20,7 +20,6 @@ package update
 // ---------------------------------------------------------------------------------------
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
@@ -28,6 +27,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
@@ -118,7 +118,7 @@ func (e *ExternalInterface) GetAllFirmwareInventory(req *updateproto.UpdateReque
 	members := []dmtf.Link{}
 	firmwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("FirmwareInventory", common.InMemory)
 	if err != nil || len(firmwareCollectionKeysArray) == 0 {
-		log.Warn("odimra doesnt have servers")
+		l.Log.Warn("odimra doesnt have servers")
 	}
 
 	for _, key := range firmwareCollectionKeysArray {
@@ -147,7 +147,7 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 	}
 	data, gerr := e.DB.GetResource("FirmwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Warn("Unable to get firmware inventory details : " + gerr.Error())
+		l.Log.Warn("Unable to get firmware inventory details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = ucommon.ResourceInfoRequest{
@@ -195,7 +195,7 @@ func (e *ExternalInterface) GetAllSoftwareInventory(req *updateproto.UpdateReque
 	members := []dmtf.Link{}
 	softwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("SoftwareInventory", common.InMemory)
 	if err != nil || len(softwareCollectionKeysArray) == 0 {
-		log.Warn("odimra doesnt have servers")
+		l.Log.Warn("odimra doesnt have servers")
 	}
 
 	for _, key := range softwareCollectionKeysArray {
@@ -224,7 +224,7 @@ func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest)
 	}
 	data, gerr := e.DB.GetResource("SoftwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Warn("Unable to get software inventory details : " + gerr.Error())
+		l.Log.Warn("Unable to get software inventory details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = ucommon.ResourceInfoRequest{

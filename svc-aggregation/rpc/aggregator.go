@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"runtime"
@@ -27,6 +26,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
@@ -75,10 +75,12 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 		OdataID:      "/redfish/v1/AggregationService",
 		Actions: agresponse.Actions{
 			Reset: agresponse.Action{
-				Target: "/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
+				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
+				ActionInfo: "/redfish/v1/AggregationService/ResetActionInfo",
 			},
 			SetDefaultBootOrder: agresponse.Action{
-				Target: "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/",
+				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/",
+				ActionInfo: "/redfish/v1/AggregationService/SetDefaultBootOrderActionInfo",
 			},
 		},
 		Aggregates: agresponse.OdataID{
@@ -138,7 +140,7 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 
@@ -147,7 +149,7 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
@@ -214,14 +216,14 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	taskURI, err := a.connector.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	strArray := strings.Split(taskURI, "/")
@@ -241,7 +243,7 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 	})
 	if err != nil {
 		// print error as we are unable to communicate with svc-task and then return
-		log.Error("Unable to contact task-service with UpdateTask RPC : " + err.Error())
+		l.Log.Error("Unable to contact task-service with UpdateTask RPC : " + err.Error())
 	}
 	go a.connector.SetDefaultBootOrder(taskID, sessionUserName, req)
 	// return 202 Accepted
@@ -297,7 +299,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 
@@ -307,7 +309,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	if err != nil {
 		errMsg := "Unable to parse the add request" + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 
@@ -316,14 +318,14 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	if invalidParam != "" {
 		errMsg := "Mandatory field " + invalidParam + " Missing"
 		generateResponse(common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{invalidParam}, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	managerAddress := addRequest.HostName
 	err = validateManagerAddress(managerAddress)
 	if err != nil {
 		generateResponse(common.GeneralError(http.StatusBadRequest, response.PropertyValueFormatError, err.Error(), []interface{}{managerAddress, "ManagerAddress"}, nil), resp)
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		return resp, nil
 	}
 
@@ -332,7 +334,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	if err != nil {
 		errMsg := "Unable to create the task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	strArray := strings.Split(taskURI, "/")
@@ -483,7 +485,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 
@@ -492,7 +494,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	var taskID string
@@ -614,7 +616,6 @@ func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.
 // which is present in the request.
 func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
 	*aggregatorproto.AggregatorResponse, error) {
-
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
@@ -716,7 +717,7 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 
@@ -725,7 +726,7 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
@@ -791,14 +792,14 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	taskURI, err := a.connector.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return resp, nil
 	}
 	strArray := strings.Split(taskURI, "/")
@@ -818,7 +819,7 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 	})
 	if err != nil {
 		// print error as we are unable to communicate with svc-task and then return
-		log.Error("Unable to contact task-service with UpdateTask RPC : " + err.Error())
+		l.Log.Error("Unable to contact task-service with UpdateTask RPC : " + err.Error())
 	}
 	go a.connector.SetDefaultBootOrderElementsOfAggregate(taskID, sessionUserName, req)
 	// return 202 Accepted
@@ -892,5 +893,92 @@ func (a *Aggregator) SendStartUpData(ctx context.Context, req *aggregatorproto.S
 	resp = &aggregatorproto.SendStartUpDataResponse{
 		ResponseBody: bytes,
 	}
+	return resp, nil
+}
+
+// GetResetActionInfoService is an rpc handler, it gets invoked during GET on AggregationService API (/redfis/v1/AggregationService/)
+func (a *Aggregator) GetResetActionInfoService(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+	resp := &aggregatorproto.AggregatorResponse{}
+	// Fill the response header first
+	resp.Header = map[string]string{
+		"Date": time.Now().Format(http.TimeFormat),
+		"Link": "</redfish/v1/SchemaStore/en/AggregationService.json>; rel=describedby",
+	}
+	// Validate the token, if user has Login priielege then proceed.
+	//Else send 401 Unauthorised
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeLogin}
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		generateResponse(authResp, resp)
+		return resp, nil
+	}
+	aggregationServiceResponse, _ := json.Marshal(agresponse.ActionInfo{
+		ID:        "ResetActionInfo",
+		OdataType: "#ActionInfo.v1_2_0.ActionInfo",
+		Name:      "Reset Action Info",
+		Parameters: []agresponse.Parameter{
+			{
+				Name:            "ResetType",
+				Required:        true,
+				DataType:        "String",
+				AllowableValues: []string{"On", "ForceOff", "GracefulShutdown", "GracefulRestart", "ForceRestart", "Nmi", "ForceOn", "PushPowerButton"},
+			}, {
+				Name:     "TargetURIs",
+				Required: true,
+				DataType: "ObjectArray",
+			}, {
+				Name:     "BatchSize",
+				Required: false,
+				DataType: "Number",
+			}, {
+				Name:     "DelayBetweenBatchesInSeconds",
+				Required: false,
+				DataType: "Number",
+			},
+		},
+		OdataID: "/redfish/v1/AggregationService/ResetActionInfo",
+	})
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	resp.Body = aggregationServiceResponse
+	return resp, nil
+}
+
+// GetSetDefaultBootOrderActionInfo is an rpc handler, it gets invoked during GET on AggregationService API (/redfis/v1/AggregationService/)
+func (a *Aggregator) GetSetDefaultBootOrderActionInfo(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+	resp := &aggregatorproto.AggregatorResponse{}
+	// Fill the response header first
+	resp.Header = map[string]string{
+		"Date": time.Now().Format(http.TimeFormat),
+		"Link": "</redfish/v1/SchemaStore/en/AggregationService.json>; rel=describedby",
+	}
+	// Validate the token, if user has Login priielege then proceed.
+	//Else send 401 Unauthorised
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeLogin}
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		generateResponse(authResp, resp)
+		return resp, nil
+	}
+	setDefaultBootOrderActionInfoResponse, _ := json.Marshal(agresponse.ActionInfo{
+		ID:        "SetDefaultBootOrderActionInfo",
+		OdataType: "#ActionInfo.v1_2_0.ActionInfo",
+		Name:      "SetDefaultBootOrder Action Info",
+		Parameters: []agresponse.Parameter{
+			{
+				Name:     "Systems",
+				Required: true,
+				DataType: "ObjectArray",
+			},
+		},
+		OdataID: "/redfish/v1/AggregationService/SetDefaultBootOrderActionInfo",
+	})
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	resp.Body = setDefaultBootOrderActionInfoResponse
 	return resp, nil
 }

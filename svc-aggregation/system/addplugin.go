@@ -17,17 +17,18 @@ package system
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
-	log "github.com/sirupsen/logrus"
-	"net/http"
-	"strings"
 )
 
 func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, targetURI string, pluginContactRequest getResourceRequest, queueList []string, cmVariants connectionMethodVariants) (response.RPC, string, []byte) {
@@ -36,14 +37,14 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 
 	if !(cmVariants.PreferredAuthType == "BasicAuth" || cmVariants.PreferredAuthType == "XAuthToken") {
 		errMsg := "error: incorrect request property value for PreferredAuthType"
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"PreferredAuthType", "[BasicAuth, XAuthToken]"}, taskInfo), "", nil
 	}
 
 	// checking the plugin type
 	if !isPluginTypeSupported(cmVariants.PluginType) {
 		errMsg := "error: incorrect request property value for PluginType"
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"PluginType", fmt.Sprintf("%v", config.Data.SupportedPluginTypes)}, taskInfo), "", nil
 	}
 
@@ -60,12 +61,12 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	_, errs := agmodel.GetPluginData(cmVariants.PluginID)
 	if errs == nil || (errs != nil && (errs.ErrNo() == errors.JSONUnmarshalFailed || errs.ErrNo() == errors.DecryptionFailed)) {
 		errMsg := "error:plugin with name " + cmVariants.PluginID + " already exists"
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", cmVariants.PluginID}, taskInfo), "", nil
 	}
 	if errs != nil && errs.ErrNo() != errors.DBKeyNotFound {
 		errMsg := "error: DB lookup failed for " + cmVariants.PluginID + " plugin: " + errs.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		if errs.ErrNo() == errors.DBConnFailed {
 			return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errMsg,
 				[]interface{}{"Backend", config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, taskInfo), "", nil
@@ -88,7 +89,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 			}
 			if plugin.IP+":"+plugin.Port == req.ManagerAddress {
 				errMsg := "error:plugin with manager adress " + req.ManagerAddress + " already exists with name " + plugin.ID + " and ManagerUUID " + plugin.ManagerUUID
-				log.Error(errMsg)
+				l.Log.Error(errMsg)
 				return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", ID}, taskInfo), "", nil
 			}
 		}
@@ -100,7 +101,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	ciphertext, err := e.EncryptPassword([]byte(req.Password))
 	if err != nil {
 		errMsg := "error: encryption failed: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
 	var managerUUID string
@@ -126,7 +127,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		_, token, getResponse, err := contactPlugin(pluginContactRequest, "error while creating the session: ")
 		if err != nil {
 			errMsg := err.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), "", nil
 		}
 		pluginContactRequest.Token = token
@@ -142,7 +143,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	body, _, getResponse, err := contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err != nil {
 		errMsg := err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), "", nil
 	}
 	//  Extract all managers info and loop  over each members
@@ -150,7 +151,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	err = json.Unmarshal([]byte(body), &managersMap)
 	if err != nil {
 		errMsg := "unable to parse the managers resposne" + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
 	var managersData = make(map[string][]byte)
@@ -162,14 +163,14 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		body, _, getResponse, err := contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 		if err != nil {
 			errMsg := err.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), "", nil
 		}
 		managerData := make(map[string]interface{})
 		err = json.Unmarshal([]byte(body), &managerData)
 		if err != nil {
 			errMsg := "unable to parse the managers resposne" + err.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 		}
 		if uuid, ok := managerData["UUID"]; ok {
@@ -182,25 +183,82 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	ldata := model.Collection{
 		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
 		ODataID:      "/redfish/v1/Managers/" + managerUUID + "/LogServices",
-		ODataEtag:    "W570254F2",
 		ODataType:    "#LogServiceCollection.LogServiceCollection",
 		Description:  "Logs view",
-		Members:      []*model.Link{},
-		MembersCount: 0,
+		Members: []*model.Link{
+			&model.Link{
+				Oid: "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL",
+			},
+		},
+		MembersCount: 1,
 		Name:         "Logs",
 	}
 	dbdata, err := json.Marshal(ldata)
 	if err != nil {
 		errMsg := "unable to marshal manager data: %v" + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 
 	}
 	key := "/redfish/v1/Managers/" + managerUUID + "/LogServices"
-	dbErr1 := agmodel.SavePluginManagerInfo([]byte(dbdata), "LogServicesCollection", key)
-	if dbErr1 != nil {
-		errMsg := dbErr1.Error()
-		log.Error(errMsg)
+	dbEr := agmodel.SavePluginManagerInfo([]byte(dbdata), "LogServicesCollection", key)
+	if dbEr != nil {
+		errMsg := dbEr.Error()
+		l.Log.Error(errMsg)
+
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
+	}
+	//adding LogEntries Colelction
+	logEntrydata := model.LogServices{
+		Ocontext:    "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		Oid:         "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL",
+		Otype:       "#LogService.v1_3_0.LogService",
+		Description: "Logs view",
+		Entries: &model.Entries{
+			Oid: "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries",
+		},
+		ID:              "SL",
+		Name:            "Security Log",
+		OverWritePolicy: "WrapsWhenFull",
+	}
+	dbLogEntrydata, err := json.Marshal(logEntrydata)
+	if err != nil {
+		errMsg := "unable to marshal manager data: %v" + err.Error()
+		l.Log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
+
+	}
+	lkey := "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL"
+	logdbErr := agmodel.SavePluginManagerInfo([]byte(dbLogEntrydata), "LogServices", lkey)
+	if logdbErr != nil {
+		errMsg := logdbErr.Error()
+		l.Log.Error(errMsg)
+
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
+	}
+
+	// adding empty logservice entry collection
+	entriesdata := model.Collection{
+		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		ODataID:      "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries",
+		ODataType:    "#LogEntryCollection.LogEntryCollection",
+		Description:  "Security Logs view",
+		Members:      []*model.Link{},
+		MembersCount: 0,
+		Name:         "Security Logs",
+	}
+	dbentriesdata, err := json.Marshal(entriesdata)
+	if err != nil {
+		errMsg := "unable to marshal manager data: %v" + err.Error()
+		l.Log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
+
+	}
+	entrieskey := "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries"
+	entriesdbErr := agmodel.SavePluginManagerInfo([]byte(dbentriesdata), "EntriesCollection", entrieskey)
+	if entriesdbErr != nil {
+		errMsg := entriesdbErr.Error()
+		l.Log.Error(errMsg)
 
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
 	}
@@ -211,7 +269,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		dbErr := agmodel.SavePluginManagerInfo(updateManagerName(data, plugin.ID), "Managers", oid)
 		if dbErr != nil {
 			errMsg := dbErr.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 
 			return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
 		}
@@ -229,7 +287,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	dbErr := agmodel.SavePluginData(plugin)
 	if dbErr != nil {
 		errMsg := "error: while saving the plugin data: " + dbErr.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
 	resp.Header = map[string]string{
@@ -241,7 +299,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	}
 	e.PublishEvent(managersList, "ManagerCollection")
 	resp.StatusCode = http.StatusCreated
-	log.Error("sucessfully added  plugin with the id ", cmVariants.PluginID)
+	l.Log.Error("sucessfully added  plugin with the id ", cmVariants.PluginID)
 
 	phc := agcommon.PluginHealthCheckInterface{
 		DecryptPassword: common.DecryptWithPrivateKey,

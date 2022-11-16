@@ -17,7 +17,6 @@ package mgrcommon
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -27,8 +26,17 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
+)
+
+var (
+	GetPluginTokenFunc = GetPluginToken
+	GetPluginDataFunc  = mgrmodel.GetPluginData
+	StringEqualFold    = strings.EqualFold
+	ContactPluginFunc  = ContactPlugin
+	JSON_UnmarshalFunc = json.Unmarshal
 )
 
 //PluginContactRequest  hold the request of contact plugin
@@ -57,6 +65,12 @@ type ResourceInfoRequest struct {
 	DecryptDevicePassword func([]byte) ([]byte, error)
 	HTTPMethod            string
 	RequestBody           []byte
+	BmcUpdatedCreds       *BmcUpdatedCreds
+}
+
+type BmcUpdatedCreds struct {
+	UserName        string
+	UpdatedPassword string
 }
 
 // PluginToken interface to hold the token
@@ -96,15 +110,15 @@ func DeviceCommunication(req ResourceInfoRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
 	}
 	// Get the Plugin info
-	plugin, gerr := mgrmodel.GetPluginData(target.PluginID)
+	plugin, gerr := GetPluginDataFunc(target.PluginID)
 	if gerr != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
 	}
 	var contactRequest PluginContactRequest
 	contactRequest.ContactClient = req.ContactClient
 	contactRequest.Plugin = plugin
-	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
-		token := GetPluginToken(contactRequest)
+	if StringEqualFold(plugin.PreferredAuthType, "XAuthToken") {
+		token := GetPluginTokenFunc(contactRequest)
 		if token == "" {
 			var errorMessage = "error: Unable to create session with plugin " + plugin.ID
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
@@ -121,6 +135,7 @@ func DeviceCommunication(req ResourceInfoRequest) response.RPC {
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
 	}
+
 	contactRequest.DeviceInfo = map[string]interface{}{
 		"ManagerAddress": target.ManagerAddress,
 		"UserName":       target.UserName,
@@ -131,7 +146,7 @@ func DeviceCommunication(req ResourceInfoRequest) response.RPC {
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = req.HTTPMethod
 	//target.PostBody = req.RequestBody
-	body, _, getResp, err := ContactPlugin(contactRequest, "error while performing virtual media actions "+contactRequest.OID+": ")
+	body, _, getResp, err := ContactPluginFunc(contactRequest, "error while performing virtual media actions "+contactRequest.OID+": ")
 	if err != nil {
 		resp.StatusCode = getResp.StatusCode
 		json.Unmarshal(body, &resp.Body)
@@ -139,7 +154,7 @@ func DeviceCommunication(req ResourceInfoRequest) response.RPC {
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	err = json.Unmarshal(body, &resp.Body)
+	err = JSON_UnmarshalFunc(body, &resp.Body)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
@@ -153,7 +168,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 		return "", gerr
 	}
 	// Get the Plugin info
-	plugin, gerr := mgrmodel.GetPluginData(target.PluginID)
+	plugin, gerr := GetPluginDataFunc(target.PluginID)
 	if gerr != nil {
 		return "", gerr
 	}
@@ -182,11 +197,23 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
 		return "", fmt.Errorf(errorMessage)
 	}
+
 	contactRequest.DeviceInfo = map[string]interface{}{
 		"ManagerAddress": target.ManagerAddress,
 		"UserName":       target.UserName,
 		"Password":       decryptedPasswordByte,
 	}
+	if req.BmcUpdatedCreds != nil {
+		if req.BmcUpdatedCreds.UserName == target.UserName && req.BmcUpdatedCreds.UpdatedPassword != string(decryptedPasswordByte) {
+			contactRequest.DeviceInfo = map[string]interface{}{
+				"ManagerAddress": target.ManagerAddress,
+				"UserName":       target.UserName,
+				"Password":       []byte(req.BmcUpdatedCreds.UpdatedPassword),
+			}
+		}
+
+	}
+
 	//replace the uuid:system id with the system to the @odata.id from request url
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet
@@ -224,7 +251,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 			errorMessage = errorMessage + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = errors.InternalError
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
@@ -234,13 +261,13 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
 	if !(response.StatusCode == http.StatusOK || response.StatusCode == http.StatusCreated) {
 		resp.StatusCode = int32(response.StatusCode)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 	data := string(body)
@@ -270,10 +297,10 @@ func getPluginStatus(plugin mgrmodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
+		l.Log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	log.Error("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	l.Log.Error("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -311,7 +338,7 @@ func createToken(req PluginContactRequest) string {
 	contactRequest.OID = "/ODIM/v1/Sessions"
 	_, token, _, err := ContactPlugin(contactRequest, "error while logging in to plugin: ")
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 	}
 	if token != "" {
 		Token.StoreToken(req.Plugin.ID, token)
@@ -356,7 +383,11 @@ func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface) {
 		config.TLSConfMutex.RUnlock()
 		err := dbInterface.AddManagertoDBInterface(mgr)
 		if err != nil {
-			log.Error(err)
+			l.Log.Error(err)
+		}
+		if l.Log.Level != config.Data.LogLevel {
+			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+			l.Log.Logger.SetLevel(config.Data.LogLevel)
 		}
 	}
 }

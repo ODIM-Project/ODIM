@@ -15,7 +15,6 @@
 package chassis
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -23,9 +22,14 @@ import (
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-	log "github.com/sirupsen/logrus"
+)
+
+var (
+	//ContactPluginFunc ...
+	ContactPluginFunc = contactPlugin
 )
 
 // getFabricChassisResource will collect the individual
@@ -36,7 +40,7 @@ func (f *fabricFactory) getFabricChassisResource(rID string) response.RPC {
 
 	managers, err := f.getFabricManagers()
 	if err != nil {
-		log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
+		l.Log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
 	}
 
@@ -59,7 +63,7 @@ func (f *fabricFactory) getFabricChassisResource(rID string) response.RPC {
 func (f *fabricFactory) getResource(plugin smodel.Plugin, rID string, ch chan response.RPC) {
 	req, errResp, err := f.createChassisRequest(plugin, fmt.Sprintf("%s/%s", collectionURL, rID), http.MethodGet, nil)
 	if errResp != nil {
-		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
+		l.Log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		ch <- *errResp
 		return
 	}
@@ -69,7 +73,7 @@ func (f *fabricFactory) getResource(plugin smodel.Plugin, rID string, ch chan re
 // collectChassisResource contacts the plugin with the details available in the
 // pluginContactRequest, and returns the RPC response
 func collectChassisResource(f *fabricFactory, pluginRequest *pluginContactRequest) (r response.RPC) {
-	body, _, statusCode, _, err := contactPlugin(pluginRequest)
+	body, _, statusCode, _, err := ContactPluginFunc(pluginRequest)
 	if statusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
 		body, _, statusCode, _, err = retryFabricsOperation(f, pluginRequest)
 	}
@@ -87,7 +91,7 @@ func collectChassisResource(f *fabricFactory, pluginRequest *pluginContactReques
 	}
 
 	var resp dmtfmodel.Chassis
-	err = json.Unmarshal([]byte(data), &resp)
+	err = JSONUnmarshalFunc([]byte(data), &resp)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}

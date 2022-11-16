@@ -5,6 +5,7 @@ metadata:
   namespace: {{ .Values.odimra.namespace }}
 data: 
   platformconfig.toml: | 
+    {{ if eq .Values.odimra.messageBusType "Kafka" }}
     [KAFKA]
     # Kafka Server List.
     #Defines the list of Kafka Server URI/Nodename:port. Example: ["localhost:9092"].
@@ -23,7 +24,14 @@ data:
     KAFKACertFile = "/etc/odimra_certs/odimra_kafka_client.crt"
     KAFKAKeyFile  = "/etc/odimra_certs/odimra_kafka_client.key"
     KAFKACAFile   = "/etc/odimra_certs/rootCA.crt"
+    {{ end }}
+    {{ if eq .Values.odimra.messageBusType "RedisStreams" }}
     [RedisStreams]
+    RedisCertFile = "/etc/odimra_certs/odimra_server.crt"
+    RedisKeyFile  = "/etc/odimra_certs/odimra_server.key"
+    RedisCAFile   = "/etc/odimra_certs/rootCA.crt"
+    RSAPrivateKeyPath = "/etc/odimra_certs/odimra_rsa.private"
+    RedisInMemoryEncryptedPassword = {{ .Values.odimra.redisInMemoryPassword | toJson }}
     {{ if eq .Values.odimra.haDeploymentEnabled false }}
     RedisServerAddress = "redis-inmemory"
     RedisServerPort = "6379"
@@ -32,4 +40,5 @@ data:
     RedisServerAddress = "redis-ha-inmemory"
     RedisServerPort = "26379"
     SentinalAddress ="primaryset"
+    {{ end }}
     {{ end }}

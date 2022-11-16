@@ -22,11 +22,11 @@ import (
 	"testing"
 
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
-
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -194,4 +194,17 @@ type sourceMock struct {
 func (s *sourceMock) read() ([]dmtfmodel.Link, *response.RPC) {
 	args := s.Mock.Called()
 	return args.Get(0).([]dmtfmodel.Link), getErrorOrNil(args.Get(1))
+}
+
+func TestNewGetCollectionHandler(t *testing.T) {
+	config := config.URLTranslation{NorthBoundURL: map[string]string{
+		"ODIM": "redfish",
+	},
+		SouthBoundURL: map[string]string{
+			"redfish": "ODIM",
+		}}
+	fun := func(table string) ([]string, error) {
+		return []string{}, nil
+	}
+	NewGetCollectionHandler(plugin.NewClientFactory(&config), fun)
 }

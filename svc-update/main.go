@@ -14,27 +14,42 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-update/rpc"
+	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/sirupsen/logrus"
 )
 
-var log = logrus.New()
-
 func main() {
-	//log.SetFormatter(&log.TextFormatter{})
+	// setting up the logging framework
+	hostName := os.Getenv("HOST_NAME")
+	podName := os.Getenv("POD_NAME")
+	pid := os.Getpid()
+	log := logs.Log
+	logs.Adorn(logrus.Fields{
+		"host":   hostName,
+		"procid": podName + fmt.Sprintf("_%d", pid),
+	})
+
+	if err := config.SetConfiguration(); err != nil {
+		log.Logger.SetFormatter(&logs.SysLogFormatter{})
+		log.Error("fatal: error while trying set up configuration: " + err.Error())
+	}
+
+	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	log.Logger.SetOutput(os.Stdout)
+	log.Logger.SetLevel(config.Data.LogLevel)
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Error("Update Service should not be run as the root user")
-	}
-
-	if err := config.SetConfiguration(); err != nil {
-		log.Error("fatal: error while trying set up configuration: " + err.Error())
 	}
 
 	config.CollectCLArgs()
@@ -42,13 +57,12 @@ func main() {
 	if err := common.CheckDBConnection(); err != nil {
 		log.Error("error while trying to check DB connection health: " + err.Error())
 	}
-	configFilePath := os.Getenv("CONFIG_FILE_PATH")
-	if configFilePath == "" {
+	ucommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
+	if ucommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	eventChan := make(chan interface{})
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	go ucommon.TrackConfigFileChanges()
 
 	registerHandlers()
 	// Run server
@@ -59,6 +73,7 @@ func main() {
 }
 
 func registerHandlers() {
+	log := logs.Log
 	if err := services.InitializeService(services.Update); err != nil {
 		log.Error("fatal: error while trying to initialize service: " + err.Error())
 	}

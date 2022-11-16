@@ -2,6 +2,7 @@ odimra:
   namespace:
   rootServiceUUID:
   fqdn:
-  apiGatewayHost: api
+  apiGatewayHost: 
   connectionMethodConf:
   haDeploymentEnabled:
+  logLevel:

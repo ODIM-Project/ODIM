@@ -35,4 +35,5 @@ type Fabric struct {
 	Zones          *Link       `json:"Zones,omitempty"`
 	MaxZones       int         `json:"MaxZones,omitempty"`
 	FabricType     string      `json:"FabricType"`
+	UUID           string      `json:"UUID"`
 }

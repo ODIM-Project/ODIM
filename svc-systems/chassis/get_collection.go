@@ -18,12 +18,12 @@ package chassis
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
@@ -31,6 +31,7 @@ import (
 
 const collectionURL = "/redfish/v1/Chassis"
 
+// NewGetCollectionHandler returns an instance of GetCollection struct
 func NewGetCollectionHandler(
 	pcf plugin.ClientFactory,
 	imkp func(table string) ([]string, error)) *GetCollection {
@@ -44,10 +45,12 @@ func NewGetCollectionHandler(
 	}
 }
 
+// GetCollection struct helps to get chassis collection information
 type GetCollection struct {
 	sourcesProvider sourceProvider
 }
 
+// Handle defines the operations which handle the RPC request-response for getting chassis collection information
 func (h *GetCollection) Handle() (r response.RPC) {
 	sources, e := h.sourcesProvider.findSources()
 	if e != nil {
@@ -109,7 +112,7 @@ type managedChassisProvider struct {
 func (m *managedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
 	keys, e := m.inMemoryKeysProvider("Chassis")
 	if e != nil {
-		log.Error("while getting all keys of ChassisCollection table, got " + e.Error())
+		l.Log.Error("while getting all keys of ChassisCollection table, got " + e.Error())
 		ge := common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 		return nil, &ge
 	}

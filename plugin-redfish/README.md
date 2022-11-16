@@ -10,10 +10,6 @@ This is an independent module which provides two primary communication channels:
 
 This guide provides a set of guidelines for developing API and EMB functions to work within the Resource Aggregator for ODIM™ environment. It ensures consistency around API semantics for all plugins.
 
-To ensure continued adoption of open technologies, the APIs for the plugins are based on the [OpenAPI specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md). Messaging is based on the now-evolving [OpenMessaging specifications](https://github.com/openmessaging/specification/blob/master/domain_architecture.md) under Linux Foundation.
-
-
-
 
 ## API accessibility
 
@@ -550,7 +546,7 @@ When adding a new subscription, follow these guidelines:
    "@odata.context":"/ODIM/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"AA6D42B0\"",
    "@odata.id":"/ODIM/v1/Managers/<Id>",
-   "@odata.type":"#Manager.v1_13_0.Manager",
+   "@odata.type":"#Manager.v1_15_0.Manager",
    "Name":"<plugin name>",
    "ManagerType":"Service",
    "Id":"<ManagerID>",
@@ -566,11 +562,7 @@ When adding a new subscription, follow these guidelines:
 
 
 
-
-
-
-
-## The plugin service details
+## Plugin service details
 
 The Plugin service is an in-memory process started as a docker instance as part of the overall host start-up process. This service hosts the API server, event synchronizer, load balancers, worker threads, EMB publishers and, subscribers among other entities as the implementation decides.
 

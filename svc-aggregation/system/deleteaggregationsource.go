@@ -21,11 +21,10 @@ import (
 	"reflect"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
@@ -38,7 +37,7 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 	aggregationSource, dbErr := agmodel.GetAggregationSourceInfo(req.URL)
 	if dbErr != nil {
 		errorMessage := dbErr.Error()
-		log.Error("Unable to get AggregationSource : " + errorMessage)
+		l.Log.Error("Unable to get AggregationSource : " + errorMessage)
 		if errors.DBKeyNotFound == dbErr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"AggregationSource", req.URL}, nil)
 		}
@@ -51,7 +50,7 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 	connectionMethod, err := e.GetConnectionMethod(connectionMethodOdataID)
 	if err != nil {
 		errorMessage := err.Error()
-		log.Error("Unable to get connectionmethod : " + errorMessage)
+		l.Log.Error("Unable to get connectionmethod : " + errorMessage)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ConnectionMethod", connectionMethodOdataID}, nil)
 		}
@@ -66,14 +65,14 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 		cmVariants := getConnectionMethodVariants(connectionMethod.ConnectionMethodVariant)
 		if len(connectionMethod.Links.AggregationSources) > 1 {
 			errMsg := fmt.Sprintf("Plugin " + cmVariants.PluginID + " can't be removed since it managing devices")
-			log.Info(errMsg)
+			l.Log.Info(errMsg)
 			return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
 		}
 		// Get the plugin
 		plugin, errs := agmodel.GetPluginData(cmVariants.PluginID)
 		if errs != nil {
 			errMsg := errs.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", cmVariants.PluginID}, nil)
 		}
 		// delete the manager
@@ -83,7 +82,7 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 		systemList, dbErr := agmodel.GetAllMatchingDetails("ComputerSystem", data[1], common.InMemory)
 		if dbErr != nil {
 			errMsg := dbErr.Error()
-			log.Error(errMsg)
+			l.Log.Error(errMsg)
 			if errors.DBKeyNotFound == dbErr.ErrNo() {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Systems", "everything"}, nil)
 			}
@@ -93,6 +92,7 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 			index := strings.LastIndexAny(systemURI, "/")
 			resp = e.deleteCompute(systemURI, index, target.PluginID)
 		}
+		removeAggregationSourceFromAggregates(systemList)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return resp
@@ -101,7 +101,7 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 	if target != nil {
 		plugin, errs := agmodel.GetPluginData(target.PluginID)
 		if errs != nil {
-			log.Error("failed to get " + target.PluginID + " plugin info: " + errs.Error())
+			l.Log.Error("failed to get " + target.PluginID + " plugin info: " + errs.Error())
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errs.Error(), []interface{}{"plugin", target.PluginID}, nil)
 		}
 		pluginStartUpData := &agmodel.PluginStartUpData{
@@ -113,7 +113,7 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 			},
 		}
 		if err := PushPluginStartUpData(plugin, pluginStartUpData); err != nil {
-			log.Error("failed to notify device removal to " + target.PluginID + " plugin: " + err.Error())
+			l.Log.Error("failed to notify device removal to " + target.PluginID + " plugin: " + err.Error())
 		}
 	}
 
@@ -122,14 +122,14 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 	if dbErr != nil {
 		errorMessage := "error while trying to delete AggreationSource  " + dbErr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp
 	}
 	connectionMethod.Links.AggregationSources = removeAggregationSource(connectionMethod.Links.AggregationSources, agmodel.OdataID{OdataID: req.URL})
 	dbErr = e.UpdateConnectionMethod(connectionMethod, connectionMethodOdataID)
 	if dbErr != nil {
 		errMsg := dbErr.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
@@ -138,6 +138,32 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 		StatusMessage: response.ResourceRemoved,
 	}
 	return resp
+}
+
+// removeAggregationSourceFromAggregates will remove the element from the aggregate
+// if the system is deleted from ODIM
+func removeAggregationSourceFromAggregates(systemList []string) {
+	aggregateKeys, err := agmodel.GetAllKeysFromTable("Aggregate")
+	if err != nil {
+		l.Log.Error("error getting aggregate : " + err.Error())
+	}
+	for _, aggregateURI := range aggregateKeys {
+		aggregate, err := agmodel.GetAggregate(aggregateURI)
+		if err != nil {
+			l.Log.Error("error getting  Aggregate : " + err.Error())
+			continue
+		}
+		var removeElements agmodel.Aggregate
+		for _, systemURI := range systemList {
+			removeElements.Elements = append(removeElements.Elements, agmodel.OdataID{OdataID: systemURI})
+		}
+		if checkRemovingElementsPresent(removeElements.Elements, aggregate.Elements) {
+			dbErr := agmodel.RemoveElementsFromAggregate(removeElements, aggregateURI)
+			if dbErr != nil {
+				l.Log.Error("Error while deleting system from aggregate : " + dbErr.Error())
+			}
+		}
+	}
 }
 
 // removeAggregationSource will remove the element from the slice return
@@ -159,7 +185,7 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	data, derr := agmodel.GetResource("Managers", oid)
 	if derr != nil {
 		errMsg := "error while getting Managers data: " + derr.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Managers", oid}, nil)
 		}
@@ -171,14 +197,14 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	plugin, errs := agmodel.GetPluginData(pluginID)
 	if errs != nil {
 		errMsg := "error while getting plugin data: " + errs.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Plugin", pluginID}, nil)
 	}
 
 	systems, dberr := agmodel.GetAllSystems()
 	if dberr != nil {
 		errMsg := derr.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Systems", "everything"}, nil)
 		}
@@ -193,7 +219,7 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	}
 	if systemCnt > 0 {
 		errMsg := fmt.Sprintf("error: plugin %v can't be removed since it managing some of the devices", pluginID)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
 	}
 
@@ -212,25 +238,59 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	_, _, _, err := contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err == nil { // no err means plugin is still up, so we can't remove it
 		errMsg := "error: plugin is still up, so it cannot be removed."
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
 	}
 
 	// deleting the manager info
-	dberr = agmodel.DeleteManagersData(oid)
+	dberr = agmodel.DeleteManagersData(oid, ManagersTable)
 	if dberr != nil {
 		errMsg := derr.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Managers", oid}, nil)
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
+
+	//deleting logservice empty collection
+	if resource[LogServices] != nil {
+		lkey := oid + "/LogServices"
+		dberr = agmodel.DeleteManagersData(lkey, LogServiceCollection)
+		if dberr != nil {
+			errMsg := derr.Error()
+			l.Log.Error(errMsg)
+			if errors.DBKeyNotFound == derr.ErrNo() {
+				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"LogServiceCollection", lkey}, nil)
+			}
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		}
+		SLKey := oid + "/LogServices/SL"
+		dberr = agmodel.DeleteManagersData(SLKey, LogServices)
+		if dberr != nil {
+			errMsg := derr.Error()
+			l.Log.Error(errMsg)
+			if errors.DBKeyNotFound == derr.ErrNo() {
+				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"LogServices", lkey}, nil)
+			}
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		}
+		logEntriesKey := oid + "/LogServices/SL/Entries"
+		dberr = agmodel.DeleteManagersData(logEntriesKey, EntriesCollection)
+		if dberr != nil {
+			errMsg := derr.Error()
+			l.Log.Error(errMsg)
+			if errors.DBKeyNotFound == derr.ErrNo() {
+				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"EntriesCollection", lkey}, nil)
+			}
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		}
+	}
 	// deleting the plugin if  zero devices are managed
-	dberr = agmodel.DeletePluginData(pluginID)
+	dberr = agmodel.DeletePluginData(pluginID, PluginTable)
 	if dberr != nil {
 		errMsg := derr.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Plugin", pluginID}, nil)
 		}
@@ -253,12 +313,12 @@ func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string
 	// check whether the any system operation is under progress
 	systemOperation, dbErr := agmodel.GetSystemOperationInfo(strings.TrimSuffix(key, "/"))
 	if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
-		log.Error(" Delete operation for system  " + key + " can't be processed " + dbErr.Error())
+		l.Log.Error(" Delete operation for system  " + key + " can't be processed " + dbErr.Error())
 		errMsg := "error while trying to delete compute system: " + dbErr.Error()
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	if systemOperation.Operation != "" {
-		log.Error("Delete operation or system  " + key + " can't be processed," +
+		l.Log.Error("Delete operation or system  " + key + " can't be processed," +
 			systemOperation.Operation + " operation  is under progress")
 		errMsg := systemOperation.Operation + " operation  is under progress"
 		return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
@@ -268,7 +328,7 @@ func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string
 	plugin, errs := agmodel.GetPluginData(pluginID)
 	if errs != nil {
 		errMsg := errs.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", pluginID}, nil)
 	}
 
@@ -276,7 +336,7 @@ func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string
 	mgrData, jerr := agmodel.GetResource("Managers", managerURI)
 	if jerr != nil {
 		errorMessage := "error while getting manager details: " + jerr.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
@@ -284,58 +344,64 @@ func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string
 	unmarshallErr := json.Unmarshal([]byte(mgrData), &managerData)
 	if unmarshallErr != nil {
 		errorMessage := "error unmarshalling manager details: " + unmarshallErr.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
 	systemOperation.Operation = "Delete"
 	dbErr = systemOperation.AddSystemOperationInfo(strings.TrimSuffix(key, "/"))
 	if dbErr != nil {
-		log.Error(" Delete operation for system  " + key + " can't be processed " + dbErr.Error())
+		l.Log.Error(" Delete operation for system  " + key + " can't be processed " + dbErr.Error())
 		errMsg := "error while trying to delete compute system: " + dbErr.Error()
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	defer func() {
 		if err := agmodel.DeleteSystemOperationInfo(strings.TrimSuffix(key, "/")); err != nil {
-			log.Errorf("failed to delete SystemOperation info of %s:%s", key, err.Error())
+			l.Log.Errorf("failed to delete SystemOperation info of %s:%s", key, err.Error())
 		}
 	}()
 	// Delete Subscription on odimra and also on device
 	subResponse, err := e.DeleteEventSubscription(key)
 	if err != nil && subResponse == nil {
 		errMsg := fmt.Sprintf("error while trying to delete subscriptions: %v", err)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	// If the DeleteEventSubscription call return status code other than http.StatusNoContent, http.StatusNotFound.
 	//Then return with error(delete event subscription failed).
 	if subResponse.StatusCode != http.StatusNoContent {
-		log.Error("error while deleting the event subscription for " + key + " :" + string(subResponse.Body))
+		l.Log.Error("error while deleting the event subscription for " + key + " :" + string(subResponse.Body))
 	}
 
 	keys := strings.SplitN(key[index+1:], ".", 2)
 	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", keys[0], common.InMemory)
 	if derr != nil {
-		log.Error("error while trying to collect the chassis list: " + derr.Error())
+		l.Log.Error("error while trying to collect the chassis list: " + derr.Error())
 	}
+
+	managersList, derr := agmodel.GetAllMatchingDetails("Managers", keys[0], common.InMemory)
+	if derr != nil {
+		l.Log.Error("error while trying to collect the manager list: " + derr.Error())
+	}
+
 	mgrResp := deleteLinkDetails(managerData, key, chassisList)
 	data, marshalErr := json.Marshal(mgrResp)
 	if marshalErr != nil {
 		errorMessage := "unable to marshal data for updating: " + marshalErr.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	genericErr := agmodel.GenericSave([]byte(data), "Managers", managerURI)
 	if genericErr != nil {
 		errorMessage := "GenericSave : error while trying to add resource date to DB: " + genericErr.Error()
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 
 	// Delete Compute System Details from InMemory
 	if derr := e.DeleteComputeSystem(index, key); derr != nil {
 		errMsg := "error while trying to delete compute system: " + derr.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{index, key}, nil)
 		}
@@ -346,14 +412,14 @@ func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string
 	k := strings.SplitN(key[index+1:], ".", 2)
 	if len(k) < 2 {
 		errMsg := fmt.Sprintf("key %v doesn't have system details", key)
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	uuid := k[0]
 	// Delete System Details from OnDisk
 	if derr := e.DeleteSystem(uuid); derr != nil {
 		errMsg := "error while trying to delete system: " + derr.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"System", uuid}, nil)
 		}
@@ -361,6 +427,9 @@ func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string
 	}
 	e.deleteWildCardValues(key[index+1:])
 
+	for _, manager := range managersList {
+		e.EventNotification(manager, "ResourceRemoved", "ManagerCollection")
+	}
 	for _, chassis := range chassisList {
 		e.EventNotification(chassis, "ResourceRemoved", "ChassisCollection")
 	}
@@ -413,7 +482,7 @@ func deleteLinkDetails(managerData map[string]interface{}, systemID string, chas
 func (e *ExternalInterface) deleteWildCardValues(systemID string) {
 	telemetryList, dbErr := e.GetAllMatchingDetails("*", "TelemetryService", common.InMemory)
 	if dbErr != nil {
-		log.Error(dbErr)
+		l.Log.Error(dbErr)
 		return
 	}
 	for _, oid := range telemetryList {
@@ -423,13 +492,13 @@ func (e *ExternalInterface) deleteWildCardValues(systemID string) {
 			resourceData := make(map[string]interface{})
 			data, dbErr := agmodel.GetResourceDetails(odataID)
 			if dbErr != nil {
-				log.Error("Unable to get system data : " + dbErr.Error())
+				l.Log.Error("Unable to get system data : " + dbErr.Error())
 				continue
 			}
 			// unmarshall the resourceData
 			err := json.Unmarshal([]byte(data), &resourceData)
 			if err != nil {
-				log.Error("Unable to unmarshall  the data: " + err.Error())
+				l.Log.Error("Unable to unmarshall  the data: " + err.Error())
 				continue
 			}
 			var wildCards []WildCard
@@ -457,7 +526,7 @@ func (e *ExternalInterface) deleteWildCardValues(systemID string) {
 					continue
 				}
 				if derr := e.Delete(oID[0], odataID, common.InMemory); derr != nil {
-					log.Error("error while trying to delete data: " + derr.Error())
+					l.Log.Error("error while trying to delete data: " + derr.Error())
 					continue
 				}
 				e.updateMemberCollection(oID[0], odataID)

@@ -16,13 +16,18 @@ package datacommunicator
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"strings"
 	"time"
 
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/go-redis/redis/v8"
 	uuid "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
+)
+
+const (
+	DefaultTLSMinVersion = tls.VersionTLS12
 )
 
 // RedisStreamsPacket defines the RedisStreamsPacket Message Packet Object. Apart from Base Packet, it
@@ -35,17 +40,29 @@ type RedisStreamsPacket struct {
 func getDBConnection() *redis.Client {
 	var dbConn *redis.Client
 
+	tlsConfig, e := TLS(MQ.RedisStreams.RedisCertFile, MQ.RedisStreams.RedisKeyFile, MQ.RedisStreams.RedisCAFile)
+	if e != nil {
+		l.Log.Error(e.Error())
+		return nil
+	}
+
+	tlsConfig.MinVersion = DefaultTLSMinVersion
+
 	if len(MQ.RedisStreams.SentinalAddress) > 0 {
 		dbConn = redis.NewFailoverClient(&redis.FailoverOptions{
-			MasterName:    MQ.RedisStreams.SentinalAddress,
-			SentinelAddrs: []string{fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort)},
-			MaxRetries:    -1,
+			MasterName:       MQ.RedisStreams.SentinalAddress,
+			SentinelAddrs:    []string{fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort)},
+			MaxRetries:       -1,
+			TLSConfig:        tlsConfig,
+			SentinelPassword: string(MQ.RedisStreams.RedisInMemoryPassword),
+			Password:         string(MQ.RedisStreams.RedisInMemoryPassword),
 		})
 	} else {
 		dbConn = redis.NewClient(&redis.Options{
-			Addr:     fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort),
-			Password: "", // no password set
-			DB:       0,  // use default DB
+			Addr:      fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort),
+			TLSConfig: tlsConfig,
+			Password:  string(MQ.RedisStreams.RedisInMemoryPassword),
+			DB:        0, // use default DB
 		})
 	}
 	return dbConn
@@ -60,7 +77,7 @@ func (rp *RedisStreamsPacket) Distribute(data interface{}) error {
 	// Encode the message before appending into Redis Message struct
 	b, e := Encode(data)
 	if e != nil {
-		log.Error(e.Error())
+		l.Log.Error(e.Error())
 		return e
 	}
 	redisClient := getDBConnection()
@@ -71,7 +88,7 @@ func (rp *RedisStreamsPacket) Distribute(data interface{}) error {
 	}).Result()
 
 	if rerr != nil {
-		log.Error("Unable to publish event to redis, got: " + rerr.Error())
+		l.Log.Error("Unable to publish event to redis, got: " + rerr.Error())
 		if rerr != nil {
 			if strings.Contains(rerr.Error(), " connection timed out") {
 				redisClient = getDBConnection()
@@ -94,7 +111,7 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 	rerr := redisClient.XGroupCreateMkStream(context.Background(),
 		rp.pipe, EVENTREADERGROUPNAME, "$").Err()
 	if rerr != nil {
-		log.Error("Unable to create the group ", rerr)
+		l.Log.Error("Unable to create the group ", rerr)
 		if strings.Contains(rerr.Error(), " connection timed out") {
 			redisClient = getDBConnection()
 		}
@@ -113,7 +130,7 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 					Streams:  []string{rp.pipe, ">"},
 				}).Result()
 			if err != nil {
-				log.Error("Unable to get data from the group ", err)
+				l.Log.Error("Unable to get data from the group ", err)
 				if strings.Contains(err.Error(), " connection timed out") {
 					redisClient = getDBConnection()
 				}

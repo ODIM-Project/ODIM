@@ -19,6 +19,7 @@ package account
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -48,8 +49,9 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 
 	var resp response.RPC
 
+	errLogPrefix := "failed to fetch accounts : "
 	if !session.Privileges[common.PrivilegeConfigureUsers] {
-		errorMessage := "User " + session.UserName + " does not have the privilege to view all users"
+		errorMessage := errLogPrefix + "User " + session.UserName + " does not have the privilege to view all users"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -67,10 +69,12 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
+
+	l.Log.Debug("GetAllAccounts() : Retrieving all users from database")
 	//Get all user keys
 	users, err := asmodel.GetAllUsers()
 	if err != nil {
-		errorMessage := "Unable to get users: " + err.Error()
+		errorMessage := errLogPrefix + "Unable to get users from db: " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.Log.Error(errorMessage)
 		return resp
@@ -124,10 +128,11 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 	}
 
 	var resp response.RPC
+	errLogPrefix := fmt.Sprintf("failed to fetch the account %s: ", accountID)
 
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
 		if accountID != session.UserName || !(session.Privileges[common.PrivilegeConfigureSelf]) {
-			errorMessage := session.UserName + " does not have the privilege to view other user's details"
+			errorMessage := errLogPrefix + session.UserName + " does not have the privilege to view other user's details"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
 			args := response.Args{
@@ -147,9 +152,10 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 		}
 	}
 
+	l.Log.Debugf("GetAccount() : Retrieving the user details from database for %s", accountID)
 	user, err := asmodel.GetUserDetails(accountID)
 	if err != nil {
-		errorMessage := "Unable to get account: " + err.Error()
+		errorMessage := errLogPrefix + "Unable to get account from DB: " + err.Error()
 		if errors.DBKeyNotFound == err.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
@@ -216,7 +222,7 @@ func GetAccountService() response.RPC {
 
 	isServiceEnabled := false
 	serviceState := "Disabled"
-	//Checks if AccountService is enabled and sets the variable isServiceEnabled to true add servicState to enabled
+	//Checks if AccountService is enabled and sets the variable isServiceEnabled to true add serviceState to enabled
 	for _, service := range config.Data.EnabledServices {
 		if service == "AccountService" {
 			isServiceEnabled = true

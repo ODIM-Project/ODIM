@@ -19,6 +19,7 @@ package account
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -39,10 +40,12 @@ import (
 // error will be passed back.
 func Delete(session *asmodel.Session, accountID string) response.RPC {
 	var resp response.RPC
+	errorLogPrefix := fmt.Sprintf("failed to delete account %s: ", accountID)
 
+	l.Log.Debugf("Delete() : validating the request to delete the account %s", accountID)
 	// Default admin user account should not be deleted
 	if accountID == defaultAdminAccount {
-		errorMessage := "default user account can not be deleted"
+		errorMessage := errorLogPrefix + "default user account can not be deleted"
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.ResourceCannotBeDeleted
 		args := response.Args{
@@ -61,7 +64,7 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 	}
 
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
-		errorMessage := session.UserName + " does not have the privilege to delete user"
+		errorMessage := errorLogPrefix + session.UserName + " does not have the privilege to delete user"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -80,8 +83,9 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 		return resp
 	}
 
+	l.Log.Debugf("Delete() : Deleting the account %s from database", accountID)
 	if derr := asmodel.DeleteUser(accountID); derr != nil {
-		errorMessage := "Unable to delete user: " + derr.Error()
+		errorMessage := errorLogPrefix + "Unable to delete user: " + derr.Error()
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound

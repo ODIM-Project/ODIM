@@ -58,6 +58,8 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	}
 
+	errorLogPrefix := fmt.Sprintf("failed to create account for the user %s: ", createAccount.UserName)
+
 	commonResponse := response.Response{
 		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + createAccount.UserName,
@@ -70,11 +72,11 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createAccount)
 	if err != nil {
-		errMsg := "While validating request parameters: " + err.Error()
+		errMsg := errorLogPrefix + "error while validating request parameters: " + err.Error()
 		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	} else if invalidProperties != "" {
-		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		errorMessage := errorLogPrefix + "One or more properties given in the request body are not valid, ensure properties are listed in upper camel case "
 		l.Log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp, fmt.Errorf(errorMessage)
@@ -85,6 +87,8 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		Password: createAccount.Password,
 		RoleID:   createAccount.RoleID,
 	}
+
+	l.Log.Debugf("Create() : Creating account for the user %s", createAccount.UserName)
 
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
 		errorMessage := "User does not have the privilege to create a new user"
@@ -107,7 +111,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	}
 	invalidParams := validateRequest(user)
 	if invalidParams != "" {
-		errorMessage := "Mandatory fields " + invalidParams + " are empty"
+		errorMessage := errorLogPrefix + "Mandatory fields " + invalidParams + " are empty"
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.PropertyMissing
 		args := response.Args{
@@ -126,7 +130,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		return resp, fmt.Errorf(errorMessage)
 	}
 	if _, gerr := e.GetRoleDetailsByID(user.RoleID); gerr != nil {
-		errorMessage := "Invalid RoleID present " + gerr.Error()
+		errorMessage := errorLogPrefix + "Invalid RoleID present " + gerr.Error()
 		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Role", user.RoleID}, nil), fmt.Errorf(errorMessage)
 	}
@@ -157,7 +161,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	user.Password = hashedPassword
 	user.AccountTypes = []string{"Redfish"}
 	if cerr := e.CreateUser(user); cerr != nil {
-		errorMessage := "Unable to add new user: " + cerr.Error()
+		errorMessage := errorLogPrefix + "Unable to add new user: " + cerr.Error()
 		if errors.DBKeyAlreadyExist == cerr.ErrNo() {
 			resp.StatusCode = http.StatusConflict
 			resp.StatusMessage = response.ResourceAlreadyExists

@@ -21,6 +21,7 @@ package account
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -56,11 +57,12 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		err  error
 	)
 
+	errorLogPrefix := fmt.Sprintf("failed to update account %s: ", req.AccountID)
 	// parsing the Account
 	var updateAccount asmodel.Account
 	err = json.Unmarshal(req.RequestBody, &updateAccount)
 	if err != nil {
-		errMsg := "unable to parse the update account request" + err.Error()
+		errMsg := errorLogPrefix + "unable to parse the update account request" + err.Error()
 		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
@@ -74,14 +76,14 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 
 	//empty request check
 	if isEmptyRequest(req.RequestBody) {
-		errMsg := "empty request can not be processed"
+		errMsg := errorLogPrefix + "empty request can not be processed"
 		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"request body"}, nil)
 	}
 
 	id := req.AccountID
 	if requestUser.UserName != "" {
-		errorMessage := "Username cannot be modified"
+		errorMessage := errorLogPrefix + "Username cannot be modified"
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.GeneralError
 		args := response.Args{
@@ -96,7 +98,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, updateAccount)
 	if err != nil {
-		errMsg := "Request parameters validaton failed: " + err.Error()
+		errMsg := errorLogPrefix + "Request parameters validation failed: " + err.Error()
 		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
@@ -112,7 +114,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 				if requestUser.RoleID != common.RoleClient {
 					_, err := e.GetRoleDetailsByID(requestUser.RoleID)
 					if err != nil {
-						errorMessage := "Invalid RoleID " + requestUser.RoleID + " present"
+						errorMessage := errorLogPrefix + "Invalid RoleID " + requestUser.RoleID + " present"
 						resp.StatusCode = http.StatusBadRequest
 						resp.StatusMessage = response.PropertyValueNotInList
 						args := response.Args{
@@ -136,9 +138,10 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 
 	}
 
+	l.Log.Debugf("Update() : Fetching details of user %s from database", id)
 	user, gerr := e.GetUserDetails(id)
 	if gerr != nil {
-		errorMessage := "Unable to get account: " + gerr.Error()
+		errorMessage := errorLogPrefix + "Unable to get account: " + gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
@@ -161,8 +164,9 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		return resp
 	}
 
+	l.Log.Debugf("Update() : validating the request to update the account %s", id)
 	if user.UserName != session.UserName && !session.Privileges[common.PrivilegeConfigureUsers] {
-		errorMessage := "User does not have the privilege to update other accounts"
+		errorMessage := errorLogPrefix + "User does not have the privilege to update other accounts"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -187,7 +191,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	// Without PrivilegeConfigureUsers user is not allowed to update any user account roleID, including his own account roleID
 	if requestUser.RoleID != "" {
 		if !session.Privileges[common.PrivilegeConfigureUsers] {
-			errorMessage := "User does not have the privilege to update any account role, including his own account"
+			errorMessage := errorLogPrefix + "User does not have the privilege to update any account role, including his own account"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
 			args := response.Args{
@@ -210,7 +214,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	if requestUser.Password != "" {
 		// Password modification not allowed, if user doesn't have ConfigureSelf or ConfigureUsers privilege
 		if !session.Privileges[common.PrivilegeConfigureSelf] && !session.Privileges[common.PrivilegeConfigureUsers] {
-			errorMessage := "Roles, user is associated with, doesn't allow changing own or other users password"
+			errorMessage := errorLogPrefix + "Roles, user is associated with, doesn't allow changing own or other users password"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
 			args := response.Args{
@@ -256,8 +260,9 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		requestUser.Password = hashedPassword
 	}
 
+	l.Log.Debugf("Update() : Updating account %s", id)
 	if uerr := e.UpdateUserDetails(user, requestUser); uerr != nil {
-		errorMessage := "Unable to update user: " + uerr.Error()
+		errorMessage := errorLogPrefix + "Unable to update user: " + uerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.Log.Error(errorMessage)
 		return resp

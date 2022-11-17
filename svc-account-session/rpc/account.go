@@ -23,6 +23,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -61,28 +62,18 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		ErrorArgs: errorArgs,
 	}
 
+	l.Log.Debug("Create() : Validating session and updating last used time to create the account")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
-		errorMessage := "error while authorizing session token: " + errs.Error()
-		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
-		if resp.StatusCode == http.StatusServiceUnavailable {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			l.Log.Error(errorMessage)
-		} else {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
-		}
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
 		return &resp, nil
 	}
+
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
-		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		errorArgs[0].ErrorMessage = errorMessage
-		errorArgs[0].StatusMessage = resp.StatusMessage
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		l.Log.Error(errorMessage)
+		errorArgs[0].StatusMessage = resp.StatusMessage
 		return &resp, nil
 	}
 
@@ -105,7 +96,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 
 // GetAllAccounts defines the operations which handles the RPC request response
 // for the list all account service of account-session micro service.
-// The functionality retrives the request and return backs the response to
+// The functionality retrieves the request and return backs the response to
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
@@ -123,29 +114,19 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
+
+	l.Log.Debug("GetAllAccounts() : Validating session and updating last used time to fetch the accounts")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
-		errorMessage := "error while authorizing session token: " + errs.Error()
-		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
-		if resp.StatusCode == http.StatusServiceUnavailable {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			l.Log.Error(errorMessage)
-		} else {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
-		}
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
 		return &resp, nil
 	}
 
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
-		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		errorArgs[0].ErrorMessage = errorMessage
-		errorArgs[0].StatusMessage = resp.StatusMessage
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		l.Log.Error(errorMessage)
+		errorArgs[0].StatusMessage = resp.StatusMessage
 		return &resp, nil
 	}
 
@@ -166,7 +147,7 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 
 // GetAccount defines the operations which handles the RPC request response
 // for the view of a particular account service of account-session micro service.
-// The functionality retrives the request and return backs the response to
+// The functionality retrieves the request and return backs the response to
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
@@ -184,29 +165,18 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
+	l.Log.Debug("GetAccount() : Validating session and updating last used time to view of an account")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
-		errorMessage := "error while authorizing session token: " + errs.Error()
-		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
-		if resp.StatusCode == http.StatusServiceUnavailable {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			l.Log.Error(errorMessage)
-		} else {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
-		}
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
 		return &resp, nil
 	}
 
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
-		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		errorArgs[0].ErrorMessage = errorMessage
-		errorArgs[0].StatusMessage = resp.StatusMessage
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		l.Log.Error(errorMessage)
+		errorArgs[0].StatusMessage = resp.StatusMessage
 		return &resp, nil
 	}
 
@@ -245,29 +215,18 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
+	l.Log.Debug("GetAccountServices() : Validating session and updating last used time to check the availability of account session")
 	_, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
-		errorMessage := "error while authorizing session token: " + errs.Error()
-		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
-		if resp.StatusCode == http.StatusServiceUnavailable {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			l.Log.Error(errorMessage)
-		} else {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
-		}
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
 		return &resp, nil
 	}
 
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
-		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		errorArgs[0].ErrorMessage = errorMessage
-		errorArgs[0].StatusMessage = resp.StatusMessage
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		l.Log.Printf(errorMessage)
+		errorArgs[0].StatusMessage = resp.StatusMessage
 		return &resp, nil
 	}
 
@@ -275,7 +234,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying marshal the response body for get account details: " + err.Error()
+		resp.StatusMessage = "error while trying marshal the response body for get account service: " + err.Error()
 		l.Log.Printf(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
@@ -288,12 +247,13 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 
 // Update defines the operations which handles the RPC request response
 // for the update of a particular account service of account-session micro service.
-// The functionality retrives the request and return backs the response to
+// The functionality retrieves the request and return backs the response to
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error) {
 	var resp accountproto.AccountResponse
+	l.Log.Debug("Update() : Validating session and updating last used time to update the account")
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -308,27 +268,15 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 	}
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
-		errorMessage := "error while authorizing session token: " + errs.Error()
-		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
-		if resp.StatusCode == http.StatusServiceUnavailable {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			l.Log.Error(errorMessage)
-		} else {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
-		}
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
 		return &resp, nil
 	}
 
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
-		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		errorArgs[0].ErrorMessage = errorMessage
-		errorArgs[0].StatusMessage = resp.StatusMessage
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		l.Log.Error(errorMessage)
+		errorArgs[0].StatusMessage = resp.StatusMessage
 		return &resp, nil
 	}
 
@@ -351,7 +299,7 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 
 // Delete defines the operations which handles the RPC request response
 // for the delete of a particular account service of account-session micro service.
-// The functionality retrives the request and return backs the response to
+// The functionality retrieves the request and return backs the response to
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
@@ -369,29 +317,18 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
+	l.Log.Debug("Delete() : Validating session and updating last used time to delete the account")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
-		errorMessage := "error while authorizing session token: " + errs.Error()
-		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
-		if resp.StatusCode == http.StatusServiceUnavailable {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			l.Log.Error(errorMessage)
-		} else {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
-		}
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
 		return &resp, nil
 	}
 
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
-		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		errorArgs[0].ErrorMessage = errorMessage
-		errorArgs[0].StatusMessage = resp.StatusMessage
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		l.Log.Error(errorMessage)
+		errorArgs[0].StatusMessage = resp.StatusMessage
 		return &resp, nil
 	}
 
@@ -409,4 +346,25 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 	resp.Header = data.Header
 
 	return &resp, nil
+}
+
+func validateSessionTimeoutError(sessionToken string, errs *errors.Error) (body []byte, statusCode int32, statusMessage string) {
+	errorMessage := "error while authorizing session token: " + errs.Error()
+	statusCode, statusMessage = errs.GetAuthStatusCodeAndMessage()
+	if statusCode == http.StatusServiceUnavailable {
+		body, _ = json.Marshal(common.GeneralError(statusCode, statusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
+		l.Log.Error(errorMessage)
+	} else {
+		body, _ = json.Marshal(common.GeneralError(statusCode, statusMessage, errorMessage, nil, nil).Body)
+		auth.CustomAuthLog(sessionToken, "Invalid session token", statusCode)
+	}
+	return
+}
+
+func validateUpdateLastUsedTimeError(err error, sessionToken string) (errorMessage string, statusCode int32, statusMessage string) {
+	errorMessage = "error while updating last used time of session with token " + sessionToken + ": " + err.Error()
+	statusCode = http.StatusInternalServerError
+	statusMessage = response.InternalError
+	l.Log.Error(errorMessage)
+	return
 }

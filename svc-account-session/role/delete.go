@@ -16,6 +16,8 @@
 package role
 
 import (
+	"fmt"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -55,13 +57,16 @@ func doSessionAuthAndUpdate(resp *response.RPC, sessionToken string) (*asmodel.S
 // Delete defines the functionality of deletion of non predefined roles
 func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 	var resp response.RPC
+	l.Log.Debug("Delete() : Validating session and updating last used time to delete role")
 	sess, err := doSessionAuthAndUpdate(&resp, req.SessionToken)
 	if err != nil {
 		return &resp
 	}
 
+	errLogPrefix := fmt.Sprintf("failed to delete role %s : ", req.ID)
+	l.Log.Debugf("Delete() : validating the request to delete the role %s", req.ID)
 	if !sess.Privileges[common.PrivilegeConfigureUsers] {
-		errorMessage := "The session token doesn't have required privilege"
+		errorMessage := errLogPrefix + "The session token doesn't have required privilege"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -81,14 +86,14 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 	}
 	users, uerr := asmodel.GetAllUsers()
 	if uerr != nil {
-		errorMessage := "Unable to get users list: " + uerr.Error()
+		errorMessage := errLogPrefix + "Unable to get users list: " + uerr.Error()
 		l.Log.Error(errorMessage)
 		resp.CreateInternalErrorResponse(errorMessage)
 		return &resp
 	}
 	for _, key := range users {
 		if req.ID == key.RoleID {
-			errorMessage := "Role is assigned to a user"
+			errorMessage := errLogPrefix + "Role is assigned to a user"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.ResourceInUse
 			args := response.Args{
@@ -109,7 +114,7 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 	}
 	role, gerr := asmodel.GetRoleDetailsByID(req.ID)
 	if gerr != nil {
-		errorMessage := "Unable to get role details: " + gerr.Error()
+		errorMessage := errLogPrefix + "Unable to get role details: " + gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
@@ -133,7 +138,7 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 		return &resp
 	}
 	if role.IsPredefined {
-		errorMessage := "A predefined role cannot be deleted."
+		errorMessage := errLogPrefix + "A predefined role cannot be deleted."
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -152,8 +157,9 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 		return &resp
 	}
 
+	l.Log.Debugf("Delete() : Deleting the role %s", req.ID)
 	if derr := role.Delete(); derr != nil {
-		errorMessage := "Unable to delete role: " + derr.Error()
+		errorMessage := errLogPrefix + "Unable to delete role: " + derr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.Log.Error(errorMessage)
 		return &resp

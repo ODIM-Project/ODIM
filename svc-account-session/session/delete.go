@@ -100,7 +100,7 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 		}
 	}
 	sessionTokens = nil
-	errorMessage := errorLogPrefix + " Session ID not found"
+	errorMessage := errorLogPrefix + "Session ID not found"
 	l.Log.Error(errorMessage)
 	resp.StatusCode = http.StatusNotFound
 	resp.StatusMessage = response.ResourceNotFound

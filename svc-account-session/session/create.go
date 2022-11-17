@@ -58,7 +58,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), ""
 	}
 
-	errLogPrefix := fmt.Sprintf("failed to create session for user %s", createSession.UserName)
+	errLogPrefix := fmt.Sprintf("failed to create session for user %s: ", createSession.UserName)
 	l.Log.Debugf("CreateNewSession() : Validating create new session request for the user %s", createSession.UserName)
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, genErr := common.RequestParamsCaseValidator(req.RequestBody, createSession)

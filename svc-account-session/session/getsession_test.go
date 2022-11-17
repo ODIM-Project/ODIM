@@ -40,7 +40,7 @@ func TestGetSession(t *testing.T) {
 		}
 	}()
 	auth.Lock.Lock()
-	common.SetUpMockConfig()
+	config.SetUpMockConfig(t)
 	auth.Lock.Unlock()
 
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
@@ -54,13 +54,16 @@ func TestGetSession(t *testing.T) {
 		"Link":         "</redfish/v1/SessionService/Sessions/" + sessionID + "/>; rel=self",
 		"X-Auth-Token": sessionToken,
 	}
+
+	errLogPrefix := fmt.Sprintf("failed to fetch the session against sessionID %s : ", sessionID)
+
 	errArgUnauth := &response.Args{
 		Code:    response.GeneralError,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to authorize session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
+				ErrorMessage:  errLogPrefix + "Unable to authorize session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -144,6 +147,7 @@ func TestGetSession(t *testing.T) {
 }
 
 func TestGetAllActiveSessions(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -171,7 +175,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to authorize session token: error: no session token found in header",
+				ErrorMessage:  "failed to fetch all active sessions : Unable to authorize session token: error: no session token found in header",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -182,7 +186,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to authorize session token: error while trying to get session details with the token invalidToken: error while trying to get the session from DB: no data with the with key invalidToken found",
+				ErrorMessage:  "failed to fetch all active sessions : Unable to authorize session token: error while trying to get session details with the token invalidToken: error while trying to get the session from DB: no data with the with key invalidToken found",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -253,6 +257,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 }
 
 func TestGetSessionService(t *testing.T) {
+	config.SetUpMockConfig(t)
 	commonResponse := response.Response{
 		OdataType: common.SessionServiceType,
 		OdataID:   "/redfish/v1/SessionService",
@@ -309,6 +314,7 @@ func TestGetSessionService(t *testing.T) {
 }
 
 func TestGetSessionUserName(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -369,6 +375,7 @@ func TestGetSessionUserName(t *testing.T) {
 }
 
 func TestGetSessionUserRoleID(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {

@@ -128,7 +128,7 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 		Name:      "Roles Collection",
 	}
 
-	errLogPrefix := fmt.Sprintf("failed to fetch all roles : ")
+	errLogPrefix := fmt.Sprintf("failed to fetch all roles: ")
 
 	l.Log.Debug("GetAllRoles() : fetching all roles from database")
 	//check for ConfigureUsers privilege in session object

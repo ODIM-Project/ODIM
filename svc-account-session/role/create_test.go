@@ -81,7 +81,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User does not have the privilege to create a new role",
+				ErrorMessage:  "failed to create role testRole: User does not have the privilege to create a new role",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -92,7 +92,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyMissing,
-				ErrorMessage:  "Both AssignedPrivileges and OemPrivileges cannot be empty.",
+				ErrorMessage:  "failed to create role testRole: Both AssignedPrivileges and OemPrivileges cannot be empty.",
 				MessageArgs:   []interface{}{"AssignedPrivileges/OemPrivileges"},
 			},
 		},
@@ -103,7 +103,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "Requested Redfish predefined privilege is not correct",
+				ErrorMessage:  "failed to create role testRole: Requested Redfish predefined privilege is not correct",
 				MessageArgs:   []interface{}{"Configure", "AssignedPrivileges"},
 			},
 		},
@@ -114,7 +114,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "Invalid create role request",
+				ErrorMessage:  "failed to create role @testRole: Invalid create role request",
 				MessageArgs:   []interface{}{"@testRole", "RoleId"},
 			},
 		},
@@ -125,7 +125,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "Cannot create pre-defined roles",
+				ErrorMessage:  "failed to create role Administrator: Cannot create pre-defined roles",
 				MessageArgs:   []interface{}{},
 			},
 		},

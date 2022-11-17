@@ -51,7 +51,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
-	errorLogPrefix := fmt.Sprintf("failed to create role %s : ", createRoleReq.ID)
+	errorLogPrefix := fmt.Sprintf("failed to create role %s: ", createRoleReq.ID)
 	commonResponse := response.Response{
 		OdataType: common.RoleType,
 		OdataID:   "/redfish/v1/AccountService/Roles/" + createRoleReq.ID,

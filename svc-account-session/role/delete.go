@@ -63,7 +63,7 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 		return &resp
 	}
 
-	errLogPrefix := fmt.Sprintf("failed to delete role %s : ", req.ID)
+	errLogPrefix := fmt.Sprintf("failed to delete role %s: ", req.ID)
 	l.Log.Debugf("Delete() : validating the request to delete the role %s", req.ID)
 	if !sess.Privileges[common.PrivilegeConfigureUsers] {
 		errorMessage := errLogPrefix + "The session token doesn't have required privilege"

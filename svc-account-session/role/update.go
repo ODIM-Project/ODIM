@@ -44,7 +44,7 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 	json.Unmarshal(req.UpdateRequest, &updateReq)
 
 	errorLogPrefix := fmt.Sprintf("failed to update role %s: ", updateReq.ID)
-	l.Log.Debugf("Update() : validating the request to update the role %s", updateReq.ID)
+	l.Log.Debugf("Validating the request to update the role %s", updateReq.ID)
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.UpdateRequest, updateReq)
 	if err != nil {
@@ -241,7 +241,7 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 		}
 		role.OEMPrivileges = updateReq.OEMPrivileges
 	}
-	l.Log.Debugf("Update() : Updating the role %s", updateReq.ID)
+	l.Log.Debugf("Updating the role %s", updateReq.ID)
 	if uerr := role.UpdateRoleDetails(); uerr != nil {
 		errorMessage := errorLogPrefix + "error while trying to update role:" + uerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)

@@ -57,14 +57,14 @@ func doSessionAuthAndUpdate(resp *response.RPC, sessionToken string) (*asmodel.S
 // Delete defines the functionality of deletion of non predefined roles
 func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 	var resp response.RPC
-	l.Log.Debug("Delete() : Validating session and updating last used time to delete role")
+	l.Log.Debug("Validating session and updating the last used time of the session before deleting the role")
 	sess, err := doSessionAuthAndUpdate(&resp, req.SessionToken)
 	if err != nil {
 		return &resp
 	}
 
 	errLogPrefix := fmt.Sprintf("failed to delete role %s: ", req.ID)
-	l.Log.Debugf("Delete() : validating the request to delete the role %s", req.ID)
+	l.Log.Debugf("Validating the request to delete the role %s", req.ID)
 	if !sess.Privileges[common.PrivilegeConfigureUsers] {
 		errorMessage := errLogPrefix + "The session token doesn't have required privilege"
 		resp.StatusCode = http.StatusForbidden
@@ -157,7 +157,7 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 		return &resp
 	}
 
-	l.Log.Debugf("Delete() : Deleting the role %s", req.ID)
+	l.Log.Debugf("Deleting the role %s", req.ID)
 	if derr := role.Delete(); derr != nil {
 		errorMessage := errLogPrefix + "Unable to delete role: " + derr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)

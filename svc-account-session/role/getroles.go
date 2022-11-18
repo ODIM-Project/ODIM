@@ -48,7 +48,7 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 
 	errLogPrefix := fmt.Sprintf("failed to fetch the role %s: ", req.Id)
 
-	l.Log.Debugf("GetRole() : fetching the role details from database for the role %s", req.Id)
+	l.Log.Debugf("Fetching the role details from the database for the role %s", req.Id)
 	//check for ConfigureUsers privilege in session object
 	status, perr := checkForPrivilege(session, "ConfigureUsers")
 	if perr != nil {
@@ -130,7 +130,7 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 
 	errLogPrefix := fmt.Sprintf("failed to fetch all roles: ")
 
-	l.Log.Debug("GetAllRoles() : fetching all roles from database")
+	l.Log.Debug("Fetching all roles from database")
 	//check for ConfigureUsers privilege in session object
 	status, err := checkForPrivilege(session, "ConfigureUsers")
 	if err != nil {

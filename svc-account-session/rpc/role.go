@@ -64,7 +64,7 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*rol
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("CreateRole() : Validating session and updating last used time to create role")
+	l.Log.Debug("Validating session and updating the last used time of the session before creating the role")
 	// Validating the session
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
@@ -119,7 +119,7 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("GetRole() : Validating session and updating last used time to view role details")
+	l.Log.Debug("Validating session and updating the last used time of the session before fetching the role details")
 	// Validating the session
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
@@ -175,7 +175,7 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("GetAllRoles() : Validating session and updating last used time to view all roles")
+	l.Log.Debug("Validating session and updating the last used time of the session before fetching all roles")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
@@ -230,7 +230,7 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("UpdateRole() : Validating session and updating last used time to update role")
+	l.Log.Debug("Validating session and updating the last used time of the session before updating the role")
 	// Validating the session
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {

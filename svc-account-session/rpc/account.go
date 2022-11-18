@@ -62,7 +62,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("Validating session and updating last used time to create the account")
+	l.Log.Debug("Validating session and updating the last used time of the session before creating the account")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
@@ -115,7 +115,7 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("GetAllAccounts() : Validating session and updating last used time to fetch the accounts")
+	l.Log.Debug("Validating session and updating the last used time of the session before fetching all accounts")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
@@ -165,7 +165,7 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	l.Log.Debug("GetAccount() : Validating session and updating last used time to view of an account")
+	l.Log.Debug("Validating session and updating the last used time of the session before fetching the account")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
@@ -215,7 +215,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	l.Log.Debug("GetAccountServices() : Validating session and updating last used time to check the availability of account session")
+	l.Log.Debug("Validating session and updating the last used time of the session before checking the availability of account session")
 	_, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
@@ -253,7 +253,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 // which is present in the request.
 func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error) {
 	var resp accountproto.AccountResponse
-	l.Log.Debug("Update() : Validating session and updating last used time to update the account")
+	l.Log.Debug("Validating session and updating the last used time of the session before updating the account")
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -317,7 +317,7 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	l.Log.Debug("Delete() : Validating session and updating last used time to delete the account")
+	l.Log.Debug("Validating session and updating the last used time of the session before deleting the account")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)

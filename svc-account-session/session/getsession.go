@@ -16,7 +16,6 @@
 package session
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -80,7 +79,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 		Name:      "User Session",
 	}
 	var resp response.RPC
-	errLogPrefix := fmt.Sprintf("failed to fetch the session against sessionID %s : ", req.SessionId)
+	errLogPrefix := "failed to fetch the session : "
 
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -95,7 +94,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debugf("GetSession() : fetching session against sessionID %s : ", req.SessionId)
+	l.Log.Debug("Validating the request to fetch the session : ")
 	// Validating the session
 	currentSession, err := auth.CheckSessionTimeOut(req.SessionToken)
 	if err != nil {

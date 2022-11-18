@@ -34,7 +34,7 @@ var (
 // from session package, if its authorized then respond with the status code.
 func (a *Auth) IsAuthorized(ctx context.Context, req *authproto.AuthRequest) (*authproto.AuthResponse, error) {
 	var resp authproto.AuthResponse
-	l.Log.Debug("IsAuthorized() : Validating if the session is authorized")
+	l.Log.Debug("Validating if the session is authorized")
 	statusCode, errorMessage := AuthFunc(req)
 	resp.StatusCode = statusCode
 	resp.StatusMessage = errorMessage

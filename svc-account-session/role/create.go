@@ -59,7 +59,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 	}
 	var resp response.RPC
 
-	l.Log.Debugf("Create() : validating the request to create the role %s", createRoleReq.ID)
+	l.Log.Debugf("Validating the request to create the role %s", createRoleReq.ID)
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createRoleReq)
 	if err != nil {
@@ -229,7 +229,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		OEMPrivileges:      createRoleReq.OEMPrivileges,
 	}
 
-	l.Log.Debugf("Create() : Creating the role %s", createRoleReq.ID)
+	l.Log.Debugf("Creating the role %s", createRoleReq.ID)
 	//Persist role in database
 	if cerr := role.Create(); cerr != nil {
 		if errors.DBKeyAlreadyExist == cerr.ErrNo() {

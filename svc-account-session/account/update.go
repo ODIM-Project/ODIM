@@ -138,7 +138,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 
 	}
 
-	l.Log.Debugf("Update() : Fetching details of user %s from database", id)
+	l.Log.Debugf("Fetching details of user %s from the database", id)
 	user, gerr := e.GetUserDetails(id)
 	if gerr != nil {
 		errorMessage := errorLogPrefix + "Unable to get account: " + gerr.Error()
@@ -164,7 +164,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		return resp
 	}
 
-	l.Log.Debugf("Update() : validating the request to update the account %s", id)
+	l.Log.Debugf("Validating the request to update the account %s", id)
 	if user.UserName != session.UserName && !session.Privileges[common.PrivilegeConfigureUsers] {
 		errorMessage := errorLogPrefix + "User does not have the privilege to update other accounts"
 		resp.StatusCode = http.StatusForbidden
@@ -260,7 +260,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		requestUser.Password = hashedPassword
 	}
 
-	l.Log.Debugf("Update() : Updating account %s", id)
+	l.Log.Debugf("Updating the account %s", id)
 	if uerr := e.UpdateUserDetails(user, requestUser); uerr != nil {
 		errorMessage := errorLogPrefix + "Unable to update user: " + uerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)

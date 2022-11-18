@@ -59,7 +59,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	}
 
 	errLogPrefix := fmt.Sprintf("failed to create session for user %s: ", createSession.UserName)
-	l.Log.Debugf("CreateNewSession() : Validating create new session request for the user %s", createSession.UserName)
+	l.Log.Debugf("Validating the request to create new session for the user %s", createSession.UserName)
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, genErr := common.RequestParamsCaseValidator(req.RequestBody, createSession)
 	if genErr != nil {
@@ -123,7 +123,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 		CreatedTime:  currentTime,
 		LastUsedTime: currentTime,
 	}
-	l.Log.Debugf("CreateNewSession() : creating session for the user %s", createSession.UserName)
+	l.Log.Debugf("Creating session for the user %s", createSession.UserName)
 	auth.Lock.Lock()
 	defer auth.Lock.Unlock()
 	if err = sess.Persist(); err != nil {

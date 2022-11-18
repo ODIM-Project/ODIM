@@ -55,15 +55,13 @@ func TestGetSession(t *testing.T) {
 		"X-Auth-Token": sessionToken,
 	}
 
-	errLogPrefix := fmt.Sprintf("failed to fetch the session against sessionID %s : ", sessionID)
-
 	errArgUnauth := &response.Args{
 		Code:    response.GeneralError,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  errLogPrefix + "Unable to authorize session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
+				ErrorMessage:  "failed to fetch the session : Unable to authorize session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
 				MessageArgs:   []interface{}{},
 			},
 		},

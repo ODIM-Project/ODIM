@@ -86,7 +86,7 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*rol
 	resp.Header = data.Header
 	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
-		errorMessage := "error while trying marshal the response body for get role: " + err.Error()
+		errorMessage := "error while trying to marshal the response body of create role API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		errorArgs[0].ErrorMessage = errorMessage
@@ -141,7 +141,7 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 	resp.Header = data.Header
 	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
-		errorMessage := "error while trying marshal the response body for get role: " + err.Error()
+		errorMessage := "error while trying to marshal the response body of get role API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		errorArgs[0].ErrorMessage = errorMessage
@@ -196,7 +196,7 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (
 	resp.Header = data.Header
 	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
-		errorMessage := "error while trying marshal the response body for get role: " + err.Error()
+		errorMessage := "error while trying to marshal the response body of the get all roles API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		errorArgs[0].ErrorMessage = errorMessage
@@ -252,7 +252,7 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 	resp.Header = data.Header
 	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
-		errorMessage := "error while trying marshal the response body for get role: " + err.Error()
+		errorMessage := "error while trying to marshal the response body of the update role API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		errorArgs[0].ErrorMessage = errorMessage
@@ -287,7 +287,7 @@ func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest)
 	var err error
 	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
-		errorMessage := "error while trying marshal the response body for get role: " + err.Error()
+		errorMessage := "error while trying to marshal the response body of the delete role API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		errorArgs[0].ErrorMessage = errorMessage

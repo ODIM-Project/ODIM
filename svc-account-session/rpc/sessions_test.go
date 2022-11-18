@@ -35,7 +35,7 @@ func TestSession_CreateSession(t *testing.T) {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"}), ""
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return []byte{}, errors.New("fakeError") },
-			want:        &sessionproto.SessionCreateResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for create account: fakeError", Body: []byte{}},
+			want:        &sessionproto.SessionCreateResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the create session API: fakeError", Body: []byte{}},
 			wantErr:     false,
 		},
 		{
@@ -86,7 +86,7 @@ func TestSession_DeleteSession(t *testing.T) {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"})
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return []byte{}, errors.New("fakeError") },
-			want:        &sessionproto.SessionResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for delete : fakeError"},
+			want:        &sessionproto.SessionResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the delete session API: fakeError"},
 			wantErr:     false,
 		},
 		{
@@ -137,7 +137,7 @@ func TestSession_GetAllActiveSessions(t *testing.T) {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"})
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return []byte{}, errors.New("fakeError") },
-			want:        &sessionproto.SessionResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for get all active session: fakeError"},
+			want:        &sessionproto.SessionResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the get all active session API: fakeError"},
 			wantErr:     false,
 		},
 		{
@@ -188,7 +188,7 @@ func TestSession_GetSession(t *testing.T) {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"})
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return []byte{}, errors.New("fakeError") },
-			want:        &sessionproto.SessionResponse{StatusMessage: "error while trying marshal the response body for get session: fakeError"},
+			want:        &sessionproto.SessionResponse{StatusMessage: "error while trying to marshal the response body of the get session API: fakeError"},
 			wantErr:     false,
 		},
 		{
@@ -239,7 +239,7 @@ func TestSession_GetSessionService(t *testing.T) {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"})
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return []byte{}, errors.New("fakeError") },
-			want:        &sessionproto.SessionResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for get session service: fakeError"},
+			want:        &sessionproto.SessionResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the get session service API: fakeError"},
 			wantErr:     false,
 		},
 		{

@@ -83,7 +83,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 	resp.Body, jsonErr = MarshalFunc(data.Body)
 	if jsonErr != nil {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying to marshal the response body of create account API: " + jsonErr.Error()
+		resp.StatusMessage = "error while trying to marshal the response body of the create account API: " + jsonErr.Error()
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
@@ -134,7 +134,7 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying marshal the response body for get all accounts: " + err.Error()
+		resp.StatusMessage = "error while trying to marshal the response body of the get all accounts API: " + err.Error()
 		l.Log.Error(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
@@ -184,7 +184,7 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying marshal the response body for get account details: " + err.Error()
+		resp.StatusMessage = "error while trying to marshal the response body of the get account API: " + err.Error()
 		l.Log.Error(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
@@ -234,7 +234,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying marshal the response body for get account service: " + err.Error()
+		resp.StatusMessage = "error while trying to marshal the response body of the get account service API: " + err.Error()
 		l.Log.Printf(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
@@ -286,7 +286,7 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying to marshal the response body for create account: " + err.Error()
+		resp.StatusMessage = "error while to trying to marshal the response body of the update account API: " + err.Error()
 		l.Log.Printf(resp.StatusMessage)
 		return &resp, nil
 	}
@@ -337,7 +337,7 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 	resp.Body, jsonErr = MarshalFunc(data.Body)
 	if jsonErr != nil {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying marshal the response body for delete account: " + jsonErr.Error()
+		resp.StatusMessage = "error while trying to marshal the response body of the delete account API: " + jsonErr.Error()
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}

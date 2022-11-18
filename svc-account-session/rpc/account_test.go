@@ -85,7 +85,7 @@ func TestAccount_Create(t *testing.T) {
 			},
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for create account: fakeError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the create account API: fakeError"},
 			wantErr:                false,
 		},
 		{
@@ -179,7 +179,7 @@ func TestAccount_GetAllAccounts(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAllAccountsFunc:     func(session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for get all accounts: fakeError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the get all accounts API: fakeError"},
 			wantErr:                true,
 		},
 		{
@@ -275,7 +275,7 @@ func TestAccount_GetAccount(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAccountFunc:         func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for get account details: fakeError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the get account API: fakeError"},
 			wantErr:                true,
 		},
 		{
@@ -371,7 +371,7 @@ func TestAccount_GetAccountServices(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAccountServiceFunc:  func() response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for get account service: fakeError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the get account service API: fakeError"},
 			wantErr:                true,
 		},
 		{
@@ -462,7 +462,7 @@ func TestAccount_Update(t *testing.T) {
 			},
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body for create account: fakeError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while to trying to marshal the response body of the update account API: fakeError"},
 			wantErr:                false,
 		},
 		{
@@ -556,7 +556,7 @@ func TestAccount_Delete(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			AccDeleteFunc:          func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for delete account: fakeError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the delete account API: fakeError"},
 			wantErr:                false,
 		},
 		{

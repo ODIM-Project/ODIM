@@ -86,7 +86,7 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 				}
 				resp.StatusCode = http.StatusNoContent
 				resp.StatusMessage = response.ResourceRemoved
-				l.Log.Debugf("Session with the token %s deleted", req.SessionToken)
+				l.Log.Debug("Session is deleted")
 				return resp
 			}
 			errorMessage := errorLogPrefix + "Insufficient privileges"

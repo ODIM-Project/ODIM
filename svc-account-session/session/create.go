@@ -127,7 +127,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	auth.Lock.Lock()
 	defer auth.Lock.Unlock()
 	if err = sess.Persist(); err != nil {
-		errMsg := errLogPrefix + "error while trying to insert session details: " + err.Error()
+		errMsg := errLogPrefix + err.Error()
 		if err.ErrNo() == errors.DBConnFailed {
 			msgArgs := []interface{}{fmt.Sprintf("%v:%v", config.Data.DBConf.InMemoryHost, config.Data.DBConf.InMemoryPort)}
 			resp = common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errMsg, msgArgs, nil)

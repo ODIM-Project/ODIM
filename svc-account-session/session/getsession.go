@@ -94,7 +94,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("Validating the request to fetch the session : ")
+	l.Log.Debug("Validating the request to fetch the session")
 	// Validating the session
 	currentSession, err := auth.CheckSessionTimeOut(req.SessionToken)
 	if err != nil {
@@ -119,7 +119,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	auth.CustomAuthLog(req.SessionToken, "Authorization is successful", http.StatusOK)
 	sessionTokens, errs := asmodel.GetAllSessionKeys()
 	if errs != nil {
-		errorMessage := "Unable to get all session keys while deleting session: " + errs.Error()
+		errorMessage := errLogPrefix + "Unable to get all session keys while deleting session: " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.Log.Error(errorMessage)
 		return resp
@@ -161,7 +161,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	}
 	sessionTokens = nil
 	errorMessage := "No session with id " + req.SessionId + " found."
-	l.Log.Error(errorMessage)
+	l.Log.Error(errLogPrefix + errorMessage)
 	resp.StatusCode = http.StatusNotFound
 	resp.StatusMessage = response.ResourceNotFound
 	errorArgs[0].ErrorMessage = errorMessage

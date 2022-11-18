@@ -65,7 +65,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "failed to update account xyz: Unable to get account: error while trying to get user: no data with the with key xyz found",
+				ErrorMessage:  "failed to update the account xyz: Unable to get account: error while trying to get user: no data with the with key xyz found",
 				MessageArgs:   []interface{}{"Account", "xyz"},
 			},
 		},
@@ -76,7 +76,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to update account testUser2: User does not have the privilege to update other accounts",
+				ErrorMessage:  "failed to update the account testUser2: User does not have the privilege of updating other accounts",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -87,7 +87,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to update account testUser1: User does not have the privilege to update other accounts",
+				ErrorMessage:  "failed to update the account testUser1: User does not have the privilege of updating other accounts",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -98,7 +98,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to update account testUser3: Roles, user is associated with, doesn't allow changing own or other users password",
+				ErrorMessage:  "failed to update the account testUser3: Roles, user is associated with, doesn't allow changing own or other users password",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -110,7 +110,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to update account testUser3: User does not have the privilege to update any account role, including his own account",
+				ErrorMessage:  "failed to update the account testUser3: User does not have the privilege of updating any account role, including his own account",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -122,7 +122,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "failed to update account testUser1: Invalid RoleID xyz present",
+				ErrorMessage:  "failed to update the account testUser1: Invalid RoleID xyz present",
 				MessageArgs:   []interface{}{"xyz", "RoleID"},
 			},
 		},
@@ -146,7 +146,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyMissing,
-				ErrorMessage:  "failed to update account testUser1: empty request can not be processed",
+				ErrorMessage:  "failed to update the account testUser1: empty request can not be processed",
 				MessageArgs:   []interface{}{"request body"},
 			},
 		},
@@ -154,7 +154,7 @@ func TestUpdate(t *testing.T) {
 
 	genArgs := response.Args{
 		Code:    response.GeneralError,
-		Message: "failed to update account testUser1: Username cannot be modified",
+		Message: "failed to update the account testUser1: Username cannot be modified",
 	}
 	type args struct {
 		req     *accountproto.UpdateAccountRequest

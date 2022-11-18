@@ -57,7 +57,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		err  error
 	)
 
-	errorLogPrefix := fmt.Sprintf("failed to update account %s: ", req.AccountID)
+	errorLogPrefix := fmt.Sprintf("failed to update the account %s: ", req.AccountID)
 	// parsing the Account
 	var updateAccount asmodel.Account
 	err = json.Unmarshal(req.RequestBody, &updateAccount)
@@ -166,7 +166,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 
 	l.Log.Debugf("Validating the request to update the account %s", id)
 	if user.UserName != session.UserName && !session.Privileges[common.PrivilegeConfigureUsers] {
-		errorMessage := errorLogPrefix + "User does not have the privilege to update other accounts"
+		errorMessage := errorLogPrefix + "User does not have the privilege of updating other accounts"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -191,7 +191,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	// Without PrivilegeConfigureUsers user is not allowed to update any user account roleID, including his own account roleID
 	if requestUser.RoleID != "" {
 		if !session.Privileges[common.PrivilegeConfigureUsers] {
-			errorMessage := errorLogPrefix + "User does not have the privilege to update any account role, including his own account"
+			errorMessage := errorLogPrefix + "User does not have the privilege of updating any account role, including his own account"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
 			args := response.Args{

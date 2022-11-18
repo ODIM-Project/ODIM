@@ -64,7 +64,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "failed to delete account xyz: Unable to delete user: no data with the with key xyz found",
+				ErrorMessage:  "failed to delete account xyz: no data with the with key xyz found",
 				MessageArgs:   []interface{}{"Account", "xyz"},
 			},
 		},

@@ -85,7 +85,7 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 
 	l.Log.Debugf("Deleting the account %s from database", accountID)
 	if derr := asmodel.DeleteUser(accountID); derr != nil {
-		errorMessage := errorLogPrefix + "Unable to delete user: " + derr.Error()
+		errorMessage := errorLogPrefix + derr.Error()
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound

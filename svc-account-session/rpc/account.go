@@ -62,7 +62,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("Create() : Validating session and updating last used time to create the account")
+	l.Log.Debug("Validating session and updating last used time to create the account")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
@@ -83,7 +83,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 	resp.Body, jsonErr = MarshalFunc(data.Body)
 	if jsonErr != nil {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying marshal the response body for create account: " + jsonErr.Error()
+		resp.StatusMessage = "error while trying to marshal the response body of create account API: " + jsonErr.Error()
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}

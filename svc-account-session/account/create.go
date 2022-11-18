@@ -53,7 +53,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	var createAccount asmodel.Account
 	err := json.Unmarshal(req.RequestBody, &createAccount)
 	if err != nil {
-		errMsg := "Unable to parse the create account request" + err.Error()
+		errMsg := "error while trying to marshal the request body of create account API" + err.Error()
 		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	}
@@ -88,10 +88,10 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		RoleID:   createAccount.RoleID,
 	}
 
-	l.Log.Debugf("Create() : Creating account for the user %s", createAccount.UserName)
+	l.Log.Debugf("Creating account for the user %s", createAccount.UserName)
 
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
-		errorMessage := "User does not have the privilege to create a new user"
+		errorMessage := "User does not have the privilege of creating a new user"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -130,7 +130,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		return resp, fmt.Errorf(errorMessage)
 	}
 	if _, gerr := e.GetRoleDetailsByID(user.RoleID); gerr != nil {
-		errorMessage := errorLogPrefix + "Invalid RoleID present " + gerr.Error()
+		errorMessage := errorLogPrefix + "Invalid RoleID present: " + gerr.Error()
 		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Role", user.RoleID}, nil), fmt.Errorf(errorMessage)
 	}
@@ -161,7 +161,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	user.Password = hashedPassword
 	user.AccountTypes = []string{"Redfish"}
 	if cerr := e.CreateUser(user); cerr != nil {
-		errorMessage := errorLogPrefix + "Unable to add new user: " + cerr.Error()
+		errorMessage := errorLogPrefix + cerr.Error()
 		if errors.DBKeyAlreadyExist == cerr.ErrNo() {
 			resp.StatusCode = http.StatusConflict
 			resp.StatusMessage = response.ResourceAlreadyExists

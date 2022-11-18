@@ -74,7 +74,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 	//Get all user keys
 	users, err := asmodel.GetAllUsers()
 	if err != nil {
-		errorMessage := errLogPrefix + "Unable to get users from db: " + err.Error()
+		errorMessage := errLogPrefix + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.Log.Error(errorMessage)
 		return resp
@@ -155,7 +155,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 	l.Log.Debugf("GetAccount() : Retrieving the user details from database for %s", accountID)
 	user, err := asmodel.GetUserDetails(accountID)
 	if err != nil {
-		errorMessage := errLogPrefix + "Unable to get account from DB: " + err.Error()
+		errorMessage := errLogPrefix + err.Error()
 		if errors.DBKeyNotFound == err.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound

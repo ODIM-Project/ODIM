@@ -138,7 +138,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyMissing,
-				ErrorMessage:  "Mandatory fields UserName Password RoleID are empty",
+				ErrorMessage:  "failed to create account for the user : Mandatory fields UserName Password RoleID are empty",
 				MessageArgs:   []interface{}{"UserName Password RoleID"},
 			},
 		},
@@ -149,7 +149,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceAlreadyExists,
-				ErrorMessage:  "Unable to add new user: error: data with key existingUser already exists",
+				ErrorMessage:  "failed to create account for the user existingUser: Unable to add new user: error: data with key existingUser already exists",
 				MessageArgs:   []interface{}{"ManagerAccount", "Id", "existingUser"},
 			},
 		},
@@ -160,7 +160,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "Invalid RoleID present error while trying to get role details: error: Invalid RoleID xyz present",
+				ErrorMessage:  "failed to create account for the user testUser1: Invalid RoleID present error while trying to get role details: error: Invalid RoleID xyz present",
 				MessageArgs:   []interface{}{"Role", "xyz"},
 			},
 		},

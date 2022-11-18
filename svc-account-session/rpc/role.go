@@ -75,8 +75,8 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*rol
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
 		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
-		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		errorArgs[0].StatusMessage = resp.StatusMessage
+		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
 	}
 
@@ -130,8 +130,8 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
 		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
-		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		errorArgs[0].StatusMessage = resp.StatusMessage
+		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
 	}
 
@@ -185,8 +185,8 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
 		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
-		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		errorArgs[0].StatusMessage = resp.StatusMessage
+		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
 	}
 
@@ -241,8 +241,8 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
 		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
-		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		errorArgs[0].StatusMessage = resp.StatusMessage
+		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
 	}
 

@@ -52,7 +52,7 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 	//check for ConfigureUsers privilege in session object
 	status, perr := checkForPrivilege(session, "ConfigureUsers")
 	if perr != nil {
-		errorMessage := errLogPrefix + "User does not have the privilege to get the role"
+		errorMessage := errLogPrefix + "User does not have the privilege of viewing the role"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
 		args := response.Args{
@@ -134,7 +134,7 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 	//check for ConfigureUsers privilege in session object
 	status, err := checkForPrivilege(session, "ConfigureUsers")
 	if err != nil {
-		errorMessage := errLogPrefix + "User does not have the privilege to get the roles"
+		errorMessage := errLogPrefix + "User does not have the privilege of viewing the roles"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
 		args := response.Args{

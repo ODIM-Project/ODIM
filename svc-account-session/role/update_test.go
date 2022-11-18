@@ -64,7 +64,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User does not have the privilege to update the role",
+				ErrorMessage:  "User does not have the privilege of updating the role",
 				MessageArgs:   []interface{}{},
 			},
 		},

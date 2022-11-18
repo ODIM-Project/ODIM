@@ -92,7 +92,7 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 	//check for ConfigureUsers privilege in session object
 	status, err := checkForPrivilege(session, common.PrivilegeConfigureUsers)
 	if err != nil {
-		errorMessage := "User does not have the privilege to update the role"
+		errorMessage := "User does not have the privilege of updating the role"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
 		args := response.Args{
@@ -243,7 +243,7 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 	}
 	l.Log.Debugf("Updating the role %s", updateReq.ID)
 	if uerr := role.UpdateRoleDetails(); uerr != nil {
-		errorMessage := errorLogPrefix + "error while trying to update role:" + uerr.Error()
+		errorMessage := errorLogPrefix + uerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		return resp
 	}

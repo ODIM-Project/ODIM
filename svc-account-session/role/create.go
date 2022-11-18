@@ -46,7 +46,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 	var createRoleReq asmodel.Role
 	err := json.Unmarshal(req.RequestBody, &createRoleReq)
 	if err != nil {
-		errMsg := "unable to parse the add request" + err.Error()
+		errMsg := "error while trying to parse the request body of create role API" + err.Error()
 		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
@@ -67,7 +67,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
-		errorMessage := errorLogPrefix + "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		errorMessage := errorLogPrefix + "One or more properties given in the request body are not valid, ensure properties are listed in upper camel case "
 		l.Log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
@@ -104,7 +104,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 	//check for ConfigureUsers privilege in session object
 	status, err := checkForPrivilege(session, "ConfigureUsers")
 	if err != nil {
-		errorMessage := errorLogPrefix + "User does not have the privilege to create a new role"
+		errorMessage := errorLogPrefix + "User does not have the privilege of creating a new role"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
 		args := response.Args{
@@ -233,7 +233,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 	//Persist role in database
 	if cerr := role.Create(); cerr != nil {
 		if errors.DBKeyAlreadyExist == cerr.ErrNo() {
-			l.Log.Error(errorLogPrefix + "Unable to create new role: " + cerr.Error())
+			l.Log.Error(errorLogPrefix + cerr.Error())
 			errorMessage := "Role with name " + role.ID + " already exists"
 			args := response.Args{
 				Code:    response.GeneralError,
@@ -245,7 +245,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 			return resp
 
 		}
-		errorMessage := errorLogPrefix + "Unable to create new role: " + cerr.Error()
+		errorMessage := errorLogPrefix + cerr.Error()
 		l.Log.Error(errorMessage)
 		resp.CreateInternalErrorResponse(errorMessage)
 		return resp

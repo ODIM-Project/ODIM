@@ -159,7 +159,7 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 
 	l.Log.Debugf("Deleting the role %s", req.ID)
 	if derr := role.Delete(); derr != nil {
-		errorMessage := errLogPrefix + "Unable to delete role: " + derr.Error()
+		errorMessage := errLogPrefix + derr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.Log.Error(errorMessage)
 		return &resp

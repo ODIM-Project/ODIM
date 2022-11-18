@@ -81,7 +81,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to create role testRole: User does not have the privilege to create a new role",
+				ErrorMessage:  "failed to create role testRole: User does not have the privilege of creating a new role",
 				MessageArgs:   []interface{}{},
 			},
 		},

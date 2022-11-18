@@ -74,7 +74,7 @@ func TestGetRole(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to fetch the role Administrator: User does not have the privilege to get the role",
+				ErrorMessage:  "failed to fetch the role Administrator: User does not have the privilege of viewing the role",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -187,7 +187,7 @@ func TestGetAllRoles(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to fetch all roles: User does not have the privilege to get the roles",
+				ErrorMessage:  "failed to fetch all roles: User does not have the privilege of viewing the roles",
 				MessageArgs:   []interface{}{},
 			},
 		},

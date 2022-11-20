@@ -42,6 +42,7 @@ var (
 
 // EventSubscriber consume messages from PMB
 func EventSubscriber(event interface{}) {
+
 	byteData, _ := json.Marshal(&event)
 	var message common.Events
 
@@ -50,6 +51,7 @@ func EventSubscriber(event interface{}) {
 		l.Log.Error("error while unmarshaling the event" + err.Error())
 		return
 	}
+	l.Log.Infof("recieved an event from PMB %s", message.EventType)
 	writeEventToJobQueue(message)
 }
 

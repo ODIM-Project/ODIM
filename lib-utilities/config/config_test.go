@@ -140,8 +140,8 @@ func TestSetConfiguration(t *testing.T) {
         },
        	"MessageBusConf": {
       			"MessageBusConfigFilePath": "/tmp/testFile.dat",
-	                "MessageBusType": "Kafka",
-      			"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
+	            "MessageBusType": "Kafka",
+				"OdimControlMessageQueue":"ODIM-CONTROL-MESSAGES"
 	      },
         "FirmwareVersion": "1.0",
         "SouthBoundRequestTimeoutInSecs": 10,

@@ -90,9 +90,9 @@ type DBConf struct {
 
 // MessageBusConf holds all message bus configurations
 type MessageBusConf struct {
-	MessageBusConfigFilePath string   `json:"MessageBusConfigFilePath"`
-	MessageBusType           string   `json:"MessageBusType"`
-	MessageBusQueue          []string `json:"MessageBusQueue"`
+	MessageBusConfigFilePath string `json:"MessageBusConfigFilePath"`
+	MessageBusType           string `json:"MessageBusType"`
+	OdimControlMessageQueue  string `json:"OdimControlMessageQueue"`
 }
 
 // KeyCertConf is for holding all security oriented configuration

@@ -106,8 +106,6 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	}
 	//User requires Login privelege to create a session
 	if _, exist := rolePrivilege[common.PrivilegeLogin]; !exist {
-		l.Log.Debugf("expected %s privilege to create session. Privileges user has are %s.",
-			common.PrivilegeLogin, auth.GetUserPrivileges(rolePrivilege))
 		errorMessage := errLogPrefix + "User doesn't have required privilege to create a session"
 		logProperties := make(map[string]interface{})
 		logProperties["SessionUserID"] = createSession.UserName

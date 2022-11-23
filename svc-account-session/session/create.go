@@ -58,8 +58,11 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), ""
 	}
 
+	incRequestString := marshalSessionRequest(&createSession)
+	l.Log.Debugf("incoming request to create session: %s", incRequestString)
+
 	errLogPrefix := fmt.Sprintf("failed to create session for user %s: ", createSession.UserName)
-	l.Log.Debugf("Validating the request to create new session for the user %s", createSession.UserName)
+	l.Log.Infof("Validating the request to create new session for the user %s", createSession.UserName)
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, genErr := common.RequestParamsCaseValidator(req.RequestBody, createSession)
 	if genErr != nil {
@@ -103,6 +106,8 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	}
 	//User requires Login privelege to create a session
 	if _, exist := rolePrivilege[common.PrivilegeLogin]; !exist {
+		l.Log.Debugf("expected %s privilege to create session. Privileges user has are %s.",
+			common.PrivilegeLogin, auth.GetUserPrivileges(rolePrivilege))
 		errorMessage := errLogPrefix + "User doesn't have required privilege to create a session"
 		logProperties := make(map[string]interface{})
 		logProperties["SessionUserID"] = createSession.UserName
@@ -123,7 +128,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 		CreatedTime:  currentTime,
 		LastUsedTime: currentTime,
 	}
-	l.Log.Debugf("Creating session for the user %s", createSession.UserName)
+	l.Log.Infof("Creating session for the user %s", createSession.UserName)
 	auth.Lock.Lock()
 	defer auth.Lock.Unlock()
 	if err = sess.Persist(); err != nil {
@@ -157,4 +162,12 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	}
 
 	return resp, commonResponse.ID
+}
+
+func marshalSessionRequest(reqBody *asmodel.CreateSession) string {
+	req, _ := json.Marshal(asmodel.CreateSession{
+		UserName: reqBody.UserName,
+		Password: "*****",
+	})
+	return string(req)
 }

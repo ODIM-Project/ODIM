@@ -49,13 +49,15 @@ func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCr
 	var err error
 	var resp sessionproto.SessionCreateResponse
 	response, sessionID := CreateNewSessionFunc(req)
-	resp.Body, err = MarshalFunc(response.Body)
+	body, err := MarshalFunc(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body of the create session API: " + err.Error()
 		l.Log.Printf(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to create a session: %s", string(body))
+	resp.Body = body
 	resp.SessionId = sessionID
 	resp.StatusCode = response.StatusCode
 	resp.StatusMessage = response.StatusMessage
@@ -77,6 +79,8 @@ func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRe
 		l.Log.Printf(response.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to delete a session: %s", string(body))
+	resp.Body = body
 	resp.StatusCode = response.StatusCode
 	resp.StatusMessage = response.StatusMessage
 	resp.Header = response.Header
@@ -96,6 +100,8 @@ func (s *Session) GetSession(ctx context.Context, req *sessionproto.SessionReque
 		l.Log.Printf(response.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to get a session: %s", string(body))
+	resp.Body = body
 	resp.StatusCode = response.StatusCode
 	resp.StatusMessage = response.StatusMessage
 	resp.Header = response.Header
@@ -131,6 +137,8 @@ func (s *Session) GetAllActiveSessions(ctx context.Context, req *sessionproto.Se
 		l.Log.Printf(response.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to get all active sessions: %s", string(body))
+	resp.Body = body
 	resp.StatusCode = response.StatusCode
 	resp.StatusMessage = response.StatusMessage
 	resp.Header = response.Header

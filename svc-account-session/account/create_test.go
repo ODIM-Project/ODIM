@@ -50,7 +50,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User does not have the privilege of creating a new user",
+				ErrorMessage:  "failed to create account for the user testUser3: User does not have the privilege of creating a new user",
 				MessageArgs:   []interface{}{},
 			},
 		},

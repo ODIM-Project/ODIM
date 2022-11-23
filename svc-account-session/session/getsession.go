@@ -45,6 +45,7 @@ func GetSessionUserName(req *sessionproto.SessionRequest) (*sessionproto.Session
 		return &resp, errs
 	}
 	resp.UserName = currentSession.UserName
+	l.Log.Debugf("outgoing response of request to get session username: %s", currentSession.UserName)
 	return &resp, nil
 }
 
@@ -64,6 +65,7 @@ func GetSessionUserRoleID(req *sessionproto.SessionRequest) (*sessionproto.Sessi
 		return &resp, errs
 	}
 	resp.RoleID = currentSession.RoleID
+	l.Log.Debugf("outgoing response of request to get session role id: %s", currentSession.RoleID)
 	return &resp, nil
 }
 
@@ -94,7 +96,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("Validating the request to fetch the session")
+	l.Log.Info("Validating the request to fetch the session")
 	// Validating the session
 	currentSession, err := auth.CheckSessionTimeOut(req.SessionToken)
 	if err != nil {
@@ -199,7 +201,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("GetAllActiveSessions() : fetching all active sessions : ")
+	l.Log.Info("fetching all active sessions")
 	// Validating the session
 	currentSession, gerr := auth.CheckSessionTimeOut(req.SessionToken)
 	if gerr != nil {

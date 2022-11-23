@@ -64,7 +64,7 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*rol
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("Validating session and updating the last used time of the session before creating the role")
+	l.Log.Info("Validating session and updating the last used time of the session before creating the role")
 	// Validating the session
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
@@ -84,7 +84,7 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*rol
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
 		errorMessage := "error while trying to marshal the response body of create role API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -95,6 +95,8 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*rol
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to create a role: %s", string(body))
+	resp.Body = body
 	return &resp, nil
 }
 
@@ -119,7 +121,9 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("Validating session and updating the last used time of the session before fetching the role details")
+	l.Log.Debugf("Incoming request to view account %s", req.Id)
+
+	l.Log.Info("Validating session and updating the last used time of the session before fetching the role details")
 	// Validating the session
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
@@ -139,7 +143,7 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
 		errorMessage := "error while trying to marshal the response body of get role API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -150,6 +154,8 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to view role details: %s", string(body))
+	resp.Body = body
 
 	return &resp, nil
 }
@@ -175,7 +181,7 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("Validating session and updating the last used time of the session before fetching all roles")
+	l.Log.Info("Validating session and updating the last used time of the session before fetching all roles")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
@@ -194,7 +200,7 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
 		errorMessage := "error while trying to marshal the response body of the get all roles API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -205,6 +211,8 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to view all roles: %s", string(body))
+	resp.Body = body
 
 	return &resp, nil
 }
@@ -230,7 +238,7 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("Validating session and updating the last used time of the session before updating the role")
+	l.Log.Info("Validating session and updating the last used time of the session before updating the role")
 	// Validating the session
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
@@ -250,7 +258,7 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
 		errorMessage := "error while trying to marshal the response body of the update role API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -261,6 +269,8 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to update role: %s", string(body))
+	resp.Body = body
 
 	return &resp, nil
 }
@@ -280,12 +290,13 @@ func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest)
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
+	l.Log.Debugf("Incoming request to delete role %s", req.ID)
 	data := DeleteFunc(req)
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 	var err error
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
 		errorMessage := "error while trying to marshal the response body of the delete role API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -296,6 +307,8 @@ func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest)
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to delete role: %s", string(body))
+	resp.Body = body
 
 	return &resp, nil
 }

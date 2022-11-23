@@ -43,8 +43,11 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 	var updateReq asmodel.Role
 	json.Unmarshal(req.UpdateRequest, &updateReq)
 
+	incRequestString := marshalRoleRequest(&updateReq)
+	l.Log.Debugf("incoming request to update a role: %s", incRequestString)
+
 	errorLogPrefix := fmt.Sprintf("failed to update role %s: ", updateReq.ID)
-	l.Log.Debugf("Validating the request to update the role %s", updateReq.ID)
+	l.Log.Infof("Validating the request to update the role %s", updateReq.ID)
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.UpdateRequest, updateReq)
 	if err != nil {
@@ -176,8 +179,8 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 		return resp
 	}
 	if len(updateReq.AssignedPrivileges) == 0 && len(updateReq.OEMPrivileges) == 0 {
-		l.Log.Error(errorLogPrefix + "Mandatory field is empty")
-		errorMessage := "Mandatory field is empty"
+		l.Log.Error(errorLogPrefix + "Assigned privileges or OEM privileges are empty")
+		errorMessage := "Assigned privileges or OEM privileges are empty"
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.PropertyMissing
 		args := response.Args{
@@ -241,7 +244,7 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 		}
 		role.OEMPrivileges = updateReq.OEMPrivileges
 	}
-	l.Log.Debugf("Updating the role %s", updateReq.ID)
+	l.Log.Infof("Updating the role %s", updateReq.ID)
 	if uerr := role.UpdateRoleDetails(); uerr != nil {
 		errorMessage := errorLogPrefix + uerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)

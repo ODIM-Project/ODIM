@@ -58,8 +58,10 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	}
 
-	errorLogPrefix := fmt.Sprintf("failed to create account for the user %s: ", createAccount.UserName)
+	incRequestString := marshalAccountRequest(&createAccount)
+	l.Log.Debugf("incoming request to create account: %s", incRequestString)
 
+	errorLogPrefix := fmt.Sprintf("failed to create account for the user %s: ", createAccount.UserName)
 	commonResponse := response.Response{
 		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + createAccount.UserName,
@@ -88,10 +90,9 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		RoleID:   createAccount.RoleID,
 	}
 
-	l.Log.Debugf("Creating account for the user %s", createAccount.UserName)
-
+	l.Log.Infof("Creating account for the user %s", createAccount.UserName)
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
-		errorMessage := "User does not have the privilege of creating a new user"
+		errorMessage := errorLogPrefix + "User does not have the privilege of creating a new user"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -251,4 +252,13 @@ func validatePassword(userName, password string) error {
 		return fmt.Errorf("error: invalid password, password should contain minimum One Upper case, One Lower case, One Number and One Special character")
 	}
 	return nil
+}
+
+func marshalAccountRequest(reqBody *asmodel.Account) string {
+	req, _ := json.Marshal(asmodel.Account{
+		UserName: reqBody.UserName,
+		Password: "*****",
+		RoleID:   reqBody.RoleID,
+	})
+	return string(req)
 }

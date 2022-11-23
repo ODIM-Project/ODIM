@@ -62,7 +62,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("Validating session and updating the last used time of the session before creating the account")
+	l.Log.Info("Validating session and updating the last used time of the session before creating the account")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
@@ -80,13 +80,15 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 	acc := account.GetExternalInterface()
 	data, err := acc.Create(req, sess)
 	var jsonErr error // jsonErr is created to protect the data in err
-	resp.Body, jsonErr = MarshalFunc(data.Body)
+	body, jsonErr := MarshalFunc(data.Body)
 	if jsonErr != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body of the create account API: " + jsonErr.Error()
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to create an account: %s", string(body))
+	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
@@ -115,7 +117,7 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debug("Validating session and updating the last used time of the session before fetching all accounts")
+	l.Log.Info("Validating session and updating the last used time of the session before fetching all accounts")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
@@ -131,13 +133,15 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 	}
 
 	data := GetAllAccountsFunc(sess)
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body of the get all accounts API: " + err.Error()
 		l.Log.Error(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
+	l.Log.Debugf("outgoing response of request to view all accounts: %s", string(body))
+	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
@@ -165,7 +169,8 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	l.Log.Debug("Validating session and updating the last used time of the session before fetching the account")
+	l.Log.Debugf("Incoming request to view account %s", req.AccountID)
+	l.Log.Info("Validating session and updating the last used time of the session before fetching the account")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
@@ -181,13 +186,15 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 	}
 
 	data := GetAccountFunc(sess, req.AccountID)
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body of the get account API: " + err.Error()
 		l.Log.Error(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
+	l.Log.Debugf("outgoing response of request to view the account: %s", string(body))
+	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
@@ -215,7 +222,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	l.Log.Debug("Validating session and updating the last used time of the session before checking the availability of account session")
+	l.Log.Info("Validating session and updating the last used time of the session before checking the availability of account session")
 	_, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
@@ -231,13 +238,15 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 	}
 
 	data := GetAccountServiceFunc()
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body of the get account service API: " + err.Error()
 		l.Log.Printf(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
+	l.Log.Debugf("outgoing response of request to view the account session: %s", string(body))
+	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
@@ -253,7 +262,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 // which is present in the request.
 func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error) {
 	var resp accountproto.AccountResponse
-	l.Log.Debug("Validating session and updating the last used time of the session before updating the account")
+	l.Log.Info("Validating session and updating the last used time of the session before updating the account")
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -283,13 +292,15 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 	acc := account.GetExternalInterface()
 
 	data := acc.Update(req, sess)
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while to trying to marshal the response body of the update account API: " + err.Error()
 		l.Log.Printf(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to update the account: %s", string(body))
+	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
@@ -312,12 +323,13 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 			MessageArgs:   []interface{}{},
 		},
 	}
+	l.Log.Debugf("Incoming request to delete account %s", req.AccountID)
 	args := &response.Args{
 		Code:      response.GeneralError,
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	l.Log.Debug("Validating session and updating the last used time of the session before deleting the account")
+	l.Log.Info("Validating session and updating the last used time of the session before deleting the account")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
@@ -334,13 +346,15 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 
 	data := AccDeleteFunc(sess, req.AccountID)
 	var jsonErr error // jsonErr is created to protect the data in err
-	resp.Body, jsonErr = MarshalFunc(data.Body)
+	body, jsonErr := MarshalFunc(data.Body)
 	if jsonErr != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body of the delete account API: " + jsonErr.Error()
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to delete the account: %s", string(body))
+	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header

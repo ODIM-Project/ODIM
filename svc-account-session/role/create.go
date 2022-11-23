@@ -51,6 +51,9 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
+	incRequestString := marshalRoleRequest(&createRoleReq)
+	l.Log.Debugf("incoming request to create role: %s", incRequestString)
+
 	errorLogPrefix := fmt.Sprintf("failed to create role %s: ", createRoleReq.ID)
 	commonResponse := response.Response{
 		OdataType: common.RoleType,
@@ -59,7 +62,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 	}
 	var resp response.RPC
 
-	l.Log.Debugf("Validating the request to create the role %s", createRoleReq.ID)
+	l.Log.Infof("Validating the request to create the role %s", createRoleReq.ID)
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createRoleReq)
 	if err != nil {
@@ -229,7 +232,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		OEMPrivileges:      createRoleReq.OEMPrivileges,
 	}
 
-	l.Log.Debugf("Creating the role %s", createRoleReq.ID)
+	l.Log.Infof("Creating the role %s", createRoleReq.ID)
 	//Persist role in database
 	if cerr := role.Create(); cerr != nil {
 		if errors.DBKeyAlreadyExist == cerr.ErrNo() {
@@ -274,4 +277,14 @@ func CheckWhitespace(fl validator.FieldLevel) bool {
 		return false
 	}
 	return true
+}
+
+func marshalRoleRequest(reqBody *asmodel.Role) string {
+	req, _ := json.Marshal(asmodel.Role{
+		ID:                 reqBody.ID,
+		IsPredefined:       reqBody.IsPredefined,
+		AssignedPrivileges: reqBody.AssignedPrivileges,
+		OEMPrivileges:      reqBody.OEMPrivileges,
+	})
+	return string(req)
 }

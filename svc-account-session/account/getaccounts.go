@@ -70,7 +70,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 		return resp
 	}
 
-	l.Log.Debug("Retrieving all users from the database")
+	l.Log.Info("Retrieving all users from the database")
 	//Get all user keys
 	users, err := asmodel.GetAllUsers()
 	if err != nil {
@@ -152,7 +152,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 		}
 	}
 
-	l.Log.Debugf("Retrieving the user details from the database for the account %s", accountID)
+	l.Log.Infof("Retrieving the user details from the database for the account %s", accountID)
 	user, err := asmodel.GetUserDetails(accountID)
 	if err != nil {
 		errorMessage := errLogPrefix + err.Error()

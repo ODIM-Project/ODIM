@@ -45,7 +45,7 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	l.Log.Debug("Validating the request to delete the session")
+	l.Log.Info("Validating the request to delete the session")
 	currentSession, serr := asmodel.GetSession(req.SessionToken)
 	if serr != nil {
 		errorMessage := errorLogPrefix + serr.Error()
@@ -86,7 +86,7 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 				}
 				resp.StatusCode = http.StatusNoContent
 				resp.StatusMessage = response.ResourceRemoved
-				l.Log.Debug("Session is deleted")
+				l.Log.Info("Session is deleted")
 				return resp
 			}
 			errorMessage := errorLogPrefix + "Insufficient privileges"

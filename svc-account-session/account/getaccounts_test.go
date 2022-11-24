@@ -26,7 +26,7 @@ import (
 )
 
 func TestGetAllAccounts(t *testing.T) {
-	common.SetUpMockConfig()
+	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -61,7 +61,7 @@ func TestGetAllAccounts(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User SomeOne does not have the privilege to view all users",
+				ErrorMessage:  "failed to fetch accounts : User SomeOne does not have the privilege to view all users",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -139,7 +139,7 @@ func TestGetAccount(t *testing.T) {
 	successResponse.Message = ""
 	successResponse.MessageID = ""
 	successResponse.Severity = ""
-	common.SetUpMockConfig()
+	config.SetUpMockConfig(t)
 	err := createMockUser("testUser1", common.RoleAdmin)
 	if err != nil {
 		t.Fatalf("Error in creating mock admin user %v", err)
@@ -155,7 +155,7 @@ func TestGetAccount(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "testUser2 does not have the privilege to view other user's details",
+				ErrorMessage:  "failed to fetch the account testUser1: testUser2 does not have the privilege to view other user's details",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -166,7 +166,7 @@ func TestGetAccount(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "Unable to get account: error while trying to get user: no data with the with key testUser4 found",
+				ErrorMessage:  "failed to fetch the account testUser4: error while trying to get user: no data with the with key testUser4 found",
 				MessageArgs:   []interface{}{"Account", "testUser4"},
 			},
 		},

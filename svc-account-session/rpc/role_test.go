@@ -133,7 +133,7 @@ func TestRole_CreateRole1(t *testing.T) {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying to marshal the response body of create role API: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
@@ -233,7 +233,7 @@ func TestRole_GetRole(t *testing.T) {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying to marshal the response body of get role API: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
@@ -334,7 +334,7 @@ func TestRole_GetAllRoles(t *testing.T) {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying to marshal the response body of the get all roles API: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
@@ -434,7 +434,7 @@ func TestRole_UpdateRole(t *testing.T) {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying to marshal the response body of the update role API: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
@@ -498,7 +498,7 @@ func TestRole_DeleteRole(t *testing.T) {
 				return &response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying to marshal the response body of the delete role API: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{

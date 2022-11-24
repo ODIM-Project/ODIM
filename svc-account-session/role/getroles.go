@@ -16,6 +16,7 @@
 package role
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -44,11 +45,13 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 		ID:        req.Id,
 	}
 	var resp response.RPC
+	errLogPrefix := fmt.Sprintf("failed to fetch the role %s: ", req.Id)
 
+	l.Log.Infof("Fetching the role details from the database for the role %s", req.Id)
 	//check for ConfigureUsers privilege in session object
 	status, perr := checkForPrivilege(session, "ConfigureUsers")
 	if perr != nil {
-		errorMessage := "User does not have the privilege to get the role"
+		errorMessage := errLogPrefix + "User does not have the privilege of viewing the role"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
 		args := response.Args{
@@ -69,7 +72,7 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 	//Get role from database using role ID
 	role, err := asmodel.GetRoleDetailsByID(req.Id)
 	if err != nil {
-		errorMessage := "Error while getting the role : " + err.Error()
+		errorMessage := errLogPrefix + "Error while getting the role : " + err.Error()
 		l.Log.Error(errorMessage)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
@@ -124,10 +127,13 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 		Name:      "Roles Collection",
 	}
 
+	errLogPrefix := fmt.Sprintf("failed to fetch all roles: ")
+
+	l.Log.Info("Fetching all roles from database")
 	//check for ConfigureUsers privilege in session object
 	status, err := checkForPrivilege(session, "ConfigureUsers")
 	if err != nil {
-		errorMessage := "User does not have the privilege to get the roles"
+		errorMessage := errLogPrefix + "User does not have the privilege of viewing the roles"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
 		args := response.Args{
@@ -147,8 +153,8 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 	}
 	roles, rerr := asmodel.GetAllRoles()
 	if rerr != nil {
-		l.Log.Error("error getting role : " + rerr.Error())
-		errorMessage := rerr.Error()
+		errorMessage := errLogPrefix + rerr.Error()
+		l.Log.Error(errLogPrefix + rerr.Error())
 		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errorMessage, []interface{}{config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, nil)
 	}
 	//Build response body and headers

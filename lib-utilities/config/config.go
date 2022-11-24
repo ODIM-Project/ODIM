@@ -92,7 +92,7 @@ type DBConf struct {
 type MessageBusConf struct {
 	MessageBusConfigFilePath string `json:"MessageBusConfigFilePath"`
 	MessageBusType           string `json:"MessageBusType"`
-	ControlMessageQueue      string `json:"OdimControlMessageQueue"`
+	OdimControlMessageQueue  string `json:"OdimControlMessageQueue"`
 }
 
 // KeyCertConf is for holding all security oriented configuration

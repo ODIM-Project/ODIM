@@ -28,7 +28,7 @@ import (
 
 //Publish will takes the system id,Event type and publishes the data to message bus
 func Publish(systemID, eventType, collectionType string) {
-	topicName := config.Data.MessageBusConf.ControlMessageQueue
+	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
 	k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
 		l.Log.Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
@@ -77,7 +77,7 @@ func Publish(systemID, eventType, collectionType string) {
 
 // PublishCtrlMsg publishes ODIM control messages to the message bus
 func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
-	topicName := config.Data.MessageBusConf.ControlMessageQueue
+	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
 	conn, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
 		return fmt.Errorf("failed to get kafka connection: %s", err.Error())

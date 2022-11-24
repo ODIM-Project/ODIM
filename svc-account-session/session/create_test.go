@@ -101,7 +101,7 @@ func TestCreateSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to authorize session creation credentials: error: Invalid username or password ",
+				ErrorMessage:  "failed to create session for user : Unable to authorize session creation credentials: error while checking session credentials: username or password is empty",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -113,7 +113,7 @@ func TestCreateSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to authorize session creation credentials: error: Invalid username or password ",
+				ErrorMessage:  "failed to create session for user admin: Unable to authorize session creation credentials: error while checking session credentials: input password is not matching user password",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -124,7 +124,7 @@ func TestCreateSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User doesn't have required privilege to create a session",
+				ErrorMessage:  "failed to create session for user sample: User doesn't have required privilege to create a session",
 				MessageArgs:   []interface{}{},
 			},
 		},

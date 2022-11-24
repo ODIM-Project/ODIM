@@ -101,7 +101,7 @@ func main() {
 	go evcommon.TrackConfigFileChanges()
 
 	// Subscribe to intercomm messagebus queue
-	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.OdimControlMessageQueue)
+	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.ControlMessageQueue)
 
 	// Subscribe to EMBs of all the available plugins
 	startUPInterface := evcommon.StartUpInteraface{

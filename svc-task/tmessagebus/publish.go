@@ -27,7 +27,7 @@ import (
 
 //Publish will takes the taskURI, messageID, Event type and publishes the data to message bus
 func Publish(taskURI, messageID, eventType, taskMessage string) {
-	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
+	topicName := config.Data.MessageBusConf.ControlMessageQueue
 	k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
 		l.Log.Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())

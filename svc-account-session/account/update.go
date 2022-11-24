@@ -67,9 +67,6 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
-	incRequestString := marshalAccountRequest(&updateAccount)
-	l.Log.Debugf("incoming request to update account: %s", incRequestString)
-
 	requestUser := asmodel.User{
 		UserName:     updateAccount.UserName,
 		Password:     updateAccount.Password,

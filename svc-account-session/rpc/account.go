@@ -169,7 +169,7 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	l.Log.Debugf("Incoming request to view account %s", req.AccountID)
+
 	l.Log.Info("Validating session and updating the last used time of the session before fetching the account")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
@@ -323,7 +323,6 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 			MessageArgs:   []interface{}{},
 		},
 	}
-	l.Log.Debugf("Incoming request to delete account %s", req.AccountID)
 	args := &response.Args{
 		Code:      response.GeneralError,
 		Message:   "",

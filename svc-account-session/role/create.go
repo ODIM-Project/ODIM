@@ -51,9 +51,6 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
-	incRequestString := marshalRoleRequest(&createRoleReq)
-	l.Log.Debugf("incoming request to create role: %s", incRequestString)
-
 	errorLogPrefix := fmt.Sprintf("failed to create role %s: ", createRoleReq.ID)
 	commonResponse := response.Response{
 		OdataType: common.RoleType,
@@ -277,14 +274,4 @@ func CheckWhitespace(fl validator.FieldLevel) bool {
 		return false
 	}
 	return true
-}
-
-func marshalRoleRequest(reqBody *asmodel.Role) string {
-	req, _ := json.Marshal(asmodel.Role{
-		ID:                 reqBody.ID,
-		IsPredefined:       reqBody.IsPredefined,
-		AssignedPrivileges: reqBody.AssignedPrivileges,
-		OEMPrivileges:      reqBody.OEMPrivileges,
-	})
-	return string(req)
 }

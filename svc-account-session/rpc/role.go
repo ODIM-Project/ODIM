@@ -121,8 +121,6 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Debugf("Incoming request to view account %s", req.Id)
-
 	l.Log.Info("Validating session and updating the last used time of the session before fetching the role details")
 	// Validating the session
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
@@ -269,7 +267,7 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.Log.Debugf("outgoing response of request to update role: %s", string(body))
+	l.Log.Debugf("outgoing response of request to update the role: %s", string(body))
 	resp.Body = body
 
 	return &resp, nil
@@ -290,7 +288,6 @@ func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest)
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	l.Log.Debugf("Incoming request to delete role %s", req.ID)
 	data := DeleteFunc(req)
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
@@ -307,7 +304,7 @@ func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest)
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.Log.Debugf("outgoing response of request to delete role: %s", string(body))
+	l.Log.Debugf("outgoing response of request to delete the role: %s", string(body))
 	resp.Body = body
 
 	return &resp, nil

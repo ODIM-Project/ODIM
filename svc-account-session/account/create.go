@@ -58,9 +58,6 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	}
 
-	incRequestString := marshalAccountRequest(&createAccount)
-	l.Log.Debugf("incoming request to create account: %s", incRequestString)
-
 	errorLogPrefix := fmt.Sprintf("failed to create account for the user %s: ", createAccount.UserName)
 	commonResponse := response.Response{
 		OdataType:    common.ManagerAccountType,
@@ -252,13 +249,4 @@ func validatePassword(userName, password string) error {
 		return fmt.Errorf("error: invalid password, password should contain minimum One Upper case, One Lower case, One Number and One Special character")
 	}
 	return nil
-}
-
-func marshalAccountRequest(reqBody *asmodel.Account) string {
-	req, _ := json.Marshal(asmodel.Account{
-		UserName: reqBody.UserName,
-		Password: "*****",
-		RoleID:   reqBody.RoleID,
-	})
-	return string(req)
 }

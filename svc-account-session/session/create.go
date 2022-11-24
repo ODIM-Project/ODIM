@@ -58,9 +58,6 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), ""
 	}
 
-	incRequestString := marshalSessionRequest(&createSession)
-	l.Log.Debugf("incoming request to create session: %s", incRequestString)
-
 	errLogPrefix := fmt.Sprintf("failed to create session for user %s: ", createSession.UserName)
 	l.Log.Infof("Validating the request to create new session for the user %s", createSession.UserName)
 	// Validating the request JSON properties for case sensitive
@@ -160,12 +157,4 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	}
 
 	return resp, commonResponse.ID
-}
-
-func marshalSessionRequest(reqBody *asmodel.CreateSession) string {
-	req, _ := json.Marshal(asmodel.CreateSession{
-		UserName: reqBody.UserName,
-		Password: "*****",
-	})
-	return string(req)
 }

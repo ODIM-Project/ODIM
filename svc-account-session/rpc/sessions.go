@@ -56,7 +56,7 @@ func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCr
 		l.Log.Printf(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.Log.Debugf("outgoing response of request to create a session: %s", string(body))
+	l.Log.Debugf("outgoing response of request to create the session: %s", string(body))
 	resp.Body = body
 	resp.SessionId = sessionID
 	resp.StatusCode = response.StatusCode
@@ -79,7 +79,7 @@ func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRe
 		l.Log.Printf(response.StatusMessage)
 		return &resp, nil
 	}
-	l.Log.Debugf("outgoing response of request to delete a session: %s", string(body))
+	l.Log.Debugf("outgoing response of request to delete the session: %s", string(body))
 	resp.Body = body
 	resp.StatusCode = response.StatusCode
 	resp.StatusMessage = response.StatusMessage
@@ -100,7 +100,7 @@ func (s *Session) GetSession(ctx context.Context, req *sessionproto.SessionReque
 		l.Log.Printf(response.StatusMessage)
 		return &resp, nil
 	}
-	l.Log.Debugf("outgoing response of request to get a session: %s", string(body))
+	l.Log.Debugf("outgoing response of request to get the session: %s", string(body))
 	resp.Body = body
 	resp.StatusCode = response.StatusCode
 	resp.StatusMessage = response.StatusMessage

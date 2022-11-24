@@ -35,7 +35,7 @@ func TestSession_CreateSession(t *testing.T) {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"}), ""
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return []byte{}, errors.New("fakeError") },
-			want:        &sessionproto.SessionCreateResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the create session API: fakeError", Body: []byte{}},
+			want:        &sessionproto.SessionCreateResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the create session API: fakeError"},
 			wantErr:     false,
 		},
 		{

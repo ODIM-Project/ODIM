@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -55,6 +56,7 @@ func createSession(t *testing.T, role, username string, privileges []string) (st
 	return sessionID, resp.Header["X-Auth-Token"]
 }
 func TestDeleteSession(t *testing.T) {
+	config.SetUpMockConfig(t)
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
 	sessionID2, sessionToken2 := createSession(t, common.RoleClient, "client", []string{common.PrivilegeLogin})
 	defer func() {
@@ -77,7 +79,7 @@ func TestDeleteSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to delete session: error while trying to get the session from DB: no data with the with key  found",
+				ErrorMessage:  "failed to delete session : error while trying to get the session from DB: no data with the with key  found",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -88,7 +90,7 @@ func TestDeleteSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error: Session ID not found",
+				ErrorMessage:  "failed to delete session : Session ID not found",
 				MessageArgs:   []interface{}{"Session", "invalid-id"},
 			},
 		},
@@ -99,7 +101,7 @@ func TestDeleteSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "Insufficient privileges",
+				ErrorMessage:  "failed to delete session : Insufficient privileges",
 				MessageArgs:   []interface{}{},
 			},
 		},

@@ -21,8 +21,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -66,30 +64,19 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*rol
 		ErrorArgs: errorArgs,
 	}
 
+	l.Log.Info("Validating session and updating the last used time of the session before creating the role")
 	// Validating the session
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
-		errorMessage := "error while authorizing session token: " + errs.Error()
-		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
-		if resp.StatusCode == http.StatusServiceUnavailable {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			l.Log.Error(errorMessage)
-		} else {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
-		}
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
 		return &resp, nil
 	}
 
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
-		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		errorArgs[0].ErrorMessage = errorMessage
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		l.Log.Error(errorMessage)
 		return &resp, nil
 	}
 
@@ -97,9 +84,9 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*rol
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
-		errorMessage := "error while trying marshal the response body for get role: " + err.Error()
+		errorMessage := "error while trying to marshal the response body of create role API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		errorArgs[0].ErrorMessage = errorMessage
@@ -108,6 +95,8 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*rol
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to create a role: %s", string(body))
+	resp.Body = body
 	return &resp, nil
 }
 
@@ -132,30 +121,19 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 		ErrorArgs: errorArgs,
 	}
 
+	l.Log.Info("Validating session and updating the last used time of the session before fetching the role details")
 	// Validating the session
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
-		errorMessage := "error while authorizing session token: " + errs.Error()
-		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
-		if resp.StatusCode == http.StatusServiceUnavailable {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			l.Log.Error(errorMessage)
-		} else {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
-		}
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
 		return &resp, nil
 	}
 
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
-		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		errorArgs[0].ErrorMessage = errorMessage
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		l.Log.Error(errorMessage)
 		return &resp, nil
 	}
 
@@ -163,9 +141,9 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
-		errorMessage := "error while trying marshal the response body for get role: " + err.Error()
+		errorMessage := "error while trying to marshal the response body of get role API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		errorArgs[0].ErrorMessage = errorMessage
@@ -174,13 +152,15 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to view role details: %s", string(body))
+	resp.Body = body
 
 	return &resp, nil
 }
 
 //GetAllRoles defines the operations which handles the RPC request response
 // for the list all roles  of account-session micro service.
-// The functionality retrives the request and return backs the response to
+// The functionality retrieves the request and return backs the response to
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
@@ -199,29 +179,18 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (
 		ErrorArgs: errorArgs,
 	}
 
+	l.Log.Info("Validating session and updating the last used time of the session before fetching all roles")
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
-		errorMessage := "error while authorizing session token: " + errs.Error()
-		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
-		if resp.StatusCode == http.StatusServiceUnavailable {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			l.Log.Error(errorMessage)
-		} else {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
-		}
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
 		return &resp, nil
 	}
 
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
-		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		errorArgs[0].ErrorMessage = errorMessage
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		l.Log.Error(errorMessage)
 		return &resp, nil
 	}
 
@@ -229,9 +198,9 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
-		errorMessage := "error while trying marshal the response body for get role: " + err.Error()
+		errorMessage := "error while trying to marshal the response body of the get all roles API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		errorArgs[0].ErrorMessage = errorMessage
@@ -240,13 +209,15 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to view all roles: %s", string(body))
+	resp.Body = body
 
 	return &resp, nil
 }
 
 //UpdateRole defines the operations which handles the RPC request response
 // for the update of a particular role  of account-session micro service.
-// The functionality retrives the request and return backs the response to
+// The functionality retrieves the request and return backs the response to
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
@@ -265,30 +236,19 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 		ErrorArgs: errorArgs,
 	}
 
+	l.Log.Info("Validating session and updating the last used time of the session before updating the role")
 	// Validating the session
 	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
-		errorMessage := "error while authorizing session token: " + errs.Error()
-		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
-		if resp.StatusCode == http.StatusServiceUnavailable {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			l.Log.Error(errorMessage)
-		} else {
-			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
-		}
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
 		return &resp, nil
 	}
 
 	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
-		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		errorArgs[0].ErrorMessage = errorMessage
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		l.Log.Error(errorMessage)
 		return &resp, nil
 	}
 
@@ -296,9 +256,9 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
-		errorMessage := "error while trying marshal the response body for get role: " + err.Error()
+		errorMessage := "error while trying to marshal the response body of the update role API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		errorArgs[0].ErrorMessage = errorMessage
@@ -307,6 +267,8 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to update the role: %s", string(body))
+	resp.Body = body
 
 	return &resp, nil
 }
@@ -331,9 +293,9 @@ func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest)
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 	var err error
-	resp.Body, err = MarshalFunc(data.Body)
+	body, err := MarshalFunc(data.Body)
 	if err != nil {
-		errorMessage := "error while trying marshal the response body for get role: " + err.Error()
+		errorMessage := "error while trying to marshal the response body of the delete role API: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		errorArgs[0].ErrorMessage = errorMessage
@@ -342,6 +304,8 @@ func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest)
 		l.Log.Error(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.Log.Debugf("outgoing response of request to delete the role: %s", string(body))
+	resp.Body = body
 
 	return &resp, nil
 }

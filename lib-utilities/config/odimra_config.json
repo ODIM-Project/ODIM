@@ -32,6 +32,8 @@
 	   "MaxIdleConns": 10,
 	   "MaxActiveConns": 120,
 	   "RedisHAEnabled": false,
+	   "InMemorySentinelHost":"localhost",
+	   "OnDiskSentinelHost":"localhost",
 	   "InMemorySentinelPort": "26379",
 	   "OnDiskSentinelPort": "26379",
 	   "InMemoryPrimarySet": "redisSentinel",

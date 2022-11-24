@@ -449,7 +449,7 @@ func TestValidateConfigurationGroup2(t *testing.T) {
 		case 11:
 			Data.MessageBusConf.MessageBusType = "Kafka"
 		case 12:
-			Data.MessageBusConf.MessageBusQueue = []string{"REDFISH-EVENTS-TOPIC"}
+			Data.MessageBusConf.OdimControlMessageQueue = "ODIM-CONTROL-MESSAGES"
 		}
 		t.Run(tt.name, func(t *testing.T) {
 			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {

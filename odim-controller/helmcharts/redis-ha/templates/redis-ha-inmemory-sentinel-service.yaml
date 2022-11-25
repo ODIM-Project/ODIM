@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: redis-ha-inmemory-sentinel
+  name: redis-ha-inmemory-sentinel
+  namespace: {{ .Values.odimra.namespace }}
+spec:
+  ports:
+    - name: redis-sentinel
+      port: 26379
+  selector:
+    app: redis-ha-inmemory-sentinel

@@ -90,9 +90,9 @@ type DBConf struct {
 
 // MessageBusConf holds all message bus configurations
 type MessageBusConf struct {
-	MessageBusConfigFilePath string   `json:"MessageBusConfigFilePath"`
-	MessageBusType           string   `json:"MessageBusType"`
-	MessageBusQueue          []string `json:"MessageBusQueue"`
+	MessageBusConfigFilePath string `json:"MessageBusConfigFilePath"`
+	MessageBusType           string `json:"MessageBusType"`
+	OdimControlMessageQueue  string `json:"OdimControlMessageQueue"`
 }
 
 // KeyCertConf is for holding all security oriented configuration
@@ -367,9 +367,9 @@ func checkMessageBusConf() error {
 		if _, err := os.Stat(Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
 			return fmt.Errorf("Value check failed for MessageBusConfigFilePath:%s with %v", Data.MessageBusConf.MessageBusConfigFilePath, err)
 		}
-		if len(Data.MessageBusConf.MessageBusQueue) <= 0 {
+		if len(Data.MessageBusConf.OdimControlMessageQueue) <= 0 {
 			log.Warn("No value set for MessageBusQueue, setting default value")
-			Data.MessageBusConf.MessageBusQueue = []string{"REDFISH-EVENTS-TOPIC"}
+			Data.MessageBusConf.OdimControlMessageQueue = "ODIM-CONTROL-MESSAGES"
 		}
 	}
 	if !AllowedMessageBusTypes[Data.MessageBusConf.MessageBusType] {

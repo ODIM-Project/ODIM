@@ -140,8 +140,8 @@ func TestSetConfiguration(t *testing.T) {
         },
        	"MessageBusConf": {
       			"MessageBusConfigFilePath": "/tmp/testFile.dat",
-	                "MessageBusType": "Kafka",
-      			"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
+	            "MessageBusType": "Kafka",
+				"OdimControlMessageQueue":"ODIM-CONTROL-MESSAGES"
 	      },
         "FirmwareVersion": "1.0",
         "SouthBoundRequestTimeoutInSecs": 10,
@@ -449,7 +449,7 @@ func TestValidateConfigurationGroup2(t *testing.T) {
 		case 11:
 			Data.MessageBusConf.MessageBusType = "Kafka"
 		case 12:
-			Data.MessageBusConf.MessageBusQueue = []string{"REDFISH-EVENTS-TOPIC"}
+			Data.MessageBusConf.OdimControlMessageQueue = "ODIM-CONTROL-MESSAGES"
 		}
 		t.Run(tt.name, func(t *testing.T) {
 			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {

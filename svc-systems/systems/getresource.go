@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package systems ...
+// Package systems ...
 package systems
 
 import (
@@ -125,7 +125,7 @@ func validateLastParameter(expression []string) error {
 	return nil
 }
 
-//GetMembers will fetch the resource members based on the filter expression
+// GetMembers will fetch the resource members based on the filter expression
 func GetMembers(allowed map[string]map[string]bool, expression []string, resp response.RPC) ([]dmtf.Link, response.RPC, error) {
 	err := validateLastParameter(expression)
 	if err != nil {
@@ -251,7 +251,7 @@ func GetMembers(allowed map[string]map[string]bool, expression []string, resp re
 	return members, resp, nil
 }
 
-//getAllSystemIDs will fetch all the document ID's present in the DB
+// getAllSystemIDs will fetch all the document ID's present in the DB
 func getAllSystemIDs(resp response.RPC) ([]dmtf.Link, response.RPC, error) {
 	var mems []dmtf.Link
 	systemKeys, err := GetAllKeysFromTableFunc("ComputerSystem")
@@ -271,8 +271,8 @@ func getAllSystemIDs(resp response.RPC) ([]dmtf.Link, response.RPC, error) {
 
 }
 
-//LogicalOperation will take slice of slices of member collection and logical operation to perform
-//return 1 slice of member collection with logical operation performed on them
+// LogicalOperation will take slice of slices of member collection and logical operation to perform
+// return 1 slice of member collection with logical operation performed on them
 func LogicalOperation(interm [][]dmtf.Link, lo string) []dmtf.Link {
 	var respMembers []dmtf.Link
 	if lo == "and" {
@@ -309,7 +309,7 @@ func LogicalOperation(interm [][]dmtf.Link, lo string) []dmtf.Link {
 	return respMembers
 }
 
-//SearchAndFilter take the url as input and return the search result based on the filter expression
+// SearchAndFilter take the url as input and return the search result based on the filter expression
 func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error) {
 	allowed := make(map[string]map[string]bool)
 	allowed["queryKeys"] = make(map[string]bool)
@@ -719,8 +719,8 @@ func rediscoverStorageInventory(systemID, systemURL string) {
 
 // GetSystemsCollection is to fetch all the Systems uri's and retruns with created collection
 // of systems data from odimra
-func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
-
+func GetSystemsCollection(ctx context.Context, req *systemsproto.GetSystemsRequest) response.RPC {
+	l.LogWithFields(ctx).Info("Inside GetSystemsCollection function (GetResource)")
 	allowed := make(map[string]map[string]bool)
 	allowed["searchKeys"] = make(map[string]bool)
 	allowed["conditionKeys"] = make(map[string]bool)
@@ -748,7 +748,7 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 
 	systemKeys, err := GetAllKeysFromTableFunc("ComputerSystem")
 	if err != nil {
-		l.Log.Error("error getting all keys of systemcollection table : " + err.Error())
+		l.LogWithFields(ctx).Error("error getting all keys of systemcollection table : " + err.Error())
 		errorMessage := err.Error()
 		if errorMessage == "error while trying to get resource details: no data with the with table name SystemCollection found" {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", ""}, nil)

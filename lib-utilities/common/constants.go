@@ -153,7 +153,36 @@ const (
 	// AggregateSubscriptionIndex is a index name which required for indexing
 	// subscription of aggregate
 	AggregateSubscriptionIndex = "AggregateToHost"
+	// Below fields are Process Name for logging
+	TransactionID = "transactionid"
+	ThreadID      = "threadid"
+	ThreadName    = "threadname"
+	ActionName    = "actionname"
+	ActionID      = "actionid"
+	// Below fields define Service Name
+	AccountService = "svc-account"
+	SystemService  = "svc-systems"
+	ApiService     = "svc-api"
+	// DefaultThreadID to be used for apis
+	DefaultThreadID = "0"
 )
+
+// ActionType defines type of action
+type ActionType struct {
+	ActionID   string
+	ActionName string
+}
+
+// ActionURL defines type of url and its method
+type ActionURL struct {
+	Url    string
+	Method string
+}
+
+// Actions contain map of URL object and action related to request made by user
+var Actions = map[ActionURL]ActionType{
+	{"/redfish/v1/Systems", "GET"}: {"001", "GetSystemCollection"},
+}
 
 var Types = map[string]string{
 	"EthernetInterfaces": "#EthernetInterface.v1_8_0.EthernetInterface",
@@ -320,7 +349,7 @@ type Link struct {
 	Oid string `json:"@odata.id"`
 }
 
-//DeviceSubscription is a model to store the subscription details of a device
+// DeviceSubscription is a model to store the subscription details of a device
 type DeviceSubscription struct {
 	EventHostIP     string   `json:"EventHostIP,omitempty"`
 	OriginResources []string `json:"OriginResources"`

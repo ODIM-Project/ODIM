@@ -15,6 +15,7 @@
 package logs
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -66,12 +67,30 @@ func Adorn(m logrus.Fields) {
 	Log = Log.WithFields(m)
 }
 
+// LogWithFields add fields to log
+func LogWithFields(ctx context.Context) *logrus.Entry {
+	transID := ctx.Value("transactionid")
+	threadID := ctx.Value("threadid")
+	actionName := ctx.Value("actionname")
+	threadName := ctx.Value("threadname")
+	actionID := ctx.Value("actionid")
+	fields := logrus.Fields{
+		"transactionid": transID,
+		"actionid":      actionID,
+		"actionname":    actionName,
+		"threadid":      threadID,
+		"threadname":    threadName,
+	}
+	return Log.WithFields(fields)
+}
+
 // Format renders a log in syslog format
 func (f *SysLogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	level := entry.Level.String()
 	priorityNumber := findSysLogPriorityNumeric(level)
 	sysLogMsg := fmt.Sprintf("<%d> %s ", priorityNumber, entry.Time.UTC().Format(time.RFC3339))
 	sysLogMsg = formatPriorityFields(entry, sysLogMsg)
+	sysLogMsg = formatStructuredFields(entry, sysLogMsg)
 	for k, v := range logFields {
 		if accountLog, present := formatSyslog(k, v, entry); present {
 			sysLogMsg = fmt.Sprintf("%s %s", sysLogMsg, accountLog)
@@ -96,6 +115,30 @@ func formatPriorityFields(entry *logrus.Entry, msg string) string {
 	}
 	if !present {
 		msg = msg[:len(msg)-1]
+	}
+	return msg
+}
+
+// formatStructuredFields is used to create structured fields for log
+func formatStructuredFields(entry *logrus.Entry, msg string) string {
+	var transID, actionID, actionName, threadID, threadName string
+	if val, ok := entry.Data["transactionid"]; ok {
+		transID = val.(string)
+	}
+	if val, ok := entry.Data["actionid"]; ok {
+		actionID = val.(string)
+	}
+	if val, ok := entry.Data["actionname"]; ok {
+		actionName = val.(string)
+	}
+	if val, ok := entry.Data["threadid"]; ok {
+		threadID = val.(string)
+	}
+	if val, ok := entry.Data["threadname"]; ok {
+		threadName = val.(string)
+	}
+	if transID != "" {
+		msg = fmt.Sprintf("%s [process@1 transactionID=\"%s\" actionID=\"%s\" actionName=\"%s\" threadID=\"%s\" threadName=\"%s\"]", msg, transID, actionID, actionName, threadID, threadName)
 	}
 	return msg
 }

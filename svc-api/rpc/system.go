@@ -12,13 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -27,15 +28,16 @@ var (
 	NewSystemsClientFunc = systemsproto.NewSystemsClient
 )
 
-//GetSystemsCollection will do the rpc call to collect Systems from odimra
-func GetSystemsCollection(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+// GetSystemsCollection will do the rpc call to collect Systems from odimra
+func GetSystemsCollection(ctx context.Context, req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.GetSystemsCollection(context.TODO(), &req)
+	resp, err := asService.GetSystemsCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -59,7 +61,7 @@ func GetSystemRequestRPC(req systemsproto.GetSystemsRequest) (*systemsproto.Syst
 	return resp, nil
 }
 
-//GetSystemResource will do the rpc call to collect System Resource
+// GetSystemResource will do the rpc call to collect System Resource
 func GetSystemResource(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {

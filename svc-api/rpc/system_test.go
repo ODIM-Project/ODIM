@@ -29,6 +29,7 @@
 package rpc
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -70,7 +71,7 @@ func TestGetSystemsCollection(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSystemsClientFunc = tt.NewSystemsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetSystemsCollection(tt.args.req)
+			got, err := GetSystemsCollection(context.TODO(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSystemsCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -13,7 +13,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package router ...
+// Package router ...
 package router
 
 import (
@@ -41,7 +41,7 @@ import (
 var isCompositionEnabled bool
 var cs handle.CompositionServiceRPCs
 
-//Router method to register API handlers.
+// Router method to register API handlers.
 func Router() *iris.Application {
 	r := handle.RoleRPCs{
 		GetAllRolesRPC: rpc.GetAllRoles,
@@ -214,11 +214,13 @@ func Router() *iris.Application {
 	// Parses the URL and performs URL decoding for path
 	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		ctx := r.Context()
+		l.LogWithFields(ctx).Info("Inside router function")
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {
 			errMessage := "while trying to parse the URL: " + err.Error()
-			l.Log.Error(errMessage)
+			l.LogWithFields(ctx).Error(errMessage)
 			return
 		}
 		path := strings.Replace(rawURI, parsedURI.EscapedPath(), parsedURI.Path, -1)
@@ -252,14 +254,14 @@ func Router() *iris.Application {
 		if r.Body != nil {
 			body, err := ioutil.ReadAll(r.Body)
 			if err != nil {
-				l.Log.Error("while reading request body ", err.Error())
+				l.LogWithFields(ctx).Error("while reading request body ", err.Error())
 			}
 			r.Body = ioutil.NopCloser(bytes.NewReader(body))
 
 			if len(body) > 0 {
 				err = json.Unmarshal(body, &reqBody)
 				if err != nil {
-					l.Log.Error("while unmarshalling request body", err.Error())
+					l.LogWithFields(ctx).Error("while unmarshalling request body", err.Error())
 				}
 			}
 		}

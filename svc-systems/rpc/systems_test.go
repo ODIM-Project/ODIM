@@ -266,12 +266,12 @@ func TestSystems_GetAllSystems(t *testing.T) {
 	sys := new(Systems)
 	sys.IsAuthorizedRPC = mockIsAuthorized
 	ctx := context.Background()
-	ctx = common.CreateMetadata(ctx)
 	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
 	ctx = context.WithValue(ctx, common.ActionID, "001")
 	ctx = context.WithValue(ctx, common.ActionName, "xyz")
 	ctx = context.WithValue(ctx, common.ThreadID, "0")
 	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = common.CreateMetadata(ctx)
 	type args struct {
 		ctx  context.Context
 		req  *systemsproto.GetSystemsRequest

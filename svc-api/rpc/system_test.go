@@ -34,6 +34,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"google.golang.org/grpc"
 )
@@ -42,6 +43,13 @@ func TestGetSystemsCollection(t *testing.T) {
 	type args struct {
 		req systemsproto.GetSystemsRequest
 	}
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = common.CreateMetadata(ctx)
 	tests := []struct {
 		name                 string
 		args                 args
@@ -71,7 +79,7 @@ func TestGetSystemsCollection(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSystemsClientFunc = tt.NewSystemsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetSystemsCollection(context.TODO(), tt.args.req)
+			got, err := GetSystemsCollection(ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSystemsCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -163,6 +163,8 @@ const (
 	AccountService = "svc-account"
 	SystemService  = "svc-systems"
 	ApiService     = "svc-api"
+	// DefaultThreadID to be used for apis
+	DefaultThreadID = "0"
 )
 
 // ActionType defines type of action

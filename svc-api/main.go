@@ -73,12 +73,14 @@ func main() {
 			r.RequestURI = path
 			r.URL.Path = path
 		}
+		// generating transaction ID
 		transactionID := uuid.New()
 		ctx := context.Background()
 		action := common.Actions[common.ActionURL{Url: r.URL.Path, Method: r.Method}]
+		// Add values in context (TransactionID, ThreadName, ThreadID, ActionName, ActionID)
 		ctx = context.WithValue(ctx, common.TransactionID, transactionID.String())
 		ctx = context.WithValue(ctx, common.ThreadName, common.ApiService)
-		ctx = context.WithValue(ctx, common.ThreadID, "0")
+		ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
 		ctx = context.WithValue(ctx, common.ActionName, action.ActionName)
 		ctx = context.WithValue(ctx, common.ActionID, action.ActionID)
 

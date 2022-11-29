@@ -53,11 +53,13 @@ func SetCommonHeaders(w http.ResponseWriter) {
 func GetContextData(ctx context.Context) context.Context {
 	md, _ := metadata.FromIncomingContext(ctx)
 	ctx = metadata.NewIncomingContext(ctx, md)
-	ctx = context.WithValue(ctx, TransactionID, md[TransactionID][0])
-	ctx = context.WithValue(ctx, ActionID, md[ActionID][0])
-	ctx = context.WithValue(ctx, ActionName, md[ActionName][0])
-	ctx = context.WithValue(ctx, ThreadID, md[ThreadID][0])
-	ctx = context.WithValue(ctx, ThreadName, md[ThreadName][0])
+	if len(md[TransactionID]) > 0 {
+		ctx = context.WithValue(ctx, TransactionID, md[TransactionID][0])
+		ctx = context.WithValue(ctx, ActionID, md[ActionID][0])
+		ctx = context.WithValue(ctx, ActionName, md[ActionName][0])
+		ctx = context.WithValue(ctx, ThreadID, md[ThreadID][0])
+		ctx = context.WithValue(ctx, ThreadName, md[ThreadName][0])
+	}
 
 	return ctx
 }
@@ -72,5 +74,6 @@ func CreateMetadata(ctx context.Context) context.Context {
 		ThreadName:    ctx.Value(ThreadName).(string),
 	})
 	ctx = metadata.NewOutgoingContext(ctx, md)
+
 	return ctx
 }

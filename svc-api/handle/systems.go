@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package handle ...
+// Package handle ...
 package handle
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -28,7 +29,7 @@ import (
 
 // SystemRPCs defines all the RPC methods in account service
 type SystemRPCs struct {
-	GetSystemsCollectionRPC    func(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error)
+	GetSystemsCollectionRPC    func(ctx context.Context, req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error)
 	GetSystemRPC               func(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error)
 	GetSystemResourceRPC       func(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error)
 	SystemResetRPC             func(req systemsproto.ComputerSystemResetRequest) (*systemsproto.SystemsResponse, error)
@@ -39,8 +40,10 @@ type SystemRPCs struct {
 	DeleteVolumeRPC            func(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error)
 }
 
-//GetSystemsCollection fetches all systems
+// GetSystemsCollection fetches all systems
 func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
+	l.LogWithFields(ctxt).Info("Inside GetSystemCollection function (handler)")
 	defer ctx.Next()
 	req := systemsproto.GetSystemsRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -54,10 +57,10 @@ func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := sys.GetSystemsCollectionRPC(req)
+	resp, err := sys.GetSystemsCollectionRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -70,7 +73,7 @@ func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
 	ctx.Write(resp.Body)
 }
 
-//GetSystem fetches computer system details
+// GetSystem fetches computer system details
 func (sys *SystemRPCs) GetSystem(ctx iris.Context) {
 	defer ctx.Next()
 	req := systemsproto.GetSystemsRequest{
@@ -151,7 +154,7 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 	ctx.Write(resp.Body)
 }
 
-//ComputerSystemReset resets the indivitual computer systems
+// ComputerSystemReset resets the indivitual computer systems
 func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 	defer ctx.Next()
 	var req interface{}

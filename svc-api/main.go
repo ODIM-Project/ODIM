@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package main
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -21,6 +22,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -71,6 +73,18 @@ func main() {
 			r.RequestURI = path
 			r.URL.Path = path
 		}
+		// generating transaction ID
+		transactionID := uuid.New()
+		ctx := context.Background()
+		action := common.Actions[common.ActionURL{Url: r.URL.Path, Method: r.Method}]
+		// Add values in context (TransactionID, ThreadName, ThreadID, ActionName, ActionID)
+		ctx = context.WithValue(ctx, common.TransactionID, transactionID.String())
+		ctx = context.WithValue(ctx, common.ThreadName, common.ApiService)
+		ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
+		ctx = context.WithValue(ctx, common.ActionName, action.ActionName)
+		ctx = context.WithValue(ctx, common.ActionID, action.ActionID)
+
+		r = r.WithContext(ctx)
 		basicAuth := r.Header.Get("Authorization")
 		var basicAuthToken string
 
@@ -81,7 +95,7 @@ func main() {
 			for _, item := range urlNoBasicAuth {
 				if item == path {
 					authRequired = false
-					logs.Log.Warn("Basic auth is provided but not used as URL is: " + path)
+					logs.LogWithFields(ctx).Warn("Basic auth is provided but not used as URL is: " + path)
 					break
 				}
 			}
@@ -92,21 +106,21 @@ func main() {
 					spl := strings.Split(basicAuth, " ")
 					if len(spl) != 2 {
 						errorMessage := "Invalid basic auth provided"
-						logs.Log.Error(errorMessage)
+						logs.LogWithFields(ctx).Error(errorMessage)
 						invalidAuthResp(errorMessage, w)
 						return
 					}
 					data, err := base64.StdEncoding.DecodeString(spl[1])
 					if err != nil {
 						errorMessage := "Decoding the authorization failed: " + err.Error()
-						logs.Log.Error(err.Error())
+						logs.LogWithFields(ctx).Error(err.Error())
 						invalidAuthResp(errorMessage, w)
 						return
 					}
 					userCred := strings.SplitN(string(data), ":", 2)
 					if len(userCred) < 2 {
 						errorMessage := "Invalid basic auth provided"
-						logs.Log.Error(errorMessage)
+						logs.LogWithFields(ctx).Error(errorMessage)
 						invalidAuthResp(errorMessage, w)
 						return
 					}
@@ -114,7 +128,7 @@ func main() {
 					password = userCred[1]
 				} else {
 					errorMessage := "Invalid basic auth provided"
-					logs.Log.Error(errorMessage)
+					logs.LogWithFields(ctx).Error(errorMessage)
 					invalidAuthResp(errorMessage, w)
 					return
 				}
@@ -132,7 +146,7 @@ func main() {
 				resp, err := rpc.DoSessionCreationRequest(req)
 				if err != nil && resp == nil {
 					errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-					logs.Log.Error(errorMessage)
+					logs.LogWithFields(ctx).Error(errorMessage)
 					common.SetCommonHeaders(w)
 					w.WriteHeader(http.StatusInternalServerError)
 					body, _ := json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
@@ -143,12 +157,12 @@ func main() {
 					common.SetCommonHeaders(w)
 					w.WriteHeader(int(resp.StatusCode))
 					if resp.StatusCode == http.StatusServiceUnavailable {
-						logs.Log.Error("error: unable to establish connection with db")
+						logs.LogWithFields(ctx).Error("error: unable to establish connection with db")
 						w.Write(resp.Body)
 						return
 					}
 					errorMessage := "error: failed to create a sesssion"
-					logs.Log.Info(errorMessage)
+					logs.LogWithFields(ctx).Info(errorMessage)
 					body, _ := json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 					w.Write([]byte(body))
 					return

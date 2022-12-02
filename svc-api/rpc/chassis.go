@@ -13,13 +13,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -28,8 +29,9 @@ var (
 	NewChassisClientFunc = chassisproto.NewChassisClient
 )
 
-//GetChassisCollection will do the rpc call to collect all chassis
-func GetChassisCollection(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+// GetChassisCollection will do the rpc call to collect all chassis
+func GetChassisCollection(ctx context.Context, req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -44,8 +46,9 @@ func GetChassisCollection(req chassisproto.GetChassisRequest) (*chassisproto.Get
 	return resp, nil
 }
 
-//GetChassisResource will do the rpc call to collect Chassis Resource
-func GetChassisResource(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+// GetChassisResource will do the rpc call to collect Chassis Resource
+func GetChassisResource(ctx context.Context, req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -60,8 +63,9 @@ func GetChassisResource(req chassisproto.GetChassisRequest) (*chassisproto.GetCh
 	return resp, nil
 }
 
-//GetChassis will do the rpc call to  System Resource
-func GetChassis(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+// GetChassis will do the rpc call to  System Resource
+func GetChassis(ctx context.Context, req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -76,8 +80,9 @@ func GetChassis(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisRes
 	return resp, nil
 }
 
-//CreateChassis will do the rpc call to create a Chassis
-func CreateChassis(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+// CreateChassis will do the rpc call to create a Chassis
+func CreateChassis(ctx context.Context, req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -92,8 +97,9 @@ func CreateChassis(req chassisproto.CreateChassisRequest) (*chassisproto.GetChas
 	return resp, nil
 }
 
-//DeleteChassis will do the rpc call to delete a chassis
-func DeleteChassis(req chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error) {
+// DeleteChassis will do the rpc call to delete a chassis
+func DeleteChassis(ctx context.Context, req chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -108,8 +114,9 @@ func DeleteChassis(req chassisproto.DeleteChassisRequest) (*chassisproto.GetChas
 	return resp, nil
 }
 
-//UpdateChassis will do the rpc call to update a chassis
-func UpdateChassis(req chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+// UpdateChassis will do the rpc call to update a chassis
+func UpdateChassis(ctx context.Context, req chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)

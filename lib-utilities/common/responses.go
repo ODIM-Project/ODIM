@@ -66,14 +66,16 @@ func GetContextData(ctx context.Context) context.Context {
 
 // CreateMetadata is used to add metadata values in context to be used in grpc calls
 func CreateMetadata(ctx context.Context) context.Context {
-	md := metadata.New(map[string]string{
-		TransactionID: ctx.Value(TransactionID).(string),
-		ActionName:    ctx.Value(ActionName).(string),
-		ActionID:      ctx.Value(ActionID).(string),
-		ThreadID:      ctx.Value(ThreadID).(string),
-		ThreadName:    ctx.Value(ThreadName).(string),
-	})
-	ctx = metadata.NewOutgoingContext(ctx, md)
+	if ctx.Value(TransactionID) != nil {
+		md := metadata.New(map[string]string{
+			TransactionID: ctx.Value(TransactionID).(string),
+			ActionName:    ctx.Value(ActionName).(string),
+			ActionID:      ctx.Value(ActionID).(string),
+			ThreadID:      ctx.Value(ThreadID).(string),
+			ThreadName:    ctx.Value(ThreadName).(string),
+		})
+		ctx = metadata.NewOutgoingContext(ctx, md)
+	}
 
 	return ctx
 }

@@ -24,7 +24,7 @@ import (
 	"github.com/kataras/iris/v12/httptest"
 )
 
-func mockGetSystemRequest(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+func mockGetSystemRequest(ctx context.Context, req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 	var response = &systemsproto.SystemsResponse{}
 	if req.URL == "/redfish/v1/Systems/1A" && req.SessionToken == "ValidToken" {
 		response = &systemsproto.SystemsResponse{
@@ -168,13 +168,13 @@ func TestGetSystem_InvalidToken(t *testing.T) {
 	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
 }
 
-func mockGetSystemResource(systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+func mockGetSystemResource(context.Context, systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 	return &systemsproto.SystemsResponse{
 		StatusCode: http.StatusOK,
 	}, nil
 }
 
-func mockGetSystemResourceRPCError(systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+func mockGetSystemResourceRPCError(context.Context, systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 	return &systemsproto.SystemsResponse{}, errors.New("RPC Error")
 }
 
@@ -217,7 +217,7 @@ func TestSystemRPCs_GetSystemResourceWithoutToken(t *testing.T) {
 	).Expect().Status(http.StatusUnauthorized)
 }
 
-func mockChangeBiosSettings(req systemsproto.BiosSettingsRequest) (*systemsproto.SystemsResponse, error) {
+func mockChangeBiosSettings(ctx context.Context, req systemsproto.BiosSettingsRequest) (*systemsproto.SystemsResponse, error) {
 	var response = &systemsproto.SystemsResponse{}
 	if req.SessionToken == "" {
 		response = &systemsproto.SystemsResponse{
@@ -307,7 +307,7 @@ func TestChangeBiosSettingsNegativeTestCases(t *testing.T) {
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
 }
 
-func mockChangeBootOrderSettings(req systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error) {
+func mockChangeBootOrderSettings(ctx context.Context, req systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error) {
 	var response = &systemsproto.SystemsResponse{}
 	if req.SessionToken == "" {
 		response = &systemsproto.SystemsResponse{
@@ -378,7 +378,7 @@ func TestChangeBootOrderSettingsNegativeTestCases(t *testing.T) {
 	).WithHeader("X-Auth-Token", "Token").Expect().Status(http.StatusBadRequest)
 }
 
-func mockComputerSystemReset(req systemsproto.ComputerSystemResetRequest) (*systemsproto.SystemsResponse, error) {
+func mockComputerSystemReset(ctx context.Context, req systemsproto.ComputerSystemResetRequest) (*systemsproto.SystemsResponse, error) {
 	var response = &systemsproto.SystemsResponse{}
 	if req.SessionToken == "" {
 		response = &systemsproto.SystemsResponse{
@@ -430,7 +430,7 @@ func TestComputerSystemResetWithValidData(t *testing.T) {
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
-func mockSetDefaultBootOrder(req systemsproto.DefaultBootOrderRequest) (*systemsproto.SystemsResponse, error) {
+func mockSetDefaultBootOrder(ctx context.Context, req systemsproto.DefaultBootOrderRequest) (*systemsproto.SystemsResponse, error) {
 	var response = &systemsproto.SystemsResponse{}
 	if req.SessionToken == "" {
 		response = &systemsproto.SystemsResponse{
@@ -480,7 +480,7 @@ func TestSetDefaultBootOrderWithValidData(t *testing.T) {
 }
 
 // Create volume unit tests
-func mockCreateVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+func mockCreateVolume(ctx context.Context, req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
 	var response = &systemsproto.SystemsResponse{}
 	if req.SessionToken == "" {
 		response = &systemsproto.SystemsResponse{
@@ -570,7 +570,7 @@ func TestCreateVolumeNegativeTestCases(t *testing.T) {
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
 }
 
-func mockDeleteVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+func mockDeleteVolume(ctx context.Context, req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
 	var response = &systemsproto.SystemsResponse{}
 	if req.SessionToken == "" {
 		response = &systemsproto.SystemsResponse{

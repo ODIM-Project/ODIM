@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package handle
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -23,7 +24,7 @@ import (
 	"github.com/kataras/iris/v12/httptest"
 )
 
-func mockGetManagersRequest(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+func mockGetManagersRequest(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var response = &managersproto.ManagerResponse{}
 	if req.ManagerID == "1A" && req.SessionToken == "ValidToken" {
 		response = &managersproto.ManagerResponse{
@@ -49,7 +50,7 @@ func mockGetManagersRequest(req managersproto.ManagerRequest) (*managersproto.Ma
 	return response, nil
 }
 
-func mockGetManagersResourceRequest(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+func mockGetManagersResourceRequest(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var response = &managersproto.ManagerResponse{}
 	if req.ManagerID == "1A" && req.ResourceID == "1B" && req.SessionToken == "ValidToken" {
 		response = &managersproto.ManagerResponse{
@@ -86,7 +87,7 @@ func mockGetManagersResourceRequest(req managersproto.ManagerRequest) (*managers
 	}
 	return response, nil
 }
-func mockGetManagersCollectionRequest(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+func mockGetManagersCollectionRequest(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var response = &managersproto.ManagerResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &managersproto.ManagerResponse{
@@ -111,7 +112,7 @@ func mockGetManagersCollectionRequest(req managersproto.ManagerRequest) (*manage
 	}
 	return response, nil
 }
-func mockVirtualMediaInsertRequest(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+func mockVirtualMediaInsertRequest(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var response = &managersproto.ManagerResponse{}
 	if req.ManagerID == "1A" && req.ResourceID == "1B" && req.SessionToken == "ValidToken" {
 		response = &managersproto.ManagerResponse{
@@ -149,7 +150,7 @@ func mockVirtualMediaInsertRequest(req managersproto.ManagerRequest) (*managersp
 	return response, nil
 }
 
-func mockVirtualMediaEjectRequest(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+func mockVirtualMediaEjectRequest(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var response = &managersproto.ManagerResponse{}
 	if req.ManagerID == "1A" && req.ResourceID == "1B" && req.SessionToken == "ValidToken" {
 		response = &managersproto.ManagerResponse{
@@ -186,7 +187,7 @@ func mockVirtualMediaEjectRequest(req managersproto.ManagerRequest) (*managerspr
 	}
 	return response, nil
 }
-func mockGetRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+func mockGetRemoteAccountService(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var response = &managersproto.ManagerResponse{}
 	if req.URL == "/redfish/v1/Managers/1A/RemoteAccountService/Accounts" && req.SessionToken == "ValidToken" {
 		response = &managersproto.ManagerResponse{
@@ -233,7 +234,7 @@ func mockGetRemoteAccountService(req managersproto.ManagerRequest) (*managerspro
 	}
 	return response, nil
 }
-func mockRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+func mockRemoteAccountService(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var response = &managersproto.ManagerResponse{}
 	if req.URL == "/redfish/v1/Managers/1A/RemoteAccountService/Accounts" && req.SessionToken == "ValidToken" {
 		response = &managersproto.ManagerResponse{

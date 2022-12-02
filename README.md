@@ -201,9 +201,10 @@ The following table lists the software components and versions that are compatib
 |Ubuntu LTS|20.04.4|
 |ZooKeeper|3.7.0|
 |Docker|20.10.12|
-|Ansible|2.9.6|
-|Kubernetes|1.23.5|
-|Kubespray|2.18.1|
+|Ansible|5.7.1|
+|Kubernetes|1.24.6|
+|Kubespray|2.20.0|
+|containerd|1.6.8|
 |Helm charts|3.9.2|
 |Nginx|1.18.0-0ubuntu1.3|
 |Keepalived|1:2.0.19.2|
@@ -282,7 +283,7 @@ The following table lists the software components and versions that are compatib
       ```
 
    9. ```
-      sudo -H pip3 install ansible==2.9.6 --proxy=${http_proxy}
+      sudo -H pip3 install ansible==5.7.1 --proxy=${http_proxy}
       ```
 
    10. ```

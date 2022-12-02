@@ -379,21 +379,20 @@ The following table lists the software components and versions that are compatib
    
    |Docker image name|Version|Docker image file name|
    |-----|----|-----|
-   |k8s.gcr.io/kube-apiserver|v1.24.6 |k8s.gcr.io_kube-apiserver.tar |
-   |k8s.gcr.io/kube-controller-manager|v1.24.6 |k8s.gcr.io_kube-controller-manager.tar |
-   |k8s.gcr.io/kube-proxy| v1.24.6 |k8s.gcr.io_kube-proxy.tar |
-   |k8s.gcr.io/kube-scheduler| v1.24.6 |k8s.gcr.io_kube-scheduler.tar |
+   | registry.k8s.io/kube-apiserver                            |v1.24.6 | registry.k8s.io_kube-apiserver.tar                           |
+   | registry.k8s.io/kube-controller-manager                   |v1.24.6 | registry.k8s.io_kube-controller-manager.tar                  |
+   | registry.k8s.io/kube-proxy                                | v1.24.6 | registry.k8s.io_kube-proxy.tar                               |
+   | registry.k8s.io/kube-scheduler                            | v1.24.6 | registry.k8s.io_kube-scheduler.tar                           |
    |quay.io/calico/node| v3.23.3 |quay.io_calico_node.tar |
-   |quay.io/calico/pod2daemon-flexvol| v3.23.3 |quay.io_calico_pod2daemon-flexvol.tar |
+   | quay.io/calico/pod2daemon-flexvol                         | v3.23.3 | quay.io_calico_pod2daemon-flexvol.tar                        |
    |quay.io/calico/cni| v3.23.3 |quay.io_calico_cni.tar |
    |quay.io/calico/kube-controllers| v3.23.3 |quay.io_calico_kube-controllers.tar |
-   |k8s.gcr.io/dns/k8s-dns-node-cache|1.21.1 |k8s.gcr.io_dns_k8s-dns-node-cache.tar |
-   |k8s.gcr.io/pause|3.6 |k8s.gcr.io_pause.tar |
-   |nginx|1.23.0 |nginx.tar |
-   |k8s.gcr.io/coredns/coredns|v1.8.6 |k8s.gcr.io_coredns_coredns.tar |
+   | registry.k8s.io/dns/k8s-dns-node-cache                    |1.21.1 | registry.k8s.io_dns_k8s-dns-node-cache.tar                   |
+   | registry.k8s.io/pause                                     |3.6 | registry.k8s.io_pause.tar                                    |
+   |docker.io/library/nginx|1.23.0 |nginx.tar |
+   | registry.k8s.io/coredns/coredns                           |v1.8.6 | registry.k8s.io_coredns_coredns.tar                          |
    |quay.io/coreos/etcd|v3.4.13 |quay.io_coreos_etcd.tar |
-   |k8s.gcr.io/cpa/cluster-proportional-autoscaler-amd64|1.8.5 |k8s.gcr.io_cpa_cluster-proportional-autoscaler-amd64.tar |
-   | lachlanevenson/k8s-helm                              |v3.2.3 |lachlanevenson_k8s-helm.tar |
+   | registry.k8s.io/cpa/cluster-proportional-autoscaler-amd64 |1.8.5 | registry.k8s.io_cpa_cluster-proportional-autoscaler-amd64.tar |
    
 2. Verify you have successfully pulled all the images.
    ```

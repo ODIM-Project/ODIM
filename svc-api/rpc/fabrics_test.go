@@ -29,6 +29,7 @@
 package rpc
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -70,7 +71,7 @@ func TestGetFabricResource(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewFabricsClientFunc = tt.NewFabricsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetFabricResource(tt.args.req)
+			got, err := GetFabricResource(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetFabricResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -115,7 +116,7 @@ func TestUpdateFabricResource(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewFabricsClientFunc = tt.NewFabricsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := UpdateFabricResource(tt.args.req)
+			got, err := UpdateFabricResource(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpdateFabricResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -160,7 +161,7 @@ func TestDeleteFabricResource(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewFabricsClientFunc = tt.NewFabricsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DeleteFabricResource(tt.args.req)
+			got, err := DeleteFabricResource(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteFabricResource() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -31,6 +31,7 @@
 package rpc
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -72,7 +73,7 @@ func TestGetChassisCollection(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewChassisClientFunc = tt.NewChassisClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetChassisCollection(tt.args.req)
+			got, err := GetChassisCollection(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetChassisCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -117,7 +118,7 @@ func TestGetChassisResource(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewChassisClientFunc = tt.NewChassisClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetChassisResource(tt.args.req)
+			got, err := GetChassisResource(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetChassisResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -162,7 +163,7 @@ func TestGetChassis(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewChassisClientFunc = tt.NewChassisClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetChassis(tt.args.req)
+			got, err := GetChassis(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetChassis() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -207,7 +208,7 @@ func TestCreateChassis(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewChassisClientFunc = tt.NewChassisClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CreateChassis(tt.args.req)
+			got, err := CreateChassis(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateChassis() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -252,7 +253,7 @@ func TestDeleteChassis(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewChassisClientFunc = tt.NewChassisClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DeleteChassis(tt.args.req)
+			got, err := DeleteChassis(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteChassis() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -297,7 +298,7 @@ func TestUpdateChassis(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewChassisClientFunc = tt.NewChassisClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := UpdateChassis(tt.args.req)
+			got, err := UpdateChassis(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpdateChassis() error = %v, wantErr %v", err, tt.wantErr)
 				return

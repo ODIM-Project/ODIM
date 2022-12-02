@@ -253,58 +253,7 @@ The error is displayed if the `odimraServerCertIPSan` and `odimraKafkaClientCert
 2. Specify valid values for `odimraServerCertIPSan` and `odimraKafkaClientCertIPSan`, else specify
    both their values as `""` (empty double quotation marks).
 
-------
 
-**12. I see the following error while installing Kubernetes**
-
-**`TASK [k8-copy-image : Install docker packages] *********************************`**
-
-**`fatal: [mastervm]: FAILED! => {"cache_update_time": 1643275509, "cache_updated": false, "changed": false, "msg": "'/usr/bin/apt-get -y -o \"Dpkg::Options::=--force-confdef\" -o \"Dpkg::Options::=--force-confold\"   install 'docker-ce=5:20.10.11~3-0~ubuntu-bionic' 'docker-ce-cli=5:20.10.11~3-0~ubuntu-bionic' 'containerd.io'' failed: E: Sub-process /usr/bin/dpkg returned an error code (1)\n", "rc": 100, "stderr": "E: Sub-process /usr/bin/dpkg returned an error code (1)\n", "stderr_lines": ["E: Sub-process /usr/bin/dpkg returned an error code (1)"], "stdout": "Reading package lists...\nBuilding dependency tree...\nReading state information...\nSuggested packages:\n aufs-tools cgroupfs-mount | cgroup-lite\nThe following NEW packages will be installed:\n containerd.io docker-ce docker-ce-cli\n0 upgraded, 3 newly installed, 0 to remove and 2 not upgraded.\nNeed to get 0 B/83.7 MB of archives.\nAfter this operation, 368 MB of additional disk space will be used.\nSelecting previously unselected package containerd.io.\r\n(Reading database ... \r(Reading database ... 5%\r(Reading database ... 10%\r(Reading database ... 15%\r(Reading database ... 20%\r(Reading database ... 25%\r(Reading database ... 30%\r(Reading database ... 35%\r(Reading database ... 40%\r(Reading database ... 45%\r(Reading database ... 50%\r(Reading database ... 55%\r(Reading database ... 60%\r(Reading database ... 65%\r(Reading database ... 70%\r(Reading database ... 75%\r(Reading database ... 80%\r(Reading database ... 85%\r(Reading database ... 90%\r(Reading database ... 95%\r(Reading database ... 100%\r(Reading database ... 108067 files and directories currently installed.)\r\nPreparing to unpack .../containerd.io_1.4.12-1_amd64.deb ...\r\nUnpacking containerd.io (1.4.12-1) ...\r\nSelecting previously unselected package docker-ce-cli.\r\nPreparing to unpack .../docker-ce-cli_5%3a20.10.11~3-0~ubuntu-bionic_amd64.deb ...\r\nUnpacking docker-ce-cli (5:20.10.11~3-0~ubuntu-bionic) ...\r\nSelecting previously unselected package docker-ce.\r\nPreparing to unpack .../docker-ce_5%3a20.10.11~3-0~ubuntu-bionic_amd64.deb ...\r\nUnpacking docker-ce (5:20.10.11~3-0~ubuntu-bionic) ...\r\nSetting up containerd.io (1.4.12-1) ...\r\nCreated symlink /etc/systemd/system/multi-user.target.wants/containerd.service -> /lib/systemd/system/containerd.service.\r\nSetting up docker-ce-cli (5:20.10.11~3-0~ubuntu-bionic) ...\r\nSetting up docker-ce (5:20.10.11~3-0~ubuntu-bionic) ...\r\nCreated symlink /etc/systemd/system/multi-user.target.wants/docker.service -> /lib/systemd/system/docker.service.\r\nCreated symlink /etc/systemd/system/sockets.target.wants/docker.socket -> /lib/systemd/system/docker.socket.\r\nJob for docker.service failed because the control process exited with error code.\r\nSee \"systemctl status docker.service\" and \"journalctl -xe\" for details.\r\ninvoke-rc.d: initscript docker, action \"start\" failed.\r\n* docker.service - Docker Application Container Engine\r\n   Loaded: loaded (\u001b]8;;file://deployvm/lib/systemd/system/docker.service\u0007/lib/systemd/system/docker.service\u001b]8;;\u0007; enabled; vendor preset: enabled)\r\n   Active: activating (auto-restart) (Result: exit-code) since Thu 2022-01-27 11:13:06 UTC; 6ms ago\r\nTriggeredBy: \u001b[0;1;32m*\u001b[0m docker.socket\r\n    Docs: \u001b]8;;https://docs.docker.com\u0007https://docs.docker.com\u001b]8;;\u0007\r\n  Process: 142814 ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock \u001b[0;1;31m(code=exited, status=1/FAILURE)\u001b[0m\r\n  Main PID: 142814 (code=exited, status=1/FAILURE)\r\ndpkg: error processing package docker-ce (--configure):\r\n installed docker-ce package post-installation script subprocess returned error exit status 1\r\nProcessing triggers for man-db (2.9.1-1) ...\r\nProcessing triggers for systemd (245.4-4ubuntu3.15) ...\r\nErrors were encountered while processing:\r\n docker-ce\r\n", "stdout_lines": ["Reading package lists...", "Building dependency tree...", "Reading state information...", "Suggested packages:", " aufs-tools cgroupfs-mount | cgroup-lite", "The following NEW packages will be installed:", " containerd.io docker-ce docker-ce-cli", "0 upgraded, 3 newly installed, 0 to remove and 2 not upgraded.", "Need to get 0 B/83.7 MB of archives.", "After this operation, 368 MB of additional disk space will be used.", "Selecting previously unselected package containerd.io.", "(Reading database ... ", "(Reading database ... 5%", "(Reading database ... 10%", "(Reading database ... 15%", "(Reading database ... 20%", "(Reading database ... 25%", "(Reading database ... 30%", "(Reading database ... 35%", "(Reading database ... 40%", "(Reading database ... 45%", "(Reading database ... 50%", "(Reading database ... 55%", "(Reading database ... 60%", "(Reading database ... 65%", "(Reading database ... 70%", "(Reading database ... 75%", "(Reading database ... 80%", "(Reading database ... 85%", "(Reading database ... 90%", "(Reading database ... 95%", "(Reading database ... 100%", "(Reading database ... 108067 files and directories currently installed.)", "Preparing to unpack .../containerd.io_1.4.12-1_amd64.deb ...", "Unpacking containerd.io (1.4.12-1) ...", "Selecting previously unselected package docker-ce-cli.", "Preparing to unpack .../docker-ce-cli_5%3a20.10.11~3-0~ubuntu-bionic_amd64.deb ...", "Unpacking docker-ce-cli (5:20.10.11~3-0~ubuntu-bionic) ...", "Selecting previously unselected package docker-ce.", "Preparing to unpack .../docker-ce_5%3a20.10.11~3-0~ubuntu-bionic_amd64.deb ...", "Unpacking docker-ce (5:20.10.11~3-0~ubuntu-bionic) ...", "Setting up containerd.io (1.4.12-1) ...", "Created symlink /etc/systemd/system/multi-user.target.wants/containerd.service -> /lib/systemd/system/containerd.service.", "Setting up docker-ce-cli (5:20.10.11~3-0~ubuntu-bionic) ...", "Setting up docker-ce (5:20.10.11~3-0~ubuntu-bionic) ...", "Created symlink /etc/systemd/system/multi-user.target.wants/docker.service -> /lib/systemd/system/docker.service.", "Created symlink /etc/systemd/system/sockets.target.wants/docker.socket -> /lib/systemd/system/docker.socket.", "Job for docker.service failed because the control process exited with error code.", "See \"systemctl status docker.service\" and \"journalctl -xe\" for details.", "invoke-rc.d: initscript docker, action \"start\" failed.", " *docker.service - Docker Application Container Engine", "   Loaded: loaded (\u001b]8;;file://deployvm/lib/systemd/system/docker.service\u0007/lib/systemd/system/docker.service\u001b]8;;\u0007; enabled; vendor preset: enabled)", "   Active: activating (auto-restart) (Result: exit-code) since Thu 2022-01-27 11:13:06 UTC; 6ms ago", "TriggeredBy: \u001b[0;1;32m*\u001b[0m docker.socket", "    Docs: \u001b]8;;https://docs.docker.com\u0007https://docs.docker.com\u001b]8;;\u0007", "  Process: 142814 ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock \u001b[0;1;31m(code=exited, status=1/FAILURE)\u001b[0m", "  Main PID: 142814 (code=exited, status=1/FAILURE)", "dpkg: error processing package docker-ce (--configure):", " installed docker-ce package post-installation script subprocess returned error exit status 1", "Processing triggers for man-db (2.9.1-1) ...", "Processing triggers for systemd (245.4-4ubuntu3.15) ...", "Errors were encountered while processing:", " docker-ce"]}`**
-
-**Solution**:
-
-The error is displayed if the Docker packages aren't removed properly from the previous installation. Perform the following steps:
-
-1. Remove docker packages from all Kubernetes cluster nodes using the following commands.
-
-   ```
-   dpkg -l | grep -i docker 
-   ```
-   ```sudo apt-get autoremove -y --purge docker-engine docker docker.io docker-ce  docker-ce-rootless-extras  docker-scan-plugin containerd.io
-   sudo apt-get purge  -y docker-engine docker docker.io docker-ce  docker-ce-rootless-extras  docker-scan-plugin containerd.io	
-   ```
-   ```sudo rm -rf /var/lib/docker /etc/docker
-   sudo apt-get autoremove -y --purge docker-engine docker docker.io docker-ce  docker-ce-rootless-extras  docker-scan-plugin containerd.io
-   ```
-   ```sudo rm /etc/apparmor.d/docker
-   sudo rm -rf /var/lib/docker /etc/docker
-   ```
-   ```sudo groupdel docker
-   sudo rm /etc/apparmor.d/docker
-   ```
-   ```sudo rm -rf /var/run/docker.sock
-   sudo groupdel docker
-   ```
-   ```
-   sudo rm -rf /var/run/docker.sock
-   ```
-   
-2. Reset Kubernetes deployment:
-
-   ```
-   python3 odim-controller.py --reset kubernetes --config \
-   /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
-   ```
-   
-3. Redeploy Kubernetes:
-
-   ```
-   python3 odim-controller.py --deploy \
-   kubernetes --config /home/${USER}/ODIM/odim-controller/\
-   scripts/kube_deploy_nodes.yaml
-   ```
-
-   
 
 ## Other Frequently Asked Questions
 

@@ -146,7 +146,7 @@ To deploy Resource Aggregator for ODIM, you will require:
   Each controller node has the following components:
 
   -   An underlying Ubuntu OS platform
-  -   The Docker container engine
+  -   The containerd container engine
   -   The resource aggregator and the plugin microservice pods
   -   The infrastructure pods containing all the third-party services
   -   Kubelet, Kubeproxy, and the Kubernetes control plane comprising the API server, Scheduler, and the Controller-Manager
@@ -201,9 +201,10 @@ The following table lists the software components and versions that are compatib
 |Ubuntu LTS|20.04.4|
 |ZooKeeper|3.7.0|
 |Docker|20.10.12|
-|Ansible|2.9.6|
-|Kubernetes|1.23.5|
-|Kubespray|2.18.1|
+|Ansible|5.7.1|
+|Kubernetes|1.24.6|
+|Kubespray|2.20.0|
+|containerd|1.6.8|
 |Helm charts|3.9.2|
 |Nginx|1.18.0-0ubuntu1.3|
 |Keepalived|1:2.0.19.2|
@@ -282,7 +283,7 @@ The following table lists the software components and versions that are compatib
       ```
 
    9. ```
-      sudo -H pip3 install ansible==2.9.6 --proxy=${http_proxy}
+      sudo -H pip3 install ansible==5.7.1 --proxy=${http_proxy}
       ```
 
    10. ```
@@ -372,27 +373,26 @@ The following table lists the software components and versions that are compatib
    docker pull <imagename>:<version>
    ```
    
-   Example: `docker pull quay.io/calico/cni:v3.20.3`
+   Example: `docker pull quay.io/calico/cni:v3.23.3`
    
    The following table lists the Docker images of all the Kubernetes microservices.
    
    |Docker image name|Version|Docker image file name|
    |-----|----|-----|
-   |k8s.gcr.io/kube-apiserver|v1.23.5 |k8s.gcr.io_kube-apiserver.tar |
-   |k8s.gcr.io/kube-controller-manager|v1.23.5 |k8s.gcr.io_kube-controller-manager.tar |
-   |k8s.gcr.io/kube-proxy| v1.23.5 |k8s.gcr.io_kube-proxy.tar |
-   |k8s.gcr.io/kube-scheduler| v1.23.5 |k8s.gcr.io_kube-scheduler.tar |
-   |quay.io/calico/node| v3.20.3 |quay.io_calico_node.tar |
-   |quay.io/calico/pod2daemon-flexvol| v3.20.3 |quay.io_calico_pod2daemon-flexvol.tar |
-   |quay.io/calico/cni| v3.20.3 |quay.io_calico_cni.tar |
-   |quay.io/calico/kube-controllers| v3.20.3 |quay.io_calico_kube-controllers.tar |
-   |k8s.gcr.io/dns/k8s-dns-node-cache|1.21.1 |k8s.gcr.io_dns_k8s-dns-node-cache.tar |
-   |k8s.gcr.io/pause|3.6 |k8s.gcr.io_pause.tar |
-   |nginx|1.21.4 |nginx.tar |
-   |k8s.gcr.io/coredns/coredns|v1.8.0 |k8s.gcr.io_coredns_coredns.tar |
+   | registry.k8s.io/kube-apiserver                            |v1.24.6 | registry.k8s.io_kube-apiserver.tar                           |
+   | registry.k8s.io/kube-controller-manager                   |v1.24.6 | registry.k8s.io_kube-controller-manager.tar                  |
+   | registry.k8s.io/kube-proxy                                | v1.24.6 | registry.k8s.io_kube-proxy.tar                               |
+   | registry.k8s.io/kube-scheduler                            | v1.24.6 | registry.k8s.io_kube-scheduler.tar                           |
+   |quay.io/calico/node| v3.23.3 |quay.io_calico_node.tar |
+   | quay.io/calico/pod2daemon-flexvol                         | v3.23.3 | quay.io_calico_pod2daemon-flexvol.tar                        |
+   |quay.io/calico/cni| v3.23.3 |quay.io_calico_cni.tar |
+   |quay.io/calico/kube-controllers| v3.23.3 |quay.io_calico_kube-controllers.tar |
+   | registry.k8s.io/dns/k8s-dns-node-cache                    |1.21.1 | registry.k8s.io_dns_k8s-dns-node-cache.tar                   |
+   | registry.k8s.io/pause                                     |3.6 | registry.k8s.io_pause.tar                                    |
+   |docker.io/library/nginx|1.23.0 |nginx.tar |
+   | registry.k8s.io/coredns/coredns                           |v1.8.6 | registry.k8s.io_coredns_coredns.tar                          |
    |quay.io/coreos/etcd|v3.4.13 |quay.io_coreos_etcd.tar |
-   |k8s.gcr.io/cpa/cluster-proportional-autoscaler-amd64|1.8.5 |k8s.gcr.io_cpa_cluster-proportional-autoscaler-amd64.tar |
-   | lachlanevenson/k8s-helm                              |v3.2.3 |lachlanevenson_k8s-helm.tar |
+   | registry.k8s.io/cpa/cluster-proportional-autoscaler-amd64 |1.8.5 | registry.k8s.io_cpa_cluster-proportional-autoscaler-amd64.tar |
    
 2. Verify you have successfully pulled all the images.
    ```

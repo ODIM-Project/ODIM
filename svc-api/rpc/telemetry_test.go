@@ -29,6 +29,7 @@
 package rpc
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -70,7 +71,7 @@ func TestDoGetTelemetryService(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewTelemetryClientFunc = tt.NewTelemetryClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetTelemetryService(tt.args.req)
+			got, err := DoGetTelemetryService(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetTelemetryService() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -115,7 +116,7 @@ func TestDoGetMetricDefinitionCollection(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewTelemetryClientFunc = tt.NewTelemetryClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetMetricDefinitionCollection(tt.args.req)
+			got, err := DoGetMetricDefinitionCollection(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetMetricDefinitionCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -160,7 +161,7 @@ func TestDoGetMetricReportDefinitionCollection(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewTelemetryClientFunc = tt.NewTelemetryClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetMetricReportDefinitionCollection(tt.args.req)
+			got, err := DoGetMetricReportDefinitionCollection(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetMetricReportDefinitionCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -205,7 +206,7 @@ func TestDoGetMetricReportCollection(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewTelemetryClientFunc = tt.NewTelemetryClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetMetricReportCollection(tt.args.req)
+			got, err := DoGetMetricReportCollection(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetMetricReportCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -250,7 +251,7 @@ func TestDoGetTriggerCollection(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewTelemetryClientFunc = tt.NewTelemetryClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetTriggerCollection(tt.args.req)
+			got, err := DoGetTriggerCollection(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetTriggerCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -295,7 +296,7 @@ func TestDoGetMetricDefinition(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewTelemetryClientFunc = tt.NewTelemetryClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetMetricDefinition(tt.args.req)
+			got, err := DoGetMetricDefinition(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetMetricDefinition() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -340,7 +341,7 @@ func TestDoGetMetricReportDefinition(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewTelemetryClientFunc = tt.NewTelemetryClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetMetricReportDefinition(tt.args.req)
+			got, err := DoGetMetricReportDefinition(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetMetricReportDefinition() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -385,7 +386,7 @@ func TestDoGetMetricReport(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewTelemetryClientFunc = tt.NewTelemetryClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetMetricReport(tt.args.req)
+			got, err := DoGetMetricReport(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetMetricReport() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -430,7 +431,7 @@ func TestDoGetTrigger(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewTelemetryClientFunc = tt.NewTelemetryClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetTrigger(tt.args.req)
+			got, err := DoGetTrigger(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetTrigger() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -475,7 +476,7 @@ func TestDoUpdateTrigger(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewTelemetryClientFunc = tt.NewTelemetryClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoUpdateTrigger(tt.args.req)
+			got, err := DoUpdateTrigger(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoUpdateTrigger() error = %v, wantErr %v", err, tt.wantErr)
 				return

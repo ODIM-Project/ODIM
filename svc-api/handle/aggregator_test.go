@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package handle
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -28,18 +29,18 @@ func testDeleteComputeRPC(req aggregatorproto.AggregatorRequest) (*aggregatorpro
 		StatusCode: http.StatusOK,
 	}, nil
 }
-func testAddComputeRPC(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+func testAddComputeRPC(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
 	return &aggregatorproto.AggregatorResponse{
 		StatusCode: http.StatusOK,
 	}, nil
 }
-func testAddComputeRPCWithRPCError(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+func testAddComputeRPCWithRPCError(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
 	return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
 }
-func testDeleteComputeRPCWIthRPCError(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+func testDeleteComputeRPCWIthRPCError(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
 	return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
 }
-func testGetAggregationService(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+func testGetAggregationService(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
 	var response = &aggregatorproto.AggregatorResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &aggregatorproto.AggregatorResponse{
@@ -58,7 +59,7 @@ func testGetAggregationService(req aggregatorproto.AggregatorRequest) (*aggregat
 	return response, nil
 }
 
-func testAddAggregationSourceRPCCall(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+func testAddAggregationSourceRPCCall(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
 	var response = &aggregatorproto.AggregatorResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &aggregatorproto.AggregatorResponse{
@@ -77,7 +78,7 @@ func testAddAggregationSourceRPCCall(req aggregatorproto.AggregatorRequest) (*ag
 	return response, nil
 }
 
-func testGetAllAggregationSourceRPC(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+func testGetAllAggregationSourceRPC(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
 	var response = &aggregatorproto.AggregatorResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &aggregatorproto.AggregatorResponse{
@@ -96,7 +97,7 @@ func testGetAllAggregationSourceRPC(req aggregatorproto.AggregatorRequest) (*agg
 	return response, nil
 }
 
-func testUpdateAggregationSourceRPCCall(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+func testUpdateAggregationSourceRPCCall(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
 	var response = &aggregatorproto.AggregatorResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &aggregatorproto.AggregatorResponse{
@@ -115,7 +116,7 @@ func testUpdateAggregationSourceRPCCall(req aggregatorproto.AggregatorRequest) (
 	return response, nil
 }
 
-func testGetAggregationSourceRPC(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+func testGetAggregationSourceRPC(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
 	var response = &aggregatorproto.AggregatorResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &aggregatorproto.AggregatorResponse{
@@ -134,7 +135,7 @@ func testGetAggregationSourceRPC(req aggregatorproto.AggregatorRequest) (*aggreg
 	return response, nil
 }
 
-func testDeleteAggregationSourceRPCCall(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+func testDeleteAggregationSourceRPCCall(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
 	var response = &aggregatorproto.AggregatorResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &aggregatorproto.AggregatorResponse{
@@ -153,7 +154,7 @@ func testDeleteAggregationSourceRPCCall(req aggregatorproto.AggregatorRequest) (
 	return response, nil
 }
 
-func testAggregateRPCCall(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+func testAggregateRPCCall(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
 	var response = &aggregatorproto.AggregatorResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &aggregatorproto.AggregatorResponse{
@@ -176,7 +177,7 @@ func testAggregateRPCCall(req aggregatorproto.AggregatorRequest) (*aggregatorpro
 	return response, nil
 }
 
-func testGetAggregateRPCCall(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+func testGetAggregateRPCCall(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
 	var response = &aggregatorproto.AggregatorResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &aggregatorproto.AggregatorResponse{
@@ -199,7 +200,7 @@ func testGetAggregateRPCCall(req aggregatorproto.AggregatorRequest) (*aggregator
 	return response, nil
 }
 
-func testDeleteAggregateRPCCall(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+func testDeleteAggregateRPCCall(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
 	var response = &aggregatorproto.AggregatorResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &aggregatorproto.AggregatorResponse{

@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -44,7 +45,7 @@ func TestDoAccountCreationRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAccountClientFunc = tt.NewAccountClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoAccountCreationRequest(tt.args.req)
+			got, err := DoAccountCreationRequest(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoAccountCreationRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -89,7 +90,7 @@ func TestDoAccountDeleteRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAccountClientFunc = tt.NewAccountClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoAccountDeleteRequest(tt.args.req)
+			got, err := DoAccountDeleteRequest(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoAccountDeleteRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -134,7 +135,7 @@ func TestDoGetAccountRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAccountClientFunc = tt.NewAccountClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetAccountRequest(tt.args.req)
+			got, err := DoGetAccountRequest(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetAccountRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -179,7 +180,7 @@ func TestDoGetAccountServiceRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAccountClientFunc = tt.NewAccountClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetAccountServiceRequest(tt.args.req)
+			got, err := DoGetAccountServiceRequest(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetAccountServiceRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -224,7 +225,7 @@ func TestDoGetAllAccountRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAccountClientFunc = tt.NewAccountClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetAllAccountRequest(tt.args.req)
+			got, err := DoGetAllAccountRequest(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetAllAccountRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -269,7 +270,7 @@ func TestDoUpdateAccountRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAccountClientFunc = tt.NewAccountClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoUpdateAccountRequest(tt.args.req)
+			got, err := DoUpdateAccountRequest(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoUpdateAccountRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return

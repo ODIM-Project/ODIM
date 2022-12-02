@@ -124,7 +124,7 @@ func TestGetSystemRequestRPC(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSystemsClientFunc = tt.NewSystemsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetSystemRequestRPC(tt.args.req)
+			got, err := GetSystemRequestRPC(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSystemRequestRPC() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -169,7 +169,7 @@ func TestGetSystemResource(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSystemsClientFunc = tt.NewSystemsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetSystemResource(tt.args.req)
+			got, err := GetSystemResource(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSystemResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -214,7 +214,7 @@ func TestComputerSystemReset(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSystemsClientFunc = tt.NewSystemsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ComputerSystemReset(tt.args.req)
+			got, err := ComputerSystemReset(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ComputerSystemReset() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -259,7 +259,7 @@ func TestSetDefaultBootOrder(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSystemsClientFunc = tt.NewSystemsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := SetDefaultBootOrder(tt.args.req)
+			got, err := SetDefaultBootOrder(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SetDefaultBootOrder() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -304,7 +304,7 @@ func TestChangeBiosSettings(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSystemsClientFunc = tt.NewSystemsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ChangeBiosSettings(tt.args.req)
+			got, err := ChangeBiosSettings(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ChangeBiosSettings() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -349,7 +349,7 @@ func TestChangeBootOrderSettings(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSystemsClientFunc = tt.NewSystemsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ChangeBootOrderSettings(tt.args.req)
+			got, err := ChangeBootOrderSettings(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ChangeBootOrderSettings() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -394,7 +394,7 @@ func TestCreateVolume(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSystemsClientFunc = tt.NewSystemsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CreateVolume(tt.args.req)
+			got, err := CreateVolume(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateVolume() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -439,7 +439,7 @@ func TestDeleteVolume(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSystemsClientFunc = tt.NewSystemsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DeleteVolume(tt.args.req)
+			got, err := DeleteVolume(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteVolume() error = %v, wantErr %v", err, tt.wantErr)
 				return

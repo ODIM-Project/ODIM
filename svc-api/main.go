@@ -75,31 +75,7 @@ func main() {
 		}
 		// generating transaction ID
 		transactionID := uuid.New()
-		ctx := context.Background()
-		var serviceName string
-		val := strings.Split(r.URL.Path, "/")
-		if len(val) >= 4 && val[2] != "" {
-			serviceName = val[3]
-		} else {
-			serviceName = ""
-		}
-		// Add Action ID and Action Name in logs
-		if action, ok := common.Actions[common.ActionKey{Service: serviceName, Uri: val[len(val)-1], Method: r.Method}]; ok {
-			ctx = context.WithValue(ctx, common.ActionName, action.ActionName)
-			ctx = context.WithValue(ctx, common.ActionID, action.ActionID)
-		} else if action, ok := common.Actions[common.ActionKey{Service: serviceName, Uri: val[len(val)-2] + "/{id}", Method: r.Method}]; ok {
-			ctx = context.WithValue(ctx, common.ActionName, action.ActionName)
-			ctx = context.WithValue(ctx, common.ActionID, action.ActionID)
-		} else {
-			ctx = context.WithValue(ctx, common.ActionName, common.InvalidActionName)
-			ctx = context.WithValue(ctx, common.ActionID, common.InvalidActionID)
-		}
-		// Add values in context (TransactionID, ThreadName, ThreadID)
-		ctx = context.WithValue(ctx, common.TransactionID, transactionID.String())
-		ctx = context.WithValue(ctx, common.ProcessName, podName)
-		ctx = context.WithValue(ctx, common.ThreadName, common.ApiService)
-		ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
-
+		ctx := createContext(r, transactionID, podName)
 		r = r.WithContext(ctx)
 		basicAuth := r.Header.Get("Authorization")
 		var basicAuthToken string
@@ -237,4 +213,35 @@ func invalidAuthResp(errMsg string, w http.ResponseWriter) {
 	w.WriteHeader(http.StatusUnauthorized)
 	body, _ := json.Marshal(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil).Body)
 	w.Write([]byte(body))
+}
+
+// getContext is used to create new context with fields which are required for logging (transcationID, actionID, actionName,
+// ThreadID, ThreadName and ProcessName)
+func createContext(r *http.Request, transactionID uuid.UUID, podName string) context.Context {
+	ctx := context.Background()
+	var serviceName string
+	val := strings.Split(r.URL.Path, "/")
+	if len(val) >= 4 && val[2] != "" {
+		serviceName = val[3]
+	} else {
+		serviceName = ""
+	}
+	// Add Action ID and Action Name in logs
+	if action, ok := common.Actions[common.ActionKey{Service: serviceName, Uri: val[len(val)-1], Method: r.Method}]; ok {
+		ctx = context.WithValue(ctx, common.ActionName, action.ActionName)
+		ctx = context.WithValue(ctx, common.ActionID, action.ActionID)
+	} else if action, ok := common.Actions[common.ActionKey{Service: serviceName, Uri: val[len(val)-2] + "/{id}", Method: r.Method}]; ok {
+		ctx = context.WithValue(ctx, common.ActionName, action.ActionName)
+		ctx = context.WithValue(ctx, common.ActionID, action.ActionID)
+	} else {
+		ctx = context.WithValue(ctx, common.ActionName, common.InvalidActionName)
+		ctx = context.WithValue(ctx, common.ActionID, common.InvalidActionID)
+	}
+	// Add values in context (TransactionID, ThreadName, ThreadID)
+	ctx = context.WithValue(ctx, common.TransactionID, transactionID.String())
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = context.WithValue(ctx, common.ThreadName, common.ApiService)
+	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
+
+	return ctx
 }

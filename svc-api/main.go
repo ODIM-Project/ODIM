@@ -76,13 +76,29 @@ func main() {
 		// generating transaction ID
 		transactionID := uuid.New()
 		ctx := context.Background()
-		action := common.Actions[common.ActionURL{Url: r.URL.Path, Method: r.Method}]
-		// Add values in context (TransactionID, ThreadName, ThreadID, ActionName, ActionID)
+		var serviceName string
+		val := strings.Split(r.URL.Path, "/")
+		if len(val) >= 4 && val[2] != "" {
+			serviceName = val[3]
+		} else {
+			serviceName = ""
+		}
+		// Add Action ID and Action Name in logs
+		if action, ok := common.Actions[common.ActionKey{Service: serviceName, Uri: val[len(val)-1], Method: r.Method}]; ok {
+			ctx = context.WithValue(ctx, common.ActionName, action.ActionName)
+			ctx = context.WithValue(ctx, common.ActionID, action.ActionID)
+		} else if action, ok := common.Actions[common.ActionKey{Service: serviceName, Uri: val[len(val)-2] + "/{id}", Method: r.Method}]; ok {
+			ctx = context.WithValue(ctx, common.ActionName, action.ActionName)
+			ctx = context.WithValue(ctx, common.ActionID, action.ActionID)
+		} else {
+			ctx = context.WithValue(ctx, common.ActionName, common.InvalidActionName)
+			ctx = context.WithValue(ctx, common.ActionID, common.InvalidActionID)
+		}
+		// Add values in context (TransactionID, ThreadName, ThreadID)
 		ctx = context.WithValue(ctx, common.TransactionID, transactionID.String())
+		ctx = context.WithValue(ctx, common.ProcessName, podName)
 		ctx = context.WithValue(ctx, common.ThreadName, common.ApiService)
 		ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
-		ctx = context.WithValue(ctx, common.ActionName, action.ActionName)
-		ctx = context.WithValue(ctx, common.ActionID, action.ActionID)
 
 		r = r.WithContext(ctx)
 		basicAuth := r.Header.Get("Authorization")
@@ -143,7 +159,7 @@ func main() {
 
 				var req sessionproto.SessionCreateRequest
 				req.RequestBody = sessionReqData
-				resp, err := rpc.DoSessionCreationRequest(req)
+				resp, err := rpc.DoSessionCreationRequest(ctx, req)
 				if err != nil && resp == nil {
 					errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
 					logs.LogWithFields(ctx).Error(errorMessage)

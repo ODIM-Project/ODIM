@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package handle ...
+// Package handle ...
 package handle
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -28,12 +29,12 @@ import (
 
 // AccountRPCs defines all the RPC methods in account service
 type AccountRPCs struct {
-	GetServiceRPC     func(accountproto.AccountRequest) (*accountproto.AccountResponse, error)
-	CreateRPC         func(accountproto.CreateAccountRequest) (*accountproto.AccountResponse, error)
-	GetAllAccountsRPC func(accountproto.AccountRequest) (*accountproto.AccountResponse, error)
-	GetAccountRPC     func(accountproto.GetAccountRequest) (*accountproto.AccountResponse, error)
-	UpdateRPC         func(accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error)
-	DeleteRPC         func(accountproto.DeleteAccountRequest) (*accountproto.AccountResponse, error)
+	GetServiceRPC     func(context.Context, accountproto.AccountRequest) (*accountproto.AccountResponse, error)
+	CreateRPC         func(context.Context, accountproto.CreateAccountRequest) (*accountproto.AccountResponse, error)
+	GetAllAccountsRPC func(context.Context, accountproto.AccountRequest) (*accountproto.AccountResponse, error)
+	GetAccountRPC     func(context.Context, accountproto.GetAccountRequest) (*accountproto.AccountResponse, error)
+	UpdateRPC         func(context.Context, accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error)
+	DeleteRPC         func(context.Context, accountproto.DeleteAccountRequest) (*accountproto.AccountResponse, error)
 }
 
 // GetAccountService defines the GetAccountService iris handler.
@@ -42,12 +43,14 @@ type AccountRPCs struct {
 // and gives out a proper response.
 func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := accountproto.AccountRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
 
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -55,10 +58,10 @@ func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
 		return
 	}
 
-	resp, err := a.GetServiceRPC(req)
+	resp, err := a.GetServiceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -79,12 +82,13 @@ func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
 // and gives out a proper response.
 func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req interface{}
 
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the account create request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -96,6 +100,7 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -111,10 +116,10 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 		RequestBody:  request,
 	}
 
-	resp, err := a.CreateRPC(createRequest)
+	resp, err := a.CreateRPC(ctxt, createRequest)
 	if err != nil && resp == nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -134,12 +139,14 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 // and gives out a proper response.
 func (a *AccountRPCs) GetAllAccounts(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := accountproto.AccountRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
 
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -147,10 +154,10 @@ func (a *AccountRPCs) GetAllAccounts(ctx iris.Context) {
 		return
 	}
 
-	resp, err := a.GetAllAccountsRPC(req)
+	resp, err := a.GetAllAccountsRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -172,6 +179,7 @@ func (a *AccountRPCs) GetAllAccounts(ctx iris.Context) {
 // and gives out a proper response.
 func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := accountproto.GetAccountRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		AccountID:    ctx.Params().Get("id"),
@@ -179,6 +187,7 @@ func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -186,10 +195,10 @@ func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 		return
 	}
 
-	resp, err := a.GetAccountRPC(req)
+	resp, err := a.GetAccountRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -212,11 +221,12 @@ func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 	defer ctx.Next()
 	var req interface{}
+	ctxt := ctx.Request().Context()
 
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the account update request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -229,6 +239,7 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -245,10 +256,10 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 		RequestBody:  request,
 	}
 
-	resp, err := a.UpdateRPC(updateRequest)
+	resp, err := a.UpdateRPC(ctxt, updateRequest)
 	if err != nil && resp == nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -269,6 +280,7 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 // and gives out a proper response.
 func (a *AccountRPCs) DeleteAccount(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := accountproto.DeleteAccountRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		AccountID:    ctx.Params().Get("id"),
@@ -276,6 +288,7 @@ func (a *AccountRPCs) DeleteAccount(ctx iris.Context) {
 
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -283,10 +296,10 @@ func (a *AccountRPCs) DeleteAccount(ctx iris.Context) {
 		return
 	}
 
-	resp, err := a.DeleteRPC(req)
+	resp, err := a.DeleteRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

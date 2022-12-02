@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package handle
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -23,7 +24,7 @@ import (
 	"github.com/kataras/iris/v12/httptest"
 )
 
-func mockGetTaskStatus(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+func mockGetTaskStatus(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var response = &taskproto.TaskResponse{}
 	if req.TaskID == "1A" && req.SessionToken == "ValidToken" {
 		response = &taskproto.TaskResponse{
@@ -49,7 +50,7 @@ func mockGetTaskStatus(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, 
 	}
 	return response, nil
 }
-func mockTaskCollection(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+func mockTaskCollection(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var response = &taskproto.TaskResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &taskproto.TaskResponse{
@@ -68,7 +69,7 @@ func mockTaskCollection(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse,
 	}
 	return response, nil
 }
-func mockGetTaskService(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+func mockGetTaskService(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var response = &taskproto.TaskResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &taskproto.TaskResponse{
@@ -86,7 +87,7 @@ func mockGetTaskService(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse,
 	}
 	return response, nil
 }
-func mockGetSubTasks(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+func mockGetSubTasks(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var response = &taskproto.TaskResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &taskproto.TaskResponse{
@@ -104,7 +105,7 @@ func mockGetSubTasks(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, er
 	}
 	return response, nil
 }
-func mockGetSubTask(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+func mockGetSubTask(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var response = &taskproto.TaskResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &taskproto.TaskResponse{
@@ -122,7 +123,7 @@ func mockGetSubTask(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, err
 	}
 	return response, nil
 }
-func mockGetTaskMonitor(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+func mockGetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var response = &taskproto.TaskResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &taskproto.TaskResponse{

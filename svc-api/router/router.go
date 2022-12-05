@@ -266,7 +266,7 @@ func Router() *iris.Application {
 			}
 		}
 		if config.Data.RequestLimitCountPerSession > 0 {
-			err = ratelimiter.RequestRateLimiter(sessionToken)
+			err = ratelimiter.RequestRateLimiter(ctx, sessionToken)
 			if err != nil {
 				common.SetCommonHeaders(w)
 				w.WriteHeader(http.StatusServiceUnavailable)

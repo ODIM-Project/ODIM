@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package handle ...
+// Package handle ...
 package handle
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -28,15 +29,16 @@ import (
 
 // FabricRPCs defines all the RPC methods in fabric service
 type FabricRPCs struct {
-	GetFabricResourceRPC    func(fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error)
-	UpdateFabricResourceRPC func(fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error)
-	DeleteFabricResourceRPC func(fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error)
+	GetFabricResourceRPC    func(context.Context, fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error)
+	UpdateFabricResourceRPC func(context.Context, fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error)
+	DeleteFabricResourceRPC func(context.Context, fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error)
 }
 
 // GetFabricCollection defines the GetFabricCollection iris handler.
 // The method extracts given Fabric Resource
 func (f *FabricRPCs) GetFabricCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -51,10 +53,10 @@ func (f *FabricRPCs) GetFabricCollection(ctx iris.Context) {
 		return
 	}
 
-	resp, err := f.GetFabricResourceRPC(req)
+	resp, err := f.GetFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -73,6 +75,7 @@ func (f *FabricRPCs) GetFabricCollection(ctx iris.Context) {
 // The method extracts given Fabric Resource
 func (f *FabricRPCs) GetFabric(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -87,10 +90,10 @@ func (f *FabricRPCs) GetFabric(ctx iris.Context) {
 		return
 	}
 
-	resp, err := f.GetFabricResourceRPC(req)
+	resp, err := f.GetFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -109,6 +112,7 @@ func (f *FabricRPCs) GetFabric(ctx iris.Context) {
 // The method extracts given Fabric Resource
 func (f *FabricRPCs) GetFabricSwitchCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -123,10 +127,10 @@ func (f *FabricRPCs) GetFabricSwitchCollection(ctx iris.Context) {
 		return
 	}
 
-	resp, err := f.GetFabricResourceRPC(req)
+	resp, err := f.GetFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -145,6 +149,7 @@ func (f *FabricRPCs) GetFabricSwitchCollection(ctx iris.Context) {
 // The method extracts given Fabric Resource
 func (f *FabricRPCs) GetFabricSwitch(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -159,10 +164,10 @@ func (f *FabricRPCs) GetFabricSwitch(ctx iris.Context) {
 		return
 	}
 
-	resp, err := f.GetFabricResourceRPC(req)
+	resp, err := f.GetFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -181,6 +186,7 @@ func (f *FabricRPCs) GetFabricSwitch(ctx iris.Context) {
 // The method extracts given Fabric Resource
 func (f *FabricRPCs) GetSwitchPortCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -195,10 +201,10 @@ func (f *FabricRPCs) GetSwitchPortCollection(ctx iris.Context) {
 		return
 	}
 
-	resp, err := f.GetFabricResourceRPC(req)
+	resp, err := f.GetFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -217,6 +223,7 @@ func (f *FabricRPCs) GetSwitchPortCollection(ctx iris.Context) {
 // The method extracts given Fabric Resource
 func (f *FabricRPCs) GetSwitchPort(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -231,10 +238,10 @@ func (f *FabricRPCs) GetSwitchPort(ctx iris.Context) {
 		return
 	}
 
-	resp, err := f.GetFabricResourceRPC(req)
+	resp, err := f.GetFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -253,6 +260,7 @@ func (f *FabricRPCs) GetSwitchPort(ctx iris.Context) {
 // The method extracts given Fabric Resource
 func (f *FabricRPCs) GetFabricZoneCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -267,10 +275,10 @@ func (f *FabricRPCs) GetFabricZoneCollection(ctx iris.Context) {
 		return
 	}
 
-	resp, err := f.GetFabricResourceRPC(req)
+	resp, err := f.GetFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -289,6 +297,7 @@ func (f *FabricRPCs) GetFabricZoneCollection(ctx iris.Context) {
 // The method extracts given Fabric Resource
 func (f *FabricRPCs) GetFabricZone(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -303,10 +312,10 @@ func (f *FabricRPCs) GetFabricZone(ctx iris.Context) {
 		return
 	}
 
-	resp, err := f.GetFabricResourceRPC(req)
+	resp, err := f.GetFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -325,6 +334,7 @@ func (f *FabricRPCs) GetFabricZone(ctx iris.Context) {
 // The method extracts given Fabric Resource
 func (f *FabricRPCs) GetFabricEndPointCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -339,10 +349,10 @@ func (f *FabricRPCs) GetFabricEndPointCollection(ctx iris.Context) {
 		return
 	}
 
-	resp, err := f.GetFabricResourceRPC(req)
+	resp, err := f.GetFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -361,6 +371,7 @@ func (f *FabricRPCs) GetFabricEndPointCollection(ctx iris.Context) {
 // The method extracts given Fabric Resource
 func (f *FabricRPCs) GetFabricEndPoints(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -375,10 +386,10 @@ func (f *FabricRPCs) GetFabricEndPoints(ctx iris.Context) {
 		return
 	}
 
-	resp, err := f.GetFabricResourceRPC(req)
+	resp, err := f.GetFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -397,6 +408,7 @@ func (f *FabricRPCs) GetFabricEndPoints(ctx iris.Context) {
 // The method extracts given Fabric Resource
 func (f *FabricRPCs) GetFabricAddressPoolCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -411,10 +423,10 @@ func (f *FabricRPCs) GetFabricAddressPoolCollection(ctx iris.Context) {
 		return
 	}
 
-	resp, err := f.GetFabricResourceRPC(req)
+	resp, err := f.GetFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -433,6 +445,7 @@ func (f *FabricRPCs) GetFabricAddressPoolCollection(ctx iris.Context) {
 // The method extracts given Fabric Resource
 func (f *FabricRPCs) GetFabricAddressPool(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -447,10 +460,10 @@ func (f *FabricRPCs) GetFabricAddressPool(ctx iris.Context) {
 		return
 	}
 
-	resp, err := f.GetFabricResourceRPC(req)
+	resp, err := f.GetFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -469,6 +482,7 @@ func (f *FabricRPCs) GetFabricAddressPool(ctx iris.Context) {
 // The method updates if Fabric Resource exists else creates new one.
 func (f *FabricRPCs) UpdateFabricResource(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -487,7 +501,7 @@ func (f *FabricRPCs) UpdateFabricResource(ctx iris.Context) {
 	err := ctx.ReadJSON(&createReq)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the  request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -500,7 +514,7 @@ func (f *FabricRPCs) UpdateFabricResource(ctx iris.Context) {
 	request, err := json.Marshal(createReq)
 	if err != nil {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -508,10 +522,10 @@ func (f *FabricRPCs) UpdateFabricResource(ctx iris.Context) {
 		return
 	}
 	req.RequestBody = request
-	resp, err := f.UpdateFabricResourceRPC(req)
+	resp, err := f.UpdateFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -528,6 +542,7 @@ func (f *FabricRPCs) UpdateFabricResource(ctx iris.Context) {
 // This method is used for deleting requested fabric resource
 func (f *FabricRPCs) DeleteFabricResource(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := fabricsproto.FabricRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -542,10 +557,10 @@ func (f *FabricRPCs) DeleteFabricResource(ctx iris.Context) {
 		return
 	}
 
-	resp, err := f.DeleteFabricResourceRPC(req)
+	resp, err := f.DeleteFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

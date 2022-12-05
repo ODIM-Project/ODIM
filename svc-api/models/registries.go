@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package models ...
+// Package models ...
 package models
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -23,14 +24,14 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
-//GetRegistryFile fetches a resource from database using table and key
-func GetRegistryFile(Table, key string) ([]byte, *errors.Error) {
+// GetRegistryFile fetches a resource from database using table and key
+func GetRegistryFile(ctx context.Context, Table, key string) ([]byte, *errors.Error) {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return nil, errors.PackError(err.ErrNo(), err)
 	}
 	resourceData, err := conn.Read(Table, key)
-	l.Log.Info("Table Name: " + Table + ", Key : " + key)
+	l.LogWithFields(ctx).Info("Table Name: " + Table + ", Key : " + key)
 	if err != nil {
 		return nil, errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
 	}
@@ -42,8 +43,8 @@ func GetRegistryFile(Table, key string) ([]byte, *errors.Error) {
 	return []byte(resource), nil
 }
 
-//GetAllRegistryFileNamesFromDB return all key in given table
-func GetAllRegistryFileNamesFromDB(table string) ([]string, *errors.Error) {
+// GetAllRegistryFileNamesFromDB return all key in given table
+func GetAllRegistryFileNamesFromDB(ctx context.Context, table string) ([]string, *errors.Error) {
 
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {

@@ -496,13 +496,11 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 	var outBody interface{}
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		if err != nil {
-			errorMessage := "error while reading body  : " + err.Error()
-			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
-				&resp, []interface{}{})
-			l.Log.Error(errorMessage)
-			return "", resp
-		}
+		errorMessage := "error while reading body  : " + err.Error()
+		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
+			&resp, []interface{}{})
+		l.Log.Error(errorMessage)
+		return "", resp
 	}
 	err = json.Unmarshal(body, &outBody)
 	if err != nil {
@@ -639,7 +637,6 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 	if protocol == "" {
 		protocol = "Redfish"
 	}
-	// var host string
 	bubbleUpStatusCode := http.StatusCreated
 	var postRequest evmodel.RequestBody
 	postRequest.Destination = ""

@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -77,7 +78,7 @@ func createMockUser(username, roleID string) error {
 }
 
 func TestDelete(t *testing.T) {
-	common.SetUpMockConfig()
+	config.SetUpMockConfig(t)
 	defer truncateDB(t)
 	token, tokenWithoutPrivilege := "someToken", "tokenWithoutPrivilege"
 	err := mockSession(token, common.RoleAdmin, true)
@@ -113,7 +114,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "The session token doesn't have required privilege",
+				ErrorMessage:  "failed to delete role someRole: The session token doesn't have required privilege",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -124,7 +125,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "Unable to get role details: error while trying to get role details: no data with the with key xyz found",
+				ErrorMessage:  "failed to delete role xyz: Unable to get role details: error while trying to get role details: no data with the with key xyz found",
 				MessageArgs:   []interface{}{"Role", "xyz"},
 			},
 		},
@@ -146,7 +147,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "A predefined role cannot be deleted.",
+				ErrorMessage:  "failed to delete role someOtherRole: A predefined role cannot be deleted.",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -157,7 +158,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceInUse,
-				ErrorMessage:  "Role is assigned to a user",
+				ErrorMessage:  "failed to delete role someUserDefinedRole: Role is assigned to a user",
 				MessageArgs:   []interface{}{},
 			},
 		},

@@ -24,12 +24,6 @@ const (
 	SubscribeEMB ControlMessage = iota
 )
 
-const (
-	// InterCommMsgQueueName is the name of the messagebus
-	// queue which is used for inter comm events
-	InterCommMsgQueueName = "ODIM-CONTROL-MESSAGES"
-)
-
 // ControlMessageData holds the control message data
 type ControlMessageData struct {
 	MessageType ControlMessage

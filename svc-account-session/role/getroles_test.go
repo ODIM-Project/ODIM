@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -41,6 +42,7 @@ func createMockRole(roleID string, privileges []string, oemPrivileges []string, 
 }
 
 func TestGetRole(t *testing.T) {
+	config.SetUpMockConfig(t)
 	commonResponse := response.Response{
 		OdataType: common.RoleType,
 		OdataID:   "/redfish/v1/AccountService/Roles/" + common.RoleAdmin,
@@ -72,7 +74,7 @@ func TestGetRole(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User does not have the privilege to get the role",
+				ErrorMessage:  "failed to fetch the role Administrator: User does not have the privilege of viewing the role",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -83,7 +85,7 @@ func TestGetRole(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "Error while getting the role : error while trying to get role details: no data with the with key " + common.RoleClient + " found",
+				ErrorMessage:  "failed to fetch the role ReadOnly: Error while getting the role : error while trying to get role details: no data with the with key " + common.RoleClient + " found",
 				MessageArgs:   []interface{}{"Role", common.RoleClient},
 			},
 		},
@@ -172,7 +174,7 @@ func TestGetAllRoles(t *testing.T) {
 	commonResponse.MessageID = ""
 	commonResponse.Severity = ""
 	auth.Lock.Lock()
-	common.SetUpMockConfig()
+	config.SetUpMockConfig(t)
 	auth.Lock.Unlock()
 	defer truncateDB(t)
 	err := createMockRole(common.RoleAdmin, []string{common.PrivilegeConfigureUsers}, []string{}, false)
@@ -185,7 +187,7 @@ func TestGetAllRoles(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User does not have the privilege to get the roles",
+				ErrorMessage:  "failed to fetch all roles: User does not have the privilege of viewing the roles",
 				MessageArgs:   []interface{}{},
 			},
 		},

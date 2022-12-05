@@ -1,6 +1,7 @@
 package ratelimiter
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -33,13 +34,13 @@ const (
 // if count is exceded the limit then return the response with too many requests, retry after some time
 // if its not exceded then increment the counter
 // and when the request completes the task then decrement the counter
-func RequestRateLimiter(sessionToken string) error {
+func RequestRateLimiter(ctx context.Context, sessionToken string) error {
 	if sessionToken != "" {
 		count, _ := IncrementCounter(sessionToken, SessionRateLimit)
 		if count > config.Data.RequestLimitCountPerSession {
 			DecrementCounter(sessionToken, SessionRateLimit)
 			errorMessage := "too many requests, retry after some time"
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return fmt.Errorf(errorMessage)
 		}
 	}
@@ -51,13 +52,13 @@ func RequestRateLimiter(sessionToken string) error {
 // if count is exceded the limit then return the response with too many requests, retry after some time
 // if its not exceded then incremen the counter
 // and when the request completes the task then decrement the counter
-func SessionRateLimiter(userid string) error {
+func SessionRateLimiter(ctx context.Context, userid string) error {
 	if userid != "" {
 		count, _ := IncrementCounter(userid, UserRateLimit)
 		if count > config.Data.SessionLimitCountPerUser {
 			DecrementCounter(userid, UserRateLimit)
 			errorMessage := "too many requests, retry after some time"
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return fmt.Errorf(errorMessage)
 		}
 		//IncrementCounter(userid, UserRateLimit)
@@ -67,6 +68,7 @@ func SessionRateLimiter(userid string) error {
 
 // ResourceRateLimiter will Limit the get on resource untill previous get completed the task
 func ResourceRateLimiter(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 	uri := ctx.Request().RequestURI
 	for _, val := range config.Data.ResourceRateLimit {
 		resourceLimit := strings.Split(val, ":")
@@ -77,7 +79,7 @@ func ResourceRateLimiter(ctx iris.Context) {
 			if regex.MatchString(uri) {
 				conn, err := common.GetDBConnection(common.InMemory)
 				if err != nil {
-					l.Log.Error(err.Error())
+					l.LogWithFields(ctxt).Error(err.Error())
 					response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 					common.SetResponseHeader(ctx, response.Header)
 					ctx.StatusCode(http.StatusInternalServerError)
@@ -88,7 +90,7 @@ func ResourceRateLimiter(ctx iris.Context) {
 				expiretime := rLimit / 1000
 				if err = conn.SetExpire("ResourceRateLimit", uri, "", expiretime); err != nil {
 					errorMessage := "too many requests, retry after some time"
-					l.Log.Error(errorMessage)
+					l.LogWithFields(ctxt).Error(errorMessage)
 					response := common.GeneralError(http.StatusServiceUnavailable, response.RateLimitExceeded, errorMessage, nil, nil)
 					remainTime, _ := conn.TTL(ResourceRateLimit, uri)
 					if remainTime > 0 {

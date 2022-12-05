@@ -12,12 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
 	"context"
 	"fmt"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -29,7 +31,8 @@ var (
 
 // DoGetAccountServiceRequest defines the RPC call function for
 // the GetAccountService from account-session micro service
-func DoGetAccountServiceRequest(req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
+func DoGetAccountServiceRequest(ctx context.Context, req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -46,7 +49,8 @@ func DoGetAccountServiceRequest(req accountproto.AccountRequest) (*accountproto.
 
 // DoAccountCreationRequest defines the RPC call function for
 // the AccountCreation from account-session micro service
-func DoAccountCreationRequest(req accountproto.CreateAccountRequest) (*accountproto.AccountResponse, error) {
+func DoAccountCreationRequest(ctx context.Context, req accountproto.CreateAccountRequest) (*accountproto.AccountResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -63,7 +67,8 @@ func DoAccountCreationRequest(req accountproto.CreateAccountRequest) (*accountpr
 
 // DoGetAllAccountRequest defines the RPC call function for
 // the GetAllAccount from account-session micro service
-func DoGetAllAccountRequest(req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
+func DoGetAllAccountRequest(ctx context.Context, req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -80,7 +85,8 @@ func DoGetAllAccountRequest(req accountproto.AccountRequest) (*accountproto.Acco
 
 // DoGetAccountRequest defines the RPC call function for
 // the GetAccount from account-session micro service
-func DoGetAccountRequest(req accountproto.GetAccountRequest) (*accountproto.AccountResponse, error) {
+func DoGetAccountRequest(ctx context.Context, req accountproto.GetAccountRequest) (*accountproto.AccountResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -98,7 +104,8 @@ func DoGetAccountRequest(req accountproto.GetAccountRequest) (*accountproto.Acco
 
 // DoUpdateAccountRequest defines the RPC call function for
 // the UpdateAccount from account-session micro service
-func DoUpdateAccountRequest(req accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error) {
+func DoUpdateAccountRequest(ctx context.Context, req accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -115,7 +122,8 @@ func DoUpdateAccountRequest(req accountproto.UpdateAccountRequest) (*accountprot
 
 // DoAccountDeleteRequest defines the RPC call function for
 // the AccountDelete from account-session micro service
-func DoAccountDeleteRequest(req accountproto.DeleteAccountRequest) (*accountproto.AccountResponse, error) {
+func DoAccountDeleteRequest(ctx context.Context, req accountproto.DeleteAccountRequest) (*accountproto.AccountResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)

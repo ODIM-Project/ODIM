@@ -16,10 +16,13 @@ package rpc
 import (
 	"context"
 	e "errors"
+	"fmt"
+	"net/http"
 	"reflect"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -31,7 +34,7 @@ func TestAccount_Create(t *testing.T) {
 		ctx context.Context
 		req *accountproto.CreateAccountRequest
 	}
-	common.SetUpMockConfig()
+	config.SetUpMockConfig(t)
 	tests := []struct {
 		name                    string
 		args                    args
@@ -82,7 +85,7 @@ func TestAccount_Create(t *testing.T) {
 			},
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for create account: fakeError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the create account API: fakeError"},
 			wantErr:                false,
 		},
 		{
@@ -176,7 +179,7 @@ func TestAccount_GetAllAccounts(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAllAccountsFunc:     func(session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for get all accounts: fakeError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the get all accounts API: fakeError"},
 			wantErr:                true,
 		},
 		{
@@ -272,7 +275,7 @@ func TestAccount_GetAccount(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAccountFunc:         func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for get account details: fakeError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the get account API: fakeError"},
 			wantErr:                true,
 		},
 		{
@@ -368,7 +371,7 @@ func TestAccount_GetAccountServices(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			GetAccountServiceFunc:  func() response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for get account details: fakeError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the get account service API: fakeError"},
 			wantErr:                true,
 		},
 		{
@@ -459,7 +462,7 @@ func TestAccount_Update(t *testing.T) {
 			},
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body for create account: fakeError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while to trying to marshal the response body of the update account API: fakeError"},
 			wantErr:                false,
 		},
 		{
@@ -553,7 +556,7 @@ func TestAccount_Delete(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(token string) error { return nil },
 			AccDeleteFunc:          func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for delete account: fakeError"},
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body of the delete account API: fakeError"},
 			wantErr:                false,
 		},
 		{
@@ -583,6 +586,82 @@ func TestAccount_Delete(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Delete() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_validateSessionTimeoutError(t *testing.T) {
+	config.SetUpMockConfig(t)
+	type args struct {
+		sessionToken string
+		errs         *errors.Error
+	}
+	tests := []struct {
+		name              string
+		args              args
+		wantStatusCode    int32
+		wantStatusMessage string
+	}{
+		{
+			name: "validate session timeout error",
+			args: args{
+				sessionToken: "123",
+				errs:         errors.PackError(http.StatusUnauthorized),
+			},
+			wantStatusCode:    http.StatusUnauthorized,
+			wantStatusMessage: response.NoValidSession,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, gotStatusCode, gotStatusMessage := validateSessionTimeoutError(tt.args.sessionToken, tt.args.errs)
+			fmt.Println(gotStatusCode, gotStatusMessage)
+			if gotStatusCode != tt.wantStatusCode {
+				t.Errorf("validateSessionTimeoutError() gotStatusCode = %v, want %v", gotStatusCode, tt.wantStatusCode)
+			}
+			if gotStatusMessage != tt.wantStatusMessage {
+				t.Errorf("validateSessionTimeoutError() gotStatusMessage = %v, want %v", gotStatusMessage, tt.wantStatusMessage)
+			}
+		})
+	}
+}
+
+func Test_validateUpdateLastUsedTimeError(t *testing.T) {
+	config.SetUpMockConfig(t)
+	type args struct {
+		err          error
+		sessionToken string
+	}
+	tests := []struct {
+		name              string
+		args              args
+		wantErrorMessage  string
+		wantStatusCode    int32
+		wantStatusMessage string
+	}{
+		{
+			name: "validate updateLastUsedTime error",
+			args: args{
+				err:          fmt.Errorf("fakeError"),
+				sessionToken: "123",
+			},
+			wantErrorMessage:  "error while updating last used time of session with token 123: fakeError",
+			wantStatusCode:    http.StatusInternalServerError,
+			wantStatusMessage: response.InternalError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotErrorMessage, gotStatusCode, gotStatusMessage := validateUpdateLastUsedTimeError(tt.args.err, tt.args.sessionToken)
+			if gotErrorMessage != tt.wantErrorMessage {
+				t.Errorf("validateUpdateLastUsedTimeError() gotErrorMessage = %v, want %v", gotErrorMessage, tt.wantErrorMessage)
+			}
+			if gotStatusCode != tt.wantStatusCode {
+				t.Errorf("validateUpdateLastUsedTimeError() gotStatusCode = %v, want %v", gotStatusCode, tt.wantStatusCode)
+			}
+			if gotStatusMessage != tt.wantStatusMessage {
+				t.Errorf("validateUpdateLastUsedTimeError() gotStatusMessage = %v, want %v", gotStatusMessage, tt.wantStatusMessage)
 			}
 		})
 	}

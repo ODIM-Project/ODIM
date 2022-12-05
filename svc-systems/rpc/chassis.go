@@ -13,7 +13,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
@@ -184,13 +184,13 @@ func jsonMarshal(input interface{}) []byte {
 	return bytes
 }
 
-func generateResponse(input interface{}) []byte {
+func generateResponse(ctx context.Context, input interface{}) []byte {
 	if bytes, alreadyBytes := input.([]byte); alreadyBytes {
 		return bytes
 	}
 	bytes, err := JSONMarshalFunc(input)
 	if err != nil {
-		l.Log.Error("error in unmarshalling response object from util-libs" + err.Error())
+		l.LogWithFields(ctx).Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
 }

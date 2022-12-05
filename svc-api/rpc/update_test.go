@@ -29,6 +29,7 @@
 package rpc
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -70,7 +71,7 @@ func TestDoGetUpdateService(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewUpdateClientFunc = tt.NewUpdateClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetUpdateService(tt.args.req)
+			got, err := DoGetUpdateService(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetUpdateService() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -115,7 +116,7 @@ func TestDoGetFirmwareInventory(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewUpdateClientFunc = tt.NewUpdateClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetFirmwareInventory(tt.args.req)
+			got, err := DoGetFirmwareInventory(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetFirmwareInventory() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -160,7 +161,7 @@ func TestDoGetSoftwareInventory(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewUpdateClientFunc = tt.NewUpdateClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetSoftwareInventory(tt.args.req)
+			got, err := DoGetSoftwareInventory(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetSoftwareInventory() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -205,7 +206,7 @@ func TestDoGetFirmwareInventoryCollection(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewUpdateClientFunc = tt.NewUpdateClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetFirmwareInventoryCollection(tt.args.req)
+			got, err := DoGetFirmwareInventoryCollection(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetFirmwareInventoryCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -250,7 +251,7 @@ func TestDoGetSoftwareInventoryCollection(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewUpdateClientFunc = tt.NewUpdateClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetSoftwareInventoryCollection(tt.args.req)
+			got, err := DoGetSoftwareInventoryCollection(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetSoftwareInventoryCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -295,7 +296,7 @@ func TestDoSimpleUpdate(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewUpdateClientFunc = tt.NewUpdateClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoSimpleUpdate(tt.args.req)
+			got, err := DoSimpleUpdate(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoSimpleUpdate() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -340,7 +341,7 @@ func TestDoStartUpdate(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewUpdateClientFunc = tt.NewUpdateClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoStartUpdate(tt.args.req)
+			got, err := DoStartUpdate(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoStartUpdate() error = %v, wantErr %v", err, tt.wantErr)
 				return

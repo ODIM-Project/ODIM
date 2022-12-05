@@ -55,6 +55,7 @@
    - [Odim-controller configuration parameters](#odim-controller-configuration-parameters)
    - [Running curl commands on a different server](#Running-curl-commands-on-a-different-server)
    - [Plugin configuration parameters](#plugin-configuration-parameters)
+   - [Log levels](#log-levels)
    - [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names)
    - [Using protoc compiler](#using-protoc-compiler)
    - [Using your own CA certificates and keys](#using-your-own-ca-certificates-and-keys)
@@ -145,7 +146,7 @@ To deploy Resource Aggregator for ODIM, you will require:
   Each controller node has the following components:
 
   -   An underlying Ubuntu OS platform
-  -   The Docker container engine
+  -   The containerd container engine
   -   The resource aggregator and the plugin microservice pods
   -   The infrastructure pods containing all the third-party services
   -   Kubelet, Kubeproxy, and the Kubernetes control plane comprising the API server, Scheduler, and the Controller-Manager
@@ -200,15 +201,17 @@ The following table lists the software components and versions that are compatib
 |Ubuntu LTS|20.04.4|
 |ZooKeeper|3.7.0|
 |Docker|20.10.12|
-|Ansible|2.9.6|
-|Kubernetes|1.23.5|
-|Kubespray|2.18.1|
+|Ansible|5.7.1|
+|Kubernetes|1.24.6|
+|Kubespray|2.20.0|
+|containerd|1.6.8|
 |Helm charts|3.9.2|
 |Nginx|1.18.0-0ubuntu1.3|
 |Keepalived|1:2.0.19.2|
 |Stakater/Reloader|v0.0.76|
 |Redfish Schema|2022.1|
 |Redfish Specification|1.15.1|
+
 
 
 # Resource Aggregator for ODIM pre-deployment operations
@@ -280,7 +283,7 @@ The following table lists the software components and versions that are compatib
       ```
 
    9. ```
-      sudo -H pip3 install ansible==2.9.6 --proxy=${http_proxy}
+      sudo -H pip3 install ansible==5.7.1 --proxy=${http_proxy}
       ```
 
    10. ```
@@ -370,27 +373,26 @@ The following table lists the software components and versions that are compatib
    docker pull <imagename>:<version>
    ```
    
-   Example: `docker pull quay.io/calico/cni:v3.20.3`
+   Example: `docker pull quay.io/calico/cni:v3.23.3`
    
    The following table lists the Docker images of all the Kubernetes microservices.
    
    |Docker image name|Version|Docker image file name|
    |-----|----|-----|
-   |k8s.gcr.io/kube-apiserver|v1.23.5 |k8s.gcr.io_kube-apiserver.tar |
-   |k8s.gcr.io/kube-controller-manager|v1.23.5 |k8s.gcr.io_kube-controller-manager.tar |
-   |k8s.gcr.io/kube-proxy| v1.23.5 |k8s.gcr.io_kube-proxy.tar |
-   |k8s.gcr.io/kube-scheduler| v1.23.5 |k8s.gcr.io_kube-scheduler.tar |
-   |quay.io/calico/node| v3.20.3 |quay.io_calico_node.tar |
-   |quay.io/calico/pod2daemon-flexvol| v3.20.3 |quay.io_calico_pod2daemon-flexvol.tar |
-   |quay.io/calico/cni| v3.20.3 |quay.io_calico_cni.tar |
-   |quay.io/calico/kube-controllers| v3.20.3 |quay.io_calico_kube-controllers.tar |
-   |k8s.gcr.io/dns/k8s-dns-node-cache|1.21.1 |k8s.gcr.io_dns_k8s-dns-node-cache.tar |
-   |k8s.gcr.io/pause|3.6 |k8s.gcr.io_pause.tar |
-   |nginx|1.21.4 |nginx.tar |
-   |k8s.gcr.io/coredns/coredns|v1.8.0 |k8s.gcr.io_coredns_coredns.tar |
+   | registry.k8s.io/kube-apiserver                            |v1.24.6 | registry.k8s.io_kube-apiserver.tar                           |
+   | registry.k8s.io/kube-controller-manager                   |v1.24.6 | registry.k8s.io_kube-controller-manager.tar                  |
+   | registry.k8s.io/kube-proxy                                | v1.24.6 | registry.k8s.io_kube-proxy.tar                               |
+   | registry.k8s.io/kube-scheduler                            | v1.24.6 | registry.k8s.io_kube-scheduler.tar                           |
+   |quay.io/calico/node| v3.23.3 |quay.io_calico_node.tar |
+   | quay.io/calico/pod2daemon-flexvol                         | v3.23.3 | quay.io_calico_pod2daemon-flexvol.tar                        |
+   |quay.io/calico/cni| v3.23.3 |quay.io_calico_cni.tar |
+   |quay.io/calico/kube-controllers| v3.23.3 |quay.io_calico_kube-controllers.tar |
+   | registry.k8s.io/dns/k8s-dns-node-cache                    |1.21.1 | registry.k8s.io_dns_k8s-dns-node-cache.tar                   |
+   | registry.k8s.io/pause                                     |3.6 | registry.k8s.io_pause.tar                                    |
+   |docker.io/library/nginx|1.23.0 |nginx.tar |
+   | registry.k8s.io/coredns/coredns                           |v1.8.6 | registry.k8s.io_coredns_coredns.tar                          |
    |quay.io/coreos/etcd|v3.4.13 |quay.io_coreos_etcd.tar |
-   |k8s.gcr.io/cpa/cluster-proportional-autoscaler-amd64|1.8.5 |k8s.gcr.io_cpa_cluster-proportional-autoscaler-amd64.tar |
-   | lachlanevenson/k8s-helm                              |v3.2.3 |lachlanevenson_k8s-helm.tar |
+   | registry.k8s.io/cpa/cluster-proportional-autoscaler-amd64 |1.8.5 | registry.k8s.io_cpa_cluster-proportional-autoscaler-amd64.tar |
    
 2. Verify you have successfully pulled all the images.
    ```
@@ -2470,8 +2472,8 @@ This procedure shows how to set up time synchronization across all the nodes (de
    
 ```
    sudo systemctl enable chrony
-   ```
-   
+```
+
    
 
 ## Downloading and installing Go language
@@ -2888,6 +2890,47 @@ The following table lists all the configuration parameters required to deploy a 
 | lbPort                                  | If it is a one-cluster configuration, the lbPort must be same as eventListenerNodePort. <br>If there is more than one cluster node (`haDeploymentEnabled` is true), lbport must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as nginx proxy port for the plugin. |
 | logPath                                 | The path where the plugin logs are stored. Default path is `/var/log/<plugin_name>_logs`<br>**Example**: `/var/log/grfplugin_logs` |
 
+## Log levels
+
+Every operation in Resource Aggregator for ODIM is logged in `var/log/odimra`. Resource Aggregator for ODIM supports logs in syslog format. These logs can be of different levels and are useful in diagnosing issues. 
+You can filter the log levels you want to view on your system by specifying the `logLevel` parameter in your `kube_deploy_nodes.yaml` configuration file. Supported values for the parameter are `panic`, `fatal`, `error`, `warn`, `info`, `debug`, `trace`.
+
+> **NOTE**: The default value for `logLevel` is `warn`.
+
+For a log level filter you specify, the relevant logs as well as the logs with its preceding priority values are displayed. For example, if you specify the `logLevel` parameter as `error`, all the `errors`, `fatals`, and `panics` are logged.
+
+| Log level | Priority value | Description                                                  |
+| --------- | -------------- | ------------------------------------------------------------ |
+| panic     | 8              | Highest level of severity.                                   |
+| fatal     | 9              | Exits even if the `logLevel` parameter is set to `panic`.    |
+| error     | 11             | Used for errors that should definitely be noted.             |
+| warn      | 12             | Non-critical entries.                                        |
+| info      | 14             | General operational entries about what's happening in the application. |
+| debug     | 15             | Usually only enabled when debugging. Verbose logging.        |
+| trace     | 15             | Designates finer-grained informational events than the debug logs. |
+
+> **Sample log**
+
+Each log consists of a priority value of the log level, date and time of the log, log level, user account details, and the log message.
+
+```
+<11> 2022-09-12T15:27:48Z error clustervm task-86c45f76df-2ht9j_8
+GetTaskStatus : Unable to read taskdata from DB: no data with the key found
+```
+
+#### Updating log levels
+
+To update an existing log level after Resource Aggregator for ODIM is installed, perform the following steps:
+
+1. Update the `logLevel` parameter in your `kube_deploy_nodes.yaml` configuration file.
+
+2. Run the following command to update log levels for all Resource Aggregator for ODIM services:
+
+   ```
+   python3 odim-controller.py --config /home/${USER}/R4H60-11016/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra
+   ```
+
+   
 
 
 ## Resource Aggregator for ODIM deployment names

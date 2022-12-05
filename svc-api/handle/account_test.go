@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package handle
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -33,7 +34,7 @@ var header = map[string][]string{
 	"Transfer-Encoding":      {"chunked"},
 }
 
-func mockGetAccountServiceRPC(req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
+func mockGetAccountServiceRPC(ctx context.Context, req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
 	if req.SessionToken == "TokenRPC" {
 		return nil, errors.New("RPC Error")
 	}
@@ -42,7 +43,7 @@ func mockGetAccountServiceRPC(req accountproto.AccountRequest) (*accountproto.Ac
 	}, nil
 }
 
-func mockCreateAccountRPC(req accountproto.CreateAccountRequest) (*accountproto.AccountResponse, error) {
+func mockCreateAccountRPC(ctx context.Context, req accountproto.CreateAccountRequest) (*accountproto.AccountResponse, error) {
 	if req.SessionToken == "TokenRPC" {
 		return nil, errors.New("RPC Error")
 	}
@@ -51,7 +52,7 @@ func mockCreateAccountRPC(req accountproto.CreateAccountRequest) (*accountproto.
 	}, nil
 }
 
-func mockGetAllAccountsRPC(req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
+func mockGetAllAccountsRPC(ctx context.Context, req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
 	if req.SessionToken == "TokenRPC" {
 		return nil, errors.New("RPC Error")
 	}
@@ -60,7 +61,7 @@ func mockGetAllAccountsRPC(req accountproto.AccountRequest) (*accountproto.Accou
 	}, nil
 }
 
-func mockGetAccountRPC(req accountproto.GetAccountRequest) (*accountproto.AccountResponse, error) {
+func mockGetAccountRPC(ctx context.Context, req accountproto.GetAccountRequest) (*accountproto.AccountResponse, error) {
 	if req.SessionToken == "TokenRPC" {
 		return nil, errors.New("RPC Error")
 	}
@@ -69,7 +70,7 @@ func mockGetAccountRPC(req accountproto.GetAccountRequest) (*accountproto.Accoun
 	}, nil
 }
 
-func mockUpdateAccountRPC(req accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error) {
+func mockUpdateAccountRPC(ctx context.Context, req accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error) {
 	if req.SessionToken == "TokenRPC" {
 		return nil, errors.New("RPC Error")
 	}
@@ -78,7 +79,7 @@ func mockUpdateAccountRPC(req accountproto.UpdateAccountRequest) (*accountproto.
 	}, nil
 }
 
-func mockDeleteAccountRPC(req accountproto.DeleteAccountRequest) (*accountproto.AccountResponse, error) {
+func mockDeleteAccountRPC(ctx context.Context, req accountproto.DeleteAccountRequest) (*accountproto.AccountResponse, error) {
 	if req.SessionToken == "TokenRPC" {
 		return nil, errors.New("RPC Error")
 	}

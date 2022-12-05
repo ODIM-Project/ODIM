@@ -13,10 +13,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package handle ...
+// Package handle ...
 package handle
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -29,22 +30,23 @@ import (
 
 // ChassisRPCs defines all the RPC methods in system service
 type ChassisRPCs struct {
-	GetChassisCollectionRPC func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
-	GetChassisResourceRPC   func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
-	GetChassisRPC           func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
-	CreateChassisRPC        func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error)
-	DeleteChassisRPC        func(req chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error)
-	UpdateChassisRPC        func(req chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error)
+	GetChassisCollectionRPC func(ctx context.Context,req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
+	GetChassisResourceRPC   func(ctx context.Context,req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
+	GetChassisRPC           func(ctx context.Context,req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
+	CreateChassisRPC        func(ctx context.Context,req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error)
+	DeleteChassisRPC        func(ctx context.Context,req chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error)
+	UpdateChassisRPC        func(ctx context.Context,req chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error)
 }
 
 //CreateChassis creates a new chassis
 func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	requestBody := new(json.RawMessage)
 	e := ctx.ReadJSON(requestBody)
 	if e != nil {
 		errorMessage := "error while trying to read obligatory json body: " + e.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -53,6 +55,7 @@ func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
 	}
 
 	rpcResp, rpcErr := chassis.CreateChassisRPC(
+		ctxt,
 		chassisproto.CreateChassisRequest{
 			RequestBody:  *requestBody,
 			SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -60,7 +63,7 @@ func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
 	)
 
 	if rpcErr != nil {
-		l.Log.Error("RPC error:" + rpcErr.Error())
+		l.LogWithFields(ctxt).Error("RPC error:" + rpcErr.Error())
 		re := common.GeneralError(http.StatusInternalServerError, response.InternalError, rpcErr.Error(), nil, nil)
 		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
 		return
@@ -83,6 +86,7 @@ func writeResponse(ctx iris.Context, headers map[string]string, status int32, bo
 //GetChassisCollection fetches all Chassis
 func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI}
@@ -94,10 +98,10 @@ func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := chassis.GetChassisCollectionRPC(req)
+	resp, err := chassis.GetChassisCollectionRPC(ctxt,req)
 	if err != nil {
 		errorMessage := " RPC error:" + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -117,6 +121,7 @@ func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 // and gives out a proper response.
 func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		RequestParam: ctx.Params().Get("id"),
@@ -130,10 +135,10 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := chassis.GetChassisResourceRPC(req)
+	resp, err := chassis.GetChassisResourceRPC(ctxt,req)
 	if err != nil {
 		errorMessage := " RPC error:" + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -153,6 +158,7 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 // and gives out a proper response.
 func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		RequestParam: ctx.Params().Get("id"),
@@ -165,10 +171,10 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := chassis.GetChassisRPC(req)
+	resp, err := chassis.GetChassisRPC(ctxt,req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -184,25 +190,26 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 //UpdateChassis updates an existing chassis
 func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	requestBody := new(json.RawMessage)
 	e := ctx.ReadJSON(requestBody)
 	if e != nil {
 		errorMessage := "error while trying to read obligatory json body: " + e.Error()
-		l.Log.Println(errorMessage)
+		l.LogWithFields(ctxt).Println(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
-	rr, rerr := chassis.UpdateChassisRPC(chassisproto.UpdateChassisRequest{
+	rr, rerr := chassis.UpdateChassisRPC(ctxt,chassisproto.UpdateChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 		RequestBody:  *requestBody,
 	})
 
 	if rerr != nil {
-		l.Log.Println("RPC error:" + rerr.Error())
+		l.LogWithFields(ctxt).Println("RPC error:" + rerr.Error())
 		re := common.GeneralError(http.StatusInternalServerError, response.InternalError, rerr.Error(), nil, nil)
 		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
 		return
@@ -215,13 +222,14 @@ func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
 //DeleteChassis deletes a chassis
 func (chassis *ChassisRPCs) DeleteChassis(ctx iris.Context) {
 	defer ctx.Next()
-	rpcResp, rpcErr := chassis.DeleteChassisRPC(chassisproto.DeleteChassisRequest{
+	ctxt := ctx.Request().Context()
+	rpcResp, rpcErr := chassis.DeleteChassisRPC(ctxt,chassisproto.DeleteChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	})
 
 	if rpcErr != nil {
-		l.Log.Println("RPC error:" + rpcErr.Error())
+		l.LogWithFields(ctxt).Println("RPC error:" + rpcErr.Error())
 		re := common.GeneralError(http.StatusInternalServerError, response.InternalError, rpcErr.Error(), nil, nil)
 		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
 		return

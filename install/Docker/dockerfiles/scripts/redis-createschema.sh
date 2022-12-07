@@ -21,12 +21,13 @@ if [ $? -eq 0 ]; then
 	  echo "Updating the db with default entries"
     redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512)
     redis-cli -a ${redis_password} -h ${master} -p ${REDIS_HA_REDIS_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} <<HERE
-Set  "registry:assignedprivileges"  '{"List":["Login", "ConfigureManager", "ConfigureUsers", "ConfigureSelf", "ConfigureComponents"]}'
+Set "registry:assignedprivileges"  '{"List":["Login", "ConfigureManager", "ConfigureUsers", "ConfigureSelf", "ConfigureComponents"]}'
 Set "roles:redfishdefined"  '{"List":["Administrator", "Operator", "ReadOnly"]}'
 Set "User:admin"  '{"UserName":"admin","Password":"O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==","RoleId":"Administrator", "AccountTypes":["Redfish"]}'
 Set "role:Administrator"  '{"@odata.type":"","RoleId":"Administrator","Name":"","Description":"","IsPredefined":true,"AssignedPrivileges":["ConfigureSelf","Login","ConfigureUsers","ConfigureComponents","ConfigureManager"],"OemPrivileges":null,"@odata.context":"","@odata.id":""}'
 Set "role:Operator"  '{"@odata.type":"","RoleId":"Operator","Name":"","Description":"","IsPredefined":true,"AssignedPrivileges":["ConfigureSelf","Login","ConfigureComponents"],"OemPrivileges":null,"@odata.context":"","@odata.id":""}'
 Set "role:ReadOnly"  '{"@odata.type":"","RoleId":"ReadOnly","Name":"","Description":"","IsPredefined":true,"AssignedPrivileges":["ConfigureSelf","Login"],"OemPrivileges":null,"@odata.context":"","@odata.id":""}'
+ZAdd "Subscription" 0 '{"UserName":"","SubscriptionID":"0","Destination":"","Name":"default","Context":"","EventTypes":["Alert"],"MessageIds":null,"Protocol":"Redfish","SubscriptionType":"RedfishEvent","EventFormatType":"","SubordinateResources":true,"ResourceTypes":null,"OriginResources":[],"Hosts":[],"DeliveryRetryPolicy":"RetryForever"}'
 keys *
 SAVE
 HERE

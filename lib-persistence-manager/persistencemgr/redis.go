@@ -699,6 +699,9 @@ func (c *Conn) Close() {
 	if c.WriteConn != nil {
 		c.WriteConn.Close()
 	}
+	if c.WritePool != nil {
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(c.WritePool)), nil)
+	}
 }
 
 // Ping will check the DB write connection health
@@ -714,9 +717,6 @@ func (c *Conn) Ping() *errors.Error {
 func (c *Conn) IsBadConn() bool {
 	if c.WriteConn != nil && c.Ping() == nil {
 		return false
-	}
-	if c.WritePool != nil {
-		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(c.WritePool)), nil)
 	}
 	return true
 }

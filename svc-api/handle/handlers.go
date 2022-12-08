@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package handle ...
+// Package handle ...
 package handle
 
 import (
@@ -32,7 +32,7 @@ import (
 	iris "github.com/kataras/iris/v12"
 )
 
-//GetVersion is an API handler method, which build the response body and headers for /redfish API
+// GetVersion is an API handler method, which build the response body and headers for /redfish API
 func GetVersion(ctx iris.Context) {
 	defer ctx.Next()
 	Version := models.Version{
@@ -43,19 +43,19 @@ func GetVersion(ctx iris.Context) {
 	ctx.JSON(Version)
 }
 
-//ServiceRoot defines getService function
+// ServiceRoot defines getService function
 type ServiceRoot struct {
 	getService func([]string, string) models.ServiceRoot
 }
 
-//InitServiceRoot func returns ServiceRoot
+// InitServiceRoot func returns ServiceRoot
 func InitServiceRoot() ServiceRoot {
 	return ServiceRoot{
 		getService: getService,
 	}
 }
 
-//getService method takes list of string as parameter and returns Serviceroot struct with assigned values
+// getService method takes list of string as parameter and returns Serviceroot struct with assigned values
 func getService(microServices []string, uuid string) models.ServiceRoot {
 	serviceRoot := models.ServiceRoot{
 		OdataType:      "#ServiceRoot.v1_14_0.ServiceRoot",
@@ -118,7 +118,7 @@ func getService(microServices []string, uuid string) models.ServiceRoot {
 	return serviceRoot
 }
 
-//GetServiceRoot builds response body and headers for /redfish/v1
+// GetServiceRoot builds response body and headers for /redfish/v1
 func (s *ServiceRoot) GetServiceRoot(ctx iris.Context) {
 	defer ctx.Next()
 	services := config.Data.EnabledServices
@@ -133,7 +133,7 @@ func (s *ServiceRoot) GetServiceRoot(ctx iris.Context) {
 	ctx.JSON(serviceRoot)
 }
 
-//GetOdata builds response body and headers for /redfish/v1/odata
+// GetOdata builds response body and headers for /redfish/v1/odata
 func GetOdata(ctx iris.Context) {
 	defer ctx.Next()
 	Odata := models.Odata{
@@ -163,7 +163,7 @@ func GetOdata(ctx iris.Context) {
 	ctx.JSON(Odata)
 }
 
-//GetMetadata build response body and headers for the GET operation on /redfish/v1/$metadata
+// GetMetadata build response body and headers for the GET operation on /redfish/v1/$metadata
 func GetMetadata(ctx iris.Context) {
 	defer ctx.Next()
 	Metadata := models.Metadata{
@@ -813,9 +813,10 @@ type Registry struct {
 	Auth func(string, []string, []string) errResponse.RPC
 }
 
-//GetRegistryFileCollection is show available collection of registry files.
+// GetRegistryFileCollection is show available collection of registry files.
 func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	// Authorize the request here
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
@@ -828,7 +829,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		l.Log.Error("error while trying to authorize token")
+		l.LogWithFields(ctxt).Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
 		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -844,7 +845,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	registryStore := config.Data.RegistryStorePath
 	regFiles, err := ioutil.ReadDir(registryStore)
 	if err != nil {
-		l.Log.Fatal(err.Error())
+		l.LogWithFields(ctxt).Fatal(err.Error())
 	}
 	//Construct the Response body
 	var listMembers []response.ListMember
@@ -860,7 +861,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 		listMembers = append(listMembers, member)
 	}
 	// Get Registry file names from db if any
-	regFileKeys, err := models.GetAllRegistryFileNamesFromDB("Registries")
+	regFileKeys, err := models.GetAllRegistryFileNamesFromDB(ctxt, "Registries")
 	if err != nil {
 		// log Critical message but proceed
 	}
@@ -884,9 +885,10 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	ctx.JSON(regCollectionResp)
 }
 
-//GetMessageRegistryFileID this is for giving deatiled information about the file and its locations.
+// GetMessageRegistryFileID this is for giving deatiled information about the file and its locations.
 func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	regFileID := ctx.Params().Get("id")
 	if strings.Contains(regFileID, ".json") {
@@ -914,7 +916,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		l.Log.Error("error while trying to authorize token")
+		l.LogWithFields(ctxt).Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
 		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -930,7 +932,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 
 	reqRegistryFileName := regFileID + ".json"
 	if err != nil {
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 	}
 	// Constuct the registry file names slice
 	var regFileNames []string
@@ -939,10 +941,10 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	}
 	locationURI := ""
 	// Registry file from DB and append
-	regFileKeys, err := models.GetAllRegistryFileNamesFromDB("Registries")
+	regFileKeys, err := models.GetAllRegistryFileNamesFromDB(ctxt, "Registries")
 	if err != nil {
 		// log Critical message but proceed
-		l.Log.Error("error: while trying to get the Registry files (Keys/FileNames only)from DB")
+		l.LogWithFields(ctxt).Error("error: while trying to get the Registry files (Keys/FileNames only)from DB")
 	}
 	regFileNames = append(regFileNames, regFileKeys...)
 	for _, regFile := range regFileNames {
@@ -953,7 +955,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	}
 	if locationURI == "" {
 		errorMessage := "error: resource not found"
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusNotFound, errResponse.ResourceNotFound, errorMessage, []interface{}{"RegistryFile", regFileID}, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusNotFound)
@@ -982,9 +984,10 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	ctx.JSON(resp)
 }
 
-//GetMessageRegistryFile this is to retreve the message registry file itself.
+// GetMessageRegistryFile this is to retreve the message registry file itself.
 func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	regFileID := ctx.Params().Get("id")
 	if strings.HasPrefix(regFileID, "#") {
@@ -1008,7 +1011,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		l.Log.Error("error while trying to authorize token")
+		l.LogWithFields(ctxt).Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
 		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -1026,12 +1029,12 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 	content, err := ioutil.ReadFile(regFilePath)
 	if err != nil {
 		// Check if this file is in DB
-		content, err = models.GetRegistryFile("Registries", regFileID)
+		content, err = models.GetRegistryFile(ctxt, "Registries", regFileID)
 		if content == nil {
 			// file Not found, send 404 error
-			l.Log.Error("got error while retreiving fom DB")
+			l.LogWithFields(ctxt).Error("got error while retreiving fom DB")
 			errorMessage := "error: Resource not found"
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctxt).Error(errorMessage)
 			response := common.GeneralError(http.StatusNotFound, errResponse.ResourceNotFound, errorMessage, []interface{}{"RegistryFile", regFileID}, nil)
 			common.SetResponseHeader(ctx, response.Header)
 			ctx.StatusCode(http.StatusNotFound)
@@ -1040,13 +1043,13 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		}
 	}
 	var data interface{}
-	l.Log.Error("Before Unmarshalling Data")
+	l.LogWithFields(ctxt).Error("Before Unmarshalling Data")
 	err = json.Unmarshal(content, &data)
 	if err != nil {
 		//return fmt.Errorf("error while trying to unmarshal the config data: %v", err)
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		errorMessage := "error: Resource not found"
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

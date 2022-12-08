@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package handle
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -23,7 +24,7 @@ import (
 	"github.com/kataras/iris/v12/httptest"
 )
 
-func testGetUpdateService(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+func testGetUpdateService(ctx context.Context, req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	var response = &updateproto.UpdateResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &updateproto.UpdateResponse{
@@ -42,13 +43,13 @@ func testGetUpdateService(req updateproto.UpdateRequest) (*updateproto.UpdateRes
 	return response, nil
 }
 
-func mockGetInventory(updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+func mockGetInventory(context.Context, updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	return &updateproto.UpdateResponse{
 		StatusCode: http.StatusOK,
 	}, nil
 }
 
-func mockSimpleUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+func mockSimpleUpdate(ctx context.Context, req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	var response = &updateproto.UpdateResponse{}
 	if req.SessionToken == "" {
 		response = &updateproto.UpdateResponse{
@@ -73,7 +74,7 @@ func mockSimpleUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateRespons
 	return response, nil
 }
 
-func mockStartUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+func mockStartUpdate(ctx context.Context, req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	var response = &updateproto.UpdateResponse{}
 	if req.SessionToken == "" {
 		response = &updateproto.UpdateResponse{

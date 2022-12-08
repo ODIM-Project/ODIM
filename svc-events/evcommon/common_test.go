@@ -300,7 +300,7 @@ func TestCallPluginStartUp(t *testing.T) {
 	ts.StartTLS()
 	defer ts.Close()
 	servers := []SavedSystems{
-		SavedSystems{
+		{
 			ManagerAddress: "100.100.100.100",
 			Password:       []byte("password"),
 			UserName:       "admin",
@@ -405,7 +405,7 @@ func TestStartUpInteraface_SubscribePluginEMB(t *testing.T) {
 	pc.SubscribePluginEMB()
 
 	GetAllPluginsFunc = func() ([]evmodel.Plugin, *errors.Error) {
-		return []evmodel.Plugin{evmodel.Plugin{IP: ""}}, &errors.Error{}
+		return []evmodel.Plugin{{IP: ""}}, nil
 	}
 	pc.SubscribePluginEMB()
 	getTypes("[alert statuschange]")

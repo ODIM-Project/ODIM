@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package persistencemgr provides an  interfaces for database communication
+// Package persistencemgr provides an  interfaces for database communication
 package persistencemgr
 
 import (
@@ -61,7 +61,7 @@ type Conn struct {
 	WriteConn redis.Conn
 }
 
-//RedisExternalCalls containes the methods to make calls to external client libraries of Redis DB
+// RedisExternalCalls containes the methods to make calls to external client libraries of Redis DB
 type RedisExternalCalls interface {
 	newSentinelClient(opt *redisSentinel.Options) *redisSentinel.SentinelClient
 	getMasterAddrByName(mset string, snlClient *redisSentinel.SentinelClient) []string
@@ -77,7 +77,7 @@ func (r redisExtCallsImp) getMasterAddrByName(masterSet string, snlClient *redis
 	return snlClient.GetMasterAddrByName(masterSet).Val()
 }
 
-//NewRedisExternalCalls is Constructor for RedisExternalCalls
+// NewRedisExternalCalls is Constructor for RedisExternalCalls
 func NewRedisExternalCalls() RedisExternalCalls {
 	return &redisExtCallsImp{}
 }
@@ -102,7 +102,7 @@ func sentinelNewClient(dbConfig *Config) *redisSentinel.SentinelClient {
 	return rdb
 }
 
-//GetCurrentMasterHostPort is to get the current Redis Master IP and Port from Sentinel.
+// GetCurrentMasterHostPort is to get the current Redis Master IP and Port from Sentinel.
 func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 	sentinelClient := sentinelNewClient(dbConfig)
 	stringSlice := redisExtCalls.getMasterAddrByName(dbConfig.MasterSet, sentinelClient)
@@ -116,7 +116,7 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 	return masterIP, masterPort
 }
 
-//resetDBWriteConection is used to reset the WriteConnection Pool (inmemory / OnDisk).
+// resetDBWriteConection is used to reset the WriteConnection Pool (inmemory / OnDisk).
 func resetDBWriteConection(dbFlag DbType) {
 	switch dbFlag {
 	case InMemory:
@@ -205,7 +205,7 @@ func getOnDiskDBConfig() *Config {
 	}
 }
 
-//GetDBConnection is used to get the new Connection Pool for Inmemory/OnDisk DB
+// GetDBConnection is used to get the new Connection Pool for Inmemory/OnDisk DB
 func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 	var err *errors.Error
 	switch dbFlag {
@@ -247,7 +247,7 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 	}
 }
 
-//getPool is used is utility function to get the Connection Pool from DB.
+// getPool is used is utility function to get the Connection Pool from DB.
 func getPool(host, port, password string) (*redis.Pool, error) {
 	protocol := config.Data.DBConf.Protocol
 	tlsConfig, err := getTLSConfig()
@@ -432,7 +432,7 @@ func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.
 	return saveID, nil
 }
 
-//Read is for getting singular data
+// Read is for getting singular data
 // Read takes "key" sting as input which acts as a unique ID to fetch specific data from DB
 func (p *ConnPool) Read(table, key string) (string, *errors.Error) {
 	readConn := p.ReadPool.Get()
@@ -479,7 +479,7 @@ func (p *ConnPool) FindOrNull(table, key string) (string, error) {
 	return r, nil
 }
 
-//GetAllDetails will fetch all the keys present in the database
+// GetAllDetails will fetch all the keys present in the database
 func (p *ConnPool) GetAllDetails(table string) ([]string, *errors.Error) {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
@@ -499,7 +499,7 @@ func (p *ConnPool) GetAllDetails(table string) ([]string, *errors.Error) {
 	return IDs, nil
 }
 
-//Delete data entry
+// Delete data entry
 // Read takes "key" sting as input which acts as a unique ID to delete specific data from DB
 func (p *ConnPool) Delete(table, key string) *errors.Error {
 
@@ -529,8 +529,8 @@ func (p *ConnPool) Delete(table, key string) *errors.Error {
 	return nil
 }
 
-//CleanUpDB will delete all database entries
-//The flush command will be executed without warnings please be cautious in using this
+// CleanUpDB will delete all database entries
+// The flush command will be executed without warnings please be cautious in using this
 func (p *ConnPool) CleanUpDB() *errors.Error {
 	writeConn := p.WritePool.Get()
 	defer writeConn.Close()
@@ -565,7 +565,7 @@ func (p *ConnPool) FilterSearch(table, key, path string) (interface{}, *errors.E
 
 */
 
-//DeleteServer data entry without table
+// DeleteServer data entry without table
 // Read takes "key" sting as input which acts as a unique ID to delete specific data from DB
 func (p *ConnPool) DeleteServer(key string) *errors.Error {
 	readConn := p.ReadPool.Get()
@@ -601,7 +601,7 @@ func (p *ConnPool) DeleteServer(key string) *errors.Error {
 	return nil
 }
 
-//GetAllMatchingDetails will fetch all the keys which matches pattern present in the database
+// GetAllMatchingDetails will fetch all the keys which matches pattern present in the database
 func (p *ConnPool) GetAllMatchingDetails(table, pattern string) ([]string, *errors.Error) {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
@@ -621,7 +621,7 @@ func (p *ConnPool) GetAllMatchingDetails(table, pattern string) ([]string, *erro
 	return IDs, nil
 }
 
-//Transaction is to do a atomic operation using optimistic lock
+// Transaction is to do a atomic operation using optimistic lock
 func (p *ConnPool) Transaction(key string, cb func(string) error) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
@@ -872,7 +872,7 @@ func isTimeOutError(err error) bool {
 	return false
 }
 
-//GetResourceDetails will fetch the key and also fetch the data
+// GetResourceDetails will fetch the key and also fetch the data
 func (p *ConnPool) GetResourceDetails(key string) (string, *errors.Error) {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
@@ -1488,7 +1488,7 @@ func (p *ConnPool) UpdateDeviceSubscription(index, hostIP, location string, orig
 	return nil
 }
 
-//UpdateResourceIndex is used to update the resource inforamtion which is indexed
+// UpdateResourceIndex is used to update the resource inforamtion which is indexed
 // form contains index name and value:key for the index
 func (p *ConnPool) UpdateResourceIndex(form map[string]interface{}, uuid string) error {
 	for index := range form {
@@ -1504,8 +1504,8 @@ func (p *ConnPool) UpdateResourceIndex(form map[string]interface{}, uuid string)
 	return nil
 }
 
-//Incr is for incrementing the count
-//Incr takes "key" string as input which acts as a unique ID to increment the count and return same
+// Incr is for incrementing the count
+// Incr takes "key" string as input which acts as a unique ID to increment the count and return same
 func (p *ConnPool) Incr(table, key string) (int, *errors.Error) {
 	var count int
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
@@ -1541,8 +1541,8 @@ func (p *ConnPool) Incr(table, key string) (int, *errors.Error) {
 	return count, nil
 }
 
-//Decr is for decrementing the count
-//Decr takes "key" string as input which acts as a unique ID to decrement the count and return same
+// Decr is for decrementing the count
+// Decr takes "key" string as input which acts as a unique ID to decrement the count and return same
 func (p *ConnPool) Decr(table, key string) (int, *errors.Error) {
 	var count int
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
@@ -1616,7 +1616,7 @@ func (p *ConnPool) SetExpire(table, key string, data interface{}, expiretime int
 	return nil
 }
 
-//TTL is for getting singular data
+// TTL is for getting singular data
 // TTL takes "key" sting as input which acts as a unique ID to fetch time left
 func (p *ConnPool) TTL(table, key string) (int, *errors.Error) {
 	readConn := p.ReadPool.Get()

@@ -19,9 +19,7 @@
 	"MessageBusConf": {
 	   "MessageBusConfigFilePath": "",
 	   "MessageBusType": "Kafka",
-	   "MessageBusQueue": [
-		  "REDFISH-EVENTS-TOPIC"
-	   ]
+	   "OdimControlMessageQueue":"ODIM-CONTROL-MESSAGES"
 	},
 	"DBConf": {
 	   "Protocol": "tcp",

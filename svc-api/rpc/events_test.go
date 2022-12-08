@@ -29,6 +29,7 @@
 package rpc
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -70,7 +71,7 @@ func TestDoGetEventService(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewEventsClientFunc = tt.NewEventsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetEventService(tt.args.req)
+			got, err := DoGetEventService(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetEventService() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -115,7 +116,7 @@ func TestDoCreateEventSubscription(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewEventsClientFunc = tt.NewEventsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoCreateEventSubscription(tt.args.req)
+			got, err := DoCreateEventSubscription(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoCreateEventSubscription() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -160,7 +161,7 @@ func TestDoSubmitTestEvent(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewEventsClientFunc = tt.NewEventsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoSubmitTestEvent(tt.args.req)
+			got, err := DoSubmitTestEvent(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoSubmitTestEvent() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -205,7 +206,7 @@ func TestDoGetEventSubscription(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewEventsClientFunc = tt.NewEventsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetEventSubscription(tt.args.req)
+			got, err := DoGetEventSubscription(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetEventSubscription() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -250,7 +251,7 @@ func TestDoDeleteEventSubscription(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewEventsClientFunc = tt.NewEventsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoDeleteEventSubscription(tt.args.req)
+			got, err := DoDeleteEventSubscription(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoDeleteEventSubscription() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -295,7 +296,7 @@ func TestDoGetEventSubscriptionsCollection(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewEventsClientFunc = tt.NewEventsClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetEventSubscriptionsCollection(tt.args.req)
+			got, err := DoGetEventSubscriptionsCollection(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetEventSubscriptionsCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -243,7 +243,7 @@ def perform_checks(skip_opt_param_check=False):
 	else:
 		ANSIBLE_SUDO_PW_FILE = CONTROLLER_CONF_DATA['nodePasswordFilePath']
 		if not os.path.exists(ANSIBLE_SUDO_PW_FILE):
-			logger.critical("Node Password File Path does not exist, exiting!!!")
+			logger.critical("node password file path does not exist, exiting!!!")
 
 	if IS_ODIMRA_DEPLOYMENT == True:
 		if 'redisInMemoryPasswordFilePath' not in CONTROLLER_CONF_DATA or \
@@ -255,7 +255,7 @@ def perform_checks(skip_opt_param_check=False):
 		else:
 			REDIS_INMEMORY_PW_FILE = CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath']
 			if not os.path.exists(REDIS_INMEMORY_PW_FILE):
-				logger.critical("Redis In-Memory Password File Path does not exist, exiting!!!")
+				logger.critical("redis in-memory password file path does not exist, exiting!!!")
 
 		if 'redisOnDiskPasswordFilePath' not in CONTROLLER_CONF_DATA or \
 		CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == "":
@@ -266,7 +266,7 @@ def perform_checks(skip_opt_param_check=False):
 		else:
 			REDIS_ONDISK_PW_FILE = CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath']
 			if not os.path.exists(REDIS_ONDISK_PW_FILE):
-				logger.critical("Redis On-Disk Password File Path does not exist, exiting!!!")
+				logger.critical("redis On-Disk Password File Path does not exist, exiting!!!")
 
 	cert_dir = os.path.join(CONTROLLER_SRC_PATH, 'certs')
 	if not os.path.exists(cert_dir):

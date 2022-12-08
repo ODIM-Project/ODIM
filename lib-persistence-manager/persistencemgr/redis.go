@@ -59,6 +59,7 @@ const (
 // Conn contains the write connection instance retrieved from the connection pool
 type Conn struct {
 	WriteConn redis.Conn
+	WritePool **redis.Pool
 }
 
 // RedisExternalCalls containes the methods to make calls to external client libraries of Redis DB
@@ -175,7 +176,7 @@ func (p *ConnPool) setWritePool(c *Config) error {
 func retryForMasterIP(pool *ConnPool, config *Config) (currentMasterIP, currentMasterPort string) {
 	for i := 0; i < 120; i++ {
 		currentMasterIP, currentMasterPort = GetCurrentMasterHostPort(config)
-		if currentMasterIP != "" && pool.MasterIP != currentMasterIP {
+		if currentMasterIP != "" {
 			break
 		}
 		time.Sleep(1 * time.Second)
@@ -305,6 +306,7 @@ func (p *ConnPool) GetWriteConnection() (*Conn, *errors.Error) {
 	writeConn := writePool.Get()
 	return &Conn{
 		WriteConn: writeConn,
+		WritePool: &p.WritePool,
 	}, nil
 }
 
@@ -712,6 +714,9 @@ func (c *Conn) Ping() *errors.Error {
 func (c *Conn) IsBadConn() bool {
 	if c.WriteConn != nil && c.Ping() == nil {
 		return false
+	}
+	if c.WritePool != nil {
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(c.WritePool)), nil)
 	}
 	return true
 }

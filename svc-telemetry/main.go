@@ -39,22 +39,22 @@ func main() {
 		"procid": podName + fmt.Sprintf("_%d", pid),
 	})
 
-	if err := config.SetConfiguration(); err != nil {
+	configWarnings, err := config.SetConfiguration()
+	if err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
-		log.Error("fatal: error while trying set up configuration: " + err.Error())
+		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
-
 	log.Logger.SetFormatter(&logs.SysLogFormatter{})
 	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(config.Data.LogLevel)
 
+	for _, warning := range configWarnings {
+		log.Warn(warning)
+	}
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Error("Telemetry Service should not be run as the root user")
-	}
-
-	if err := config.SetConfiguration(); err != nil {
-		log.Error("fatal: error while trying set up configuration: " + err.Error())
 	}
 
 	config.CollectCLArgs()

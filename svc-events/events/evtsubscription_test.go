@@ -553,7 +553,7 @@ func TestExternalInterfaces_UpdateEventSubscriptions(t *testing.T) {
 	pc := getMockMethods()
 	res := pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{}, false)
 	assert.Nil(t, res, "there shoud be an error ")
-	pc.External.Auth = func(s1 string, s2, s3 []string) response.RPC { return response.RPC{StatusCode: 200} }
+	pc.External.Auth = func(s1 string, s2, s3 []string) (response.RPC, error) { return response.RPC{StatusCode: 200}, nil }
 	res = pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{SessionToken: "", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
 	assert.Nil(t, res, "there shoud be an error ")
 

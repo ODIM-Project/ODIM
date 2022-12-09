@@ -40,16 +40,17 @@ func main() {
 		"procid": podName + fmt.Sprintf("_%d", pid),
 	})
 
-	if err := config.SetConfiguration(); err != nil {
+	configWarnings, err := config.SetConfiguration()
+	if err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
-		log.Error("fatal: error while trying set up configuration: " + err.Error())
+		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
 	log.Logger.SetFormatter(&logs.SysLogFormatter{})
 	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(config.Data.LogLevel)
 
-	if uid := os.Geteuid(); uid == 0 {
-		log.Error("Licenses Service should not be run as the root user")
+	for _, warning := range configWarnings {
+		log.Warn(warning)
 	}
 
 	config.CollectCLArgs()

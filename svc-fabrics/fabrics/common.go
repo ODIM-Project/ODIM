@@ -46,7 +46,7 @@ var (
 
 // Fabrics struct helps to hold the behaviours
 type Fabrics struct {
-	Auth          func(sessionToken string, privileges []string, oemPrivileges []string) response.RPC
+	Auth          func(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error)
 	ContactClient func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 
@@ -232,9 +232,12 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	var contactRequest pluginContactRequest
 	var resp response.RPC
 	sessionToken := req.SessionToken
-	authResp := f.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := f.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := "error while trying to authenticate session"
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
 		l.Log.Error(errMsg)
 		return contactRequest, authResp, fmt.Errorf(errMsg)
 	}

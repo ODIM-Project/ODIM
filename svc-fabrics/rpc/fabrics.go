@@ -29,7 +29,7 @@ import (
 
 // Fabrics struct helps to register service
 type Fabrics struct {
-	IsAuthorizedRPC  func(sessionToken string, privileges []string, oemPrivileges []string) response.RPC
+	IsAuthorizedRPC  func(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error)
 	ContactClientRPC func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 

@@ -45,7 +45,7 @@ var (
 // External struct to inject the contact external function into the handlers
 type External struct {
 	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth            func(string, []string, []string) response.RPC
+	Auth            func(string, []string, []string) (response.RPC, error)
 	CreateTask      func(string) (string, error)
 	UpdateTask      func(common.TaskData) error
 	CreateChildTask func(string, string) (string, error)

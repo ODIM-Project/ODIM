@@ -43,7 +43,7 @@ func TrackConfigFileChanges(configFilePath string, eventChan chan<- interface{})
 					l.Log.Info("modified file:" + fileEvent.Name)
 					// update the odim config
 					config.TLSConfMutex.Lock()
-					if err := config.SetConfiguration(); err != nil {
+					if _, err := config.SetConfiguration(); err != nil {
 						l.Log.Error("error while trying to set configuration: " + err.Error())
 					}
 					config.TLSConfMutex.Unlock()

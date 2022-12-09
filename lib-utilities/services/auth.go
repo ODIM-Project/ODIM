@@ -31,12 +31,11 @@ import (
 // As parameters session token, privileges and oem privileges are passed.
 // A RPC call is made with these parameters to the Account-Session service
 // to check whether the session is valid and have all the privileges which are passed to it.
-func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errResponse.RPC {
+func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) (errResponse.RPC, error) {
 	conn, err := ODIMService.Client(AccountSession)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to create client connection: %v", err)
-		log.Error(errMsg)
-		return GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil)
+		return GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil), fmt.Errorf(errMsg)
 	}
 	defer conn.Close()
 	asService := authproto.NewAuthorizationClient(conn)
@@ -50,14 +49,13 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errRe
 	)
 	if err != nil && response == nil {
 		errMsg := fmt.Sprintf("rpc call failed: %v", err)
-		log.Error(errMsg)
-		return GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil)
+		return GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil), fmt.Errorf(errMsg)
 	}
 	var msgArgs []interface{}
 	if response.StatusCode == http.StatusServiceUnavailable {
 		msgArgs = append(msgArgs, fmt.Sprintf("%v:%v", "", ""))
 	}
-	return GeneralError(response.StatusCode, response.StatusMessage, "while checking the authorization", msgArgs)
+	return GeneralError(response.StatusCode, response.StatusMessage, "while checking the authorization", msgArgs), nil
 }
 
 // GetSessionUserName will get user name from the session token by rpc call to account-session service

@@ -283,19 +283,26 @@ func checkTLSConf() error {
 		return nil
 	}
 
+	warningList := &lutilconf.WarningList{}
+
 	var err error
 	lutilconf.SetVerifyPeer(Data.TLSConf.VerifyPeer)
-	if err = lutilconf.SetTLSMinVersion(Data.TLSConf.MinVersion); err != nil {
+	if err = lutilconf.SetTLSMinVersion(Data.TLSConf.MinVersion, warningList); err != nil {
 		return err
 	}
-	if err = lutilconf.SetTLSMaxVersion(Data.TLSConf.MaxVersion); err != nil {
+	if err = lutilconf.SetTLSMaxVersion(Data.TLSConf.MaxVersion, warningList); err != nil {
 		return err
 	}
-	if err = lutilconf.ValidateConfiguredTLSVersions(); err != nil {
+	if err = lutilconf.ValidateConfiguredTLSVersions(warningList); err != nil {
 		return err
 	}
 	if err = lutilconf.SetPreferredCipherSuites(Data.TLSConf.PreferredCipherSuites); err != nil {
 		return err
 	}
+
+	for _, warning := range *warningList {
+		log.Warn(warning)
+	}
+
 	return nil
 }

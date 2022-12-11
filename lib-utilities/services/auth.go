@@ -24,7 +24,6 @@ import (
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
-	log "github.com/sirupsen/logrus"
 )
 
 // IsAuthorized is used to authorize the services using svc-account-session.
@@ -73,8 +72,7 @@ func GetSessionUserName(sessionToken string) (string, error) {
 		},
 	)
 	if err != nil && response == nil {
-		log.Error("something went wrong with rpc call: " + err.Error())
-		return "", err
+		return "", fmt.Errorf("something went wrong with rpc call: " + err.Error())
 	}
 	return response.UserName, err
 }
@@ -94,32 +92,9 @@ func GetSessionUserRoleID(sessionToken string) (string, error) {
 		},
 	)
 	if err != nil && response == nil {
-		log.Error("something went wrong with rpc call: " + err.Error())
-		return "", err
+		return "", fmt.Errorf("something went wrong with rpc call: " + err.Error())
 	}
 	return response.RoleID, err
-}
-
-// GetUserDetails function is used to get the session details
-func GetUserDetails(sessionToken string) (string, string) {
-	var err error
-	sessionUserName := "null"
-	sessionRoleID := "null"
-	if sessionToken != "" {
-		sessionUserName, err = GetSessionUserName(sessionToken)
-		if err != nil {
-			errMsg := "while trying to get session details: " + err.Error()
-			log.Error(errMsg)
-			return "null", "null"
-		}
-		sessionRoleID, err = GetSessionUserRoleID(sessionToken)
-		if err != nil {
-			errMsg := "while trying to get session details: " + err.Error()
-			log.Error(errMsg)
-			return sessionUserName, "null"
-		}
-	}
-	return sessionUserName, sessionRoleID
 }
 
 // GeneralError will create the error response

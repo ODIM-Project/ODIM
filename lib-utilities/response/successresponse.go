@@ -16,7 +16,8 @@ package response
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
+
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 // CreateGenericResponse will fill the response with respective data
@@ -41,7 +42,7 @@ func (r *Response) CreateGenericResponse(statusMessage string) {
 	case TaskStarted:
 		r.NumberOfArgs = len(r.MessageArgs)
 		if r.NumberOfArgs < 1 {
-			log.Warn("MessageArgs in Response is missing")
+			l.Log.Warn("MessageArgs in Response is missing")
 		}
 		r.Message = fmt.Sprintf("The task with id %v has started.", r.MessageArgs[0])
 	}

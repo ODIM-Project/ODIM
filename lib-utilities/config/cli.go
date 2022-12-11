@@ -17,7 +17,7 @@ package config
 import (
 	"flag"
 
-	log "github.com/sirupsen/logrus"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 // cliModel holds the data passed as the command line argument
@@ -41,9 +41,9 @@ func CollectCLArgs() {
 	flag.StringVar(&CLArgs.FrameWork, "framework", "GRPC", "framework used for micro service communication")
 	flag.Parse()
 	if CLArgs.RegistryAddress == "" {
-		log.Warn("No CLI argument found for registry_address")
+		l.Log.Warn("No CLI argument found for registry_address")
 	}
 	if CLArgs.ServerAddress == "" {
-		log.Warn("No CLI argument found for server_address")
+		l.Log.Warn("No CLI argument found for server_address")
 	}
 }

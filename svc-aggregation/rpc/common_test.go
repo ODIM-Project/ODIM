@@ -193,8 +193,8 @@ func createTaskForTesting(sessionUserName string) (string, error) {
 	return "some/Task", nil
 }
 
-func mockSubscribeEMB(pluginID string, list []string) {
-	return
+func mockSubscribeEMB(pluginID string, list []string) error {
+	return nil
 }
 
 func mockCreateChildTask(sessionID, taskID string) (string, error) {

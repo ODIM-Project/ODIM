@@ -85,7 +85,7 @@ type ExternalInterface struct {
 	PublishEvent             func([]string, string)
 	PublishEventMB           func(string, string, string)
 	GetPluginStatus          func(agmodel.Plugin) bool
-	SubscribeToEMB           func(string, []string)
+	SubscribeToEMB           func(string, []string) error
 	EncryptPassword          func([]byte) ([]byte, error)
 	DecryptPassword          func([]byte) ([]byte, error)
 	DeleteComputeSystem      func(int, string) *errors.Error

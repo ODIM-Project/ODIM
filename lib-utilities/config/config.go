@@ -611,13 +611,13 @@ func checkTLSConf(wl *WarningList) error {
 
 	var err error
 	SetVerifyPeer(Data.TLSConf.VerifyPeer)
-	if err = SetTLSMinVersion(Data.TLSConf.MinVersion); err != nil {
+	if err = SetTLSMinVersion(Data.TLSConf.MinVersion, wl); err != nil {
 		return err
 	}
-	if err = SetTLSMaxVersion(Data.TLSConf.MaxVersion); err != nil {
+	if err = SetTLSMaxVersion(Data.TLSConf.MaxVersion, wl); err != nil {
 		return err
 	}
-	if err = ValidateConfiguredTLSVersions(); err != nil {
+	if err = ValidateConfiguredTLSVersions(wl); err != nil {
 		return err
 	}
 	if err = SetPreferredCipherSuites(Data.TLSConf.PreferredCipherSuites); err != nil {

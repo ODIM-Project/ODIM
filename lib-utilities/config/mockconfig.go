@@ -342,8 +342,8 @@ func SetUpMockConfig(t *testing.T) error {
 		DeliveryRetryIntervalSeconds: 1,
 	}
 	SetVerifyPeer(Data.TLSConf.VerifyPeer)
-	SetTLSMinVersion(Data.TLSConf.MinVersion)
-	SetTLSMaxVersion(Data.TLSConf.MaxVersion)
+	SetTLSMinVersion(Data.TLSConf.MinVersion, &WarningList{})
+	SetTLSMaxVersion(Data.TLSConf.MaxVersion, &WarningList{})
 	SetPreferredCipherSuites(Data.TLSConf.PreferredCipherSuites)
 	return nil
 }

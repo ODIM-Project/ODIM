@@ -34,12 +34,14 @@ func main() {
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
-	log := logs.Log
 	logs.Adorn(logrus.Fields{
 		"host":   hostName,
 		"procid": podName + fmt.Sprintf("_%d", pid),
 	})
 
+	// log should be initialized after Adorn is invoked
+	// as Adorn will assign new pointer to Log variable in logs package.
+	log := logs.Log
 	configWarnings, err := config.SetConfiguration()
 	if err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})

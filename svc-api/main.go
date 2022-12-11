@@ -57,10 +57,6 @@ func main() {
 	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(config.Data.LogLevel)
 
-	for _, warning := range configWarnings {
-		log.Warn(warning)
-	}
-
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Api Service should not be run as the root user")
@@ -180,7 +176,10 @@ func main() {
 	})
 
 	// TODO: uncomment the following line after the migration
-	config.CollectCLArgs()
+	config.CollectCLArgs(&configWarnings)
+	for _, warning := range configWarnings {
+		log.Warn(warning)
+	}
 
 	err = services.InitializeClient(services.APIClient)
 	if err != nil {

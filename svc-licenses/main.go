@@ -49,11 +49,10 @@ func main() {
 	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(config.Data.LogLevel)
 
+	config.CollectCLArgs(&configWarnings)
 	for _, warning := range configWarnings {
 		log.Warn(warning)
 	}
-
-	config.CollectCLArgs()
 
 	if err := common.CheckDBConnection(); err != nil {
 		log.Error("error while trying to check DB connection health: " + err.Error())

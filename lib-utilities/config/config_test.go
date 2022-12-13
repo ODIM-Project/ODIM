@@ -143,6 +143,11 @@ func TestSetConfiguration(t *testing.T) {
 	            "MessageBusType": "Kafka",
 				"OdimControlMessageQueue":"ODIM-CONTROL-MESSAGES"
 	      },
+		"TaskQueueConf" : {
+			"QueueSize": 20000,
+			"DBCommitInterval": 1000,
+			"RetryInterval": 5000
+		},
         "FirmwareVersion": "1.0",
         "SouthBoundRequestTimeoutInSecs": 10,
         "ServerRediscoveryBatchSize": 30,
@@ -521,6 +526,11 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 		},
 	}
 	for num, tt := range tests {
+		Data.TaskQueueConf = &TaskQueueConf{
+			QueueSize:        1000,
+			DBCommitInterval: 1000,
+			RetryInterval:    5000,
+		}
 		switch num {
 		case 0:
 			Data.AuthConf = &AuthConf{

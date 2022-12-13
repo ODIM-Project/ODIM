@@ -60,6 +60,7 @@ type configModel struct {
 	PluginStatusPolling            *PluginStatusPolling     `json:"PluginStatusPolling"`
 	ExecPriorityDelayConf          *ExecPriorityDelayConf   `json:"ExecPriorityDelayConf"`
 	TLSConf                        *TLSConf                 `json:"TLSConf"`
+	TaskQueueConf                  *TaskQueueConf           `json:"TaskQueueConf"`
 	SupportedPluginTypes           []string                 `json:"SupportedPluginTypes"`
 	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
 	EventConf                      *EventConf               `json:"EventConf"`
@@ -173,6 +174,13 @@ type TLSConf struct {
 	PreferredCipherSuites []string `json:"PreferredCipherSuites"`
 }
 
+// TaskQueueConf holds configuration for the queue in task service
+type TaskQueueConf struct {
+	QueueSize        int `json:"QueueSize"`
+	DBCommitInterval int `json:"DBCommitInterval"`
+	RetryInterval    int `json:"RetryInterval"`
+}
+
 // ConnectionMethodConf is for connection method type and variant
 type ConnectionMethodConf struct {
 	ConnectionMethodType    string `json:"ConnectionMethodType"`
@@ -236,11 +244,14 @@ func ValidateConfiguration() (WarningList, error) {
 	if err = checkResourceRateLimit(); err != nil {
 		return *warningList, err
 	}
-	checkAuthConf(warningList)
-	checkAddComputeSkipResources(warningList)
-	checkURLTranslation(warningList)
-	checkPluginStatusPolling(warningList)
-	checkExecPriorityDelayConf(warningList)
+	if err = checkTaskQueueConfiguration(); err != nil {
+		return *warningList, err
+	}
+	checkAuthConf()
+	checkAddComputeSkipResources()
+	checkURLTranslation()
+	checkPluginStatusPolling()
+	checkExecPriorityDelayConf()
 
 	return *warningList, nil
 }
@@ -669,6 +680,19 @@ func checkResourceRateLimit() error {
 				return fmt.Errorf("time should be in integer format: %v", err.Error())
 			}
 		}
+	}
+	return nil
+}
+
+func checkTaskQueueConfiguration() error {
+	if Data.TaskQueueConf.QueueSize <= 0 {
+		return fmt.Errorf("task queue size should be greater than 0")
+	}
+	if Data.TaskQueueConf.DBCommitInterval <= 0 {
+		return fmt.Errorf("task db commit interval should be greater than 0")
+	}
+	if Data.TaskQueueConf.RetryInterval <= 0 {
+		return fmt.Errorf("retry interval should be greater than 0")
 	}
 	return nil
 }

@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -31,6 +32,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-task/thandle"
 	"github.com/ODIM-Project/ODIM/svc-task/tmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
+	"github.com/ODIM-Project/ODIM/svc-task/tqueue"
 )
 
 func main() {
@@ -85,6 +87,8 @@ func main() {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
 
+	tqueue.NewTaskQueue(config.Data.TaskQueueConf.QueueSize)
+
 	task := new(thandle.TasksRPC)
 	task.AuthenticationRPC = auth.Authentication
 	task.GetSessionUserNameRPC = auth.GetSessionUserName
@@ -97,7 +101,7 @@ func main() {
 
 	task.DeleteTaskFromDBModel = tmodel.DeleteTaskFromDB
 	task.DeleteTaskIndex = tmodel.DeleteTaskIndex
-	task.UpdateTaskStatusModel = tmodel.UpdateTaskStatus
+	task.UpdateTaskQueue = tqueue.EnqueueTask
 	task.PersistTaskModel = tmodel.PersistTask
 	task.ValidateTaskUserNameModel = tmodel.ValidateTaskUserName
 	task.PublishToMessageBus = tmessagebus.Publish
@@ -106,6 +110,11 @@ func main() {
 		Lock:           sync.Mutex{},
 	}
 	taskproto.RegisterGetTaskServiceServer(services.ODIMService.Server(), task)
+
+	tick := &tmodel.Tick{
+		Ticker: time.NewTicker(time.Duration(config.Data.TaskQueueConf.DBCommitInterval) * time.Microsecond),
+	}
+	go tqueue.UpdateTasksWorker(tick)
 
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {

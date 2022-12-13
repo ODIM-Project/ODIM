@@ -341,6 +341,11 @@ func SetUpMockConfig(t *testing.T) error {
 		DeliveryRetryAttempts:        1,
 		DeliveryRetryIntervalSeconds: 1,
 	}
+	Data.TaskQueueConf = &TaskQueueConf{
+		QueueSize:        1000,
+		DBCommitInterval: 1000,
+		RetryInterval:    1000,
+	}
 	SetVerifyPeer(Data.TLSConf.VerifyPeer)
 	SetTLSMinVersion(Data.TLSConf.MinVersion, &WarningList{})
 	SetTLSMaxVersion(Data.TLSConf.MaxVersion, &WarningList{})

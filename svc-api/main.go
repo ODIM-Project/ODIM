@@ -205,8 +205,10 @@ func main() {
 		logs.Log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 
+	errChan := make(chan error)
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go apicommon.TrackConfigFileChanges()
+	go apicommon.TrackConfigFileChanges(errChan)
+	go apicommon.TrackConfigErrors(errChan)
 
 	router.Run(iris.Server(apiServer))
 }

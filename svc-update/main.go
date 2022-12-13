@@ -66,10 +66,13 @@ func main() {
 	if ucommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go ucommon.TrackConfigFileChanges()
 
-	registerHandlers()
+	errChan := make(chan error)
+	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+	go ucommon.TrackConfigFileChanges(errChan)
+	go ucommon.TrackConfigErrors(errChan)
+
+	registerHandlers(errChan)
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {
 		log.Error(err)
@@ -77,9 +80,9 @@ func main() {
 
 }
 
-func registerHandlers() {
+func registerHandlers(errChan chan error) {
 	log := logs.Log
-	if err := services.InitializeService(services.Update); err != nil {
+	if err := services.InitializeService(services.Update, errChan); err != nil {
 		log.Error("fatal: error while trying to initialize service: " + err.Error())
 	}
 	updater := rpc.GetUpdater()

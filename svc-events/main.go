@@ -68,7 +68,8 @@ func main() {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
-	if err := services.InitializeService(services.Events); err != nil {
+	errChan := make(chan error)
+	if err := services.InitializeService(services.Events, errChan); err != nil {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
 
@@ -103,7 +104,8 @@ func main() {
 	}
 
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go evcommon.TrackConfigFileChanges()
+	go evcommon.TrackConfigFileChanges(errChan)
+	go evcommon.TrackConfigErrors(errChan)
 
 	// Subscribe to intercomm messagebus queue
 	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.OdimControlMessageQueue)

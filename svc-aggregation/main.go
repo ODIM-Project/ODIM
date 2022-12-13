@@ -88,7 +88,8 @@ func main() {
 		log.Fatal("error while trying add connection method: " + err.Error())
 	}
 
-	if err := services.InitializeService(services.Aggregator); err != nil {
+	errChan := make(chan error)
+	if err := services.InitializeService(services.Aggregator, errChan); err != nil {
 		log.Fatal("fatal: error while trying to initialize service: " + err.Error())
 	}
 
@@ -112,7 +113,8 @@ func main() {
 	if agcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	go agcommon.TrackConfigFileChanges(connectionMethodInterface)
+	go agcommon.TrackConfigFileChanges(connectionMethodInterface, errChan)
+	go agcommon.TrackConfigErrors(errChan)
 
 	go system.PerformPluginHealthCheck()
 

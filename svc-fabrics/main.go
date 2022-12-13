@@ -65,7 +65,8 @@ func main() {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
-	if err := services.InitializeService(services.Fabrics); err != nil {
+	errChan := make(chan error)
+	if err := services.InitializeService(services.Fabrics, errChan); err != nil {
 		log.Fatal("fatal: error while trying to initialize service: %v" + err.Error())
 	}
 	fabrics.Token.Tokens = make(map[string]string)
@@ -75,7 +76,8 @@ func main() {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go fabrics.TrackConfigFileChanges()
+	go fabrics.TrackConfigFileChanges(errChan)
+	go fabrics.TrackConfigErrors(errChan)
 
 	registerHandlers()
 	if err := services.ODIMService.Run(); err != nil {

@@ -301,9 +301,9 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 }
 
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-func TrackConfigFileChanges(configFilePath string) {
+func TrackConfigFileChanges(configFilePath string, errChan chan error) {
 	eventChan := make(chan interface{})
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	go common.TrackConfigFileChanges(configFilePath, eventChan, errChan)
 	select {
 	case <-eventChan: // new data arrives through eventChan channel
 		config.TLSConfMutex.RLock()
@@ -320,5 +320,13 @@ func TrackConfigFileChanges(configFilePath string) {
 			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
 			l.Log.Logger.SetLevel(config.Data.LogLevel)
 		}
+	}
+}
+
+// TrackConfigErrors monitors the errors in goroutines of odim libraries and log the errors
+func TrackConfigErrors(errChan chan error) {
+	for {
+		err := <-errChan
+		l.Log.Error(err)
 	}
 }

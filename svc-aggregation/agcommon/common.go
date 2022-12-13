@@ -191,9 +191,9 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 // Whenever  any config file changes and events  will be  and  reload the configuration and verify the existing connection methods
-func TrackConfigFileChanges(dbInterface DBInterface) {
+func TrackConfigFileChanges(dbInterface DBInterface, errChan chan error) {
 	eventChan := make(chan interface{})
-	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, errChan)
 	for {
 		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
 		config.TLSConfMutex.RLock()
@@ -208,6 +208,14 @@ func TrackConfigFileChanges(dbInterface DBInterface) {
 			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
 			l.Log.Logger.SetLevel(config.Data.LogLevel)
 		}
+	}
+}
+
+// TrackConfigErrors monitors the errors in goroutines of odim libraries and log the errors
+func TrackConfigErrors(errChan chan error) {
+	for {
+		err := <-errChan
+		l.Log.Error(err)
 	}
 }
 

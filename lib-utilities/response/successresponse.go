@@ -16,8 +16,6 @@ package response
 
 import (
 	"fmt"
-
-	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 // CreateGenericResponse will fill the response with respective data
@@ -41,10 +39,6 @@ func (r *Response) CreateGenericResponse(statusMessage string) {
 		r.Message = "The resource has been created successfully."
 	case TaskStarted:
 		r.NumberOfArgs = len(r.MessageArgs)
-		if r.NumberOfArgs < 1 {
-			l.Log.Warn("MessageArgs in Response is missing")
-		}
 		r.Message = fmt.Sprintf("The task with id %v has started.", r.MessageArgs[0])
 	}
-
 }

@@ -568,9 +568,9 @@ func (st *StartUpInteraface) getPluginEMB(plugin evmodel.Plugin) {
 	return
 }
 
-func TrackConfigFileChanges() {
+func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
-	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, errChan)
 	for {
 		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
 		if l.Log.Level != config.Data.LogLevel {
@@ -578,5 +578,13 @@ func TrackConfigFileChanges() {
 			l.Log.Logger.SetLevel(config.Data.LogLevel)
 		}
 
+	}
+}
+
+// TrackConfigErrors monitors the errors in goroutines of odim libraries and log the errors
+func TrackConfigErrors(errChan chan error) {
+	for {
+		err := <-errChan
+		l.Log.Error(err)
 	}
 }

@@ -87,9 +87,12 @@ func main() {
 	if configFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	go scommon.TrackConfigFileChanges(configFilePath)
 
-	err = services.InitializeService(services.Systems)
+	errChan := make(chan error)
+	go scommon.TrackConfigFileChanges(configFilePath, errChan)
+	go scommon.TrackConfigErrors(errChan)
+
+	err = services.InitializeService(services.Systems, errChan)
 	if err != nil {
 		log.Fatal("Error while trying to initialize the service: " + err.Error())
 	}

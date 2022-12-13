@@ -29,6 +29,7 @@
 package rpc
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -70,7 +71,7 @@ func TestDoSessionCreationRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSessionClientFunc = tt.NewSessionClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoSessionCreationRequest(tt.args.req)
+			got, err := DoSessionCreationRequest(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoSessionCreationRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -116,7 +117,7 @@ func TestDeleteSessionRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSessionClientFunc = tt.NewSessionClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DeleteSessionRequest(tt.args.sessionID, tt.args.sessionToken)
+			got, err := DeleteSessionRequest(context.Background(), tt.args.sessionID, tt.args.sessionToken)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteSessionRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -162,7 +163,7 @@ func TestGetSessionRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSessionClientFunc = tt.NewSessionClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetSessionRequest(tt.args.sessionID, tt.args.sessionToken)
+			got, err := GetSessionRequest(context.Background(), tt.args.sessionID, tt.args.sessionToken)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSessionRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -208,7 +209,7 @@ func TestGetAllActiveSessionRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSessionClientFunc = tt.NewSessionClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetAllActiveSessionRequest(tt.args.sessionID, tt.args.sessionToken)
+			got, err := GetAllActiveSessionRequest(context.Background(), tt.args.sessionID, tt.args.sessionToken)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAllActiveSessionRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -247,7 +248,7 @@ func TestGetSessionServiceRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewSessionClientFunc = tt.NewSessionClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetSessionServiceRequest()
+			got, err := GetSessionServiceRequest(context.Background())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSessionServiceRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return

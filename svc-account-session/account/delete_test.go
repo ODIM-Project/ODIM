@@ -64,7 +64,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "Unable to delete user: no data with the with key xyz found",
+				ErrorMessage:  "failed to delete account xyz: no data with the with key xyz found",
 				MessageArgs:   []interface{}{"Account", "xyz"},
 			},
 		},
@@ -75,7 +75,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "SomeOne does not have the privilege to delete user",
+				ErrorMessage:  "failed to delete account 2: SomeOne does not have the privilege to delete user",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -161,7 +161,7 @@ func TestDeleteDefaultAdminAccount(t *testing.T) {
 		}
 	}()
 
-	common.SetUpMockConfig()
+	config.SetUpMockConfig(t)
 
 	errArgs := response.Args{
 		Code:    response.GeneralError,
@@ -169,7 +169,7 @@ func TestDeleteDefaultAdminAccount(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceCannotBeDeleted,
-				ErrorMessage:  "default user account can not be deleted",
+				ErrorMessage:  "failed to delete account admin: default user account can not be deleted",
 			},
 		},
 	}

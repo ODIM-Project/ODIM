@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package middleware ...
+// Package middleware ...
 package middleware
 
 import (
@@ -21,17 +21,18 @@ import (
 	iris "github.com/kataras/iris/v12"
 )
 
-//SessionDelMiddleware is used to delete session created for basic auth
+// SessionDelMiddleware is used to delete session created for basic auth
 func SessionDelMiddleware(ctx iris.Context) {
 	ctx.Next()
+	ctxt := ctx.Request().Context()
 
 	sessionID := ctx.Request().Header.Get("Session-ID")
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionID != "" {
-		resp, err := rpc.DeleteSessionRequest(sessionID, sessionToken)
+		resp, err := rpc.DeleteSessionRequest(ctxt, sessionID, sessionToken)
 		if err != nil && resp == nil {
 			errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctxt).Error(errorMessage)
 			return
 		}
 	}

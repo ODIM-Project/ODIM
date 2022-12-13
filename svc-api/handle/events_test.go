@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package handle
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -24,7 +25,7 @@ import (
 	"github.com/kataras/iris/v12/httptest"
 )
 
-func mockGetEventServiceRPC(req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
+func mockGetEventServiceRPC(ctx context.Context, req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
 	var response *eventsproto.EventSubResponse
 	if req.SessionToken == "ValidToken" {
 		response = &eventsproto.EventSubResponse{
@@ -43,7 +44,7 @@ func mockGetEventServiceRPC(req eventsproto.EventSubRequest) (*eventsproto.Event
 	}
 	return response, nil
 }
-func mockCreateEventSubscriptionRPC(req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
+func mockCreateEventSubscriptionRPC(ctx context.Context, req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
 	var response *eventsproto.EventSubResponse
 	if req.SessionToken == "ValidToken" {
 		response = &eventsproto.EventSubResponse{
@@ -63,7 +64,7 @@ func mockCreateEventSubscriptionRPC(req eventsproto.EventSubRequest) (*eventspro
 	return response, nil
 }
 
-func mockEventSubscriptionRPC(req eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+func mockEventSubscriptionRPC(ctx context.Context, req eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
 	var response *eventsproto.EventSubResponse
 	if req.SessionToken == "ValidToken" && req.EventSubscriptionID == "1A" {
 		response = &eventsproto.EventSubResponse{
@@ -82,7 +83,7 @@ func mockEventSubscriptionRPC(req eventsproto.EventRequest) (*eventsproto.EventS
 	}
 	return response, nil
 }
-func mockGetEventSubscriptionRPC(req eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+func mockGetEventSubscriptionRPC(ctx context.Context, req eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
 	var response *eventsproto.EventSubResponse
 	if req.SessionToken == "ValidToken" {
 		response = &eventsproto.EventSubResponse{

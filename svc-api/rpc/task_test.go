@@ -29,6 +29,7 @@
 package rpc
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -70,7 +71,7 @@ func TestDeleteTaskRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewGetTaskServiceClientFunc = tt.NewGetTaskServiceClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DeleteTaskRequest(tt.args.req)
+			got, err := DeleteTaskRequest(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteTaskRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -115,7 +116,7 @@ func TestGetTaskRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewGetTaskServiceClientFunc = tt.NewGetTaskServiceClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetTaskRequest(tt.args.req)
+			got, err := GetTaskRequest(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetTaskRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -160,7 +161,7 @@ func TestGetSubTasks(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewGetTaskServiceClientFunc = tt.NewGetTaskServiceClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetSubTasks(tt.args.req)
+			got, err := GetSubTasks(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSubTasks() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -205,7 +206,7 @@ func TestGetSubTask(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewGetTaskServiceClientFunc = tt.NewGetTaskServiceClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetSubTask(tt.args.req)
+			got, err := GetSubTask(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSubTask() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -250,7 +251,7 @@ func TestGetTaskMonitor(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewGetTaskServiceClientFunc = tt.NewGetTaskServiceClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetTaskMonitor(tt.args.req)
+			got, err := GetTaskMonitor(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetTaskMonitor() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -295,7 +296,7 @@ func TestTaskCollection(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewGetTaskServiceClientFunc = tt.NewGetTaskServiceClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := TaskCollection(tt.args.req)
+			got, err := TaskCollection(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("TaskCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -340,7 +341,7 @@ func TestGetTaskService(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewGetTaskServiceClientFunc = tt.NewGetTaskServiceClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetTaskService(tt.args.req)
+			got, err := GetTaskService(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetTaskService() error = %v, wantErr %v", err, tt.wantErr)
 				return

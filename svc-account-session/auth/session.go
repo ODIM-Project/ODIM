@@ -36,7 +36,7 @@ var Lock sync.Mutex
 func CheckSessionCreationCredentials(userName, password string) (*asmodel.User, *errors.Error) {
 	go expiredSessionCleanUp()
 	if userName == "" || password == "" {
-		return nil, errors.PackError(errors.UndefinedErrorType, "error: Invalid username or password ")
+		return nil, errors.PackError(errors.UndefinedErrorType, "error while checking session credentials: username or password is empty")
 	}
 	user, err := asmodel.GetUserDetails(userName)
 	if err != nil {
@@ -47,7 +47,7 @@ func CheckSessionCreationCredentials(userName, password string) (*asmodel.User, 
 	hashSum := hash.Sum(nil)
 	hashedPassword := base64.URLEncoding.EncodeToString(hashSum)
 	if user.Password != hashedPassword {
-		return nil, errors.PackError(errors.UndefinedErrorType, "error: Invalid username or password ")
+		return nil, errors.PackError(errors.UndefinedErrorType, "error while checking session credentials: input password is not matching user password")
 	}
 	return &user, nil
 }
@@ -63,7 +63,7 @@ func CheckSessionTimeOut(sessionToken string) (*asmodel.Session, *errors.Error) 
 		return nil, errors.PackError(err.ErrNo(), "error while trying to get session details with the token ", sessionToken, ": ", err.Error())
 	}
 	if time.Since(session.LastUsedTime).Minutes() > config.Data.AuthConf.SessionTimeOutInMins {
-		return nil, errors.PackError(errors.InvalidAuthToken, "error: invalid token ", sessionToken)
+		return nil, errors.PackError(errors.InvalidAuthToken, "error: session is timed out", sessionToken)
 	}
 
 	return &session, nil

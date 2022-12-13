@@ -45,6 +45,7 @@ func GetSessionUserName(req *sessionproto.SessionRequest) (*sessionproto.Session
 		return &resp, errs
 	}
 	resp.UserName = currentSession.UserName
+	l.Log.Debugf("outgoing response of request to get session username: %s", currentSession.UserName)
 	return &resp, nil
 }
 
@@ -64,6 +65,7 @@ func GetSessionUserRoleID(req *sessionproto.SessionRequest) (*sessionproto.Sessi
 		return &resp, errs
 	}
 	resp.RoleID = currentSession.RoleID
+	l.Log.Debugf("outgoing response of request to get session role id: %s", currentSession.RoleID)
 	return &resp, nil
 }
 
@@ -79,6 +81,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 		Name:      "User Session",
 	}
 	var resp response.RPC
+	errLogPrefix := "failed to fetch the session : "
 
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -93,10 +96,11 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 		ErrorArgs: errorArgs,
 	}
 
+	l.Log.Info("Validating the request to fetch the session")
 	// Validating the session
 	currentSession, err := auth.CheckSessionTimeOut(req.SessionToken)
 	if err != nil {
-		errorMessage := "Unable to authorize session token: " + err.Error()
+		errorMessage := errLogPrefix + "Unable to authorize session token: " + err.Error()
 		resp.StatusCode, resp.StatusMessage = err.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body
@@ -109,7 +113,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	}
 
 	if errs := UpdateLastUsedTime(req.SessionToken); errs != nil {
-		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
+		errorMessage := errLogPrefix + "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.Log.Error(errorMessage)
 		return resp
@@ -117,7 +121,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	auth.CustomAuthLog(req.SessionToken, "Authorization is successful", http.StatusOK)
 	sessionTokens, errs := asmodel.GetAllSessionKeys()
 	if errs != nil {
-		errorMessage := "Unable to get all session keys while deleting session: " + errs.Error()
+		errorMessage := errLogPrefix + "Unable to get all session keys while deleting session: " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.Log.Error(errorMessage)
 		return resp
@@ -147,7 +151,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 				resp.Body = respBody
 				return resp
 			}
-			errorMessage := "The session doesn't have the requisite privileges for the action"
+			errorMessage := errLogPrefix + "The session doesn't have the requisite privileges for the action"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
 			errorArgs[0].ErrorMessage = errorMessage
@@ -159,7 +163,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	}
 	sessionTokens = nil
 	errorMessage := "No session with id " + req.SessionId + " found."
-	l.Log.Error(errorMessage)
+	l.Log.Error(errLogPrefix + errorMessage)
 	resp.StatusCode = http.StatusNotFound
 	resp.StatusMessage = response.ResourceNotFound
 	errorArgs[0].ErrorMessage = errorMessage
@@ -183,6 +187,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 	}
 
 	var resp response.RPC
+	errorLogPrefix := "failed to fetch all active sessions : "
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -196,10 +201,11 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 		ErrorArgs: errorArgs,
 	}
 
+	l.Log.Info("fetching all active sessions")
 	// Validating the session
 	currentSession, gerr := auth.CheckSessionTimeOut(req.SessionToken)
 	if gerr != nil {
-		errorMessage := "Unable to authorize session token: " + gerr.Error()
+		errorMessage := errorLogPrefix + "Unable to authorize session token: " + gerr.Error()
 		resp.StatusCode, resp.StatusMessage = gerr.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body
@@ -213,14 +219,14 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 
 	err := UpdateLastUsedTime(req.SessionToken)
 	if err != nil {
-		errorMessage := "Unable to update last used time of session with token " + req.SessionToken + ": " + err.Error()
+		errorMessage := errorLogPrefix + "Unable to update last used time of session with token " + req.SessionToken + ": " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.Log.Error(errorMessage)
 		return resp
 	}
 	auth.CustomAuthLog(req.SessionToken, "Authorization is successful", http.StatusOK)
 	if !currentSession.Privileges[common.PrivilegeConfigureSelf] && !currentSession.Privileges[common.PrivilegeConfigureUsers] {
-		errorMessage := "Insufficient privileges: " + err.Error()
+		errorMessage := errorLogPrefix + "Insufficient privileges: " + err.Error()
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		errorArgs[0].ErrorMessage = errorMessage
@@ -232,7 +238,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 
 	sessionTokens, errs := asmodel.GetAllSessionKeys()
 	if errs != nil {
-		errorMessage := "Unable to get all session keys in delete session: " + errs.Error()
+		errorMessage := errorLogPrefix + "Unable to get all session keys : " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.Log.Error(errorMessage)
 		return resp
@@ -242,7 +248,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 	for _, token := range sessionTokens {
 		session, err := auth.CheckSessionTimeOut(token)
 		if err != nil {
-			l.Log.Error("Unable to get session details with the token " + token + ": " + err.Error())
+			l.Log.Error(errorLogPrefix + "Unable to get session details with the token " + token + ": " + err.Error())
 			continue
 		}
 

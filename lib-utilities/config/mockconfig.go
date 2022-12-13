@@ -246,8 +246,8 @@ func SetUpMockConfig(t *testing.T) error {
 		RedisOnDiskPassword:   []byte("redis_password"),
 	}
 	Data.MessageBusConf = &MessageBusConf{
-		MessageBusType:  "Kafka",
-		MessageBusQueue: []string{"redfish-topic"},
+		MessageBusType:          "Kafka",
+		OdimControlMessageQueue: "odim-control-messages",
 	}
 	Data.KeyCertConf = &KeyCertConf{
 		RootCACertificate: hostCA,

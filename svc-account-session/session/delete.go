@@ -32,6 +32,7 @@ import (
 // respond RPC response and error if there is.
 func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 	var resp response.RPC
+	errorLogPrefix := "failed to delete session : "
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -44,16 +45,17 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
+	l.Log.Info("Validating the request to delete the session")
 	currentSession, serr := asmodel.GetSession(req.SessionToken)
 	if serr != nil {
-		errorMessage := "Unable to delete session: " + serr.Error()
+		errorMessage := errorLogPrefix + serr.Error()
 		l.Log.Error(errorMessage)
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 	}
 
 	sessionTokens, err := asmodel.GetAllSessionKeys()
 	if err != nil {
-		errorMessage := "Unable to get all session keys while deleting session: " + err.Error()
+		errorMessage := errorLogPrefix + "Unable to get all session keys : " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.Log.Error(errorMessage)
 		return resp
@@ -61,7 +63,7 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 	for _, token := range sessionTokens {
 		session, err := auth.CheckSessionTimeOut(token)
 		if err != nil {
-			l.Log.Error("Unable to get session details with the token " + token + ": " + err.Error())
+			l.Log.Error(errorLogPrefix + "Unable to get session details with the token " + token + ": " + err.Error())
 			continue
 		}
 		if session.ID == req.SessionId {
@@ -70,24 +72,24 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 				if req.SessionToken != session.Token {
 					err := UpdateLastUsedTime(req.SessionToken)
 					if err != nil {
-						errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + err.Error()
+						errorMessage := errorLogPrefix + "Unable to update last used time of session matching token " + req.SessionToken + ": " + err.Error()
 						resp.CreateInternalErrorResponse(errorMessage)
 						l.Log.Error(errorMessage)
 						return resp
 					}
 				}
 				if err := session.Delete(); err != nil {
-					errorMessage := "Unable to get all session keys while deleting session: " + err.Error()
+					errorMessage := errorLogPrefix + err.Error()
 					resp.CreateInternalErrorResponse(errorMessage)
 					l.Log.Error(errorMessage)
 					return resp
 				}
-				l.Log.Info("Successfully Deleted: ")
 				resp.StatusCode = http.StatusNoContent
 				resp.StatusMessage = response.ResourceRemoved
+				l.Log.Info("Session is deleted")
 				return resp
 			}
-			errorMessage := "Insufficient privileges"
+			errorMessage := errorLogPrefix + "Insufficient privileges"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
 			errorArgs[0].ErrorMessage = errorMessage
@@ -98,8 +100,8 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 		}
 	}
 	sessionTokens = nil
-	l.Log.Error("error: Status Not Found")
-	errorMessage := "error: Session ID not found"
+	errorMessage := errorLogPrefix + "Session ID not found"
+	l.Log.Error(errorMessage)
 	resp.StatusCode = http.StatusNotFound
 	resp.StatusMessage = response.ResourceNotFound
 	errorArgs[0].ErrorMessage = errorMessage

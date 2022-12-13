@@ -15,6 +15,7 @@
 package systems
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -450,7 +451,7 @@ func TestGetAllSystems(t *testing.T) {
 		}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetSystemsCollection(tt.args.req)
+			got := GetSystemsCollection(context.Background(), tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSystemsInfo() = %v, want %v", got, tt.want)
 			}
@@ -462,7 +463,7 @@ func TestGetAllSystems(t *testing.T) {
 	GetAllKeysFromTableFunc = func(table string) ([]string, error) {
 		return nil, &errors.Error{}
 	}
-	resp := GetSystemsCollection(&req)
+	resp := GetSystemsCollection(context.Background(), &req)
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
 
 }
@@ -1045,7 +1046,7 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetSystemsCollection(tt.args.req)
+			got := GetSystemsCollection(context.Background(), tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAllSystemsWithMultipleIndexData = %v, want %v", got, tt.want)
 			}

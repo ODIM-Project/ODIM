@@ -100,7 +100,6 @@ func checkForPrivilege(session *asmodel.Session, privilege string) (*Status, err
 	//check if user has ConfigureUsers privilege
 	//	l.Log.Println(session)
 	if !session.Privileges[privilege] {
-		l.Log.Error("InsufficientPrivilege")
 		return &Status{Code: http.StatusForbidden, Message: response.InsufficientPrivilege}, fmt.Errorf("InsufficientPrivilege")
 	}
 	return nil, nil

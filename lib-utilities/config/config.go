@@ -247,11 +247,11 @@ func ValidateConfiguration() (WarningList, error) {
 	if err = checkTaskQueueConfiguration(); err != nil {
 		return *warningList, err
 	}
-	checkAuthConf()
-	checkAddComputeSkipResources()
-	checkURLTranslation()
-	checkPluginStatusPolling()
-	checkExecPriorityDelayConf()
+	checkAuthConf(warningList)
+	checkAddComputeSkipResources(warningList)
+	checkURLTranslation(warningList)
+	checkPluginStatusPolling(warningList)
+	checkExecPriorityDelayConf(warningList)
 
 	return *warningList, nil
 }

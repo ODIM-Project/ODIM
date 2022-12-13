@@ -18,9 +18,13 @@ package tmodel
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
+	db "github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
@@ -39,6 +43,7 @@ type CompletedTask struct {
 	EndTime  int64
 }
 
+// to be moved to dmtf
 // Task Model
 type Task struct {
 	ParentID     string
@@ -64,6 +69,26 @@ type Task struct {
 	EndTime         time.Time
 }
 
+// Tick struct is used to help the goroutines that process the task queue to communicate effectively
+// Tick contains the following attributes
+/*
+1. Ticker is of type Ticker in time package. it is used to acknowledge
+the function that process task queue that it is time to commit the current
+pipelined transaction to redis DB
+2. M is of type Mutex in sync package. It ensures only one goroutine access
+the Commit and Executing flags at the same time.
+3. Commit is a flag which is made true when ticker "ticks". when it is made true,
+"ProcessTaskQueue" commit the current pipeline to redis.
+4. Executing is a flag which is made true when the "ProcessTaskQueue" function is invoked
+and made false when it is finished.
+*/
+type Tick struct {
+	Ticker    *time.Ticker
+	M         sync.Mutex
+	Commit    bool
+	Executing bool
+}
+
 // Payload contain information detailing the HTTP and JSON payload
 //information for executing the task.
 //This object shall not be included in the response if the HidePayload property
@@ -86,20 +111,28 @@ type Message struct {
 	Severity          string   `json:"Severity"`
 }
 
-//BuildCompletedTaskIndex is used to build the index for Completed Task
-func BuildCompletedTaskIndex(completedTask *Task, table string) error {
-	conn, err := common.GetDBConnection(common.InMemory)
+// GetWriteConnection returns write connection retrieved from the connection pool.
+func GetWriteConnection() *db.Conn {
+	connPool, err := db.GetDBConnection(db.InMemory)
 	if err != nil {
-		l.Log.Error("BuildCompletedTaskIndex : error while trying to get DB Connection : " + err.Error())
-		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+		l.Log.Error(err.Error())
+		return nil
 	}
-	key := completedTask.UserName + "::" + completedTask.EndTime.String() + "::" + completedTask.ID
-	createError := conn.CreateTaskIndex(CompletedTaskIndex, completedTask.EndTime.UnixNano(), key)
-	if createError != nil {
-		l.Log.Error("BuildCompletedTaskIndex : error while trying to CreateTaskIndex : " + createError.Error())
-		return fmt.Errorf("error while trying to create task index: %v", err)
+
+	conn, connErr := connPool.GetWriteConnection()
+	if connErr != nil {
+		l.Log.Error("ProcessTaskQueue : error while trying to get DB write Connection : " + connErr.Error())
+		return nil
 	}
-	return nil
+	return conn
+}
+
+func validateDBConnection(conn *db.Conn) *db.Conn {
+	if conn.IsBadConn() {
+		conn.Close()
+		return GetWriteConnection()
+	}
+	return conn
 }
 
 // GetCompletedTasksIndex Searches Complete Tasks in the db using secondary index with provided search Key
@@ -136,35 +169,6 @@ func PersistTask(t *Task, db common.DbType) error {
 	if err = connPool.Create("task", t.ID, t); err != nil {
 		l.Log.Error("PersistTask : error while trying to create task : " + err.Error())
 		return fmt.Errorf("error while trying to create new task: %v", err.Error())
-	}
-	return nil
-}
-
-// UpdateTaskStatus is to update the task data already present in db
-// Takes:
-//	db of type common.DbType(int32)
-//	t of type *Task
-// Returns:
-//	err of type error
-//	On Success - return nil value
-//	On Failure - return non nill value
-func UpdateTaskStatus(t *Task, db common.DbType) error {
-	connPool, err := common.GetDBConnection(db)
-	if err != nil {
-		l.Log.Error("UpdateTaskStatus : error while trying to get DB Connection : " + err.Error())
-		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
-	}
-	if _, err = connPool.Update("task", t.ID, t); err != nil {
-		l.Log.Error("UpdateTaskStatus : error while trying to updating task status : " + err.Error())
-		return fmt.Errorf("error while trying to update task: %v", err.Error())
-	}
-	// Build Redis Index here if we dont do it in thandle
-	if (t.TaskState == "Completed" || t.TaskState == "Exception") && t.ParentID == "" {
-		taskIndexErr := BuildCompletedTaskIndex(t, CompletedTaskTable)
-		if taskIndexErr != nil {
-			l.Log.Error("UpdateTaskStatus : error in creating index for task : " + taskIndexErr.Error())
-			return taskIndexErr
-		}
 	}
 	return nil
 }
@@ -283,4 +287,124 @@ func ValidateTaskUserName(userName string) error {
 		return fmt.Errorf("error while trying to read from DB: %v", err.Error())
 	}
 	return nil
+}
+
+// ProcessTaskQueue dequeue the tasks details from queue and update DB using pipelined transaction
+// the pipeline is committed when signal task is dequeued from the queue
+// a signal task is enqueued by the caller once in a millisecond
+/* ProcessTaskQueue takes the following keys as input:
+1."queue" is a pointer to the channel which acts as the task queue
+2."conn" is an instance of Conn struct in persistence manager library
+*/
+func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
+
+	defer func() {
+		tick.M.Lock()
+		tick.Commit = false
+		tick.Executing = false
+		tick.M.Unlock()
+	}()
+
+	const (
+		MaxRetry int    = 3
+		Table    string = "task"
+	)
+
+	var (
+		i             int           = 0
+		updatedTasks  bool          = false
+		createdIndex  bool          = false
+		mapSize       int           = config.Data.TaskQueueConf.QueueSize
+		retryInterval time.Duration = time.Duration(config.Data.TaskQueueConf.RetryInterval) * time.Millisecond
+	)
+
+	tasks := make(map[string]interface{}, mapSize)
+	completedTasks := make(map[string]int64, mapSize)
+
+	if len(*queue) <= 0 {
+		return
+	}
+
+	tick.M.Lock()
+	tick.Executing = true
+	tick.M.Unlock()
+
+	conn = validateDBConnection(conn)
+
+	for {
+		task := dequeueTask(queue)
+
+		if task != nil {
+			saveID := Table + ":" + task.ID
+			tasks[saveID] = task
+			if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
+				key := task.UserName + "::" + task.EndTime.String() + "::" + task.ID
+				completedTasks[key] = task.EndTime.UnixNano()
+			}
+		}
+
+		if tick.Commit {
+			break
+		}
+	}
+
+	if len(tasks) > 0 {
+		for i < MaxRetry {
+			if err := conn.UpdateTransaction(tasks); err != nil {
+				if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
+					time.Sleep(retryInterval)
+					conn = validateDBConnection(conn)
+				} else {
+					l.Log.Error("ProcessTaskQueue() : task update transaction failed : " + err.Error())
+					break
+				}
+				i++
+			} else {
+				updatedTasks = true
+				break
+			}
+		}
+
+		if !updatedTasks {
+			for task := range tasks {
+				l.Log.Errorf("Failed to update the task : %s", task)
+			}
+		}
+	}
+
+	if len(completedTasks) > 0 {
+		i = 0
+		for i < MaxRetry {
+			if err := conn.CreateIndexTransaction(CompletedTaskIndex, completedTasks); err != nil {
+				if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
+					time.Sleep(retryInterval)
+					conn = validateDBConnection(conn)
+				} else {
+					l.Log.Error("ProcessTaskQueue() : create index transaction failed : " + err.Error())
+					break
+				}
+				i++
+			} else {
+				createdIndex = true
+				break
+			}
+		}
+
+		if !createdIndex {
+			for task := range completedTasks {
+				l.Log.Errorf("Failed to create index for the task : %s", task)
+			}
+		}
+	}
+
+	tasks = nil
+	completedTasks = nil
+}
+
+// dequeueTask dequeue a task from channel and returns. If no elements is present in the queue it returns nil.
+func dequeueTask(queue *chan *Task) *Task {
+	if len(*queue) <= 0 {
+		return nil
+	}
+	return <-*queue
 }

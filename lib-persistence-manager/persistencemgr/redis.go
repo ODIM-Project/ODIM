@@ -20,7 +20,10 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io"
 	"math/big"
+	"net"
+	"sort"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -52,6 +55,12 @@ const (
 	// OnDisk - To select in-disk db connection pool
 	OnDisk
 )
+
+// Conn contains the write connection instance retrieved from the connection pool
+type Conn struct {
+	WriteConn redis.Conn
+	WritePool **redis.Pool
+}
 
 // RedisExternalCalls containes the methods to make calls to external client libraries of Redis DB
 type RedisExternalCalls interface {
@@ -167,7 +176,7 @@ func (p *ConnPool) setWritePool(c *Config) error {
 func retryForMasterIP(pool *ConnPool, config *Config) (currentMasterIP, currentMasterPort string) {
 	for i := 0; i < 120; i++ {
 		currentMasterIP, currentMasterPort = GetCurrentMasterHostPort(config)
-		if currentMasterIP != "" && pool.MasterIP != currentMasterIP {
+		if currentMasterIP != "" {
 			break
 		}
 		time.Sleep(1 * time.Second)
@@ -277,6 +286,28 @@ func getPool(host, port, password string) (*redis.Pool, error) {
 		},
 	}
 	return p, nil
+}
+
+// GetWritePool return instance of redis write pool
+func (p *ConnPool) GetWritePool() (*redis.Pool, *errors.Error) {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	if writePool == nil {
+		return nil, errors.PackError(errors.DBConnFailed, "error while trying to Write Transaction data: WritePool is nil")
+	}
+	return writePool, nil
+}
+
+// GetWriteConnection retrieve a write connection from the connection pool
+func (p *ConnPool) GetWriteConnection() (*Conn, *errors.Error) {
+	writePool, err := p.GetWritePool()
+	if err != nil {
+		return nil, err
+	}
+	writeConn := writePool.Get()
+	return &Conn{
+		WriteConn: writeConn,
+		WritePool: &p.WritePool,
+	}, nil
 }
 
 func getTLSConfig() (*tls.Config, error) {
@@ -661,6 +692,189 @@ func (p *ConnPool) SaveBMCInventory(data map[string]interface{}) *errors.Error {
 	}
 	return nil
 
+}
+
+// Close closes the write connection retrieved from the connection pool
+func (c *Conn) Close() {
+	if c.WriteConn != nil {
+		c.WriteConn.Close()
+	}
+	if c.WritePool != nil {
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(c.WritePool)), nil)
+	}
+}
+
+// Ping will check the DB write connection health
+func (c *Conn) Ping() *errors.Error {
+	if _, err := c.WriteConn.Do("PING"); err != nil {
+		return errors.PackError(errors.DBConnFailed, "error while pinging DB with write connection: WritePool is nil : "+err.Error())
+
+	}
+	return nil
+}
+
+// IsBadConn checks if the connection to DB is active or not
+func (c *Conn) IsBadConn() bool {
+	if c.WriteConn != nil && c.Ping() == nil {
+		return false
+	}
+	return true
+}
+
+func getSortedMapKeys(m interface{}) []string {
+	var keys []string
+	switch m := m.(type) {
+	case map[string]interface{}:
+		keys = make([]string, 0, len(m))
+		for k := range m {
+			keys = append(keys, k)
+		}
+	case map[string]int64:
+		keys = make([]string, 0, len(m))
+		for k := range m {
+			keys = append(keys, k)
+		}
+	default:
+		l.Log.Error("mapKeys(): Type of map is unexpected")
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// UpdateTransaction will update the database using pipelined transaction
+/* UpdateTransaction takes the following keys as input:
+1."data" is of type map[string]interface{} and is the user data sent to be updated in DB.
+key of map should be the key in database.
+*/
+func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
+	var partialFailure bool = false
+	keys := getSortedMapKeys(data)
+	c.WriteConn.Send("MULTI")
+	for _, key := range keys {
+		jsondata, err := json.Marshal(data[key])
+		if err != nil {
+			delete(data, key)
+			l.Log.Error(errors.PackError(errors.JSONUnmarshalFailed,
+				fmt.Sprintf("update db: JSON Unmarshal failed: error : %s, key: %s, json: %v", err.Error(), key, data[key])))
+			continue
+		}
+		updateErr := c.WriteConn.Send("SET", key, jsondata)
+		if updateErr != nil {
+			c.WriteConn.Send("DISCARD")
+			if isTimeOutError(updateErr) {
+				return errors.PackError(errors.TimeoutError, updateErr.Error())
+			}
+			return errors.PackError(errors.DBUpdateFailed, updateErr.Error())
+		}
+	}
+
+	keys = getSortedMapKeys(data)
+	result, err := redis.Values(c.WriteConn.Do("EXEC"))
+	if err != nil {
+		c.WriteConn.Send("DISCARD")
+		if isTimeOutError(err) {
+			return errors.PackError(errors.TimeoutError, err.Error())
+		}
+		return errors.PackError(errors.DBUpdateFailed, err.Error())
+	}
+
+	for i, key := range keys {
+		res, ok := result[i].(string)
+		if ok && res == "OK" {
+			delete(data, key)
+		} else {
+			partialFailure = true
+		}
+	}
+
+	if partialFailure {
+		return errors.PackError(errors.TransactionPartiallyFailed, "TransactionPartiallyFailed : All keys in transaction are not updated in DB")
+	}
+	return nil
+}
+
+// CreateIndexTransaction will create the indices using pipelined transaction
+/* CreateIndexTransaction takes the following keys as input:
+1. "key" is the key of the sorted set.
+2."scores" is of type map[string]int64 and is the user data sent to be updated in DB.
+key of map should be the member for which we create the index. the value is score of that member
+*/
+func (c *Conn) CreateIndexTransaction(key string, scores map[string]int64) *errors.Error {
+	var partialFailure bool = false
+	members := getSortedMapKeys(scores)
+	c.WriteConn.Send("MULTI")
+	for _, member := range members {
+		createErr := c.WriteConn.Send("ZADD", key, scores[member], member)
+		if createErr != nil {
+			c.WriteConn.Send("DISCARD")
+			if isTimeOutError(createErr) {
+				return errors.PackError(errors.TimeoutError, createErr.Error())
+			}
+			return errors.PackError(errors.DBUpdateFailed, createErr.Error())
+		}
+	}
+	result, err := redis.Values(c.WriteConn.Do("EXEC"))
+	if err != nil {
+		c.WriteConn.Send("DISCARD")
+		if isTimeOutError(err) {
+			return errors.PackError(errors.TimeoutError, err.Error())
+		}
+		return errors.PackError(errors.DBUpdateFailed, err.Error())
+	}
+
+	for i, member := range members {
+		res, ok := result[i].(int64)
+		if ok && res == 1 {
+			delete(scores, member)
+		} else {
+			partialFailure = true
+		}
+	}
+
+	if partialFailure {
+		return errors.PackError(errors.TransactionPartiallyFailed, "TransactionPartiallyFailed : All indices for the key are not created in DB")
+	}
+	return nil
+}
+
+// ShouldRetry checks fi the redis db operation can be retried or not by validating the error returned by redis
+func IsRetriable(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	e := err.Error()
+	redisErrorPrefixes := []string{
+		"LOADING ",
+		"READONLY ",
+		"MOVED ",
+		"TRYAGAIN ",
+	}
+
+	switch e {
+	case io.EOF.Error(), io.ErrUnexpectedEOF.Error():
+		return true
+	case "ERR max number of clients reached":
+		return true
+	}
+
+	for _, prefix := range redisErrorPrefixes {
+		if strings.Contains(e, prefix) {
+			return true
+		}
+	}
+
+	// if instance of Error struct in errors package of lib-utilities is passed as the error,
+	// conversion to timeout error would not be possible
+	// So actual error should be passed to check if it is timeout
+	return isTimeOutError(err)
+}
+
+func isTimeOutError(err error) bool {
+	if err, ok := err.(net.Error); ok && err.Timeout() {
+		return true
+	}
+	return false
 }
 
 // GetResourceDetails will fetch the key and also fetch the data

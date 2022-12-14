@@ -19,6 +19,7 @@ import (
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	teleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
 )
 
@@ -32,8 +33,11 @@ func (a *Telemetry) GetTelemetryService(ctx context.Context, req *teleproto.Tele
 // GetMetricDefinitionCollection an rpc handler which is invoked during GET on MetricDefinition Collection
 func (a *Telemetry) GetMetricDefinitionCollection(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 	resp := &teleproto.TelemetryResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -44,8 +48,11 @@ func (a *Telemetry) GetMetricDefinitionCollection(ctx context.Context, req *tele
 // GetMetricReportDefinitionCollection is an rpc handler which is invoked during GET on MetricReportDefinition Collection
 func (a *Telemetry) GetMetricReportDefinitionCollection(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 	resp := &teleproto.TelemetryResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -56,8 +63,11 @@ func (a *Telemetry) GetMetricReportDefinitionCollection(ctx context.Context, req
 // GetMetricReportCollection is an rpc handler which is invoked during GET on MetricReport Collection
 func (a *Telemetry) GetMetricReportCollection(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 	resp := &teleproto.TelemetryResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -68,8 +78,11 @@ func (a *Telemetry) GetMetricReportCollection(ctx context.Context, req *teleprot
 // GetTriggerCollection is an rpc handler which is invoked during GET on TriggerCollection
 func (a *Telemetry) GetTriggerCollection(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 	resp := &teleproto.TelemetryResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -80,8 +93,11 @@ func (a *Telemetry) GetTriggerCollection(ctx context.Context, req *teleproto.Tel
 // GetMetricDefinition is an rpc handler which is invoked during GET on MetricDefinition
 func (a *Telemetry) GetMetricDefinition(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 	resp := &teleproto.TelemetryResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -92,8 +108,11 @@ func (a *Telemetry) GetMetricDefinition(ctx context.Context, req *teleproto.Tele
 // GetMetricReportDefinition is an rpc handler which is invoked during GET on MetricReportDefinition
 func (a *Telemetry) GetMetricReportDefinition(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 	resp := &teleproto.TelemetryResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -104,8 +123,11 @@ func (a *Telemetry) GetMetricReportDefinition(ctx context.Context, req *teleprot
 // GetMetricReport is an rpc handler which is invoked during GET on MetricReport
 func (a *Telemetry) GetMetricReport(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 	resp := &teleproto.TelemetryResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -116,8 +138,11 @@ func (a *Telemetry) GetMetricReport(ctx context.Context, req *teleproto.Telemetr
 // GetTrigger is an rpc handler which is invoked during GET on Triggers
 func (a *Telemetry) GetTrigger(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 	resp := &teleproto.TelemetryResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -128,8 +153,11 @@ func (a *Telemetry) GetTrigger(ctx context.Context, req *teleproto.TelemetryRequ
 // UpdateTrigger is an rpc handler which is invoked during update on Trigger
 func (a *Telemetry) UpdateTrigger(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 	resp := &teleproto.TelemetryResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}

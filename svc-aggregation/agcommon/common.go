@@ -191,22 +191,27 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 // Whenever  any config file changes and events  will be  and  reload the configuration and verify the existing connection methods
-func TrackConfigFileChanges(dbInterface DBInterface) {
+func TrackConfigFileChanges(dbInterface DBInterface, errChan chan error) {
 	eventChan := make(chan interface{})
-	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, errChan)
 	for {
-		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
-		config.TLSConfMutex.RLock()
-		l.Log.Info("Updating connection method ")
-		err := dbInterface.AddConnectionMethods(config.Data.ConnectionMethodConf)
-		if err != nil {
-			l.Log.Error("error while trying to Add connection methods:" + err.Error())
-		}
-		config.TLSConfMutex.RUnlock()
-		l.Log.Info("Update connection method completed")
-		if l.Log.Level != config.Data.LogLevel {
-			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
-			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		select {
+		case info := <-eventChan:
+			l.Log.Info(info) // new data arrives through eventChan channel
+			config.TLSConfMutex.RLock()
+			l.Log.Info("Updating connection method ")
+			err := dbInterface.AddConnectionMethods(config.Data.ConnectionMethodConf)
+			if err != nil {
+				l.Log.Error("error while trying to Add connection methods:" + err.Error())
+			}
+			config.TLSConfMutex.RUnlock()
+			l.Log.Info("Update connection method completed")
+			if l.Log.Level != config.Data.LogLevel {
+				l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+				l.Log.Logger.SetLevel(config.Data.LogLevel)
+			}
+		case err := <-errChan:
+			l.Log.Error(err)
 		}
 	}
 }

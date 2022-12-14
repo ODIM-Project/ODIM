@@ -28,7 +28,7 @@ import (
 
 // Managers struct helps to register service
 type Managers struct {
-	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) response.RPC
+	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
 	EI              *managers.ExternalInterface
 }
 
@@ -39,8 +39,11 @@ type Managers struct {
 func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -64,8 +67,11 @@ func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto
 func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -89,8 +95,11 @@ func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerReq
 func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -111,8 +120,11 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 func (m *Managers) VirtualMediaInsert(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	sessionToken := req.SessionToken
 	resp := &managersproto.ManagerResponse{}
-	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -133,8 +145,11 @@ func (m *Managers) VirtualMediaInsert(ctx context.Context, req *managersproto.Ma
 func (m *Managers) VirtualMediaEject(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	sessionToken := req.SessionToken
 	resp := &managersproto.ManagerResponse{}
-	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -165,8 +180,11 @@ func generateResponse(input interface{}) []byte {
 func (m *Managers) GetRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -189,8 +207,11 @@ func (m *Managers) GetRemoteAccountService(ctx context.Context, req *managerspro
 func (m *Managers) CreateRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
+	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -213,8 +234,11 @@ func (m *Managers) CreateRemoteAccountService(ctx context.Context, req *managers
 func (m *Managers) UpdateRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
+	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -237,8 +261,11 @@ func (m *Managers) UpdateRemoteAccountService(ctx context.Context, req *managers
 func (m *Managers) DeleteRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
+	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)

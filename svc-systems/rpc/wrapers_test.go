@@ -23,7 +23,9 @@ import (
 )
 
 func Test_auth(t *testing.T) {
-	authFunc := func(sessionToken string, privileges, oemPrivileges []string) response.RPC { return response.RPC{} }
+	authFunc := func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+		return response.RPC{}, nil
+	}
 	callback := func() response.RPC { return response.RPC{} }
 	resp := auth(authFunc, "", []string{}, callback)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "status should be StatusUnauthorized")

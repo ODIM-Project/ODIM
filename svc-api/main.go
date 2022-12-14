@@ -42,18 +42,19 @@ func main() {
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
-	log := logs.Log
 	logs.Adorn(logrus.Fields{
 		"host":   hostName,
 		"procid": podName + fmt.Sprintf("_%d", pid),
 	})
 
-	err := config.SetConfiguration()
+	// log should be initialized after Adorn is invoked
+	// as Adorn will assign new pointer to Log variable in logs package.
+	log := logs.Log
+	configWarnings, err := config.SetConfiguration()
 	if err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
-		log.Fatal(err.Error())
+		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
-
 	log.Logger.SetFormatter(&logs.SysLogFormatter{})
 	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(config.Data.LogLevel)
@@ -177,7 +178,10 @@ func main() {
 	})
 
 	// TODO: uncomment the following line after the migration
-	config.CollectCLArgs()
+	config.CollectCLArgs(&configWarnings)
+	for _, warning := range configWarnings {
+		log.Warn(warning)
+	}
 
 	err = services.InitializeClient(services.APIClient)
 	if err != nil {
@@ -201,8 +205,9 @@ func main() {
 		logs.Log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 
+	errChan := make(chan error)
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go apicommon.TrackConfigFileChanges()
+	go apicommon.TrackConfigFileChanges(errChan)
 
 	router.Run(iris.Server(apiServer))
 }

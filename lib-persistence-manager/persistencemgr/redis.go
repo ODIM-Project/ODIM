@@ -720,9 +720,6 @@ func (c *Conn) IsBadConn() bool {
 	if c.WriteConn != nil && c.Ping() == nil {
 		return false
 	}
-	if c.WritePool != nil {
-		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(c.WritePool)), nil)
-	}
 	return true
 }
 

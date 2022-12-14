@@ -371,7 +371,8 @@ func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface, errC
 	go common.TrackConfigFileChanges(configFilePath, eventChan, errChan)
 	for {
 		select {
-		case <-eventChan: // new data arrives through eventChan channel
+		case info := <-eventChan: // new data arrives through eventChan channel
+			l.Log.Info(info)
 			config.TLSConfMutex.RLock()
 			mgr := mgrmodel.RAManager{
 				Name:            "odimra",

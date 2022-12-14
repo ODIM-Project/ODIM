@@ -90,7 +90,6 @@ func main() {
 
 	errChan := make(chan error)
 	go scommon.TrackConfigFileChanges(configFilePath, errChan)
-	go scommon.TrackConfigErrors(errChan)
 
 	err = services.InitializeService(services.Systems, errChan)
 	if err != nil {

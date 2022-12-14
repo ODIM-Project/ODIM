@@ -84,7 +84,6 @@ func main() {
 
 	errChan := make(chan error)
 	go mgrcommon.TrackConfigFileChanges(configFilePath, managerInterface, errChan)
-	go mgrcommon.TrackConfigErrors(errChan)
 
 	err = services.InitializeService(services.Managers, errChan)
 	if err != nil {

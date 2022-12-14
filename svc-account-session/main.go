@@ -75,7 +75,6 @@ func main() {
 	errChan := make(chan error)
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go account.TrackConfigFileChanges(errChan)
-	go account.TrackConfigErrors(errChan)
 
 	if err := services.InitializeService(services.AccountSession, errChan); err != nil {
 		log.Fatal("Error while trying to initialize the service: " + err.Error())

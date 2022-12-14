@@ -105,7 +105,6 @@ func main() {
 
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go evcommon.TrackConfigFileChanges(errChan)
-	go evcommon.TrackConfigErrors(errChan)
 
 	// Subscribe to intercomm messagebus queue
 	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.OdimControlMessageQueue)

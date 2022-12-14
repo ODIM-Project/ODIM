@@ -208,7 +208,6 @@ func main() {
 	errChan := make(chan error)
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go apicommon.TrackConfigFileChanges(errChan)
-	go apicommon.TrackConfigErrors(errChan)
 
 	router.Run(iris.Server(apiServer))
 }

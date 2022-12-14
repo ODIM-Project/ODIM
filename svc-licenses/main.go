@@ -66,7 +66,6 @@ func main() {
 	}
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go lcommon.TrackConfigFileChanges(errChan)
-	go lcommon.TrackConfigErrors(errChan)
 
 	registerHandlers(errChan)
 

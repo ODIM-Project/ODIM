@@ -70,7 +70,6 @@ func main() {
 	errChan := make(chan error)
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go ucommon.TrackConfigFileChanges(errChan)
-	go ucommon.TrackConfigErrors(errChan)
 
 	registerHandlers(errChan)
 	// Run server

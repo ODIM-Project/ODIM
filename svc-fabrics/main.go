@@ -77,7 +77,6 @@ func main() {
 	}
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go fabrics.TrackConfigFileChanges(errChan)
-	go fabrics.TrackConfigErrors(errChan)
 
 	registerHandlers()
 	if err := services.ODIMService.Run(); err != nil {

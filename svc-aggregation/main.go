@@ -114,7 +114,6 @@ func main() {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 	go agcommon.TrackConfigFileChanges(connectionMethodInterface, errChan)
-	go agcommon.TrackConfigErrors(errChan)
 
 	go system.PerformPluginHealthCheck()
 

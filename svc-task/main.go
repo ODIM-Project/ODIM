@@ -81,7 +81,6 @@ func main() {
 	errChan := make(chan error)
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go tcommon.TrackConfigFileChanges(errChan)
-	go tcommon.TrackConfigErrors(errChan)
 
 	if err := services.InitializeService(services.Tasks, errChan); err != nil {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())

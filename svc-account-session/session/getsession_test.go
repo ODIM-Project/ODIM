@@ -78,10 +78,15 @@ func TestGetSession(t *testing.T) {
 			},
 		},
 	}
-
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		req *sessionproto.SessionRequest
-		ctx context.Context
 	}
 	tests := []struct {
 		name string
@@ -138,7 +143,7 @@ func TestGetSession(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetSession(tt.args.ctx, tt.args.req)
+			got := GetSession(ctx, tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSession() = %v, want %v", got, tt.want)
 			}
@@ -191,9 +196,15 @@ func TestGetAllActiveSessions(t *testing.T) {
 			},
 		},
 	}
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		req *sessionproto.SessionRequest
-		ctx context.Context
 	}
 	tests := []struct {
 		name string
@@ -249,7 +260,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetAllActiveSessions(tt.args.ctx, tt.args.req)
+			got := GetAllActiveSessions(ctx, tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAllActiveSessions() = %v, want %v", got, tt.want)
 			}
@@ -328,10 +339,16 @@ func TestGetSessionUserName(t *testing.T) {
 		}
 	}()
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		req  *sessionproto.SessionRequest
 		resp *sessionproto.SessionUserName
-		ctx  context.Context
 	}
 	tests := []struct {
 		name    string
@@ -366,7 +383,7 @@ func TestGetSessionUserName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := GetSessionUserName(tt.args.ctx, tt.args.req)
+			_, err := GetSessionUserName(ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSessionUserName() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -390,10 +407,16 @@ func TestGetSessionUserRoleID(t *testing.T) {
 		}
 	}()
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		req  *sessionproto.SessionRequest
 		resp *sessionproto.SessionUsersRoleID
-		ctx  context.Context
 	}
 	tests := []struct {
 		name    string
@@ -428,7 +451,7 @@ func TestGetSessionUserRoleID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := GetSessionUserRoleID(tt.args.ctx, tt.args.req)
+			_, err := GetSessionUserRoleID(ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSessionUserRoleID() error = %v, wantErr %v", err, tt.wantErr)
 			}

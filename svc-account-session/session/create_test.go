@@ -130,9 +130,15 @@ func TestCreateSession(t *testing.T) {
 			},
 		},
 	}
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		req *sessionproto.SessionCreateRequest
-		ctx context.Context
 	}
 
 	reqBodyCreateSession, _ := json.Marshal(asmodel.CreateSession{
@@ -205,7 +211,7 @@ func TestCreateSession(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, tokenID := CreateNewSession(tt.args.ctx, tt.args.req)
+			got, tokenID := CreateNewSession(ctx, tt.args.req)
 			if tokenID != "" { // success case
 				commonResponse.ID = tokenID
 				commonResponse.OdataID = "/redfish/v1/SessionService/Sessions/" + tokenID

@@ -613,10 +613,16 @@ func TestAccount_Delete(t *testing.T) {
 
 func Test_validateSessionTimeoutError(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		sessionToken string
 		errs         *errors.Error
-		ctx          context.Context
 	}
 	tests := []struct {
 		name              string
@@ -636,7 +642,7 @@ func Test_validateSessionTimeoutError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, gotStatusCode, gotStatusMessage := validateSessionTimeoutError(tt.args.ctx, tt.args.sessionToken, tt.args.errs)
+			_, gotStatusCode, gotStatusMessage := validateSessionTimeoutError(ctx, tt.args.sessionToken, tt.args.errs)
 			fmt.Println(gotStatusCode, gotStatusMessage)
 			if gotStatusCode != tt.wantStatusCode {
 				t.Errorf("validateSessionTimeoutError() gotStatusCode = %v, want %v", gotStatusCode, tt.wantStatusCode)
@@ -650,10 +656,16 @@ func Test_validateSessionTimeoutError(t *testing.T) {
 
 func Test_validateUpdateLastUsedTimeError(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		err          error
 		sessionToken string
-		ctx          context.Context
 	}
 	tests := []struct {
 		name              string
@@ -675,7 +687,7 @@ func Test_validateUpdateLastUsedTimeError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotErrorMessage, gotStatusCode, gotStatusMessage := validateUpdateLastUsedTimeError(tt.args.ctx, tt.args.err, tt.args.sessionToken)
+			gotErrorMessage, gotStatusCode, gotStatusMessage := validateUpdateLastUsedTimeError(ctx, tt.args.err, tt.args.sessionToken)
 			if gotErrorMessage != tt.wantErrorMessage {
 				t.Errorf("validateUpdateLastUsedTimeError() gotErrorMessage = %v, want %v", gotErrorMessage, tt.wantErrorMessage)
 			}

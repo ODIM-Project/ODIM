@@ -45,6 +45,13 @@ func TestCreate(t *testing.T) {
 	config.SetUpMockConfig(t)
 	acc := getMockExternalInterface()
 	common.SetUpMockConfig()
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	errArgs := response.Args{
 		Code:    response.GeneralError,
 		Message: "",
@@ -169,7 +176,6 @@ func TestCreate(t *testing.T) {
 	type args struct {
 		req     *accountproto.CreateAccountRequest
 		session *asmodel.Session
-		ctx context.Context
 	}
 	reqBodyValidAcc, _ := json.Marshal(asmodel.Account{
 		UserName: "testUser",
@@ -491,7 +497,7 @@ func TestCreate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := acc.Create(tt.args.ctx,tt.args.req, tt.args.session)
+			got, err := acc.Create(ctx, tt.args.req, tt.args.session)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Create() error = %v, wantErr %v", err, tt.wantErr)
 			}

@@ -16,8 +16,14 @@ import (
 type any = interface{}
 
 func TestSession_CreateSession(t *testing.T) {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
-		ctx context.Context
 		req *sessionproto.SessionCreateRequest
 	}
 	tests := []struct {
@@ -30,7 +36,7 @@ func TestSession_CreateSession(t *testing.T) {
 	}{
 		{
 			name: "Marshall error",
-			args: args{context.Background(), &sessionproto.SessionCreateRequest{}},
+			args: args{&sessionproto.SessionCreateRequest{}},
 			CreateNewSessionFunc: func(ctx context.Context, req *sessionproto.SessionCreateRequest) (response.RPC, string) {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"}), ""
 			},
@@ -54,7 +60,7 @@ func TestSession_CreateSession(t *testing.T) {
 		MarshalFunc = tt.MarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Session{}
-			got, err := s.CreateSession(tt.args.ctx, tt.args.req)
+			got, err := s.CreateSession(ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateSession() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -67,8 +73,14 @@ func TestSession_CreateSession(t *testing.T) {
 }
 
 func TestSession_DeleteSession(t *testing.T) {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
-		ctx context.Context
 		req *sessionproto.SessionRequest
 	}
 	tests := []struct {
@@ -81,7 +93,7 @@ func TestSession_DeleteSession(t *testing.T) {
 	}{
 		{
 			name: "Marshall error",
-			args: args{context.Background(), &sessionproto.SessionRequest{}},
+			args: args{&sessionproto.SessionRequest{}},
 			DeleteSessionFunc: func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"})
 			},
@@ -105,7 +117,7 @@ func TestSession_DeleteSession(t *testing.T) {
 		MarshalFunc = tt.MarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Session{}
-			got, err := s.DeleteSession(tt.args.ctx, tt.args.req)
+			got, err := s.DeleteSession(ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteSession() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -118,8 +130,14 @@ func TestSession_DeleteSession(t *testing.T) {
 }
 
 func TestSession_GetAllActiveSessions(t *testing.T) {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
-		ctx context.Context
 		req *sessionproto.SessionRequest
 	}
 	tests := []struct {
@@ -132,7 +150,7 @@ func TestSession_GetAllActiveSessions(t *testing.T) {
 	}{
 		{
 			name: "Marshall error",
-			args: args{context.Background(), &sessionproto.SessionRequest{}},
+			args: args{&sessionproto.SessionRequest{}},
 			GetAllActiveSessionsFunc: func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"})
 			},
@@ -156,7 +174,7 @@ func TestSession_GetAllActiveSessions(t *testing.T) {
 		MarshalFunc = tt.MarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Session{}
-			got, err := s.GetAllActiveSessions(tt.args.ctx, tt.args.req)
+			got, err := s.GetAllActiveSessions(ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAllActiveSessions() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -169,8 +187,14 @@ func TestSession_GetAllActiveSessions(t *testing.T) {
 }
 
 func TestSession_GetSession(t *testing.T) {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
-		ctx context.Context
 		req *sessionproto.SessionRequest
 	}
 	tests := []struct {
@@ -183,7 +207,7 @@ func TestSession_GetSession(t *testing.T) {
 	}{
 		{
 			name: "Marshall error",
-			args: args{context.Background(), &sessionproto.SessionRequest{}},
+			args: args{&sessionproto.SessionRequest{}},
 			GetSessionFunc: func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"})
 			},
@@ -207,7 +231,7 @@ func TestSession_GetSession(t *testing.T) {
 		MarshalFunc = tt.MarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Session{}
-			got, err := s.GetSession(tt.args.ctx, tt.args.req)
+			got, err := s.GetSession(ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSession() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -220,8 +244,14 @@ func TestSession_GetSession(t *testing.T) {
 }
 
 func TestSession_GetSessionService(t *testing.T) {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
-		ctx context.Context
 		req *sessionproto.SessionRequest
 	}
 	tests := []struct {
@@ -234,7 +264,7 @@ func TestSession_GetSessionService(t *testing.T) {
 	}{
 		{
 			name: "Marshall error",
-			args: args{context.Background(), &sessionproto.SessionRequest{}},
+			args: args{&sessionproto.SessionRequest{}},
 			GetSessionServiceFunc: func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"})
 			},
@@ -258,7 +288,7 @@ func TestSession_GetSessionService(t *testing.T) {
 		MarshalFunc = tt.MarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Session{}
-			got, err := s.GetSessionService(tt.args.ctx, tt.args.req)
+			got, err := s.GetSessionService(ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSessionService() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -271,8 +301,14 @@ func TestSession_GetSessionService(t *testing.T) {
 }
 
 func TestSession_GetSessionUserName(t *testing.T) {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
-		ctx context.Context
 		req *sessionproto.SessionRequest
 	}
 	tests := []struct {
@@ -296,7 +332,7 @@ func TestSession_GetSessionUserName(t *testing.T) {
 		GetSessionUserNameFunc = tt.GetSessionUserNameFunc
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Session{}
-			got, err := s.GetSessionUserName(tt.args.ctx, tt.args.req)
+			got, err := s.GetSessionUserName(ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSessionUserName() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -309,8 +345,14 @@ func TestSession_GetSessionUserName(t *testing.T) {
 }
 
 func TestSession_GetSessionUserRoleID(t *testing.T) {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
-		ctx context.Context
 		req *sessionproto.SessionRequest
 	}
 	tests := []struct {
@@ -334,7 +376,7 @@ func TestSession_GetSessionUserRoleID(t *testing.T) {
 		GetSessionUserRoleIDFunc = tt.GetSessionUserRoleIDFunc
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Session{}
-			got, err := s.GetSessionUserRoleID(tt.args.ctx, tt.args.req)
+			got, err := s.GetSessionUserRoleID(ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSessionUserRoleID() error = %v, wantErr %v", err, tt.wantErr)
 				return

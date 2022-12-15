@@ -161,11 +161,16 @@ func TestCreate(t *testing.T) {
 		AssignedPrivileges: []string{common.PrivilegeLogin},
 		OEMPrivileges:      []string{},
 	})
-
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		req     *roleproto.RoleRequest
 		session *asmodel.Session
-		ctx     context.Context
 	}
 	tests := []struct {
 		name string
@@ -304,7 +309,7 @@ func TestCreate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Create(tt.args.ctx, tt.args.req, tt.args.session)
+			got := Create(ctx, tt.args.req, tt.args.session)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Create() = %v, want %v", got, tt.want)
 			}

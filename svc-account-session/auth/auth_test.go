@@ -46,6 +46,13 @@ func TestAuth(t *testing.T) {
 	Lock.Lock()
 	common.SetUpMockConfig()
 	Lock.Unlock()
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -75,7 +82,6 @@ func TestAuth(t *testing.T) {
 
 	type args struct {
 		req *authproto.AuthRequest
-		ctx context.Context
 	}
 	tests := []struct {
 		name  string
@@ -147,7 +153,7 @@ func TestAuth(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := Auth(tt.args.ctx, tt.args.req)
+			got, got1 := Auth(ctx, tt.args.req)
 			if !reflect.DeepEqual(got, int32(tt.want)) {
 				t.Errorf("Auth() = %v, want = %v", got, tt.want)
 			}

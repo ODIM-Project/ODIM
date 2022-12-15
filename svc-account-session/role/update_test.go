@@ -107,11 +107,16 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 	}
-
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		req     *roleproto.UpdateRoleRequest
 		session *asmodel.Session
-		ctx     context.Context
 	}
 	tests := []struct {
 		name    string
@@ -240,7 +245,7 @@ func TestUpdate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Update(tt.args.ctx,tt.args.req, tt.args.session)
+			got := Update(ctx, tt.args.req, tt.args.session)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Update() = %v, want %v", got, tt.want)
 			}

@@ -157,10 +157,16 @@ func TestUpdate(t *testing.T) {
 		Code:    response.GeneralError,
 		Message: "failed to update the account testUser1: Username cannot be modified",
 	}
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		req     *accountproto.UpdateAccountRequest
 		session *asmodel.Session
-		ctx     context.Context
 	}
 
 	reqBodyRoleIDOperator, _ := json.Marshal(asmodel.Account{
@@ -581,7 +587,7 @@ func TestUpdate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := acc.Update(tt.args.ctx, tt.args.req, tt.args.session)
+			got := acc.Update(ctx, tt.args.req, tt.args.session)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Update() = %v, want %v", got, tt.want)
 			}

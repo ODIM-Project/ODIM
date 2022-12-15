@@ -81,11 +81,16 @@ func TestDelete(t *testing.T) {
 			},
 		},
 	}
-
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		session   *asmodel.Session
 		accountID string
-		ctx       context.Context
 	}
 	tests := []struct {
 		name string
@@ -147,7 +152,7 @@ func TestDelete(t *testing.T) {
 			t.Fatalf("Error in creating mock admin user %v", err)
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			got := Delete(tt.args.ctx, tt.args.session, tt.args.accountID)
+			got := Delete(ctx, tt.args.session, tt.args.accountID)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Delete() = %v, want %v", got, tt.want)
 			}
@@ -179,10 +184,16 @@ func TestDeleteDefaultAdminAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock admin user %v", err)
 	}
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		session   *asmodel.Session
 		accountID string
-		ctx       context.Context
 	}
 	tests := []struct {
 		name string
@@ -209,7 +220,7 @@ func TestDeleteDefaultAdminAccount(t *testing.T) {
 	for _, tt := range tests {
 
 		t.Run(tt.name, func(t *testing.T) {
-			got := Delete(tt.args.ctx, tt.args.session, tt.args.accountID)
+			got := Delete(ctx, tt.args.session, tt.args.accountID)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Delete() = %v, want %v", got, tt.want)
 			}

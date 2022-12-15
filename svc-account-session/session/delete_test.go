@@ -70,9 +70,15 @@ func TestDeleteSession(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		req *sessionproto.SessionRequest
-		ctx context.Context
 	}
 
 	errArgUnauth := &response.Args{
@@ -174,7 +180,7 @@ func TestDeleteSession(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			got := DeleteSession(tt.args.ctx, tt.args.req)
+			got := DeleteSession(ctx, tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DeleteSession() = %v, want %v", got, tt.want)
 			}

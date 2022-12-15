@@ -58,10 +58,16 @@ func TestCheckSessionCreationCredentials(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock admin user %v", err)
 	}
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	type args struct {
 		userName string
 		password string
-		ctx      context.Context
 	}
 	tests := []struct {
 		name    string
@@ -94,7 +100,7 @@ func TestCheckSessionCreationCredentials(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CheckSessionCreationCredentials(tt.args.ctx, tt.args.userName, tt.args.password)
+			got, err := CheckSessionCreationCredentials(ctx, tt.args.userName, tt.args.password)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CheckSessionCreationCredentials() error = %v, wantErr %v", err.Error(), tt.wantErr)
 				return
@@ -113,6 +119,13 @@ func TestCheckSessionTimeOut(t *testing.T) {
 	Lock.Lock()
 	common.SetUpMockConfig()
 	Lock.Unlock()
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	config.Data.AuthConf.SessionTimeOutInMins = 0.0333333
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
@@ -131,7 +144,6 @@ func TestCheckSessionTimeOut(t *testing.T) {
 	}
 	type args struct {
 		sessionToken string
-		ctx          context.Context
 	}
 	tests := []struct {
 		name    string
@@ -164,7 +176,7 @@ func TestCheckSessionTimeOut(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CheckSessionTimeOut(tt.args.ctx, tt.args.sessionToken)
+			got, err := CheckSessionTimeOut(ctx, tt.args.sessionToken)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CheckSessionTimeOut() error = %+v, wantErr %v", err, tt.wantErr)
 			}

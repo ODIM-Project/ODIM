@@ -35,6 +35,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// WarningList will have the warning logs during the config validation
 type WarningList []string
 
 // Data will have the configuration data from config file

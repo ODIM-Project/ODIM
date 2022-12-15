@@ -19,6 +19,7 @@ package account
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -48,13 +49,13 @@ import (
 //
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
-func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, session *asmodel.Session) (response.RPC, error) {
+func (e *ExternalInterface) Create(ctx context.Context, req *accountproto.CreateAccountRequest, session *asmodel.Session) (response.RPC, error) {
 	// parsing the CreateAccount
 	var createAccount asmodel.Account
 	err := json.Unmarshal(req.RequestBody, &createAccount)
 	if err != nil {
 		errMsg := "error while trying to marshal the request body of create account API" + err.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	}
 
@@ -72,11 +73,11 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createAccount)
 	if err != nil {
 		errMsg := errorLogPrefix + "error while validating request parameters: " + err.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	} else if invalidProperties != "" {
 		errorMessage := errorLogPrefix + "One or more properties given in the request body are not valid, ensure properties are listed in upper camel case "
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp, fmt.Errorf(errorMessage)
 	}
@@ -87,7 +88,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		RoleID:   createAccount.RoleID,
 	}
 
-	l.Log.Infof("Creating account for the user %s", createAccount.UserName)
+	l.LogWithFields(ctx).Infof("Creating account for the user %s", createAccount.UserName)
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
 		errorMessage := errorLogPrefix + "User does not have the privilege of creating a new user"
 		resp.StatusCode = http.StatusForbidden
@@ -104,7 +105,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
+		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp, fmt.Errorf(errorMessage)
 	}
 	invalidParams := validateRequest(user)
@@ -124,12 +125,12 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
 	if _, gerr := e.GetRoleDetailsByID(user.RoleID); gerr != nil {
 		errorMessage := errorLogPrefix + "Invalid RoleID present: " + gerr.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Role", user.RoleID}, nil), fmt.Errorf(errorMessage)
 	}
 	if err := validatePassword(user.UserName, user.Password); err != nil {
@@ -148,7 +149,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp, err
 
 	}
@@ -178,7 +179,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
 

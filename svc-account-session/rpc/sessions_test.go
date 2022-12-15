@@ -23,7 +23,7 @@ func TestSession_CreateSession(t *testing.T) {
 	tests := []struct {
 		name                 string
 		args                 args
-		CreateNewSessionFunc func(req *sessionproto.SessionCreateRequest) (response.RPC, string)
+		CreateNewSessionFunc func(ctx context.Context, req *sessionproto.SessionCreateRequest) (response.RPC, string)
 		MarshalFunc          func(v any) ([]byte, error)
 		want                 *sessionproto.SessionCreateResponse
 		wantErr              bool
@@ -31,7 +31,7 @@ func TestSession_CreateSession(t *testing.T) {
 		{
 			name: "Marshall error",
 			args: args{context.Background(), &sessionproto.SessionCreateRequest{}},
-			CreateNewSessionFunc: func(req *sessionproto.SessionCreateRequest) (response.RPC, string) {
+			CreateNewSessionFunc: func(ctx context.Context, req *sessionproto.SessionCreateRequest) (response.RPC, string) {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"}), ""
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return []byte{}, errors.New("fakeError") },
@@ -41,7 +41,7 @@ func TestSession_CreateSession(t *testing.T) {
 		{
 			name: "No error",
 			args: args{},
-			CreateNewSessionFunc: func(req *sessionproto.SessionCreateRequest) (response.RPC, string) {
+			CreateNewSessionFunc: func(ctx context.Context, req *sessionproto.SessionCreateRequest) (response.RPC, string) {
 				return response.RPC{StatusCode: 200, StatusMessage: "Success", Header: map[string]string{"pass": "case"}}, "413"
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return json.Marshal(v) },
@@ -74,7 +74,7 @@ func TestSession_DeleteSession(t *testing.T) {
 	tests := []struct {
 		name              string
 		args              args
-		DeleteSessionFunc func(req *sessionproto.SessionRequest) response.RPC
+		DeleteSessionFunc func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC
 		MarshalFunc       func(v any) ([]byte, error)
 		want              *sessionproto.SessionResponse
 		wantErr           bool
@@ -82,7 +82,7 @@ func TestSession_DeleteSession(t *testing.T) {
 		{
 			name: "Marshall error",
 			args: args{context.Background(), &sessionproto.SessionRequest{}},
-			DeleteSessionFunc: func(req *sessionproto.SessionRequest) response.RPC {
+			DeleteSessionFunc: func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"})
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return []byte{}, errors.New("fakeError") },
@@ -92,7 +92,7 @@ func TestSession_DeleteSession(t *testing.T) {
 		{
 			name: "No error",
 			args: args{},
-			DeleteSessionFunc: func(req *sessionproto.SessionRequest) response.RPC {
+			DeleteSessionFunc: func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 				return response.RPC{StatusCode: 200, StatusMessage: "Success", Header: map[string]string{"pass": "case"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return json.Marshal(v) },
@@ -125,7 +125,7 @@ func TestSession_GetAllActiveSessions(t *testing.T) {
 	tests := []struct {
 		name                     string
 		args                     args
-		GetAllActiveSessionsFunc func(req *sessionproto.SessionRequest) response.RPC
+		GetAllActiveSessionsFunc func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC
 		MarshalFunc              func(v any) ([]byte, error)
 		want                     *sessionproto.SessionResponse
 		wantErr                  bool
@@ -133,7 +133,7 @@ func TestSession_GetAllActiveSessions(t *testing.T) {
 		{
 			name: "Marshall error",
 			args: args{context.Background(), &sessionproto.SessionRequest{}},
-			GetAllActiveSessionsFunc: func(req *sessionproto.SessionRequest) response.RPC {
+			GetAllActiveSessionsFunc: func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"})
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return []byte{}, errors.New("fakeError") },
@@ -143,7 +143,7 @@ func TestSession_GetAllActiveSessions(t *testing.T) {
 		{
 			name: "No error",
 			args: args{},
-			GetAllActiveSessionsFunc: func(req *sessionproto.SessionRequest) response.RPC {
+			GetAllActiveSessionsFunc: func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 				return response.RPC{StatusCode: 200, StatusMessage: "Success", Header: map[string]string{"pass": "case"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return json.Marshal(v) },
@@ -176,7 +176,7 @@ func TestSession_GetSession(t *testing.T) {
 	tests := []struct {
 		name           string
 		args           args
-		GetSessionFunc func(req *sessionproto.SessionRequest) response.RPC
+		GetSessionFunc func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC
 		MarshalFunc    func(v any) ([]byte, error)
 		want           *sessionproto.SessionResponse
 		wantErr        bool
@@ -184,7 +184,7 @@ func TestSession_GetSession(t *testing.T) {
 		{
 			name: "Marshall error",
 			args: args{context.Background(), &sessionproto.SessionRequest{}},
-			GetSessionFunc: func(req *sessionproto.SessionRequest) response.RPC {
+			GetSessionFunc: func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"})
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return []byte{}, errors.New("fakeError") },
@@ -194,7 +194,7 @@ func TestSession_GetSession(t *testing.T) {
 		{
 			name: "No error",
 			args: args{},
-			GetSessionFunc: func(req *sessionproto.SessionRequest) response.RPC {
+			GetSessionFunc: func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 				return response.RPC{StatusCode: 200, StatusMessage: "Success", Header: map[string]string{"pass": "case"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return json.Marshal(v) },
@@ -227,7 +227,7 @@ func TestSession_GetSessionService(t *testing.T) {
 	tests := []struct {
 		name                  string
 		args                  args
-		GetSessionServiceFunc func(req *sessionproto.SessionRequest) response.RPC
+		GetSessionServiceFunc func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC
 		MarshalFunc           func(v any) ([]byte, error)
 		want                  *sessionproto.SessionResponse
 		wantErr               bool
@@ -235,7 +235,7 @@ func TestSession_GetSessionService(t *testing.T) {
 		{
 			name: "Marshall error",
 			args: args{context.Background(), &sessionproto.SessionRequest{}},
-			GetSessionServiceFunc: func(req *sessionproto.SessionRequest) response.RPC {
+			GetSessionServiceFunc: func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 				return common.GeneralError(400, "fakeStatus", "fakeError", nil, &common.TaskUpdateInfo{TaskID: "1"})
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return []byte{}, errors.New("fakeError") },
@@ -245,7 +245,7 @@ func TestSession_GetSessionService(t *testing.T) {
 		{
 			name: "No error",
 			args: args{},
-			GetSessionServiceFunc: func(req *sessionproto.SessionRequest) response.RPC {
+			GetSessionServiceFunc: func(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 				return response.RPC{StatusCode: 200, StatusMessage: "Success", Header: map[string]string{"pass": "case"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return json.Marshal(v) },
@@ -278,14 +278,14 @@ func TestSession_GetSessionUserName(t *testing.T) {
 	tests := []struct {
 		name                   string
 		args                   args
-		GetSessionUserNameFunc func(req *sessionproto.SessionRequest) (*sessionproto.SessionUserName, error)
+		GetSessionUserNameFunc func(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUserName, error)
 		want                   *sessionproto.SessionUserName
 		wantErr                bool
 	}{
 		{
 			name: "Pass case",
 			args: args{},
-			GetSessionUserNameFunc: func(req *sessionproto.SessionRequest) (*sessionproto.SessionUserName, error) {
+			GetSessionUserNameFunc: func(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUserName, error) {
 				return &sessionproto.SessionUserName{}, nil
 			},
 			want:    &sessionproto.SessionUserName{},
@@ -316,14 +316,14 @@ func TestSession_GetSessionUserRoleID(t *testing.T) {
 	tests := []struct {
 		name                     string
 		args                     args
-		GetSessionUserRoleIDFunc func(req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error)
+		GetSessionUserRoleIDFunc func(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error)
 		want                     *sessionproto.SessionUsersRoleID
 		wantErr                  bool
 	}{
 		{
 			name: "Pass case",
 			args: args{},
-			GetSessionUserRoleIDFunc: func(req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
+			GetSessionUserRoleIDFunc: func(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
 				return &sessionproto.SessionUsersRoleID{}, nil
 			},
 			want:    &sessionproto.SessionUsersRoleID{},

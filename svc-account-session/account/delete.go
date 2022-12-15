@@ -19,6 +19,7 @@ package account
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -38,11 +39,11 @@ import (
 //
 // As return parameters RPC response, which contains status code, message, headers and data,
 // error will be passed back.
-func Delete(session *asmodel.Session, accountID string) response.RPC {
+func Delete(ctx context.Context, session *asmodel.Session, accountID string) response.RPC {
 	var resp response.RPC
 	errorLogPrefix := fmt.Sprintf("failed to delete account %s: ", accountID)
 
-	l.Log.Infof("Validating the request to delete the account %s", accountID)
+	l.LogWithFields(ctx).Infof("Validating the request to delete the account %s", accountID)
 	// Default admin user account should not be deleted
 	if accountID == defaultAdminAccount {
 		errorMessage := errorLogPrefix + "default user account can not be deleted"
@@ -59,7 +60,7 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 
@@ -79,11 +80,11 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
+		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 
-	l.Log.Infof("Deleting the account %s from database", accountID)
+	l.LogWithFields(ctx).Infof("Deleting the account %s from database", accountID)
 	if derr := asmodel.DeleteUser(accountID); derr != nil {
 		errorMessage := errorLogPrefix + derr.Error()
 		if errors.DBKeyNotFound == derr.ErrNo() {
@@ -104,7 +105,7 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 

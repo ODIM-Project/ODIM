@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package session
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -80,6 +81,7 @@ func TestGetSession(t *testing.T) {
 
 	type args struct {
 		req *sessionproto.SessionRequest
+		ctx context.Context
 	}
 	tests := []struct {
 		name string
@@ -136,7 +138,7 @@ func TestGetSession(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetSession(tt.args.req)
+			got := GetSession(tt.args.ctx, tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSession() = %v, want %v", got, tt.want)
 			}
@@ -191,6 +193,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 	}
 	type args struct {
 		req *sessionproto.SessionRequest
+		ctx context.Context
 	}
 	tests := []struct {
 		name string
@@ -246,7 +249,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetAllActiveSessions(tt.args.req)
+			got := GetAllActiveSessions(tt.args.ctx, tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAllActiveSessions() = %v, want %v", got, tt.want)
 			}
@@ -269,6 +272,7 @@ func TestGetSessionService(t *testing.T) {
 
 	type args struct {
 		req *sessionproto.SessionRequest
+		ctx context.Context
 	}
 	tests := []struct {
 		name string
@@ -304,7 +308,7 @@ func TestGetSessionService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetSessionService(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := GetSessionService(tt.args.ctx, tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSessionService() = %v, want %v", got, tt.want)
 			}
 		})
@@ -327,6 +331,7 @@ func TestGetSessionUserName(t *testing.T) {
 	type args struct {
 		req  *sessionproto.SessionRequest
 		resp *sessionproto.SessionUserName
+		ctx  context.Context
 	}
 	tests := []struct {
 		name    string
@@ -361,7 +366,7 @@ func TestGetSessionUserName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := GetSessionUserName(tt.args.req)
+			_, err := GetSessionUserName(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSessionUserName() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -388,6 +393,7 @@ func TestGetSessionUserRoleID(t *testing.T) {
 	type args struct {
 		req  *sessionproto.SessionRequest
 		resp *sessionproto.SessionUsersRoleID
+		ctx  context.Context
 	}
 	tests := []struct {
 		name    string
@@ -422,7 +428,7 @@ func TestGetSessionUserRoleID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := GetSessionUserRoleID(tt.args.req)
+			_, err := GetSessionUserRoleID(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSessionUserRoleID() error = %v, wantErr %v", err, tt.wantErr)
 			}

@@ -163,12 +163,17 @@ const (
 	// Below fields define Service Name
 	AccountService = "svc-account"
 	SystemService  = "svc-systems"
+	SessionService = "svc-account-session"
 	ApiService     = "svc-api"
 	// DefaultThreadID to be used for apis
 	DefaultThreadID = "0"
 	// Invalid Action
 	InvalidActionID   = "000"
 	InvalidActionName = "MethodNotAllowed"
+	// ThreadName
+	CheckAuth            = "Check-Authentication"
+	CheckSessionCreation = "CheckSessionCreationCredentials"
+	CheckSessionTimeout  = "CheckSessionTimeOut"
 )
 
 // ActionType defines type of action

@@ -16,14 +16,14 @@ func TestAuth_IsAuthorized(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		AuthFunc func(req *authproto.AuthRequest) (int32, string)
+		AuthFunc func(ctx context.Context, req *authproto.AuthRequest) (int32, string)
 		want     *authproto.AuthResponse
 		wantErr  bool
 	}{
 		{
 			name:     "No error",
 			args:     args{context.Background(), &authproto.AuthRequest{}},
-			AuthFunc: func(req *authproto.AuthRequest) (int32, string) { return 200, "123Success" },
+			AuthFunc: func(ctx context.Context, req *authproto.AuthRequest) (int32, string) { return 200, "123Success" },
 			want:     &authproto.AuthResponse{StatusCode: 200, StatusMessage: "123Success"},
 			wantErr:  false,
 		},

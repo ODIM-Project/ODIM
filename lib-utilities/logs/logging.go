@@ -25,7 +25,7 @@ import (
 )
 
 type Logging struct {
-	GetUserDetails func(string) (string, string)
+	GetUserDetails func(string) (string, string, error)
 }
 
 // AuditLog is used for generating audit logs in syslog format for each request
@@ -33,7 +33,10 @@ type Logging struct {
 // properties logged are prival, time, host, username, roleid, request method, resource, requestbody, responsecode and message
 
 func (l *Logging) AuditLog(ctx iris.Context, reqBody map[string]interface{}) {
-	logMsg := l.auditLogEntry(ctx, reqBody)
+	logMsg, err := l.auditLogEntry(ctx, reqBody)
+	if err != nil {
+		Log.Error(err)
+	}
 	// Get response code
 	respStatusCode := int32(ctx.GetStatusCode())
 	operationStatus := getResponseStatus(respStatusCode)
@@ -47,6 +50,7 @@ func (l *Logging) AuditLog(ctx iris.Context, reqBody map[string]interface{}) {
 		failedMsg := "<107> " + logMsg + " Operation failed"
 		fmt.Println(failedMsg)
 	}
+	return
 }
 
 // AuthLog is used for generating security logs in syslog format for each request
@@ -103,11 +107,11 @@ func AuthLog(logProperties map[string]interface{}) {
 
 // auditLogEntry extracts the required info from context like session token, username, request URI
 // and formats in syslog format for audit logs
-func (l *Logging) auditLogEntry(ctx iris.Context, reqBody map[string]interface{}) string {
+func (l *Logging) auditLogEntry(ctx iris.Context, reqBody map[string]interface{}) (string, error) {
 	var logMsg string
 	// getting the request URI, host and method from context
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
-	sessionUserName, sessionRoleID := l.GetUserDetails(sessionToken)
+	sessionUserName, sessionRoleID, err := l.GetUserDetails(sessionToken)
 	rawURI := ctx.Request().RequestURI
 	host := ctx.Request().Host
 	method := ctx.Request().Method
@@ -121,7 +125,7 @@ func (l *Logging) auditLogEntry(ctx iris.Context, reqBody map[string]interface{}
 	} else {
 		logMsg = fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\" requestBody= %s][response@1 responseCode=%d]", timeNow, host, sessionUserName, sessionRoleID, method, rawURI, reqStr, respStatusCode)
 	}
-	return logMsg
+	return logMsg, err
 }
 
 // MaskRequestBody function

@@ -810,7 +810,7 @@ func GetMetadata(ctx iris.Context) {
 
 // Registry defines Auth which helps with authorization
 type Registry struct {
-	Auth func(string, []string, []string) errResponse.RPC
+	Auth func(string, []string, []string) (errResponse.RPC, error)
 }
 
 // GetRegistryFileCollection is show available collection of registry files.
@@ -827,9 +827,13 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		l.LogWithFields(ctxt).Error("error while trying to authorize token")
+		errMsg := "error while trying to authenticate session"
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(int(authResp.StatusCode))
 		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -914,9 +918,13 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		l.LogWithFields(ctxt).Error("error while trying to authorize token")
+		errMsg := "error while trying to authenticate session"
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(int(authResp.StatusCode))
 		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -1009,9 +1017,13 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		l.LogWithFields(ctxt).Error("error while trying to authorize token")
+		errMsg := "error while trying to authenticate session"
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(int(authResp.StatusCode))
 		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)

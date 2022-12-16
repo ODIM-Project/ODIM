@@ -35,8 +35,11 @@ func (a *Updater) GetUpdateService(ctx context.Context, req *updateproto.UpdateR
 // GetFirmwareInventoryCollection an rpc handler which is invoked during GET on firmware inventory collection
 func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	resp := &updateproto.UpdateResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -47,8 +50,11 @@ func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updat
 // GetFirmwareInventory is an rpc handler which is invoked during GET on firmware inventory
 func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	resp := &updateproto.UpdateResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -59,8 +65,11 @@ func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.Upd
 // GetSoftwareInventoryCollection is an rpc handler which is invoked during GET on software inventory collection
 func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	resp := &updateproto.UpdateResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -71,8 +80,11 @@ func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updat
 // GetSoftwareInventory is an rpc handler which is invoked during GET on software inventory
 func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	resp := &updateproto.UpdateResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -83,8 +95,11 @@ func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.Upd
 // SimepleUpdate is an rpc handler, it gets involked during POST on UpdateService API actions (/Actions/UpdateService.SimpleUpdate)
 func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	resp := &updateproto.UpdateResponse{}
-	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -140,8 +155,11 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 
 	resp := &updateproto.UpdateResponse{}
 	sessionToken := req.SessionToken
-	authResp := a.connector.External.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := a.connector.External.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}

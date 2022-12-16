@@ -150,16 +150,16 @@ func TestGetEventSubscription(t *testing.T) {
 func TestExternalInterfaces_IsAggregateHaveSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
 	pc := getMockMethods()
-	pc.Auth = func(s1 string, s2, s3 []string) response.RPC {
+	pc.Auth = func(s1 string, s2, s3 []string) (response.RPC, error) {
 		return response.RPC{
 			StatusCode: 400,
-		}
+		}, nil
 	}
 	pc.IsAggregateHaveSubscription(&eventsproto.EventUpdateRequest{})
-	pc.Auth = func(s1 string, s2, s3 []string) response.RPC {
+	pc.Auth = func(s1 string, s2, s3 []string) (response.RPC, error) {
 		return response.RPC{
 			StatusCode: 200,
-		}
+		}, nil
 	}
 	pc.IsAggregateHaveSubscription(&eventsproto.EventUpdateRequest{})
 	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {

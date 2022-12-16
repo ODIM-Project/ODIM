@@ -166,11 +166,11 @@ func GetPluginStatusForTesting(plugin agmodel.Plugin) bool {
 	return true
 }
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken == "invalidToken" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
 func getSessionUserNameForTesting(sessionToken string) (string, error) {
@@ -193,8 +193,8 @@ func createTaskForTesting(sessionUserName string) (string, error) {
 	return "some/Task", nil
 }
 
-func mockSubscribeEMB(pluginID string, list []string) {
-	return
+func mockSubscribeEMB(pluginID string, list []string) error {
+	return nil
 }
 
 func mockCreateChildTask(sessionID, taskID string) (string, error) {

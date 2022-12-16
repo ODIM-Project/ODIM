@@ -41,13 +41,15 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		"Date": time.Now().Format(http.TimeFormat),
 	}
 	privileges := []string{common.PrivilegeLogin}
-	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
-		l.Log.Printf(authErrorMessage)
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(&rsp, authResp)
 		return &rsp, nil
 	}
-	_, err := ts.GetSessionUserNameRPC(req.SessionToken)
+	_, err = ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
 		l.Log.Printf(authErrorMessage)
 		fillProtoResponse(&rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))

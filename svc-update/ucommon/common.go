@@ -303,15 +303,19 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 	}
 	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
-func TrackConfigFileChanges() {
+func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
-	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, errChan)
 	for {
-		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
-		if l.Log.Level != config.Data.LogLevel {
-			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
-			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		select {
+		case info := <-eventChan:
+			l.Log.Info(info) // new data arrives through eventChan channel
+			if l.Log.Level != config.Data.LogLevel {
+				l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+				l.Log.Logger.SetLevel(config.Data.LogLevel)
+			}
+		case err := <-errChan:
+			l.Log.Error(err)
 		}
-
 	}
 }

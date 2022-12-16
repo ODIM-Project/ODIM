@@ -28,7 +28,6 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	uuid "github.com/satori/go.uuid"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc"
@@ -57,7 +56,7 @@ type odimService struct {
 var ODIMService odimService
 
 // InitializeService will initialize a new micro service with the selected framework.
-func InitializeService(serviceName string) error {
+func InitializeService(serviceName string, errChan chan<- error) error {
 	switch config.CLArgs.FrameWork {
 	case "GRPC":
 		err := ODIMService.Init(serviceName)
@@ -69,7 +68,7 @@ func InitializeService(serviceName string) error {
 			return fmt.Errorf("While trying to register the service in the registry, got: %v", err)
 		}
 
-		ODIMService.intiateSignalHandler()
+		ODIMService.intiateSignalHandler(errChan)
 
 	default:
 		return fmt.Errorf("unknown framework type")
@@ -282,7 +281,7 @@ func getTLSConfig() (*tls.Config, error) {
 	}, nil
 }
 
-func (s *odimService) intiateSignalHandler() {
+func (s *odimService) intiateSignalHandler(errChan chan<- error) {
 
 	sigs := make(chan os.Signal, 1)
 
@@ -292,9 +291,9 @@ func (s *odimService) intiateSignalHandler() {
 		syscall.SIGQUIT)
 	go func() {
 		sig := <-sigs
-		l.Log.Infof("Received signal: %v", sig)
+		errChan <- fmt.Errorf("Received interrupt signal from OS: %v", sig)
 		err := s.deregisterService()
-		l.Log.Error(err)
+		errChan <- err
 	}()
 
 }

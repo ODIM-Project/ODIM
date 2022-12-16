@@ -366,28 +366,33 @@ func RetryManagersOperation(req PluginContactRequest, errorMessage string) ([]by
 }
 
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface) {
+func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface, errChan chan error) {
 	eventChan := make(chan interface{})
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
-	select {
-	case <-eventChan: // new data arrives through eventChan channel
-		config.TLSConfMutex.RLock()
-		mgr := mgrmodel.RAManager{
-			Name:            "odimra",
-			ManagerType:     "Service",
-			FirmwareVersion: config.Data.FirmwareVersion,
-			ID:              config.Data.RootServiceUUID,
-			UUID:            config.Data.RootServiceUUID,
-			State:           "Enabled",
-		}
-		config.TLSConfMutex.RUnlock()
-		err := dbInterface.AddManagertoDBInterface(mgr)
-		if err != nil {
+	go common.TrackConfigFileChanges(configFilePath, eventChan, errChan)
+	for {
+		select {
+		case info := <-eventChan: // new data arrives through eventChan channel
+			l.Log.Info(info)
+			config.TLSConfMutex.RLock()
+			mgr := mgrmodel.RAManager{
+				Name:            "odimra",
+				ManagerType:     "Service",
+				FirmwareVersion: config.Data.FirmwareVersion,
+				ID:              config.Data.RootServiceUUID,
+				UUID:            config.Data.RootServiceUUID,
+				State:           "Enabled",
+			}
+			config.TLSConfMutex.RUnlock()
+			err := dbInterface.AddManagertoDBInterface(mgr)
+			if err != nil {
+				l.Log.Error(err)
+			}
+			if l.Log.Level != config.Data.LogLevel {
+				l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+				l.Log.Logger.SetLevel(config.Data.LogLevel)
+			}
+		case err := <-errChan:
 			l.Log.Error(err)
-		}
-		if l.Log.Level != config.Data.LogLevel {
-			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
-			l.Log.Logger.SetLevel(config.Data.LogLevel)
 		}
 	}
 }

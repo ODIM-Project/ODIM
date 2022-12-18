@@ -14,7 +14,6 @@
 package account
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"reflect"
@@ -157,13 +156,7 @@ func TestUpdate(t *testing.T) {
 		Code:    response.GeneralError,
 		Message: "failed to update the account testUser1: Username cannot be modified",
 	}
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req     *accountproto.UpdateAccountRequest
 		session *asmodel.Session

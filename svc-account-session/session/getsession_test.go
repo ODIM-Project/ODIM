@@ -78,13 +78,7 @@ func TestGetSession(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionRequest
 	}
@@ -196,13 +190,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionRequest
 	}
@@ -339,13 +327,7 @@ func TestGetSessionUserName(t *testing.T) {
 		}
 	}()
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req  *sessionproto.SessionRequest
 		resp *sessionproto.SessionUserName
@@ -407,13 +389,7 @@ func TestGetSessionUserRoleID(t *testing.T) {
 		}
 	}()
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req  *sessionproto.SessionRequest
 		resp *sessionproto.SessionUsersRoleID

@@ -49,6 +49,7 @@ var (
 func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCreateRequest) (*sessionproto.SessionCreateResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside CreateSession function (svc-account-session)")
 	var err error
 	var resp sessionproto.SessionCreateResponse
@@ -76,6 +77,7 @@ func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCr
 func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside DeleteSession function (svc-account-session)")
 	response := DeleteSessionFunc(ctx, req)
 	var resp sessionproto.SessionResponse
@@ -101,6 +103,7 @@ func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRe
 func (s *Session) GetSession(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside GetSession function (svc-account-session)")
 	var resp sessionproto.SessionResponse
 	response := GetSessionFunc(ctx, req)
@@ -124,6 +127,7 @@ func (s *Session) GetSession(ctx context.Context, req *sessionproto.SessionReque
 func (s *Session) GetSessionUserName(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUserName, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside GetSessionUserName function (svc-account-session)")
 	resp, err := GetSessionUserNameFunc(ctx, req)
 	return resp, err
@@ -146,6 +150,7 @@ func (s *Session) GetSessionUserRoleID(ctx context.Context, req *sessionproto.Se
 func (s *Session) GetAllActiveSessions(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside GetAllActiveSessions function (svc-account-session)")
 	var resp sessionproto.SessionResponse
 	response := GetAllActiveSessionsFunc(ctx, req)
@@ -171,6 +176,7 @@ func (s *Session) GetAllActiveSessions(ctx context.Context, req *sessionproto.Se
 func (s *Session) GetSessionService(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside GetSessionService function (svc-account-session)")
 	var resp sessionproto.SessionResponse
 	response := GetSessionServiceFunc(ctx, req)

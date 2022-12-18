@@ -41,11 +41,7 @@ func createSession(token, id string, privileges map[string]bool, createdTime, la
 	return nil
 }
 
-func TestAuth(t *testing.T) {
-	config.SetUpMockConfig(t)
-	Lock.Lock()
-	common.SetUpMockConfig()
-	Lock.Unlock()
+func mockContext() context.Context {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
 	ctx = context.WithValue(ctx, common.ActionID, "001")
@@ -53,6 +49,15 @@ func TestAuth(t *testing.T) {
 	ctx = context.WithValue(ctx, common.ThreadID, "0")
 	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
 	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
+func TestAuth(t *testing.T) {
+	config.SetUpMockConfig(t)
+	Lock.Lock()
+	common.SetUpMockConfig()
+	Lock.Unlock()
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {

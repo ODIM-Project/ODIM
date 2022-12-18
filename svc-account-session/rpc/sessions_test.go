@@ -16,13 +16,7 @@ import (
 type any = interface{}
 
 func TestSession_CreateSession(t *testing.T) {
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionCreateRequest
 	}
@@ -73,13 +67,7 @@ func TestSession_CreateSession(t *testing.T) {
 }
 
 func TestSession_DeleteSession(t *testing.T) {
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionRequest
 	}
@@ -130,13 +118,7 @@ func TestSession_DeleteSession(t *testing.T) {
 }
 
 func TestSession_GetAllActiveSessions(t *testing.T) {
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionRequest
 	}
@@ -187,13 +169,7 @@ func TestSession_GetAllActiveSessions(t *testing.T) {
 }
 
 func TestSession_GetSession(t *testing.T) {
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionRequest
 	}
@@ -244,13 +220,7 @@ func TestSession_GetSession(t *testing.T) {
 }
 
 func TestSession_GetSessionService(t *testing.T) {
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionRequest
 	}
@@ -301,13 +271,7 @@ func TestSession_GetSessionService(t *testing.T) {
 }
 
 func TestSession_GetSessionUserName(t *testing.T) {
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionRequest
 	}
@@ -345,13 +309,7 @@ func TestSession_GetSessionUserName(t *testing.T) {
 }
 
 func TestSession_GetSessionUserRoleID(t *testing.T) {
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionRequest
 	}

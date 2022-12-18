@@ -31,6 +31,17 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func createMockUser(username, roleID string) error {
 	hash := sha3.New512()
 	hash.Write([]byte("P@$$w0rd"))
@@ -130,13 +141,7 @@ func TestCreateSession(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionCreateRequest
 	}

@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -41,6 +42,9 @@ var (
 	AccDeleteFunc         = account.Delete
 )
 
+// podName defines the current name of process
+var podName = os.Getenv("POD_NAME")
+
 // Create defines the operations which handles the RPC request response
 // for the create account service of account-session micro service.
 // The functionality retrives the request and return backs the response to
@@ -50,6 +54,7 @@ var (
 func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountRequest) (*accountproto.AccountResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside Create function (svc-account-session)")
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
@@ -108,6 +113,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside GetAllAccounts function (svc-account-session)")
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
@@ -164,6 +170,7 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRequest) (*accountproto.AccountResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside GetAccount function (svc-account-session)")
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
@@ -220,6 +227,7 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside GetAccountService function (svc-account-session)")
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
@@ -275,6 +283,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside Update function (svc-account-session)")
 	var resp accountproto.AccountResponse
 	l.LogWithFields(ctx).Info("Validating session and updating the last used time of the session before updating the account")
@@ -332,6 +341,7 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountRequest) (*accountproto.AccountResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside Delete function (svc-account-session)")
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{

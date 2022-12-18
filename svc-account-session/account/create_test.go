@@ -41,10 +41,8 @@ func createMockRole(roleID string, privileges []string, oemPrivileges []string, 
 	}
 	return nil
 }
-func TestCreate(t *testing.T) {
-	config.SetUpMockConfig(t)
-	acc := getMockExternalInterface()
-	common.SetUpMockConfig()
+
+func mockContext() context.Context {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
 	ctx = context.WithValue(ctx, common.ActionID, "001")
@@ -52,6 +50,14 @@ func TestCreate(t *testing.T) {
 	ctx = context.WithValue(ctx, common.ThreadID, "0")
 	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
 	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
+func TestCreate(t *testing.T) {
+	config.SetUpMockConfig(t)
+	acc := getMockExternalInterface()
+	common.SetUpMockConfig()
+	ctx := mockContext()
 	errArgs := response.Args{
 		Code:    response.GeneralError,
 		Message: "",

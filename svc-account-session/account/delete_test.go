@@ -14,7 +14,6 @@
 package account
 
 import (
-	"context"
 	"encoding/base64"
 	"net/http"
 	"reflect"
@@ -81,13 +80,7 @@ func TestDelete(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		session   *asmodel.Session
 		accountID string
@@ -184,13 +177,7 @@ func TestDeleteDefaultAdminAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock admin user %v", err)
 	}
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		session   *asmodel.Session
 		accountID string

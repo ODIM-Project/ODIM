@@ -53,6 +53,7 @@ var (
 func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*roleproto.RoleResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside CreateRole function (svc-account-session)")
 	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
@@ -113,6 +114,7 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*rol
 func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside GetRole function (svc-account-session)")
 	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
@@ -174,6 +176,7 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside GetAllRoles function (svc-account-session)")
 	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
@@ -234,6 +237,7 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (
 func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest) (*roleproto.RoleResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside UpdateRole function (svc-account-session)")
 	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
@@ -290,6 +294,7 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest) (*roleproto.RoleResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	l.LogWithFields(ctx).Info("Inside DeleteRole function (svc-account-session)")
 	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{

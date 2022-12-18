@@ -14,7 +14,6 @@
 package role
 
 import (
-	"context"
 	"encoding/json"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -107,13 +106,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req     *roleproto.UpdateRoleRequest
 		session *asmodel.Session

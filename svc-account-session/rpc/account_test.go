@@ -29,6 +29,17 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 )
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func TestAccount_Create(t *testing.T) {
 	type args struct {
 		ctx context.Context
@@ -613,13 +624,7 @@ func TestAccount_Delete(t *testing.T) {
 
 func Test_validateSessionTimeoutError(t *testing.T) {
 	config.SetUpMockConfig(t)
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		sessionToken string
 		errs         *errors.Error
@@ -656,13 +661,7 @@ func Test_validateSessionTimeoutError(t *testing.T) {
 
 func Test_validateUpdateLastUsedTimeError(t *testing.T) {
 	config.SetUpMockConfig(t)
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		err          error
 		sessionToken string

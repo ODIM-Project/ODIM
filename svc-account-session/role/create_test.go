@@ -57,6 +57,17 @@ func mockPrivilegeRegistry() error {
 	return nil
 }
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func TestCreate(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.SetUpMockConfig()
@@ -161,13 +172,7 @@ func TestCreate(t *testing.T) {
 		AssignedPrivileges: []string{common.PrivilegeLogin},
 		OEMPrivileges:      []string{},
 	})
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		req     *roleproto.RoleRequest
 		session *asmodel.Session

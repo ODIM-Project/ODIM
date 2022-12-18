@@ -14,7 +14,6 @@
 package auth
 
 import (
-	"context"
 	"encoding/base64"
 	"reflect"
 	"testing"
@@ -58,13 +57,7 @@ func TestCheckSessionCreationCredentials(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock admin user %v", err)
 	}
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	type args struct {
 		userName string
 		password string
@@ -119,13 +112,7 @@ func TestCheckSessionTimeOut(t *testing.T) {
 	Lock.Lock()
 	common.SetUpMockConfig()
 	Lock.Unlock()
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx := mockContext()
 	config.Data.AuthConf.SessionTimeOutInMins = 0.0333333
 	defer func() {
 		err := common.TruncateDB(common.InMemory)

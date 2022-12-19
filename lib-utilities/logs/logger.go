@@ -233,10 +233,8 @@ func (format LogFormat) MarshalText() ([]byte, error) {
 func SetFormatter(format LogFormat) {
 	switch format {
 	case SyslogFormat:
-		fmt.Println("Setting syslog format")
 		Log.Logger.SetFormatter(&SysLogFormatter{})
 	case JsonFormat:
-		fmt.Println("Setting json format")
 		Log.Logger.SetFormatter(&logrus.JSONFormatter{})
 	default:
 		Log.Logger.SetFormatter(&SysLogFormatter{})

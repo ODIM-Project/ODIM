@@ -30,6 +30,7 @@ import (
 	"strings"
 	"time"
 
+	lgr "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/google/uuid"
@@ -69,6 +70,7 @@ type configModel struct {
 	RequestLimitCountPerSession    int                      `json:"RequestLimitCountPerSession"`
 	SessionLimitCountPerUser       int                      `json:"SessionLimitCountPerUser"`
 	LogLevel                       log.Level                `json:"LogLevel"`
+	LogFormat                      lgr.LogFormat            `json:"LogFormat"`
 	ImageRegistryAddress           string                   `json:"ImageRegistryAddress,omitempty"`
 }
 

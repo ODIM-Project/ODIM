@@ -54,6 +54,7 @@ func GetContextData(ctx context.Context) context.Context {
 	md, _ := metadata.FromIncomingContext(ctx)
 	ctx = metadata.NewIncomingContext(ctx, md)
 	if len(md[TransactionID]) > 0 {
+		ctx = context.WithValue(ctx, ProcessName, md[ProcessName][0])
 		ctx = context.WithValue(ctx, TransactionID, md[TransactionID][0])
 		ctx = context.WithValue(ctx, ActionID, md[ActionID][0])
 		ctx = context.WithValue(ctx, ActionName, md[ActionName][0])
@@ -68,6 +69,7 @@ func GetContextData(ctx context.Context) context.Context {
 func CreateMetadata(ctx context.Context) context.Context {
 	if ctx.Value(TransactionID) != nil {
 		md := metadata.New(map[string]string{
+			ProcessName:   ctx.Value(ProcessName).(string),
 			TransactionID: ctx.Value(TransactionID).(string),
 			ActionName:    ctx.Value(ActionName).(string),
 			ActionID:      ctx.Value(ActionID).(string),

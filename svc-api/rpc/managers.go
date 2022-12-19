@@ -37,7 +37,7 @@ func GetManagersCollection(ctx context.Context, req managersproto.ManagerRequest
 	}
 
 	asService := NewManagersClientFunc(conn)
-	resp, err := asService.GetManagersCollection(context.TODO(), &req)
+	resp, err := asService.GetManagersCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -54,7 +54,7 @@ func GetManagers(ctx context.Context, req managersproto.ManagerRequest) (*manage
 	}
 
 	asService := NewManagersClientFunc(conn)
-	resp, err := asService.GetManager(context.TODO(), &req)
+	resp, err := asService.GetManager(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -71,7 +71,7 @@ func GetManagersResource(ctx context.Context, req managersproto.ManagerRequest) 
 	}
 
 	asService := NewManagersClientFunc(conn)
-	resp, err := asService.GetManagersResource(context.TODO(), &req)
+	resp, err := asService.GetManagersResource(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -88,7 +88,7 @@ func VirtualMediaInsert(ctx context.Context, req managersproto.ManagerRequest) (
 	}
 
 	asService := NewManagersClientFunc(conn)
-	resp, err := asService.VirtualMediaInsert(context.TODO(), &req)
+	resp, err := asService.VirtualMediaInsert(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -105,7 +105,7 @@ func VirtualMediaEject(ctx context.Context, req managersproto.ManagerRequest) (*
 	}
 
 	asService := NewManagersClientFunc(conn)
-	resp, err := asService.VirtualMediaEject(context.TODO(), &req)
+	resp, err := asService.VirtualMediaEject(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -122,7 +122,7 @@ func GetRemoteAccountService(ctx context.Context, req managersproto.ManagerReque
 	}
 
 	mService := NewManagersClientFunc(conn)
-	resp, err := mService.GetRemoteAccountService(context.TODO(), &req)
+	resp, err := mService.GetRemoteAccountService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -139,7 +139,7 @@ func CreateRemoteAccountService(ctx context.Context, req managersproto.ManagerRe
 	}
 
 	mService := NewManagersClientFunc(conn)
-	resp, err := mService.CreateRemoteAccountService(context.TODO(), &req)
+	resp, err := mService.CreateRemoteAccountService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -156,7 +156,7 @@ func UpdateRemoteAccountService(ctx context.Context, req managersproto.ManagerRe
 	}
 
 	mService := NewManagersClientFunc(conn)
-	resp, err := mService.UpdateRemoteAccountService(context.TODO(), &req)
+	resp, err := mService.UpdateRemoteAccountService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -173,7 +173,7 @@ func DeleteRemoteAccountService(ctx context.Context, req managersproto.ManagerRe
 	}
 
 	mService := NewManagersClientFunc(conn)
-	resp, err := mService.DeleteRemoteAccountService(context.TODO(), &req)
+	resp, err := mService.DeleteRemoteAccountService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}

@@ -16,16 +16,18 @@
 package session
 
 import (
+	"context"
 	"fmt"
-	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"time"
+
+	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 )
 
 // UpdateLastUsedTime is supposed to be used whenever there is a session usage.
 // The function is for updating the last used time of a session, so that
 // the active sessions won't time out and expire. As the input of the function
 // we are passing the session token. As return, function give backs the error, if any.
-func UpdateLastUsedTime(token string) error {
+func UpdateLastUsedTime(ctx context.Context, token string) error {
 	session, err := asmodel.GetSession(token)
 	if err != nil {
 		return fmt.Errorf("error while trying to get the session details with the token %v: %v", token, err)

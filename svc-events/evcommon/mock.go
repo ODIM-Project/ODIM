@@ -41,11 +41,11 @@ func stubEMBConsume(topic string) {
 }
 
 // MockIsAuthorized is for mocking up of authorization
-func MockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
+func MockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken != "validToken" && sessionToken != "token" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
 // MockGetSessionUserName is for mocking up of session user name

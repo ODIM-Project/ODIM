@@ -277,11 +277,11 @@ func TestMethodNotAllowedForLogServices(t *testing.T) {
 		}(uri)
 	}
 }
-func authMock(token string, b []string, c []string) response.RPC {
+func authMock(token string, b []string, c []string) (response.RPC, error) {
 	if token == "invalidToken" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
 func TestGetRegistryFileCollection(t *testing.T) {

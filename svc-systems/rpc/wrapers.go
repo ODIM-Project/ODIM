@@ -20,10 +20,11 @@ import (
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
-type authenticator func(sessionToken string, privileges, oemPrivileges []string) response.RPC
+type authenticator func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
 
 func auth(authenticate authenticator, sessionToken string,
 	privilages []string, callback func() response.RPC) response.RPC {
@@ -31,8 +32,11 @@ func auth(authenticate authenticator, sessionToken string,
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "X-Auth-Token header is missing", nil, nil)
 	}
 
-	resp := authenticate(sessionToken, privilages, []string{})
+	resp, err := authenticate(sessionToken, privilages, []string{})
 	if resp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		return resp
 	}
 	return callback()

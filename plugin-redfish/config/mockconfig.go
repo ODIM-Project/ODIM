@@ -216,9 +216,10 @@ func SetUpMockConfig(t *testing.T) error {
 			"TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
 		},
 	}
+	warningList := &lutilconf.WarningList{}
 	lutilconf.SetVerifyPeer(Data.TLSConf.VerifyPeer)
-	lutilconf.SetTLSMinVersion(Data.TLSConf.MinVersion)
-	lutilconf.SetTLSMaxVersion(Data.TLSConf.MaxVersion)
+	lutilconf.SetTLSMinVersion(Data.TLSConf.MinVersion, warningList)
+	lutilconf.SetTLSMaxVersion(Data.TLSConf.MaxVersion, warningList)
 	lutilconf.SetPreferredCipherSuites(Data.TLSConf.PreferredCipherSuites)
 
 	return nil

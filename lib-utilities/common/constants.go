@@ -161,6 +161,7 @@ const (
 	ActionID      = "actionid"
 	ProcessName   = "processname"
 	// Below fields define Service Name
+	ManagerService = "svc-managers"
 	AccountService = "svc-account"
 	SystemService  = "svc-systems"
 	SessionService = "svc-account-session"

@@ -278,7 +278,12 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		})
 
 	}
-	e.SubscribeToEMB(plugin.ID, queueList)
+
+	l.Log.Info("subscribing to EMB for plugin " + plugin.ID)
+	err = e.SubscribeToEMB(plugin.ID, queueList)
+	if err != nil {
+		l.Log.Error(err)
+	}
 
 	// store encrypted password
 	plugin.Password = ciphertext

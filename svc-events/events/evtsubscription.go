@@ -1162,7 +1162,10 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 // UpdateEventSubscriptions it will add subscription for newly Added system in aggregate
 func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpdateRequest, isRemove bool) error {
 	// var resp response.RPC
-	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if err != nil {
+		l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+	}
 	if authResp.StatusCode != http.StatusOK {
 		l.Log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		return nil
@@ -1171,7 +1174,7 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpda
 	var contactRequest evcommon.PluginContactRequest
 	var target *evmodel.Target
 
-	target, _, err := e.getTargetDetails(req.SystemID)
+	target, _, err = e.getTargetDetails(req.SystemID)
 	if err != nil {
 		return err
 	}

@@ -12312,17 +12312,29 @@ curl -i -X POST \
 
 # Audit logs
 
-Audit logs provide information on each API and are stored in the `api.log` file in `odimra` logs.  Each log consists of a priority value, date and time of the log, hostname from which the APIs are sent, user account and role details, API request method and resource, response body, response code, and the message.
+Audit logs provide information on each API and are stored in the `api.log` file in `odimra` logs. 
 
-**Sample logs**
+**Sample log**
 
-- <110> 2009-11-10T23:00:00Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
+```
+<14> 1 2022-11-29T10:39:23Z odim-controller svc-systems systems-744b9475c6-bgvwm_7 GetSystemCollection [process@1 processName="systems-744b9475c6-bgvwm" transactionID="e77fe640-d8d5-4c2e-a219-31b217fee0da" actionID="001" actionName="GetSystemCollection" threadID="0" threadName="svc-systems"] Inside GetSystemsCollection function (GetResource)
+```
 
-- <110> 2022-01-17T13:57:48Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="POST" resource="/redfish/v1/AggregationService/AggregationSources" requestBody="{"HostName":"xxx.xxx.xxx.xxx","Links":{"ConnectionMethod":{"@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/337ea3cb-3acc-49e2-b33f-3f5ce2a5ada4"}},"Password":"null","UserName":"admin"}"][response@1 responseCode=202] Operation successful
+Each log consists of the following properties:
 
-- <107> 2009-11-10T23:00:00Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
-
-  <blockquote> Note: <110> and <107> are priority values. <110> is the audit information log and <107> is the audit error log. </blockquote>
+- **<14>**, **<110>** or **<107>**—Priority values. 
+  <110> is the value for successful operation, <107> is the value for failed operation. <14> is the value for log information.
+- **1**—Version number of the system protocol standard.
+- **2022-11-29T10:39:23Z**—Date and time of the log.
+- **odim-controller**—Hostname from which the APIs are sent.
+- **svc-systems**—Thread name.
+- **GetSystemCollection**—ID number of the message.
+- **processName**—System that originally sent the message.
+- **transactionID**—Unique UUID for each API request.
+- **actionID**—Unique ID for each actionName.
+- **actionName**—HTTP operation performed.
+- **threadID**—A main thread that is always running. A number of worker threads that process the messages.
+- **threadName**—Action for each thread.
 
 
 

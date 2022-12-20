@@ -32,7 +32,7 @@ func GetLicenseService(ctx context.Context, req licenseproto.GetLicenseServiceRe
 	}
 	defer conn.Close()
 	licenseService := licenseproto.NewLicensesClient(conn)
-	resp, err := licenseService.GetLicenseService(context.TODO(), &req)
+	resp, err := licenseService.GetLicenseService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -48,7 +48,7 @@ func GetLicenseCollection(ctx context.Context, req licenseproto.GetLicenseReques
 	}
 	defer conn.Close()
 	licenseService := licenseproto.NewLicensesClient(conn)
-	resp, err := licenseService.GetLicenseCollection(context.TODO(), &req)
+	resp, err := licenseService.GetLicenseCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -64,7 +64,7 @@ func GetLicenseResource(ctx context.Context, req licenseproto.GetLicenseResource
 	}
 	defer conn.Close()
 	licenseService := licenseproto.NewLicensesClient(conn)
-	resp, err := licenseService.GetLicenseResource(context.TODO(), &req)
+	resp, err := licenseService.GetLicenseResource(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -80,7 +80,7 @@ func InstallLicenseService(ctx context.Context, req licenseproto.InstallLicenseR
 	}
 	defer conn.Close()
 	licenseService := licenseproto.NewLicensesClient(conn)
-	resp, err := licenseService.InstallLicenseService(context.TODO(), &req)
+	resp, err := licenseService.InstallLicenseService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}

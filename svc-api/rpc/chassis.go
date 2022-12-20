@@ -38,7 +38,7 @@ func GetChassisCollection(ctx context.Context, req chassisproto.GetChassisReques
 	}
 
 	asService := NewChassisClientFunc(conn)
-	resp, err := asService.GetChassisCollection(context.TODO(), &req)
+	resp, err := asService.GetChassisCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -55,7 +55,7 @@ func GetChassisResource(ctx context.Context, req chassisproto.GetChassisRequest)
 	}
 
 	asService := NewChassisClientFunc(conn)
-	resp, err := asService.GetChassisResource(context.TODO(), &req)
+	resp, err := asService.GetChassisResource(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -72,7 +72,7 @@ func GetChassis(ctx context.Context, req chassisproto.GetChassisRequest) (*chass
 	}
 
 	asService := NewChassisClientFunc(conn)
-	resp, err := asService.GetChassisInfo(context.TODO(), &req)
+	resp, err := asService.GetChassisInfo(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -89,7 +89,7 @@ func CreateChassis(ctx context.Context, req chassisproto.CreateChassisRequest) (
 	}
 
 	service := NewChassisClientFunc(conn)
-	resp, err := service.CreateChassis(context.TODO(), &req)
+	resp, err := service.CreateChassis(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -106,7 +106,7 @@ func DeleteChassis(ctx context.Context, req chassisproto.DeleteChassisRequest) (
 	}
 
 	service := NewChassisClientFunc(conn)
-	resp, err := service.DeleteChassis(context.TODO(), &req)
+	resp, err := service.DeleteChassis(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -123,7 +123,7 @@ func UpdateChassis(ctx context.Context, req chassisproto.UpdateChassisRequest) (
 	}
 
 	service := NewChassisClientFunc(conn)
-	resp, err := service.UpdateChassis(context.TODO(), &req)
+	resp, err := service.UpdateChassis(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}

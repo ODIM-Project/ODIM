@@ -19,6 +19,7 @@ package account
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -39,7 +40,7 @@ import (
 //
 // As return parameters RPC response, which contains status code, message, headers and data,
 // error will be passed back.
-func GetAllAccounts(session *asmodel.Session) response.RPC {
+func GetAllAccounts(ctx context.Context, session *asmodel.Session) response.RPC {
 	commonResponse := response.Response{
 		OdataType:    "#ManagerAccountCollection.ManagerAccountCollection",
 		OdataID:      "/redfish/v1/AccountService/Accounts",
@@ -66,17 +67,17 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
+		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 
-	l.Log.Info("Retrieving all users from the database")
+	l.LogWithFields(ctx).Info("Retrieving all users from the database")
 	//Get all user keys
 	users, err := asmodel.GetAllUsers()
 	if err != nil {
 		errorMessage := errLogPrefix + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 	//Build response body and headers
@@ -118,7 +119,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 //
 // As return parameters RPC response, which contains status code, message, headers and data,
 // error will be passed back.
-func GetAccount(session *asmodel.Session, accountID string) response.RPC {
+func GetAccount(ctx context.Context, session *asmodel.Session, accountID string) response.RPC {
 	commonResponse := response.Response{
 		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + accountID,
@@ -147,12 +148,12 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
+			auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}
 
-	l.Log.Infof("Retrieving the user details from the database for the account %s", accountID)
+	l.LogWithFields(ctx).Infof("Retrieving the user details from the database for the account %s", accountID)
 	user, err := asmodel.GetUserDetails(accountID)
 	if err != nil {
 		errorMessage := errLogPrefix + err.Error()
@@ -174,7 +175,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 
@@ -210,7 +211,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 //
 // As return parameters RPC response, which contains status code, message, headers and data,
 // error will be passed back.
-func GetAccountService() response.RPC {
+func GetAccountService(ctx context.Context) response.RPC {
 	commonResponse := response.Response{
 		OdataType:    common.AccountServiceType,
 		OdataID:      "/redfish/v1/AccountService",

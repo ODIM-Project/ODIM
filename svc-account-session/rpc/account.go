@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -41,6 +42,9 @@ var (
 	AccDeleteFunc         = account.Delete
 )
 
+// podName defines the current name of process
+var podName = os.Getenv("POD_NAME")
+
 // Create defines the operations which handles the RPC request response
 // for the create account service of account-session micro service.
 // The functionality retrives the request and return backs the response to
@@ -48,6 +52,10 @@ var (
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountRequest) (*accountproto.AccountResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	l.LogWithFields(ctx).Info("Inside Create function (svc-account-session)")
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -62,32 +70,32 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Info("Validating session and updating the last used time of the session before creating the account")
-	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
+	l.LogWithFields(ctx).Info("Validating session and updating the last used time of the session before creating the account")
+	sess, errs := CheckSessionTimeOutFunc(ctx, req.SessionToken)
 	if errs != nil {
-		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(ctx, req.SessionToken, errs)
 		return &resp, nil
 	}
 
-	err := UpdateLastUsedTimeFunc(req.SessionToken)
+	err := UpdateLastUsedTimeFunc(ctx, req.SessionToken)
 	if err != nil {
-		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err, req.SessionToken)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
 	}
 
 	acc := account.GetExternalInterface()
-	data, err := acc.Create(req, sess)
+	data, err := acc.Create(ctx, req, sess)
 	var jsonErr error // jsonErr is created to protect the data in err
 	body, jsonErr := MarshalFunc(data.Body)
 	if jsonErr != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body of the create account API: " + jsonErr.Error()
-		l.Log.Error(resp.StatusMessage)
+		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.Log.Debugf("outgoing response of request to create an account: %s", string(body))
+	l.LogWithFields(ctx).Debugf("outgoing response of request to create an account: %s", string(body))
 	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
@@ -103,6 +111,10 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	l.LogWithFields(ctx).Info("Inside GetAllAccounts function (svc-account-session)")
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -117,30 +129,30 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Info("Validating session and updating the last used time of the session before fetching all accounts")
-	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
+	l.LogWithFields(ctx).Info("Validating session and updating the last used time of the session before fetching all accounts")
+	sess, errs := CheckSessionTimeOutFunc(ctx, req.SessionToken)
 	if errs != nil {
-		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(ctx, req.SessionToken, errs)
 		return &resp, nil
 	}
 
-	err := UpdateLastUsedTimeFunc(req.SessionToken)
+	err := UpdateLastUsedTimeFunc(ctx, req.SessionToken)
 	if err != nil {
-		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err, req.SessionToken)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
 	}
 
-	data := GetAllAccountsFunc(sess)
+	data := GetAllAccountsFunc(ctx, sess)
 	body, err := MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body of the get all accounts API: " + err.Error()
-		l.Log.Error(resp.StatusMessage)
+		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
-	l.Log.Debugf("outgoing response of request to view all accounts: %s", string(body))
+	l.LogWithFields(ctx).Debugf("outgoing response of request to view all accounts: %s", string(body))
 	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
@@ -156,6 +168,10 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRequest) (*accountproto.AccountResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	l.LogWithFields(ctx).Info("Inside GetAccount function (svc-account-session)")
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -170,30 +186,30 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		ErrorArgs: errorArgs,
 	}
 
-	l.Log.Info("Validating session and updating the last used time of the session before fetching the account")
-	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
+	l.LogWithFields(ctx).Info("Validating session and updating the last used time of the session before fetching the account")
+	sess, errs := CheckSessionTimeOutFunc(ctx, req.SessionToken)
 	if errs != nil {
-		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(ctx, req.SessionToken, errs)
 		return &resp, nil
 	}
 
-	err := UpdateLastUsedTimeFunc(req.SessionToken)
+	err := UpdateLastUsedTimeFunc(ctx, req.SessionToken)
 	if err != nil {
-		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err, req.SessionToken)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
 	}
 
-	data := GetAccountFunc(sess, req.AccountID)
+	data := GetAccountFunc(ctx, sess, req.AccountID)
 	body, err := MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body of the get account API: " + err.Error()
-		l.Log.Error(resp.StatusMessage)
+		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
-	l.Log.Debugf("outgoing response of request to view the account: %s", string(body))
+	l.LogWithFields(ctx).Debugf("outgoing response of request to view the account: %s", string(body))
 	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
@@ -209,6 +225,10 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	l.LogWithFields(ctx).Info("Inside GetAccountService function (svc-account-session)")
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -222,30 +242,30 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	l.Log.Info("Validating session and updating the last used time of the session before checking the availability of account session")
-	_, errs := CheckSessionTimeOutFunc(req.SessionToken)
+	l.LogWithFields(ctx).Info("Validating session and updating the last used time of the session before checking the availability of account session")
+	_, errs := CheckSessionTimeOutFunc(ctx, req.SessionToken)
 	if errs != nil {
-		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(ctx, req.SessionToken, errs)
 		return &resp, nil
 	}
 
-	err := UpdateLastUsedTimeFunc(req.SessionToken)
+	err := UpdateLastUsedTimeFunc(ctx, req.SessionToken)
 	if err != nil {
-		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err, req.SessionToken)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
 	}
 
-	data := GetAccountServiceFunc()
+	data := GetAccountServiceFunc(ctx)
 	body, err := MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body of the get account service API: " + err.Error()
-		l.Log.Printf(resp.StatusMessage)
+		l.LogWithFields(ctx).Printf(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
-	l.Log.Debugf("outgoing response of request to view the account session: %s", string(body))
+	l.LogWithFields(ctx).Debugf("outgoing response of request to view the account session: %s", string(body))
 	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
@@ -261,8 +281,12 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	l.LogWithFields(ctx).Info("Inside Update function (svc-account-session)")
 	var resp accountproto.AccountResponse
-	l.Log.Info("Validating session and updating the last used time of the session before updating the account")
+	l.LogWithFields(ctx).Info("Validating session and updating the last used time of the session before updating the account")
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -275,15 +299,15 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
+	sess, errs := CheckSessionTimeOutFunc(ctx, req.SessionToken)
 	if errs != nil {
-		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(ctx, req.SessionToken, errs)
 		return &resp, nil
 	}
 
-	err := UpdateLastUsedTimeFunc(req.SessionToken)
+	err := UpdateLastUsedTimeFunc(ctx, req.SessionToken)
 	if err != nil {
-		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err, req.SessionToken)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
@@ -291,15 +315,15 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 
 	acc := account.GetExternalInterface()
 
-	data := acc.Update(req, sess)
+	data := acc.Update(ctx, req, sess)
 	body, err := MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while to trying to marshal the response body of the update account API: " + err.Error()
-		l.Log.Printf(resp.StatusMessage)
+		l.LogWithFields(ctx).Printf(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.Log.Debugf("outgoing response of request to update the account: %s", string(body))
+	l.LogWithFields(ctx).Debugf("outgoing response of request to update the account: %s", string(body))
 	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
@@ -315,6 +339,10 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountRequest) (*accountproto.AccountResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	l.LogWithFields(ctx).Info("Inside Delete function (svc-account-session)")
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -328,31 +356,31 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	l.Log.Info("Validating session and updating the last used time of the session before deleting the account")
-	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
+	l.LogWithFields(ctx).Info("Validating session and updating the last used time of the session before deleting the account")
+	sess, errs := CheckSessionTimeOutFunc(ctx, req.SessionToken)
 	if errs != nil {
-		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(req.SessionToken, errs)
+		resp.Body, resp.StatusCode, resp.StatusMessage = validateSessionTimeoutError(ctx, req.SessionToken, errs)
 		return &resp, nil
 	}
 
-	err := UpdateLastUsedTimeFunc(req.SessionToken)
+	err := UpdateLastUsedTimeFunc(ctx, req.SessionToken)
 	if err != nil {
-		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(err, req.SessionToken)
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err, req.SessionToken)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
 	}
 
-	data := AccDeleteFunc(sess, req.AccountID)
+	data := AccDeleteFunc(ctx, sess, req.AccountID)
 	var jsonErr error // jsonErr is created to protect the data in err
 	body, jsonErr := MarshalFunc(data.Body)
 	if jsonErr != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body of the delete account API: " + jsonErr.Error()
-		l.Log.Error(resp.StatusMessage)
+		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.Log.Debugf("outgoing response of request to delete the account: %s", string(body))
+	l.LogWithFields(ctx).Debugf("outgoing response of request to delete the account: %s", string(body))
 	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
@@ -361,23 +389,23 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 	return &resp, nil
 }
 
-func validateSessionTimeoutError(sessionToken string, errs *errors.Error) (body []byte, statusCode int32, statusMessage string) {
+func validateSessionTimeoutError(ctx context.Context, sessionToken string, errs *errors.Error) (body []byte, statusCode int32, statusMessage string) {
 	errorMessage := "error while authorizing session token: " + errs.Error()
 	statusCode, statusMessage = errs.GetAuthStatusCodeAndMessage()
 	if statusCode == http.StatusServiceUnavailable {
 		body, _ = json.Marshal(common.GeneralError(statusCode, statusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 	} else {
 		body, _ = json.Marshal(common.GeneralError(statusCode, statusMessage, errorMessage, nil, nil).Body)
-		auth.CustomAuthLog(sessionToken, "Invalid session token", statusCode)
+		auth.CustomAuthLog(ctx, sessionToken, "Invalid session token", statusCode)
 	}
 	return
 }
 
-func validateUpdateLastUsedTimeError(err error, sessionToken string) (errorMessage string, statusCode int32, statusMessage string) {
+func validateUpdateLastUsedTimeError(ctx context.Context, err error, sessionToken string) (errorMessage string, statusCode int32, statusMessage string) {
 	errorMessage = "error while updating last used time of session with token " + sessionToken + ": " + err.Error()
 	statusCode = http.StatusInternalServerError
 	statusMessage = response.InternalError
-	l.Log.Error(errorMessage)
+	l.LogWithFields(ctx).Error(errorMessage)
 	return
 }

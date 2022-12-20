@@ -39,7 +39,7 @@ func DoGetAggregationService(ctx context.Context, req aggregatorproto.Aggregator
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.GetAggregationService(context.TODO(), &req)
+	resp, err := aggregator.GetAggregationService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -58,7 +58,7 @@ func DoResetRequest(ctx context.Context, req aggregatorproto.AggregatorRequest) 
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.Reset(context.TODO(), &req)
+	resp, err := aggregator.Reset(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -77,7 +77,7 @@ func DoSetDefaultBootOrderRequest(ctx context.Context, req aggregatorproto.Aggre
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.SetDefaultBootOrder(context.TODO(), &req)
+	resp, err := aggregator.SetDefaultBootOrder(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -96,7 +96,7 @@ func DoAddAggregationSource(ctx context.Context, req aggregatorproto.AggregatorR
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.AddAggregationSource(context.TODO(), &req)
+	resp, err := aggregator.AddAggregationSource(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -115,7 +115,7 @@ func DoGetAllAggregationSource(ctx context.Context, req aggregatorproto.Aggregat
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.GetAllAggregationSource(context.TODO(), &req)
+	resp, err := aggregator.GetAllAggregationSource(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -134,7 +134,7 @@ func DoGetAggregationSource(ctx context.Context, req aggregatorproto.AggregatorR
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.GetAggregationSource(context.TODO(), &req)
+	resp, err := aggregator.GetAggregationSource(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -153,7 +153,7 @@ func DoUpdateAggregationSource(ctx context.Context, req aggregatorproto.Aggregat
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.UpdateAggregationSource(context.TODO(), &req)
+	resp, err := aggregator.UpdateAggregationSource(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -172,7 +172,7 @@ func DoDeleteAggregationSource(ctx context.Context, req aggregatorproto.Aggregat
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.DeleteAggregationSource(context.TODO(), &req)
+	resp, err := aggregator.DeleteAggregationSource(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -191,7 +191,7 @@ func DoCreateAggregate(ctx context.Context, req aggregatorproto.AggregatorReques
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.CreateAggregate(context.TODO(), &req)
+	resp, err := aggregator.CreateAggregate(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -210,7 +210,7 @@ func DoGetAggregateCollection(ctx context.Context, req aggregatorproto.Aggregato
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.GetAllAggregates(context.TODO(), &req)
+	resp, err := aggregator.GetAllAggregates(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -229,7 +229,7 @@ func DoGeteAggregate(ctx context.Context, req aggregatorproto.AggregatorRequest)
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.GetAggregate(context.TODO(), &req)
+	resp, err := aggregator.GetAggregate(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -248,7 +248,7 @@ func DoDeleteAggregate(ctx context.Context, req aggregatorproto.AggregatorReques
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.DeleteAggregate(context.TODO(), &req)
+	resp, err := aggregator.DeleteAggregate(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -267,7 +267,7 @@ func DoAddElementsToAggregate(ctx context.Context, req aggregatorproto.Aggregato
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.AddElementsToAggregate(context.TODO(), &req)
+	resp, err := aggregator.AddElementsToAggregate(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -286,7 +286,7 @@ func DoRemoveElementsFromAggregate(ctx context.Context, req aggregatorproto.Aggr
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.RemoveElementsFromAggregate(context.TODO(), &req)
+	resp, err := aggregator.RemoveElementsFromAggregate(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -305,7 +305,7 @@ func DoResetAggregateElements(ctx context.Context, req aggregatorproto.Aggregato
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.ResetElementsOfAggregate(context.TODO(), &req)
+	resp, err := aggregator.ResetElementsOfAggregate(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -324,7 +324,7 @@ func DoSetDefaultBootOrderAggregateElements(ctx context.Context, req aggregatorp
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.SetDefaultBootOrderElementsOfAggregate(context.TODO(), &req)
+	resp, err := aggregator.SetDefaultBootOrderElementsOfAggregate(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -343,7 +343,7 @@ func DoGetAllConnectionMethods(ctx context.Context, req aggregatorproto.Aggregat
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.GetAllConnectionMethods(context.TODO(), &req)
+	resp, err := aggregator.GetAllConnectionMethods(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -362,7 +362,7 @@ func DoGetConnectionMethod(ctx context.Context, req aggregatorproto.AggregatorRe
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.GetConnectionMethod(context.TODO(), &req)
+	resp, err := aggregator.GetConnectionMethod(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -381,7 +381,7 @@ func DoGetResetActionInfoService(ctx context.Context, req aggregatorproto.Aggreg
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.GetResetActionInfoService(context.TODO(), &req)
+	resp, err := aggregator.GetResetActionInfoService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -400,7 +400,7 @@ func DoGetSetDefaultBootOrderActionInfo(ctx context.Context, req aggregatorproto
 
 	aggregator := NewAggregatorClientFunc(conn)
 
-	resp, err := aggregator.GetSetDefaultBootOrderActionInfo(context.TODO(), &req)
+	resp, err := aggregator.GetSetDefaultBootOrderActionInfo(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}

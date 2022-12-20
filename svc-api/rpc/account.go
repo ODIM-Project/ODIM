@@ -39,7 +39,7 @@ func DoGetAccountServiceRequest(ctx context.Context, req accountproto.AccountReq
 	}
 	account := NewAccountClientFunc(conn)
 
-	resp, err := account.GetAccountServices(context.TODO(), &req)
+	resp, err := account.GetAccountServices(ctx, &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}
@@ -57,7 +57,7 @@ func DoAccountCreationRequest(ctx context.Context, req accountproto.CreateAccoun
 	}
 	account := NewAccountClientFunc(conn)
 
-	resp, err := account.Create(context.TODO(), &req)
+	resp, err := account.Create(ctx, &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}
@@ -75,7 +75,7 @@ func DoGetAllAccountRequest(ctx context.Context, req accountproto.AccountRequest
 	}
 	account := NewAccountClientFunc(conn)
 
-	resp, err := account.GetAllAccounts(context.TODO(), &req)
+	resp, err := account.GetAllAccounts(ctx, &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}
@@ -94,7 +94,7 @@ func DoGetAccountRequest(ctx context.Context, req accountproto.GetAccountRequest
 
 	account := NewAccountClientFunc(conn)
 
-	resp, err := account.GetAccount(context.TODO(), &req)
+	resp, err := account.GetAccount(ctx, &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}
@@ -112,7 +112,7 @@ func DoUpdateAccountRequest(ctx context.Context, req accountproto.UpdateAccountR
 	}
 	account := NewAccountClientFunc(conn)
 
-	resp, err := account.Update(context.TODO(), &req)
+	resp, err := account.Update(ctx, &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}
@@ -130,7 +130,7 @@ func DoAccountDeleteRequest(ctx context.Context, req accountproto.DeleteAccountR
 	}
 	account := NewAccountClientFunc(conn)
 
-	resp, err := account.Delete(context.TODO(), &req)
+	resp, err := account.Delete(ctx, &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}

@@ -38,7 +38,7 @@ func GetRole(ctx context.Context, req roleproto.GetRoleRequest) (*roleproto.Role
 	}
 
 	asService := NewRolesClientFunc(conn)
-	resp, err := asService.GetRole(context.TODO(), &req)
+	resp, err := asService.GetRole(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -56,7 +56,7 @@ func GetAllRoles(ctx context.Context, req roleproto.GetRoleRequest) (*roleproto.
 	}
 
 	asService := NewRolesClientFunc(conn)
-	resp, err := asService.GetAllRoles(context.TODO(), &req)
+	resp, err := asService.GetAllRoles(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -74,7 +74,7 @@ func UpdateRole(ctx context.Context, req roleproto.UpdateRoleRequest) (*roleprot
 	}
 
 	asService := NewRolesClientFunc(conn)
-	resp, err := asService.UpdateRole(context.TODO(), &req)
+	resp, err := asService.UpdateRole(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -91,7 +91,7 @@ func DeleteRole(ctx context.Context, req roleproto.DeleteRoleRequest) (*roleprot
 	}
 
 	asService := NewRolesClientFunc(conn)
-	resp, err := asService.DeleteRole(context.TODO(), &req)
+	resp, err := asService.DeleteRole(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}

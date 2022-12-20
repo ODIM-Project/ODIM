@@ -1,24 +1,25 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package auth
 
 import (
 	"encoding/base64"
-	"golang.org/x/crypto/sha3"
 	"reflect"
 	"testing"
 	"time"
+
+	"golang.org/x/crypto/sha3"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -56,6 +57,7 @@ func TestCheckSessionCreationCredentials(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock admin user %v", err)
 	}
+	ctx := mockContext()
 	type args struct {
 		userName string
 		password string
@@ -91,7 +93,7 @@ func TestCheckSessionCreationCredentials(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CheckSessionCreationCredentials(tt.args.userName, tt.args.password)
+			got, err := CheckSessionCreationCredentials(ctx, tt.args.userName, tt.args.password)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CheckSessionCreationCredentials() error = %v, wantErr %v", err.Error(), tt.wantErr)
 				return
@@ -110,6 +112,7 @@ func TestCheckSessionTimeOut(t *testing.T) {
 	Lock.Lock()
 	common.SetUpMockConfig()
 	Lock.Unlock()
+	ctx := mockContext()
 	config.Data.AuthConf.SessionTimeOutInMins = 0.0333333
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
@@ -160,7 +163,7 @@ func TestCheckSessionTimeOut(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CheckSessionTimeOut(tt.args.sessionToken)
+			got, err := CheckSessionTimeOut(ctx, tt.args.sessionToken)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CheckSessionTimeOut() error = %+v, wantErr %v", err, tt.wantErr)
 			}

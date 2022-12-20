@@ -2066,6 +2066,10 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    sudo chown odimra:odimra etcd_backup/
    ```
 
+   ```
+   sudo chmod 755 etcd_backup/
+   ```
+
 2. Get the cert and other details from `etcd.env` file located at `/etc`. 
    `ETCDCTL_CACERT`, `ETCDCTL_KEY`, `ETCDCTL_CERT` values would be the `caCert.cert`, `server.key` and `cert.crt` files.
 
@@ -2119,7 +2123,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    | -------- | -------- | ---------- | ---------- |
    | 107a4572 | 31002    | 1952       | 12` `MB    |
 
-8. For three-node cluster deployment, take the restore files of the etcd for all the nodes:
+8. For three-node cluster deployment, generate restore files from .db file for all the nodes:
 
    ```
    ETCDCTL_API=3 sudo etcdctl snapshot restore etcd_backup/etcd_backup.db --name etcd1 --initial-cluster etcd1=https://10.117.2.101:2380,etcd2=https://10.117.2.102:2380,etcd3=https://10.117.2.103:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://10.117.2.101:2380
@@ -2133,7 +2137,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    ETCDCTL_API=3 sudo etcdctl snapshot restore etcd_backup/etcd_backup.db --name etcd3 --initial-cluster etcd1=https://10.117.2.101:2380,etcd2=https://10.117.2.102:2380,etcd3=https://10.117.2.103:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://10.117.2.103:2380
    ```
 
-   For one-node cluster deployment, take the restore files of the etcd for the single node:
+   For one-node cluster deployment, generate restore files from .db file for the single node:
 
    ```
    ETCDCTL_API=3 sudo etcdctl snapshot restore etcd_backup/etcd_backup.db

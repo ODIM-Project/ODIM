@@ -16,6 +16,7 @@
 package session
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -30,7 +31,7 @@ import (
 // it will accepts the SessionCreateRequest which will have sessionid and sessiontoken
 // and it will check privileges to delete session and then delete the session
 // respond RPC response and error if there is.
-func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
+func DeleteSession(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 	var resp response.RPC
 	errorLogPrefix := "failed to delete session : "
 	errorArgs := []response.ErrArgs{
@@ -45,11 +46,11 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	l.Log.Info("Validating the request to delete the session")
+	l.LogWithFields(ctx).Info("Validating the request to delete the session")
 	currentSession, serr := asmodel.GetSession(req.SessionToken)
 	if serr != nil {
 		errorMessage := errorLogPrefix + serr.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 	}
 
@@ -57,36 +58,36 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 	if err != nil {
 		errorMessage := errorLogPrefix + "Unable to get all session keys : " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 	for _, token := range sessionTokens {
-		session, err := auth.CheckSessionTimeOut(token)
+		session, err := auth.CheckSessionTimeOut(ctx, token)
 		if err != nil {
-			l.Log.Error(errorLogPrefix + "Unable to get session details with the token " + token + ": " + err.Error())
+			l.LogWithFields(ctx).Error(errorLogPrefix + "Unable to get session details with the token " + token + ": " + err.Error())
 			continue
 		}
 		if session.ID == req.SessionId {
 			hasprivilege := checkPrivilege(req.SessionToken, session, &currentSession)
 			if hasprivilege {
 				if req.SessionToken != session.Token {
-					err := UpdateLastUsedTime(req.SessionToken)
+					err := UpdateLastUsedTime(ctx, req.SessionToken)
 					if err != nil {
 						errorMessage := errorLogPrefix + "Unable to update last used time of session matching token " + req.SessionToken + ": " + err.Error()
 						resp.CreateInternalErrorResponse(errorMessage)
-						l.Log.Error(errorMessage)
+						l.LogWithFields(ctx).Error(errorMessage)
 						return resp
 					}
 				}
 				if err := session.Delete(); err != nil {
 					errorMessage := errorLogPrefix + err.Error()
 					resp.CreateInternalErrorResponse(errorMessage)
-					l.Log.Error(errorMessage)
+					l.LogWithFields(ctx).Error(errorMessage)
 					return resp
 				}
 				resp.StatusCode = http.StatusNoContent
 				resp.StatusMessage = response.ResourceRemoved
-				l.Log.Info("Session is deleted")
+				l.LogWithFields(ctx).Info("Session is deleted")
 				return resp
 			}
 			errorMessage := errorLogPrefix + "Insufficient privileges"
@@ -95,13 +96,13 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 			errorArgs[0].ErrorMessage = errorMessage
 			errorArgs[0].StatusMessage = resp.StatusMessage
 			resp.Body = args.CreateGenericErrorResponse()
-			auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
+			auth.CustomAuthLog(ctx, req.SessionToken, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}
 	sessionTokens = nil
 	errorMessage := errorLogPrefix + "Session ID not found"
-	l.Log.Error(errorMessage)
+	l.LogWithFields(ctx).Error(errorMessage)
 	resp.StatusCode = http.StatusNotFound
 	resp.StatusMessage = response.ResourceNotFound
 	errorArgs[0].ErrorMessage = errorMessage

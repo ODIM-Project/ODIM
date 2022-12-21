@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package account
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"reflect"
@@ -40,10 +41,23 @@ func createMockRole(roleID string, privileges []string, oemPrivileges []string, 
 	}
 	return nil
 }
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func TestCreate(t *testing.T) {
 	config.SetUpMockConfig(t)
 	acc := getMockExternalInterface()
 	common.SetUpMockConfig()
+	ctx := mockContext()
 	errArgs := response.Args{
 		Code:    response.GeneralError,
 		Message: "",
@@ -489,7 +503,7 @@ func TestCreate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := acc.Create(tt.args.req, tt.args.session)
+			got, err := acc.Create(ctx, tt.args.req, tt.args.session)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Create() error = %v, wantErr %v", err, tt.wantErr)
 			}

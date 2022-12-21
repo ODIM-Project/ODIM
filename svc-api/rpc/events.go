@@ -39,7 +39,7 @@ func DoGetEventService(ctx context.Context, req eventsproto.EventSubRequest) (*e
 
 	events := NewEventsClientFunc(conn)
 
-	resp, err := events.GetEventService(context.TODO(), &req)
+	resp, err := events.GetEventService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -58,7 +58,7 @@ func DoCreateEventSubscription(ctx context.Context, req eventsproto.EventSubRequ
 
 	events := NewEventsClientFunc(conn)
 
-	resp, err := events.CreateEventSubscription(context.TODO(), &req)
+	resp, err := events.CreateEventSubscription(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -77,7 +77,7 @@ func DoSubmitTestEvent(ctx context.Context, req eventsproto.EventSubRequest) (*e
 
 	events := NewEventsClientFunc(conn)
 
-	resp, err := events.SubmitTestEvent(context.TODO(), &req)
+	resp, err := events.SubmitTestEvent(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -96,7 +96,7 @@ func DoGetEventSubscription(ctx context.Context, req eventsproto.EventRequest) (
 
 	events := NewEventsClientFunc(conn)
 
-	resp, err := events.GetEventSubscription(context.TODO(), &req)
+	resp, err := events.GetEventSubscription(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -115,7 +115,7 @@ func DoDeleteEventSubscription(ctx context.Context, req eventsproto.EventRequest
 
 	events := NewEventsClientFunc(conn)
 
-	resp, err := events.DeleteEventSubscription(context.TODO(), &req)
+	resp, err := events.DeleteEventSubscription(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -134,7 +134,7 @@ func DoGetEventSubscriptionsCollection(ctx context.Context, req eventsproto.Even
 
 	events := NewEventsClientFunc(conn)
 
-	resp, err := events.GetEventSubscriptionsCollection(context.TODO(), &req)
+	resp, err := events.GetEventSubscriptionsCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}

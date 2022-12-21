@@ -39,7 +39,7 @@ func DoGetTelemetryService(ctx context.Context, req teleproto.TelemetryRequest) 
 
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetTelemetryService(context.TODO(), &req)
+	resp, err := telemetry.GetTelemetryService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -57,7 +57,7 @@ func DoGetMetricDefinitionCollection(ctx context.Context, req teleproto.Telemetr
 	}
 
 	telemetry := NewTelemetryClientFunc(conn)
-	resp, err := telemetry.GetMetricDefinitionCollection(context.TODO(), &req)
+	resp, err := telemetry.GetMetricDefinitionCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -75,7 +75,7 @@ func DoGetMetricReportDefinitionCollection(ctx context.Context, req teleproto.Te
 	}
 
 	telemetry := NewTelemetryClientFunc(conn)
-	resp, err := telemetry.GetMetricReportDefinitionCollection(context.TODO(), &req)
+	resp, err := telemetry.GetMetricReportDefinitionCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -94,7 +94,7 @@ func DoGetMetricReportCollection(ctx context.Context, req teleproto.TelemetryReq
 
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetMetricReportCollection(context.TODO(), &req)
+	resp, err := telemetry.GetMetricReportCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -113,7 +113,7 @@ func DoGetTriggerCollection(ctx context.Context, req teleproto.TelemetryRequest)
 
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetTriggerCollection(context.TODO(), &req)
+	resp, err := telemetry.GetTriggerCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -132,7 +132,7 @@ func DoGetMetricDefinition(ctx context.Context, req teleproto.TelemetryRequest) 
 
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetMetricDefinition(context.TODO(), &req)
+	resp, err := telemetry.GetMetricDefinition(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -151,7 +151,7 @@ func DoGetMetricReportDefinition(ctx context.Context, req teleproto.TelemetryReq
 
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetMetricReportDefinition(context.TODO(), &req)
+	resp, err := telemetry.GetMetricReportDefinition(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -170,7 +170,7 @@ func DoGetMetricReport(ctx context.Context, req teleproto.TelemetryRequest) (*te
 
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetMetricReport(context.TODO(), &req)
+	resp, err := telemetry.GetMetricReport(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -189,7 +189,7 @@ func DoGetTrigger(ctx context.Context, req teleproto.TelemetryRequest) (*telepro
 
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetTrigger(context.TODO(), &req)
+	resp, err := telemetry.GetTrigger(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -208,7 +208,7 @@ func DoUpdateTrigger(ctx context.Context, req teleproto.TelemetryRequest) (*tele
 
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.UpdateTrigger(context.TODO(), &req)
+	resp, err := telemetry.UpdateTrigger(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}

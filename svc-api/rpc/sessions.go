@@ -55,7 +55,7 @@ func DoSessionCreationRequest(ctx context.Context, req sessionproto.SessionCreat
 	asService := NewSessionClientFunc(conn)
 
 	// Call the CreateSession
-	rsp, err := asService.CreateSession(context.TODO(), &req)
+	rsp, err := asService.CreateSession(ctx, &req)
 	if err != nil && rsp == nil {
 		return nil, fmt.Errorf("error while trying to make create session rpc call: %v", err)
 	}
@@ -74,7 +74,7 @@ func DeleteSessionRequest(ctx context.Context, sessionID, sessionToken string) (
 	asService := NewSessionClientFunc(conn)
 
 	// Call the DeleteSession
-	rsp, err := asService.DeleteSession(context.TODO(), &sessionproto.SessionRequest{
+	rsp, err := asService.DeleteSession(ctx, &sessionproto.SessionRequest{
 		SessionId:    sessionID,
 		SessionToken: sessionToken,
 	})
@@ -96,7 +96,7 @@ func GetSessionRequest(ctx context.Context, sessionID, sessionToken string) (*se
 	asService := NewSessionClientFunc(conn)
 
 	// Call the GetSession
-	rsp, err := asService.GetSession(context.TODO(), &sessionproto.SessionRequest{
+	rsp, err := asService.GetSession(ctx, &sessionproto.SessionRequest{
 		SessionId:    sessionID,
 		SessionToken: sessionToken,
 	})
@@ -118,7 +118,7 @@ func GetAllActiveSessionRequest(ctx context.Context, sessionID, sessionToken str
 	asService := NewSessionClientFunc(conn)
 
 	// Call the GetAllActiveSessions
-	rsp, err := asService.GetAllActiveSessions(context.TODO(), &sessionproto.SessionRequest{
+	rsp, err := asService.GetAllActiveSessions(ctx, &sessionproto.SessionRequest{
 		SessionId:    sessionID,
 		SessionToken: sessionToken,
 	})
@@ -140,7 +140,7 @@ func GetSessionServiceRequest(ctx context.Context) (*sessionproto.SessionRespons
 	asService := NewSessionClientFunc(conn)
 
 	// Call the GetSessionService
-	rsp, err := asService.GetSessionService(context.TODO(), &sessionproto.SessionRequest{})
+	rsp, err := asService.GetSessionService(ctx, &sessionproto.SessionRequest{})
 	if err != nil && rsp == nil {
 		return nil, fmt.Errorf("error while trying to make get session service rpc call: %v", err)
 	}

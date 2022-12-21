@@ -41,7 +41,7 @@ func DeleteTaskRequest(ctx context.Context, req *taskproto.GetTaskRequest) (*tas
 
 	asService := NewGetTaskServiceClientFunc(conn)
 	// Call the DeleteTask
-	rsp, err := asService.DeleteTask(context.TODO(), req)
+	rsp, err := asService.DeleteTask(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)
@@ -66,7 +66,7 @@ func GetTaskRequest(ctx context.Context, req *taskproto.GetTaskRequest) (*taskpr
 
 	asService := NewGetTaskServiceClientFunc(conn)
 	// Call the GetTasks
-	rsp, err := asService.GetTasks(context.TODO(), req)
+	rsp, err := asService.GetTasks(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)
@@ -91,7 +91,7 @@ func GetSubTasks(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto
 
 	tService := NewGetTaskServiceClientFunc(conn)
 	// Call the GetSubTasks
-	rsp, err := tService.GetSubTasks(context.TODO(), req)
+	rsp, err := tService.GetSubTasks(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)
@@ -116,7 +116,7 @@ func GetSubTask(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.
 
 	tService := NewGetTaskServiceClientFunc(conn)
 	// Call the GetSubTask
-	rsp, err := tService.GetSubTask(context.TODO(), req)
+	rsp, err := tService.GetSubTask(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)
@@ -141,7 +141,7 @@ func GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRequest) (*taskpr
 
 	tService := NewGetTaskServiceClientFunc(conn)
 	// perform rpc call to svc-task to get TaskMonitor resource
-	rsp, err := tService.GetTaskMonitor(context.TODO(), req)
+	rsp, err := tService.GetTaskMonitor(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)
@@ -166,7 +166,7 @@ func TaskCollection(ctx context.Context, req *taskproto.GetTaskRequest) (*taskpr
 
 	tService := NewGetTaskServiceClientFunc(conn)
 	// perform rpc call to svc-task to get TaskCollection resource
-	rsp, err := tService.TaskCollection(context.TODO(), req)
+	rsp, err := tService.TaskCollection(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)
@@ -191,7 +191,7 @@ func GetTaskService(ctx context.Context, req *taskproto.GetTaskRequest) (*taskpr
 
 	tService := NewGetTaskServiceClientFunc(conn)
 	// perform rpc call to svc-task to get TaskService resource
-	rsp, err := tService.GetTaskService(context.TODO(), req)
+	rsp, err := tService.GetTaskService(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)

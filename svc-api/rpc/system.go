@@ -54,7 +54,7 @@ func GetSystemRequestRPC(ctx context.Context, req systemsproto.GetSystemsRequest
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.GetSystems(context.TODO(), &req)
+	resp, err := asService.GetSystems(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -71,7 +71,7 @@ func GetSystemResource(ctx context.Context, req systemsproto.GetSystemsRequest) 
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.GetSystemResource(context.TODO(), &req)
+	resp, err := asService.GetSystemResource(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -88,7 +88,7 @@ func ComputerSystemReset(ctx context.Context, req systemsproto.ComputerSystemRes
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.ComputerSystemReset(context.TODO(), &req)
+	resp, err := asService.ComputerSystemReset(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -105,7 +105,7 @@ func SetDefaultBootOrder(ctx context.Context, req systemsproto.DefaultBootOrderR
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.SetDefaultBootOrder(context.TODO(), &req)
+	resp, err := asService.SetDefaultBootOrder(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -122,7 +122,7 @@ func ChangeBiosSettings(ctx context.Context, req systemsproto.BiosSettingsReques
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.ChangeBiosSettings(context.TODO(), &req)
+	resp, err := asService.ChangeBiosSettings(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -139,7 +139,7 @@ func ChangeBootOrderSettings(ctx context.Context, req systemsproto.BootOrderSett
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.ChangeBootOrderSettings(context.TODO(), &req)
+	resp, err := asService.ChangeBootOrderSettings(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -156,7 +156,7 @@ func CreateVolume(ctx context.Context, req systemsproto.VolumeRequest) (*systems
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.CreateVolume(context.TODO(), &req)
+	resp, err := asService.CreateVolume(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -173,7 +173,7 @@ func DeleteVolume(ctx context.Context, req systemsproto.VolumeRequest) (*systems
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.DeleteVolume(context.TODO(), &req)
+	resp, err := asService.DeleteVolume(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}

@@ -26,6 +26,8 @@
    - [Scaling down the resources and services of Resource Aggregator for ODIM](#scaling-down-the-resources-and-services-of-resource-aggregator-for-odim)
    - [Rolling back to an earlier deployment revision](#rolling-back-to-an-earlier-deployment-revision)
    - [Upgrading the Resource Aggregator for ODIM deployment](#upgrading-the-resource-aggregator-for-odim-deployment)
+   - [Backup and restore of Kubernetes etcd](#Backup-and-restore-of-Kubernetes-etcd)
+   - [Backup and restore of ODIM etcd](#Backup-and-restore-of-ODIM-etcd)
 6. [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
    - [Adding a server into the resource inventory](#adding-a-server-into-the-resource-inventory)
    - [Viewing the resource inventory](#viewing-the-resource-inventory)
@@ -2052,6 +2054,284 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 
 
 
+## Backup and restore of Kubernetes etcd
+
+1. Make a directory to store the utilities and change the ownership and permission of the directory to odimra:
+
+   ```
+   mkdir -p etcd_backup/
+   ```
+
+   ```
+   sudo chown odimra:odimra etcd_backup/
+   ```
+
+   ```
+   sudo chmod 755 etcd_backup/
+   ```
+
+2. Get the cert and other details from `etcd.env` file located at `/etc`. 
+   `ETCDCTL_CACERT`, `ETCDCTL_KEY`, `ETCDCTL_CERT` values would be the `caCert.cert`, `server.key` and `cert.crt` files.
+
+3. Copy all the `etcd cert`, `caCert`, and `key` from the `etcd` directory to the working directory:
+
+   ```
+   sudo cp /etc/ssl/etcd/ssl/ca.pem etcd_backup/caCert.crt
+   ```
+
+   ```
+   sudo cp /etc/ssl/etcd/ssl/admin-master-node1.pem etcd_backup/cert.crt
+   ```
+
+   ```
+   sudo cp /etc/ssl/etcd/ssl/admin-master-node1-key.pem etcd_backup/server.key
+   ```
+
+4. Identify the leader node by running the following command in all the three nodes:
+
+   ```
+   ETCDCTL_API=3 sudo etcdctl endpoint status --endpoints=https://127.0.0.1:2379 --write-out=table  --cacert=etcd_backup/caCert.crt  --cert=etcd_backup/cert.crt  --key=etcd_backup/server.key
+   ```
+
+5. In the output, if `IS LEADER` is true, follow steps 6 and 7 on that node.
+
+   Output sample:
+
+   | ENDPOINT               | ID               | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
+   | ---------------------- | ---------------- | ------- | ------- | --------- | ---------- | --------- | ---------- | ------------------ | ------ |
+   | https://127.0.0.1:2379 | 50c7d42f7d83108a | 3.5.0   | 18 MB   | true      | false      | 3         | 74390      | 74390              |        |
+
+6. Take the snapshot or backup file from etcd leader node:
+
+   ```
+   ETCDCTL_API=3  sudo etcdctl snapshot save etcd_backup/etcd_backup.db \
+    --endpoints=https://127.0.0.1:2379 \
+    --cacert=etcd_backup/caCert.crt \
+    --cert=etcd_backup/cert.crt \
+    --key=etcd_backup/server.key
+   ```
+
+7. Check the status of the snapshot file:
+
+   ```
+   ETCD_API=3 sudo etcdctl snapshot --write-out=table  status etcd_backup/etcd_backup.db
+   ```
+
+   Output sample: 
+
+   | HASH     | REVISION | TOTAL KEYS | TOTAL SIZE |
+   | -------- | -------- | ---------- | ---------- |
+   | 107a4572 | 31002    | 1952       | 12` `MB    |
+
+8. For three-node cluster deployment, generate restore files from .db file for all the nodes:
+
+   ```
+   ETCDCTL_API=3 sudo etcdctl snapshot restore etcd_backup/etcd_backup.db --name etcd1 --initial-cluster etcd1=https://10.117.2.101:2380,etcd2=https://10.117.2.102:2380,etcd3=https://10.117.2.103:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://10.117.2.101:2380
+   ```
+
+   ```
+   ETCDCTL_API=3 sudo etcdctl snapshot restore etcd_backup/etcd_backup.db  --name etcd2 --initial-cluster etcd1=https://10.117.2.101:2380,etcd2=https://10.117.2.102:2380,etcd3=https://10.117.2.103:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://10.117.2.102:2380
+   ```
+
+   ```
+   ETCDCTL_API=3 sudo etcdctl snapshot restore etcd_backup/etcd_backup.db --name etcd3 --initial-cluster etcd1=https://10.117.2.101:2380,etcd2=https://10.117.2.102:2380,etcd3=https://10.117.2.103:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://10.117.2.103:2380
+   ```
+
+   For one-node cluster deployment, generate restore files from .db file for the single node:
+
+   ```
+   ETCDCTL_API=3 sudo etcdctl snapshot restore etcd_backup/etcd_backup.db
+   ```
+
+9. Transfer the etcd snapshot of the etcd instance to the respective node:
+
+   ```
+   sudo scp -r  etcd2.etcd/ bruce@10.117.2.102:/home/bruce
+   ```
+
+   ```
+   sudo scp -r  etcd3.etcd/ bruce@10.117.2.103:/home/bruce
+   ```
+
+   > Note: This step is not needed for one-node because the backup file will be in the same node.
+
+10. Stop all the Kube services (kube-apiserver, kube-controller, kube-schedule):
+
+    ```
+    sudo mv /etc/kubernetes/manifests/*.yaml etcd_backup/
+    ```
+
+11. Stop all the instances of etcd across the cluster(all three nodes):
+
+    ```
+    systemctl stop etcd
+    ```
+
+12. Move the current member directory to a backup member directory:
+
+    ```
+    sudo mv /var/lib/etcd/member /var/lib/etcd/member.bkp
+    ```
+
+13. Move all the snapshot DB etcd instances to `/var/lib/etcd`:
+
+    ```
+    sudo mv etcd1.etcd/member /var/lib/etcd/
+    ```
+
+    ```
+    sudo mv etcd2.etcd/member /var/lib/etcd/
+    ```
+
+    ```
+    sudo mv etcd3.etcd/member /var/lib/etcd/
+    ```
+
+    For one-node cluster deployment:
+
+    ```
+    sudo mv default.etcd/member /var/lib/etcd
+    ```
+
+14. Start the etcd instances across the cluster (all three nodes):
+
+    ```
+    systemctl start etcd
+    ```
+
+15. Restart all the kube applications by moving to the manifests:
+
+    ```
+    sudo mv etcd_backup/*.yaml /etc/kubernetes/manifests/
+    ```
+
+    
+
+## Backup and restore of ODIM etcd
+
+1.  Inside the etcd pod in odim namespace, run the following command:
+
+   ```
+   kubectl exec -it etcd-0 bash -nodim
+   ```
+
+2. Check the endpoint health:
+
+   ```
+   /opt/etcd/bin/etcdctl endpoint health --endpoints=https://etcd:2379 --write-out=table  --cacert=/opt/etcd/conf/rootCA.crt  --cert=/opt/etcd/conf/odimra_etcd_server.crt  --key=/opt/etcd/conf/odimra_etcd_server.key
+   ```
+
+3. Identify the leader node by running the following command in all three nodes and if IS LEADER is true, follow all the steps in that node:
+
+   ```
+   /opt/etcd/bin/etcdctl endpoint list --endpoints=https://etcd1:2379 --write-out=table  --cacert=/opt/etcd/conf/rootCA.crt  --cert=/opt/etcd/conf/odimra_etcd_server.crt  --key=/opt/etcd/conf/odimra_etcd_server.key
+   ```
+
+4. Navigate to the home/odimra directory and take the backup:
+
+   ```
+   cd /home/odimra
+   ```
+
+   ```
+   opt/etcd/bin/etcdctl snapshot save /home/odimra/etcd_backup.db \
+    --endpoints=https://etcd:2379 \
+    --cacert=/opt/etcd/conf/rootCA.crt\
+    --cert=/opt/etcd/conf/odimra_etcd_server.crt  \
+    --key=/opt/etcd/conf/odimra_etcd_server.key
+   ```
+
+5. Verify the backup file `etcd_backup.db` is available in `/home/odimra` and see the snapshot status:
+
+   ```
+   /opt/etcd/bin/etcdctl --write-out=table snapshot status
+   ```
+
+6. Delete or modify the data in the current etcd:
+
+   ```
+   /opt/etcd/bin/etcdctl del svc.account.session-de7a7bc0-7038-4216-a020-70b95591f2db    --endpoints=https://etcd:2379  --cacert=/opt/etcd/conf/rootCA.crt  --cert=/opt/etcd/conf/odimra_etcd_server.crt  --key=/opt/etcd/conf/odimra_etcd_server.key
+    /opt/etcd/bin/etcdctl del greeting    --endpoints=https://etcd:2379  --cacert=/opt/etcd/conf/rootCA.crt  --cert=/opt/etcd/conf/odimra_etcd_server.crt  --key=/opt/etcd/conf/odimra_etcd_server.key
+   ```
+
+7. Get the restore of the backup DB for all three nodes:
+
+   ```
+   /opt/etcd/bin/etcdctl snapshot restore home/odimra/etcd_backup.db --name etcd1 --initial-cluster etcd1=https://etcd1:2380,etcd2=https://etcd2:2380,etcd3=https://etcd3:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://etcd1:2380
+   ```
+
+   ```
+   /opt/etcd/bin/etcdctl snapshot restore home/odimra/etcd_backup.db --name etcd2 --initial-cluster etcd1=https://etcd1:2380,etcd2=https://etcd2:2380,etcd3=https://etcd3:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://etcd2:2380
+   ```
+
+   ```
+   /opt/etcd/bin/etcdctl snapshot restore home/odimra/etcd_backup.db --name etcd3 --initial-cluster etcd1=https://etcd1:2380,etcd2=https://etcd2:2380,etcd3=https://etcd3:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://etcd3:2380
+   ```
+
+   For one-node cluster deployment, run the following command:
+
+   ```
+   /opt/etcd/bin/etcdctl snapshot restore home/odimra/etcd_backup.db
+   ```
+
+8. Exit from the pod. There is a new directory created `default.etcd`, move the directory content outside the pod to store it for further usage:
+
+   ```
+   kubectl cp odim/etcd-0:/home/odimra/default.etcd/ /home/bruce/backup
+   ```
+
+9. In case of three nodes, get all the .etcd files outside the pod and move to the different nodes:
+
+   ```
+   sudo scp -r  etcd2.etcd/ bruce@10.117.2.102:/home/bruce
+   ```
+
+   ```
+   sudo scp -r  etcd3.etcd/ bruce@10.117.2.103:/home/bruce
+   ```
+
+10. To restore, enter the etcd pod and mv the current data if available and make it backup:
+
+    ```
+    mv /opt/etcd/data/member /opt/etcd/data/member.bkp/
+    ```
+
+11. Get the backup directory back to the Kubernetes pod and store it in the data directory:
+
+    ```
+    kubectl cp /home/bruce/backup/member odim/etcd-0:/opt/etcd/data/
+    ```
+
+    ```
+    kubectl cp /home/bruce/backup/member odim/etcd-1:/opt/etcd/data/
+    ```
+
+    ```
+    kubectl cp /home/bruce/backup/member odim/etcd-2:/opt/etcd/data/
+    ```
+
+12. Restart the etcd pod in ODIM namespace and check for the existence of old data:
+
+    ```
+    kubectl delete pod etcd-0 -nodim
+    ```
+
+    ```
+    kubectl delete pod etcd-1 -nodim
+    ```
+
+    ```
+    kubectl delete pod etcd-2 -nodim
+    ```
+
+    
+
+
+
+
+
+
+
 # Use cases for Resource Aggregator for ODIM
 
 ## Adding a server into the resource inventory
@@ -3823,7 +4103,9 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     ```
 
 
+
 ## Removing an existing plugin
+
 To remove an existing plugin from the Resource Aggregator for ODIM framework, run the following command: 
 
 ```

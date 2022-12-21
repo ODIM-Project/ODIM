@@ -46,7 +46,7 @@ func main() {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
 		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
-	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	logs.SetFormatter(config.Data.LogFormat)
 	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(config.Data.LogLevel)
 

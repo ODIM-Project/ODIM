@@ -6,3 +6,4 @@ odimra:
   connectionMethodConf:
   haDeploymentEnabled:
   logLevel:
+  logFormat:

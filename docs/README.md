@@ -206,6 +206,7 @@
   - [Installing a license](#installing-a-license)
 - [Audit logs](#audit-logs)
 - [Security logs](#security-logs)
+- [Application logs](#Application-logs)
 
 # Resource Aggregator for Open Distributed Infrastructure Management
 
@@ -12312,17 +12313,19 @@ curl -i -X POST \
 
 # Audit logs
 
-Audit logs provide information on each API and are stored in the `api.log` file in `odimra` logs.  Each log consists of a priority value, date and time of the log, hostname from which the APIs are sent, user account and role details, API request method and resource, response body, response code, and the message.
+Audit logs provide information on each API and are stored in the `api.log` file in `odimra` logs. Each log consists of a priority value, date and time of the log, hostname from which the APIs are sent, user account and role details, API request method and resource, response body, response code, and the message.
 
 **Sample logs**
 
-- <110> 2009-11-10T23:00:00Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
+```
+<110> 2009-11-10T23:00:00Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
+```
 
-- <110> 2022-01-17T13:57:48Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="POST" resource="/redfish/v1/AggregationService/AggregationSources" requestBody="{"HostName":"xxx.xxx.xxx.xxx","Links":{"ConnectionMethod":{"@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/337ea3cb-3acc-49e2-b33f-3f5ce2a5ada4"}},"Password":"null","UserName":"admin"}"][response@1 responseCode=202] Operation successful
+```
+<107> 2009-11-10T23:00:00Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
+```
 
-- <107> 2009-11-10T23:00:00Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
-
-  <blockquote> Note: <110> and <107> are priority values. <110> is the audit information log and <107> is the audit error log. </blockquote>
+> **Note**: <110> and <107> are priority values. <110> is the audit information log and <107> is the audit error log.
 
 
 
@@ -12332,10 +12335,43 @@ Security logs provide information on the successful and failed user authenticati
 
 **Sample logs**
 
-- <86> 2022-01-28T04:44:09Z [account@1 user="admin" roleID="Administrator"] Authentication/Authorization successful for session token 388281e8-4a45-45e5-862b-6b1ccfd6e6a3
+```
+<86> 2022-01-28T04:44:09Z [account@1 user="admin" roleID="Administrator"] Authentication/Authorization successful for session token 388281e8-4a45-45e5-862b-6b1ccfd6e6a3
+```
 
-- <84> 2022-01-28T04:43:39Z [account@1 user="admin1" roleID="null"] Authentication failed, Invalid username or password
+```
+<84> 2022-01-28T04:43:39Z [account@1 user="admin1" roleID="null"] Authentication failed, Invalid username or password
+```
 
-  <blockquote> Note: <86> and <84> are priority values. <86> is security information log and <84> is the warning log.</blockquote>
+<blockquote> Note: <86> and <84> are priority values. <86> is security information log and <84> is the warning log.</blockquote>
 
 
+
+# Application logs
+
+Application logs provide information on all operations performed during specific times.
+
+**Sample log**
+
+```
+<11>1 2022-12-21T07:39:49Z odim-host  svc-managers  managers-b5465c4df-fj4ss_9  GetManager [process@1 processName="managers-b5465c4df-fj4ss" transactionID="b3b66d09-f844-41bd-8b8d-957addf09b20" actionID="169" actionName="GetManager" threadID="0" threadName="svc-managers"] unable to get managers details: no data with the key /redfish/v1/Managers/386710f8-3a38-4938-a986-5f1048f487fdf found
+```
+
+The following table lists the properties, values and description of the application logs:
+
+| Property      | Value (given in sample log)                                  | Description                                                  |
+| ------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| pri           | <11>                                                         | Priority value. <br/>For the list of all priority values, see *Log levels* section in the *Resource Aggregator for ODIM Getting Started Readme*. |
+| version       | 1                                                            | Version number of the syslog protocol specification.         |
+| timestamp     | 2022-12-21T07:39:49Z                                         | Date and time of the log.                                    |
+| hostName      | odim-host                                                    | Name of the host from which the syslog messages are sent.    |
+| appName       | svc-managers                                                 | Application that originated the message.                     |
+| procID        | managers                                                     | Process name or process ID associated with the syslog system. |
+| msgID         | GetManager                                                   | Identifies the type of message.                              |
+| processName   | managers-b5465c4df-fj4ss                                     | System that originally sent the message.                     |
+| transactionID | b3b66d09-f844-41bd-8b8d-957addf09b20                         | Unique UUID for each API request.                            |
+| actionID      | 169                                                          | Unique ID for each actionName.                               |
+| actionName    | GetManager                                                   | HTTP operation performed.                                    |
+| threadID      | 0                                                            | Unique ID of the current running thread.                     |
+| threadName    | svc-managers                                                 | Name of the current running thread.                          |
+| message       | no data with the key /redfish/v1/Managers/386710f8-3a38-4938-a986-5f1048f487fdf found | Logged result message.                                       |

@@ -47,6 +47,17 @@ func mockGetResource(table, key string, dbType common.DbType) (string, *errors.E
 	return "body", nil
 }
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
 	return []string{"/redfish/v1/UpdateService/FirmwareInentory/uuid.1"}, nil
 }
@@ -69,6 +80,7 @@ func mockGetExternalInterface() *update.ExternalInterface {
 
 func TestUpdate_GetUpdateService(t *testing.T) {
 	update := new(Updater)
+	ctx := mockContext()
 	update.connector = mockGetExternalInterface()
 	type args struct {
 		ctx context.Context
@@ -99,7 +111,7 @@ func TestUpdate_GetUpdateService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := tt.a.GetUpdateService(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
+			if _, err := tt.a.GetUpdateService(ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Update.GetUpdateService() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -108,6 +120,7 @@ func TestUpdate_GetUpdateService(t *testing.T) {
 
 func TestUpdate_GetFirmwareInventoryCollection(t *testing.T) {
 	update := new(Updater)
+	ctx := mockContext()
 	update.connector = mockGetExternalInterface()
 	type args struct {
 		ctx context.Context
@@ -140,7 +153,7 @@ func TestUpdate_GetFirmwareInventoryCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if resp, err := tt.a.GetFirmwareInventoryCollection(tt.args.ctx, tt.args.req); err != nil {
+			if resp, err := tt.a.GetFirmwareInventoryCollection(ctx, tt.args.req); err != nil {
 				t.Errorf("Update.GetFirmwareInventoryCollection() got = %v, want %v", resp.StatusCode, tt.StatusCode)
 			}
 		})
@@ -149,6 +162,7 @@ func TestUpdate_GetFirmwareInventoryCollection(t *testing.T) {
 
 func TestUpdate_GetSoftwareInventoryCollection(t *testing.T) {
 	update := new(Updater)
+	ctx := mockContext()
 	update.connector = mockGetExternalInterface()
 	type args struct {
 		ctx context.Context
@@ -181,7 +195,7 @@ func TestUpdate_GetSoftwareInventoryCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if resp, err := tt.a.GetSoftwareInventoryCollection(tt.args.ctx, tt.args.req); err != nil {
+			if resp, err := tt.a.GetSoftwareInventoryCollection(ctx, tt.args.req); err != nil {
 				t.Errorf("Update.GetSoftwareInventoryCollection() got = %v, want %v", resp.StatusCode, tt.StatusCode)
 			}
 		})
@@ -190,7 +204,7 @@ func TestUpdate_GetSoftwareInventoryCollection(t *testing.T) {
 
 func TestGetFirmwareInventorywithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	update := new(Updater)
 	update.connector = mockGetExternalInterface()
 	req := &updateproto.UpdateRequest{
@@ -202,7 +216,7 @@ func TestGetFirmwareInventorywithInValidtoken(t *testing.T) {
 }
 
 func TestGetFirmwareInventorywithValidtoken(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	update := new(Updater)
 	update.connector = mockGetExternalInterface()
 	req := &updateproto.UpdateRequest{
@@ -216,7 +230,7 @@ func TestGetFirmwareInventorywithValidtoken(t *testing.T) {
 
 func TestGetSoftwareInventorywithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	update := new(Updater)
 	update.connector = mockGetExternalInterface()
 	req := &updateproto.UpdateRequest{
@@ -228,7 +242,7 @@ func TestGetSoftwareInventorywithInValidtoken(t *testing.T) {
 }
 
 func TestGetSoftwareInventorywithValidtoken(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	update := new(Updater)
 	update.connector = mockGetExternalInterface()
 	req := &updateproto.UpdateRequest{
@@ -256,6 +270,7 @@ func mockCreateTaskfunc(sessionToken string) (string, error) {
 }
 func TestUpdater_SimepleUpdate(t *testing.T) {
 	update := new(Updater)
+	ctx := mockContext()
 	update.connector = mockGetExternalInterface()
 	type args struct {
 		ctx context.Context
@@ -318,7 +333,7 @@ func TestUpdater_SimepleUpdate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := tt.a.SimepleUpdate(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
+			if _, err := tt.a.SimepleUpdate(ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Update.SimepleUpdate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -327,6 +342,7 @@ func TestUpdater_SimepleUpdate(t *testing.T) {
 
 func TestUpdater_StartUpdate(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	update := new(Updater)
 	update.connector = mockGetExternalInterface()
 	type args struct {
@@ -390,7 +406,7 @@ func TestUpdater_StartUpdate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := tt.a.StartUpdate(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
+			if _, err := tt.a.StartUpdate(ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Update.StartUpdate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

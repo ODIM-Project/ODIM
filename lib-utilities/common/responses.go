@@ -81,3 +81,9 @@ func CreateMetadata(ctx context.Context) context.Context {
 
 	return ctx
 }
+
+func ModifyContext(ctx context.Context, threadName, podName string) context.Context {
+	ctx = context.WithValue(ctx, ThreadName, threadName)
+	ctx = context.WithValue(ctx, ProcessName, podName)
+	return ctx
+}

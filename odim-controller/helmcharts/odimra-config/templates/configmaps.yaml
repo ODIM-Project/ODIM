@@ -27,7 +27,7 @@ data:
        "MessageBusConf": {
          "MessageBusConfigFilePath": "/etc/odimra_config/platformconfig.toml",
          "MessageBusType": {{ .Values.odimra.messageBusType | quote }},
-         "MessageBusQueue": {{ .Values.odimra.messageBusQueue | quote | toStrings }}
+         "OdimControlMessageQueue": "ODIM-CONTROL-MESSAGES"
       },
     	"DBConf": {
                 "Protocol": "tcp",
@@ -148,6 +148,7 @@ data:
       },
       "ResourceRateLimit": {{ .Values.odimra.resourceRateLimit | toJson }},
       "LogLevel": {{ .Values.odimra.logLevel | quote }},
+      "LogFormat": {{ .Values.odimra.logFormat | quote }},
       "ImageRegistryAddress": {{ .Values.odimra.imageRegistryAddress | quote }},
       "RequestLimitCountPerSession": {{ .Values.odimra.requestLimitPerSession | default 0 }},
       "SessionLimitCountPerUser": {{ .Values.odimra.sessionLimitPerUser | default 0 }}

@@ -17,6 +17,7 @@ package logs
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -59,6 +60,13 @@ var logFields = map[string][]string{
 type SysLogFormatter struct{}
 
 var Log *logrus.Entry
+
+type LogFormat uint32
+
+const (
+	SyslogFormat LogFormat = iota
+	JsonFormat
+)
 
 func init() {
 	Log = logrus.NewEntry(logrus.New())
@@ -174,4 +182,62 @@ func formatSyslog(logType string, logFields []string, entry *logrus.Entry) (stri
 	}
 	msg = msg[:len(msg)-1]
 	return fmt.Sprintf("%s]", msg), isPresent
+}
+
+// Convert the log format to a string.
+func (format LogFormat) String() string {
+	if b, err := format.MarshalText(); err == nil {
+		return string(b)
+	} else {
+		return "unknown_log_format"
+	}
+}
+
+// ParseLogFormat takes a string level and returns the log format.
+func ParseLogFormat(format string) (LogFormat, error) {
+	switch strings.ToLower(format) {
+	case "syslog":
+		return SyslogFormat, nil
+	case "json":
+		return JsonFormat, nil
+	}
+
+	var lf LogFormat
+	return lf, fmt.Errorf("invalid log format : %s", format)
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (format *LogFormat) UnmarshalText(text []byte) error {
+	l, err := ParseLogFormat(string(text))
+	if err != nil {
+		return err
+	}
+
+	*format = l
+	return nil
+}
+
+// MarshalText will validate the log format and return the corresponding string
+func (format LogFormat) MarshalText() ([]byte, error) {
+	switch format {
+	case SyslogFormat:
+		return []byte("syslog"), nil
+	case JsonFormat:
+		return []byte("json"), nil
+	}
+
+	return nil, fmt.Errorf("invalid log format %d", format)
+}
+
+// SetFormatter set the format for logging
+func SetFormatter(format LogFormat) {
+	switch format {
+	case SyslogFormat:
+		Log.Logger.SetFormatter(&SysLogFormatter{})
+	case JsonFormat:
+		Log.Logger.SetFormatter(&logrus.JSONFormatter{})
+	default:
+		Log.Logger.SetFormatter(&SysLogFormatter{})
+		Log.Info("Something went wrong! Setting the default format Syslog for logging")
+	}
 }

@@ -128,7 +128,6 @@ func (s *Session) GetSessionUserName(ctx context.Context, req *sessionproto.Sess
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
 	ctx = context.WithValue(ctx, common.ProcessName, podName)
-	l.LogWithFields(ctx).Info("Inside GetSessionUserName function (svc-account-session)")
 	resp, err := GetSessionUserNameFunc(ctx, req)
 	return resp, err
 }
@@ -138,7 +137,6 @@ func (s *Session) GetSessionUserName(ctx context.Context, req *sessionproto.Sess
 func (s *Session) GetSessionUserRoleID(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	l.LogWithFields(ctx).Info("Inside GetSessionUserRoleID function (svc-account-session)")
 	resp, err := GetSessionUserRoleIDFunc(ctx, req)
 	return resp, err
 }

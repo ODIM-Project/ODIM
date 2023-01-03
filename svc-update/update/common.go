@@ -15,6 +15,7 @@
 package update
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -37,7 +38,7 @@ var (
 	ServicesUpdateTaskFunc = services.UpdateTask
 )
 
-//Device struct to define the response from plugin for UUID
+// Device struct to define the response from plugin for UUID
 type Device struct {
 	ServerIP   string `json:"ServerIP"`
 	Username   string `json:"Username"`
@@ -67,13 +68,13 @@ type External struct {
 	Auth               func(string, []string, []string) (response.RPC, error)
 	DevicePassword     func([]byte) ([]byte, error)
 	GetPluginData      func(string) (umodel.Plugin, *errors.Error)
-	ContactPlugin      func(ucommon.PluginContactRequest, string) ([]byte, string, ucommon.ResponseStatus, error)
+	ContactPlugin      func(context.Context, ucommon.PluginContactRequest, string) ([]byte, string, ucommon.ResponseStatus, error)
 	GetTarget          func(string) (*umodel.Target, *errors.Error)
 	CreateChildTask    func(string, string) (string, error)
 	CreateTask         func(string) (string, error)
 	UpdateTask         func(common.TaskData) error
 	GetSessionUserName func(string) (string, error)
-	GenericSave        func([]byte, string, string) error
+	GenericSave        func(context.Context, []byte, string, string) error
 }
 
 type responseStatus struct {
@@ -172,14 +173,14 @@ func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskStat
 	}
 }
 
-func (e *ExternalInterface) monitorPluginTask(subTaskChannel chan<- int32, monitorTaskData *monitorTaskRequest) (ucommon.ResponseStatus, error) {
+func (e *ExternalInterface) monitorPluginTask(ctx context.Context, subTaskChannel chan<- int32, monitorTaskData *monitorTaskRequest) (ucommon.ResponseStatus, error) {
 	for {
 
 		var task common.TaskData
 		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {
 			subTaskChannel <- http.StatusInternalServerError
 			errMsg := "Unable to parse the simple update respone" + err.Error()
-			l.Log.Warn(errMsg)
+			l.LogWithFields(ctx).Warn(errMsg)
 			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
 			return monitorTaskData.getResponse, err
 		}
@@ -194,11 +195,11 @@ func (e *ExternalInterface) monitorPluginTask(subTaskChannel chan<- int32, monit
 		time.Sleep(time.Second * 5)
 		monitorTaskData.pluginRequest.OID = monitorTaskData.location
 		monitorTaskData.pluginRequest.HTTPMethodType = http.MethodGet
-		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = e.External.ContactPlugin(monitorTaskData.pluginRequest, "error while performing simple update action: ")
+		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = e.External.ContactPlugin(ctx, monitorTaskData.pluginRequest, "error while performing simple update action: ")
 		if err != nil {
 			subTaskChannel <- monitorTaskData.getResponse.StatusCode
 			errMsg := err.Error()
-			l.Log.Warn(errMsg)
+			l.LogWithFields(ctx).Warn(errMsg)
 			common.GeneralError(monitorTaskData.getResponse.StatusCode, monitorTaskData.getResponse.StatusMessage, errMsg, monitorTaskData.getResponse.MsgArgs, monitorTaskData.taskInfo)
 			return monitorTaskData.getResponse, err
 		}

@@ -65,6 +65,7 @@ func CheckSessionTimeOut(ctx context.Context, sessionToken string) (*asmodel.Ses
 	ctxt := context.WithValue(ctx, common.ThreadName, common.CheckSessionTimeout)
 	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	go expiredSessionCleanUp(ctxt)
+	threadID++
 	if sessionToken == "" {
 		return nil, errors.PackError(errors.InvalidAuthToken, "error: no session token found in header")
 	}

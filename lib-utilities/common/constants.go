@@ -166,6 +166,7 @@ const (
 	SystemService  = "svc-systems"
 	SessionService = "svc-account-session"
 	ApiService     = "svc-api"
+	UpdateService  = "svc-update"
 	// DefaultThreadID to be used for apis
 	DefaultThreadID = "0"
 	// Invalid Action
@@ -175,6 +176,10 @@ const (
 	CheckAuth            = "Check-Authentication"
 	CheckSessionCreation = "CheckSessionCreationCredentials"
 	CheckSessionTimeout  = "CheckSessionTimeOut"
+	SendRequest          = "SendRequest"
+	StartRequest         = "StartRequest"
+	SimpleUpdate         = "SimpleUpdate"
+	StartUpdate          = "StartUpdate"
 )
 
 // ActionType defines type of action

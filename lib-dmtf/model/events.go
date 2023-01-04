@@ -23,6 +23,9 @@ type EventType string
 // Services can replace the value defined in the message registry with a value more applicable to the implementation.
 type MessageSeverity string
 
+//The subscription type for events.
+type SubscriptionType string
+
 const (
 	// EventTypeAlert - "Alert": "A condition requires attention."
 	EventTypeAlert EventType = "Alert"
@@ -46,6 +49,32 @@ const (
 	MessageSeverityOK MessageSeverity = "OK"
 	// MessageSeverityWarning - "Warning": "A condition requires attention."
 	MessageSeverityWarning MessageSeverity = "Warning"
+	
+	// Subscription Types for events. Currently ODIM only support subscriptions 
+	// of type RedFishTypeEvent.
+	// SubscriptionTypeRedFishEvent - The subscription follows the Redfish 
+	// Specification for event notifications. To send an event notification,
+	// a service sends an HTTP POST to the subscriber's destination URI.
+	SubscriptionTypeRedFishEvent SubscriptionType = "RedfishEvent"
+        
+	// SubscriptionTySubscriptionTypeSSE - The subscription follows the HTML5 
+	// server-sent event definition for event notifications.
+	SubscriptionTySubscriptionTypeSSE SubscriptionType = "SSE"
+	
+        // SubscriptionTypeSNMPTrap - The subscription follows the various versions
+	// of SNMP Traps for event notifications.
+	SubscriptionTypeSNMPTrap SubscriptionType = "SNMPTrap"
+	
+	// SubscriptionTypeSNMPInform - The subscription follows versions 2 and 3 of 
+	// SNMP Inform for event notifications.
+        SubscriptionTypeSNMPInform SubscriptionType = "SNMPInform"
+	
+	// SubscriptionTypeSyslog - The subscription sends Syslog messages for 
+	// event notifications.
+        SubscriptionTypeSyslog SubscriptionType = "Syslog"
+	
+	// SubscriptionTypeOEM - The subscription is an OEM subscription.
+        SubscriptionTypeOEM SubscriptionType = "OEM"
 )
 
 // Event schema describes the JSON payload received by an event destination, which has subscribed to event notification, when events occur.
@@ -82,3 +111,12 @@ type EventRecord struct {
 	SpecificEventExistsInGroup bool        `json:"SpecificEventExistsInGroup,omitempty"`
 	LogEntry                   *Link       `json:"LogEntry,omitempty"`
 }
+
+// This Resource shall represent the target of an event subscription, including 
+// the event types and context to provide to the target in the Event payload.
+type EventDestination struct {
+	
+}
+
+
+

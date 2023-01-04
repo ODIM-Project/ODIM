@@ -77,8 +77,11 @@ const (
         SubscriptionTypeOEM SubscriptionType = "OEM"
 )
 
-// Event schema describes the JSON payload received by an event destination, which has subscribed to event notification, when events occur.
-// This resource contains data about events, including descriptions, severity, and a message identifier to a message registry that can be accessed for further information.
+// Event schema describes the JSON payload received by an event destination, which has 
+// subscribed to event notification, when events occur. This resource contains data 
+// about events, including descriptions, severity, and a message identifier to a 
+// message registry that can be accessed for further information.
+// Refer to Event.v1_7_0.json of the redfish spec for more details
 type Event struct {
 	ODataContext string        `json:"@odata.context,omitempty"`
 	ODataType    string        `json:"@odata.type"`
@@ -92,7 +95,10 @@ type Event struct {
 	Oem          interface{}   `json:"Oem,omitempty"`
 }
 
-// EventRecord - This property shall indicate the type of event.
+// EventRecord - a single event in the Events array of the Event Resource. This  has a 
+// set of properties that describe a single event. Because Events is an array, more than 
+// one EventRecord can be sent simultaneously.
+// Refer to Event.v1_7_0.json of the redfish spec for more details
 type EventRecord struct {
 	Actions                    *OemActions `json:"Actions,omitempty"`
 	Context                    string      `json:"Context,omitempty"`
@@ -114,6 +120,7 @@ type EventRecord struct {
 
 // This Resource shall represent the target of an event subscription, including 
 // the event types and context to provide to the target in the Event payload.
+// Refer to EventDestination.v1_11_2.json of the redfish spec for more details
 type EventDestination struct {
 	
 }

@@ -16,6 +16,7 @@
 package session
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -40,7 +41,7 @@ import (
 // and check whether the credentials are correct also it will
 // check privileges. and then add the session details in DB
 // respond RPC response and error if there is.
-func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, string) {
+func CreateNewSession(ctx context.Context, req *sessionproto.SessionCreateRequest) (response.RPC, string) {
 	commonResponse := response.Response{
 		OdataType: common.SessionServiceType,
 		OdataID:   "/redfish/v1/SessionService/Sessions",
@@ -54,26 +55,29 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	genErr := json.Unmarshal(req.RequestBody, &createSession)
 	if genErr != nil {
 		errMsg := "Unable to parse the create session request" + genErr.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), ""
 	}
 
+	errLogPrefix := fmt.Sprintf("failed to create session for user %s: ", createSession.UserName)
+	l.LogWithFields(ctx).Infof("Validating the request to create new session for the user %s", createSession.UserName)
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, genErr := common.RequestParamsCaseValidator(req.RequestBody, createSession)
 	if genErr != nil {
-		errMsg := "Unable to validate request parameters: " + genErr.Error()
-		l.Log.Error(errMsg)
+		errMsg := errLogPrefix + "Unable to validate request parameters: " + genErr.Error()
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), ""
 	} else if invalidProperties != "" {
-		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		l.Log.Error(errorMessage)
+		errorMessage := errLogPrefix + "One or more properties given in the request body are not valid, ensure properties are listed in upper camel case "
+		l.LogWithFields(ctx).Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp, ""
 	}
 
-	user, err := auth.CheckSessionCreationCredentials(createSession.UserName, createSession.Password)
+	user, err := auth.CheckSessionCreationCredentials(ctx, createSession.UserName, createSession.Password)
 	if err != nil {
-		errMsg := "Unable to authorize session creation credentials: " + err.Error()
+		errMsg := errLogPrefix + "Unable to authorize session creation credentials: " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
 		if err.ErrNo() == errors.DBConnFailed {
 			msgArgs := []interface{}{fmt.Sprintf("%v:%v", config.Data.DBConf.OnDiskHost, config.Data.DBConf.OnDiskPort)}
 			resp = common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errMsg, msgArgs, nil)
@@ -90,9 +94,9 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 
 	role, err := asmodel.GetRoleDetailsByID(user.RoleID)
 	if err != nil {
-		errorMessage := "Unable to get role privileges for session creation: " + err.Error()
+		errorMessage := errLogPrefix + "Unable to get role privileges for session creation: " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp, ""
 	}
 	rolePrivilege := make(map[string]bool)
@@ -101,7 +105,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	}
 	//User requires Login privelege to create a session
 	if _, exist := rolePrivilege[common.PrivilegeLogin]; !exist {
-		errorMessage := "User doesn't have required privilege to create a session"
+		errorMessage := errLogPrefix + "User doesn't have required privilege to create a session"
 		logProperties := make(map[string]interface{})
 		logProperties["SessionUserID"] = createSession.UserName
 		logProperties["SessionRoleID"] = role.ID
@@ -121,17 +125,18 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 		CreatedTime:  currentTime,
 		LastUsedTime: currentTime,
 	}
+	l.LogWithFields(ctx).Infof("Creating session for the user %s", createSession.UserName)
 	auth.Lock.Lock()
 	defer auth.Lock.Unlock()
 	if err = sess.Persist(); err != nil {
-		errMsg := "error while trying to insert session details: " + err.Error()
+		errMsg := errLogPrefix + err.Error()
 		if err.ErrNo() == errors.DBConnFailed {
 			msgArgs := []interface{}{fmt.Sprintf("%v:%v", config.Data.DBConf.InMemoryHost, config.Data.DBConf.InMemoryPort)}
 			resp = common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errMsg, msgArgs, nil)
 		} else {
 			resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 		}
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return resp, ""
 	}
 

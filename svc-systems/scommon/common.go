@@ -233,7 +233,6 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		l.Log.Error(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
-	l.Log.Info("Response" + string(body))
 	l.Log.Info("response.StatusCode: " + fmt.Sprintf("%d", response.StatusCode))
 	resp.StatusCode = int32(response.StatusCode)
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted {
@@ -302,20 +301,35 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 }
 
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-func TrackConfigFileChanges(configFilePath string) {
+func TrackConfigFileChanges(configFilePath string, errChan chan error) {
 	eventChan := make(chan interface{})
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
-	select {
-	case <-eventChan: // new data arrives through eventChan channel
-		config.TLSConfMutex.RLock()
-		schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
-		if err != nil {
-			l.Log.Error("error while trying to read search/filter schema json" + err.Error())
-		}
-		config.TLSConfMutex.RUnlock()
-		err = json.Unmarshal(schemaFile, &SF)
-		if err != nil {
-			l.Log.Error("error while trying to fetch search/filter schema json" + err.Error())
+	format := config.Data.LogFormat
+	go common.TrackConfigFileChanges(configFilePath, eventChan, errChan)
+	for {
+		select {
+		case info := <-eventChan: // new data arrives through eventChan channel
+			l.Log.Info(info)
+			config.TLSConfMutex.RLock()
+			schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
+			if err != nil {
+				l.Log.Error("error while trying to read search/filter schema json" + err.Error())
+			}
+			config.TLSConfMutex.RUnlock()
+			err = json.Unmarshal(schemaFile, &SF)
+			if err != nil {
+				l.Log.Error("error while trying to fetch search/filter schema json" + err.Error())
+			}
+			if l.Log.Level != config.Data.LogLevel {
+				l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+				l.Log.Logger.SetLevel(config.Data.LogLevel)
+			}
+			if format != config.Data.LogFormat {
+				l.SetFormatter(config.Data.LogFormat)
+				format = config.Data.LogFormat
+				l.Log.Info("Log format is updated, new log format is ", config.Data.LogFormat)
+			}
+		case err := <-errChan:
+			l.Log.Error(err)
 		}
 	}
 }

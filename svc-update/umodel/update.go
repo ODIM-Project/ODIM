@@ -16,6 +16,7 @@
 package umodel
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -24,7 +25,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
-//Target is for sending the requst to south bound/plugin
+// Target is for sending the requst to south bound/plugin
 type Target struct {
 	ManagerAddress string `json:"ManagerAddress"`
 	Password       []byte `json:"Password"`
@@ -45,7 +46,7 @@ type Plugin struct {
 	PreferredAuthType string
 }
 
-//GetAllKeysFromTable fetches all keys in a given table
+// GetAllKeysFromTable fetches all keys in a given table
 func GetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
 	conn, err := common.GetDBConnection(dbtype)
 	if err != nil {
@@ -58,7 +59,7 @@ func GetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
 	return keysArray, nil
 }
 
-//GetResource fetches a resource from database using table and key
+// GetResource fetches a resource from database using table and key
 func GetResource(Table, key string, dbtype common.DbType) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(dbtype)
 	if err != nil {
@@ -75,8 +76,8 @@ func GetResource(Table, key string, dbtype common.DbType) (string, *errors.Error
 	return resource, nil
 }
 
-//GenericSave will save any resource data into the database
-func GenericSave(body []byte, table string, key string) error {
+// GenericSave will save any resource data into the database
+func GenericSave(ctx context.Context, body []byte, table string, key string) error {
 	connPool, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
@@ -85,12 +86,12 @@ func GenericSave(body []byte, table string, key string) error {
 		if errors.DBKeyAlreadyExist == err.ErrNo() {
 			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 		}
-		l.Log.Warn("skipped saving of duplicate data with key " + key)
+		l.LogWithFields(ctx).Warn("skipped saving of duplicate data with key " + key)
 	}
 	return nil
 }
 
-//GetTarget fetches the System(Target Device Credentials) table details
+// GetTarget fetches the System(Target Device Credentials) table details
 func GetTarget(deviceUUID string) (*Target, *errors.Error) {
 	var target Target
 	conn, err := common.GetDBConnection(common.OnDisk)
@@ -107,7 +108,7 @@ func GetTarget(deviceUUID string) (*Target, *errors.Error) {
 	return &target, nil
 }
 
-//GetPluginData will fetch plugin details
+// GetPluginData will fetch plugin details
 func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	var plugin Plugin
 

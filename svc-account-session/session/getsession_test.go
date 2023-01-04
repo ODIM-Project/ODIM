@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package session
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -40,7 +41,7 @@ func TestGetSession(t *testing.T) {
 		}
 	}()
 	auth.Lock.Lock()
-	common.SetUpMockConfig()
+	config.SetUpMockConfig(t)
 	auth.Lock.Unlock()
 
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
@@ -54,13 +55,14 @@ func TestGetSession(t *testing.T) {
 		"Link":         "</redfish/v1/SessionService/Sessions/" + sessionID + "/>; rel=self",
 		"X-Auth-Token": sessionToken,
 	}
+
 	errArgUnauth := &response.Args{
 		Code:    response.GeneralError,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to authorize session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
+				ErrorMessage:  "failed to fetch the session : Unable to authorize session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -76,7 +78,7 @@ func TestGetSession(t *testing.T) {
 			},
 		},
 	}
-
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionRequest
 	}
@@ -135,7 +137,7 @@ func TestGetSession(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetSession(tt.args.req)
+			got := GetSession(ctx, tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSession() = %v, want %v", got, tt.want)
 			}
@@ -144,6 +146,7 @@ func TestGetSession(t *testing.T) {
 }
 
 func TestGetAllActiveSessions(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -171,7 +174,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to authorize session token: error: no session token found in header",
+				ErrorMessage:  "failed to fetch all active sessions : Unable to authorize session token: error: no session token found in header",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -182,11 +185,12 @@ func TestGetAllActiveSessions(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to authorize session token: error while trying to get session details with the token invalidToken: error while trying to get the session from DB: no data with the with key invalidToken found",
+				ErrorMessage:  "failed to fetch all active sessions : Unable to authorize session token: error while trying to get session details with the token invalidToken: error while trying to get the session from DB: no data with the with key invalidToken found",
 				MessageArgs:   []interface{}{},
 			},
 		},
 	}
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionRequest
 	}
@@ -244,7 +248,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetAllActiveSessions(tt.args.req)
+			got := GetAllActiveSessions(ctx, tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAllActiveSessions() = %v, want %v", got, tt.want)
 			}
@@ -253,6 +257,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 }
 
 func TestGetSessionService(t *testing.T) {
+	config.SetUpMockConfig(t)
 	commonResponse := response.Response{
 		OdataType: common.SessionServiceType,
 		OdataID:   "/redfish/v1/SessionService",
@@ -266,6 +271,7 @@ func TestGetSessionService(t *testing.T) {
 
 	type args struct {
 		req *sessionproto.SessionRequest
+		ctx context.Context
 	}
 	tests := []struct {
 		name string
@@ -301,7 +307,7 @@ func TestGetSessionService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetSessionService(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := GetSessionService(tt.args.ctx, tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSessionService() = %v, want %v", got, tt.want)
 			}
 		})
@@ -309,6 +315,7 @@ func TestGetSessionService(t *testing.T) {
 }
 
 func TestGetSessionUserName(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -320,6 +327,7 @@ func TestGetSessionUserName(t *testing.T) {
 		}
 	}()
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
+	ctx := mockContext()
 	type args struct {
 		req  *sessionproto.SessionRequest
 		resp *sessionproto.SessionUserName
@@ -357,7 +365,7 @@ func TestGetSessionUserName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := GetSessionUserName(tt.args.req)
+			_, err := GetSessionUserName(ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSessionUserName() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -369,6 +377,7 @@ func TestGetSessionUserName(t *testing.T) {
 }
 
 func TestGetSessionUserRoleID(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -380,6 +389,7 @@ func TestGetSessionUserRoleID(t *testing.T) {
 		}
 	}()
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
+	ctx := mockContext()
 	type args struct {
 		req  *sessionproto.SessionRequest
 		resp *sessionproto.SessionUsersRoleID
@@ -417,7 +427,7 @@ func TestGetSessionUserRoleID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := GetSessionUserRoleID(tt.args.req)
+			_, err := GetSessionUserRoleID(ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSessionUserRoleID() error = %v, wantErr %v", err, tt.wantErr)
 			}

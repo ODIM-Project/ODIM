@@ -16,7 +16,9 @@
 package role
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"reflect"
 
@@ -33,24 +35,26 @@ import (
 //
 // For updating an account,  parameters need to be passed are RoleRequest and Session.
 // New RoleID,AssignedPrivileges and OEMPrivileges will be part of RoleRequest,
-// and Session parameter will have all session related data, espically the privileges.
+// and Session parameter will have all session related data, especially the privileges.
 //
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body.
-func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC {
+func Update(ctx context.Context, req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC {
 	var resp response.RPC
 	var updateReq asmodel.Role
 	json.Unmarshal(req.UpdateRequest, &updateReq)
 
+	errorLogPrefix := fmt.Sprintf("failed to update role %s: ", updateReq.ID)
+	l.LogWithFields(ctx).Infof("Validating the request to update the role %s", updateReq.ID)
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.UpdateRequest, updateReq)
 	if err != nil {
-		errMsg := "Unable to validate request parameters: " + err.Error()
-		l.Log.Error(errMsg)
+		errMsg := errorLogPrefix + "Unable to validate request parameters: " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
-		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		l.Log.Error(errorMessage)
+		errorMessage := errorLogPrefix + "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		l.LogWithFields(ctx).Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
 	}
@@ -58,8 +62,8 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 	//Get redfish roles from database
 	redfishRoles, gerr := asmodel.GetRedfishRoles()
 	if gerr != nil {
-		l.Log.Error("Unable to get redfish roles: " + gerr.Error())
-		errorMessage := gerr.Error()
+		l.LogWithFields(ctx).Error(errorLogPrefix + "Unable to get redfish roles: " + gerr.Error())
+		errorMessage := errorLogPrefix + gerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		return resp
 
@@ -74,7 +78,7 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 	}
 
 	if isPredefined {
-		l.Log.Error("Cannot update predefined role")
+		l.LogWithFields(ctx).Error(errorLogPrefix + "Cannot update predefined role")
 		resp.StatusCode = http.StatusMethodNotAllowed
 		resp.StatusMessage = response.GeneralError
 		errorMessage := "Updating predefined role is restricted"
@@ -89,7 +93,7 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 	//check for ConfigureUsers privilege in session object
 	status, err := checkForPrivilege(session, common.PrivilegeConfigureUsers)
 	if err != nil {
-		errorMessage := "User does not have the privilege to update the role"
+		errorMessage := "User does not have the privilege of updating the role"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
 		args := response.Args{
@@ -104,12 +108,12 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
+		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 	role, gerr := asmodel.GetRoleDetailsByID(req.Id)
 	if gerr != nil {
-		errorMessage := gerr.Error()
+		errorMessage := errorLogPrefix + gerr.Error()
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.ResourceNotFound
 		args := response.Args{
@@ -124,15 +128,15 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 
 	// check any duplicate roles present in the request
 	privelege, duplicatePresent := isDuplicatePrivilegesPresent(updateReq)
 	if duplicatePresent {
-		errorMessage := "Duplicate privileges can not be updated"
-		l.Log.Error(errorMessage)
+		errorMessage := errorLogPrefix + "Duplicate privileges can not be updated"
+		l.LogWithFields(ctx).Error(errorMessage)
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.PropertyValueConflict
 		args := response.Args{
@@ -155,7 +159,7 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 		"OEMPrivileges":      true,
 	})
 	if errorMessage != "" {
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorLogPrefix + errorMessage)
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -173,8 +177,8 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 		return resp
 	}
 	if len(updateReq.AssignedPrivileges) == 0 && len(updateReq.OEMPrivileges) == 0 {
-		l.Log.Error("Mandatory field is empty")
-		errorMessage := "Mandatory field is empty"
+		l.LogWithFields(ctx).Error(errorLogPrefix + "Assigned privileges or OEM privileges are empty")
+		errorMessage := "Assigned privileges or OEM privileges are empty"
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.PropertyMissing
 		args := response.Args{
@@ -193,9 +197,9 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 	}
 
 	if len(updateReq.AssignedPrivileges) != 0 {
-		status, messageArgs, err := validateAssignedPrivileges(updateReq.AssignedPrivileges)
+		status, messageArgs, err := validateAssignedPrivileges(ctx, updateReq.AssignedPrivileges)
 		if err != nil {
-			errorMessage := err.Error()
+			errorMessage := errorLogPrefix + err.Error()
 			resp.StatusCode = int32(status.Code)
 			resp.StatusMessage = status.Message
 			args := response.Args{
@@ -210,15 +214,15 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return resp
 		}
 		role.AssignedPrivileges = updateReq.AssignedPrivileges
 	}
 	if len(updateReq.OEMPrivileges) != 0 {
-		status, messageArgs, err := validateOEMPrivileges(updateReq.OEMPrivileges)
+		status, messageArgs, err := validateOEMPrivileges(ctx, updateReq.OEMPrivileges)
 		if err != nil {
-			errorMessage := err.Error()
+			errorMessage := errorLogPrefix + err.Error()
 			resp.StatusCode = int32(status.Code)
 			resp.StatusMessage = status.Message
 			args := response.Args{
@@ -233,13 +237,14 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return resp
 		}
 		role.OEMPrivileges = updateReq.OEMPrivileges
 	}
+	l.LogWithFields(ctx).Infof("Updating the role %s", updateReq.ID)
 	if uerr := role.UpdateRoleDetails(); uerr != nil {
-		errorMessage := "error while trying to updating role:" + uerr.Error()
+		errorMessage := errorLogPrefix + uerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		return resp
 	}
@@ -296,7 +301,7 @@ func isDuplicatePrivilegesPresent(updateReq asmodel.Role) (string, bool) {
 	return "", false
 }
 
-//check if the privileges have duplicate privilege
+// check if the privileges have duplicate privilege
 func checkDuplicatePrivileges(privileges []string) (string, bool) {
 	duplicate := make(map[string]int)
 	for _, privilege := range privileges {

@@ -16,8 +16,6 @@ package config
 
 import (
 	"flag"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // cliModel holds the data passed as the command line argument
@@ -33,7 +31,7 @@ type clModel struct {
 var CLArgs clModel
 
 // CollectCLArgs will collect the command line arguments and fill CLArgs variable of type clModel
-func CollectCLArgs() {
+func CollectCLArgs(wl *WarningList) {
 	flag.StringVar(&CLArgs.ClientRequestTimeout, "client_request_timeout", "", "maximum request time which client waits")
 	flag.StringVar(&CLArgs.Registry, "registry", "", "service registry")
 	flag.StringVar(&CLArgs.RegistryAddress, "registry_address", "", "address of the registry")
@@ -41,9 +39,9 @@ func CollectCLArgs() {
 	flag.StringVar(&CLArgs.FrameWork, "framework", "GRPC", "framework used for micro service communication")
 	flag.Parse()
 	if CLArgs.RegistryAddress == "" {
-		log.Warn("No CLI argument found for registry_address")
+		wl.add("No CLI argument found for registry_address")
 	}
 	if CLArgs.ServerAddress == "" {
-		log.Warn("No CLI argument found for server_address")
+		wl.add("No CLI argument found for server_address")
 	}
 }

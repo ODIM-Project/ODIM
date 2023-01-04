@@ -1,15 +1,15 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package account
 
@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -27,6 +28,7 @@ import (
 )
 
 func TestUpdate(t *testing.T) {
+	config.SetUpMockConfig(t)
 	acc := getMockExternalInterface()
 
 	successResponse := response.Response{
@@ -63,7 +65,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "Unable to get account: error while trying to get user: no data with the with key xyz found",
+				ErrorMessage:  "failed to update the account xyz: Unable to get account: error while trying to get user: no data with the with key xyz found",
 				MessageArgs:   []interface{}{"Account", "xyz"},
 			},
 		},
@@ -74,7 +76,18 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User does not have the privilege to update other accounts",
+				ErrorMessage:  "failed to update the account testUser2: User does not have the privilege of updating other accounts",
+				MessageArgs:   []interface{}{},
+			},
+		},
+	}
+	errArgs5 := response.Args{
+		Code:    response.GeneralError,
+		Message: "",
+		ErrorArgs: []response.ErrArgs{
+			response.ErrArgs{
+				StatusMessage: response.InsufficientPrivilege,
+				ErrorMessage:  "failed to update the account testUser1: User does not have the privilege of updating other accounts",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -85,7 +98,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "Roles, user is associated with, doesn't allow changing own or other users password",
+				ErrorMessage:  "failed to update the account testUser3: Roles, user is associated with, doesn't allow changing own or other users password",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -97,7 +110,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User does not have the privilege to update any account role, including his own account",
+				ErrorMessage:  "failed to update the account testUser3: User does not have the privilege of updating any account role, including his own account",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -109,7 +122,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "Invalid RoleID xyz present",
+				ErrorMessage:  "failed to update the account testUser1: Invalid RoleID xyz present",
 				MessageArgs:   []interface{}{"xyz", "RoleID"},
 			},
 		},
@@ -133,7 +146,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyMissing,
-				ErrorMessage:  "empty request can not be processed",
+				ErrorMessage:  "failed to update the account testUser1: empty request can not be processed",
 				MessageArgs:   []interface{}{"request body"},
 			},
 		},
@@ -141,8 +154,9 @@ func TestUpdate(t *testing.T) {
 
 	genArgs := response.Args{
 		Code:    response.GeneralError,
-		Message: "Username cannot be modified",
+		Message: "failed to update the account testUser1: Username cannot be modified",
 	}
+	ctx := mockContext()
 	type args struct {
 		req     *accountproto.UpdateAccountRequest
 		session *asmodel.Session
@@ -222,7 +236,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Body:          errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs5.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -566,7 +580,7 @@ func TestUpdate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := acc.Update(tt.args.req, tt.args.session)
+			got := acc.Update(ctx, tt.args.req, tt.args.session)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Update() = %v, want %v", got, tt.want)
 			}

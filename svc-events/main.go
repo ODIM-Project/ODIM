@@ -34,27 +34,32 @@ func main() {
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
-	log := logs.Log
 	logs.Adorn(logrus.Fields{
 		"host":   hostName,
 		"procid": podName + fmt.Sprintf("_%d", pid),
 	})
 
-	if err := config.SetConfiguration(); err != nil {
+	// log should be initialized after Adorn is invoked
+	// as Adorn will assign new pointer to Log variable in logs package.
+	log := logs.Log
+	configWarnings, err := config.SetConfiguration()
+	if err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
-		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
+		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
-
-	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	logs.SetFormatter(config.Data.LogFormat)
 	log.Logger.SetOutput(os.Stdout)
-	log.Logger.SetLevel(logrus.WarnLevel)
+	log.Logger.SetLevel(config.Data.LogLevel)
 
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Event Service should not be run as the root user")
 	}
 
-	config.CollectCLArgs()
+	config.CollectCLArgs(&configWarnings)
+	for _, warning := range configWarnings {
+		log.Warn(warning)
+	}
 
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
 		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
@@ -63,7 +68,8 @@ func main() {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
-	if err := services.InitializeService(services.Events); err != nil {
+	errChan := make(chan error)
+	if err := services.InitializeService(services.Events, errChan); err != nil {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
 
@@ -92,16 +98,16 @@ func main() {
 	// which is passed to it as ProcessCtrlMsg method after reading the data from the channel.
 	common.RunReadWorkers(consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 1)
 
-	configFilePath := os.Getenv("CONFIG_FILE_PATH")
-	if configFilePath == "" {
+	evcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
+	if evcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	eventChan := make(chan interface{})
+
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	go evcommon.TrackConfigFileChanges(errChan)
 
 	// Subscribe to intercomm messagebus queue
-	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.MessageBusQueue[0])
+	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.OdimControlMessageQueue)
 
 	// Subscribe to EMBs of all the available plugins
 	startUPInterface := evcommon.StartUpInteraface{

@@ -13,7 +13,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package router ...
+// Package router ...
 package router
 
 import (
@@ -26,6 +26,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	loggingService "github.com/ODIM-Project/ODIM/lib-utilities/logService"
 	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -37,7 +38,10 @@ import (
 	"github.com/kataras/iris/v12"
 )
 
-//Router method to register API handlers.
+var isCompositionEnabled bool
+var cs handle.CompositionServiceRPCs
+
+// Router method to register API handlers.
 func Router() *iris.Application {
 	r := handle.RoleRPCs{
 		GetAllRolesRPC: rpc.GetAllRoles,
@@ -165,20 +169,28 @@ func Router() *iris.Application {
 		UpdateTriggerRPC:                       rpc.DoUpdateTrigger,
 	}
 
-	cs := handle.CompositionServiceRPCs{
-		GetCompositionServiceRPC:      rpc.GetCompositionService,
-		GetResourceBlockCollectionRPC: rpc.GetResourceBlockCollection,
-		GetResourceBlockRPC:           rpc.GetResourceBlock,
-		CreateResourceBlockRPC:        rpc.CreateResourceBlock,
-		DeleteResourceBlockRPC:        rpc.DeleteResourceBlock,
-		GetResourceZoneCollectionRPC:  rpc.GetResourceZoneCollection,
-		GetResourceZoneRPC:            rpc.GetResourceZone,
-		CreateResourceZoneRPC:         rpc.CreateResourceZone,
-		DeleteResourceZoneRPC:         rpc.DeleteResourceZone,
-		ComposeRPC:                    rpc.Compose,
-		GetActivePoolRPC:              rpc.GetActivePool,
-		GetFreePoolRPC:                rpc.GetFreePool,
-		GetCompositionReservationsRPC: rpc.GetCompositionReservations,
+	for _, service := range config.Data.EnabledServices {
+		if service == "CompositionService" {
+			isCompositionEnabled = true
+		}
+	}
+
+	if isCompositionEnabled {
+		cs = handle.CompositionServiceRPCs{
+			GetCompositionServiceRPC:      rpc.GetCompositionService,
+			GetResourceBlockCollectionRPC: rpc.GetResourceBlockCollection,
+			GetResourceBlockRPC:           rpc.GetResourceBlock,
+			CreateResourceBlockRPC:        rpc.CreateResourceBlock,
+			DeleteResourceBlockRPC:        rpc.DeleteResourceBlock,
+			GetResourceZoneCollectionRPC:  rpc.GetResourceZoneCollection,
+			GetResourceZoneRPC:            rpc.GetResourceZone,
+			CreateResourceZoneRPC:         rpc.CreateResourceZone,
+			DeleteResourceZoneRPC:         rpc.DeleteResourceZone,
+			ComposeRPC:                    rpc.Compose,
+			GetActivePoolRPC:              rpc.GetActivePool,
+			GetFreePoolRPC:                rpc.GetFreePool,
+			GetCompositionReservationsRPC: rpc.GetCompositionReservations,
+		}
 	}
 
 	licenses := handle.LicenseRPCs{
@@ -191,25 +203,30 @@ func Router() *iris.Application {
 	registryFile := handle.Registry{
 		Auth: srv.IsAuthorized,
 	}
+	logService := l.Logging{
+		GetUserDetails: loggingService.GetUserDetails,
+	}
 
 	serviceRoot := handle.InitServiceRoot()
 
 	router := iris.New()
 	router.OnErrorCode(iris.StatusNotFound, handle.SystemsMethodInvalidURI)
-	var reqBody map[string]interface{}
 	// Parses the URL and performs URL decoding for path
 	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		ctx := r.Context()
+		l.LogWithFields(ctx).Info("Inside router function")
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {
 			errMessage := "while trying to parse the URL: " + err.Error()
-			l.Log.Error(errMessage)
+			l.LogWithFields(ctx).Error(errMessage)
 			return
 		}
 		path := strings.Replace(rawURI, parsedURI.EscapedPath(), parsedURI.Path, -1)
 		r.RequestURI = path
 		r.URL.Path = parsedURI.Path
+		var reqBody map[string]interface{}
 
 		// Validating session token
 		sessionToken := r.Header.Get("X-Auth-Token")
@@ -237,19 +254,19 @@ func Router() *iris.Application {
 		if r.Body != nil {
 			body, err := ioutil.ReadAll(r.Body)
 			if err != nil {
-				l.Log.Error("while reading request body ", err.Error())
+				l.LogWithFields(ctx).Error("while reading request body ", err.Error())
 			}
 			r.Body = ioutil.NopCloser(bytes.NewReader(body))
 
 			if len(body) > 0 {
 				err = json.Unmarshal(body, &reqBody)
 				if err != nil {
-					l.Log.Error("while unmarshalling request body", err.Error())
+					l.LogWithFields(ctx).Error("while unmarshalling request body", err.Error())
 				}
 			}
 		}
 		if config.Data.RequestLimitCountPerSession > 0 {
-			err = ratelimiter.RequestRateLimiter(sessionToken)
+			err = ratelimiter.RequestRateLimiter(ctx, sessionToken)
 			if err != nil {
 				common.SetCommonHeaders(w)
 				w.WriteHeader(http.StatusServiceUnavailable)
@@ -262,8 +279,9 @@ func Router() *iris.Application {
 
 	})
 	router.Done(func(ctx iris.Context) {
-		customLogs.AuditLog(ctx, reqBody)
-		reqBody = make(map[string]interface{})
+		var reqBody map[string]interface{}
+		ctx.ReadJSON(&reqBody)
+		logService.AuditLog(ctx, reqBody)
 		// before returning response, decrement the session limit counter
 		sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 		if sessionToken != "" && config.Data.RequestLimitCountPerSession > 0 {
@@ -704,27 +722,29 @@ func Router() *iris.Application {
 	licenseService.Any("/Licenses/{id}", handle.LicenseMethodNotAllowed)
 
 	// composition service
-	compositionService := v1.Party("/CompositionService", middleware.SessionDelMiddleware)
-	compositionService.SetRegisterRule(iris.RouteSkip)
-	compositionService.Get("/", cs.GetCompositionService)
-	compositionService.Get("/ResourceBlocks", cs.GetResourceBlockCollection)
-	compositionService.Get("/ResourceBlocks/{id}", cs.GetResourceBlock)
-	compositionService.Post("/ResourceBlocks", cs.CreateResourceBlock)
-	compositionService.Delete("/ResourceBlocks/{id}", cs.DeleteResourceBlock)
-	compositionService.Get("/ResourceZones", cs.GetResourceZoneCollection)
-	compositionService.Get("/ResourceZones/{id}", cs.GetResourceZone)
-	compositionService.Post("/ResourceZones", cs.CreateResourceZone)
-	compositionService.Delete("/ResourceZones/{id}", cs.DeleteResourceZone)
-	compositionService.Post("/Actions/CompositionService.Compose", cs.Compose)
-	compositionService.Get("/ActivePool", cs.GetActivePool)
-	compositionService.Get("/FreePool", cs.GetFreePool)
-	compositionService.Get("/CompositionReservations", cs.GetCompositionReservations)
-	compositionService.Any("/", handle.CompositionServiceMethodNotAllowed)
-	compositionService.Any("/ResourceBlocks", handle.CompositionServiceMethodNotAllowed)
-	compositionService.Any("/ResourceBlocks/{id}", handle.CompositionServiceMethodNotAllowed)
-	compositionService.Any("/ResourceZones", handle.CompositionServiceMethodNotAllowed)
-	compositionService.Any("/ResourceZones/{id}", handle.CompositionServiceMethodNotAllowed)
-	compositionService.Any("/FreePool", handle.CompositionServiceMethodNotAllowed)
-	compositionService.Any("/ActivePool", handle.CompositionServiceMethodNotAllowed)
+	if isCompositionEnabled {
+		compositionService := v1.Party("/CompositionService", middleware.SessionDelMiddleware)
+		compositionService.SetRegisterRule(iris.RouteSkip)
+		compositionService.Get("/", cs.GetCompositionService)
+		compositionService.Get("/ResourceBlocks", cs.GetResourceBlockCollection)
+		compositionService.Get("/ResourceBlocks/{id}", cs.GetResourceBlock)
+		compositionService.Post("/ResourceBlocks", cs.CreateResourceBlock)
+		compositionService.Delete("/ResourceBlocks/{id}", cs.DeleteResourceBlock)
+		compositionService.Get("/ResourceZones", cs.GetResourceZoneCollection)
+		compositionService.Get("/ResourceZones/{id}", cs.GetResourceZone)
+		compositionService.Post("/ResourceZones", cs.CreateResourceZone)
+		compositionService.Delete("/ResourceZones/{id}", cs.DeleteResourceZone)
+		compositionService.Post("/Actions/CompositionService.Compose", cs.Compose)
+		compositionService.Get("/ActivePool", cs.GetActivePool)
+		compositionService.Get("/FreePool", cs.GetFreePool)
+		compositionService.Get("/CompositionReservations", cs.GetCompositionReservations)
+		compositionService.Any("/", handle.CompositionServiceMethodNotAllowed)
+		compositionService.Any("/ResourceBlocks", handle.CompositionServiceMethodNotAllowed)
+		compositionService.Any("/ResourceBlocks/{id}", handle.CompositionServiceMethodNotAllowed)
+		compositionService.Any("/ResourceZones", handle.CompositionServiceMethodNotAllowed)
+		compositionService.Any("/ResourceZones/{id}", handle.CompositionServiceMethodNotAllowed)
+		compositionService.Any("/FreePool", handle.CompositionServiceMethodNotAllowed)
+		compositionService.Any("/ActivePool", handle.CompositionServiceMethodNotAllowed)
+	}
 	return router
 }

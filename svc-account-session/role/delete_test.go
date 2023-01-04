@@ -1,15 +1,15 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package role
 
@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -77,7 +78,7 @@ func createMockUser(username, roleID string) error {
 }
 
 func TestDelete(t *testing.T) {
-	common.SetUpMockConfig()
+	config.SetUpMockConfig(t)
 	defer truncateDB(t)
 	token, tokenWithoutPrivilege := "someToken", "tokenWithoutPrivilege"
 	err := mockSession(token, common.RoleAdmin, true)
@@ -113,7 +114,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "The session token doesn't have required privilege",
+				ErrorMessage:  "failed to delete role someRole: The session token doesn't have required privilege",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -124,7 +125,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "Unable to get role details: error while trying to get role details: no data with the with key xyz found",
+				ErrorMessage:  "failed to delete role xyz: Unable to get role details: error while trying to get role details: no data with the with key xyz found",
 				MessageArgs:   []interface{}{"Role", "xyz"},
 			},
 		},
@@ -146,7 +147,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "A predefined role cannot be deleted.",
+				ErrorMessage:  "failed to delete role someOtherRole: A predefined role cannot be deleted.",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -157,11 +158,12 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceInUse,
-				ErrorMessage:  "Role is assigned to a user",
+				ErrorMessage:  "failed to delete role someUserDefinedRole: Role is assigned to a user",
 				MessageArgs:   []interface{}{},
 			},
 		},
 	}
+	ctx := mockContext()
 	type args struct {
 		req *roleproto.DeleteRoleRequest
 	}
@@ -256,7 +258,7 @@ func TestDelete(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Delete(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := Delete(ctx, tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Delete() = %v, want %v", got, tt.want)
 			}
 		})

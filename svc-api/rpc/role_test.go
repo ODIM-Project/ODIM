@@ -29,6 +29,7 @@
 package rpc
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -70,7 +71,7 @@ func TestGetRole(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewRolesClientFunc = tt.NewRolesClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetRole(tt.args.req)
+			got, err := GetRole(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetRole() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -87,12 +88,12 @@ func TestGetAllRoles(t *testing.T) {
 		req roleproto.GetRoleRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
+		name               string
+		args               args
 		ClientFunc         func(clientName string) (*grpc.ClientConn, error)
 		NewRolesClientFunc func(cc *grpc.ClientConn) roleproto.RolesClient
-		want    *roleproto.RoleResponse
-		wantErr bool
+		want               *roleproto.RoleResponse
+		wantErr            bool
 	}{
 		{
 			name:               "Client func error",
@@ -115,7 +116,7 @@ func TestGetAllRoles(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewRolesClientFunc = tt.NewRolesClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetAllRoles(tt.args.req)
+			got, err := GetAllRoles(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAllRoles() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -132,12 +133,12 @@ func TestUpdateRole(t *testing.T) {
 		req roleproto.UpdateRoleRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
+		name               string
+		args               args
 		ClientFunc         func(clientName string) (*grpc.ClientConn, error)
 		NewRolesClientFunc func(cc *grpc.ClientConn) roleproto.RolesClient
-		want    *roleproto.RoleResponse
-		wantErr bool
+		want               *roleproto.RoleResponse
+		wantErr            bool
 	}{
 		{
 			name:               "Client func error",
@@ -160,7 +161,7 @@ func TestUpdateRole(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewRolesClientFunc = tt.NewRolesClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := UpdateRole(tt.args.req)
+			got, err := UpdateRole(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpdateRole() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -177,12 +178,12 @@ func TestDeleteRole(t *testing.T) {
 		req roleproto.DeleteRoleRequest
 	}
 	tests := []struct {
-		name    string
-		args    args
+		name               string
+		args               args
 		ClientFunc         func(clientName string) (*grpc.ClientConn, error)
 		NewRolesClientFunc func(cc *grpc.ClientConn) roleproto.RolesClient
-		want    *roleproto.RoleResponse
-		wantErr bool
+		want               *roleproto.RoleResponse
+		wantErr            bool
 	}{
 		{
 			name:               "Client func error",
@@ -205,7 +206,7 @@ func TestDeleteRole(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewRolesClientFunc = tt.NewRolesClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DeleteRole(tt.args.req)
+			got, err := DeleteRole(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteRole() error = %v, wantErr %v", err, tt.wantErr)
 				return

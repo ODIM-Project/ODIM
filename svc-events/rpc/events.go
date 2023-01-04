@@ -108,8 +108,13 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 	//Else send 401 Unautherised
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authResp := e.Connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := e.Connector.Auth(req.SessionToken, privileges, oemprivileges)
 	if authResp.StatusCode != http.StatusOK {
+		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
+		l.Log.Error(errMsg)
 		resp.Body = generateResponse(authResp.Body)
 		resp.StatusMessage = authResp.StatusMessage
 		resp.StatusCode = authResp.StatusCode
@@ -203,8 +208,13 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 	var err error
 	var taskID string
 	// Athorize the request here
-	authResp := e.Connector.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Connector.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
+		l.Log.Error(errMsg)
 		resp.Body = generateResponse(authResp.Body)
 		resp.StatusCode = authResp.StatusCode
 		return &resp, nil

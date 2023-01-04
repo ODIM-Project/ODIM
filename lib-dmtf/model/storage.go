@@ -245,13 +245,13 @@ type Current struct {
 }
 type CollectionCapabilities struct {
 	OdataType    string          `json:"@odata.type"`
-	Capabilities []*Capabilities `json:"Capabilities",omitempty`
+	Capabilities []*Capabilities `json:"Capabilities,omitempty"`
 }
 
 type Capabilities struct {
-	CapabilitiesObject *Link    `json:"CapabilitiesObject"`
-	Links              CapLinks `json:"Links"`
-	UseCase            string   `json:"UseCase"`
+	CapabilitiesObject *Link    `json:"CapabilitiesObject,omitempty"`
+	Links              CapLinks `json:"Links,omitempty"`
+	UseCase            string   `json:"UseCase,omitempty"`
 }
 type CapabilitiesObject struct {
 	ODataID           string     `json:"@odata.id"`
@@ -274,7 +274,7 @@ type LinkValues struct {
 	Drives               bool `json:"Drives@Redfish.RequiredOnCreate"`
 }
 type CapLinks struct {
-	TargetCollection *Link `json:"TargetCollection"`
+	TargetCollection *Link `json:"TargetCollection,omitempty"`
 }
 type VolumeCollection struct {
 	ODataContext           string                 `json:"@odata.context,omitempty"`
@@ -296,7 +296,7 @@ type Volume struct {
 	ODataEtag                        string                   `json:"@odata.etag"`
 	ODataType                        string                   `json:"@odata.type"`
 	AccessCapabilities               []string                 `json:"AccessCapabilities,omitempty"`
-	CollectionCapabilities           CollectionCapabilities   `json:"@Redfish.CollectionCapabilities"`
+	CollectionCapabilities           *CollectionCapabilities  `json:"@Redfish.CollectionCapabilities,omitempty"`
 	Actions                          *Actions                 `json:"Actions,omitempty"`
 	AllocatedPools                   *Link                    `json:"AllocatedPools,omitempty"`
 	BlockSizeBytes                   int                      `json:"BlockSizeBytes,omitempty"`

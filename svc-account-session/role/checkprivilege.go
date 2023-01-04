@@ -16,6 +16,7 @@
 package role
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -30,14 +31,14 @@ type Status struct {
 	Message string
 }
 
-//ValidateAssignedPrivileges  provides functionality which verifies user provided privileges
+// ValidateAssignedPrivileges  provides functionality which verifies user provided privileges
 // with configured privileges
 // It accepts  user provided privileges for the role as request and returns  status and error
-func validateAssignedPrivileges(assignedPrivileges []string) (*Status, []interface{}, error) {
+func validateAssignedPrivileges(ctx context.Context, assignedPrivileges []string) (*Status, []interface{}, error) {
 	//Get privilege registry from database
 	privilegeRegistry, err := asmodel.GetPrivilegeRegistry()
 	if err != nil {
-		l.Log.Error("Unable to get Privileges: " + err.Error())
+		l.LogWithFields(ctx).Error("Unable to get Privileges: " + err.Error())
 		return &Status{
 			Code:    http.StatusInternalServerError,
 			Message: response.InternalError,
@@ -55,7 +56,7 @@ func validateAssignedPrivileges(assignedPrivileges []string) (*Status, []interfa
 				}
 			}
 			if !flag {
-				l.Log.Error("Requested Redfish predefined privilege is not correct")
+				l.LogWithFields(ctx).Error("Requested Redfish predefined privilege is not correct")
 				return &Status{Code: http.StatusBadRequest, Message: response.PropertyValueNotInList}, []interface{}{userPrivilege, "AssignedPrivileges"}, fmt.Errorf("Requested Redfish predefined privilege is not correct")
 			}
 		}
@@ -63,14 +64,14 @@ func validateAssignedPrivileges(assignedPrivileges []string) (*Status, []interfa
 	return nil, []interface{}{}, nil
 }
 
-//ValidateOEMPrivileges provides functionality which verifies user provided OEMprivileges
+// ValidateOEMPrivileges provides functionality which verifies user provided OEMprivileges
 // with configured OEMprivileges
 // It accepts  user provided OEMprivileges for the role as request and returns Status and error as response
-func validateOEMPrivileges(oemPrivileges []string) (*Status, []interface{}, error) {
+func validateOEMPrivileges(ctx context.Context, oemPrivileges []string) (*Status, []interface{}, error) {
 	//Get OEM privileges from database
 	oemPrivilegeRegistry, err := asmodel.GetOEMPrivileges()
 	if err != nil {
-		l.Log.Error("error getting OEM Privileges: " + err.Error())
+		l.LogWithFields(ctx).Error("error getting OEM Privileges: " + err.Error())
 		return &Status{Code: http.StatusInternalServerError, Message: response.InternalError}, []interface{}{}, fmt.Errorf("error getting OEM Privileges: %v", err)
 	}
 
@@ -85,7 +86,7 @@ func validateOEMPrivileges(oemPrivileges []string) (*Status, []interface{}, erro
 				}
 			}
 			if !flag {
-				l.Log.Error("Requested OEM privilege is not correct")
+				l.LogWithFields(ctx).Error("Requested OEM privilege is not correct")
 				return &Status{Code: http.StatusBadRequest, Message: response.PropertyValueNotInList}, []interface{}{userPrivilege, "OemPrivileges"}, fmt.Errorf("Requested OEM privilege is not correct")
 			}
 		}
@@ -93,14 +94,13 @@ func validateOEMPrivileges(oemPrivileges []string) (*Status, []interface{}, erro
 	return nil, []interface{}{}, nil
 }
 
-//CheckForPrivilege checks given  privilege  in session object
-//It accepts session object  and privilege as request and returns  Status and error as response
+// CheckForPrivilege checks given  privilege  in session object
+// It accepts session object  and privilege as request and returns  Status and error as response
 func checkForPrivilege(session *asmodel.Session, privilege string) (*Status, error) {
 	//Get session object
 	//check if user has ConfigureUsers privilege
 	//	l.Log.Println(session)
 	if !session.Privileges[privilege] {
-		l.Log.Error("InsufficientPrivilege")
 		return &Status{Code: http.StatusForbidden, Message: response.InsufficientPrivilege}, fmt.Errorf("InsufficientPrivilege")
 	}
 	return nil, nil

@@ -35,9 +35,18 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
 )
 
+var (
+	//RequestParamsCaseValidatorFunc ...
+	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
+	//GetAllFabricPluginDetailsFunc ...
+	GetAllFabricPluginDetailsFunc = fabmodel.GetAllFabricPluginDetails
+	// ConfigFilePath holds the value of odim config file path
+	ConfigFilePath string
+)
+
 // Fabrics struct helps to hold the behaviours
 type Fabrics struct {
-	Auth          func(sessionToken string, privileges []string, oemPrivileges []string) response.RPC
+	Auth          func(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error)
 	ContactClient func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 
@@ -223,9 +232,12 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	var contactRequest pluginContactRequest
 	var resp response.RPC
 	sessionToken := req.SessionToken
-	authResp := f.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := f.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := "error while trying to authenticate session"
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
 		l.Log.Error(errMsg)
 		return contactRequest, authResp, fmt.Errorf(errMsg)
 	}
@@ -427,7 +439,7 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, fabricRequest)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, fabricRequest)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
 		l.Log.Error(errMsg)
@@ -440,4 +452,27 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	}
 
 	return resp, nil
+}
+
+func TrackConfigFileChanges(errChan chan error) {
+	eventChan := make(chan interface{})
+	format := config.Data.LogFormat
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, errChan)
+	for {
+		select {
+		case info := <-eventChan:
+			l.Log.Info(info) // new data arrives through eventChan channel
+			if l.Log.Level != config.Data.LogLevel {
+				l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+				l.Log.Logger.SetLevel(config.Data.LogLevel)
+			}
+			if format != config.Data.LogFormat {
+				l.SetFormatter(config.Data.LogFormat)
+				format = config.Data.LogFormat
+				l.Log.Info("Log format is updated, new log format is ", config.Data.LogFormat)
+			}
+		case err := <-errChan:
+			l.Log.Error(err)
+		}
+	}
 }

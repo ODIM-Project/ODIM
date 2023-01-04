@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-00010101000000-000000000000
 	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20220118101906-b2873faecdba
-	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201201072448-9772421f1b55
+	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20220426104855-9b203a83173f
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/kataras/iris/v12 v12.2.0-alpha9
@@ -63,6 +63,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pierrec/lz4/v4 v4.1.14 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/schollz/closestmatch v2.1.0+incompatible // indirect
 	github.com/segmentio/kafka-go v0.4.31 // indirect
@@ -87,6 +88,7 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
+	google.golang.org/grpc v1.38.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect

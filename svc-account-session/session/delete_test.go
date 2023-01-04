@@ -1,25 +1,27 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package session
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"reflect"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -47,7 +49,7 @@ func createSession(t *testing.T, role, username string, privileges []string) (st
 		RequestBody: reqBodyBytes,
 	}
 
-	resp, sessionID := CreateNewSession(req)
+	resp, sessionID := CreateNewSession(context.TODO(), req)
 	if sessionID == "" {
 		t.Fatalf("Session creation failed: %#v", resp)
 	}
@@ -55,6 +57,7 @@ func createSession(t *testing.T, role, username string, privileges []string) (st
 	return sessionID, resp.Header["X-Auth-Token"]
 }
 func TestDeleteSession(t *testing.T) {
+	config.SetUpMockConfig(t)
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
 	sessionID2, sessionToken2 := createSession(t, common.RoleClient, "client", []string{common.PrivilegeLogin})
 	defer func() {
@@ -67,6 +70,7 @@ func TestDeleteSession(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionRequest
 	}
@@ -77,7 +81,7 @@ func TestDeleteSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to delete session: error while trying to get the session from DB: no data with the with key  found",
+				ErrorMessage:  "failed to delete session : error while trying to get the session from DB: no data with the with key  found",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -88,7 +92,7 @@ func TestDeleteSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error: Session ID not found",
+				ErrorMessage:  "failed to delete session : Session ID not found",
 				MessageArgs:   []interface{}{"Session", "invalid-id"},
 			},
 		},
@@ -99,7 +103,7 @@ func TestDeleteSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "Insufficient privileges",
+				ErrorMessage:  "failed to delete session : Insufficient privileges",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -170,7 +174,7 @@ func TestDeleteSession(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			got := DeleteSession(tt.args.req)
+			got := DeleteSession(ctx, tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DeleteSession() = %v, want %v", got, tt.want)
 			}

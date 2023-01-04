@@ -25,6 +25,7 @@ Set "User:admin"  '{"UserName":"admin","Password":"O01bKrP7Tzs7YoO3YvQt4pRa2J_R6
 Set "role:Administrator"  '{"@odata.type":"","RoleId":"Administrator","Name":"","Description":"","IsPredefined":true,"AssignedPrivileges":["ConfigureSelf","Login","ConfigureUsers","ConfigureComponents","ConfigureManager"],"OemPrivileges":null,"@odata.context":"","@odata.id":""}'
 Set "role:Operator"  '{"@odata.type":"","RoleId":"Operator","Name":"","Description":"","IsPredefined":true,"AssignedPrivileges":["ConfigureSelf","Login","ConfigureComponents"],"OemPrivileges":null,"@odata.context":"","@odata.id":""}'
 Set "role:ReadOnly"  '{"@odata.type":"","RoleId":"ReadOnly","Name":"","Description":"","IsPredefined":true,"AssignedPrivileges":["ConfigureSelf","Login"],"OemPrivileges":null,"@odata.context":"","@odata.id":""}'
+ZAdd "Subscription" 0 '{"UserName":"","SubscriptionID":"0","Destination":"","Name":"default","Context":"","EventTypes":["Alert"],"MessageIds":null,"Protocol":"Redfish","SubscriptionType":"RedfishEvent","EventFormatType":"","SubordinateResources":true,"ResourceTypes":null,"OriginResources":[],"Hosts":[],"DeliveryRetryPolicy":"RetryForever"}'
 keys *
 SAVE
 HERE

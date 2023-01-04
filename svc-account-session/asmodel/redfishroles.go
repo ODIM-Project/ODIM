@@ -52,7 +52,7 @@ func (r *RedfishRoles) Create() *errors.Error {
 		return err
 	}
 	if err = conn.Create("roles", "redfishdefined", r); err != nil {
-		return errors.PackError(err.ErrNo(), "error while trying to create redfishroles: ", err.Error())
+		return errors.PackError(err.ErrNo(), "error while trying to create redfish roles: ", err.Error())
 	}
 
 	return nil

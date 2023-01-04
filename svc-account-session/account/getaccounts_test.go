@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package account
 
 import (
+	"context"
 	"net/http"
 	"reflect"
 	"testing"
@@ -26,7 +27,7 @@ import (
 )
 
 func TestGetAllAccounts(t *testing.T) {
-	common.SetUpMockConfig()
+	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -61,11 +62,12 @@ func TestGetAllAccounts(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User SomeOne does not have the privilege to view all users",
+				ErrorMessage:  "failed to fetch accounts : User SomeOne does not have the privilege to view all users",
 				MessageArgs:   []interface{}{},
 			},
 		},
 	}
+	ctx := mockContext()
 	type args struct {
 		session *asmodel.Session
 	}
@@ -119,7 +121,7 @@ func TestGetAllAccounts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetAllAccounts(tt.args.session)
+			got := GetAllAccounts(ctx, tt.args.session)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAllAccounts() = %v, want %v", got, tt.want)
 			}
@@ -139,11 +141,12 @@ func TestGetAccount(t *testing.T) {
 	successResponse.Message = ""
 	successResponse.MessageID = ""
 	successResponse.Severity = ""
-	common.SetUpMockConfig()
+	config.SetUpMockConfig(t)
 	err := createMockUser("testUser1", common.RoleAdmin)
 	if err != nil {
 		t.Fatalf("Error in creating mock admin user %v", err)
 	}
+	ctx := mockContext()
 	type args struct {
 		session   *asmodel.Session
 		accountID string
@@ -155,7 +158,7 @@ func TestGetAccount(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "testUser2 does not have the privilege to view other user's details",
+				ErrorMessage:  "failed to fetch the account testUser1: testUser2 does not have the privilege to view other user's details",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -166,7 +169,7 @@ func TestGetAccount(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "Unable to get account: error while trying to get user: no data with the with key testUser4 found",
+				ErrorMessage:  "failed to fetch the account testUser4: error while trying to get user: no data with the with key testUser4 found",
 				MessageArgs:   []interface{}{"Account", "testUser4"},
 			},
 		},
@@ -286,7 +289,7 @@ func TestGetAccount(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetAccount(tt.args.session, tt.args.accountID)
+			got := GetAccount(ctx, tt.args.session, tt.args.accountID)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAccount() = %v, want %v", got, tt.want)
 			}
@@ -369,7 +372,7 @@ func TestGetAccountService(t *testing.T) {
 	config.Data.EnabledServices = []string{"AccountService"}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetAccountService()
+			got := GetAccountService(context.TODO())
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAccountService() = %v, want %v", got, tt.want)
 			}

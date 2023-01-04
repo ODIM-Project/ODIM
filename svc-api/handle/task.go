@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package handle ...
+// Package handle ...
 package handle
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -27,13 +28,13 @@ import (
 
 // TaskRPCs defines all the RPC methods in task service
 type TaskRPCs struct {
-	DeleteTaskRPC     func(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
-	GetTaskRPC        func(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
-	GetSubTasksRPC    func(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
-	GetSubTaskRPC     func(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
-	GetTaskMonitorRPC func(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
-	TaskCollectionRPC func(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
-	GetTaskServiceRPC func(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
+	DeleteTaskRPC     func(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
+	GetTaskRPC        func(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
+	GetSubTasksRPC    func(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
+	GetSubTaskRPC     func(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
+	GetTaskMonitorRPC func(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
+	TaskCollectionRPC func(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
+	GetTaskServiceRPC func(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
 }
 
 // DeleteTask deletes the task with given TaskID
@@ -41,16 +42,17 @@ type TaskRPCs struct {
 // Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) DeleteTask(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
-	response, err := task.DeleteTaskRPC(req)
+	response, err := task.DeleteTaskRPC(ctxt, req)
 	common.SetResponseHeader(ctx, response.Header)
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -68,16 +70,17 @@ func (task *TaskRPCs) DeleteTask(ctx iris.Context) {
 // Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) GetTaskStatus(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
-	response, err := task.GetTaskRPC(req)
+	response, err := task.GetTaskRPC(ctxt, req)
 	common.SetResponseHeader(ctx, response.Header)
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -97,16 +100,17 @@ func (task *TaskRPCs) GetTaskStatus(ctx iris.Context) {
 // Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) GetSubTasks(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
-	response, err := task.GetSubTasksRPC(req)
+	response, err := task.GetSubTasksRPC(ctxt, req)
 	common.SetResponseHeader(ctx, response.Header)
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -126,17 +130,18 @@ func (task *TaskRPCs) GetSubTasks(ctx iris.Context) {
 // Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) GetSubTask(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
 		SubTaskID:    ctx.Params().Get("subTaskID"),
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
-	response, err := task.GetSubTaskRPC(req)
+	response, err := task.GetSubTaskRPC(ctxt, req)
 	common.SetResponseHeader(ctx, response.Header)
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -156,16 +161,17 @@ func (task *TaskRPCs) GetSubTask(ctx iris.Context) {
 // Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) GetTaskMonitor(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
-	response, err := task.GetTaskMonitorRPC(req)
+	response, err := task.GetTaskMonitorRPC(ctxt, req)
 	common.SetResponseHeader(ctx, response.Header)
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -179,11 +185,12 @@ func (task *TaskRPCs) GetTaskMonitor(ctx iris.Context) {
 	return
 }
 
-//TaskCollection fetches all tasks available in DB
-//It takes iris context and extract auth token from the context
-//Create a request object in task proto request format and pass it to rpc call
+// TaskCollection fetches all tasks available in DB
+// It takes iris context and extract auth token from the context
+// Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := &taskproto.GetTaskRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -195,12 +202,12 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 		common.SetResponseHeader(ctx, nil)
 		return
 	}
-	response, err := task.TaskCollectionRPC(req)
+	response, err := task.TaskCollectionRPC(ctxt, req)
 	common.SetResponseHeader(ctx, response.Header)
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
@@ -215,20 +222,21 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 	return
 }
 
-//GetTaskService fetches Task Service details
-//It takes iris context and extract auth token from the context
-//Create a request object in task proto request format and pass it to rpc call
+// GetTaskService fetches Task Service details
+// It takes iris context and extract auth token from the context
+// Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) GetTaskService(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := &taskproto.GetTaskRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
-	response, err := task.GetTaskServiceRPC(req)
+	response, err := task.GetTaskServiceRPC(ctxt, req)
 	common.SetResponseHeader(ctx, response.Header)
 
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)

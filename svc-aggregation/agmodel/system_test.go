@@ -1,15 +1,15 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 // Package agmodel ...
 package agmodel
@@ -21,12 +21,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 func getEncryptedKey(t *testing.T, key []byte) []byte {
@@ -429,7 +428,7 @@ func TestGetRegistryFile(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	mockData(t, common.OnDisk, "someTable", "someKey", "someData")
+	mockData(t, common.InMemory, "someTable", "someKey", "someData")
 	type args struct {
 		Table string
 		key   string
@@ -882,6 +881,46 @@ func TestGetResourceDetails(t *testing.T) {
 	}
 }
 
+func TestGetString(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	mockData(t, common.InMemory, "ComputerSystem", "someKey", "someData")
+	type args struct {
+		index string
+		match string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  []string
+		want1 *errors.Error
+	}{
+		{
+			name:  "success case",
+			args:  args{index: "someKey", match: "key"},
+			want:  []string{},
+			want1: nil,
+		},
+		{
+			name:  "not found",
+			args:  args{index: "someKey", match: "match"},
+			want:  []string{},
+			want1: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, _ := GetString(tt.args.index, tt.args.match)
+			if len(got) != 0 {
+				t.Errorf("GetResourceDetails() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestSystemOperation(t *testing.T) {
 	// testing  the Add SystemOpearation use case
 	common.SetUpMockConfig()
@@ -1242,4 +1281,236 @@ func TestRemoveElementsFromAggregate(t *testing.T) {
 	err = RemoveElementsFromAggregate(req1, invalidAggregateURI)
 	assert.NotNil(t, err, "err should not be nil")
 
+}
+
+func TestConnectionMethod(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	connectionMethodURI := "/redfish/v1/AggregationService/ConnectionMethods/a418caec-8791-45ac-8c67-38d8de751cec"
+	req := ConnectionMethod{
+		ConnectionMethodType:    "Redfish",
+		ConnectionMethodVariant: "Compute:BasicAuth:DELL_v1.0.0",
+		Links: Links{
+			[]OdataID{
+				{"/redfish/v1/AggregationService/AggregationSources/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+				{"/redfish/v1/AggregationService/AggregationSources/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
+			},
+		},
+	}
+	err := AddConnectionMethod(req, connectionMethodURI)
+	assert.Nil(t, err, "err should be nil")
+	err = AddConnectionMethod(req, connectionMethodURI)
+	assert.NotNil(t, err, "Error Should not be nil")
+	got, err := GetConnectionMethod(connectionMethodURI)
+	assert.Nil(t, err, "err should be nil")
+	assert.Equal(t, 2, len(got.Links.AggregationSources), "there should be two element")
+	updateErr := UpdateConnectionMethod(req, "xyz")
+	assert.NotNil(t, updateErr, errors.PackError(errors.DBKeyNotFound, "error: data with key xyz does not exist"))
+}
+
+func TestCheckActiveRequest(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	_, err := CheckActiveRequest("xyz")
+	assert.Nil(t, err, "err should be nil")
+	err = DeleteActiveRequest("xyz")
+	assert.NotNil(t, err, "error should not be nil")
+}
+
+func TestGetEventSubscriptions(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	var res []string
+	key := "/redfish/v1/Systems/71200a7e-e95c-435b-bec7-926de482da26.1"
+	data, err := GetEventSubscriptions(key)
+	assert.Equal(t, res, data, "should be same")
+	assert.Nil(t, err, "There should be no error")
+}
+
+func TestSavePluginManagerInfo(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	type args struct {
+		table string
+		body  []byte
+		key   string
+	}
+	tests := []struct {
+		name string
+		args args
+		want *errors.Error
+	}{
+		{
+			name: "positive case",
+			args: args{table: "successTable", body: []byte{}, key: "Key"},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := SavePluginManagerInfo(tt.args.body, tt.args.table, tt.args.key); reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SavePluginManagerInfo() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetSliceFromString(t *testing.T) {
+	config.SetUpMockConfig(t)
+	sliceString := "xyz"
+	body := []string{"xyz"}
+	data := getSliceFromString(sliceString)
+	assert.Equal(t, body, data, "should be same")
+}
+
+func TestUpdateDeviceSubscription(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	req := common.DeviceSubscription{
+		EventHostIP:     "10.24.44.11",
+		OriginResources: []string{},
+		Location:        "xyz",
+	}
+	config.SetUpMockConfig(t)
+	data := UpdateDeviceSubscription(req)
+	assert.NotNil(t, data, "should not be nil")
+}
+
+func TestCheckMetricRequest(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	key := "MetricRequest"
+	got, err := CheckMetricRequest(key)
+	assert.Equal(t, false, got, "should be same")
+	assert.Nil(t, err, "There should be no error")
+	err = DeleteMetricRequest(key)
+	assert.NotNil(t, err, "There should be error")
+}
+
+func TestAggregateHostIndex(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	uuid := "71200a7e-e95c-435b-bec7-926de482da26"
+	err := AddAggregateHostIndex(uuid, []string{"10.24.1.1"})
+	assert.Nil(t, err, "There should be no error")
+}
+
+func TestHostToAggregateHostIndex(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	mockData(t, common.OnDisk, "table", "someKey", "someData")
+	uuid := "71200a7e-e95c-435b-bec7-926de482da26"
+	err := AddNewHostToAggregateHostIndex(uuid, "10.24.1.1")
+	assert.NotNil(t, err, "There should be error")
+	err = RemoveNewIPToAggregateHostIndex(uuid, "10.24.1.1")
+	assert.NotNil(t, err, "There should be error")
+	err = DeleteAggregateHostIndex(uuid)
+	assert.NotNil(t, err, "There should be error")
+}
+
+func TestRemoveIps(t *testing.T) {
+	config.SetUpMockConfig(t)
+	body := []string{"10.24.1.1", "10.24.1.2"}
+	res := []string{"10.24.1.2"}
+	data := removeIps(body, "10.24.1.1")
+	assert.Equal(t, res, data, "should be same")
+}
+
+func TestDelete(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	err := Delete("table", "10.24.1.1", common.OnDisk)
+	assert.NotNil(t, err, "There should be error")
+}
+
+func TestSaveBMCInventory(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	var data = make(map[string]interface{})
+	data["10.24.1.1"] = "xyz"
+	err := SaveBMCInventory(data)
+	assert.Nil(t, err, "There should be no error")
+}
+
+func TestGetDeviceSubscriptions(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	hostIP := "10.24.0.0"
+	mockData(t, common.OnDisk, "ComputerSystem", hostIP, hostIP)
+	_, err := GetDeviceSubscriptions(hostIP)
+	assert.NotNil(t, err, "There should be error")
 }

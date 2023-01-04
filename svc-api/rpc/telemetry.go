@@ -12,32 +12,34 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	teleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
-var(
+var (
 	NewTelemetryClientFunc = teleproto.NewTelemetryClient
 )
+
 // DoGetTelemetryService defines the RPC call function for
 // the GetTelemetryService from telemetry micro service
-func DoGetTelemetryService(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
-
+func DoGetTelemetryService(ctx context.Context, req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Telemetry)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetTelemetryService(context.TODO(), &req)
+	resp, err := telemetry.GetTelemetryService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -47,15 +49,15 @@ func DoGetTelemetryService(req teleproto.TelemetryRequest) (*teleproto.Telemetry
 
 // DoGetMetricDefinitionCollection defines the RPC call function for
 // the GetMetricDefinitionCollection from telemetry micro service
-func DoGetMetricDefinitionCollection(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
-
+func DoGetMetricDefinitionCollection(ctx context.Context, req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Telemetry)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	telemetry := NewTelemetryClientFunc(conn)
-	resp, err := telemetry.GetMetricDefinitionCollection(context.TODO(), &req)
+	resp, err := telemetry.GetMetricDefinitionCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -65,15 +67,15 @@ func DoGetMetricDefinitionCollection(req teleproto.TelemetryRequest) (*teleproto
 
 // DoGetMetricReportDefinitionCollection defines the RPC call function for
 // the GetMetricReportDefinitionCollection from telemetry micro service
-func DoGetMetricReportDefinitionCollection(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
-
+func DoGetMetricReportDefinitionCollection(ctx context.Context, req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Telemetry)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	telemetry := NewTelemetryClientFunc(conn)
-	resp, err := telemetry.GetMetricReportDefinitionCollection(context.TODO(), &req)
+	resp, err := telemetry.GetMetricReportDefinitionCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -83,16 +85,16 @@ func DoGetMetricReportDefinitionCollection(req teleproto.TelemetryRequest) (*tel
 
 // DoGetMetricReportCollection defines the RPC call function for
 // the GetMetricReportCollection from telemetry micro service
-func DoGetMetricReportCollection(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
-
+func DoGetMetricReportCollection(ctx context.Context, req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Telemetry)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetMetricReportCollection(context.TODO(), &req)
+	resp, err := telemetry.GetMetricReportCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -102,16 +104,16 @@ func DoGetMetricReportCollection(req teleproto.TelemetryRequest) (*teleproto.Tel
 
 // DoGetTriggerCollection defines the RPC call function for
 // the GetTriggerCollection from telemetry micro service
-func DoGetTriggerCollection(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
-
+func DoGetTriggerCollection(ctx context.Context, req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Telemetry)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetTriggerCollection(context.TODO(), &req)
+	resp, err := telemetry.GetTriggerCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -121,16 +123,16 @@ func DoGetTriggerCollection(req teleproto.TelemetryRequest) (*teleproto.Telemetr
 
 // DoGetMetricDefinition defines the RPC call function for
 // the GetMetricDefinition from telemetry micro service
-func DoGetMetricDefinition(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
-
+func DoGetMetricDefinition(ctx context.Context, req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Telemetry)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetMetricDefinition(context.TODO(), &req)
+	resp, err := telemetry.GetMetricDefinition(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -140,16 +142,16 @@ func DoGetMetricDefinition(req teleproto.TelemetryRequest) (*teleproto.Telemetry
 
 // DoGetMetricReportDefinition defines the RPC call function for
 // the GetMetricReportDefinition from telemetry micro service
-func DoGetMetricReportDefinition(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
-
+func DoGetMetricReportDefinition(ctx context.Context, req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Telemetry)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetMetricReportDefinition(context.TODO(), &req)
+	resp, err := telemetry.GetMetricReportDefinition(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -159,16 +161,16 @@ func DoGetMetricReportDefinition(req teleproto.TelemetryRequest) (*teleproto.Tel
 
 // DoGetMetricReport defines the RPC call function for
 // the GetMetricReport from telemetry micro service
-func DoGetMetricReport(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
-
+func DoGetMetricReport(ctx context.Context, req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Telemetry)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetMetricReport(context.TODO(), &req)
+	resp, err := telemetry.GetMetricReport(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -178,35 +180,35 @@ func DoGetMetricReport(req teleproto.TelemetryRequest) (*teleproto.TelemetryResp
 
 // DoGetTrigger defines the RPC call function for
 // the GetTrigger from telemetry micro service
-func DoGetTrigger(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
-
+func DoGetTrigger(ctx context.Context, req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Telemetry)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.GetTrigger(context.TODO(), &req)
+	resp, err := telemetry.GetTrigger(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
-	}	
+	}
 	defer conn.Close()
 	return resp, err
 }
 
 // DoUpdateTrigger defines the RPC call function for
 // the UpdateTrigger from telemetry micro service
-func DoUpdateTrigger(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
-
+func DoUpdateTrigger(ctx context.Context, req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Telemetry)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	
+
 	telemetry := NewTelemetryClientFunc(conn)
 
-	resp, err := telemetry.UpdateTrigger(context.TODO(), &req)
+	resp, err := telemetry.UpdateTrigger(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}

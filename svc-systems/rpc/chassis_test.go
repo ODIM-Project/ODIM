@@ -1,16 +1,16 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-//(C) Copyright 2020 Intel Corporation
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright 2020 Intel Corporation
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package rpc
 
@@ -42,11 +42,11 @@ func mockResourceData(body []byte, table, key string) error {
 	}
 	return nil
 }
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken != "validToken" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
 func TestChassisRPC_GetChassisResource(t *testing.T) {
@@ -349,7 +349,7 @@ func Test_jsonMarshal(t *testing.T) {
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
-	generateResponse("dummy")
+	generateResponse(context.Background(), "dummy")
 	jsonMarshal("dummy")
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)

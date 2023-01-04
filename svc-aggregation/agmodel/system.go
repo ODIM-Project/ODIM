@@ -35,14 +35,14 @@ const (
 	aggregateHostIndex = common.AggregateSubscriptionIndex
 )
 
-//Schema model is used to iterate throgh the schema json for search/filter
+// Schema model is used to iterate throgh the schema json for search/filter
 type Schema struct {
 	SearchKeys    []map[string]map[string]string `json:"searchKeys"`
 	ConditionKeys []string                       `json:"conditionKeys"`
 	QueryKeys     []string                       `json:"queryKeys"`
 }
 
-//SaveSystem model is used to save encrypted data into db
+// SaveSystem model is used to save encrypted data into db
 type SaveSystem struct {
 	ManagerAddress string
 	Password       []byte
@@ -63,7 +63,7 @@ type Plugin struct {
 	ManagerUUID       string
 }
 
-//Target is for sending the requst to south bound/plugin
+// Target is for sending the requst to south bound/plugin
 type Target struct {
 	ManagerAddress string `json:"ManagerAddress"`
 	Password       []byte `json:"Password"`
@@ -73,7 +73,7 @@ type Target struct {
 	PluginID       string `json:"PluginID"`
 }
 
-//SystemOperation hold the value system operation(InventoryRediscovery or Delete)
+// SystemOperation hold the value system operation(InventoryRediscovery or Delete)
 type SystemOperation struct {
 	Operation string
 }
@@ -125,12 +125,12 @@ type Links struct {
 	AggregationSources []OdataID `json:"AggregationSources"`
 }
 
-//OdataID struct definition for @odata.id
+// OdataID struct definition for @odata.id
 type OdataID struct {
 	OdataID string `json:"@odata.id"`
 }
 
-//ServerInfo holds the details of the server
+// ServerInfo holds the details of the server
 type ServerInfo SaveSystem
 
 // PluginStartUpData holds the required data for plugin startup
@@ -160,7 +160,7 @@ type EventSubscriptionInfo struct {
 type TriggerInfo struct {
 }
 
-//PluginContactRequest holds the details required to contact the plugin
+// PluginContactRequest holds the details required to contact the plugin
 type PluginContactRequest struct {
 	URL             string
 	HTTPMethodType  string
@@ -171,7 +171,7 @@ type PluginContactRequest struct {
 	Plugin          Plugin
 }
 
-//GetResource fetches a resource from database using table and key
+// GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -206,7 +206,7 @@ func (system *SaveSystem) Create(systemID string) *errors.Error {
 	return nil
 }
 
-//GetPluginData will fetch plugin details
+// GetPluginData will fetch plugin details
 func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	var plugin Plugin
 
@@ -233,7 +233,7 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	return plugin, nil
 }
 
-//GetComputeSystem will fetch the compute resource details
+// GetComputeSystem will fetch the compute resource details
 func GetComputeSystem(deviceUUID string) (dmtfmodel.ComputerSystem, error) {
 	var compute dmtfmodel.ComputerSystem
 
@@ -256,7 +256,7 @@ func GetComputeSystem(deviceUUID string) (dmtfmodel.ComputerSystem, error) {
 
 }
 
-//SaveComputeSystem will save the compute server complete details into the database
+// SaveComputeSystem will save the compute server complete details into the database
 func SaveComputeSystem(computeServer dmtfmodel.ComputerSystem, deviceUUID string) error {
 	//use dmtf logic to save data into database
 	l.Log.Info("Saving server details into database")
@@ -268,7 +268,7 @@ func SaveComputeSystem(computeServer dmtfmodel.ComputerSystem, deviceUUID string
 	return nil
 }
 
-//SaveChassis will save the chassis details into the database
+// SaveChassis will save the chassis details into the database
 func SaveChassis(chassis dmtfmodel.Chassis, deviceUUID string) error {
 	//use dmtf logic to save data into database
 	l.Log.Info("Saving chassis details into database")
@@ -296,7 +296,7 @@ func GenericSave(body []byte, table string, key string) error {
 	return nil
 }
 
-//SaveRegistryFile will save any Registry file in database OnDisk DB
+// SaveRegistryFile will save any Registry file in database OnDisk DB
 func SaveRegistryFile(body []byte, table string, key string) error {
 
 	connPool, err := common.GetDBConnection(common.OnDisk)
@@ -313,9 +313,9 @@ func SaveRegistryFile(body []byte, table string, key string) error {
 	return nil
 }
 
-//GetRegistryFile from Onisk DB
+// GetRegistryFile from InMemory DB
 func GetRegistryFile(Table, key string) (string, *errors.Error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return "", errors.PackError(err.ErrNo(), err)
 	}
@@ -330,7 +330,7 @@ func GetRegistryFile(Table, key string) (string, *errors.Error) {
 	return resource, nil
 }
 
-//DeleteComputeSystem will delete the compute system
+// DeleteComputeSystem will delete the compute system
 func DeleteComputeSystem(index int, key string) *errors.Error {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -425,7 +425,7 @@ func deletefilteredkeys(key string) error {
 	return nil
 }
 
-//DeleteSystem will delete the system from OnDisk
+// DeleteSystem will delete the system from OnDisk
 func DeleteSystem(key string) *errors.Error {
 	connPool, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -456,7 +456,7 @@ func DeleteSystem(key string) *errors.Error {
 	return nil
 }
 
-//GetTarget fetches the System(Target Device Credentials) table details
+// GetTarget fetches the System(Target Device Credentials) table details
 func GetTarget(deviceUUID string) (*Target, error) {
 	var target Target
 	conn, err := common.GetDBConnection(common.OnDisk)
@@ -476,7 +476,7 @@ func GetTarget(deviceUUID string) (*Target, error) {
 	return &target, nil
 }
 
-//SaveIndex is used to create a
+// SaveIndex is used to create a
 func SaveIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string) error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -493,7 +493,7 @@ func SaveIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string
 
 }
 
-//SavePluginData will saves plugin on disk
+// SavePluginData will saves plugin on disk
 func SavePluginData(plugin Plugin) *errors.Error {
 
 	conn, err := common.GetDBConnection(common.OnDisk)
@@ -534,7 +534,7 @@ func GetAllSystems() ([]Target, *errors.Error) {
 	return targets, nil
 }
 
-//DeletePluginData will delete the plugin entry from the database based on the uuid
+// DeletePluginData will delete the plugin entry from the database based on the uuid
 func DeletePluginData(key, table string) *errors.Error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -546,7 +546,7 @@ func DeletePluginData(key, table string) *errors.Error {
 	return nil
 }
 
-//DeleteManagersData will delete the table entry from the database based on the uuid
+// DeleteManagersData will delete the table entry from the database based on the uuid
 func DeleteManagersData(key, table string) *errors.Error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -558,7 +558,7 @@ func DeleteManagersData(key, table string) *errors.Error {
 	return nil
 }
 
-//UpdateIndex is used for updating an existing index
+// UpdateIndex is used for updating an existing index
 func UpdateIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string) error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -575,7 +575,7 @@ func UpdateIndex(searchForm map[string]interface{}, table, uuid, bmcAddress stri
 	return nil
 }
 
-//UpdateComputeSystem is used for updating ComputerSystem table
+// UpdateComputeSystem is used for updating ComputerSystem table
 func UpdateComputeSystem(key string, computeData interface{}) error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -591,7 +591,7 @@ func UpdateComputeSystem(key string, computeData interface{}) error {
 	return nil
 }
 
-//GetResourceDetails fetches a resource from database using key
+// GetResourceDetails fetches a resource from database using key
 func GetResourceDetails(key string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -668,7 +668,7 @@ func GetSystemOperationInfo(systemURI string) (SystemOperation, *errors.Error) {
 	return systemOperation, nil
 }
 
-//DeleteSystemOperationInfo will delete the system operation entry from the database based on the systemURI
+// DeleteSystemOperationInfo will delete the system operation entry from the database based on the systemURI
 func DeleteSystemOperationInfo(systemURI string) *errors.Error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -725,7 +725,7 @@ func GetSystemResetInfo(systemURI string) (map[string]string, *errors.Error) {
 	return resetInfo, nil
 }
 
-//DeleteSystemResetInfo will delete the system reset entry from the database based on the systemURI
+// DeleteSystemResetInfo will delete the system reset entry from the database based on the systemURI
 func DeleteSystemResetInfo(systemURI string) *errors.Error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -812,7 +812,7 @@ func UpdateAggregtionSource(aggregationSource AggregationSource, key string) *er
 	return nil
 }
 
-//GetAllMatchingDetails accepts the table name ,pattern and DB type and return all the keys which mathces the pattern
+// GetAllMatchingDetails accepts the table name ,pattern and DB type and return all the keys which mathces the pattern
 func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
 	conn, err := common.GetDBConnection(dbtype)
 	if err != nil {
@@ -821,7 +821,7 @@ func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]strin
 	return conn.GetAllMatchingDetails(table, pattern)
 }
 
-//DeleteAggregationSource will delete the AggregationSource entry from the database based on the aggregtionSourceURI
+// DeleteAggregationSource will delete the AggregationSource entry from the database based on the aggregtionSourceURI
 func DeleteAggregationSource(aggregtionSourceURI string) *errors.Error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -833,7 +833,7 @@ func DeleteAggregationSource(aggregtionSourceURI string) *errors.Error {
 	return nil
 }
 
-//GetComputerSystem fetches computer system details by UUID from database
+// GetComputerSystem fetches computer system details by UUID from database
 func GetComputerSystem(systemid string) (string, *errors.Error) {
 	var system string
 	conn, err := common.GetDBConnection(common.InMemory)
@@ -851,7 +851,7 @@ func GetComputerSystem(systemid string) (string, *errors.Error) {
 	return system, nil
 }
 
-//CreateAggregate will create aggregate on disk
+// CreateAggregate will create aggregate on disk
 func CreateAggregate(aggregate Aggregate, aggregateURI string) *errors.Error {
 
 	conn, err := common.GetDBConnection(common.OnDisk)
@@ -886,7 +886,7 @@ func GetAggregate(aggregateURI string) (Aggregate, *errors.Error) {
 	return aggregate, nil
 }
 
-//DeleteAggregate will delete the aggregate
+// DeleteAggregate will delete the aggregate
 func DeleteAggregate(key string) *errors.Error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -899,7 +899,7 @@ func DeleteAggregate(key string) *errors.Error {
 	return nil
 }
 
-//GetAllKeysFromTable retrun all matching data give table name
+// GetAllKeysFromTable retrun all matching data give table name
 func GetAllKeysFromTable(table string) ([]string, error) {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -912,7 +912,7 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 	return keysArray, nil
 }
 
-//AddElementsToAggregate add elements to the aggregate
+// AddElementsToAggregate add elements to the aggregate
 func AddElementsToAggregate(aggregate Aggregate, aggregateURL string) *errors.Error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -930,7 +930,7 @@ func AddElementsToAggregate(aggregate Aggregate, aggregateURL string) *errors.Er
 	return nil
 }
 
-//RemoveElementsFromAggregate remove elements from an aggregate
+// RemoveElementsFromAggregate remove elements from an aggregate
 func RemoveElementsFromAggregate(aggregate Aggregate, aggregateURL string) *errors.Error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -970,7 +970,7 @@ func removeElements(requestElements, presentElements []OdataID) []OdataID {
 	return newElements
 }
 
-//AddConnectionMethod will add connection methods on disk
+// AddConnectionMethod will add connection methods on disk
 func AddConnectionMethod(connectionMethod ConnectionMethod, connectionMethodURI string) *errors.Error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -1059,7 +1059,7 @@ func DeleteActiveRequest(key string) *errors.Error {
 	return nil
 }
 
-//SavePluginManagerInfo will save plugin manager  data into the database
+// SavePluginManagerInfo will save plugin manager  data into the database
 func SavePluginManagerInfo(body []byte, table string, key string) error {
 
 	conn, err := common.GetDBConnection(common.InMemory)
@@ -1178,11 +1178,14 @@ func AddNewHostToAggregateHostIndex(aggregateID string, hostIP string) error {
 	if err != nil {
 		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
 	}
-	aggreagtes, err1 := conn.GetAggregateHosts(aggregateHostIndex, aggregateID+"[^0-9]*")
+	aggregates, err1 := conn.GetAggregateHosts(aggregateHostIndex, aggregateID+"[^0-9]*")
 	if err != nil {
 		return err1
 	}
-	devSub := strings.Split(aggreagtes[0], "||")
+	if len(aggregates) < 1 {
+		return fmt.Errorf("error: no aggregate found aggregateHostIndex : %s", aggregateID)
+	}
+	devSub := strings.Split(aggregates[0], "||")
 	ips := getSliceFromString(devSub[1])
 	isUpdate := true
 	for _, ip := range ips {
@@ -1207,16 +1210,19 @@ func RemoveNewIPToAggregateHostIndex(aggregateID string, hostIP string) error {
 	if err != nil {
 		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
 	}
-	aggreagtes, err1 := conn.GetAggregateHosts(aggregateHostIndex, aggregateID+"[^0-9]*")
+	aggregates, err1 := conn.GetAggregateHosts(aggregateHostIndex, aggregateID+"[^0-9]*")
 	if err != nil {
 		return err1
 	}
-	devSub := strings.Split(aggreagtes[0], "||")
+	if len(aggregates) < 1 {
+		return fmt.Errorf("error: no aggregate found aggregateHostIndex : %s", aggregateID)
+	}
+	devSub := strings.Split(aggregates[0], "||")
 	ips := getSliceFromString(devSub[1])
 	ips = removeIps(ips, hostIP)
 	err1 = conn.UpdateAggregateHosts(aggregateHostIndex, aggregateID, ips)
 	if err1 != nil {
-		return errors.PackError(err.ErrNo(), "error: while trying to add aggregate: ", err.Error())
+		return errors.PackError(err.ErrNo(), "error: while trying to remove aggregate: ", err.Error())
 	}
 	return nil
 }
@@ -1239,6 +1245,18 @@ func DeleteAggregateHostIndex(uuid string) error {
 	err1 := conn.DeleteAggregateHosts(aggregateHostIndex, uuid)
 	if err1 != nil {
 		return fmt.Errorf("error: while trying to delete aggregate: %v", err1.Error())
+	}
+	return nil
+}
+
+// SaveBMCInventory function save all bmc inventory data togeter using the transaction model
+func SaveBMCInventory(data map[string]interface{}) error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.SaveBMCInventory(data); err != nil {
+		return fmt.Errorf("error while trying to save BMC inventory: %v", err.Error())
 	}
 	return nil
 }

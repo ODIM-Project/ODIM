@@ -35,8 +35,8 @@ func PostEventFunctionForTesting(s []string, name string) {}
 func GetPluginStatusForTesting(plugin agmodel.Plugin) bool {
 	return true
 }
-func mockSubscribeEMB(pluginID string, list []string) {
-	return
+func mockSubscribeEMB(pluginID string, list []string) error {
+	return nil
 }
 
 func mockContactClientForDuplicate(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {

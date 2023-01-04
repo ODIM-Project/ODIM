@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package session
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
@@ -29,6 +30,17 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	"golang.org/x/crypto/sha3"
 )
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
 
 func createMockUser(username, roleID string) error {
 	hash := sha3.New512()
@@ -101,7 +113,7 @@ func TestCreateSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to authorize session creation credentials: error: Invalid username or password ",
+				ErrorMessage:  "failed to create session for user : Unable to authorize session creation credentials: error while checking session credentials: username or password is empty",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -113,7 +125,7 @@ func TestCreateSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to authorize session creation credentials: error: Invalid username or password ",
+				ErrorMessage:  "failed to create session for user admin: Unable to authorize session creation credentials: error while checking session credentials: input password is not matching user password",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -124,11 +136,12 @@ func TestCreateSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User doesn't have required privilege to create a session",
+				ErrorMessage:  "failed to create session for user sample: User doesn't have required privilege to create a session",
 				MessageArgs:   []interface{}{},
 			},
 		},
 	}
+	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionCreateRequest
 	}
@@ -203,7 +216,7 @@ func TestCreateSession(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, tokenID := CreateNewSession(tt.args.req)
+			got, tokenID := CreateNewSession(ctx, tt.args.req)
 			if tokenID != "" { // success case
 				commonResponse.ID = tokenID
 				commonResponse.OdataID = "/redfish/v1/SessionService/Sessions/" + tokenID

@@ -50,7 +50,7 @@ eval_cmd_exec()
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.odim -t odim:4.0 ." "odim"
 
 # base image for building composition service Image
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.cs -t cs:1.0 ." "cs"
+#eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.cs -t cs:1.0 ." "cs"
 
 # third party docker images
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.etcd -t etcd:1.16 ." "etcd"
@@ -69,7 +69,7 @@ eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.ma
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.systems -t systems:4.0 ." "systems"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.task -t task:3.1 ." "task"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.update -t update:3.1 ." "update"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.compositionService -t composition-service:1.0 ." "composition service"
+#eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.compositionService -t composition-service:1.0 ." "composition service"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.licenses -t licenses:1.0 ." "licenses"
 
 # ODIMRA plugins image

@@ -79,6 +79,7 @@ spec:
             claimName: odimra-log-claim
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       containers:
         - name: task
           env:
@@ -96,7 +97,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          image: task:{{ .Values.odimra.taskImageTag }}
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}task:{{ .Values.odimra.taskImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45105

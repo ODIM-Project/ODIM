@@ -19,7 +19,7 @@ declare DESTINATION_DIR
 
 create_packages()
 {
-	packages_list=(odimra-platformconfig odimra-config configure-hosts odimra-pv-pvc redis-ha redis zookeeper-ha zookeeper kafka-secret zookeeper-secret odimra-secret reloader update task systems managers fabrics events api aggregation telemetry account-session kafka-ha kafka odimra-k8s-access-config etcd etcd-ha composition-service licenses)
+	packages_list=(odimra-platformconfig odimra-config configure-hosts odimra-pv-pvc redis-ha redis zookeeper-ha zookeeper kafka-secret zookeeper-secret odimra-secret reloader update task systems managers fabrics events api aggregation telemetry account-session kafka-ha kafka odimra-k8s-access-config etcd etcd-ha licenses)
 
 	for chart in "${packages_list[@]}"; do
 		helm package ${SOURCE_DIR}/$chart -d ${DESTINATION_DIR}

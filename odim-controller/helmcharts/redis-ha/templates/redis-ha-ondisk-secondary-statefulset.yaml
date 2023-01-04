@@ -16,7 +16,7 @@ spec:
   selector:
     matchLabels:
       app: redis-ha-ondisk
-      role: node
+      role: node 
   template:
     metadata:
       labels:
@@ -62,6 +62,9 @@ spec:
             {{- end }}
 
       restartPolicy: Always
+      securityContext:
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -81,7 +84,7 @@ spec:
 
       containers:
       - name: redis
-        image: redis:{{ .Values.odimra.redisImageTag }}
+        image: {{ .Values.odimra.imageRegistryAddress| default  }}redis:{{ .Values.odimra.redisImageTag }}
         imagePullPolicy: IfNotPresent
 
         ports:
@@ -122,7 +125,7 @@ spec:
         - name: REDIS_MASTER_SET
           value: {{ .Values.odimra.redisMasterSet | quote }} 
       - name: sentinel
-        image: redis:{{ .Values.odimra.redisImageTag }}
+        image: {{ .Values.odimra.imageRegistryAddress| default  }}redis:{{ .Values.odimra.redisImageTag }}
         imagePullPolicy: IfNotPresent
 
         ports:

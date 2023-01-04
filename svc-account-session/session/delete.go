@@ -16,6 +16,7 @@
 package session
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -30,8 +31,9 @@ import (
 // it will accepts the SessionCreateRequest which will have sessionid and sessiontoken
 // and it will check privileges to delete session and then delete the session
 // respond RPC response and error if there is.
-func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
+func DeleteSession(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 	var resp response.RPC
+	errorLogPrefix := "failed to delete session : "
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -44,62 +46,63 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
+	l.LogWithFields(ctx).Info("Validating the request to delete the session")
 	currentSession, serr := asmodel.GetSession(req.SessionToken)
 	if serr != nil {
-		errorMessage := "Unable to delete session: " + serr.Error()
-		l.Log.Error(errorMessage)
+		errorMessage := errorLogPrefix + serr.Error()
+		l.LogWithFields(ctx).Error(errorMessage)
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 	}
 
 	sessionTokens, err := asmodel.GetAllSessionKeys()
 	if err != nil {
-		errorMessage := "Unable to get all session keys while deleting session: " + err.Error()
+		errorMessage := errorLogPrefix + "Unable to get all session keys : " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 	for _, token := range sessionTokens {
-		session, err := auth.CheckSessionTimeOut(token)
+		session, err := auth.CheckSessionTimeOut(ctx, token)
 		if err != nil {
-			l.Log.Error("Unable to get session details with the token " + token + ": " + err.Error())
+			l.LogWithFields(ctx).Error(errorLogPrefix + "Unable to get session details with the token " + token + ": " + err.Error())
 			continue
 		}
 		if session.ID == req.SessionId {
 			hasprivilege := checkPrivilege(req.SessionToken, session, &currentSession)
 			if hasprivilege {
 				if req.SessionToken != session.Token {
-					err := UpdateLastUsedTime(req.SessionToken)
+					err := UpdateLastUsedTime(ctx, req.SessionToken)
 					if err != nil {
-						errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + err.Error()
+						errorMessage := errorLogPrefix + "Unable to update last used time of session matching token " + req.SessionToken + ": " + err.Error()
 						resp.CreateInternalErrorResponse(errorMessage)
-						l.Log.Error(errorMessage)
+						l.LogWithFields(ctx).Error(errorMessage)
 						return resp
 					}
 				}
 				if err := session.Delete(); err != nil {
-					errorMessage := "Unable to get all session keys while deleting session: " + err.Error()
+					errorMessage := errorLogPrefix + err.Error()
 					resp.CreateInternalErrorResponse(errorMessage)
-					l.Log.Error(errorMessage)
+					l.LogWithFields(ctx).Error(errorMessage)
 					return resp
 				}
-				l.Log.Info("Successfully Deleted: ")
 				resp.StatusCode = http.StatusNoContent
 				resp.StatusMessage = response.ResourceRemoved
+				l.LogWithFields(ctx).Info("Session is deleted")
 				return resp
 			}
-			errorMessage := "Insufficient privileges"
+			errorMessage := errorLogPrefix + "Insufficient privileges"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
 			errorArgs[0].ErrorMessage = errorMessage
 			errorArgs[0].StatusMessage = resp.StatusMessage
 			resp.Body = args.CreateGenericErrorResponse()
-			auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
+			auth.CustomAuthLog(ctx, req.SessionToken, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}
 	sessionTokens = nil
-	l.Log.Error("error: Status Not Found")
-	errorMessage := "error: Session ID not found"
+	errorMessage := errorLogPrefix + "Session ID not found"
+	l.LogWithFields(ctx).Error(errorMessage)
 	resp.StatusCode = http.StatusNotFound
 	resp.StatusMessage = response.ResourceNotFound
 	errorArgs[0].ErrorMessage = errorMessage

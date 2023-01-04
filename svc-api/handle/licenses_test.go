@@ -17,6 +17,7 @@
 package handle
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -26,7 +27,7 @@ import (
 	"github.com/kataras/iris/v12/httptest"
 )
 
-func testLicenseService(req licenseproto.GetLicenseServiceRequest) (*licenseproto.GetLicenseResponse, error) {
+func testLicenseService(ctx context.Context, req licenseproto.GetLicenseServiceRequest) (*licenseproto.GetLicenseResponse, error) {
 	var response = &licenseproto.GetLicenseResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &licenseproto.GetLicenseResponse{
@@ -45,7 +46,7 @@ func testLicenseService(req licenseproto.GetLicenseServiceRequest) (*licenseprot
 	return response, nil
 }
 
-func testLicenseCollection(req licenseproto.GetLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
+func testLicenseCollection(ctx context.Context, req licenseproto.GetLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
 	var response = &licenseproto.GetLicenseResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &licenseproto.GetLicenseResponse{
@@ -64,7 +65,7 @@ func testLicenseCollection(req licenseproto.GetLicenseRequest) (*licenseproto.Ge
 	return response, nil
 }
 
-func testLicenseResource(req licenseproto.GetLicenseResourceRequest) (*licenseproto.GetLicenseResponse, error) {
+func testLicenseResource(ctx context.Context, req licenseproto.GetLicenseResourceRequest) (*licenseproto.GetLicenseResponse, error) {
 	var response = &licenseproto.GetLicenseResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &licenseproto.GetLicenseResponse{
@@ -83,7 +84,7 @@ func testLicenseResource(req licenseproto.GetLicenseResourceRequest) (*licensepr
 	return response, nil
 }
 
-func testInstallLicenseService(req licenseproto.InstallLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
+func testInstallLicenseService(ctx context.Context, req licenseproto.InstallLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
 	var response = &licenseproto.GetLicenseResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &licenseproto.GetLicenseResponse{

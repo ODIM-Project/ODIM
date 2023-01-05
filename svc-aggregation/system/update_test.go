@@ -363,7 +363,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		UserName: "admin",
 		Links:    reqBMC.Links,
 	}
-	errMsg := "error: while trying to fetch Aggregation Source data: no data with the with key /redfish/v1/AggregationService/AggregationSources/123466 found"
+	errMsg := "error: while trying to fetch Aggregation Source data: no data with key /redfish/v1/AggregationService/AggregationSources/123466 found"
 	resp3 := common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"AggregationSource", "/redfish/v1/AggregationService/AggregationSources/123466"}, nil)
 	param := "HostName "
 	errMsg = "field " + param + " Missing"

@@ -441,7 +441,7 @@ func (p *ConnPool) Read(table, key string) (string, *errors.Error) {
 	if err != nil {
 
 		if err.Error() == "redigo: nil returned" {
-			return "", errors.PackError(errors.DBKeyNotFound, "no data with the with key ", key, " found")
+			return "", errors.PackError(errors.DBKeyNotFound, "no data with key ", key, " found")
 		}
 		if errs, aye := isDbConnectError(err); aye {
 			return "", errs
@@ -450,7 +450,7 @@ func (p *ConnPool) Read(table, key string) (string, *errors.Error) {
 	}
 
 	if value == nil {
-		return "", errors.PackError(errors.DBKeyNotFound, "no data with the with key ", key, " found")
+		return "", errors.PackError(errors.DBKeyNotFound, "no data with key ", key, " found")
 	}
 	data, err := redis.String(value, err)
 	if err != nil {
@@ -505,7 +505,7 @@ func (p *ConnPool) Delete(table, key string) *errors.Error {
 	defer writeConn.Close()
 	_, readErr := p.Read(table, key)
 	if readErr != nil {
-		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil ", readErr.Error())
+		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil: ", readErr.Error())
 	}
 
 	_, doErr := writeConn.Do("DEL", table+":"+key)

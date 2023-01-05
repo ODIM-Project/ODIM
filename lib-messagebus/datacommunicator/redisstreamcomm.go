@@ -125,6 +125,7 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 
 	// create a unique consumer id for the  instance
 	errChan := make(chan error)
+	defer close(errChan)
 	go rp.checkUnacknowledgedEvents(fn, id, errChan)
 	err = <-errChan
 	if err != nil {

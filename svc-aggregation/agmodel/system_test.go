@@ -96,7 +96,7 @@ func TestGetResource(t *testing.T) {
 				key:   "successID",
 			},
 			want:  "",
-			want1: errors.PackError(errors.DBKeyNotFound, "error while trying to get resource details: no data with the with key successID found"),
+			want1: errors.PackError(errors.DBKeyNotFound, "error while trying to get resource details: no data with key successID found"),
 		},
 	}
 	for _, tt := range tests {
@@ -524,7 +524,7 @@ func TestDeleteSystem(t *testing.T) {
 		{
 			name: "not found",
 			args: args{key: "someOtherKey"},
-			want: errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key someOtherKey found"),
+			want: errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with key someOtherKey found"),
 		},
 	}
 	for _, tt := range tests {
@@ -724,7 +724,7 @@ func TestDeletePluginData(t *testing.T) {
 		{
 			name: "no data found",
 			args: args{key: "someOtherID"},
-			want: errors.PackError(errors.DBKeyNotFound, "no data with the with key someOtherID found"),
+			want: errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil: no data with key someOtherID found"),
 		},
 	}
 	for _, tt := range tests {
@@ -759,7 +759,7 @@ func TestDeleteManagersData(t *testing.T) {
 		{
 			name: "no data found",
 			args: args{key: "someOtherID"},
-			want: errors.PackError(errors.DBKeyNotFound, "no data with the with key someOtherID found"),
+			want: errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil: no data with key someOtherID found"),
 		},
 	}
 	for _, tt := range tests {

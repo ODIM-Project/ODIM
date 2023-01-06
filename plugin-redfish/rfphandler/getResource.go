@@ -108,8 +108,10 @@ func GetResource(ctx iris.Context) {
 	}
 	respData := string(body)
 	//Replace response body with smaller case of systems,bios to capital cases
-	respData = strings.Replace(string(respData), "systems", "Systems", -1)
-	respData = strings.Replace(string(respData), "bios", "Bios", -1)
+	if strings.Contains(uri, "Systems") {
+		respData = strings.Replace(string(respData), "systems", "Systems", -1)
+		respData = strings.Replace(string(respData), "bios", "Bios", -1)
+	}
 	//replacing the resposne with north bound translation URL
 	for key, value := range pluginConfig.Data.URLTranslation.NorthBoundURL {
 		respData = strings.Replace(respData, key, value, -1)

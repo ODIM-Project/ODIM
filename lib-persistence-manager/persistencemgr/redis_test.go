@@ -335,7 +335,7 @@ func TestDelete_nonExistingKey(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
-	want := errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil: no data with the with key key found")
+	want := errors.PackError(errors.DBKeyNotFound, "no data with the with key key found")
 	derr := c.Delete("table", "key")
 	if !reflect.DeepEqual(derr, want) {
 		t.Errorf("table should not exist: %v, want: %v\n", derr.Error(), want)

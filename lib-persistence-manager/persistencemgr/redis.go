@@ -213,7 +213,7 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 			config := getInMemoryDBConfig()
 			inMemDBConnPool, err = config.Connection()
 			if err != nil {
-				return nil, errors.PackError(err.ErrNo(), "error while trying to get Inmemory Readpool connection : ", err.Error())
+				return nil, errors.PackError(err.ErrNo(), err.Error())
 			}
 			inMemDBConnPool.PoolUpdatedTime = time.Now()
 		}
@@ -229,7 +229,7 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 			config := getOnDiskDBConfig()
 			onDiskDBConnPool, err = config.Connection()
 			if err != nil {
-				return nil, errors.PackError(err.ErrNo(), "error while trying to get Ondisk Readpool connection : ", err.Error())
+				return nil, errors.PackError(err.ErrNo(), err.Error())
 			}
 			onDiskDBConnPool.PoolUpdatedTime = time.Now()
 		}
@@ -331,7 +331,7 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 	if config.Data.DBConf.RedisHAEnabled {
 		masterIP, masterPort, err = GetCurrentMasterHostPort(c)
 		if err != nil {
-			return nil, errors.PackError(errors.UndefinedErrorType, "error while getting current master host port", err.Error())
+			return nil, errors.PackError(errors.UndefinedErrorType, err.Error())
 		}
 	}
 
@@ -339,7 +339,7 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 	//Check if any connection error occured
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
-			return nil, errors.PackError(errors.UndefinedErrorType, "error while trying to get Readpool connection :", errs.Error())
+			return nil, errors.PackError(errors.DBKeyNotFound, errs.Error())
 		}
 		return nil, errors.PackError(errors.UndefinedErrorType, err)
 	}
@@ -347,7 +347,7 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 	//Check if any connection error occured
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
-			return nil, errors.PackError(errors.UndefinedErrorType, "error while trying to get Writepool connection :", errs.Error())
+			return nil, errors.PackError(errors.DBKeyNotFound, errs.Error())
 		}
 		return nil, errors.PackError(errors.UndefinedErrorType, err)
 	}
@@ -408,7 +408,7 @@ func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.
 
 	jsondata, err := json.Marshal(data)
 	if err != nil {
-		return "", errors.PackError(errors.UndefinedErrorType, "Update : error in masrshalling json data "+err.Error())
+		return "", errors.PackError(errors.UndefinedErrorType, err.Error())
 	}
 
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
@@ -505,14 +505,14 @@ func (p *ConnPool) Delete(table, key string) *errors.Error {
 	defer writeConn.Close()
 	_, readErr := p.Read(table, key)
 	if readErr != nil {
-		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil: ", readErr.Error())
+		return errors.PackError(errors.DBKeyNotFound, readErr.Error())
 	}
 
 	_, doErr := writeConn.Do("DEL", table+":"+key)
 	if doErr != nil {
 		if errs, aye := isDbConnectError(doErr); aye {
 			atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
-			return errors.PackError(errors.UndefinedErrorType, "error while  getting connection in Delete :", errs.Error())
+			return errors.PackError(errors.DBKeyNotFound, errs.Error())
 		}
 		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: ", doErr)
 	}
@@ -564,7 +564,7 @@ func (p *ConnPool) DeleteServer(key string) *errors.Error {
 	keys, err := readConn.Do("KEYS", key)
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
-			return errors.PackError(errors.UndefinedErrorType, "error while getting connection in Delete Server :", errs.Error())
+			return errors.PackError(errors.DBKeyNotFound, errs.Error())
 		}
 		return errors.PackError(errors.UndefinedErrorType, errorCollectingData, err)
 	}
@@ -580,7 +580,7 @@ func (p *ConnPool) DeleteServer(key string) *errors.Error {
 		if err != nil {
 			if errs, aye := isDbConnectError(err); aye {
 				atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
-				return errors.PackError(errors.UndefinedErrorType, "error while Deleting Server", errs.Error())
+				return errors.PackError(errors.DBKeyNotFound, errs.Error())
 			}
 			//          return errors.PackError(errors.UndefinedErrorType, errorCollectingData, err)
 		}
@@ -867,7 +867,7 @@ func (p *ConnPool) GetResourceDetails(key string) (string, *errors.Error) {
 	keys, err := readConn.Do("KEYS", "*"+key)
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
-			return "", errors.PackError(errors.UndefinedErrorType, "Error while getting resource datails  : ", errs.Error())
+			return "", errors.PackError(errors.DBKeyNotFound, errs.Error())
 		}
 		return "", errors.PackError(errors.UndefinedErrorType, errorCollectingData, err)
 	}

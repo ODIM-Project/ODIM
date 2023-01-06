@@ -724,7 +724,7 @@ func TestDeletePluginData(t *testing.T) {
 		{
 			name: "no data found",
 			args: args{key: "someOtherID"},
-			want: errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil: no data with the with key someOtherID found"),
+			want: errors.PackError(errors.DBKeyNotFound, "no data with the with key someOtherID found"),
 		},
 	}
 	for _, tt := range tests {
@@ -759,7 +759,7 @@ func TestDeleteManagersData(t *testing.T) {
 		{
 			name: "no data found",
 			args: args{key: "someOtherID"},
-			want: errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil: no data with the with key someOtherID found"),
+			want: errors.PackError(errors.DBKeyNotFound, "no data with the with key someOtherID found"),
 		},
 	}
 	for _, tt := range tests {

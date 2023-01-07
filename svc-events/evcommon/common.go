@@ -45,7 +45,7 @@ type StartUpInteraface struct {
 	GetAllSystems                    func() ([]string, error)
 	GetSingleSystem                  func(string) (string, error)
 	GetPluginData                    func(string) (*evmodel.Plugin, *errors.Error)
-	GetEvtSubscriptions              func(string) ([]evmodel.Subscription, error)
+	GetEvtSubscriptions              func(string) ([]evmodel.SubscriptionResource, error)
 	GetDeviceSubscriptions           func(string) (*evmodel.DeviceSubscription, error)
 	UpdateDeviceSubscriptionLocation func(evmodel.DeviceSubscription) error
 }
@@ -366,10 +366,10 @@ func (st *StartUpInteraface) getSubscribedEventsDetails(serverAddress string) (s
 		return "", nil, err
 	}
 	for i := 0; i < len(subscriptionDetails); i++ {
-		if len(subscriptionDetails[i].EventTypes) == 0 {
+		if len(subscriptionDetails[i].EventDestination.EventTypes) == 0 {
 			emptyListFlag = true
 		} else {
-			eventTypes = append(eventTypes, subscriptionDetails[i].EventTypes...)
+			eventTypes = append(eventTypes, subscriptionDetails[i].EventDestination.EventTypes...)
 		}
 	}
 	if emptyListFlag {

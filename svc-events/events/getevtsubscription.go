@@ -76,22 +76,22 @@ func (e *ExternalInterfaces) GetEventSubscriptionsDetails(req *eventsproto.Event
 		commonResponse := response.Response{
 			OdataType:    common.EventDestinationType,
 			ID:           evtSubscription.SubscriptionID,
-			Name:         evtSubscription.Name,
+			Name:         evtSubscription.EventDestination.Name,
 			OdataContext: "/redfish/v1/$metadata#EventDestination.EventDestination",
 			OdataID:      "/redfish/v1/EventService/Subscriptions/" + evtSubscription.SubscriptionID,
 		}
 
 		subscriptions = &evresponse.SubscriptionResponse{
 			Response:            commonResponse,
-			Destination:         evtSubscription.Destination,
-			Protocol:            evtSubscription.Protocol,
-			Context:             evtSubscription.Context,
-			EventTypes:          evtSubscription.EventTypes,
-			SubscriptionType:    evtSubscription.SubscriptionType,
-			MessageIds:          evtSubscription.MessageIds,
-			ResourceTypes:       evtSubscription.ResourceTypes,
-			OriginResources:     updateOriginResourceswithOdataID(evtSubscription.OriginResources),
-			DeliveryRetryPolicy: evtSubscription.DeliveryRetryPolicy,
+			Destination:         evtSubscription.EventDestination.Destination,
+			Protocol:            evtSubscription.EventDestination.Protocol,
+			Context:             evtSubscription.EventDestination.Context,
+			EventTypes:          evtSubscription.EventDestination.EventTypes,
+			SubscriptionType:    evtSubscription.EventDestination.SubscriptionType,
+			MessageIds:          evtSubscription.EventDestination.MessageIds,
+			ResourceTypes:       evtSubscription.EventDestination.ResourceTypes,
+			OriginResources:     updateOriginResourcesWithOdataID(evtSubscription.EventDestination.OriginResources),
+			DeliveryRetryPolicy: evtSubscription.EventDestination.DeliveryRetryPolicy,
 		}
 	}
 	resp.Body = subscriptions
@@ -123,7 +123,7 @@ func (e *ExternalInterfaces) GetEventSubscriptionsCollection(req *eventsproto.Ev
 	}
 	for _, evtSubscription := range subscriptionDetails {
 		subscriptionID := evtSubscription.SubscriptionID
-		destination := evtSubscription.Destination
+		destination := evtSubscription.EventDestination.Destination
 		if destination == "" {
 			continue
 		}

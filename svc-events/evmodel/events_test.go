@@ -20,6 +20,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -563,12 +564,14 @@ func TestSaveEventSubscription(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	sub := Subscription{
-		SubscriptionID:  "1",
-		Destination:     "https://10.10.10.23:8080/destination",
-		Name:            "Event Subscription",
-		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+	sub := SubscriptionResource{
+		SubscriptionID: "1",
+		EventDestination: &model.EventDestination{
+			Destination:     "https://10.10.10.23:8080/destination",
+			Name:            "Event Subscription",
+			EventTypes:      []string{"Alert", "StatusChange"},
+			OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+		},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions : %v\n", cerr.Error())
@@ -583,12 +586,14 @@ func TestSaveEventSubscription_existingData(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	sub := Subscription{
-		SubscriptionID:  "123456",
-		Destination:     "https://10.10.10.23:8080/destination",
-		Name:            "Event Subscription",
-		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+	sub := SubscriptionResource{
+		SubscriptionID: "123456",
+		EventDestination: &model.EventDestination{
+			Destination:     "https://10.10.10.23:8080/destination",
+			Name:            "Event Subscription",
+			EventTypes:      []string{"Alert", "StatusChange"},
+			OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+		},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())
@@ -607,12 +612,13 @@ func TestGetEvtSubscriptions(t *testing.T) {
 		}
 	}()
 
-	sub := Subscription{
-		SubscriptionID:  "1",
-		Destination:     "https://10.10.10.23:8080/destination",
-		Name:            "Event Subscription",
-		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+	sub := SubscriptionResource{
+		SubscriptionID: "1",
+		EventDestination: &model.EventDestination{
+			Destination:     "https://10.10.10.23:8080/destination",
+			Name:            "Event Subscription",
+			EventTypes:      []string{"Alert", "StatusChange"},
+			OriginResources: []string{"/redfish/v1/Systems/uuid.1"}},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())
@@ -623,13 +629,13 @@ func TestGetEvtSubscriptions(t *testing.T) {
 		t.Errorf("Error while getting event subscriptions: %v\n", err.Error())
 	}
 	assert.Equal(t, sub.SubscriptionID, evtSub[0].SubscriptionID, "SubscriptionID should be 1")
-	assert.Equal(t, sub.Destination, evtSub[0].Destination, "Destination should be https://10.10.10.23:8080/destination")
-	assert.Equal(t, sub.Name, evtSub[0].Name, "Name should be Event Subscription")
-	assert.Equal(t, sub.Destination, evtSub[0].Destination, "Destination should be https://10.10.10.23:8080/destination")
-	if !reflect.DeepEqual(sub.EventTypes, evtSub[0].EventTypes) {
+	assert.Equal(t, sub.EventDestination.Destination, evtSub[0].EventDestination.Destination, "Destination should be https://10.10.10.23:8080/destination")
+	assert.Equal(t, sub.EventDestination.Name, evtSub[0].EventDestination.Name, "Name should be Event Subscription")
+	assert.Equal(t, sub.EventDestination.Destination, evtSub[0].EventDestination.Destination, "Destination should be https://10.10.10.23:8080/destination")
+	if !reflect.DeepEqual(sub.EventDestination.EventTypes, evtSub[0].EventDestination.EventTypes) {
 		t.Errorf("Event Types are not same")
 	}
-	if !reflect.DeepEqual(sub.OriginResources, evtSub[0].OriginResources) {
+	if !reflect.DeepEqual(sub.EventDestination.OriginResources, evtSub[0].EventDestination.OriginResources) {
 		t.Errorf("OriginResources are not same")
 	}
 }
@@ -643,12 +649,14 @@ func TestDeleteEvtSubscription(t *testing.T) {
 		}
 	}()
 
-	sub := Subscription{
-		SubscriptionID:  "112345",
-		Destination:     "https://10.10.10.23:8080/destination",
-		Name:            "Event Subscription",
-		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+	sub := SubscriptionResource{
+		SubscriptionID: "112345",
+		EventDestination: &model.EventDestination{
+			Destination:     "https://10.10.10.23:8080/destination",
+			Name:            "Event Subscription",
+			EventTypes:      []string{"Alert", "StatusChange"},
+			OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+		},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())
@@ -670,18 +678,20 @@ func TestUpdateEvtSubscription(t *testing.T) {
 		}
 	}()
 
-	sub := Subscription{
-		SubscriptionID:  "112345",
-		Destination:     "https://10.10.10.23:8080/destination",
-		Name:            "Event Subscription",
-		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+	sub := SubscriptionResource{
+		SubscriptionID: "112345",
+		EventDestination: &model.EventDestination{
+			Destination:     "https://10.10.10.23:8080/destination",
+			Name:            "Event Subscription",
+			EventTypes:      []string{"Alert", "StatusChange"},
+			OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+		},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())
 	}
 
-	sub.Destination = "https://10.10.10.23:8080/destination1"
+	sub.EventDestination.Destination = "https://10.10.10.23:8080/destination1"
 	if err := UpdateEventSubscription(sub); err != nil {
 		t.Errorf("Error while updating event subscriptions: %v\n", err.Error())
 	}
@@ -690,7 +700,7 @@ func TestUpdateEvtSubscription(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error while getting event subscriptions: %v\n", err.Error())
 	}
-	assert.Equal(t, "https://10.10.10.23:8080/destination1", evtSub[0].Destination, "Destination should be https://10.10.10.23:8080/destination1")
+	assert.Equal(t, "https://10.10.10.23:8080/destination1", evtSub[0].EventDestination.Destination, "Destination should be https://10.10.10.23:8080/destination1")
 
 }
 func TestSaveUndeliveredEvents(t *testing.T) {
@@ -1218,13 +1228,13 @@ func TestInvalidDbConnection(t *testing.T) {
 	assert.NotNil(t, "there should be an error ", err1)
 	err1 = DeleteDeviceSubscription("")
 	assert.NotNil(t, "there should be an error ", err1)
-	err1 = SaveEventSubscription(Subscription{})
+	err1 = SaveEventSubscription(SubscriptionResource{})
 	assert.NotNil(t, "there should be an error ", err1)
 	_, err1 = GetEvtSubscriptions("")
 	assert.NotNil(t, "there should be an error ", err1)
 	err1 = DeleteEvtSubscription("")
 	assert.NotNil(t, "there should be an error ", err1)
-	err1 = UpdateEventSubscription(Subscription{})
+	err1 = UpdateEventSubscription(SubscriptionResource{})
 	assert.NotNil(t, "there should be an error ", err1)
 	err1 = SaveUndeliveredEvents("", []byte{})
 	assert.NotNil(t, "there should be an error ", err1)

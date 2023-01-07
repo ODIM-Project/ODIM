@@ -14,18 +14,18 @@
 
 package model
 
-// EventType - This property shall contain an array that contains the types 
+// EventType - This property shall contain an array that contains the types
 // of events that shall be sent to the destination.  To specify that a client
-// is subscribing for Metric Reports, the EventTypes property should 
-// include 'MetricReport'.  If the subscription does not include this property, 
+// is subscribing for Metric Reports, the EventTypes property should
+// include 'MetricReport'.  If the subscription does not include this property,
 //the service shall use a single element with a default of `Other`.
-// Note: This property has been deprecated.  Starting with Redfish Specification 
-// v1.6 (Event v1.3), subscriptions are based on the RegistryPrefix and ResourceType 
-// properties and not on the EventType property.  Use EventFormatType to create 
-// subscriptions for Metric Reports.  
+// Note: This property has been deprecated.  Starting with Redfish Specification
+// v1.6 (Event v1.3), subscriptions are based on the RegistryPrefix and ResourceType
+// properties and not on the EventType property.  Use EventFormatType to create
+// subscriptions for Metric Reports.
 type EventType string
 
-// MessageSeverity - The severity of the message in this event. This property shall 
+// MessageSeverity - The severity of the message in this event. This property shall
 // contain the severity of the message in this event. Services can replace the value
 // defined in the message registry with a value more applicable to the implementation.
 type MessageSeverity string
@@ -33,68 +33,116 @@ type MessageSeverity string
 //The subscription type for events.
 type SubscriptionType string
 
+//DeliveryRetryPolicy - The subscription delivery retry policy for events, where the subscription type is RedfishEvent.
+type DeliveryRetryPolicy string
+
 const (
 	// EventTypeAlert - "Alert": "A condition requires attention."
 	EventTypeAlert EventType = "Alert"
-	
+
 	// EventTypeMetricReport - "MetricReport": "The telemetry service is sending a metric report."
 	EventTypeMetricReport EventType = "MetricReport"
-	
+
 	// EventTypeOther - "Other": "Because EventType is deprecated as of Redfish Specification v1.6,
 	// the event is based on a registry or resource but not an EventType."
 	EventTypeOther EventType = "Other"
-	
+
 	// EventTypeResourceAdded - "ResourceAdded": "A resource has been added."
 	EventTypeResourceAdded EventType = "ResourceAdded"
-	
+
 	// EventTypeResourceRemoved - "ResourceRemoved": "A resource has been removed."
 	EventTypeResourceRemoved EventType = "ResourceRemoved"
-	
+
 	// EventTypeResourceUpdated - "ResourceUpdated": "A resource has been updated."
 	EventTypeResourceUpdated EventType = "ResourceUpdated"
-	
+
 	// EventTypeStatusChange - "StatusChange": "The status of a resource has changed."
 	EventTypeStatusChange EventType = "StatusChange"
 
 	// MessageSeverityCritical - "Critical": "A critical condition requires immediate attention."
 	MessageSeverityCritical MessageSeverity = "Critical"
-	
+
 	// MessageSeverityOK - "OK": "Normal."
 	MessageSeverityOK MessageSeverity = "OK"
-	
+
 	// MessageSeverityWarning - "Warning": "A condition requires attention."
 	MessageSeverityWarning MessageSeverity = "Warning"
-	
-	// Subscription Types for events. Currently ODIM only support subscriptions 
+
+	// Subscription Types for events. Currently ODIM only support subscriptions
 	// of type RedFishTypeEvent.
-	// SubscriptionTypeRedFishEvent - The subscription follows the Redfish 
+	// SubscriptionTypeRedFishEvent - The subscription follows the Redfish
 	// Specification for event notifications. To send an event notification,
 	// a service sends an HTTP POST to the subscriber's destination URI.
 	SubscriptionTypeRedFishEvent SubscriptionType = "RedfishEvent"
-        
-	// SubscriptionTySubscriptionTypeSSE - The subscription follows the HTML5 
+
+	// SubscriptionTySubscriptionTypeSSE - The subscription follows the HTML5
 	// server-sent event definition for event notifications.
 	SubscriptionTySubscriptionTypeSSE SubscriptionType = "SSE"
-	
-        // SubscriptionTypeSNMPTrap - The subscription follows the various versions
+
+	// SubscriptionTypeSNMPTrap - The subscription follows the various versions
 	// of SNMP Traps for event notifications.
 	SubscriptionTypeSNMPTrap SubscriptionType = "SNMPTrap"
-	
-	// SubscriptionTypeSNMPInform - The subscription follows versions 2 and 3 of 
+
+	// SubscriptionTypeSNMPInform - The subscription follows versions 2 and 3 of
 	// SNMP Inform for event notifications.
-        SubscriptionTypeSNMPInform SubscriptionType = "SNMPInform"
-	
-	// SubscriptionTypeSyslog - The subscription sends Syslog messages for 
+	SubscriptionTypeSNMPInform SubscriptionType = "SNMPInform"
+
+	// SubscriptionTypeSyslog - The subscription sends Syslog messages for
 	// event notifications.
-        SubscriptionTypeSyslog SubscriptionType = "Syslog"
-	
+	SubscriptionTypeSyslog SubscriptionType = "Syslog"
+
 	// SubscriptionTypeOEM - The subscription is an OEM subscription.
-        SubscriptionTypeOEM SubscriptionType = "OEM"
+	SubscriptionTypeOEM SubscriptionType = "OEM"
+
+	// DeliveryRetryPolicy for events. Currently ODIM only support subscriptions
+	// of type RetryForever.
+	// DeliveryRetryPolicyRetryForever - The subscription is not suspended or terminated, and attempts at delivery of future events shall continue regardless of the number of retries.
+	DeliveryRetryPolicyRetryForever DeliveryRetryPolicy = "RetryForever"
+
+	// DeliveryRetryPolicyRetryForeverWithBackoff - The subscription is not suspended or terminated, and attempts at delivery of future events shall continue regardless of the number of retries, but issued over time according to a service-defined backoff algorithm
+	DeliveryRetryPolicyRetryForeverWithBackoff DeliveryRetryPolicy = "RetryForeverWithBackoff"
+
+	// DeliveryRetryPolicySuspendRetries - The subscription is suspended after the maximum number of retries is reached
+	DeliveryRetryPolicySuspendRetries DeliveryRetryPolicy = "SuspendRetries"
+
+	// DeliveryRetryPolicyTerminateAfterRetries : The subscription is terminated after the maximum number of retries is reached.
+	DeliveryRetryPolicyTerminateAfterRetries DeliveryRetryPolicy = "TerminateAfterRetries"
 )
 
-// Event schema describes the JSON payload received by an event destination, which has 
-// subscribed to event notification, when events occur. This resource contains data 
-// about events, including descriptions, severity, and a message identifier to a 
+func (subscriptionType SubscriptionType) IsValidSubscriptionType() (bool, string) {
+	switch subscriptionType {
+	case SubscriptionTypeRedFishEvent:
+		return true, ""
+	case SubscriptionTypeOEM, SubscriptionTypeSNMPInform, SubscriptionTypeSNMPTrap, SubscriptionTypeSyslog, SubscriptionTySubscriptionTypeSSE:
+		return false, "Unsupported SubscriptionType"
+	default:
+		return false, "Invalid SubscriptionType"
+	}
+}
+
+func (eventType EventType) IsValidEventType() (bool, string) {
+	switch eventType {
+	case EventTypeAlert, EventTypeMetricReport, EventTypeOther, EventTypeResourceRemoved, EventTypeResourceAdded, EventTypeResourceUpdated, EventTypeStatusChange:
+		return true, ""
+	default:
+		return false, "Invalid EventTypes"
+	}
+
+}
+func (deliveryRetryPolicy DeliveryRetryPolicy) IsValidDeliveryRetryPolicyType() (bool, string) {
+	switch deliveryRetryPolicy {
+	case DeliveryRetryPolicyRetryForever:
+		return true, ""
+	case DeliveryRetryPolicySuspendRetries, DeliveryRetryPolicyTerminateAfterRetries, DeliveryRetryPolicyRetryForeverWithBackoff:
+		return false, "Unsupported SubscriptionType"
+	default:
+		return false, "Invalid DeliveryRetryPolicy"
+	}
+}
+
+// Event schema describes the JSON payload received by an event destination, which has
+// subscribed to event notification, when events occur. This resource contains data
+// about events, including descriptions, severity, and a message identifier to a
 // message registry that can be accessed for further information.
 // Refer to Event.v1_7_0.json of the redfish spec for more details
 type Event struct {
@@ -110,8 +158,8 @@ type Event struct {
 	Oem          interface{}   `json:"Oem,omitempty"`
 }
 
-// EventRecord - a single event in the Events array of the Event Resource. This  has a 
-// set of properties that describe a single event. Because Events is an array, more than 
+// EventRecord - a single event in the Events array of the Event Resource. This  has a
+// set of properties that describe a single event. Because Events is an array, more than
 // one EventRecord can be sent simultaneously.
 // Refer to Event.v1_7_0.json of the redfish spec for more details
 type EventRecord struct {
@@ -133,12 +181,22 @@ type EventRecord struct {
 	LogEntry                   *Link       `json:"LogEntry,omitempty"`
 }
 
-// This Resource shall represent the target of an event subscription, including 
+// This Resource shall represent the target of an event subscription, including
 // the event types and context to provide to the target in the Event payload.
 // Refer to EventDestination.v1_11_2.json of the redfish spec for more details
 type EventDestination struct {
-	
+	Context                 string              `json:"Context"`
+	EventTypes              []string            `json:"EventTypes"`
+	EventFormatType         string              `json:"EventFormatType"`
+	ExcludeMessageIds       []string            `json:"ExcludeMessageIds,omitempty"`
+	ExcludeRegistryPrefixes []string            `json:"ExcludeRegistryPrefixes,omitempty"`
+	DeliveryRetryPolicy     DeliveryRetryPolicy `json:"DeliveryRetryPolicy"`
+	Destination             string              `json:"Destination"`
+	MessageIds              []string            `json:"MessageIds"`
+	Name                    string              `json:"Name"`
+	OriginResources         []string            `json:"OriginResources"`
+	Protocol                string              `json:"Protocol"`
+	ResourceTypes           []string            `json:"ResourceTypes"`
+	SubscriptionType        SubscriptionType    `json:"SubscriptionType"`
+	SubordinateResources    bool                `json:"SubordinateResources"`
 }
-
-
-

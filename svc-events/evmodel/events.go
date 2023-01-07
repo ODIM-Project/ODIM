@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
@@ -70,46 +72,28 @@ type OdataIDLink struct {
 
 //RequestBody is required to receive the post request payload
 type RequestBody struct {
-	Name                 string        `json:"Name"`
-	Destination          string        `json:"Destination" validate:"required"`
-	EventTypes           []string      `json:"EventTypes,omitempty"`
-	MessageIds           []string      `json:"MessageIds,omitempty"`
-	ResourceTypes        []string      `json:"ResourceTypes,omitempty"`
-	Context              string        `json:"Context"`
-	Protocol             string        `json:"Protocol" validate:"required"`
-	SubscriptionType     string        `json:"SubscriptionType"`
-	EventFormatType      string        `json:"EventFormatType"`
-	SubordinateResources bool          `json:"SubordinateResources"`
-	OriginResources      []OdataIDLink `json:"OriginResources"`
-	DeliveryRetryPolicy  string        `json:"DeliveryRetryPolicy"`
+	Name                 string                   `json:"Name"`
+	Destination          string                   `json:"Destination" validate:"required"`
+	EventTypes           []string                 `json:"EventTypes,omitempty"`
+	MessageIds           []string                 `json:"MessageIds,omitempty"`
+	ResourceTypes        []string                 `json:"ResourceTypes,omitempty"`
+	Context              string                   `json:"Context"`
+	Protocol             string                   `json:"Protocol" validate:"required"`
+	SubscriptionType     dmtf.SubscriptionType    `json:"SubscriptionType"`
+	EventFormatType      string                   `json:"EventFormatType"`
+	SubordinateResources bool                     `json:"SubordinateResources"`
+	OriginResources      []OdataIDLink            `json:"OriginResources"`
+	DeliveryRetryPolicy  dmtf.DeliveryRetryPolicy `json:"DeliveryRetryPolicy"`
 }
 
 //Subscription is a model to store the subscription details
-type Subscription struct {
-	UserName             string   `json:"UserName"`
-	SubscriptionID       string   `json:"SubscriptionID"`
-	Destination          string   `json:"Destination"`
-	Name                 string   `json:"Name"`
-	Context              string   `json:"Context"`
-	EventTypes           []string `json:"EventTypes"`
-	MessageIds           []string `json:"MessageIds"`
-	Protocol             string   `json:"Protocol"`
-	SubscriptionType     string   `json:"SubscriptionType"`
-	EventFormatType      string   `json:"EventFormatType"`
-	SubordinateResources bool     `json:"SubordinateResources"`
-	ResourceTypes        []string `json:"ResourceTypes"`
-	// To store origin resource
-	OriginResource string `json:"OriginResource,omitempty"`
-	// To store multiple origin resource
-	OriginResources []string `json:"OriginResources"`
-	// To store all Device address
-	Hosts []string `json:"Hosts"`
-	// Remove Location and EventHostIP
-	Location                string   `json:"location,omitempty"`
-	EventHostIP             string   `json:"EventHostIP,omitempty"`
-	ExcludeMessageIds       []string `json:"ExcludeMessageIds,omitempty"`
-	ExcludeRegistryPrefixes []string `json:"ExcludeRegistryPrefixes,omitempty"`
-	DeliveryRetryPolicy     string   `json:"DeliveryRetryPolicy"`
+type SubscriptionResource struct {
+	EventDestination *dmtf.EventDestination `json:"EventDestination"`
+	EventHostIP      string                 `json:"EventHostIP,omitempty"`
+	Hosts            []string               `json:"Hosts"`
+	SubscriptionID   string                 `json:"SubscriptionID"`
+	UserName         string                 `json:"UserName"`
+	Location         string                 `json:"location,omitempty"`
 }
 
 //DeviceSubscription is a model to store the subscription details of a device
@@ -117,19 +101,19 @@ type DeviceSubscription common.DeviceSubscription
 
 //EvtSubPost is required to frame the post payload for the target device (South Bound)
 type EvtSubPost struct {
-	Name                 string        `json:"Name"`
-	Destination          string        `json:"Destination"`
-	EventTypes           []string      `json:"EventTypes,omitempty"`
-	MessageIds           []string      `json:"MessageIds,omitempty"`
-	ResourceTypes        []string      `json:"ResourceTypes,omitempty"`
-	Protocol             string        `json:"Protocol"`
-	EventFormatType      string        `json:"EventFormatType"`
-	SubscriptionType     string        `json:"SubscriptionType"`
-	SubordinateResources bool          `json:"SubordinateResources"`
-	HTTPHeaders          []HTTPHeaders `json:"HttpHeaders"`
-	Context              string        `json:"Context"`
-	OriginResources      []OdataIDLink `json:"OriginResources"`
-	DeliveryRetryPolicy  string        `json:"DeliveryRetryPolicy,omitempty"`
+	Name                 string                   `json:"Name"`
+	Destination          string                   `json:"Destination"`
+	EventTypes           []string                 `json:"EventTypes,omitempty"`
+	MessageIds           []string                 `json:"MessageIds,omitempty"`
+	ResourceTypes        []string                 `json:"ResourceTypes,omitempty"`
+	Protocol             string                   `json:"Protocol"`
+	EventFormatType      string                   `json:"EventFormatType"`
+	SubscriptionType     dmtf.SubscriptionType    `json:"SubscriptionType"`
+	SubordinateResources bool                     `json:"SubordinateResources"`
+	HTTPHeaders          []HTTPHeaders            `json:"HttpHeaders"`
+	Context              string                   `json:"Context"`
+	OriginResources      []OdataIDLink            `json:"OriginResources"`
+	DeliveryRetryPolicy  dmtf.DeliveryRetryPolicy `json:"DeliveryRetryPolicy,omitempty"`
 }
 
 //HTTPHeaders required for the subscribing for events
@@ -435,7 +419,7 @@ func getSliceFromString(sliceString string) []string {
 }
 
 // SaveEventSubscription is to save event subscription details
-func SaveEventSubscription(evtSubscription Subscription) error {
+func SaveEventSubscription(evtSubscription SubscriptionResource) error {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
@@ -452,7 +436,7 @@ func SaveEventSubscription(evtSubscription Subscription) error {
 }
 
 // GetEvtSubscriptions is to get event subscription details
-func GetEvtSubscriptions(searchKey string) ([]Subscription, error) {
+func GetEvtSubscriptions(searchKey string) ([]SubscriptionResource, error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -461,9 +445,9 @@ func GetEvtSubscriptions(searchKey string) ([]Subscription, error) {
 	if gerr != nil {
 		return nil, fmt.Errorf("error while trying to get subscription of device %v", gerr.Error())
 	}
-	var eventSubscriptions []Subscription
+	var eventSubscriptions []SubscriptionResource
 	for _, value := range evtSub {
-		var eventSub Subscription
+		var eventSub SubscriptionResource
 		if err := json.Unmarshal([]byte(value), &eventSub); err != nil {
 			return nil, fmt.Errorf("error while unmarshalling event subscriptions: %v", err.Error())
 		}
@@ -487,7 +471,7 @@ func DeleteEvtSubscription(key string) error {
 }
 
 // UpdateEventSubscription is to update event subscription details
-func UpdateEventSubscription(evtSubscription Subscription) error {
+func UpdateEventSubscription(evtSubscription SubscriptionResource) error {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err

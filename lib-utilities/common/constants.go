@@ -597,6 +597,7 @@ type DeviceSubscription struct {
 	EventHostIP     string   `json:"EventHostIP,omitempty"`
 	OriginResources []string `json:"OriginResources"`
 	Location        string   `json:"location,omitempty"`
+	OriginResource  string   `json:"OriginResource"`
 }
 
 // URIWithNoAuth contains the list of URI's which does not require authentication

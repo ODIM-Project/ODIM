@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 
@@ -86,7 +87,7 @@ type RequestBody struct {
 	DeliveryRetryPolicy  dmtf.DeliveryRetryPolicy `json:"DeliveryRetryPolicy"`
 }
 
-//Subscription is a model to store the subscription details
+//SubscriptionResource is a model to store the subscription details
 type SubscriptionResource struct {
 	EventDestination *dmtf.EventDestination `json:"EventDestination"`
 	EventHostIP      string                 `json:"EventHostIP,omitempty"`
@@ -94,6 +95,19 @@ type SubscriptionResource struct {
 	SubscriptionID   string                 `json:"SubscriptionID"`
 	UserName         string                 `json:"UserName"`
 	Location         string                 `json:"location,omitempty"`
+}
+
+//Subscription is a model to store subs set of subscription details which required properties for cache
+type Subscription struct {
+	Id                   string
+	Destination          string
+	EventTypes           []string
+	MessageIds           []string
+	SubordinateResources bool
+	ResourceTypes        []string
+	SubscriptionType     dmtf.SubscriptionType
+	OriginResources      []string
+	DeliveryRetryPolicy  dmtf.DeliveryRetryPolicy
 }
 
 //DeviceSubscription is a model to store the subscription details of a device
@@ -641,4 +655,77 @@ func GetAggregateList(hostIP string) ([]string, error) {
 		aggregates = append(aggregates, devSub[0])
 	}
 	return aggregates, nil
+}
+
+// GetAggregate fetches the aggregate info for the given aggregateURI
+func GetAggregate(aggregateURI string) (Aggregate, *errors.Error) {
+	var aggregate Aggregate
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return aggregate, err
+	}
+	const table string = "Aggregate"
+	data, err := conn.Read(table, aggregateURI)
+	if err != nil {
+		return aggregate, errors.PackError(err.ErrNo(), "error: while trying to fetch connection method data: ", err.Error())
+	}
+	if err := json.Unmarshal([]byte(data), &aggregate); err != nil {
+		return aggregate, errors.PackError(errors.JSONUnmarshalFailed, err)
+	}
+	return aggregate, nil
+}
+
+//GetAllAggregates return all aggregate url added in DB
+func GetAllAggregates() ([]string, error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	keysArray, err := conn.GetAllDetails("Aggregate")
+	if err != nil {
+		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", "Aggregate", err.Error())
+	}
+	return keysArray, nil
+}
+
+// GetAllDeviceSubscriptions is to get subscription details of device
+func GetAllDeviceSubscriptions() ([]string, error) {
+	t := time.Now()
+	defer l.Log.Debug("Time take to read Complete GetAllDeviceSubscriptions ", time.Since(t))
+	conn, err := GetDbConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	devSubscription, gerr := conn.GetAllDeviceSubscription(DeviceSubscriptionIndex)
+	if gerr != nil {
+		return nil, fmt.Errorf("error while trying to get subscription of device %v", gerr.Error())
+	}
+	return devSubscription, nil
+}
+
+// GetSliceFromString is to convert the string to array
+func GetSliceFromString(sliceString string) []string {
+	// EX : array stored in db in string("[alert statuschange]")
+	// to convert into an array removing "[" ,"]" and splitting
+	slice := strings.Replace(sliceString, "[", "", -1)
+	slice = strings.Replace(slice, "]", "", -1)
+	if len(slice) < 1 {
+		return []string{}
+	}
+	return strings.Split(slice, " ")
+}
+
+// GetAllEvtSubscriptions is to get all event subscription details
+func GetAllEvtSubscriptions() ([]string, error) {
+	t := time.Now()
+	defer l.Log.Debug("Time take to read Complete GetAllEvtSubscriptions ", time.Since(t))
+	conn, err := GetDbConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	evtSub, gerr := conn.GetAllEvtSubscriptions(SubscriptionIndex)
+	if gerr != nil {
+		return nil, fmt.Errorf("error while trying to get subscription of device %v", gerr.Error())
+	}
+	return evtSub, nil
 }

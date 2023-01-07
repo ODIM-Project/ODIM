@@ -17,6 +17,8 @@ import (
 	"fmt"
 	"os"
 
+	ev "github.com/ODIM-Project/ODIM/svc-events/events"
+
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -115,7 +117,7 @@ func main() {
 		EMBConsume:      consumer.Consume,
 	}
 	go startUPInterface.SubscribePluginEMB()
-
+	go ev.LoadSubscriptionData()
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())

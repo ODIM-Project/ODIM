@@ -30,13 +30,6 @@ func LoadSubscriptionData() {
 	getAllSubscriptions()
 	getAllAggregates()
 	getAllDeviceSubscriptions()
-
-	fmt.Println("All Subscription ", len(subscriptionsCache))
-	fmt.Println("System Subscription ", len(systemToSubscriptionsMap))
-	fmt.Println("Aggregate Subscription ", len(aggregateIdToSubscriptionsMap))
-	fmt.Println("Collection Subscription ", len(collectionToSubscriptionsMap))
-	fmt.Println("Empty Subscription", len(emptyOriginResourceToSubscriptionsMap))
-	fmt.Println("Event Source Subscription", len(emptyOriginResourceToSubscriptionsMap))
 }
 func getAllSubscriptions() {
 	subscriptionsCache = make(map[string]evmodel.Subscription)

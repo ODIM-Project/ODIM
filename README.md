@@ -28,6 +28,7 @@
    - [Upgrading the Resource Aggregator for ODIM deployment](#upgrading-the-resource-aggregator-for-odim-deployment)
    - [Backup and restore of Kubernetes etcd](#Backup-and-restore-of-Kubernetes-etcd)
    - [Backup and restore of ODIM etcd](#Backup-and-restore-of-ODIM-etcd)
+   - [Backup and restore of Redis](#Backup-and-restore-of-Redis)
 6. [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
    - [Adding a server into the resource inventory](#adding-a-server-into-the-resource-inventory)
    - [Viewing the resource inventory](#viewing-the-resource-inventory)

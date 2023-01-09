@@ -2326,11 +2326,177 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 
     
 
+## Backup and restore of Redis
 
+1. Create a directory to store the backup rdb files and append-only files.
 
+   ```
+   mkdir backup
+   ```
 
+2. Get the name of the master pod to get the backup snapshot and appendonly files of the backup and restore want to take (either ondisk or inmemory).
 
+   ```
+   kubectl get pods -nodim | grep redis | grep primary
+   ```
 
+   ```
+   redis-ha-inmemory-primary-0
+   ```
+
+   ```
+   redis-ha-ondisk-primary-0
+   ```
+
+3. Copy the rdb files and aof files from the relative pod.
+
+   ```
+   kubectl cp odim/<pod-name>:/redis-data/dump.rdb /home/bruce/backups/dump.rdb
+   ```
+
+   ```
+   kubectl cp odim/<pod-name>:/redis-data/appendonly.aof 
+   ```
+
+   ```
+   /home/bruce/backups/appendonly.aof
+   ```
+
+   **For example (on-disk)**:
+
+   ```
+   kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/dump.rdb 
+   ```
+
+   ```
+   /home/bruce/backups/dump.rdb
+   ```
+
+   ```
+   kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/appendonly.aof 
+   ```
+
+   ```
+   /home/bruce/backups/appendonly.aof
+   ```
+
+   **For example(in-memory)**:
+
+   ```
+   kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/dump.rdb 
+   ```
+
+   ```
+   /home/bruce/backups/dump.rdb
+   ```
+
+   ```
+   kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof 
+   ```
+
+   ```
+   /home/bruce/backups/appendonly.aof
+   ```
+
+   These are the backup files needed to be restored.
+
+4. Copy the above backup files to the pod to restore them.
+
+   ```
+   kubectl cp ./backups/dump.rdb odim/<pod-name>:/redis-data/dump.rdb-1
+   ```
+
+   ```
+   kubectl cp ./backups/appendonly.aof  odim/pod-name>:/redis-data/appendonly.aof.old
+   ```
+
+   **For example**:
+
+   ```
+   kubectl cp ./backups/dump.rdb odim/redis-ha-ondisk-primary-0:/redis-data/dump.rdb-1
+   ```
+
+   ```
+   kubectl cp ./backups/appendonly.aof  odim/redis-ha-ondisk-primary-0/redis-data/appendonly.aof.old
+   ```
+
+   ```
+   kubectl cp ./backups/dump.rdb odim/redis-ha-inmemory-primary-0:/redis-data/dump.rdb-1
+   ```
+
+   ```
+   kubectl cp ./backups/appendonly.aof  odim/redis-ha-inmemory-primary-0/redis-data/appendonly.aof.old
+   ```
+
+5. Log in to redis-cli and disable append-only config to restore the data back.
+
+   ```
+   redis-cli --tls --cert /etc/odimra_certs/odimra_server.crt --key /etc/odimra_certs/odimra_server.key --cacert /etc/odimra_certs/rootCA.crt -a <password>
+   ```
+
+   ```
+   CONFIG SET "appendonly" no
+   ```
+
+6. Delete the data available to check later, if the restore option works (optional for verification).
+
+   ```
+   keys *
+   ```
+
+   ```
+   FLUSHALL
+   ```
+
+7. Exit from the redis-cli and move to the redis-data directory and remove the existing rdb and aof file and replace the backuped one with the name.
+
+   ```
+   cd /redis-data
+   ```
+
+   ```
+   rm -rf dump.rdb appendonly.aof
+   ```
+
+   ```
+   mv dump.rdb-1 dumb.rdb
+   ```
+
+   ```
+   mv appendonly.aof.old appendonly.aof
+   ```
+
+8. Restart all the pods of the Redis (either in-memory or on-disk).
+
+   ```
+   kubectl get pods -nodim | grep redis | grep inmemory
+   ```
+
+   ```
+   kubectl delete pods <pod1> <pod2>..<pod3> -nodim
+   ```
+
+   **For example**:
+
+   ```
+   kubectl delete pods redis-ha-inmemory-primary-0 redis-ha-inmemory-secondary-0 redis-ha-inmemory-secondary-1 -nodim
+   ```
+
+9. Once all the pods have started and are in running state, exec inside and login into redis-cli and check for the old data.
+
+   ```
+   kubectl exec -it redis-ha-ondisk-primary-0 -nodim bash
+   ```
+
+   ```
+   redis-cli --tls --cert /etc/odimra_certs/odimra_server.crt --key /etc/odimra_certs/odimra_server.key --cacert /etc/odimra_certs/rootCA.crt -a <password>
+   ```
+
+   ```
+   keys *
+   ```
+
+   
 
 # Use cases for Resource Aggregator for ODIM
 

@@ -27,7 +27,6 @@ import (
 	"sync"
 	"time"
 
-	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -139,8 +138,7 @@ func kafkaConnect(kp *KafkaPacket) error {
 	// Creation of TLS Config and Dialer
 	tls, e := TLS(MQ.KafkaF.KAFKACertFile, MQ.KafkaF.KAFKAKeyFile, MQ.KafkaF.KAFKACAFile)
 	if e != nil {
-		l.Log.Error(e.Error())
-		return e
+		return fmt.Errorf("error: creation of tls config failed: %s", e.Error())
 	}
 	kp.DialerConn = &kafka.Dialer{
 		Timeout:   10 * time.Second,
@@ -193,8 +191,7 @@ func (kp *KafkaPacket) Distribute(d interface{}) error {
 	// Encode the message before appending into KAFKA Message struct
 	b, e := Encode(d)
 	if e != nil {
-		l.Log.Error(e.Error())
-		return e
+		return fmt.Errorf("error: message encoding failed: %s", e.Error())
 	}
 
 	// Place the byte stream into Kafka.Message
@@ -205,8 +202,7 @@ func (kp *KafkaPacket) Distribute(d interface{}) error {
 
 	// Write the messgae in the specified Pipe.
 	if e = writer.WriteMessages(context.Background(), km); e != nil {
-		l.Log.Error(e.Error())
-		return e
+		return fmt.Errorf("error: write message failed: %s", e.Error())
 	}
 
 	return nil
@@ -272,14 +268,12 @@ func (kp *KafkaPacket) Read(fn MsgProcess) error {
 		// explicitly committing the messages
 		m, e := reader.ReadMessage(c)
 		if e != nil {
-			l.Log.Error(e.Error())
-			return e
+			return fmt.Errorf("error: read message failed: %s", e.Error())
 		}
 
 		// Decode the message before passing it to Callback
 		if e = Decode(m.Value, &d); e != nil {
-			l.Log.Error(e.Error())
-			return e
+			return fmt.Errorf("error: decode message failed: %s", e.Error())
 		}
 		// Callback Function call.
 		fn(d)

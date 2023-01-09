@@ -133,12 +133,63 @@ type EventRecord struct {
 	LogEntry                   *Link       `json:"LogEntry,omitempty"`
 }
 
-// This Resource shall represent the target of an event subscription, including 
-// the event types and context to provide to the target in the Event payload.
-// Refer to EventDestination.v1_11_2.json of the redfish spec for more details
+// EventDestination represents the target of an event subscription,
+// including the event types and context to provide to the target
+// in the Event payload.
+// Reference	                : EventDestination.v1_12_0.json
 type EventDestination struct {
-	
+	ODataContext                 string       `json:"@odata.context,omitempty"`
+	ODataEtag                    string       `json:"@odata.etag,omitempty"`
+	ODataId                      string       `json:"@odata.id"`
+	ODataType                    string       `json:"@odata.type"`
+	Actions                      *Actions     `json:"Actions,omitempty"`
+	Certificates                 *Link        `json:"Certificates,omitempty"`
+	ClientCertificates           *Link        `json:"ClientCertificates,omitempty"`
+	Context                      string       `json:"Context"`
+	DeliveryRetryPolicy          string       `json:"DeliveryRetryPolicy,omitempty"`
+	Description                  string       `json:"Description,omitempty"`
+	Destination                  string       `json:"Destination"`
+	EventFormatType              string       `json:"EventFormatType,omitempty"`
+	EventTypes                   []string     `json:"EventTypes,omitempty"`
+	ExcludeMessageIds            []string     `json:"ExcludeMessageIds,omitempty"`
+	ExcludeRegistryPrefixes      []string     `json:"ExcludeRegistryPrefixes,omitempty"`
+	HeartbeatIntervalMins        int          `json:"HeartbeatIntervalMinutes,omitempty"`
+	HttpHeaders                  []string     `json:"HttpHeaders,omitempty"`
+	ID                           string       `json:"Id"`
+	IncludeOriginOfCondition     bool         `json:"IncludeOriginOfCondition,omitempty"`
+	MessageIds                   []string     `json:"MessageIds,omitempty"`
+	MetricReportDefinitions      *Link        `json:"MetricReportDefinitions,omitempty"`
+	MetricReportDefinitionsCount int          `json:MetricReportDefinitions@odata.count,omitempty`
+	Name                         string       `json:"Name"`
+	OEMProtocol                  string       `json:"OEMProtocol,omitempty"`
+	OEMSubscriptionType          string       `json:"OEMSubscriptionType"`
+	Oem                          interface{}  `json:"Oem,omitempty"`
+	OriginResources              []string     `json:"OriginResources,omitempty"`
+	OriginResourcesCount         int          `json:MetricReportDefinitions@odata.count,omitempty`
+	Protocol                     string       `json:"Protocol"`
+	RegistryPrefixes             []string     `json:"RegistryPrefixes,omitempty"`
+	ResourceTypes                []string     `json:"ResourceTypes,omitempty"`
+	SNMP                         SNMPSettings `json:"SNMP,omitempty"`
+	SendHeartbeat                bool         `json:"SendHeartbeat,omitempty"`
+	Status                       Status       `json:"Status,omitempty"`
+	SubordinateResources         bool         `json:"SubordinateResources,omitempty"`
+	SubscriptionType             string       `json:"SubscriptionType,omitempty"`
+	SyslogFilters                SyslogFilter `json:"SyslogFilters,omitempty"`
+	VerifyCertificate            bool         `json:"VerifyCertificate,omitempty"`
 }
+
+
+// place holders for attribs needed in EventDestination.
+type Actions struct{}
+type SNMPAuthenticationProtocols struct{}
+type SNMPEncryptionProtocols struct{}
+type SNMPSettings struct{}
+type SubscriptionType struct{}
+type SuspendSubscription struct{}
+type SyslogFacility struct{}
+type SyslogFilter struct{}
+type SyslogSeverity struct{}
+
 
 
 

@@ -355,6 +355,6 @@ type SuspendSubscription struct {
 // syslog messages are sent.
 // Reference	                : EventDestination.v1_12_0.json
 type SyslogFilter struct {
-	LogFacilities  SyslogFacility `json:"LogFacilities,omitEmpty"`
-	LowestSeverity SyslogSeverity `json:"LogFacilities,omitEmpty"`
+	LogFacilities  SyslogFacility `json:"LogFacilities,omitempty"`
+	LowestSeverity SyslogSeverity `json:"LogFacilities,omitempty"`
 }

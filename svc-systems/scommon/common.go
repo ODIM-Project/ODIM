@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package scommon ...
+// Package scommon ...
 package scommon
 
 import (
@@ -47,7 +47,7 @@ type Schema struct {
 // SF holds the schema data for search/filter
 var SF Schema
 
-//PluginContactRequest  hold the request of contact plugin
+// PluginContactRequest  hold the request of contact plugin
 type PluginContactRequest struct {
 	Token           string
 	OID             string
@@ -59,13 +59,13 @@ type PluginContactRequest struct {
 	HTTPMethodType  string
 }
 
-//ResponseStatus holds the response of Contact Plugin
+// ResponseStatus holds the response of Contact Plugin
 type ResponseStatus struct {
 	StatusCode    int32
 	StatusMessage string
 }
 
-//ResourceInfoRequest  hold the request of getting  Resource
+// ResourceInfoRequest  hold the request of getting  Resource
 type ResourceInfoRequest struct {
 	URL             string
 	UUID            string
@@ -194,7 +194,7 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	return strings.Join(key, "/")
 }
 
-//getResourceName fetches the table name for storing the particualar resource
+// getResourceName fetches the table name for storing the particualar resource
 func getResourceName(oDataID string, memberFlag bool) string {
 	str := strings.Split(oDataID, "/")
 	if memberFlag {

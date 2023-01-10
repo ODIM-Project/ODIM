@@ -18,6 +18,7 @@ package router
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -242,11 +243,9 @@ func Router() *iris.Application {
 				authRequired = true
 			}
 			if authRequired {
-				logProperties := make(map[string]interface{})
-				logProperties["SessionToken"] = sessionToken
-				logProperties["Message"] = "X-Auth-Token is missing in the request header"
-				logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
-				customLogs.AuthLog(logProperties)
+				ctx = context.WithValue(ctx, common.SessionToken, sessionToken)
+				ctx = context.WithValue(ctx, common.StatusCode, int32(http.StatusUnauthorized))
+				customLogs.AuthLog(ctx).Info("X-Auth-Token is missing in the request header")
 			}
 		}
 

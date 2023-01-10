@@ -180,6 +180,11 @@ const (
 	StartRequest         = "StartRequest"
 	SimpleUpdate         = "SimpleUpdate"
 	StartUpdate          = "StartUpdate"
+	// constants for log
+	SessionToken  = "sessiontoken"
+	SessionUserID = "sessionuserid"
+	SessionRoleID = "sessionroleid"
+	StatusCode    = "statuscode"
 )
 
 // ActionType defines type of action

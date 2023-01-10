@@ -16,12 +16,15 @@
 package logs
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/kataras/iris/v12"
+	"github.com/sirupsen/logrus"
 )
 
 type Logging struct {
@@ -33,6 +36,7 @@ type Logging struct {
 // properties logged are prival, time, host, username, roleid, request method, resource, requestbody, responsecode and message
 
 func (l *Logging) AuditLog(ctx iris.Context, reqBody map[string]interface{}) {
+	ctxt := ctx.Request().Context()
 	logMsg, err := l.auditLogEntry(ctx, reqBody)
 	if err != nil {
 		Log.Error(err)
@@ -40,14 +44,15 @@ func (l *Logging) AuditLog(ctx iris.Context, reqBody map[string]interface{}) {
 	// Get response code
 	respStatusCode := int32(ctx.GetStatusCode())
 	operationStatus := getResponseStatus(respStatusCode)
-
+	r := getProcessLogDetails(ctxt)
+	logMsg = formatStructuredFields(Log.WithFields(r), logMsg)
 	// 110 indicates info audit log for successful operation
 	// 107 indicates error audit log for failed operation
 	if operationStatus {
-		successMsg := "<110> " + logMsg + " Operation successful"
+		successMsg := "<110>1 " + logMsg + " Operation successful"
 		fmt.Println(successMsg)
 	} else {
-		failedMsg := "<107> " + logMsg + " Operation failed"
+		failedMsg := "<107>1 " + logMsg + " Operation failed"
 		fmt.Println(failedMsg)
 	}
 	return
@@ -56,53 +61,12 @@ func (l *Logging) AuditLog(ctx iris.Context, reqBody map[string]interface{}) {
 // AuthLog is used for generating security logs in syslog format for each request
 // this function logs an info for successful operation and warning for failure auth operation
 // properties logged are prival, time, username, roleid and message
-func AuthLog(logProperties map[string]interface{}) {
-	sessionToken := "null"
-	sessionUserName := "null"
-	sessionRoleID := "null"
-	msg := "null"
-	respStatusCode := int32(http.StatusUnauthorized)
-	tokenMsg := ""
+func AuthLog(ctx context.Context) *logrus.Entry {
+	ctx = context.WithValue(ctx, "auth", true)
+	ctx = context.WithValue(ctx, "statuscode", ctx.Value("statuscode").(int32))
+	r := getProcessLogDetails(ctx)
 
-	if logProperties["SessionToken"] != nil {
-		sessionToken = logProperties["SessionToken"].(string)
-	}
-	if logProperties["SessionUserID"] != nil {
-		sessionUserName = logProperties["SessionUserID"].(string)
-	}
-	if logProperties["SessionRoleID"] != nil {
-		sessionRoleID = logProperties["SessionRoleID"].(string)
-	}
-	if logProperties["Message"] != nil {
-		msg = logProperties["Message"].(string)
-	}
-	if logProperties["ResponseStatusCode"] != nil {
-		respStatusCode = logProperties["ResponseStatusCode"].(int32)
-	}
-
-	timeNow := time.Now().Format(time.RFC3339)
-	// formatting logs in syslog format
-	logMsg := fmt.Sprintf("%s [account@1 user=\"%s\" roleID=\"%s\"]", timeNow, sessionUserName, sessionRoleID)
-	// Get response code
-	operationStatus := getResponseStatus(respStatusCode)
-	if sessionToken != "null" {
-		tokenMsg = "for session token " + sessionToken
-	}
-	// 86 is for auth log info
-	// 84 is for auth log warning
-	if operationStatus {
-		successMsg := fmt.Sprintf("%s %s %s %s", "<86>", logMsg, "Authentication/Authorization successful", tokenMsg)
-		fmt.Println(successMsg)
-	} else {
-		errMsg := "Authentication/Authorization failed"
-		if respStatusCode == http.StatusForbidden {
-			errMsg = "Authorization failed"
-		} else if respStatusCode == http.StatusUnauthorized {
-			errMsg = "Authentication failed"
-		}
-		failedMsg := fmt.Sprintf("%s %s %s %s, %s", "<84>", logMsg, errMsg, tokenMsg, msg)
-		fmt.Println(failedMsg)
-	}
+	return Log.WithFields(r)
 }
 
 // auditLogEntry extracts the required info from context like session token, username, request URI
@@ -118,12 +82,17 @@ func (l *Logging) auditLogEntry(ctx iris.Context, reqBody map[string]interface{}
 	respStatusCode := ctx.GetStatusCode()
 	timeNow := time.Now().Format(time.RFC3339)
 	reqStr := MaskRequestBody(reqBody)
-
+	ctxt := ctx.Request().Context()
+	thread := ctxt.Value("threadname")
+	action := ctxt.Value("actionname")
+	process := ctxt.Value("processname").(string)
+	pid := os.Getpid()
+	procid := process + fmt.Sprintf("_%d", pid)
 	// formatting logs in syslog format
 	if reqStr == "" {
-		logMsg = fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\"][response@1 responseCode=%d]", timeNow, host, sessionUserName, sessionRoleID, method, rawURI, respStatusCode)
+		logMsg = fmt.Sprintf("%s %s %s %s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\"][response@1 responseCode=%d]", timeNow, host, thread, procid, action, sessionUserName, sessionRoleID, method, rawURI, respStatusCode)
 	} else {
-		logMsg = fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\" requestBody= %s][response@1 responseCode=%d]", timeNow, host, sessionUserName, sessionRoleID, method, rawURI, reqStr, respStatusCode)
+		logMsg = fmt.Sprintf("%s %s %s %s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\" requestBody= %s][response@1 responseCode=%d]", timeNow, host, thread, procid, action, sessionUserName, sessionRoleID, method, rawURI, reqStr, respStatusCode)
 	}
 	return logMsg, err
 }

@@ -17,6 +17,7 @@ package logs
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -68,6 +69,61 @@ const (
 	JsonFormat
 )
 
+func getProcessLogDetails(ctx context.Context) logrus.Fields {
+	var auth bool
+	var statusCode int32
+	var transID, processName, threadID, actionName, threadName, actionID, sessionToken, sessionUserName, sessionRoleID string
+	if val, ok := ctx.Value("transactionid").(string); ok {
+		transID = val
+	}
+	if val, ok := ctx.Value("processname").(string); ok {
+		processName = val
+	}
+	if val, ok := ctx.Value("threadid").(string); ok {
+		threadID = val
+	}
+	if val, ok := ctx.Value("actionname").(string); ok {
+		actionName = val
+	}
+	if val, ok := ctx.Value("threadname").(string); ok {
+		threadName = val
+	}
+	if val, ok := ctx.Value("actionid").(string); ok {
+		actionID = val
+	}
+	if val, ok := ctx.Value("auth").(bool); ok {
+		auth = val
+	}
+	if val, ok := ctx.Value("statuscode").(int32); ok {
+		statusCode = val
+	}
+	if val, ok := ctx.Value("sessiontoken").(string); ok {
+		sessionToken = val
+	}
+	if val, ok := ctx.Value("sessionuserid").(string); ok {
+		sessionUserName = val
+	}
+	if val, ok := ctx.Value("sessionroleid").(string); ok {
+		sessionRoleID = val
+	}
+	fields := logrus.Fields{
+		"processname":   processName,
+		"transactionid": transID,
+		"actionid":      actionID,
+		"actionname":    actionName,
+		"threadid":      threadID,
+		"threadname":    threadName,
+		"messageid":     actionName,
+		"auth":          auth,
+		"statuscode":    statusCode,
+		"sessiontoken":  sessionToken,
+		"sessionuserid": sessionUserName,
+		"sessionroleid": sessionRoleID,
+	}
+
+	return fields
+}
+
 func init() {
 	Log = logrus.NewEntry(logrus.New())
 }
@@ -79,31 +135,20 @@ func Adorn(m logrus.Fields) {
 
 // LogWithFields add fields to log
 func LogWithFields(ctx context.Context) *logrus.Entry {
-	transID := ctx.Value("transactionid")
-	processName := ctx.Value("processname")
-	threadID := ctx.Value("threadid")
-	actionName := ctx.Value("actionname")
-	threadName := ctx.Value("threadname")
-	actionID := ctx.Value("actionid")
-	fields := logrus.Fields{
-		"processname":   processName,
-		"transactionid": transID,
-		"actionid":      actionID,
-		"actionname":    actionName,
-		"threadid":      threadID,
-		"threadname":    threadName,
-		"messageid":     actionName,
-	}
+	fields := getProcessLogDetails(ctx)
 	return Log.WithFields(fields)
 }
 
 // Format renders a log in syslog format
 func (f *SysLogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	level := entry.Level.String()
-	priorityNumber := findSysLogPriorityNumeric(level)
+	priorityNumber := findSysLogPriorityNumeric(entry, level)
 	sysLogMsg := fmt.Sprintf("<%d>%s %s", priorityNumber, "1", entry.Time.UTC().Format(time.RFC3339))
 	sysLogMsg = formatPriorityFields(entry, sysLogMsg)
 	sysLogMsg = formatStructuredFields(entry, sysLogMsg)
+	if _, ok := entry.Data["auth"]; ok {
+		sysLogMsg = formatStructFields(entry, sysLogMsg, priorityNumber)
+	}
 	for k, v := range logFields {
 		if accountLog, present := formatSyslog(k, v, entry); present {
 			sysLogMsg = fmt.Sprintf("%s %s", sysLogMsg, accountLog)
@@ -114,7 +159,15 @@ func (f *SysLogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	return append([]byte(sysLogMsg), '\n'), nil
 }
 
-func findSysLogPriorityNumeric(level string) int8 {
+// findSysLogPriorityNumeric is used to find the log priority number
+func findSysLogPriorityNumeric(entry *logrus.Entry, level string) int8 {
+	if _, ok := entry.Data["auth"].(bool); ok {
+		sCode := entry.Data["statuscode"].(int32)
+		if getResponseStatus(sCode) {
+			return 86
+		}
+		return 84
+	}
 	return syslogPriorityNumerics[level]
 }
 
@@ -129,6 +182,43 @@ func formatPriorityFields(entry *logrus.Entry, msg string) string {
 	if !present {
 		msg = msg[:len(msg)-1]
 	}
+	return msg
+}
+
+// formatStructFields used to format the syslog message
+func formatStructFields(entry *logrus.Entry, msg string, priorityNo int8) string {
+	var sessionToken, sessionUserName, sessionRoleID string
+	respStatusCode := int32(http.StatusUnauthorized)
+	tokenMsg := ""
+
+	if entry.Data["sessiontoken"] != nil {
+		sessionToken = entry.Data["sessiontoken"].(string)
+	}
+	if entry.Data["sessionuserid"] != nil {
+		sessionUserName = entry.Data["sessionuserid"].(string)
+	}
+	if entry.Data["sessionroleid"] != nil {
+		sessionRoleID = entry.Data["sessionroleid"].(string)
+	}
+	if entry.Data["statuscode"] != nil {
+		respStatusCode = entry.Data["statuscode"].(int32)
+	}
+	msg = fmt.Sprintf("%s [account@1 user=\"%s\" roleID=\"%s\"]", msg, sessionUserName, sessionRoleID)
+	if sessionToken != "null" {
+		tokenMsg = "for session token " + sessionToken
+	}
+	if priorityNo == 86 {
+		msg = fmt.Sprintf("%s %s %s", msg, "Authentication/Authorization successful", tokenMsg)
+	} else {
+		errMsg := "Authentication/Authorization failed"
+		if respStatusCode == http.StatusForbidden {
+			errMsg = "Authorization failed"
+		} else if respStatusCode == http.StatusUnauthorized {
+			errMsg = "Authentication failed"
+		}
+		msg = fmt.Sprintf("%s %s %s", msg, errMsg, tokenMsg)
+	}
+
 	return msg
 }
 

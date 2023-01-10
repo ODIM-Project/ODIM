@@ -365,7 +365,7 @@ type SNMPSettings struct {
 // Reference	                : EventDestination.v1_12_0.json
 type SuspendSubscription struct {
 	Target string `json:"target,omitempty"`
-	Title  string `json:"tittle,omitempty"`
+	Title  string `json:"title,omitempty"`
 }
 
 // A list of filters applied to syslog messages before sending

@@ -99,7 +99,7 @@ type Subscription struct {
 	SubordinateResources bool     `json:"SubordinateResources"`
 	ResourceTypes        []string `json:"ResourceTypes"`
 	// To store origin resource
-	OriginResource string `json:"OriginResource"`
+	OriginResource string `json:"OriginResource,omitempty"`
 	// To store multiple origin resource
 	OriginResources []string `json:"OriginResources"`
 	// To store all Device address
@@ -132,12 +132,12 @@ type EvtSubPost struct {
 	DeliveryRetryPolicy  string        `json:"DeliveryRetryPolicy,omitempty"`
 }
 
-//HTTPHeaders required for the suscribing for events
+//HTTPHeaders required for the subscribing for events
 type HTTPHeaders struct {
 	ContentType string `json:"Content-Type"`
 }
 
-//Target is for sending the requst to south bound/plugin
+//Target is for sending the request to south bound/plugin
 type Target struct {
 	ManagerAddress string `json:"ManagerAddress"`
 	Password       []byte `json:"Password"`
@@ -267,7 +267,7 @@ func GetAllPlugins() ([]Plugin, *errors.Error) {
 	return plugins, nil
 }
 
-//GetAllKeysFromTable retrun all matching data give table name
+//GetAllKeysFromTable return all matching data give table name
 func GetAllKeysFromTable(table string) ([]string, error) {
 	conn, err := GetDbConnection(common.InMemory)
 	if err != nil {
@@ -280,7 +280,7 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 	return keysArray, nil
 }
 
-//GetAllSystems retrives all the compute systems in odimra
+//GetAllSystems retrieves all the compute systems in odimra
 func GetAllSystems() ([]string, error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -293,7 +293,7 @@ func GetAllSystems() ([]string, error) {
 	return keysArray, nil
 }
 
-//GetSingleSystem retrives specific compute system in odimra based on the ID
+//GetSingleSystem retrieves specific compute system in odimra based on the ID
 func GetSingleSystem(id string) (string, error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -346,7 +346,7 @@ func GetAggregateData(aggreagetKey string) (Aggregate, error) {
 	return aggregate, nil
 }
 
-//GetAllFabrics retrun all Fabrics
+//GetAllFabrics return all Fabrics
 func GetAllFabrics() ([]string, error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -563,11 +563,10 @@ func SetUndeliveredEventsFlag(destination string) error {
 	if err = conn.AddResourceData(ReadInProgres, destination, "true"); err != nil {
 		return fmt.Errorf("error while trying to create new %v resource: %v", ReadInProgres, err.Error())
 	}
-	data, err := conn.Read(ReadInProgres, destination)
+	_, err = conn.Read(ReadInProgres, destination)
 	if err != nil {
-		fmt.Println(err)
+		l.Log.Error(err)
 	}
-	fmt.Println(data)
 	return nil
 }
 

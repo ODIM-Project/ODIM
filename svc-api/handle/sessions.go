@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package handle ...
+// Package handle ...
 package handle
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -29,11 +30,11 @@ import (
 
 // SessionRPCs defines all the RPC methods in session service
 type SessionRPCs struct {
-	CreateSessionRPC        func(sessionproto.SessionCreateRequest) (*sessionproto.SessionCreateResponse, error)
-	DeleteSessionRPC        func(string, string) (*sessionproto.SessionResponse, error)
-	GetSessionRPC           func(string, string) (*sessionproto.SessionResponse, error)
-	GetAllActiveSessionsRPC func(string, string) (*sessionproto.SessionResponse, error)
-	GetSessionServiceRPC    func() (*sessionproto.SessionResponse, error)
+	CreateSessionRPC        func(context.Context, sessionproto.SessionCreateRequest) (*sessionproto.SessionCreateResponse, error)
+	DeleteSessionRPC        func(context.Context, string, string) (*sessionproto.SessionResponse, error)
+	GetSessionRPC           func(context.Context, string, string) (*sessionproto.SessionResponse, error)
+	GetAllActiveSessionsRPC func(context.Context, string, string) (*sessionproto.SessionResponse, error)
+	GetSessionServiceRPC    func(context.Context) (*sessionproto.SessionResponse, error)
 }
 
 // CreateSession defines the Create session iris handler
@@ -42,11 +43,12 @@ type SessionRPCs struct {
 // and feed the response to iris
 func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the session create request body: %v" + err.Error()
-		l.Log.Printf(errorMessage)
+		l.LogWithFields(ctxt).Printf(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -61,7 +63,7 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 		RequestBody: request,
 	}
 
-	resp, err := s.CreateSessionRPC(createRequest)
+	resp, err := s.CreateSessionRPC(ctxt, createRequest)
 	if err != nil && resp == nil {
 		if strings.Contains(err.Error(), "too many requests") {
 			response := common.GeneralError(http.StatusServiceUnavailable, response.SessionLimitExceeded, err.Error(), nil, nil)
@@ -71,7 +73,7 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 			return
 		}
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -94,6 +96,7 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 // and feed the response to iris
 func (s *SessionRPCs) DeleteSession(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	sessionID := ctx.Params().Get("sessionID")
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
@@ -105,10 +108,10 @@ func (s *SessionRPCs) DeleteSession(ctx iris.Context) {
 		return
 	}
 
-	resp, err := s.DeleteSessionRPC(sessionID, sessionToken)
+	resp, err := s.DeleteSessionRPC(ctxt, sessionID, sessionToken)
 	if err != nil && resp == nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -127,13 +130,14 @@ func (s *SessionRPCs) DeleteSession(ctx iris.Context) {
 // and feed the response to iris
 func (s *SessionRPCs) GetSession(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	sessionID := ctx.Params().Get("sessionID")
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 
-	resp, err := s.GetSessionRPC(sessionID, sessionToken)
+	resp, err := s.GetSessionRPC(ctxt, sessionID, sessionToken)
 	if err != nil && resp == nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -156,13 +160,14 @@ func (s *SessionRPCs) GetSession(ctx iris.Context) {
 // and feed the response to iris
 func (s *SessionRPCs) GetAllActiveSessions(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	sessionID := ctx.Params().Get("sessionID")
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 
-	resp, err := s.GetAllActiveSessionsRPC(sessionID, sessionToken)
+	resp, err := s.GetAllActiveSessionsRPC(ctxt, sessionID, sessionToken)
 	if err != nil && resp == nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -179,10 +184,11 @@ func (s *SessionRPCs) GetAllActiveSessions(ctx iris.Context) {
 // GetSessionService will do the rpc call to get session service
 func (s *SessionRPCs) GetSessionService(ctx iris.Context) {
 	defer ctx.Next()
-	resp, err := s.GetSessionServiceRPC()
+	ctxt := ctx.Request().Context()
+	resp, err := s.GetSessionServiceRPC(ctxt)
 	if err != nil && resp == nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

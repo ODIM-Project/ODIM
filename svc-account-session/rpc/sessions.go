@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -46,16 +47,22 @@ var (
 // and It will check the credentials of user, if user is authorized
 // then create session for the same
 func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCreateRequest) (*sessionproto.SessionCreateResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	l.LogWithFields(ctx).Info("Inside CreateSession function (svc-account-session)")
 	var err error
 	var resp sessionproto.SessionCreateResponse
-	response, sessionID := CreateNewSessionFunc(req)
-	resp.Body, err = MarshalFunc(response.Body)
+	response, sessionID := CreateNewSessionFunc(ctx, req)
+	body, err := MarshalFunc(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying marshal the response body for create account: " + err.Error()
-		l.Log.Printf(resp.StatusMessage)
+		resp.StatusMessage = "error while trying to marshal the response body of the create session API: " + err.Error()
+		l.LogWithFields(ctx).Printf(resp.StatusMessage)
 		return &resp, nil
 	}
+	l.LogWithFields(ctx).Debugf("outgoing response of request to create the session: %s", string(body))
+	resp.Body = body
 	resp.SessionId = sessionID
 	resp.StatusCode = response.StatusCode
 	resp.StatusMessage = response.StatusMessage
@@ -68,15 +75,21 @@ func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCr
 // It will get all the session tokens from the db and from the session token get the session details
 // if session id is matched with recieved session id ten delete the session
 func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
-	response := DeleteSessionFunc(req)
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	l.LogWithFields(ctx).Info("Inside DeleteSession function (svc-account-session)")
+	response := DeleteSessionFunc(ctx, req)
 	var resp sessionproto.SessionResponse
 	body, err := MarshalFunc(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying marshal the response body for delete : " + err.Error()
-		l.Log.Printf(response.StatusMessage)
+		resp.StatusMessage = "error while trying to marshal the response body of the delete session API: " + err.Error()
+		l.LogWithFields(ctx).Printf(response.StatusMessage)
 		return &resp, nil
 	}
+	l.LogWithFields(ctx).Debugf("outgoing response of request to delete the session: %s", string(body))
+	resp.Body = body
 	resp.StatusCode = response.StatusCode
 	resp.StatusMessage = response.StatusMessage
 	resp.Header = response.Header
@@ -88,14 +101,20 @@ func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRe
 // It will get all the session tokens from the db and from the session token get the session details
 // if session id is matched with recieved session id then delete the session
 func (s *Session) GetSession(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	l.LogWithFields(ctx).Info("Inside GetSession function (svc-account-session)")
 	var resp sessionproto.SessionResponse
-	response := GetSessionFunc(req)
+	response := GetSessionFunc(ctx, req)
 	body, err := MarshalFunc(response.Body)
 	if err != nil {
-		resp.StatusMessage = "error while trying marshal the response body for get session: " + err.Error()
-		l.Log.Printf(response.StatusMessage)
+		resp.StatusMessage = "error while trying to marshal the response body of the get session API: " + err.Error()
+		l.LogWithFields(ctx).Printf(response.StatusMessage)
 		return &resp, nil
 	}
+	l.LogWithFields(ctx).Debugf("outgoing response of request to get the session: %s", string(body))
+	resp.Body = body
 	resp.StatusCode = response.StatusCode
 	resp.StatusMessage = response.StatusMessage
 	resp.Header = response.Header
@@ -106,14 +125,19 @@ func (s *Session) GetSession(ctx context.Context, req *sessionproto.SessionReque
 // GetSessionUserName is a rpc call to get session username
 // It will get all the session username from the session
 func (s *Session) GetSessionUserName(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUserName, error) {
-	resp, err := GetSessionUserNameFunc(req)
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	resp, err := GetSessionUserNameFunc(ctx, req)
 	return resp, err
 }
 
 // GetSessionUserRoleID is a rpc call to get session user's role ID
 // It will get the session username's role id from the session
 func (s *Session) GetSessionUserRoleID(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
-	resp, err := GetSessionUserRoleIDFunc(req)
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	resp, err := GetSessionUserRoleIDFunc(ctx, req)
 	return resp, err
 }
 
@@ -122,15 +146,21 @@ func (s *Session) GetSessionUserRoleID(ctx context.Context, req *sessionproto.Se
 // and it will call GetAllActiveSessions from the session package
 // and respond all the sessionresponse values along with error if there is.
 func (s *Session) GetAllActiveSessions(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	l.LogWithFields(ctx).Info("Inside GetAllActiveSessions function (svc-account-session)")
 	var resp sessionproto.SessionResponse
-	response := GetAllActiveSessionsFunc(req)
+	response := GetAllActiveSessionsFunc(ctx, req)
 	body, err := MarshalFunc(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying marshal the response body for get all active session: " + err.Error()
-		l.Log.Printf(response.StatusMessage)
+		resp.StatusMessage = "error while trying to marshal the response body of the get all active session API: " + err.Error()
+		l.LogWithFields(ctx).Printf(response.StatusMessage)
 		return &resp, nil
 	}
+	l.LogWithFields(ctx).Debugf("outgoing response of request to get all active sessions: %s", string(body))
+	resp.Body = body
 	resp.StatusCode = response.StatusCode
 	resp.StatusMessage = response.StatusMessage
 	resp.Header = response.Header
@@ -142,13 +172,17 @@ func (s *Session) GetAllActiveSessions(ctx context.Context, req *sessionproto.Se
 // GetSessionService is a rpc call to get session service
 // which basically checks if the session service is enabled or not
 func (s *Session) GetSessionService(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	l.LogWithFields(ctx).Info("Inside GetSessionService function (svc-account-session)")
 	var resp sessionproto.SessionResponse
-	response := GetSessionServiceFunc(req)
+	response := GetSessionServiceFunc(ctx, req)
 	body, err := MarshalFunc(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying marshal the response body for get session service: " + err.Error()
-		l.Log.Printf(response.StatusMessage)
+		resp.StatusMessage = "error while trying to marshal the response body of the get session service API: " + err.Error()
+		l.LogWithFields(ctx).Printf(response.StatusMessage)
 		return &resp, nil
 	}
 	resp.StatusCode = response.StatusCode

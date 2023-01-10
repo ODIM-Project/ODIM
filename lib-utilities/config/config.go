@@ -30,10 +30,14 @@ import (
 	"strings"
 	"time"
 
+	lgr "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/google/uuid"
 )
+
+// WarningList will have the warning logs during the config validation
+type WarningList []string
 
 // Data will have the configuration data from config file
 var Data configModel
@@ -58,6 +62,7 @@ type configModel struct {
 	PluginStatusPolling            *PluginStatusPolling     `json:"PluginStatusPolling"`
 	ExecPriorityDelayConf          *ExecPriorityDelayConf   `json:"ExecPriorityDelayConf"`
 	TLSConf                        *TLSConf                 `json:"TLSConf"`
+	TaskQueueConf                  *TaskQueueConf           `json:"TaskQueueConf"`
 	SupportedPluginTypes           []string                 `json:"SupportedPluginTypes"`
 	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
 	EventConf                      *EventConf               `json:"EventConf"`
@@ -65,6 +70,7 @@ type configModel struct {
 	RequestLimitCountPerSession    int                      `json:"RequestLimitCountPerSession"`
 	SessionLimitCountPerUser       int                      `json:"SessionLimitCountPerUser"`
 	LogLevel                       log.Level                `json:"LogLevel"`
+	LogFormat                      lgr.LogFormat            `json:"LogFormat"`
 	ImageRegistryAddress           string                   `json:"ImageRegistryAddress,omitempty"`
 }
 
@@ -90,9 +96,9 @@ type DBConf struct {
 
 // MessageBusConf holds all message bus configurations
 type MessageBusConf struct {
-	MessageBusConfigFilePath string   `json:"MessageBusConfigFilePath"`
-	MessageBusType           string   `json:"MessageBusType"`
-	MessageBusQueue          []string `json:"MessageBusQueue"`
+	MessageBusConfigFilePath string `json:"MessageBusConfigFilePath"`
+	MessageBusType           string `json:"MessageBusType"`
+	OdimControlMessageQueue  string `json:"OdimControlMessageQueue"`
 }
 
 // KeyCertConf is for holding all security oriented configuration
@@ -171,6 +177,13 @@ type TLSConf struct {
 	PreferredCipherSuites []string `json:"PreferredCipherSuites"`
 }
 
+// TaskQueueConf holds configuration for the queue in task service
+type TaskQueueConf struct {
+	QueueSize        int `json:"QueueSize"`
+	DBCommitInterval int `json:"DBCommitInterval"`
+	RetryInterval    int `json:"RetryInterval"`
+}
+
 // ConnectionMethodConf is for connection method type and variant
 type ConnectionMethodConf struct {
 	ConnectionMethodType    string `json:"ConnectionMethodType"`
@@ -184,67 +197,71 @@ type EventConf struct {
 }
 
 // SetConfiguration will extract the config data from file
-func SetConfiguration() error {
+func SetConfiguration() (WarningList, error) {
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
 	if configFilePath == "" {
-		return fmt.Errorf("No value set to environment variable CONFIG_FILE_PATH")
+		return WarningList{}, fmt.Errorf("No value set to environment variable CONFIG_FILE_PATH")
 	}
 	configData, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
-		return fmt.Errorf("Failed to read the config file: %v", err)
+		return WarningList{}, fmt.Errorf("Failed to read the config file: %v", err)
 	}
 	err = json.Unmarshal(configData, &Data)
 	if err != nil {
-		return fmt.Errorf("Failed to unmarshal config data: %v", err)
+		return WarningList{}, fmt.Errorf("Failed to unmarshal config data: %v", err)
 	}
 	return ValidateConfiguration()
 }
 
 // ValidateConfiguration will validate configurations read and assign default values, where required
-func ValidateConfiguration() error {
+func ValidateConfiguration() (WarningList, error) {
 	var err error
+	warningList := &WarningList{}
 	if err = CheckRootServiceuuid(Data.RootServiceUUID); err != nil {
-		return err
+		return *warningList, err
 	}
-	if err = checkMiscellaneousConf(); err != nil {
-		return err
+	if err = checkMiscellaneousConf(warningList); err != nil {
+		return *warningList, err
 	}
-	if err = checkDBConf(); err != nil {
-		return err
+	if err = checkDBConf(warningList); err != nil {
+		return *warningList, err
 	}
-	if err = checkMessageBusConf(); err != nil {
-		return err
+	if err = checkMessageBusConf(warningList); err != nil {
+		return *warningList, err
 	}
 	if err = checkKeyCertConf(); err != nil {
-		return err
+		return *warningList, err
 	}
 	if err = checkAPIGatewayConf(); err != nil {
-		return err
+		return *warningList, err
 	}
-	if err = checkTLSConf(); err != nil {
-		return err
+	if err = checkTLSConf(warningList); err != nil {
+		return *warningList, err
 	}
 	if err = checkConnectionMethodConf(); err != nil {
-		return err
+		return *warningList, err
 	}
-	if err = checkEventConf(); err != nil {
-		return err
+	if err = checkEventConf(warningList); err != nil {
+		return *warningList, err
 	}
 	if err = checkResourceRateLimit(); err != nil {
-		return err
+		return *warningList, err
 	}
-	checkAuthConf()
-	checkAddComputeSkipResources()
-	checkURLTranslation()
-	checkPluginStatusPolling()
-	checkExecPriorityDelayConf()
+	if err = checkTaskQueueConfiguration(); err != nil {
+		return *warningList, err
+	}
+	checkAuthConf(warningList)
+	checkAddComputeSkipResources(warningList)
+	checkURLTranslation(warningList)
+	checkPluginStatusPolling(warningList)
+	checkExecPriorityDelayConf(warningList)
 
-	return nil
+	return *warningList, nil
 }
 
-func checkMiscellaneousConf() error {
+func checkMiscellaneousConf(wl *WarningList) error {
 	if Data.FirmwareVersion == "" {
-		log.Warn("No value set for FirmwareVersion, setting default value")
+		wl.add("No value set for FirmwareVersion, setting default value")
 		Data.FirmwareVersion = DefaultFirmwareVersion
 	}
 	if Data.RootServiceUUID == "" {
@@ -271,12 +288,12 @@ func checkMiscellaneousConf() error {
 	return nil
 }
 
-func checkDBConf() error {
+func checkDBConf(wl *WarningList) error {
 	if Data.DBConf == nil {
 		return fmt.Errorf("error: DBConf is not provided")
 	}
 	if Data.DBConf.Protocol != DefaultDBProtocol {
-		log.Warn("Incorrect value configured for DB Protocol, setting default value")
+		wl.add("Incorrect value configured for DB Protocol, setting default value")
 		Data.DBConf.Protocol = DefaultDBProtocol
 	}
 	if Data.DBConf.InMemoryHost == "" {
@@ -292,11 +309,11 @@ func checkDBConf() error {
 		return fmt.Errorf("error: no value configured for DB OnDiskPort")
 	}
 	if Data.DBConf.MaxActiveConns == 0 {
-		log.Warn("No value configured for MaxActiveConns, setting default value")
+		wl.add("No value configured for MaxActiveConns, setting default value")
 		Data.DBConf.MaxActiveConns = DefaultDBMaxActiveConns
 	}
 	if Data.DBConf.MaxIdleConns == 0 {
-		log.Warn("No value configured for MaxIdleConns, setting default value")
+		wl.add("No value configured for MaxIdleConns, setting default value")
 		Data.DBConf.MaxIdleConns = DefaultDBMaxIdleConns
 	}
 	if Data.DBConf.RedisHAEnabled {
@@ -355,21 +372,21 @@ func decryptRSAOAEPEncryptedPasswords(passwordFilePath string) ([]byte, error) {
 	return password, nil
 }
 
-func checkMessageBusConf() error {
+func checkMessageBusConf(wl *WarningList) error {
 	if Data.MessageBusConf == nil {
 		return fmt.Errorf("error: MessageBusConf is not provided")
 	}
 	if Data.MessageBusConf.MessageBusType == "" {
-		log.Warn("No value set for MessageBusType, setting default value")
+		wl.add("No value set for MessageBusType, setting default value")
 		Data.MessageBusConf.MessageBusType = "Kafka"
 	}
 	if Data.MessageBusConf.MessageBusType == "Kafka" {
 		if _, err := os.Stat(Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
 			return fmt.Errorf("Value check failed for MessageBusConfigFilePath:%s with %v", Data.MessageBusConf.MessageBusConfigFilePath, err)
 		}
-		if len(Data.MessageBusConf.MessageBusQueue) <= 0 {
-			log.Warn("No value set for MessageBusQueue, setting default value")
-			Data.MessageBusConf.MessageBusQueue = []string{"REDFISH-EVENTS-TOPIC"}
+		if len(Data.MessageBusConf.OdimControlMessageQueue) <= 0 {
+			wl.add("No value set for MessageBusQueue, setting default value")
+			Data.MessageBusConf.OdimControlMessageQueue = "ODIM-CONTROL-MESSAGES"
 		}
 	}
 	if !AllowedMessageBusTypes[Data.MessageBusConf.MessageBusType] {
@@ -417,9 +434,9 @@ func checkKeyCertConf() error {
 	return nil
 }
 
-func checkAuthConf() {
+func checkAuthConf(wl *WarningList) {
 	if Data.AuthConf == nil {
-		log.Warn("No value found for AuthConf, setting default value")
+		wl.add("No value found for AuthConf, setting default value")
 		Data.AuthConf = &AuthConf{
 			SessionTimeOutInMins:            DefaultSessionTimeOutInMins,
 			ExpiredSessionCleanUpTimeInMins: DefaultExpiredSessionCleanUpTimeInMins,
@@ -432,19 +449,19 @@ func checkAuthConf() {
 		return
 	}
 	if Data.AuthConf.SessionTimeOutInMins == 0 {
-		log.Warn("No value set for SessionTimeOutInMin, setting default value")
+		wl.add("No value set for SessionTimeOutInMin, setting default value")
 		Data.AuthConf.SessionTimeOutInMins = DefaultSessionTimeOutInMins
 	}
 	if Data.AuthConf.ExpiredSessionCleanUpTimeInMins == 0 {
-		log.Warn("No value set for ExpiredSessionCleanUpTimeInMins, setting default value")
+		wl.add("No value set for ExpiredSessionCleanUpTimeInMins, setting default value")
 		Data.AuthConf.ExpiredSessionCleanUpTimeInMins = DefaultExpiredSessionCleanUpTimeInMins
 	}
-	checkPasswordRulesConf()
+	checkPasswordRulesConf(wl)
 }
 
-func checkPasswordRulesConf() {
+func checkPasswordRulesConf(wl *WarningList) {
 	if Data.AuthConf.PasswordRules == nil {
-		log.Warn("PasswordRules configuration is found empty, setting default value")
+		wl.add("PasswordRules configuration is found empty, setting default value")
 		Data.AuthConf.PasswordRules = &PasswordRules{
 			MinPasswordLength:       DefaultMinPasswordLength,
 			MaxPasswordLength:       DefaultMaxPasswordLength,
@@ -453,15 +470,15 @@ func checkPasswordRulesConf() {
 		return
 	}
 	if Data.AuthConf.PasswordRules.MinPasswordLength <= 0 {
-		log.Warn("No value set for MinPasswordLength, setting default value")
+		wl.add("No value set for MinPasswordLength, setting default value")
 		Data.AuthConf.PasswordRules.MinPasswordLength = DefaultMinPasswordLength
 	}
 	if Data.AuthConf.PasswordRules.MaxPasswordLength <= 0 {
-		log.Warn("No value set for MaxPasswordLength, setting default value")
+		wl.add("No value set for MaxPasswordLength, setting default value")
 		Data.AuthConf.PasswordRules.MaxPasswordLength = DefaultMaxPasswordLength
 	}
 	if Data.AuthConf.PasswordRules.AllowedSpecialCharcters == "" {
-		log.Warn("No value set for AllowedSpecialCharcters, setting default value")
+		wl.add("No value set for AllowedSpecialCharcters, setting default value")
 		Data.AuthConf.PasswordRules.AllowedSpecialCharcters = DefaultAllowedSpecialCharcters
 	}
 }
@@ -483,9 +500,9 @@ func checkAPIGatewayConf() error {
 	return nil
 }
 
-func checkAddComputeSkipResources() {
+func checkAddComputeSkipResources(wl *WarningList) {
 	if Data.AddComputeSkipResources == nil {
-		log.Warn("No value found for AddComputeRetrival, setting default value")
+		wl.add("No value found for AddComputeRetrival, setting default value")
 		Data.AddComputeSkipResources = &AddComputeSkipResources{
 			SkipResourceListUnderSystem:  DefaultSkipListUnderSystem,
 			SkipResourceListUnderManager: DefaultSkipListUnderManager,
@@ -495,26 +512,26 @@ func checkAddComputeSkipResources() {
 		return
 	}
 	if len(Data.AddComputeSkipResources.SkipResourceListUnderSystem) == 0 {
-		log.Warn("No value found for SkipResourceListUnderSystem, setting default value")
+		wl.add("No value found for SkipResourceListUnderSystem, setting default value")
 		Data.AddComputeSkipResources.SkipResourceListUnderSystem = DefaultSkipListUnderSystem
 	}
 	if len(Data.AddComputeSkipResources.SkipResourceListUnderManager) == 0 {
-		log.Warn("No value found for SkipResourceListUnderManager, setting default value")
+		wl.add("No value found for SkipResourceListUnderManager, setting default value")
 		Data.AddComputeSkipResources.SkipResourceListUnderManager = DefaultSkipListUnderManager
 	}
 	if len(Data.AddComputeSkipResources.SkipResourceListUnderChassis) == 0 {
-		log.Warn("No value found for SkipResourceListUnderChassis, setting default value")
+		wl.add("No value found for SkipResourceListUnderChassis, setting default value")
 		Data.AddComputeSkipResources.SkipResourceListUnderChassis = DefaultSkipListUnderChassis
 	}
 	if len(Data.AddComputeSkipResources.SkipResourceListUnderOthers) == 0 {
-		log.Warn("No value found for SkipResourceListUnderOthers, setting default value")
+		wl.add("No value found for SkipResourceListUnderOthers, setting default value")
 		Data.AddComputeSkipResources.SkipResourceListUnderOthers = DefaultSkipListUnderOthers
 	}
 }
 
-func checkURLTranslation() {
+func checkURLTranslation(wl *WarningList) {
 	if Data.URLTranslation == nil {
-		log.Warn("URL translation not provided, setting default value")
+		wl.add("URL translation not provided, setting default value")
 		Data.URLTranslation = &URLTranslation{
 			NorthBoundURL: map[string]string{
 				"ODIM": "redfish",
@@ -526,22 +543,22 @@ func checkURLTranslation() {
 		return
 	}
 	if len(Data.URLTranslation.NorthBoundURL) <= 0 {
-		log.Warn("NorthBoundURL is empty, setting default value")
+		wl.add("NorthBoundURL is empty, setting default value")
 		Data.URLTranslation.NorthBoundURL = map[string]string{
 			"ODIM": "redfish",
 		}
 	}
 	if len(Data.URLTranslation.SouthBoundURL) <= 0 {
-		log.Warn("SouthBoundURL is empty, setting default value")
+		wl.add("SouthBoundURL is empty, setting default value")
 		Data.URLTranslation.SouthBoundURL = map[string]string{
 			"redfish": "ODIM",
 		}
 	}
 }
 
-func checkPluginStatusPolling() {
+func checkPluginStatusPolling(wl *WarningList) {
 	if Data.PluginStatusPolling == nil {
-		log.Warn("PluginStatusPolling not provided, setting default value")
+		wl.add("PluginStatusPolling not provided, setting default value")
 		Data.PluginStatusPolling = &PluginStatusPolling{
 			PollingFrequencyInMins:  DefaultPollingFrequencyInMins,
 			MaxRetryAttempt:         DefaultMaxRetryAttempt,
@@ -552,30 +569,30 @@ func checkPluginStatusPolling() {
 		return
 	}
 	if Data.PluginStatusPolling.PollingFrequencyInMins <= 0 {
-		log.Warn("No value found for PollingFrequencyInMins, setting default value")
+		wl.add("No value found for PollingFrequencyInMins, setting default value")
 		Data.PluginStatusPolling.PollingFrequencyInMins = DefaultPollingFrequencyInMins
 	}
 	if Data.PluginStatusPolling.MaxRetryAttempt <= 0 {
-		log.Warn("No value found for MaxRetryAttempt, setting default value")
+		wl.add("No value found for MaxRetryAttempt, setting default value")
 		Data.PluginStatusPolling.MaxRetryAttempt = DefaultMaxRetryAttempt
 	}
 	if Data.PluginStatusPolling.RetryIntervalInMins <= 0 {
-		log.Warn("No value found for RetryIntervalInMins, setting default value")
+		wl.add("No value found for RetryIntervalInMins, setting default value")
 		Data.PluginStatusPolling.RetryIntervalInMins = DefaultRetryIntervalInMins
 	}
 	if Data.PluginStatusPolling.ResponseTimeoutInSecs <= 0 {
-		log.Warn("No value found for ResponseTimeoutInSecs, setting default value")
+		wl.add("No value found for ResponseTimeoutInSecs, setting default value")
 		Data.PluginStatusPolling.ResponseTimeoutInSecs = DefaultResponseTimeoutInSecs
 	}
 	if Data.PluginStatusPolling.StartUpResouceBatchSize <= 0 {
-		log.Warn("No value found for StartUpResouceBatchSize, setting default value")
+		wl.add("No value found for StartUpResouceBatchSize, setting default value")
 		Data.PluginStatusPolling.StartUpResouceBatchSize = DefaultStartUpResouceBatchSize
 	}
 }
 
-func checkExecPriorityDelayConf() {
+func checkExecPriorityDelayConf(wl *WarningList) {
 	if Data.ExecPriorityDelayConf == nil {
-		log.Warn("ExecPriorityDelayConf not provided, setting default value")
+		wl.add("ExecPriorityDelayConf not provided, setting default value")
 		Data.ExecPriorityDelayConf = &ExecPriorityDelayConf{
 			MinResetPriority:    DefaultMinResetPriority,
 			MaxResetPriority:    DefaultMinResetPriority + 1,
@@ -584,23 +601,23 @@ func checkExecPriorityDelayConf() {
 		return
 	}
 	if Data.ExecPriorityDelayConf.MinResetPriority <= 0 {
-		log.Warn("No value found for MinResetPriority, setting default value")
+		wl.add("No value found for MinResetPriority, setting default value")
 		Data.ExecPriorityDelayConf.MinResetPriority = DefaultMinResetPriority
 	}
 	if Data.ExecPriorityDelayConf.MaxResetPriority <= Data.ExecPriorityDelayConf.MinResetPriority {
-		log.Warn("no value found for MaxResetPriority, setting default value")
+		wl.add("no value found for MaxResetPriority, setting default value")
 		Data.ExecPriorityDelayConf.MaxResetPriority = Data.ExecPriorityDelayConf.MinResetPriority + 1
 	}
 	if Data.ExecPriorityDelayConf.MaxResetDelayInSecs <= 0 ||
 		Data.ExecPriorityDelayConf.MaxResetDelayInSecs > DefaultMaxResetDelay {
-		log.Warn("No value found for MaxResetDelayInSecs, setting default value")
+		wl.add("No value found for MaxResetDelayInSecs, setting default value")
 		Data.ExecPriorityDelayConf.MaxResetDelayInSecs = DefaultMaxResetDelay
 	}
 }
 
-func checkTLSConf() error {
+func checkTLSConf(wl *WarningList) error {
 	if Data.TLSConf == nil {
-		log.Warn("TLSConf not provided, setting default value")
+		wl.add("TLSConf not provided, setting default values")
 		Data.TLSConf = &TLSConf{}
 		SetDefaultTLSConf()
 		return nil
@@ -608,13 +625,13 @@ func checkTLSConf() error {
 
 	var err error
 	SetVerifyPeer(Data.TLSConf.VerifyPeer)
-	if err = SetTLSMinVersion(Data.TLSConf.MinVersion); err != nil {
+	if err = SetTLSMinVersion(Data.TLSConf.MinVersion, wl); err != nil {
 		return err
 	}
-	if err = SetTLSMaxVersion(Data.TLSConf.MaxVersion); err != nil {
+	if err = SetTLSMaxVersion(Data.TLSConf.MaxVersion, wl); err != nil {
 		return err
 	}
-	if err = ValidateConfiguredTLSVersions(); err != nil {
+	if err = ValidateConfiguredTLSVersions(wl); err != nil {
 		return err
 	}
 	if err = SetPreferredCipherSuites(Data.TLSConf.PreferredCipherSuites); err != nil {
@@ -637,9 +654,9 @@ func checkConnectionMethodConf() error {
 	return err
 }
 
-func checkEventConf() error {
+func checkEventConf(wl *WarningList) error {
 	if Data.EventConf == nil {
-		log.Warn("EventConf not provided, setting default value")
+		wl.add("EventConf not provided, setting default value")
 		Data.EventConf = &EventConf{
 			DeliveryRetryAttempts:        DefaultDeliveryRetryAttempts,
 			DeliveryRetryIntervalSeconds: DefaultDeliveryRetryIntervalSeconds,
@@ -647,11 +664,11 @@ func checkEventConf() error {
 		return nil
 	}
 	if Data.EventConf.DeliveryRetryAttempts <= 0 {
-		log.Warn("No value found for DeliveryRetryAttempts, setting default value")
+		wl.add("No value found for DeliveryRetryAttempts, setting default value")
 		Data.EventConf.DeliveryRetryAttempts = DefaultDeliveryRetryAttempts
 	}
 	if Data.EventConf.DeliveryRetryIntervalSeconds <= 0 {
-		log.Warn("No value found for DeliveryRetryIntervalSeconds, setting default value")
+		wl.add("No value found for DeliveryRetryIntervalSeconds, setting default value")
 		Data.EventConf.DeliveryRetryIntervalSeconds = DefaultDeliveryRetryIntervalSeconds
 	}
 	return nil
@@ -668,4 +685,21 @@ func checkResourceRateLimit() error {
 		}
 	}
 	return nil
+}
+
+func checkTaskQueueConfiguration() error {
+	if Data.TaskQueueConf.QueueSize <= 0 {
+		return fmt.Errorf("task queue size should be greater than 0")
+	}
+	if Data.TaskQueueConf.DBCommitInterval <= 0 {
+		return fmt.Errorf("task db commit interval should be greater than 0")
+	}
+	if Data.TaskQueueConf.RetryInterval <= 0 {
+		return fmt.Errorf("retry interval should be greater than 0")
+	}
+	return nil
+}
+
+func (wl *WarningList) add(warning string) {
+	*wl = append(*wl, warning)
 }

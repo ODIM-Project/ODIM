@@ -126,14 +126,7 @@ func mockDeleteTaskIndex(task string) error {
 	return nil
 }
 
-func mockUpdateTaskStatusModel(task *tmodel.Task, db common.DbType) error {
-	if db != common.InMemory {
-		return fmt.Errorf("error while trying to update task")
-	}
-	if task.ID == "invalidTaskID" {
-		return fmt.Errorf("error while trying to update task")
-	}
-	return nil
+func mockUpdateTaskStatusModel(task *tmodel.Task) {
 }
 
 func mockPublishToMessageBus(taskURI, taskEvenMessageID, eventType, taskMessage string) {
@@ -970,9 +963,9 @@ func TestTasksRPC_CreateChildTask(t *testing.T) {
 		{
 			name: "Positive case: All is well",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
 			},
 			args: args{
 				req: &taskproto.CreateTaskRequest{
@@ -989,9 +982,9 @@ func TestTasksRPC_CreateChildTask(t *testing.T) {
 		{
 			name: "Negative case: ParentTaskID is Empty",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
 			},
 			args: args{
 				req: &taskproto.CreateTaskRequest{
@@ -1008,9 +1001,9 @@ func TestTasksRPC_CreateChildTask(t *testing.T) {
 		{
 			name: "Negative case: Invalid ParentTaskID",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
 			},
 			args: args{
 				req: &taskproto.CreateTaskRequest{
@@ -1027,9 +1020,9 @@ func TestTasksRPC_CreateChildTask(t *testing.T) {
 		{
 			name: "Negative case: Invalid UserName",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
 			},
 			args: args{
 				req: &taskproto.CreateTaskRequest{
@@ -1073,10 +1066,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as Completed ",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1094,10 +1087,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as Killed, status as Critical ",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1115,10 +1108,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Negative case: task state as Killed, status as Critical, end time as empty ",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1139,10 +1132,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Negative case: task state as Killed, status as Invalid",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1160,10 +1153,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as Cancelled, status as     Critical ",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1181,10 +1174,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as Exception, status     as Critical ",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1202,10 +1195,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Negative case: Invalid Status for Exception state task",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1224,10 +1217,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as Cancelling, status as Ok",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1245,10 +1238,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as Interrupted, status as Ok",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1266,10 +1259,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as New, status   as Ok",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1287,10 +1280,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as Pending, status   as Ok",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1308,10 +1301,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as Running, status   as  Ok",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1329,10 +1322,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as Service, status as Ok",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1350,10 +1343,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as Starting, status as Ok",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1371,10 +1364,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as Stopping, status   as  Ok",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1392,10 +1385,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as Suspended, status as Ok",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1413,10 +1406,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Negative case: All is well with task state as InvalidState,status   as Ok",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1434,10 +1427,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Positive case: All is well with task state as Completed,status as Ok, with payload",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1463,10 +1456,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Nagative case: State as Completed, status is Invalid, with payload",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1492,10 +1485,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Nagative case: State as Completed, status is OK,but end time is null with payload",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1524,10 +1517,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Negative case: task state as Exception,status as Critical with payload, endTime as empty",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1556,10 +1549,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Negative case: state as Exception,status as   Critical with payload",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1585,10 +1578,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Negative case: All is well with task state as cancelled,status as OK, with payload",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1614,10 +1607,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Negative case: All is well with task state as cancelled,status as Critical, with payload",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1643,10 +1636,10 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		{
 			name: "Negative case: Task state as cancelled,status as Invalid",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				CreateTaskUtilHelper:  mockCreateTaskUtil,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
-				PublishToMessageBus:   mockPublishToMessageBus,
+				GetTaskStatusModel:   mockGetTaskStatusModel,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
+				UpdateTaskQueue:      mockUpdateTaskStatusModel,
+				PublishToMessageBus:  mockPublishToMessageBus,
 			},
 			args: args{
 				req: &taskproto.UpdateTaskRequest{
@@ -1743,7 +1736,7 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 			name: "Positive case: All is well",
 			ts: &TasksRPC{
 				GetTaskStatusModel:    mockGetTaskStatusModel,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
+				UpdateTaskQueue:       mockUpdateTaskStatusModel,
 				DeleteTaskFromDBModel: mockDeleteTaskFromDBModel,
 			},
 			args: args{
@@ -1755,7 +1748,7 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 			name: "Positive case: All is well, But task state is Completed",
 			ts: &TasksRPC{
 				GetTaskStatusModel:    mockGetTaskStatusModel,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
+				UpdateTaskQueue:       mockUpdateTaskStatusModel,
 				DeleteTaskFromDBModel: mockDeleteTaskFromDBModel,
 			},
 			args: args{
@@ -1767,7 +1760,7 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 			name: "Positive case: All is well, But task state is Running",
 			ts: &TasksRPC{
 				GetTaskStatusModel:    mockGetTaskStatusModel,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
+				UpdateTaskQueue:       mockUpdateTaskStatusModel,
 				DeleteTaskFromDBModel: mockDeleteTaskFromDBModel,
 			},
 			args: args{
@@ -1779,7 +1772,7 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 			name: "Negative case: InvalidTaskID",
 			ts: &TasksRPC{
 				GetTaskStatusModel:    mockGetTaskStatusModel,
-				UpdateTaskStatusModel: mockUpdateTaskStatusModel,
+				UpdateTaskQueue:       mockUpdateTaskStatusModel,
 				DeleteTaskFromDBModel: mockDeleteTaskFromDBModel,
 			},
 			args: args{

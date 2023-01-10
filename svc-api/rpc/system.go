@@ -12,13 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -27,15 +28,16 @@ var (
 	NewSystemsClientFunc = systemsproto.NewSystemsClient
 )
 
-//GetSystemsCollection will do the rpc call to collect Systems from odimra
-func GetSystemsCollection(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+// GetSystemsCollection will do the rpc call to collect Systems from odimra
+func GetSystemsCollection(ctx context.Context, req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.GetSystemsCollection(context.TODO(), &req)
+	resp, err := asService.GetSystemsCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -44,14 +46,15 @@ func GetSystemsCollection(req systemsproto.GetSystemsRequest) (*systemsproto.Sys
 }
 
 // GetSystemRequestRPC will do the rpc calls for the svc-systems
-func GetSystemRequestRPC(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+func GetSystemRequestRPC(ctx context.Context, req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.GetSystems(context.TODO(), &req)
+	resp, err := asService.GetSystems(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -59,15 +62,16 @@ func GetSystemRequestRPC(req systemsproto.GetSystemsRequest) (*systemsproto.Syst
 	return resp, nil
 }
 
-//GetSystemResource will do the rpc call to collect System Resource
-func GetSystemResource(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+// GetSystemResource will do the rpc call to collect System Resource
+func GetSystemResource(ctx context.Context, req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.GetSystemResource(context.TODO(), &req)
+	resp, err := asService.GetSystemResource(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -76,14 +80,15 @@ func GetSystemResource(req systemsproto.GetSystemsRequest) (*systemsproto.System
 }
 
 // ComputerSystemReset will do the rpc call to reset the computer system
-func ComputerSystemReset(req systemsproto.ComputerSystemResetRequest) (*systemsproto.SystemsResponse, error) {
+func ComputerSystemReset(ctx context.Context, req systemsproto.ComputerSystemResetRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.ComputerSystemReset(context.TODO(), &req)
+	resp, err := asService.ComputerSystemReset(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -92,14 +97,15 @@ func ComputerSystemReset(req systemsproto.ComputerSystemResetRequest) (*systemsp
 }
 
 // SetDefaultBootOrder will do the rpc call to set the default boot order of computer system
-func SetDefaultBootOrder(req systemsproto.DefaultBootOrderRequest) (*systemsproto.SystemsResponse, error) {
+func SetDefaultBootOrder(ctx context.Context, req systemsproto.DefaultBootOrderRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.SetDefaultBootOrder(context.TODO(), &req)
+	resp, err := asService.SetDefaultBootOrder(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -108,14 +114,15 @@ func SetDefaultBootOrder(req systemsproto.DefaultBootOrderRequest) (*systemsprot
 }
 
 // ChangeBiosSettings will do the rpc call to change bios settings
-func ChangeBiosSettings(req systemsproto.BiosSettingsRequest) (*systemsproto.SystemsResponse, error) {
+func ChangeBiosSettings(ctx context.Context, req systemsproto.BiosSettingsRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.ChangeBiosSettings(context.TODO(), &req)
+	resp, err := asService.ChangeBiosSettings(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -124,14 +131,15 @@ func ChangeBiosSettings(req systemsproto.BiosSettingsRequest) (*systemsproto.Sys
 }
 
 // ChangeBootOrderSettings will do the rpc call to change Boot Order settings
-func ChangeBootOrderSettings(req systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error) {
+func ChangeBootOrderSettings(ctx context.Context, req systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.ChangeBootOrderSettings(context.TODO(), &req)
+	resp, err := asService.ChangeBootOrderSettings(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -140,14 +148,15 @@ func ChangeBootOrderSettings(req systemsproto.BootOrderSettingsRequest) (*system
 }
 
 // CreateVolume will do the rpc call to create a volume under storage
-func CreateVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+func CreateVolume(ctx context.Context, req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.CreateVolume(context.TODO(), &req)
+	resp, err := asService.CreateVolume(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -156,14 +165,15 @@ func CreateVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse
 }
 
 // DeleteVolume will do the rpc call to DeleteVolume a volume under storage
-func DeleteVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+func DeleteVolume(ctx context.Context, req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSystemsClientFunc(conn)
-	resp, err := asService.DeleteVolume(context.TODO(), &req)
+	resp, err := asService.DeleteVolume(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}

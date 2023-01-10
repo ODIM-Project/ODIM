@@ -1,15 +1,15 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package update
 
@@ -59,6 +59,7 @@ func mockUpdateErrorTask(task common.TaskData) error {
 }
 
 func TestSimpleUpdate(t *testing.T) {
+	ctx := mockContext()
 	errMsg := []string{"/redfish/v1/Systems/uuid./target1"}
 	errArg1 := response.Args{
 		Code:    response.GeneralError,
@@ -174,13 +175,14 @@ func TestSimpleUpdate(t *testing.T) {
 	e := mockGetExternalInterface()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := e.SimpleUpdate(tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := e.SimpleUpdate(ctx, tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("SimpleUpdate() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 func Test_SimpleUpdate(t *testing.T) {
+	ctx := mockContext()
 	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid.1/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
 	e := mockGetExternalInterface()
 	req := &updateproto.UpdateRequest{
@@ -190,14 +192,14 @@ func Test_SimpleUpdate(t *testing.T) {
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", errors.New("")
 	}
-	e.SimpleUpdate("invalid", "dummy", req)
+	e.SimpleUpdate(ctx, "invalid", "dummy", req)
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
 	}
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, errors.New("")
 	}
-	e.SimpleUpdate("valid", "validId", req)
+	e.SimpleUpdate(ctx, "valid", "validId", req)
 
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)
@@ -206,6 +208,7 @@ func Test_SimpleUpdate(t *testing.T) {
 
 func TestExternalInterface_sendRequestPreferedAuthType(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	e := mockGetExternalInterface()
 	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid.1/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
 	subTaskChannel := make(chan int32, 7)
@@ -214,7 +217,7 @@ func TestExternalInterface_sendRequestPreferedAuthType(t *testing.T) {
 	StringsEqualFoldFunc = func(s, t string) bool {
 		return true
 	}
-	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	e.sendRequest(ctx, "uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
 	assert.True(t, true, "There should not be error")
 
 	StringsEqualFoldFunc = func(s, t string) bool {
@@ -222,35 +225,35 @@ func TestExternalInterface_sendRequestPreferedAuthType(t *testing.T) {
 	}
 
 	e.External.GetTarget = mockGetTargetError
-	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	e.sendRequest(ctx, "uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
 	assert.True(t, true, "There should not be error")
 
 	e.External.GetTarget = mockGetTarget
 	e.External.GenericSave = stubGenericSaveError
-	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	e.sendRequest(ctx, "uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
 	assert.True(t, true, "There should not be error")
 
 	e.External.GenericSave = stubGenericSave
 	e.External.DevicePassword = stubDevicePasswordError
-	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	e.sendRequest(ctx, "uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
 	assert.True(t, true, "There should not be error")
 
 	e.External.DevicePassword = stubDevicePassword
 	e.External.ContactPlugin = mockContactPluginError
 
-	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	e.sendRequest(ctx, "uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
 	assert.True(t, true, "There should not be error")
 
 	e.External.GetPluginData = mockGetPluginDataError
 	e.External.ContactPlugin = mockContactPlugin
 
-	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	e.sendRequest(ctx, "uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
 	assert.True(t, true, "There should not be error")
 
 	e.External.GetPluginData = mockGetPluginData
 	e.External.UpdateTask = mockUpdateErrorTask
 
-	e.sendRequest("uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
+	e.sendRequest(ctx, "uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
 	assert.True(t, true, "There should not be error")
 
 	for i := 0; i < 7; i++ {

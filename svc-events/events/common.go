@@ -45,7 +45,7 @@ var (
 // External struct to inject the contact external function into the handlers
 type External struct {
 	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth            func(string, []string, []string) response.RPC
+	Auth            func(string, []string, []string) (response.RPC, error)
 	CreateTask      func(string) (string, error)
 	UpdateTask      func(common.TaskData) error
 	CreateChildTask func(string, string) (string, error)
@@ -410,7 +410,7 @@ func getAggregateID(origin string) string {
 	return ""
 }
 
-// callPlugin check the given request url and PrefereAuth type plugin
+// callPlugin check the given request url and PreferAuth type plugin
 func (e *ExternalInterfaces) callPlugin(req evcommon.PluginContactRequest) (*http.Response, error) {
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.URL
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
@@ -455,8 +455,8 @@ func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, b
 // isHostPresentInEventForward will check if hostip present in the hosts slice
 func isHostPresentInEventForward(hosts []string, hostip string) bool {
 
-	if len(hosts) < 1 {
-		return false
+	if len(hosts) == 0 {
+		return true
 	}
 
 	front := 0

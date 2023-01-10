@@ -29,6 +29,7 @@
 package rpc
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -70,7 +71,7 @@ func TestGetManagersCollection(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewManagersClientFunc = tt.NewManagersClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetManagersCollection(tt.args.req)
+			got, err := GetManagersCollection(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetManagersCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -115,7 +116,7 @@ func TestGetManagers(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewManagersClientFunc = tt.NewManagersClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetManagers(tt.args.req)
+			got, err := GetManagers(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetManagers() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -160,7 +161,7 @@ func TestGetManagersResource(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewManagersClientFunc = tt.NewManagersClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetManagersResource(tt.args.req)
+			got, err := GetManagersResource(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetManagersResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -205,7 +206,7 @@ func TestVirtualMediaInsert(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewManagersClientFunc = tt.NewManagersClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := VirtualMediaInsert(tt.args.req)
+			got, err := VirtualMediaInsert(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("VirtualMediaInsert() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -250,7 +251,7 @@ func TestVirtualMediaEject(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewManagersClientFunc = tt.NewManagersClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := VirtualMediaEject(tt.args.req)
+			got, err := VirtualMediaEject(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("VirtualMediaEject() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -295,7 +296,7 @@ func TestGetRemoteAccountService(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewManagersClientFunc = tt.NewManagersClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetRemoteAccountService(tt.args.req)
+			got, err := GetRemoteAccountService(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetRemoteAccountService() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -340,7 +341,7 @@ func TestCreateRemoteAccountService(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewManagersClientFunc = tt.NewManagersClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CreateRemoteAccountService(tt.args.req)
+			got, err := CreateRemoteAccountService(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateRemoteAccountService() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -385,7 +386,7 @@ func TestUpdateRemoteAccountService(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewManagersClientFunc = tt.NewManagersClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := UpdateRemoteAccountService(tt.args.req)
+			got, err := UpdateRemoteAccountService(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpdateRemoteAccountService() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -430,7 +431,7 @@ func TestDeleteRemoteAccountService(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewManagersClientFunc = tt.NewManagersClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DeleteRemoteAccountService(tt.args.req)
+			got, err := DeleteRemoteAccountService(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteRemoteAccountService() error = %v, wantErr %v", err, tt.wantErr)
 				return

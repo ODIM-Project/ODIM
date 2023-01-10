@@ -25,7 +25,7 @@ import (
 )
 
 type Logging struct {
-	GetUserDetails func(string) (string, string)
+	GetUserDetails func(string) (string, string, error)
 }
 
 // AuditLog is used for generating audit logs in syslog format for each request
@@ -33,13 +33,16 @@ type Logging struct {
 // properties logged are prival, time, host, username, roleid, request method, resource, requestbody, responsecode and message
 
 func (l *Logging) AuditLog(ctx iris.Context, reqBody map[string]interface{}) {
-	logMsg := l.auditLogEntry(ctx, reqBody)
+	logMsg, err := l.auditLogEntry(ctx, reqBody)
+	if err != nil {
+		Log.Error(err)
+	}
 	// Get response code
 	respStatusCode := int32(ctx.GetStatusCode())
 	operationStatus := getResponseStatus(respStatusCode)
 
-	// 110 is for audit log info
-	// 107 is for audit log error
+	// 110 indicates info audit log for successful operation
+	// 107 indicates error audit log for failed operation
 	if operationStatus {
 		successMsg := "<110> " + logMsg + " Operation successful"
 		fmt.Println(successMsg)
@@ -47,6 +50,7 @@ func (l *Logging) AuditLog(ctx iris.Context, reqBody map[string]interface{}) {
 		failedMsg := "<107> " + logMsg + " Operation failed"
 		fmt.Println(failedMsg)
 	}
+	return
 }
 
 // AuthLog is used for generating security logs in syslog format for each request
@@ -103,11 +107,11 @@ func AuthLog(logProperties map[string]interface{}) {
 
 // auditLogEntry extracts the required info from context like session token, username, request URI
 // and formats in syslog format for audit logs
-func (l *Logging) auditLogEntry(ctx iris.Context, reqBody map[string]interface{}) string {
+func (l *Logging) auditLogEntry(ctx iris.Context, reqBody map[string]interface{}) (string, error) {
 	var logMsg string
 	// getting the request URI, host and method from context
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
-	sessionUserName, sessionRoleID := l.GetUserDetails(sessionToken)
+	sessionUserName, sessionRoleID, err := l.GetUserDetails(sessionToken)
 	rawURI := ctx.Request().RequestURI
 	host := ctx.Request().Host
 	method := ctx.Request().Method
@@ -116,12 +120,12 @@ func (l *Logging) auditLogEntry(ctx iris.Context, reqBody map[string]interface{}
 	reqStr := MaskRequestBody(reqBody)
 
 	// formatting logs in syslog format
-	if reqStr == "null" {
+	if reqStr == "" {
 		logMsg = fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\"][response@1 responseCode=%d]", timeNow, host, sessionUserName, sessionRoleID, method, rawURI, respStatusCode)
 	} else {
-		logMsg = fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\" requestBody=\"%s\"][response@1 responseCode=%d]", timeNow, host, sessionUserName, sessionRoleID, method, rawURI, reqStr, respStatusCode)
+		logMsg = fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\" requestBody= %s][response@1 responseCode=%d]", timeNow, host, sessionUserName, sessionRoleID, method, rawURI, reqStr, respStatusCode)
 	}
-	return logMsg
+	return logMsg, err
 }
 
 // MaskRequestBody function
@@ -137,10 +141,7 @@ func MaskRequestBody(reqBody map[string]interface{}) string {
 		}
 	}
 	reqStr := string(jsonStr)
-	// adding null to requestbody property if no payload is sent
-	if reqStr == "" {
-		reqStr = "null"
-	}
+
 	return reqStr
 }
 

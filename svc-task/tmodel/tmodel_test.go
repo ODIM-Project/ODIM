@@ -1,15 +1,15 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package tmodel
 
@@ -20,11 +20,45 @@ import (
 	"testing"
 	"time"
 
+	db "github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/satori/uuid"
 	"golang.org/x/crypto/sha3"
 )
+
+type MockRedisConn struct {
+	MockClose   func() error
+	MockErr     func() error
+	MockDo      func(string, ...interface{}) (interface{}, error)
+	MockSend    func(string, ...interface{}) error
+	MockFlush   func() error
+	MockReceive func() (interface{}, error)
+}
+
+func (mc MockRedisConn) Close() error {
+	return mc.MockClose()
+}
+
+func (mc MockRedisConn) Err() error {
+	return mc.MockErr()
+}
+
+func (mc MockRedisConn) Do(commandName string, args ...interface{}) (interface{}, error) {
+	return mc.MockDo(commandName, args...)
+}
+
+func (mc MockRedisConn) Send(commandName string, args ...interface{}) error {
+	return mc.MockSend(commandName, args...)
+}
+
+func (mc MockRedisConn) Flush() error {
+	return mc.MockFlush()
+}
+
+func (mc MockRedisConn) Receive() (interface{}, error) {
+	return mc.MockReceive()
+}
 
 type user struct {
 	UserName string `json:"UserName"`
@@ -85,8 +119,9 @@ func TestPersistTask(t *testing.T) {
 	}
 }
 
-func TestUpdateTaskStatus(t *testing.T) {
-	common.SetUpMockConfig()
+func TestProcessTaskQueue(t *testing.T) {
+	queue := make(chan *Task, 10)
+	config.SetUpMockConfig(t)
 	defer flushDB(t)
 	task := Task{
 		UserName:     "admin",
@@ -99,41 +134,123 @@ func TestUpdateTaskStatus(t *testing.T) {
 		EndTime:      time.Time{},
 	}
 	task.Name = "Task " + task.ID
-	// Persist in the in-memory DB
+
 	err := PersistTask(&task, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
 	}
-	task1 := new(Task)
-	task1, err = GetTaskStatus(task.ID, common.InMemory)
+
+	task1, err := GetTaskStatus(task.ID, common.InMemory)
 	if err != nil {
-		t.Fatalf("error while retreving the Task details with Get: %v", err)
+		t.Fatalf("error while retrieving the Task details with Get: %v", err)
 		return
 	}
-	// Positive Test Case
-	task1.TaskState = "Running"
-	err = UpdateTaskStatus(task1, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while updating the task details in the db: %v", err)
-		return
+
+	type args struct {
+		tasks map[string]interface{}
+		conn  *db.Conn
 	}
-	task1.TaskState = "Completed"
-	// Negetive test case
-	err = UpdateTaskStatus(task1, 23)
-	if err == nil {
-		t.Fatalf("error: expected error here but got no error ")
-		return
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "success case",
+			args: args{
+				tasks: make(map[string]interface{}),
+				conn: &db.Conn{
+					WriteConn: &MockRedisConn{
+						MockClose: func() error {
+							return nil
+						},
+						MockSend: func(s string, i ...interface{}) error {
+							return nil
+						},
+						MockDo: func(s string, i ...interface{}) (interface{}, error) {
+							return []interface{}{"OK"}, nil
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "error case 1: no retry",
+			args: args{
+				tasks: make(map[string]interface{}),
+				conn: &db.Conn{
+					WriteConn: &MockRedisConn{
+						MockClose: func() error {
+							return nil
+						},
+						MockSend: func(s string, i ...interface{}) error {
+							return fmt.Errorf("DB ERROR")
+						},
+						MockDo: func(s string, i ...interface{}) (interface{}, error) {
+							return nil, nil
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "error case 2 : retry",
+			args: args{
+				tasks: make(map[string]interface{}),
+				conn: &db.Conn{
+					WriteConn: &MockRedisConn{
+						MockClose: func() error {
+							return nil
+						},
+						MockSend: func(s string, i ...interface{}) error {
+							return fmt.Errorf("LOADING error")
+						},
+						MockDo: func(s string, i ...interface{}) (interface{}, error) {
+							return nil, nil
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "error case 3 : bad connection",
+			args: args{
+				tasks: make(map[string]interface{}),
+				conn: &db.Conn{
+					WriteConn: &MockRedisConn{
+						MockClose: func() error {
+							return nil
+						},
+						MockSend: func(s string, i ...interface{}) error {
+							return nil
+						},
+						MockDo: func(s string, i ...interface{}) (interface{}, error) {
+							return nil, fmt.Errorf("bad connection")
+						},
+					},
+				},
+			},
+		},
 	}
-	// Positive Test case
-	err = UpdateTaskStatus(task1, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while updating the task details in the db: %v", err)
-		return
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			queue <- task1
+			tick := &Tick{
+				Executing: true,
+				Commit:    true,
+			}
+			go tick.ProcessTaskQueue(&queue, tt.args.conn)
+			for {
+				if !tick.Executing {
+					break
+				}
+			}
+		})
 	}
 }
 
 func TestGetCompletedTasksIndex(t *testing.T) {
+	queue := make(chan *Task, 10)
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
@@ -155,6 +272,7 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		StartTime:    time.Now(),
 		EndTime:      time.Time{},
 	}
+
 	task.Name = "Task " + task.ID
 	// Persist in the in-memory DB
 	err := PersistTask(&task, common.InMemory)
@@ -163,17 +281,25 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		return
 	}
 
-	task1 := new(Task)
-	task1, err = GetTaskStatus(task.ID, common.InMemory)
+	task1, err := GetTaskStatus(task.ID, common.InMemory)
 	if err != nil {
-		t.Fatalf("error while retreving the Task details with Get: %v", err)
+		t.Fatalf("error while retrieving the Task details with Get: %v", err)
 		return
 	}
-	err = UpdateTaskStatus(task1, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while retreving the Task details with Get: %v", err)
-		return
+
+	queue <- task1
+	tick1 := &Tick{
+		Executing: true,
+		Commit:    true,
 	}
+	conn := GetWriteConnection()
+	go tick1.ProcessTaskQueue(&queue, conn)
+	for {
+		if !tick1.Executing {
+			break
+		}
+	}
+
 	_, err = GetCompletedTasksIndex("task1")
 	if err != nil {
 		t.Fatalf("error while getting the task details in the db: %v", err)
@@ -197,17 +323,25 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		return
 	}
 
-	task3 := new(Task)
-	task3, err = GetTaskStatus(task.ID, common.InMemory)
+	task3, err := GetTaskStatus(task.ID, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
 	}
-	err = UpdateTaskStatus(task3, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while retreving the Task details with Get: %v", err)
-		return
+
+	queue <- task3
+	tick2 := &Tick{
+		Executing: true,
+		Commit:    true,
 	}
+	conn = GetWriteConnection()
+	go tick2.ProcessTaskQueue(&queue, conn)
+	for {
+		if !tick2.Executing {
+			break
+		}
+	}
+
 	_, err = GetCompletedTasksIndex("task3")
 	if err != nil {
 		t.Fatalf("error while getting the task details in the db: %v", err)
@@ -244,8 +378,8 @@ func TestDeleteTaskFromDB(t *testing.T) {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
 	}
-	task1 := new(Task)
-	task1, err = GetTaskStatus(task.ID, common.InMemory)
+
+	task1, err := GetTaskStatus(task.ID, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
@@ -266,6 +400,7 @@ func TestDeleteTaskFromDB(t *testing.T) {
 }
 
 func TestDeleteTaskIndex(t *testing.T) {
+	queue := make(chan *Task, 10)
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
@@ -287,6 +422,7 @@ func TestDeleteTaskIndex(t *testing.T) {
 		StartTime:    time.Now(),
 		EndTime:      time.Time{},
 	}
+
 	task.Name = "Task " + task.ID
 	// Persist in the in-memory DB
 	err := PersistTask(&task, common.InMemory)
@@ -311,17 +447,26 @@ func TestDeleteTaskIndex(t *testing.T) {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
 	}
-	task1 := new(Task)
-	task1, err = GetTaskStatus(task.ID, common.InMemory)
+
+	task1, err := GetTaskStatus(task.ID, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
 	}
-	err = UpdateTaskStatus(task1, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while retreving the Task details with Get: %v", err)
-		return
+
+	queue <- task1
+	tick := &Tick{
+		Executing: true,
+		Commit:    true,
 	}
+	conn := GetWriteConnection()
+	go tick.ProcessTaskQueue(&queue, conn)
+	for {
+		if !tick.Executing {
+			break
+		}
+	}
+
 	// Positive Test case
 	err = DeleteTaskIndex(task1.ID)
 	if err != nil {

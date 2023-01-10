@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -31,6 +32,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-task/thandle"
 	"github.com/ODIM-Project/ODIM/svc-task/tmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
+	"github.com/ODIM-Project/ODIM/svc-task/tqueue"
 )
 
 func main() {
@@ -38,18 +40,20 @@ func main() {
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
-	log := logs.Log
 	logs.Adorn(logrus.Fields{
 		"host":   hostName,
 		"procid": podName + fmt.Sprintf("_%d", pid),
 	})
 
-	if err := config.SetConfiguration(); err != nil {
+	// log should be initialized after Adorn is invoked
+	// as Adorn will assign new pointer to Log variable in logs package.
+	log := logs.Log
+	configWarnings, err := config.SetConfiguration()
+	if err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
-		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
+		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
-
-	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	logs.SetFormatter(config.Data.LogFormat)
 	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(config.Data.LogLevel)
 
@@ -58,7 +62,10 @@ func main() {
 		log.Fatal("Task Service should not be run as the root user")
 	}
 
-	config.CollectCLArgs()
+	config.CollectCLArgs(&configWarnings)
+	for _, warning := range configWarnings {
+		log.Warn(warning)
+	}
 
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
 		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
@@ -70,12 +77,16 @@ func main() {
 	if tcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go tcommon.TrackConfigFileChanges()
 
-	if err := services.InitializeService(services.Tasks); err != nil {
+	errChan := make(chan error)
+	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+	go tcommon.TrackConfigFileChanges(errChan)
+
+	if err := services.InitializeService(services.Tasks, errChan); err != nil {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
+
+	tqueue.NewTaskQueue(config.Data.TaskQueueConf.QueueSize)
 
 	task := new(thandle.TasksRPC)
 	task.AuthenticationRPC = auth.Authentication
@@ -89,7 +100,7 @@ func main() {
 
 	task.DeleteTaskFromDBModel = tmodel.DeleteTaskFromDB
 	task.DeleteTaskIndex = tmodel.DeleteTaskIndex
-	task.UpdateTaskStatusModel = tmodel.UpdateTaskStatus
+	task.UpdateTaskQueue = tqueue.EnqueueTask
 	task.PersistTaskModel = tmodel.PersistTask
 	task.ValidateTaskUserNameModel = tmodel.ValidateTaskUserName
 	task.PublishToMessageBus = tmessagebus.Publish
@@ -98,6 +109,11 @@ func main() {
 		Lock:           sync.Mutex{},
 	}
 	taskproto.RegisterGetTaskServiceServer(services.ODIMService.Server(), task)
+
+	tick := &tmodel.Tick{
+		Ticker: time.NewTicker(time.Duration(config.Data.TaskQueueConf.DBCommitInterval) * time.Microsecond),
+	}
+	go tqueue.UpdateTasksWorker(tick)
 
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {

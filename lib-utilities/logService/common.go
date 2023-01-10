@@ -16,29 +16,26 @@
 package logService
 
 import (
-	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	"fmt"
+
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
 // GetUserDetails function
 // getting the session user id and role id for a given session token
-func GetUserDetails(sessionToken string) (string, string) {
+func GetUserDetails(sessionToken string) (string, string, error) {
 	var err error
 	sessionUserName := "null"
 	sessionRoleID := "null"
 	if sessionToken != "" {
 		sessionUserName, err = srv.GetSessionUserName(sessionToken)
 		if err != nil {
-			errMsg := "while trying to get session details: " + err.Error()
-			l.Log.Error(errMsg)
-			return "null", "null"
+			return "null", "null", fmt.Errorf("while trying to get session details: %s", err.Error())
 		}
 		sessionRoleID, err = srv.GetSessionUserRoleID(sessionToken)
 		if err != nil {
-			errMsg := "while trying to get session details: " + err.Error()
-			l.Log.Error(errMsg)
-			return sessionUserName, "null"
+			return sessionUserName, "null", fmt.Errorf("while trying to get session details: %s", err.Error())
 		}
 	}
-	return sessionUserName, sessionRoleID
+	return sessionUserName, sessionRoleID, nil
 }

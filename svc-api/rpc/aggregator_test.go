@@ -29,6 +29,7 @@
 package rpc
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -70,7 +71,7 @@ func TestDoGetAggregationService(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetAggregationService(tt.args.req)
+			got, err := DoGetAggregationService(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetAggregationService() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -115,7 +116,7 @@ func TestDoResetRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoResetRequest(tt.args.req)
+			got, err := DoResetRequest(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoResetRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -160,7 +161,7 @@ func TestDoSetDefaultBootOrderRequest(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoSetDefaultBootOrderRequest(tt.args.req)
+			got, err := DoSetDefaultBootOrderRequest(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoSetDefaultBootOrderRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -205,7 +206,7 @@ func TestDoAddAggregationSource(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoAddAggregationSource(tt.args.req)
+			got, err := DoAddAggregationSource(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoAddAggregationSource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -250,7 +251,7 @@ func TestDoGetAllAggregationSource(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetAllAggregationSource(tt.args.req)
+			got, err := DoGetAllAggregationSource(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetAllAggregationSource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -295,7 +296,7 @@ func TestDoGetAggregationSource(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetAggregationSource(tt.args.req)
+			got, err := DoGetAggregationSource(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetAggregationSource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -340,7 +341,7 @@ func TestDoUpdateAggregationSource(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoUpdateAggregationSource(tt.args.req)
+			got, err := DoUpdateAggregationSource(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoUpdateAggregationSource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -385,7 +386,7 @@ func TestDoDeleteAggregationSource(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoDeleteAggregationSource(tt.args.req)
+			got, err := DoDeleteAggregationSource(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoDeleteAggregationSource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -430,7 +431,7 @@ func TestDoCreateAggregate(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoCreateAggregate(tt.args.req)
+			got, err := DoCreateAggregate(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoCreateAggregate() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -475,7 +476,7 @@ func TestDoGetAggregateCollection(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetAggregateCollection(tt.args.req)
+			got, err := DoGetAggregateCollection(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetAggregateCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -520,7 +521,7 @@ func TestDoGeteAggregate(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGeteAggregate(tt.args.req)
+			got, err := DoGeteAggregate(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGeteAggregate() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -565,7 +566,7 @@ func TestDoDeleteAggregate(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoDeleteAggregate(tt.args.req)
+			got, err := DoDeleteAggregate(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoDeleteAggregate() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -610,7 +611,7 @@ func TestDoAddElementsToAggregate(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoAddElementsToAggregate(tt.args.req)
+			got, err := DoAddElementsToAggregate(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoAddElementsToAggregate() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -655,7 +656,7 @@ func TestDoRemoveElementsFromAggregate(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoRemoveElementsFromAggregate(tt.args.req)
+			got, err := DoRemoveElementsFromAggregate(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoRemoveElementsFromAggregate() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -700,7 +701,7 @@ func TestDoResetAggregateElements(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoResetAggregateElements(tt.args.req)
+			got, err := DoResetAggregateElements(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoResetAggregateElements() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -745,7 +746,7 @@ func TestDoSetDefaultBootOrderAggregateElements(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoSetDefaultBootOrderAggregateElements(tt.args.req)
+			got, err := DoSetDefaultBootOrderAggregateElements(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoSetDefaultBootOrderAggregateElements() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -790,7 +791,7 @@ func TestDoGetAllConnectionMethods(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetAllConnectionMethods(tt.args.req)
+			got, err := DoGetAllConnectionMethods(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetAllConnectionMethods() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -835,7 +836,7 @@ func TestDoGetConnectionMethod(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetConnectionMethod(tt.args.req)
+			got, err := DoGetConnectionMethod(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetConnectionMethod() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -880,7 +881,7 @@ func TestDoGetResetActionInfoService(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetResetActionInfoService(tt.args.req)
+			got, err := DoGetResetActionInfoService(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetResetActionInfoService() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -925,7 +926,7 @@ func TestDoGetSetDefaultBootOrderActionInfo(t *testing.T) {
 		ClientFunc = tt.ClientFunc
 		NewAggregatorClientFunc = tt.NewAggregatorClientFunc
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DoGetSetDefaultBootOrderActionInfo(tt.args.req)
+			got, err := DoGetSetDefaultBootOrderActionInfo(context.Background(), tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DoGetSetDefaultBootOrderActionInfo() error = %v, wantErr %v", err, tt.wantErr)
 				return

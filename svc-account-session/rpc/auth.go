@@ -17,6 +17,9 @@ package rpc
 
 import (
 	"context"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
@@ -31,8 +34,13 @@ var (
 // IsAuthorized will accepts the request and send a request to Auth method
 // from session package, if its authorized then respond with the status code.
 func (a *Auth) IsAuthorized(ctx context.Context, req *authproto.AuthRequest) (*authproto.AuthResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	l.LogWithFields(ctx).Info("Inside IsAuthorized function (svc-account-session)")
 	var resp authproto.AuthResponse
-	statusCode, errorMessage := AuthFunc(req)
+	l.LogWithFields(ctx).Info("Validating if the session is authorized")
+	statusCode, errorMessage := AuthFunc(ctx, req)
 	resp.StatusCode = statusCode
 	resp.StatusMessage = errorMessage
 	return &resp, nil

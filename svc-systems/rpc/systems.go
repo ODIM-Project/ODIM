@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
@@ -31,14 +31,14 @@ import (
 
 // Systems struct helps to register service
 type Systems struct {
-	IsAuthorizedRPC    func(sessionToken string, privileges, oemPrivileges []string) response.RPC
+	IsAuthorizedRPC    func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
 	GetSessionUserName func(string) (string, error)
 	CreateTask         func(string) (string, error)
 	UpdateTask         func(common.TaskData) error
 	EI                 *systems.ExternalInterface
 }
 
-//GetSystemResource defines the operations which handles the RPC request response
+// GetSystemResource defines the operations which handles the RPC request response
 // for the getting the system resource  of systems micro service.
 // The functionality retrives the request and return backs the response to
 // RPC according to the protoc file defined in the util-lib package.
@@ -47,10 +47,12 @@ type Systems struct {
 func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		l.Log.Error("error while trying to authenticate session")
-		fillSystemProtoResponse(&resp, authResp)
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
 	var pc = systems.PluginContact{
@@ -59,7 +61,7 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetSystemResource(req)
-	fillSystemProtoResponse(&resp, data)
+	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
 
@@ -68,19 +70,25 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 // Retrieves all the keys with table name systems collection and create the response
 // to send back to requested user.
 func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.SystemService)
+	l.LogWithFields(ctx).Info("Inside GetSystemsCollection function (RPC)")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		fillSystemProtoResponse(&resp, authResp)
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
-	data := systems.GetSystemsCollection(req)
-	fillSystemProtoResponse(&resp, data)
+	data := systems.GetSystemsCollection(ctx, req)
+	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
 
-//GetSystems defines the operations which handles the RPC request response
+// GetSystems defines the operations which handles the RPC request response
 // for the getting the system resource  of systems micro service.
 // The functionality retrives the request and return backs the response to
 // RPC according to the protoc file defined in the util-lib package.
@@ -89,9 +97,12 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		fillSystemProtoResponse(&resp, authResp)
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
 	var pc = systems.PluginContact{
@@ -100,7 +111,7 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetSystems(req)
-	fillSystemProtoResponse(&resp, data)
+	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
 
@@ -113,15 +124,18 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.ComputerSystemResetRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		fillSystemProtoResponse(&resp, authResp)
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
 	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
-		fillSystemProtoResponse(&resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
 		l.Log.Error(errMsg)
 		return &resp, nil
 	}
@@ -130,7 +144,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	taskURI, err := s.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
-		fillSystemProtoResponse(&resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
 		l.Log.Error(errMsg)
 		return &resp, nil
 	}
@@ -144,7 +158,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 		},
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)
-	fillSystemProtoResponse(&resp, rpcResp)
+	fillSystemProtoResponse(ctx, &resp, rpcResp)
 	var pc = systems.PluginContact{
 		ContactClient:  pmbhandle.ContactPlugin,
 		DevicePassword: common.DecryptWithPrivateKey,
@@ -164,9 +178,12 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.DefaultBootOrderRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		fillSystemProtoResponse(&resp, authResp)
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
 	var pc = systems.PluginContact{
@@ -174,7 +191,7 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
 	data := pc.SetDefaultBootOrder(req.SystemID)
-	fillSystemProtoResponse(&resp, data)
+	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
 
@@ -187,9 +204,12 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.BiosSettingsRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		fillSystemProtoResponse(&resp, authResp)
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
 	var pc = systems.PluginContact{
@@ -197,7 +217,7 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
 	data := pc.ChangeBiosSettings(req)
-	fillSystemProtoResponse(&resp, data)
+	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
 
@@ -210,9 +230,12 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		fillSystemProtoResponse(&resp, authResp)
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
 	var pc = systems.PluginContact{
@@ -220,7 +243,7 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
 	data := pc.ChangeBootOrderSettings(req)
-	fillSystemProtoResponse(&resp, data)
+	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
 
@@ -233,14 +256,17 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		fillSystemProtoResponse(&resp, authResp)
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
 
 	data := s.EI.CreateVolume(req)
-	fillSystemProtoResponse(&resp, data)
+	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
 
@@ -253,20 +279,23 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		fillSystemProtoResponse(&resp, authResp)
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
 
 	data := s.EI.DeleteVolume(req)
-	fillSystemProtoResponse(&resp, data)
+	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
 
-func fillSystemProtoResponse(resp *systemsproto.SystemsResponse, data response.RPC) {
+func fillSystemProtoResponse(ctx context.Context, resp *systemsproto.SystemsResponse, data response.RPC) {
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(data.Body)
+	resp.Body = generateResponse(ctx, data.Body)
 	resp.Header = data.Header
 }

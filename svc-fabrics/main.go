@@ -34,18 +34,20 @@ func main() {
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
-	log := logs.Log
 	logs.Adorn(logrus.Fields{
 		"host":   hostName,
 		"procid": podName + fmt.Sprintf("_%d", pid),
 	})
 
-	if err := config.SetConfiguration(); err != nil {
+	// log should be initialized after Adorn is invoked
+	// as Adorn will assign new pointer to Log variable in logs package.
+	log := logs.Log
+	configWarnings, err := config.SetConfiguration()
+	if err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
 		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
-
-	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	logs.SetFormatter(config.Data.LogFormat)
 	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(config.Data.LogLevel)
 
@@ -54,13 +56,17 @@ func main() {
 		log.Fatal("Fabric Service should not be run as the root user")
 	}
 
-	config.CollectCLArgs()
+	config.CollectCLArgs(&configWarnings)
+	for _, warning := range configWarnings {
+		log.Warn(warning)
+	}
 
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
-	if err := services.InitializeService(services.Fabrics); err != nil {
+	errChan := make(chan error)
+	if err := services.InitializeService(services.Fabrics, errChan); err != nil {
 		log.Fatal("fatal: error while trying to initialize service: %v" + err.Error())
 	}
 	fabrics.Token.Tokens = make(map[string]string)
@@ -70,7 +76,7 @@ func main() {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go fabrics.TrackConfigFileChanges()
+	go fabrics.TrackConfigFileChanges(errChan)
 
 	registerHandlers()
 	if err := services.ODIMService.Run(); err != nil {

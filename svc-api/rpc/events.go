@@ -12,13 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -29,7 +30,8 @@ var (
 
 // DoGetEventService defines the RPC call function for
 // the GetEventService from events micro service
-func DoGetEventService(req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
+func DoGetEventService(ctx context.Context, req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Events)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -37,7 +39,7 @@ func DoGetEventService(req eventsproto.EventSubRequest) (*eventsproto.EventSubRe
 
 	events := NewEventsClientFunc(conn)
 
-	resp, err := events.GetEventService(context.TODO(), &req)
+	resp, err := events.GetEventService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -47,8 +49,8 @@ func DoGetEventService(req eventsproto.EventSubRequest) (*eventsproto.EventSubRe
 
 // DoCreateEventSubscription defines the RPC call function for
 // the CreateEventSubscription from events micro service
-func DoCreateEventSubscription(req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
-
+func DoCreateEventSubscription(ctx context.Context, req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Events)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -56,7 +58,7 @@ func DoCreateEventSubscription(req eventsproto.EventSubRequest) (*eventsproto.Ev
 
 	events := NewEventsClientFunc(conn)
 
-	resp, err := events.CreateEventSubscription(context.TODO(), &req)
+	resp, err := events.CreateEventSubscription(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -66,8 +68,8 @@ func DoCreateEventSubscription(req eventsproto.EventSubRequest) (*eventsproto.Ev
 
 // DoSubmitTestEvent defines the RPC call function for
 // the SubmitTestEvent from events micro service
-func DoSubmitTestEvent(req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
-
+func DoSubmitTestEvent(ctx context.Context, req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Events)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -75,7 +77,7 @@ func DoSubmitTestEvent(req eventsproto.EventSubRequest) (*eventsproto.EventSubRe
 
 	events := NewEventsClientFunc(conn)
 
-	resp, err := events.SubmitTestEvent(context.TODO(), &req)
+	resp, err := events.SubmitTestEvent(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -85,8 +87,8 @@ func DoSubmitTestEvent(req eventsproto.EventSubRequest) (*eventsproto.EventSubRe
 
 // DoGetEventSubscription defines the RPC call function for
 // the DoGetEventSubscription from events micro service
-func DoGetEventSubscription(req eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
-
+func DoGetEventSubscription(ctx context.Context, req eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Events)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -94,7 +96,7 @@ func DoGetEventSubscription(req eventsproto.EventRequest) (*eventsproto.EventSub
 
 	events := NewEventsClientFunc(conn)
 
-	resp, err := events.GetEventSubscription(context.TODO(), &req)
+	resp, err := events.GetEventSubscription(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -104,8 +106,8 @@ func DoGetEventSubscription(req eventsproto.EventRequest) (*eventsproto.EventSub
 
 // DoDeleteEventSubscription defines the RPC call function for
 // the DoDeleteEventSubscription from events micro service
-func DoDeleteEventSubscription(req eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
-
+func DoDeleteEventSubscription(ctx context.Context, req eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Events)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -113,7 +115,7 @@ func DoDeleteEventSubscription(req eventsproto.EventRequest) (*eventsproto.Event
 
 	events := NewEventsClientFunc(conn)
 
-	resp, err := events.DeleteEventSubscription(context.TODO(), &req)
+	resp, err := events.DeleteEventSubscription(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -123,8 +125,8 @@ func DoDeleteEventSubscription(req eventsproto.EventRequest) (*eventsproto.Event
 
 // DoGetEventSubscriptionsCollection defines the RPC call function for
 // the DoGetEventSubscription from events micro service
-func DoGetEventSubscriptionsCollection(req eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
-
+func DoGetEventSubscriptionsCollection(ctx context.Context, req eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Events)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -132,7 +134,7 @@ func DoGetEventSubscriptionsCollection(req eventsproto.EventRequest) (*eventspro
 
 	events := NewEventsClientFunc(conn)
 
-	resp, err := events.GetEventSubscriptionsCollection(context.TODO(), &req)
+	resp, err := events.GetEventSubscriptionsCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}

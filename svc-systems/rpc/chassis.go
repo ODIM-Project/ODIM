@@ -13,7 +13,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
@@ -37,7 +37,7 @@ var (
 
 // NewChassisRPC returns an instance of ChassisRPC
 func NewChassisRPC(
-	authWrapper func(sessionToken string, privileges, oemPrivileges []string) response.RPC,
+	authWrapper func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error),
 	createHandler *chassis.Create,
 	getCollectionHandler *chassis.GetCollection,
 	deleteHandler *chassis.Delete,
@@ -56,7 +56,7 @@ func NewChassisRPC(
 
 // ChassisRPC struct helps to register service
 type ChassisRPC struct {
-	IsAuthorizedRPC      func(sessionToken string, privileges, oemPrivileges []string) response.RPC
+	IsAuthorizedRPC      func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
 	GetCollectionHandler *chassis.GetCollection
 	GetHandler           *chassis.Get
 	DeleteHandler        *chassis.Delete
@@ -121,8 +121,11 @@ func (cha *ChassisRPC) CreateChassis(_ context.Context, req *chassisproto.Create
 func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	var resp chassisproto.GetChassisResponse
 	sessionToken := req.SessionToken
-	authResp := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		rewrite(authResp, &resp)
 		return &resp, nil
 	}
@@ -184,13 +187,13 @@ func jsonMarshal(input interface{}) []byte {
 	return bytes
 }
 
-func generateResponse(input interface{}) []byte {
+func generateResponse(ctx context.Context, input interface{}) []byte {
 	if bytes, alreadyBytes := input.([]byte); alreadyBytes {
 		return bytes
 	}
 	bytes, err := JSONMarshalFunc(input)
 	if err != nil {
-		l.Log.Error("error in unmarshalling response object from util-libs" + err.Error())
+		l.LogWithFields(ctx).Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
 }

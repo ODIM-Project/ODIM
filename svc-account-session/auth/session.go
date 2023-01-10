@@ -16,10 +16,13 @@
 package auth
 
 import (
+	"context"
 	"encoding/base64"
+	"strconv"
 	"sync"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
@@ -33,10 +36,14 @@ var lastExpiredSessionCleanUpTime time.Time
 var Lock sync.Mutex
 
 // CheckSessionCreationCredentials defines the auth at the time of session creation
-func CheckSessionCreationCredentials(userName, password string) (*asmodel.User, *errors.Error) {
-	go expiredSessionCleanUp()
+func CheckSessionCreationCredentials(ctx context.Context, userName, password string) (*asmodel.User, *errors.Error) {
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.CheckSessionCreation)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go expiredSessionCleanUp(ctxt)
+	threadID++
 	if userName == "" || password == "" {
-		return nil, errors.PackError(errors.UndefinedErrorType, "error: Invalid username or password ")
+		return nil, errors.PackError(errors.UndefinedErrorType, "error while checking session credentials: username or password is empty")
 	}
 	user, err := asmodel.GetUserDetails(userName)
 	if err != nil {
@@ -47,14 +54,18 @@ func CheckSessionCreationCredentials(userName, password string) (*asmodel.User, 
 	hashSum := hash.Sum(nil)
 	hashedPassword := base64.URLEncoding.EncodeToString(hashSum)
 	if user.Password != hashedPassword {
-		return nil, errors.PackError(errors.UndefinedErrorType, "error: Invalid username or password ")
+		return nil, errors.PackError(errors.UndefinedErrorType, "error while checking session credentials: input password is not matching user password")
 	}
 	return &user, nil
 }
 
 // CheckSessionTimeOut defines the session validity check
-func CheckSessionTimeOut(sessionToken string) (*asmodel.Session, *errors.Error) {
-	go expiredSessionCleanUp()
+func CheckSessionTimeOut(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.CheckSessionTimeout)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go expiredSessionCleanUp(ctxt)
+	threadID++
 	if sessionToken == "" {
 		return nil, errors.PackError(errors.InvalidAuthToken, "error: no session token found in header")
 	}
@@ -63,35 +74,35 @@ func CheckSessionTimeOut(sessionToken string) (*asmodel.Session, *errors.Error) 
 		return nil, errors.PackError(err.ErrNo(), "error while trying to get session details with the token ", sessionToken, ": ", err.Error())
 	}
 	if time.Since(session.LastUsedTime).Minutes() > config.Data.AuthConf.SessionTimeOutInMins {
-		return nil, errors.PackError(errors.InvalidAuthToken, "error: invalid token ", sessionToken)
+		return nil, errors.PackError(errors.InvalidAuthToken, "error: session is timed out", sessionToken)
 	}
 
 	return &session, nil
 }
 
 // expiredSessionCleanUp is for deleting timed out sessions from the db
-func expiredSessionCleanUp() {
+func expiredSessionCleanUp(ctx context.Context) {
 	Lock.Lock()
 	defer Lock.Unlock()
 	// checking whether the db is cleaned up recently
 	if time.Since(lastExpiredSessionCleanUpTime).Minutes() > config.Data.AuthConf.ExpiredSessionCleanUpTimeInMins {
 		sessionTokens, err := asmodel.GetAllSessionKeys()
 		if err != nil {
-			l.Log.Error("Unable to get all session tokens from DB: %v" + err.Error())
+			l.LogWithFields(ctx).Error("Unable to get all session tokens from DB: %v" + err.Error())
 			return
 		}
 
 		for _, token := range sessionTokens {
 			session, err := asmodel.GetSession(token)
 			if err != nil {
-				l.Log.Error("Unable to get session details with the token " + token + ": " + err.Error())
+				l.LogWithFields(ctx).Error("Unable to get session details with the token " + token + ": " + err.Error())
 				continue
 			}
 			// checking for the timed out sessions
 			if time.Since(session.LastUsedTime).Minutes() > config.Data.AuthConf.SessionTimeOutInMins {
 				err = session.Delete()
 				if err != nil {
-					l.Log.Printf("Unable to delete expired session with token " + token + ": " + err.Error())
+					l.LogWithFields(ctx).Printf("Unable to delete expired session with token " + token + ": " + err.Error())
 					continue
 				}
 			}

@@ -16,7 +16,9 @@
 package role
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -40,16 +42,17 @@ import (
 //
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
-func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
+func Create(ctx context.Context, req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 	// parsing the request body
 	var createRoleReq asmodel.Role
 	err := json.Unmarshal(req.RequestBody, &createRoleReq)
 	if err != nil {
-		errMsg := "unable to parse the add request" + err.Error()
-		l.Log.Error(errMsg)
+		errMsg := "error while trying to parse the request body of create role API" + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
+	errorLogPrefix := fmt.Sprintf("failed to create role %s: ", createRoleReq.ID)
 	commonResponse := response.Response{
 		OdataType: common.RoleType,
 		OdataID:   "/redfish/v1/AccountService/Roles/" + createRoleReq.ID,
@@ -57,15 +60,16 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 	}
 	var resp response.RPC
 
+	l.LogWithFields(ctx).Infof("Validating the request to create the role %s", createRoleReq.ID)
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createRoleReq)
 	if err != nil {
-		errMsg := "Unable to validate request parameters: " + err.Error()
-		l.Log.Error(errMsg)
+		errMsg := errorLogPrefix + "Unable to validate request parameters: " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
-		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		l.Log.Error(errorMessage)
+		errorMessage := errorLogPrefix + "One or more properties given in the request body are not valid, ensure properties are listed in upper camel case "
+		l.LogWithFields(ctx).Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
 	}
@@ -75,11 +79,11 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 	// create validation to check if the ID field contains whitespaces when creating role.
 	validate.RegisterValidation("is-empty", CheckWhitespace)
 	if err := validate.Var(createRoleReq.ID, "required"); err != nil {
-		errorMessage := "error: Mandatory field RoleId is empty"
+		errorMessage := errorLogPrefix + "error: Mandatory field RoleId is empty"
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errorMessage, []interface{}{"RoleId"}, nil)
 		return response
 	} else if err := validate.Var(createRoleReq.ID, "required,is-empty,excludesall=!@#?%&$*"); err != nil {
-		errorMessage := "Invalid create role request"
+		errorMessage := errorLogPrefix + "Invalid create role request"
 		args := response.Args{
 			Code:    response.GeneralError,
 			Message: "",
@@ -94,14 +98,14 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.PropertyValueNotInList
 		resp.Body = args.CreateGenericErrorResponse()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 
 	//check for ConfigureUsers privilege in session object
 	status, err := checkForPrivilege(session, "ConfigureUsers")
 	if err != nil {
-		errorMessage := "User does not have the privilege to create a new role"
+		errorMessage := errorLogPrefix + "User does not have the privilege of creating a new role"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
 		args := response.Args{
@@ -116,11 +120,11 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
+		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 	if len(createRoleReq.AssignedPrivileges) == 0 && len(createRoleReq.OEMPrivileges) == 0 {
-		errorMessage := "Both AssignedPrivileges and OemPrivileges cannot be empty."
+		errorMessage := errorLogPrefix + "Both AssignedPrivileges and OemPrivileges cannot be empty."
 		args := response.Args{
 			Code:    response.GeneralError,
 			Message: "",
@@ -135,14 +139,14 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.PropertyMissing
 		resp.Body = args.CreateGenericErrorResponse()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 
 	if len(createRoleReq.AssignedPrivileges) != 0 {
-		status, messageArgs, err := validateAssignedPrivileges(createRoleReq.AssignedPrivileges)
+		status, messageArgs, err := validateAssignedPrivileges(ctx, createRoleReq.AssignedPrivileges)
 		if err != nil {
-			errorMessage := err.Error()
+			errorMessage := errorLogPrefix + err.Error()
 			resp.StatusCode = int32(status.Code)
 			resp.StatusMessage = status.Message
 			args := response.Args{
@@ -157,14 +161,14 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return resp
 		}
 	}
 	if len(createRoleReq.OEMPrivileges) != 0 {
-		status, messageArgs, err := validateOEMPrivileges(createRoleReq.OEMPrivileges)
+		status, messageArgs, err := validateOEMPrivileges(ctx, createRoleReq.OEMPrivileges)
 		if err != nil {
-			errorMessage := err.Error()
+			errorMessage := errorLogPrefix + err.Error()
 			resp.StatusCode = int32(status.Code)
 			resp.StatusMessage = status.Message
 			args := response.Args{
@@ -179,14 +183,14 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return resp
 		}
 	}
 	//Get redfish roles from database
 	redfishRoles, gerr := asmodel.GetRedfishRoles()
 	if gerr != nil {
-		l.Log.Error("Unable to get redfish roles: " + gerr.Error())
+		l.LogWithFields(ctx).Error(errorLogPrefix + "Unable to get redfish roles: " + gerr.Error())
 		errorMessage := gerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		return resp
@@ -200,7 +204,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		}
 	}
 	if isPredefined {
-		errorMessage := "Cannot create pre-defined roles"
+		errorMessage := errorLogPrefix + "Cannot create pre-defined roles"
 		args := response.Args{
 			Code:    response.GeneralError,
 			Message: "",
@@ -215,7 +219,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		resp.Body = args.CreateGenericErrorResponse()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 	//Response for Create role
@@ -226,10 +230,11 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		OEMPrivileges:      createRoleReq.OEMPrivileges,
 	}
 
+	l.LogWithFields(ctx).Infof("Creating the role %s", createRoleReq.ID)
 	//Persist role in database
 	if cerr := role.Create(); cerr != nil {
 		if errors.DBKeyAlreadyExist == cerr.ErrNo() {
-			l.Log.Error("Unable to create new role: " + cerr.Error())
+			l.LogWithFields(ctx).Error(errorLogPrefix + cerr.Error())
 			errorMessage := "Role with name " + role.ID + " already exists"
 			args := response.Args{
 				Code:    response.GeneralError,
@@ -241,8 +246,8 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 			return resp
 
 		}
-		l.Log.Error("Unable to create new role: " + cerr.Error())
-		errorMessage := "Unable to create new role: " + cerr.Error()
+		errorMessage := errorLogPrefix + cerr.Error()
+		l.LogWithFields(ctx).Error(errorMessage)
 		resp.CreateInternalErrorResponse(errorMessage)
 		return resp
 	}

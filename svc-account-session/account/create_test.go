@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package account
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"reflect"
@@ -40,17 +41,30 @@ func createMockRole(roleID string, privileges []string, oemPrivileges []string, 
 	}
 	return nil
 }
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func TestCreate(t *testing.T) {
 	config.SetUpMockConfig(t)
 	acc := getMockExternalInterface()
 	common.SetUpMockConfig()
+	ctx := mockContext()
 	errArgs := response.Args{
 		Code:    response.GeneralError,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User does not have the privilege to create a new user",
+				ErrorMessage:  "failed to create account for the user testUser3: User does not have the privilege of creating a new user",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -138,7 +152,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyMissing,
-				ErrorMessage:  "Mandatory fields UserName Password RoleID are empty",
+				ErrorMessage:  "failed to create account for the user : Mandatory fields UserName Password RoleID are empty",
 				MessageArgs:   []interface{}{"UserName Password RoleID"},
 			},
 		},
@@ -149,7 +163,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceAlreadyExists,
-				ErrorMessage:  "Unable to add new user: error: data with key existingUser already exists",
+				ErrorMessage:  "failed to create account for the user existingUser: error: data with key existingUser already exists",
 				MessageArgs:   []interface{}{"ManagerAccount", "Id", "existingUser"},
 			},
 		},
@@ -160,7 +174,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "Invalid RoleID present error while trying to get role details: error: Invalid RoleID xyz present",
+				ErrorMessage:  "failed to create account for the user testUser1: Invalid RoleID present: error while trying to get role details: error: Invalid RoleID xyz present",
 				MessageArgs:   []interface{}{"Role", "xyz"},
 			},
 		},
@@ -489,7 +503,7 @@ func TestCreate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := acc.Create(tt.args.req, tt.args.session)
+			got, err := acc.Create(ctx, tt.args.req, tt.args.session)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Create() error = %v, wantErr %v", err, tt.wantErr)
 			}

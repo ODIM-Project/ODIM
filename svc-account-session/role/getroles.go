@@ -16,6 +16,8 @@
 package role
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -29,14 +31,14 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
 
-//GetRole defines the viewing of a particular role which is identified by the id.
+// GetRole defines the viewing of a particular role which is identified by the id.
 //
 // As input parameters we need to pass Session, which contains all session data
 // especially configureUsers privilege and the roleID which is used to
 // identify the role which is supposed to be viewed.
 //
 // As return parameters RPC response, which contains status code, message, headers and data.
-func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC {
+func GetRole(ctx context.Context, req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC {
 	commonResponse := response.Response{
 		OdataType: common.RoleType,
 		OdataID:   "/redfish/v1/AccountService/Roles/" + req.Id,
@@ -44,11 +46,13 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 		ID:        req.Id,
 	}
 	var resp response.RPC
+	errLogPrefix := fmt.Sprintf("failed to fetch the role %s: ", req.Id)
 
+	l.LogWithFields(ctx).Infof("Fetching the role details from the database for the role %s", req.Id)
 	//check for ConfigureUsers privilege in session object
 	status, perr := checkForPrivilege(session, "ConfigureUsers")
 	if perr != nil {
-		errorMessage := "User does not have the privilege to get the role"
+		errorMessage := errLogPrefix + "User does not have the privilege of viewing the role"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
 		args := response.Args{
@@ -63,14 +67,14 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
+		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 	//Get role from database using role ID
 	role, err := asmodel.GetRoleDetailsByID(req.Id)
 	if err != nil {
-		errorMessage := "Error while getting the role : " + err.Error()
-		l.Log.Error(errorMessage)
+		errorMessage := errLogPrefix + "Error while getting the role : " + err.Error()
+		l.LogWithFields(ctx).Error(errorMessage)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
@@ -110,13 +114,13 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 	return resp
 }
 
-//GetAllRoles defines the  functionality of listing of all roles.
+// GetAllRoles defines the  functionality of listing of all roles.
 //
 // As input parameters we need to pass Session, which contains all session data
 // especially configureUsers privilege.
 //
 // As return parameters RPC response, which contains status code, message, headers and data.
-func GetAllRoles(session *asmodel.Session) response.RPC {
+func GetAllRoles(ctx context.Context, session *asmodel.Session) response.RPC {
 	var resp response.RPC
 	commonResponse := response.Response{
 		OdataType: "#RoleCollection.RoleCollection",
@@ -124,10 +128,13 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 		Name:      "Roles Collection",
 	}
 
+	errLogPrefix := fmt.Sprintf("failed to fetch all roles: ")
+
+	l.LogWithFields(ctx).Info("Fetching all roles from database")
 	//check for ConfigureUsers privilege in session object
 	status, err := checkForPrivilege(session, "ConfigureUsers")
 	if err != nil {
-		errorMessage := "User does not have the privilege to get the roles"
+		errorMessage := errLogPrefix + "User does not have the privilege of viewing the roles"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
 		args := response.Args{
@@ -141,14 +148,14 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 				},
 			},
 		}
-		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
+		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		resp.Body = args.CreateGenericErrorResponse()
 		return resp
 	}
 	roles, rerr := asmodel.GetAllRoles()
 	if rerr != nil {
-		l.Log.Error("error getting role : " + rerr.Error())
-		errorMessage := rerr.Error()
+		errorMessage := errLogPrefix + rerr.Error()
+		l.LogWithFields(ctx).Error(errLogPrefix + rerr.Error())
 		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errorMessage, []interface{}{config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, nil)
 	}
 	//Build response body and headers

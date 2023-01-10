@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package role
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"reflect"
@@ -56,6 +57,17 @@ func mockPrivilegeRegistry() error {
 	return nil
 }
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func TestCreate(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.SetUpMockConfig()
@@ -81,7 +93,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User does not have the privilege to create a new role",
+				ErrorMessage:  "failed to create role testRole: User does not have the privilege of creating a new role",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -92,7 +104,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyMissing,
-				ErrorMessage:  "Both AssignedPrivileges and OemPrivileges cannot be empty.",
+				ErrorMessage:  "failed to create role testRole: Both AssignedPrivileges and OemPrivileges cannot be empty.",
 				MessageArgs:   []interface{}{"AssignedPrivileges/OemPrivileges"},
 			},
 		},
@@ -103,7 +115,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "Requested Redfish predefined privilege is not correct",
+				ErrorMessage:  "failed to create role testRole: Requested Redfish predefined privilege is not correct",
 				MessageArgs:   []interface{}{"Configure", "AssignedPrivileges"},
 			},
 		},
@@ -114,7 +126,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "Invalid create role request",
+				ErrorMessage:  "failed to create role @testRole: Invalid create role request",
 				MessageArgs:   []interface{}{"@testRole", "RoleId"},
 			},
 		},
@@ -125,7 +137,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "Cannot create pre-defined roles",
+				ErrorMessage:  "failed to create role Administrator: Cannot create pre-defined roles",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -160,7 +172,7 @@ func TestCreate(t *testing.T) {
 		AssignedPrivileges: []string{common.PrivilegeLogin},
 		OEMPrivileges:      []string{},
 	})
-
+	ctx := mockContext()
 	type args struct {
 		req     *roleproto.RoleRequest
 		session *asmodel.Session
@@ -302,7 +314,7 @@ func TestCreate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Create(tt.args.req, tt.args.session)
+			got := Create(ctx, tt.args.req, tt.args.session)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Create() = %v, want %v", got, tt.want)
 			}

@@ -32,6 +32,15 @@ func MockDBConnection(t *testing.T) (*ConnPool, *errors.Error) {
 	return cfg.Connection()
 }
 
+// MockDBWriteConnection provides a mock db write connection for unit testing
+func MockDBWriteConnection(t *testing.T) (*Conn, *errors.Error) {
+	connPool, err := MockDBConnection(t)
+	if err != nil {
+		return nil, errors.PackError(errors.UndefinedErrorType, "error while trying to initiate mock write db connection: ", err)
+	}
+	return connPool.GetWriteConnection()
+}
+
 // GetMockDBConfig will initiate mock db and will provide the config file
 func GetMockDBConfig() (*Config, *errors.Error) {
 	//Need to discuss more on this

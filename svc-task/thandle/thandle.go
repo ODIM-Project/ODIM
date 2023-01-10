@@ -43,7 +43,7 @@ const (
 // AuthenticationRPC is used to authorize user and privileges
 // GetTaskStatusModel get task status
 type TasksRPC struct {
-	AuthenticationRPC                func(sessionToken string, privileges []string) response.RPC
+	AuthenticationRPC                func(sessionToken string, privileges []string) (response.RPC, error)
 	GetSessionUserNameRPC            func(sessionToken string) (string, error)
 	GetTaskStatusModel               func(taskID string, db common.DbType) (*tmodel.Task, error)
 	GetAllTaskKeysModel              func() ([]string, error)
@@ -53,7 +53,7 @@ type TasksRPC struct {
 	GetCompletedTasksIndexModel      func(userName string) ([]string, error)
 	DeleteTaskFromDBModel            func(t *tmodel.Task) error
 	DeleteTaskIndex                  func(taskID string) error
-	UpdateTaskStatusModel            func(t *tmodel.Task, db common.DbType) error
+	UpdateTaskQueue                  func(t *tmodel.Task)
 	PersistTaskModel                 func(t *tmodel.Task, db common.DbType) error
 	ValidateTaskUserNameModel        func(userName string) error
 	PublishToMessageBus              func(taskURI string, taskEvenMessageID string, eventType string, taskMessage string)
@@ -191,9 +191,11 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 		return &rsp, nil
 	}
 	privileges := []string{common.PrivilegeConfigureManager}
-	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
-		l.Log.Error("error while authentication")
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(&rsp, authResp)
 		return &rsp, nil
 
@@ -297,8 +299,11 @@ func constructCommonResponseHeader(rsp *taskproto.TaskResponse) {
 
 func (ts *TasksRPC) validateAndAutherize(req *taskproto.GetTaskRequest, rsp *taskproto.TaskResponse) (*tmodel.Task, error) {
 	privileges := []string{common.PrivilegeLogin}
-	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(rsp, authResp)
 		l.Log.Error(authErrorMessage)
 		return nil, fmt.Errorf(authErrorMessage)
@@ -323,10 +328,12 @@ func (ts *TasksRPC) validateAndAutherize(req *taskproto.GetTaskRequest, rsp *tas
 	//is an Admin(PrivilegeConfigureUsers). If he is admin then proceed.
 	if sessionUserName != task.UserName {
 		privileges := []string{common.PrivilegeConfigureUsers}
-		authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+		authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
 		if authResp.StatusCode != http.StatusOK {
+			if err != nil {
+				l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+			}
 			fillProtoResponse(rsp, authResp)
-			l.Log.Error(authErrorMessage)
 			return nil, fmt.Errorf(authErrorMessage)
 		}
 	}
@@ -365,22 +372,14 @@ func (ts *TasksRPC) taskCancelCallBack(taskID string) error {
 			ts.DeleteTaskFromDBModel(subTask)
 		} else if subTask.TaskState != common.Cancelling {
 			subTask.TaskState = common.Cancelling
-			err := ts.UpdateTaskStatusModel(subTask, common.InMemory)
-			if err != nil {
-				l.Log.Error("error while updating the task: " + err.Error())
-				return err
-			}
+			ts.UpdateTaskQueue(subTask)
 			go ts.asyncTaskDelete(subTaskID)
 		}
 	}
 	// Delete the parent task
 	if task.TaskState != common.Cancelling {
 		task.TaskState = common.Cancelling
-		err := ts.UpdateTaskStatusModel(task, common.InMemory)
-		if err != nil {
-			l.Log.Error("error while updating the task: " + err.Error())
-			return err
-		}
+		ts.UpdateTaskQueue(task)
 		go ts.asyncTaskDelete(taskID)
 	}
 
@@ -456,9 +455,11 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 	var rsp taskproto.TaskResponse
 	constructCommonResponseHeader(&rsp)
 	privileges := []string{common.PrivilegeLogin}
-	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
-		l.Log.Error(authErrorMessage)
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(&rsp, authResp)
 		return &rsp, nil
 	}
@@ -478,9 +479,11 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 	//Compare the task username with requesting session user name
 	if sessionUserName != task.UserName {
 		privileges := []string{common.PrivilegeConfigureUsers}
-		authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+		authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
 		if authResp.StatusCode != http.StatusOK {
-			l.Log.Error(authErrorMessage)
+			if err != nil {
+				l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+			}
 			fillProtoResponse(&rsp, authResp)
 			return &rsp, nil
 		}
@@ -569,10 +572,12 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 	}
 	constructCommonResponseHeader(&rsp)
 	privileges := []string{common.PrivilegeLogin}
-	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(&rsp, authResp)
-		l.Log.Error(authErrorMessage)
 		return &rsp, nil
 	}
 	// Get all task in in-memory db
@@ -583,7 +588,10 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 		l.Log.Error(errorMessage)
 		return &rsp, nil
 	}
-	statusConfigureUsers := ts.AuthenticationRPC(req.SessionToken, []string{common.PrivilegeConfigureUsers})
+	statusConfigureUsers, err := ts.AuthenticationRPC(req.SessionToken, []string{common.PrivilegeConfigureUsers})
+	if err != nil {
+		l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+	}
 	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
 		fillProtoResponse(&rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
@@ -730,10 +738,12 @@ func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRe
 	// Validate the token, if user has ConfigureUsers privelege then proceed.
 	//Else send 401 Unautherised
 	privileges := []string{common.PrivilegeConfigureUsers}
-	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(&rsp, authResp)
-		l.Log.Error(authErrorMessage)
 		return &rsp, nil
 	}
 
@@ -885,19 +895,11 @@ func (ts *TasksRPC) CreateChildTaskUtil(userName string, parentTaskID string) (s
 	childTask.ParentID = parentTaskID
 	childTask.URI = "/redfish/v1/TaskService/Tasks/" + parentTaskID + "/" + childTaskID
 	// Store the updated task in to In Memory DB
-	err = ts.UpdateTaskStatusModel(childTask, common.InMemory)
-	if err != nil {
-		l.Log.Error("error while updating the child/sub task details in to DB: " + err.Error())
-		return "", fmt.Errorf("error while updating the child/sub task details: " + err.Error())
-	}
+	ts.UpdateTaskQueue(childTask)
 	// Add the child/sub task id in to ChildTaskIDs(array) of the parent task
 	parentTask.ChildTaskIDs = append(parentTask.ChildTaskIDs, childTaskID)
 	// Update the parent task in to In Memory DB
-	err = ts.UpdateTaskStatusModel(parentTask, common.InMemory)
-	if err != nil {
-		l.Log.Error("error while updating the task details in to DB: " + err.Error())
-		return "", fmt.Errorf("error while trying to update the task details in InMemory DB: " + err.Error())
-	}
+	ts.UpdateTaskQueue(parentTask)
 	return "/redfish/v1/TaskService/Tasks/" + childTaskID, err
 }
 
@@ -1120,11 +1122,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		return fmt.Errorf("error invalid input argument for taskState")
 	}
 	// Update the task data in the InMemory DB
-	err = ts.UpdateTaskStatusModel(task, common.InMemory)
-	if err != nil {
-		l.Log.Error("error while updating the task in to In-memory DB: " + err.Error())
-		return fmt.Errorf("error while updating the task in to In-memory DB: " + err.Error())
-	}
+	ts.UpdateTaskQueue(task)
 	// Notify the user about task state change by sending statuschange event
 	//	notifyTaskStateChange(task.URI, taskEvenMessageID)
 	eventType := "StatusChange"

@@ -7,6 +7,7 @@ import (
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	uuid "github.com/satori/go.uuid"
 )
@@ -46,28 +47,17 @@ func getAllSubscriptions() {
 		if err != nil {
 			continue
 		}
-		subCache := dmtf.EventDestination{
-			Id:                   sub.SubscriptionID,
-			Destination:          sub.EventDestination.Destination,
-			EventTypes:           sub.EventDestination.EventTypes,
-			MessageIds:           sub.EventDestination.MessageIds,
-			SubordinateResources: sub.EventDestination.SubordinateResources,
-			ResourceTypes:        sub.EventDestination.ResourceTypes,
-			SubscriptionType:     sub.EventDestination.SubscriptionType,
-			OriginResources:      sub.EventDestination.OriginResources,
-			DeliveryRetryPolicy:  sub.EventDestination.DeliveryRetryPolicy,
-		}
-		subscriptionsCache[subCache.Id] = subCache
-
-		if len(sub.EventDestination.OriginResources) == 0 && sub.SubscriptionID != "0" {
+		subCache := sub.EventDestination
+		subCache.Id = sub.SubscriptionID
+		subscriptionsCache[subCache.Id] = *subCache
+		if len(sub.EventDestination.OriginResources) == 0 && sub.SubscriptionID != evcommon.DefaultSubscriptionID {
 			emptySubscriptionIdMap[sub.SubscriptionID] = true
-
 		} else {
 			loadSubscriptionCacheData(sub.SubscriptionID, sub.Hosts)
 		}
 	}
 	if len(emptySubscriptionIdMap) > 0 {
-		emptyOriginResourceToSubscriptionsMap["0"] = emptySubscriptionIdMap
+		emptyOriginResourceToSubscriptionsMap[evcommon.DefaultSubscriptionID] = emptySubscriptionIdMap
 	}
 
 }
@@ -100,22 +90,23 @@ func updateCatchDeviceSubscriptionData(key string, originResources []string) {
 // systemToSubscriptionsMap , aggregateToSystemIdsMap again subscription details
 func loadSubscriptionCacheData(id string, hosts []string) {
 	for _, host := range hosts {
-		addSubscriptionCache(host, host)
+		addSubscriptionCache(host, id)
 	}
 }
 
-//addSubscriptionCache add subscription in corresponding cache based on key type
-func addSubscriptionCache(key string, subId string) {
+// addSubscriptionCache add subscription in corresponding cache based on key type
+// collectionToSubscriptionsMap, aggregateIdToSubscriptionsMap, systemToSubscriptionsMap
+func addSubscriptionCache(key string, subscriptionId string) {
 	if strings.Contains(key, "Collection") {
-		updateCacheMaps(key, subId, collectionToSubscriptionsMap)
+		updateCacheMaps(key, subscriptionId, collectionToSubscriptionsMap)
 		return
 	} else {
 		_, err := uuid.FromString(key)
 		if err == nil {
-			updateCacheMaps(key, subId, aggregateIdToSubscriptionsMap)
+			updateCacheMaps(key, subscriptionId, aggregateIdToSubscriptionsMap)
 			return
 		} else {
-			updateCacheMaps(key, subId, systemToSubscriptionsMap)
+			updateCacheMaps(key, subscriptionId, systemToSubscriptionsMap)
 			return
 		}
 	}

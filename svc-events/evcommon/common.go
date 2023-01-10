@@ -37,6 +37,10 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 )
 
+var (
+	DefaultSubscriptionID = "0"
+)
+
 //StartUpInteraface Holds the function pointer of  external interface functions
 type StartUpInteraface struct {
 	DecryptPassword                  func([]byte) ([]byte, error)

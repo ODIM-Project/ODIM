@@ -243,13 +243,21 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 		}
 	}
 
-	if request.SubscriptionType == "" {
-		request.SubscriptionType = evmodel.SubscriptionType
-	} else {
-		isValid, errorMessage := request.SubscriptionType.IsValidSubscriptionType()
-		if !isValid {
-			return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"SubscriptionType"}, fmt.Errorf(errorMessage)
+	// if request.SubscriptionType == "" {
+	// 	request.SubscriptionType = evmodel.SubscriptionType
+	// } else {
+	// 	isValid, errorMessage := request.SubscriptionType.IsValidSubscriptionType()
+	// 	if !isValid {
+	// 		return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"SubscriptionType"}, fmt.Errorf(errorMessage)
+	// 	}
+	// }
+	if !request.SubscriptionType.IsSubscriptionTypeSupported() {
+		if request.SubscriptionType.IsValidSubscriptionType() {
+			return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"SubscriptionType"}, fmt.Errorf("unsupported SubscriptionType")
+		} else {
+			return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"SubscriptionType"}, fmt.Errorf("invalid SubscriptionType")
 		}
+
 	}
 
 	if request.Context == "" {
@@ -259,9 +267,13 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 	if request.DeliveryRetryPolicy == "" {
 		request.DeliveryRetryPolicy = evmodel.DeliveryRetryPolicy
 	} else {
-		isValid, errorMessage := request.DeliveryRetryPolicy.IsValidDeliveryRetryPolicyType()
-		if !isValid {
-			return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"DeliveryRetryPolicy"}, fmt.Errorf(errorMessage)
+		if !request.DeliveryRetryPolicy.IsDeliveryRetryPolicyTypeSupported() {
+			if request.DeliveryRetryPolicy.IsValidDeliveryRetryPolicyType() {
+				return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"SubscriptionType"}, fmt.Errorf("unsupported DeliveryRetryPolicy")
+
+			} else {
+				return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"SubscriptionType"}, fmt.Errorf("invalid DeliveryRetryPolicy")
+			}
 		}
 	}
 	availableProtocols := []string{"Redfish"}

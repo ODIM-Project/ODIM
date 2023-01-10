@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 
@@ -97,18 +96,18 @@ type SubscriptionResource struct {
 	Location         string                 `json:"location,omitempty"`
 }
 
-//Subscription is a model to store subs set of subscription details which required properties for cache
-type Subscription struct {
-	Id                   string
-	Destination          string
-	EventTypes           []string
-	MessageIds           []string
-	SubordinateResources bool
-	ResourceTypes        []string
-	SubscriptionType     dmtf.SubscriptionType
-	OriginResources      []string
-	DeliveryRetryPolicy  dmtf.DeliveryRetryPolicy
-}
+// //Subscription is a model to store subs set of subscription details which required properties for cache
+// type Subscription struct {
+// 	Id                   string
+// 	Destination          string
+// 	EventTypes           []string
+// 	MessageIds           []string
+// 	SubordinateResources bool
+// 	ResourceTypes        []string
+// 	SubscriptionType     dmtf.SubscriptionType
+// 	OriginResources      []string
+// 	DeliveryRetryPolicy  dmtf.DeliveryRetryPolicy
+// }
 
 //DeviceSubscription is a model to store the subscription details of a device
 type DeviceSubscription common.DeviceSubscription
@@ -690,13 +689,11 @@ func GetAllAggregates() ([]string, error) {
 
 // GetAllDeviceSubscriptions is to get subscription details of device
 func GetAllDeviceSubscriptions() ([]string, error) {
-	t := time.Now()
-	defer l.Log.Debug("Time take to read Complete GetAllDeviceSubscriptions ", time.Since(t))
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
-	devSubscription, gerr := conn.GetAllDeviceSubscription(DeviceSubscriptionIndex)
+	devSubscription, gerr := conn.GetAllDataByIndex(DeviceSubscriptionIndex)
 	if gerr != nil {
 		return nil, fmt.Errorf("error while trying to get subscription of device %v", gerr.Error())
 	}
@@ -707,23 +704,20 @@ func GetAllDeviceSubscriptions() ([]string, error) {
 func GetSliceFromString(sliceString string) []string {
 	// EX : array stored in db in string("[alert statuschange]")
 	// to convert into an array removing "[" ,"]" and splitting
-	slice := strings.Replace(sliceString, "[", "", -1)
-	slice = strings.Replace(slice, "]", "", -1)
-	if len(slice) < 1 {
-		return []string{}
-	}
-	return strings.Split(slice, " ")
+	r := strings.NewReplacer(
+		"[", "",
+		"]", "",
+	)
+	return strings.Split(r.Replace(sliceString), " ")
 }
 
 // GetAllEvtSubscriptions is to get all event subscription details
 func GetAllEvtSubscriptions() ([]string, error) {
-	t := time.Now()
-	defer l.Log.Debug("Time take to read Complete GetAllEvtSubscriptions ", time.Since(t))
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
-	evtSub, gerr := conn.GetAllEvtSubscriptions(SubscriptionIndex)
+	evtSub, gerr := conn.GetAllDataByIndex(SubscriptionIndex)
 	if gerr != nil {
 		return nil, fmt.Errorf("error while trying to get subscription of device %v", gerr.Error())
 	}

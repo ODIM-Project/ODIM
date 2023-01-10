@@ -1723,110 +1723,56 @@ func (p *ConnPool) DeleteAggregateHosts(index, aggregateID string) error {
 	return nil
 }
 
-// GetAllDeviceSubscription is used to retrive index values of type string
-/* Inputs:
-1. index is the index name to search with
-2. match is the value to match with
-*/
-// TODO : Handle cursor
-func (p *ConnPool) GetAllDeviceSubscription(index string) ([]string, error) {
-	var getList []string
-	readConn := p.ReadPool.Get()
-	defer readConn.Close()
-	const cursor float64 = 0
-	currentCursor := cursor
-	d, getErr := readConn.Do("ZCOUNT", index, 0, 0)
-	if getErr != nil {
-		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
+// This function retrieves all data for a given index from sorted sets
+// This maybe used to get all event/device subscriptions and aggregate hosts
+func (p *ConnPool) GetAllDataByIndex(index string) ([]string, error) {
+	dList, ferror := p.getAllDataFromSortedList(index)
+	if ferror != nil {
+		return []string{}, ferror
 	}
-	countData := d.(int64)
-	d, getErr = readConn.Do("ZSCAN", index, currentCursor, "MATCH", "*", "COUNT", countData)
-	if getErr != nil {
-		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
+	EvtSubscriptions, extracterr := getDataAsStringList(dList)
+	if extracterr != nil {
+		return []string{}, ferror
 	}
-	if len(d.([]interface{})) > 1 {
-		var err error
-		data, err := redis.Strings(d.([]interface{})[1], getErr)
-		if err != nil {
-			return []string{}, err
-		}
-		if len(data) < 1 {
-			return []string{}, fmt.Errorf("no data found for the key: GetAllDeviceSubscription")
-		}
-		for i := 0; i < len(data); i++ {
-			if data[i] != "0" {
-				getList = append(getList, data[i])
-			}
-		}
-	}
-	return getList, nil
+
+	return EvtSubscriptions, nil
 }
 
-// GetAllEvtSubscriptions is for to get all subscription details
-func (p *ConnPool) GetAllEvtSubscriptions(index string) ([]string, error) {
-	t := time.Now()
-	defer fmt.Println("Time taken DB all subscription read ", time.Since(t))
-	var getList []string
+func (p *ConnPool) getAllDataFromSortedList(index string) (data interface{}, err error) {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
 	const cursor float64 = 0
-	currentCursor := cursor
+
 	d, getErr := readConn.Do("ZCOUNT", index, 0, 0)
 	if getErr != nil {
-		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
+		return nil, fmt.Errorf("Unable to fetch count of data for index : " +
+			index + " : " +
+			getErr.Error())
 	}
 	countData := d.(int64)
-	d, getErr = readConn.Do("ZSCAN", index, currentCursor, "MATCH", "*", "COUNT", countData)
+
+	data, getErr = readConn.Do("ZSCAN", index, cursor, "MATCH",
+		"*", "COUNT", countData)
 	if getErr != nil {
-		return []string{}, fmt.Errorf("error while trying to get data: " + getErr.Error())
+		return []string{},
+			fmt.Errorf("Error while fetching data for " + index + " : " + getErr.Error())
 	}
+	return data, nil
+}
+
+func getDataAsStringList(d interface{}) ([]string, error) {
+	var dataList []string
+	var err error
 	if len(d.([]interface{})) > 1 {
-		data, err := redis.Strings(d.([]interface{})[1], getErr)
+		data, err := redis.Strings(d.([]interface{})[1], err)
 		if err != nil {
 			return []string{}, fmt.Errorf("error while marshaling data : " + err.Error())
 		}
 		for i := 0; i < len(data); i++ {
 			if data[i] != "0" {
-				getList = append(getList, data[i])
+				dataList = append(dataList, data[i])
 			}
 		}
 	}
-	return getList, nil
-}
-
-// GetAggregateHosts is used to retrive index values of type string
-/* Inputs:
-1. index is the index name to search with
-2. match is the value to match with
-*/
-// TODO : Handle cursor
-func (p *ConnPool) GetAllAggregateHosts(index string) ([]string, error) {
-	t := time.Now()
-	defer fmt.Println("Time taken DB all subscription read ", time.Since(t))
-	var getList []string
-	readConn := p.ReadPool.Get()
-	defer readConn.Close()
-	const cursor float64 = 0
-	currentCursor := cursor
-	d, getErr := readConn.Do("ZCOUNT", index, 0, 0)
-	if getErr != nil {
-		return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
-	}
-	countData := d.(int64)
-	d, getErr = readConn.Do("ZSCAN", index, currentCursor, "MATCH", "*", "COUNT", countData)
-	if getErr != nil {
-		return []string{}, fmt.Errorf("error while trying to get data: " + getErr.Error())
-	}
-	if len(d.([]interface{})) > 1 {
-		data, err := redis.Strings(d.([]interface{})[1], getErr)
-		if err != nil {
-			return []string{}, fmt.Errorf("error while marshaling data : " + err.Error())
-		}
-		for i := 0; i < len(data); i++ {
-			if data[i] != "0" {
-				getList = append(getList, data[i])
-			}
-		}
-	}
-	return getList, nil
+	return dataList, nil
 }

@@ -96,47 +96,70 @@ const (
 
 	// DeliveryRetryPolicy for events. Currently ODIM only support subscriptions
 	// of type RetryForever.
-	// DeliveryRetryPolicyRetryForever - The subscription is not suspended or terminated, and attempts at delivery of future events shall continue regardless of the number of retries.
-	DeliveryRetryPolicyRetryForever DeliveryRetryPolicy = "RetryForever"
+	// DeliveryRetryForever - The subscription is not suspended or terminated,
+	// and attempts at delivery of future events shall continue regardless of
+	// the number of retries.
+	DeliveryRetryForever DeliveryRetryPolicy = "RetryForever"
 
-	// DeliveryRetryPolicyRetryForeverWithBackoff - The subscription is not suspended or terminated, and attempts at delivery of future events shall continue regardless of the number of retries, but issued over time according to a service-defined backoff algorithm
-	DeliveryRetryPolicyRetryForeverWithBackoff DeliveryRetryPolicy = "RetryForeverWithBackoff"
+	// DeliveryRetryForeverWithBackoff - The subscription is not suspended or
+	// terminated, and attempts at delivery of future events shall continue
+	// regardless of the number of retries, but issued over time according to
+	// a service-defined backoff algorithm
+	DeliveryRetryForeverWithBackoff DeliveryRetryPolicy = "RetryForeverWithBackoff"
 
-	// DeliveryRetryPolicySuspendRetries - The subscription is suspended after the maximum number of retries is reached
-	DeliveryRetryPolicySuspendRetries DeliveryRetryPolicy = "SuspendRetries"
+	// DeliverySuspendRetries - The subscription is suspended after the maximum
+	// number of retries is reached
+	DeliverySuspendRetries DeliveryRetryPolicy = "SuspendRetries"
 
-	// DeliveryRetryPolicyTerminateAfterRetries : The subscription is terminated after the maximum number of retries is reached.
-	DeliveryRetryPolicyTerminateAfterRetries DeliveryRetryPolicy = "TerminateAfterRetries"
+	// DeliveryTerminateAfterRetries : The subscription is terminated after the
+	// maximum number of retries is reached.
+	DeliveryTerminateAfterRetries DeliveryRetryPolicy = "TerminateAfterRetries"
 )
 
-func (subscriptionType SubscriptionType) IsValidSubscriptionType() (bool, string) {
+func (subscriptionType SubscriptionType) IsValidSubscriptionType() bool {
+	switch subscriptionType {
+	case SubscriptionTypeRedFishEvent, SubscriptionTypeOEM, SubscriptionTypeSNMPInform, SubscriptionTypeSNMPTrap, SubscriptionTypeSyslog, SubscriptionTySubscriptionTypeSSE:
+		return true
+	default:
+		return false
+	}
+}
+
+func (subscriptionType SubscriptionType) IsSubscriptionTypeSupported() bool {
 	switch subscriptionType {
 	case SubscriptionTypeRedFishEvent:
-		return true, ""
-	case SubscriptionTypeOEM, SubscriptionTypeSNMPInform, SubscriptionTypeSNMPTrap, SubscriptionTypeSyslog, SubscriptionTySubscriptionTypeSSE:
-		return false, "Unsupported SubscriptionType"
+		return true
 	default:
-		return false, "Invalid SubscriptionType"
+		return false
 	}
 }
 
-func (eventType EventType) IsValidEventType() (bool, string) {
+func (eventType EventType) IsValidEventType() bool {
 	switch eventType {
-	case EventTypeAlert, EventTypeMetricReport, EventTypeOther, EventTypeResourceRemoved, EventTypeResourceAdded, EventTypeResourceUpdated, EventTypeStatusChange:
-		return true, ""
+	case EventTypeAlert, EventTypeMetricReport, EventTypeOther, EventTypeResourceRemoved,
+		EventTypeResourceAdded, EventTypeResourceUpdated, EventTypeStatusChange:
+		return true
 	default:
-		return false, "Invalid EventTypes"
+		return false
 	}
-
 }
-func (deliveryRetryPolicy DeliveryRetryPolicy) IsValidDeliveryRetryPolicyType() (bool, string) {
+
+func (deliveryRetryPolicy DeliveryRetryPolicy) IsValidDeliveryRetryPolicyType() bool {
 	switch deliveryRetryPolicy {
-	case DeliveryRetryPolicyRetryForever:
-		return true, ""
-	case DeliveryRetryPolicySuspendRetries, DeliveryRetryPolicyTerminateAfterRetries, DeliveryRetryPolicyRetryForeverWithBackoff:
-		return false, "Unsupported SubscriptionType"
+	case DeliveryRetryForever, DeliverySuspendRetries, DeliveryTerminateAfterRetries,
+		DeliveryRetryForeverWithBackoff:
+		return true
 	default:
-		return false, "Invalid DeliveryRetryPolicy"
+		return false
+	}
+}
+
+func (deliveryRetryPolicy DeliveryRetryPolicy) IsDeliveryRetryPolicyTypeSupported() bool {
+	switch deliveryRetryPolicy {
+	case DeliveryRetryForever:
+		return true
+	default:
+		return false
 	}
 }
 
@@ -192,6 +215,7 @@ type EventDestination struct {
 	ExcludeRegistryPrefixes []string            `json:"ExcludeRegistryPrefixes,omitempty"`
 	DeliveryRetryPolicy     DeliveryRetryPolicy `json:"DeliveryRetryPolicy"`
 	Destination             string              `json:"Destination"`
+	Id                      string              `json:"id"`
 	MessageIds              []string            `json:"MessageIds"`
 	Name                    string              `json:"Name"`
 	OriginResources         []string            `json:"OriginResources"`

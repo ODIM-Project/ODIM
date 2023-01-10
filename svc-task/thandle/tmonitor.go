@@ -50,20 +50,20 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
-		fillProtoResponse(&rsp, authResp)
+		fillProtoResponse(ctx, &rsp, authResp)
 		return &rsp, nil
 	}
 	_, err = ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
 		l.LogWithFields(ctx).Printf(authErrorMessage)
-		fillProtoResponse(&rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
+		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		return &rsp, nil
 	}
 	// get task status from database using task id
-	task, err := ts.GetTaskStatusModel(req.TaskID, common.InMemory)
+	task, err := ts.GetTaskStatusModel(ctx, req.TaskID, common.InMemory)
 	if err != nil {
 		l.LogWithFields(ctx).Printf("error getting task status : %v", err)
-		fillProtoResponse(&rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.TaskID}, nil))
+		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.TaskID}, nil))
 		return &rsp, nil
 	}
 

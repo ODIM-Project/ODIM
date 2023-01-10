@@ -228,17 +228,17 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 		if err != nil {
 			l.LogWithFields(ctx).Errorf(logPrefix+"Error while authorizing the session token : %s", err.Error())
 		}
-		fillProtoResponse(&rsp, authResp)
+		fillProtoResponse(ctx, &rsp, authResp)
 		return &rsp, nil
 
 	}
 	rsp.Header["Allow"] = "DELETE"
 	if task.PercentComplete == 100 {
-		delErr := ts.deleteCompletedTask(req.TaskID)
+		delErr := ts.deleteCompletedTask(ctx, req.TaskID)
 		if delErr != nil {
 			errorMessage := "Error while deleting the completed task: " + delErr.Error()
 			l.LogWithFields(ctx).Error(logPrefix + errorMessage)
-			fillProtoResponse(&rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
+			fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
 			return &rsp, nil
 		}
 		rsp.StatusCode = http.StatusNoContent
@@ -261,7 +261,7 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 	}
 	if err != nil {
 		errorMessage := "error max retries exceeded for TaskCancel Transaction: " + err.Error()
-		fillProtoResponse(&rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
+		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
 		l.LogWithFields(ctx).Error(logPrefix + errorMessage)
 		return &rsp, nil
 	}
@@ -510,20 +510,21 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
-		fillProtoResponse(&rsp, authResp)
+		fillProtoResponse(ctx, &rsp, authResp)
 		return &rsp, nil
 	}
 	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
-		fillProtoResponse(&rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
+		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		l.LogWithFields(ctx).Error(authErrorMessage)
 		return &rsp, nil
 	}
 	// get task status from database using task id
-	task, err := ts.GetTaskStatusModel(req.SubTaskID, common.InMemory)
+	task, err := ts.GetTaskStatusModel(ctx, req.SubTaskID, common.InMemory)
 	if err != nil {
 		l.LogWithFields(ctx).Error("error getting sub task status : " + err.Error())
-		fillProtoResponse(&rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.SubTaskID}, nil))
+		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(),
+			[]interface{}{"Task", req.SubTaskID}, nil))
 		return &rsp, nil
 	}
 	//Compare the task username with requesting session user name
@@ -534,7 +535,7 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 			if err != nil {
 				l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 			}
-			fillProtoResponse(&rsp, authResp)
+			fillProtoResponse(ctx, &rsp, authResp)
 			return &rsp, nil
 		}
 	}
@@ -631,14 +632,14 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
-		fillProtoResponse(&rsp, authResp)
+		fillProtoResponse(ctx, &rsp, authResp)
 		return &rsp, nil
 	}
 	// Get all task in in-memory db
 	tasks, err := ts.GetAllTaskKeysModel(ctx)
 	if err != nil {
 		errorMessage := "error: while trying to get all task keys from db: " + err.Error()
-		fillProtoResponse(&rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
+		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
 		l.LogWithFields(ctx).Error(errorMessage)
 		return &rsp, nil
 	}
@@ -648,7 +649,7 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 	}
 	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
-		fillProtoResponse(&rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
+		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		l.LogWithFields(ctx).Error(authErrorMessage)
 		return &rsp, nil
 
@@ -662,7 +663,8 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 			task, err := ts.GetTaskStatusModel(ctx, taskID, common.InMemory)
 			if err != nil {
 				l.LogWithFields(ctx).Error("error getting task status : " + err.Error())
-				fillProtoResponse(&rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, authErrorMessage, nil, nil))
+				fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusNotFound,
+					response.ResourceNotFound, authErrorMessage, nil, nil))
 				return &rsp, nil
 			}
 			//Check if the task belongs to user
@@ -810,7 +812,7 @@ func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRe
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
-		fillProtoResponse(&rsp, authResp)
+		fillProtoResponse(ctx, &rsp, authResp)
 		return &rsp, nil
 	}
 

@@ -16,10 +16,11 @@
 package rfphandler
 
 import (
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
@@ -106,6 +107,11 @@ func GetResource(ctx iris.Context) {
 
 	}
 	respData := string(body)
+	//Replace response body with smaller case of systems,bios to capital cases
+	if strings.Contains(uri, "Systems") {
+		respData = strings.Replace(string(respData), "systems", "Systems", -1)
+		respData = strings.Replace(string(respData), "bios", "Bios", -1)
+	}
 	//replacing the resposne with north bound translation URL
 	for key, value := range pluginConfig.Data.URLTranslation.NorthBoundURL {
 		respData = strings.Replace(respData, key, value, -1)

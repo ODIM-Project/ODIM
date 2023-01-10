@@ -15,6 +15,7 @@
 package update
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -27,12 +28,12 @@ import (
 func TestGetExternalInterface(t *testing.T) {
 	res := GetExternalInterface()
 	assert.NotNil(t, res, "There should be an error")
-	ServicesUpdateTaskFunc = func(taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error {
+	ServicesUpdateTaskFunc = func(ctx context.Context, taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error {
 		return errors.New("Cancelling")
 	}
 	resp := TaskData(mockContext(), common.TaskData{PercentComplete: 0})
 	assert.NotNil(t, resp, "There should be an error")
-	ServicesUpdateTaskFunc = func(taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error {
+	ServicesUpdateTaskFunc = func(ctx context.Context, taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error {
 		return nil
 	}
 	resp = TaskData(mockContext(), common.TaskData{PercentComplete: 0})

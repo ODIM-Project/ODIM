@@ -17,6 +17,7 @@ package evcommon
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -59,7 +60,7 @@ func MockGetSessionUserName(sessionToken string) (string, error) {
 }
 
 // MockCreateTask is for mocking up of crete task
-func MockCreateTask(sessionusername string) (string, error) {
+func MockCreateTask(ctx context.Context, sessionusername string) (string, error) {
 	if sessionusername == "non-admin" {
 		return "", fmt.Errorf("no task details")
 	}
@@ -173,12 +174,12 @@ func MockContactClient(url, method, token string, odataID string, body interface
 }
 
 // MockCreateChildTask is for mocking up of crete child task
-func MockCreateChildTask(sessionID, taskid string) (string, error) {
+func MockCreateChildTask(ctx context.Context, sessionID, taskid string) (string, error) {
 	return "123456", nil
 }
 
 // MockUpdateTask is for mocking up of update task
-func MockUpdateTask(task common.TaskData) error {
+func MockUpdateTask(context context.Context, task common.TaskData) error {
 	return nil
 }
 

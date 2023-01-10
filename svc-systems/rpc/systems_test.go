@@ -729,7 +729,7 @@ func getSessionUserNameForTesting(sessionToken string) (string, error) {
 	return "someUserName", nil
 }
 
-func createTaskForTesting(sessionUserName string) (string, error) {
+func createTaskForTesting(ctx context.Context, sessionUserName string) (string, error) {
 	if sessionUserName == "noTaskUser" {
 		return "", fmt.Errorf("no details")
 	} else if sessionUserName == "taskWithSlashUser" {
@@ -738,7 +738,7 @@ func createTaskForTesting(sessionUserName string) (string, error) {
 	return "some/Task", nil
 }
 
-func mockUpdateTask(task common.TaskData) error {
+func mockUpdateTask(ctx context.Context, task common.TaskData) error {
 	if task.TaskID == "invalid" {
 		return fmt.Errorf(common.Cancelling)
 	}

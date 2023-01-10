@@ -11,6 +11,12 @@ var (
 	ConfigFilePath string
 )
 
+const (
+	// IterationCount is a value that needs to be added in context
+	// to track the number of threads created
+	IterationCount = "IterationCount"
+)
+
 func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat

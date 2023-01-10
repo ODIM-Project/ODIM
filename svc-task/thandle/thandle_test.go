@@ -73,13 +73,13 @@ func mockGetTaskStatus(taskID string, db common.DbType) (*tmodel.Task, error) {
 	return &task, nil
 }
 
-func mockOverWriteCompletedTaskUtil(userName string) error {
+func mockOverWriteCompletedTaskUtil(ctx context.Context, userName string) error {
 	if userName != "validUser" {
 		return fmt.Errorf("user does not exist")
 	}
 	return nil
 }
-func mockCreateTaskUtil(userName string) (string, error) {
+func mockCreateTaskUtil(ctx context.Context, userName string) (string, error) {
 
 	if userName == "" {
 		return "", fmt.Errorf("error invalid input argument for userName")
@@ -90,7 +90,7 @@ func mockCreateTaskUtil(userName string) (string, error) {
 	return "/redfish/v1/TaskService/Tasks/validTaskID", nil
 }
 
-func mockGetCompletedTasksIndexModel(searchKey string) ([]string, error) {
+func mockGetCompletedTasksIndexModel(ctx context.Context, searchKey string) ([]string, error) {
 	var taskList []string
 	switch searchKey {
 	case "validUserWithNoCompletedTasks":
@@ -116,12 +116,11 @@ func mockGetCompletedTasksIndexModel(searchKey string) ([]string, error) {
 	return taskList, nil
 }
 
-func mockDeleteTaskFromDBModel(task *tmodel.Task) error {
-
+func mockDeleteTaskFromDBModel(ctx context.Context, task *tmodel.Task) error {
 	return nil
 }
 
-func mockDeleteTaskIndex(task string) error {
+func mockDeleteTaskIndex(ctx context.Context, task string) error {
 
 	return nil
 }
@@ -129,16 +128,16 @@ func mockDeleteTaskIndex(task string) error {
 func mockUpdateTaskStatusModel(task *tmodel.Task) {
 }
 
-func mockPublishToMessageBus(taskURI, taskEvenMessageID, eventType, taskMessage string) {
+func mockPublishToMessageBus(ctx context.Context, taskURI, taskEvenMessageID, eventType, taskMessage string) {
 
 }
-func mockValidateTaskUserNameModel(userName string) error {
+func mockValidateTaskUserNameModel(ctx context.Context, userName string) error {
 	if userName != "validUser" {
 		return fmt.Errorf("error while trying to read from DB: %v", errors.PackError(errors.DBKeyNotFound, "no data with the with key ", userName, " found").Error())
 	}
 	return nil
 }
-func mockPersistTaskModel(task *tmodel.Task, db common.DbType) error {
+func mockPersistTaskModel(ctx context.Context, task *tmodel.Task, db common.DbType) error {
 	if db != common.InMemory {
 		return fmt.Errorf("error while trying to connecting to DB: error invalid db type selection")
 	}
@@ -293,7 +292,7 @@ func TestTasksRPC_GetTasks(t *testing.T) {
 		})
 	}
 }
-func mockGetAllTaskKeysModel() ([]string, error) {
+func mockGetAllTaskKeysModel(ctx context.Context) ([]string, error) {
 	keys := []string{"task:key1", "task:key2"}
 	return keys, nil
 }
@@ -883,7 +882,7 @@ func TestTasksRPC_OverWriteCompletedTaskUtil(t *testing.T) {
 	}
 	task.Name = "Task " + task.ID
 	// Persist in the in-memory DB
-	err := tmodel.PersistTask(&task, common.InMemory)
+	err := tmodel.PersistTask(mockContext(), &task, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
@@ -939,7 +938,7 @@ func TestTasksRPC_OverWriteCompletedTaskUtil(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.ts.OverWriteCompletedTaskUtil(tt.args.userName); !(err != nil && tt.wantError != nil) && !(err == nil && tt.wantError == nil) {
+			if err := tt.ts.OverWriteCompletedTaskUtil(mockContext(), tt.args.userName); !(err != nil && tt.wantError != nil) && !(err == nil && tt.wantError == nil) {
 				t.Errorf("TasksRPC.OverWriteCompletedTaskUtil() error = %v, wantErr %v", err, tt.wantError)
 			}
 		})
@@ -1712,7 +1711,7 @@ func TestTasksRPC_CreateTaskUtil(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.ts.CreateTaskUtil(tt.args.userName)
+			_, err := tt.ts.CreateTaskUtil(mockContext(), tt.args.userName)
 			if !reflect.DeepEqual(err, tt.wantErr) {
 				t.Errorf("TasksRPC.CreateTaskUtil() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1783,10 +1782,21 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.ts.taskCancelCallBack(tt.args.taskID)
+			err := tt.ts.taskCancelCallBack(mockContext(), tt.args.taskID)
 			if !reflect.DeepEqual(err, tt.wantErr) {
 				t.Errorf("TasksRPC.taskCancelCallBack() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
+}
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
 }

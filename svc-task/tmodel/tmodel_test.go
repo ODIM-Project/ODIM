@@ -14,6 +14,7 @@
 package tmodel
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"reflect"
@@ -106,13 +107,13 @@ func TestPersistTask(t *testing.T) {
 	}
 	task.Name = "Task " + task.ID
 	// Negetive Test case
-	err := PersistTask(&task, 23)
+	err := PersistTask(mockContext(), &task, 23)
 	if err == nil {
 		t.Fatalf("error: expected error here but got no error")
 		return
 	}
 	// Persist in the in-memory DB
-	err = PersistTask(&task, common.InMemory)
+	err = PersistTask(mockContext(), &task, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
@@ -135,13 +136,13 @@ func TestProcessTaskQueue(t *testing.T) {
 	}
 	task.Name = "Task " + task.ID
 
-	err := PersistTask(&task, common.InMemory)
+	err := PersistTask(mockContext(), &task, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
 	}
 
-	task1, err := GetTaskStatus(task.ID, common.InMemory)
+	task1, err := GetTaskStatus(mockContext(), task.ID, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retrieving the Task details with Get: %v", err)
 		return
@@ -275,13 +276,13 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 
 	task.Name = "Task " + task.ID
 	// Persist in the in-memory DB
-	err := PersistTask(&task, common.InMemory)
+	err := PersistTask(mockContext(), &task, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
 	}
 
-	task1, err := GetTaskStatus(task.ID, common.InMemory)
+	task1, err := GetTaskStatus(mockContext(), task.ID, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retrieving the Task details with Get: %v", err)
 		return
@@ -300,7 +301,7 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		}
 	}
 
-	_, err = GetCompletedTasksIndex("task1")
+	_, err = GetCompletedTasksIndex(mockContext(), "task1")
 	if err != nil {
 		t.Fatalf("error while getting the task details in the db: %v", err)
 		return
@@ -317,13 +318,13 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 	}
 	task2.Name = "Task " + task.ID
 	// Persist in the in-memory DB
-	err = PersistTask(&task2, common.InMemory)
+	err = PersistTask(mockContext(), &task2, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
 	}
 
-	task3, err := GetTaskStatus(task.ID, common.InMemory)
+	task3, err := GetTaskStatus(mockContext(), task.ID, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
@@ -342,7 +343,7 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		}
 	}
 
-	_, err = GetCompletedTasksIndex("task3")
+	_, err = GetCompletedTasksIndex(mockContext(), "task3")
 	if err != nil {
 		t.Fatalf("error while getting the task details in the db: %v", err)
 		return
@@ -373,26 +374,26 @@ func TestDeleteTaskFromDB(t *testing.T) {
 	}
 	task.Name = "Task " + task.ID
 	// Persist in the in-memory DB
-	err := PersistTask(&task, common.InMemory)
+	err := PersistTask(mockContext(), &task, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
 	}
 
-	task1, err := GetTaskStatus(task.ID, common.InMemory)
+	task1, err := GetTaskStatus(mockContext(), task.ID, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
 	}
 	// Negetive test case
 	task2 := new(Task)
-	err = DeleteTaskFromDB(task2)
+	err = DeleteTaskFromDB(mockContext(), task2)
 	if err == nil {
 		t.Fatalf("error: expected error here but got no error ")
 		return
 	}
 	// Positive Test case
-	err = DeleteTaskFromDB(task1)
+	err = DeleteTaskFromDB(mockContext(), task1)
 	if err != nil {
 		t.Fatalf("error while deleting the task details in the db: %v", err)
 		return
@@ -425,7 +426,7 @@ func TestDeleteTaskIndex(t *testing.T) {
 
 	task.Name = "Task " + task.ID
 	// Persist in the in-memory DB
-	err := PersistTask(&task, common.InMemory)
+	err := PersistTask(mockContext(), &task, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
@@ -442,13 +443,13 @@ func TestDeleteTaskIndex(t *testing.T) {
 	}
 	task2.Name = "Task " + task2.ID
 	// Persist in the in-memory DB
-	err = PersistTask(&task2, common.InMemory)
+	err = PersistTask(mockContext(), &task2, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
 	}
 
-	task1, err := GetTaskStatus(task.ID, common.InMemory)
+	task1, err := GetTaskStatus(mockContext(), task.ID, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
@@ -468,7 +469,7 @@ func TestDeleteTaskIndex(t *testing.T) {
 	}
 
 	// Positive Test case
-	err = DeleteTaskIndex(task1.ID)
+	err = DeleteTaskIndex(mockContext(), task1.ID)
 	if err != nil {
 		t.Fatalf("error while deleting the task details in the db: %v", err)
 		return
@@ -490,19 +491,19 @@ func TestGetTaskStatus(t *testing.T) {
 	}
 	task.Name = "Task " + task.ID
 	// Persist in the in-memory DB
-	err := PersistTask(&task, common.InMemory)
+	err := PersistTask(mockContext(), &task, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
 	}
 	// Negetive Test case with wrong task ID
-	_, err = GetTaskStatus("", common.InMemory)
+	_, err = GetTaskStatus(mockContext(), "", common.InMemory)
 	if err == nil {
 		t.Fatalf("error: expected error here but got no error")
 		return
 	}
 	// Positive test case
-	_, err = GetTaskStatus(task.ID, common.InMemory)
+	_, err = GetTaskStatus(mockContext(), task.ID, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while retreving the Task details with Get: %v", err)
 		return
@@ -516,7 +517,7 @@ func TestGetAllTaskKeys(t *testing.T) {
 	for i := 0; i < count; i++ {
 		createTaskInDB(t)
 	}
-	taskList, err := GetAllTaskKeys()
+	taskList, err := GetAllTaskKeys(mockContext())
 	if err != nil {
 		t.Fatalf("fatal: error while fetching all task in db: %v", err)
 	}
@@ -543,13 +544,13 @@ func createTaskInDB(t *testing.T) {
 	}
 	task.Name = "Task " + task.ID
 	// Persist in the in-memory DB
-	err = PersistTask(&task, common.InMemory)
+	err = PersistTask(mockContext(), &task, common.InMemory)
 	if err != nil {
 		t.Fatalf("error while trying to insert the task details: %v", err)
 		return
 	}
 }
-func mockCallBack(key string) error {
+func mockCallBack(ctx context.Context, key string) error {
 	if key != "validKey" {
 		return fmt.Errorf("error invalid key")
 	}
@@ -559,7 +560,7 @@ func TestTransaction(t *testing.T) {
 	defer flushDB(t)
 	type args struct {
 		key string
-		cb  func(string) error
+		cb  func(context.Context, string) error
 	}
 	tests := []struct {
 		name    string
@@ -586,7 +587,7 @@ func TestTransaction(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := Transaction(tt.args.key, tt.args.cb); !reflect.DeepEqual(err, tt.wantErr) {
+			if err := Transaction(mockContext(), tt.args.key, tt.args.cb); !reflect.DeepEqual(err, tt.wantErr) {
 				t.Errorf("Transaction() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -637,7 +638,7 @@ func TestValidateTaskUserName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ValidateTaskUserName(tt.args.userName); !reflect.DeepEqual(err, tt.wantErr) {
+			if err := ValidateTaskUserName(mockContext(), tt.args.userName); !reflect.DeepEqual(err, tt.wantErr) {
 				t.Errorf("ValidateTaskUserName() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -652,4 +653,15 @@ func flushDB(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
+}
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
 }

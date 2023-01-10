@@ -20,21 +20,22 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/golang/protobuf/ptypes"
 )
 
 //CreateTask function is to contact the svc-task through the rpc call
-func CreateTask(sessionUserName string) (string, error) {
+func CreateTask(ctx context.Context, sessionUserName string) (string, error) {
 	conn, errConn := ODIMService.Client(Tasks)
 	if errConn != nil {
 		return "", fmt.Errorf("Failed to create client connection: %s", errConn.Error())
 	}
 	defer conn.Close()
 	taskService := taskproto.NewGetTaskServiceClient(conn)
+	ctx = common.CreateMetadata(ctx)
 	response, err := taskService.CreateTask(
-		context.TODO(),
-		&taskproto.CreateTaskRequest{
+		ctx, &taskproto.CreateTaskRequest{
 			UserName: sessionUserName,
 		},
 	)
@@ -45,16 +46,16 @@ func CreateTask(sessionUserName string) (string, error) {
 }
 
 // CreateChildTask function is to contact the svc-task through the rpc call
-func CreateChildTask(sessionUserName string, parentTaskID string) (string, error) {
+func CreateChildTask(ctx context.Context, sessionUserName string, parentTaskID string) (string, error) {
 	conn, errConn := ODIMService.Client(Tasks)
 	if errConn != nil {
 		return "", fmt.Errorf("Failed to create client connection: %s", errConn.Error())
 	}
 	defer conn.Close()
 	taskService := taskproto.NewGetTaskServiceClient(conn)
+	ctx = common.CreateMetadata(ctx)
 	response, err := taskService.CreateChildTask(
-		context.TODO(),
-		&taskproto.CreateTaskRequest{
+		ctx, &taskproto.CreateTaskRequest{
 			UserName:     sessionUserName,
 			ParentTaskID: parentTaskID,
 		},
@@ -66,7 +67,9 @@ func CreateChildTask(sessionUserName string, parentTaskID string) (string, error
 }
 
 //UpdateTask function is to contact the svc-task through the rpc call
-func UpdateTask(taskID string, taskState string, taskStatus string, percentComplete int32, payLoad *taskproto.Payload, endTime time.Time) error {
+func UpdateTask(ctx context.Context, taskID string, taskState string, taskStatus string,
+	percentComplete int32, payLoad *taskproto.Payload, endTime time.Time) error {
+
 	tspb, err := ptypes.TimestampProto(endTime)
 	if err != nil {
 		return fmt.Errorf("Failed to convert the time to protobuff timestamp: %s", err.Error())
@@ -76,10 +79,10 @@ func UpdateTask(taskID string, taskState string, taskStatus string, percentCompl
 		return fmt.Errorf("Failed to create client connection: %s", errConn.Error())
 	}
 	defer conn.Close()
+	ctx = common.CreateMetadata(ctx)
 	taskService := taskproto.NewGetTaskServiceClient(conn)
 	_, err = taskService.UpdateTask(
-		context.TODO(),
-		&taskproto.UpdateTaskRequest{
+		ctx, &taskproto.UpdateTaskRequest{
 			TaskID:          taskID,
 			TaskState:       taskState,
 			TaskStatus:      taskStatus,

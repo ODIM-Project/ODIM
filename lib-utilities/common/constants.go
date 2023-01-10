@@ -167,19 +167,22 @@ const (
 	SessionService = "svc-account-session"
 	ApiService     = "svc-api"
 	UpdateService  = "svc-update"
+	TaskService    = "svc-task"
 	// DefaultThreadID to be used for apis
 	DefaultThreadID = "0"
 	// Invalid Action
 	InvalidActionID   = "000"
 	InvalidActionName = "MethodNotAllowed"
 	// ThreadName
-	CheckAuth            = "Check-Authentication"
-	CheckSessionCreation = "CheckSessionCreationCredentials"
-	CheckSessionTimeout  = "CheckSessionTimeOut"
-	SendRequest          = "SendRequest"
-	StartRequest         = "StartRequest"
-	SimpleUpdate         = "SimpleUpdate"
-	StartUpdate          = "StartUpdate"
+	CheckAuth                  = "Check-Authentication"
+	CheckSessionCreation       = "CheckSessionCreationCredentials"
+	CheckSessionTimeout        = "CheckSessionTimeOut"
+	SendRequest                = "SendRequest"
+	StartRequest               = "StartRequest"
+	SimpleUpdate               = "SimpleUpdate"
+	StartUpdate                = "StartUpdate"
+	OverWriteCompletedTaskUtil = "OverWriteCompletedTaskUtil"
+	AsyncTaskDelete            = "AsyncTaskDelete"
 )
 
 // ActionType defines type of action

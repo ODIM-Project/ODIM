@@ -30,12 +30,12 @@ func TestGetExternalInterface(t *testing.T) {
 	ServicesUpdateTaskFunc = func(taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error {
 		return errors.New("Cancelling")
 	}
-	resp := TaskData(common.TaskData{PercentComplete: 0})
+	resp := TaskData(mockContext(), common.TaskData{PercentComplete: 0})
 	assert.NotNil(t, resp, "There should be an error")
 	ServicesUpdateTaskFunc = func(taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error {
 		return nil
 	}
-	resp = TaskData(common.TaskData{PercentComplete: 0})
+	resp = TaskData(mockContext(), common.TaskData{PercentComplete: 0})
 	assert.Nil(t, resp, "There should be no error")
 
 }

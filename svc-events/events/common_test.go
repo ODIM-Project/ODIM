@@ -9,6 +9,7 @@ package events
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -49,7 +50,7 @@ func TestUpdateTaskData(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			UpdateTaskService = tt.UpdateTaskService
-			if err := UpdateTaskData(tt.args.taskData); errors.Is(err, tt.wantErr) {
+			if err := UpdateTaskData(mockContext(), tt.args.taskData); errors.Is(err, tt.wantErr) {
 				t.Errorf("UpdateTaskData() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -100,4 +101,15 @@ func TestExternalInterfaces_PluginCall(t *testing.T) {
 	}
 	isHostPresentInEventForward([]string{}, "test")
 	isHostPresent([]string{}, "test")
+}
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
 }

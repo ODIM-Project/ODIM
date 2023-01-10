@@ -65,7 +65,7 @@ func mockGetSessionUserName(sessionToken string) (string, error) {
 	}
 	return user, nil
 }
-func mockGetTaskStatusModel(taskID string, db common.DbType) (*tmodel.Task, error) {
+func mockGetTaskStatusModel(ctx context.Context, taskID string, db common.DbType) (*tmodel.Task, error) {
 	if db != common.InMemory {
 		return nil, fmt.Errorf("Resource not found")
 	}
@@ -117,7 +117,7 @@ func mockGetTaskStatusModel(taskID string, db common.DbType) (*tmodel.Task, erro
 	return &task, nil
 
 }
-func mockTransactionModel(taskID string, cb func(string) error) error {
+func mockTransactionModel(ctx context.Context, taskID string, cb func(context.Context, string) error) error {
 	return nil
 }
 func TestTasksRPC_GetTaskMonitor(t *testing.T) {

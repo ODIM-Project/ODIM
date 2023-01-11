@@ -108,7 +108,10 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 
 		for _, origin := range sub.EventDestination.OriginResources {
 			if sub.EventDestination.Destination != "" {
-				if filterEventsToBeForwarded(sub, message.Events[0], []string{origin}) {
+				subscription := *sub.EventDestination
+				subscription.ID = sub.SubscriptionID
+
+				if filterEventsToBeForwarded(subscription, message.Events[0], []string{origin}) {
 					l.Log.Info("Destination: " + sub.EventDestination.Destination)
 					go e.postEvent(sub.EventDestination.Destination, eventUniqueID, messageBytes)
 				}

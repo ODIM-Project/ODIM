@@ -183,14 +183,6 @@ func TestPublishEventsToDestiantionWithMultipleEvents(t *testing.T) {
 	}
 }
 
-func TestExternalInterfaces_getCollectionSubscriptionInfoForOID(t *testing.T) {
-	pc := getMockMethods()
-	pc.getCollectionSubscriptionInfoForOID("Chassis", "")
-	pc.getCollectionSubscriptionInfoForOID("Managers", "")
-	pc.getCollectionSubscriptionInfoForOID("Fabrics", "")
-	pc.getCollectionSubscriptionInfoForOID("", "")
-}
-
 func TestExternalInterfaces_checkUndeliveredEvents(t *testing.T) {
 	pc := getMockMethods()
 	pc.checkUndeliveredEvents("dummy")

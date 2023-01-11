@@ -25,7 +25,6 @@ var (
 )
 
 func LoadSubscriptionData() {
-	l.Log.Debug("Cache loading invoked ")
 	getAllSubscriptions()
 	getAllAggregates()
 	getAllDeviceSubscriptions()
@@ -153,6 +152,7 @@ func getSourceId(host string) (string, error) {
 	return data, nil
 }
 
+//updateCacheMaps update map value corresponding key
 func updateCacheMaps(key, value string, cacheData map[string]map[string]bool) {
 	elements, isExists := cacheData[key]
 	if isExists {
@@ -161,4 +161,103 @@ func updateCacheMaps(key, value string, cacheData map[string]map[string]bool) {
 	} else {
 		cacheData[key] = map[string]bool{value: true}
 	}
+}
+
+// getSubscriptions return list of subscription from cache corresponding to originOfCondition
+func getSubscriptions(originOfCondition, systemId, hostIp string) (subs []dmtf.EventDestination) {
+	getSystemSubscriptionList(hostIp, subs)
+	getAggregateSubscriptionList(systemId, subs)
+	getEmptyOriginResourceSubscriptionList(subs)
+	getCollectionSubscriptionList(originOfCondition, hostIp, subs)
+	return
+}
+
+//getSystemSubscriptionList return list of subscription corresponding to host
+func getSystemSubscriptionList(hostIp string, subs []dmtf.EventDestination) {
+	systemSubscription, isExists := systemToSubscriptionsMap[hostIp]
+	if isExists {
+		for subId, _ := range systemSubscription {
+			sub, isValidSubId := getSubscriptionDetails(subId)
+			if isValidSubId {
+				subs = append(subs, sub)
+			}
+
+		}
+	}
+
+}
+
+// getAggregateSubscriptionList return list of subscription corresponding to system
+// is members of different aggregate
+func getAggregateSubscriptionList(systemId string, subs []dmtf.EventDestination) {
+	aggregateList, isExists := systemIdToAggregateIdsMap[systemId]
+	if isExists {
+		for aggregateID := range aggregateList {
+			subscriptions, isValidAggregateId := aggregateIdToSubscriptionsMap[aggregateID]
+			if isValidAggregateId {
+				for subId := range subscriptions {
+					sub, isValidSubId := getSubscriptionDetails(subId)
+					sub.OriginResources = append(sub.OriginResources, "/redfish/v1/Systems/"+systemId)
+					if isValidSubId {
+						subs = append(subs, sub)
+					}
+				}
+			}
+		}
+	}
+}
+
+// getCollectionSubscriptionList return list of subscription against
+// originOfCondition type
+func getCollectionSubscriptionList(originOfCondition, hostIp string,
+	subs []dmtf.EventDestination) {
+	collectionsKey := getCollectionKey(originOfCondition, hostIp)
+	collectionSubscription, isExists := collectionToSubscriptionsMap[collectionsKey]
+	if isExists {
+		for subId, _ := range collectionSubscription {
+			sub, isValidSubId := getSubscriptionDetails(subId)
+			if isValidSubId {
+				subs = append(subs, sub)
+			}
+		}
+	}
+
+}
+
+// getEmptyOriginResourceSubscriptionList return list of subscription
+// whose originResources is empty
+func getEmptyOriginResourceSubscriptionList(subs []dmtf.EventDestination) {
+
+	emptyOriginResourceSubscription, isExists := emptyOriginResourceToSubscriptionsMap[evcommon.DefaultSubscriptionID]
+	if isExists {
+		for subId, _ := range emptyOriginResourceSubscription {
+			sub, isValidSubId := getSubscriptionDetails(subId)
+			if isValidSubId {
+				subs = append(subs, sub)
+			}
+		}
+	}
+
+}
+
+//getSubscriptionDetails this method return subscription details corresponding subscription Id
+func getSubscriptionDetails(subscriptionID string) (dmtf.EventDestination, bool) {
+	if sub, isExists := subscriptionsCache[subscriptionID]; isExists {
+		return sub, true
+	}
+	return dmtf.EventDestination{}, false
+}
+
+// getCollectionKey return collection key corresponding originOfCondition uri
+func getCollectionKey(oid, host string) (key string) {
+	if strings.Contains(oid, "Systems") && host != "SystemsCollection" {
+		key = "SystemsCollection"
+	} else if strings.Contains(oid, "Chassis") && host != "ChassisCollection" {
+		key = "ChassisCollection"
+	} else if strings.Contains(oid, "Managers") && host != "ManagerCollection" {
+		key = "ManagerCollection"
+	} else if strings.Contains(oid, "Fabrics") && host != "FabricsCollection" {
+		key = "FabricsCollection"
+	}
+	return
 }

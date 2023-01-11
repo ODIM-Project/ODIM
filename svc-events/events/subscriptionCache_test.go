@@ -95,7 +95,15 @@ func mockData() error {
 	if cErr != nil {
 		return fmt.Errorf("error while trying to save device subscription of device %v", cErr.Error())
 	}
-	cErr = connPool.CreateEvtSubscriptionIndex(evmodel.SubscriptionIndex, "{\"EventDestination\":{\"Context\":\"ABCDEFGHJLKJ\",\"EventTypes\":[\"Alert\"],\"EventFormatType\":\"Event\",\"DeliveryRetryPolicy\":\"RetryForever\",\"Destination\":\"https://node.odim.com:8080/Destination\",\"MessageIds\":[],\"Name\":\"Bruce\",\"OriginResources\":[\"/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1\"],\"Protocol\":\"Redfish\",\"ResourceTypes\":[],\"SubscriptionType\":\"RedfishEvent\",\"SubordinateResources\":true},\"Hosts\":[\"10.24.0.5\"],\"SubscriptionID\":\"3ce177bf-42a4-4335-b1c1-41540a4b65d7\",\"UserName\":\"admin\"}")
+	cErr = connPool.CreateDeviceSubscriptionIndex(evmodel.DeviceSubscriptionIndex, "100.100.100.100", "https://odim.2.com/EventService/Subscriptions/1", []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f.1"})
+	if cErr != nil {
+		return fmt.Errorf("error while trying to save device subscription of device %v", cErr.Error())
+	}
+	cErr = connPool.CreateDeviceSubscriptionIndex(evmodel.DeviceSubscriptionIndex, "10.10.1.3", "https://odim.2.com/EventService/Subscriptions/1", []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g.1"})
+	if cErr != nil {
+		return fmt.Errorf("error while trying to save device subscription of device %v", cErr.Error())
+	}
+	cErr = connPool.CreateEvtSubscriptionIndex(evmodel.SubscriptionIndex, "{\"EventDestination\":{\"Context\":\"ABCDEFGHJLKJ\",\"EventTypes\":[\"Alert\"],\"EventFormatType\":\"Event\",\"DeliveryRetryPolicy\":\"RetryForever\",\"Destination\":\"https://node.odim.com:8080/Destination\",\"MessageIds\":[],\"Name\":\"Bruce\",\"OriginResources\":[\"/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1\"],\"Protocol\":\"Redfish\",\"ResourceTypes\":[],\"SubscriptionType\":\"RedfishEvent\",\"SubordinateResources\":true},\"Hosts\":[\"10.10.10.10\"],\"SubscriptionID\":\"3ce177bf-42a4-4335-b1c1-41540a4b65d7\",\"UserName\":\"admin\"}")
 	if cErr != nil {
 		return fmt.Errorf("error while trying to save subscription of device %v", cErr.Error())
 	}
@@ -168,6 +176,77 @@ func Test_getSourceId(t *testing.T) {
 			got, _ := getSourceId(tt.args.host)
 			if got != tt.want {
 				t.Errorf("getSourceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getSubscriptions(t *testing.T) {
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	config.SetUpMockConfig(t)
+
+	mockData()
+	LoadSubscriptionData()
+	type args struct {
+		originOfCondition string
+		systemId          string
+		hostIp            string
+	}
+	tests := []struct {
+		name                 string
+		args                 args
+		numberOfSubscription int
+	}{
+		{
+			name: "Positive case ",
+			args: args{
+				originOfCondition: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				systemId:          "e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				hostIp:            "10.10.10.10",
+			},
+			numberOfSubscription: 5,
+		},
+		{
+			name: "Positive case - ManagerCollection",
+			args: args{
+				originOfCondition: "/redfish/v1/Managers/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				systemId:          "e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				hostIp:            "10.10.10.10",
+			},
+			numberOfSubscription: 5,
+		},
+		{
+			name: "Positive case - ChassisCollection",
+			args: args{
+				originOfCondition: "/redfish/v1/Chassis/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				systemId:          "e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				hostIp:            "10.10.10.10",
+			},
+			numberOfSubscription: 5,
+		},
+		{
+			name: "Positive case - FabricsCollection",
+			args: args{
+				originOfCondition: "/redfish/v1/Fabrics/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				systemId:          "e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				hostIp:            "10.10.10.10",
+			},
+			numberOfSubscription: 5,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotSubs := getSubscriptions(tt.args.originOfCondition, tt.args.systemId, tt.args.hostIp); len(gotSubs) == tt.numberOfSubscription {
+				t.Errorf("getSubscriptions() = %v, want %v", gotSubs, tt.numberOfSubscription)
 			}
 		})
 	}

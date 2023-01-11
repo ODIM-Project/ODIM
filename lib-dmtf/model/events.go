@@ -39,9 +39,6 @@ type SNMPEncryptionProtocols string
 // The subscription type for events.
 type SubscriptionType string
 
-//DeliveryRetryPolicy - The subscription delivery retry policy for events, where the subscription type is RedfishEvent.
-type DeliveryRetryPolicy string
-
 // This property shall contain the types of programs that can log messages.
 // If this property contains an empty array or is absent, all facilities
 // shall be indicated. Facility values are described in the RFC5424.
@@ -51,6 +48,11 @@ type SyslogFacility string
 // that will be forwarded. The service shall forward all messages
 // equal to or greater than the value in this property.  The value
 // `All` shall indicate all severities.
+
+//DeliveryRetryPolicy - The subscription delivery retry policy for events,
+// where the subscription type is RedfishEvent.
+type DeliveryRetryPolicy string
+
 type SyslogSeverity string
 
 const (
@@ -143,27 +145,6 @@ const (
 
 	// SubscriptionTypeOEM - The subscription is an OEM subscription.
 	SubscriptionTypeOEM SubscriptionType = "OEM"
-
-	// DeliveryRetryPolicy for events. Currently ODIM only support subscriptions
-	// of type RetryForever.
-	// DeliveryRetryForever - The subscription is not suspended or terminated,
-	// and attempts at delivery of future events shall continue regardless of
-	// the number of retries.
-	DeliveryRetryForever DeliveryRetryPolicy = "RetryForever"
-
-	// DeliveryRetryForeverWithBackoff - The subscription is not suspended or
-	// terminated, and attempts at delivery of future events shall continue
-	// regardless of the number of retries, but issued over time according to
-	// a service-defined backoff algorithm
-	DeliveryRetryForeverWithBackoff DeliveryRetryPolicy = "RetryForeverWithBackoff"
-
-	// DeliverySuspendRetries - The subscription is suspended after the maximum
-	// number of retries is reached
-	DeliverySuspendRetries DeliveryRetryPolicy = "SuspendRetries"
-
-	// DeliveryTerminateAfterRetries : The subscription is terminated after the
-	// maximum number of retries is reached.
-	DeliveryTerminateAfterRetries DeliveryRetryPolicy = "TerminateAfterRetries"
 
 	// Security/authentication messages.
 	SyslogFacilityAuth SyslogFacility = "Auth"
@@ -263,8 +244,30 @@ const (
 
 	// A Warning.
 	SyslogSeverityWarning SyslogSeverity = "Warning"
+
+	// DeliveryRetryPolicy for events. Currently ODIM only support subscriptions
+	// of type RetryForever.
+	// DeliveryRetryForever - The subscription is not suspended or terminated,
+	// and attempts at delivery of future events shall continue regardless of
+	// the number of retries.
+	DeliveryRetryForever DeliveryRetryPolicy = "RetryForever"
+
+	// DeliveryRetryForeverWithBackoff - The subscription is not suspended or
+	// terminated, and attempts at delivery of future events shall continue
+	// regardless of the number of retries, but issued over time according to
+	// a service-defined backoff algorithm
+	DeliveryRetryForeverWithBackoff DeliveryRetryPolicy = "RetryForeverWithBackoff"
+
+	// DeliverySuspendRetries - The subscription is suspended after the maximum
+	// number of retries is reached
+	DeliverySuspendRetries DeliveryRetryPolicy = "SuspendRetries"
+
+	// DeliveryTerminateAfterRetries : The subscription is terminated after the
+	// maximum number of retries is reached.
+	DeliveryTerminateAfterRetries DeliveryRetryPolicy = "TerminateAfterRetries"
 )
 
+//IsValidSubscriptionType validate subscription type is valid,
 func (subscriptionType SubscriptionType) IsValidSubscriptionType() bool {
 	switch subscriptionType {
 	case SubscriptionTypeRedFishEvent, SubscriptionTypeOEM, SubscriptionTypeSNMPInform, SubscriptionTypeSNMPTrap, SubscriptionTypeSyslog, SubscriptionTySubscriptionTypeSSE:
@@ -274,6 +277,7 @@ func (subscriptionType SubscriptionType) IsValidSubscriptionType() bool {
 	}
 }
 
+// IsSubscriptionTypeSupported method return true if subscription type is RedfishEvent
 func (subscriptionType SubscriptionType) IsSubscriptionTypeSupported() bool {
 	switch subscriptionType {
 	case SubscriptionTypeRedFishEvent:
@@ -283,6 +287,7 @@ func (subscriptionType SubscriptionType) IsSubscriptionTypeSupported() bool {
 	}
 }
 
+//IsValidEventType return true if event type is valid
 func (eventType EventType) IsValidEventType() bool {
 	switch eventType {
 	case EventTypeAlert, EventTypeMetricReport, EventTypeOther, EventTypeResourceRemoved,
@@ -293,6 +298,7 @@ func (eventType EventType) IsValidEventType() bool {
 	}
 }
 
+// IsValidDeliveryRetryPolicyType is validate DeliveryRetryPolicy value valid or not
 func (deliveryRetryPolicy DeliveryRetryPolicy) IsValidDeliveryRetryPolicyType() bool {
 	switch deliveryRetryPolicy {
 	case DeliveryRetryForever, DeliverySuspendRetries, DeliveryTerminateAfterRetries,
@@ -303,6 +309,8 @@ func (deliveryRetryPolicy DeliveryRetryPolicy) IsValidDeliveryRetryPolicyType() 
 	}
 }
 
+// IsDeliveryRetryPolicyTypeSupported is return true if DeliveryRetryPolicy
+// is RetryForever. Currently ODIM support RetryForever value
 func (deliveryRetryPolicy DeliveryRetryPolicy) IsDeliveryRetryPolicyTypeSupported() bool {
 	switch deliveryRetryPolicy {
 	case DeliveryRetryForever:
@@ -398,23 +406,8 @@ type EventDestination struct {
 	VerifyCertificate            bool                `json:"VerifyCertificate,omitempty"`
 }
 
-// EventDestinationAction contain the available
-// actions for this resource..
-// Reference	                : EventDestination.v1_12_0.json
-type EventDestinationAction struct {
-	ResumeSubscription  *ResumeSubscription  `json:"ResumeSubscription,omitempty"`
-	SuspendSubscription *SuspendSubscription `json:"SuspendSubscription,omitempty"`
-	Oem                 *OemActions          `json:"OemActions,omitempty"`
-}
-
-// This action shall resume a suspended event subscription,
-// which affects the subscription status. The service may deliver
-// buffered events when the subscription is resumed.
-// Reference	                : EventDestination.v1_12_0.json
-type ResumeSubscription struct {
-	Target string `json:"target,omitempty"`
-	Title  string `json:"title,omitempty"`
-}
+// place holders for attribs needed in EventDestination.
+type EventDestinationActions struct{}
 
 // This type shall contain the settings for an SNMP event destination.
 // Reference	                : EventDestination.v1_12_0.json
@@ -435,8 +428,8 @@ type SNMPSettings struct {
 // events while the subscription is suspended.
 // Reference	                : EventDestination.v1_12_0.json
 type SuspendSubscription struct {
-	Target string `json:"target,omitempty"`
-	Title  string `json:"title,omitempty"`
+	target string `json:"target,omitempty"`
+	title  string `json:"target,omitempty"`
 }
 
 // A list of filters applied to syslog messages before sending
@@ -444,6 +437,6 @@ type SuspendSubscription struct {
 // syslog messages are sent.
 // Reference	                : EventDestination.v1_12_0.json
 type SyslogFilter struct {
-	LogFacilities  SyslogFacility `json:"LogFacilities,omitempty"`
-	LowestSeverity SyslogSeverity `json:"LowestSeverity,omitempty"`
+	LogFacilities  SyslogFacility `json:"LogFacilities,omitEmpty"`
+	LowestSeverity SyslogSeverity `json:"LogFacilities,omitEmpty"`
 }

@@ -406,8 +406,23 @@ type EventDestination struct {
 	VerifyCertificate            bool                `json:"VerifyCertificate,omitempty"`
 }
 
-// place holders for attribs needed in EventDestination.
-type EventDestinationActions struct{}
+// EventDestinationAction contain the available
+// actions for this resource..
+// Reference	                : EventDestination.v1_12_0.json
+type EventDestinationAction struct {
+	ResumeSubscription  *ResumeSubscription  `json:"ResumeSubscription,omitempty"`
+	SuspendSubscription *SuspendSubscription `json:"SuspendSubscription,omitempty"`
+	Oem                 *OemActions          `json:"OemActions,omitempty"`
+}
+
+// This action shall resume a suspended event subscription,
+// which affects the subscription status. The service may deliver
+// buffered events when the subscription is resumed.
+// Reference	                : EventDestination.v1_12_0.json
+type ResumeSubscription struct {
+	Target string `json:"target,omitempty"`
+	Title  string `json:"title,omitempty"`
+}
 
 // This type shall contain the settings for an SNMP event destination.
 // Reference	                : EventDestination.v1_12_0.json
@@ -428,8 +443,8 @@ type SNMPSettings struct {
 // events while the subscription is suspended.
 // Reference	                : EventDestination.v1_12_0.json
 type SuspendSubscription struct {
-	target string `json:"target,omitempty"`
-	title  string `json:"target,omitempty"`
+	Target string `json:"target,omitempty"`
+	Title  string `json:"title,omitempty"`
 }
 
 // A list of filters applied to syslog messages before sending
@@ -437,6 +452,6 @@ type SuspendSubscription struct {
 // syslog messages are sent.
 // Reference	                : EventDestination.v1_12_0.json
 type SyslogFilter struct {
-	LogFacilities  SyslogFacility `json:"LogFacilities,omitEmpty"`
-	LowestSeverity SyslogSeverity `json:"LogFacilities,omitEmpty"`
+	LogFacilities  SyslogFacility `json:"LogFacilities,omitempty"`
+	LowestSeverity SyslogSeverity `json:"LowestSeverity,omitempty"`
 }

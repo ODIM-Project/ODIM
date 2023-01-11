@@ -244,10 +244,10 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 	}
 
 	if !request.SubscriptionType.IsValidSubscriptionType() {
-		return http.StatusBadRequest, errResponse.PropertyUnknown, []interface{}{"SubscriptionType"}, fmt.Errorf("invalid SubscriptionType")
+		return http.StatusBadRequest, errResponse.PropertyUnknown, []interface{}{request.SubscriptionType, "SubscriptionType"}, fmt.Errorf("invalid SubscriptionType")
 	}
 	if !request.SubscriptionType.IsSubscriptionTypeSupported() {
-		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{"SubscriptionType"}, fmt.Errorf("unsupported SubscriptionType")
+		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.SubscriptionType, "SubscriptionType"}, fmt.Errorf("unsupported SubscriptionType")
 	}
 
 	if request.Context == "" {
@@ -258,10 +258,10 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 		request.DeliveryRetryPolicy = evmodel.DeliveryRetryPolicy
 	} else {
 		if !request.DeliveryRetryPolicy.IsValidDeliveryRetryPolicyType() {
-			return http.StatusBadRequest, errResponse.PropertyUnknown, []interface{}{"DeliveryRetryPolicy"}, fmt.Errorf("invalid DeliveryRetryPolicy")
+			return http.StatusBadRequest, errResponse.PropertyUnknown, []interface{}{request.DeliveryRetryPolicy, "DeliveryRetryPolicy"}, fmt.Errorf("invalid DeliveryRetryPolicy")
 		}
 		if !request.DeliveryRetryPolicy.IsDeliveryRetryPolicyTypeSupported() {
-			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{"DeliveryRetryPolicy"}, fmt.Errorf("unsupported DeliveryRetryPolicy")
+			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.DeliveryRetryPolicy, "DeliveryRetryPolicy"}, fmt.Errorf("unsupported DeliveryRetryPolicy")
 		}
 	}
 	availableProtocols := []string{"Redfish"}

@@ -38,7 +38,10 @@ import (
 )
 
 var (
-	DefaultSubscriptionID = "0"
+	DefaultSubscriptionID        = "0"
+	SubscriptionChannelKey       = "__key*__:Subscription"
+	DeviceSubscriptionChannelKey = "__key*__:DeviceSubscription"
+	AggregateToHostChannelKey    = "__key*__:AggregateToHost"
 )
 
 //StartUpInteraface Holds the function pointer of  external interface functions

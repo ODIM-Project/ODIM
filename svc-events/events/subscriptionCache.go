@@ -4,11 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
+	"time"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
+	"github.com/gomodule/redigo/redis"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -22,14 +26,18 @@ var (
 	eventSourceToManagerIDMap             map[string]string
 	managerIDToSystemIDsMap               map[string][]string
 	managerIDToChassisIDsMap              map[string][]string
+	subscribeCacheLock                    sync.Mutex
 )
 
 func LoadSubscriptionData() {
 	getAllSubscriptions()
 	getAllAggregates()
 	getAllDeviceSubscriptions()
+	go initializeDbObserver()
 }
 func getAllSubscriptions() {
+	subscribeCacheLock.Lock()
+	defer subscribeCacheLock.Unlock()
 	systemToSubscriptionsMap = make(map[string]map[string]bool)
 	aggregateIdToSubscriptionsMap = make(map[string]map[string]bool)
 	collectionToSubscriptionsMap = make(map[string]map[string]bool)
@@ -64,6 +72,9 @@ func getAllSubscriptions() {
 
 // getAllDeviceSubscriptions method fetch data from DeviceSubscription table
 func getAllDeviceSubscriptions() {
+	subscribeCacheLock.Lock()
+	defer subscribeCacheLock.Unlock()
+
 	eventSourceToManagerIDMap = make(map[string]string)
 	deviceSubscriptionList, err := evmodel.GetAllDeviceSubscriptions()
 	if err != nil {
@@ -115,6 +126,9 @@ func addSubscriptionCache(key string, subscriptionId string) {
 // getAllAggregates method will read all aggregate from db and
 // update systemIdToAggregateIdsMap to corresponding member in aggregate
 func getAllAggregates() {
+	subscribeCacheLock.Lock()
+	defer subscribeCacheLock.Unlock()
+
 	systemIdToAggregateIdsMap = make(map[string]map[string]bool)
 	aggregateUrls, err := evmodel.GetAllAggregates()
 	if err != nil {
@@ -260,4 +274,38 @@ func getCollectionKey(oid, host string) (key string) {
 		key = "FabricsCollection"
 	}
 	return
+}
+
+func initializeDbObserver() {
+	l.Log.Debug("Initializing observer ")
+START:
+	conn, _ := common.GetDBConnection(common.OnDisk)
+	writeConn := conn.WritePool.Get()
+	defer writeConn.Close()
+	_, err := writeConn.Do("CONFIG", "SET", "notify-keyspace-events", "Kz") //published
+	if err != nil {
+		l.Log.Error("error occurred configuring keyevent ", err)
+		time.Sleep(time.Second * 5)
+		goto START
+	}
+	psc := redis.PubSubConn{Conn: writeConn}
+
+	psc.PSubscribe(evcommon.AggregateToHostChannelKey, evcommon.DeviceSubscriptionChannelKey,
+		evcommon.SubscriptionChannelKey)
+	for {
+		switch v := psc.Receive().(type) {
+		case redis.Message:
+			switch string(v.Pattern) {
+			case evcommon.DeviceSubscriptionChannelKey:
+				getAllDeviceSubscriptions()
+			case evcommon.SubscriptionChannelKey:
+				getAllSubscriptions()
+			case evcommon.AggregateToHostChannelKey:
+				getAllAggregates()
+			}
+		case error:
+			l.Log.Error("Error occurred in redis keyspace notifier publisher ", v)
+			goto START
+		}
+	}
 }

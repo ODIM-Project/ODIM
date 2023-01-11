@@ -74,6 +74,8 @@ func (e *ExternalInterfaces) addFabric(message common.MessageData, host string) 
 //Returns:
 //	bool: return false if any error occurred during execution, else returns true
 func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
+	subscribeCacheLock.Lock()
+	defer subscribeCacheLock.Unlock()
 
 	if data == nil {
 		l.Log.Info("invalid input params")

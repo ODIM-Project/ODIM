@@ -181,8 +181,8 @@ func (ts *TasksRPC) deleteCompletedTask(ctx context.Context, taskID string) erro
 func (ts *TasksRPC) CreateChildTask(ctx context.Context, req *taskproto.CreateTaskRequest) (*taskproto.CreateTaskResponse, error) {
 	var rsp taskproto.CreateTaskResponse
 	ctx = common.GetContextData(ctx)
-	l.LogWithFields(ctx).Debugf("Incoming request to create child task for the task %v and user %v", req.ParentTaskID, req.UserName)
 	ctx = common.ModifyContext(ctx, common.TaskService, podName)
+	l.LogWithFields(ctx).Debugf("Incoming request to create child task for the task %v and user %v", req.ParentTaskID, req.UserName)
 	taskURI, err := ts.CreateChildTaskUtil(ctx, req.UserName, req.ParentTaskID)
 	if err != nil {
 		l.LogWithFields(ctx).Errorf("failed to create child task for the task ID %v : %v", req.ParentTaskID, err.Error())

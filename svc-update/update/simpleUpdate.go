@@ -176,7 +176,7 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 	subTaskURI, err := e.External.CreateChildTask(ctx, sessionUserName, taskID)
 	if err != nil {
 		subTaskChannel <- http.StatusInternalServerError
-		l.LogWithFields(ctx).Warn("Unable to create sub task")
+		l.LogWithFields(ctx).Warn("Unable to create sub task: " + err.Error())
 		return
 	}
 	var subTaskID string

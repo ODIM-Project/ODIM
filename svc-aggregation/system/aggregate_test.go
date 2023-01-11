@@ -15,6 +15,7 @@
 package system
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"reflect"
@@ -51,7 +52,7 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-
+	ctx := mockContext()
 	mockData(t, common.OnDisk, "System", "6d4a0a66-7efa-578e-83cf-44dc68d2874e", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e"})
 	mockData(t, common.OnDisk, "System", "c14d91b5-3333-48bb-a7b7-75f74a137d48", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "c14d91b5-3333-48bb-a7b7-75f74a137d48"})
 
@@ -156,7 +157,7 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.CreateAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.e.CreateAggregate(ctx, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.CreateAggregate() = %v, want %v", got, tt.want)
 			}
 		})
@@ -168,7 +169,7 @@ func TestExternalInterface_GetAllAggregates(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-
+	ctx := mockContext()
 	req := agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
 			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
@@ -207,7 +208,7 @@ func TestExternalInterface_GetAllAggregates(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetAllAggregates(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.e.GetAllAggregates(ctx, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.GetAllAggregates() = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
 		})
@@ -233,6 +234,7 @@ func TestExternalInterface_GetAggregate(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 	p := getMockExternalInterface()
+	ctx := mockContext()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}
@@ -289,7 +291,7 @@ func TestExternalInterface_GetAggregate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.e.GetAggregate(ctx, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.GetAggregate() = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
 		})
@@ -302,7 +304,7 @@ func TestExternalInterface_DeleteAggregate(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	DeleteAggregateSubscription = func(url, session string, systems []agmodel.OdataID) error {
+	DeleteAggregateSubscription = func(ctx context.Context, url, session string, systems []agmodel.OdataID) error {
 		return nil
 	}
 	req := agmodel.Aggregate{
@@ -314,7 +316,7 @@ func TestExternalInterface_DeleteAggregate(t *testing.T) {
 	mockData(t, common.OnDisk, "System", "6d4a0a66-7efa-578e-83cf-44dc68d2874e", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e"})
 	mockData(t, common.OnDisk, "System", "c14d91b5-3333-48bb-a7b7-75f74a137d48", &agmodel.Target{ManagerAddress: "10.10.0.1", DeviceUUID: "c14d91b5-3333-48bb-a7b7-75f74a137d48"})
 	mockAggregateHostIndexData(t, common.OnDisk, common.AggregateSubscriptionIndex, "7ff3bd97-c41c-5de0-937d-85d390691b73", []string{"10.10.0.1"})
-
+	ctx := mockContext()
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -358,7 +360,7 @@ func TestExternalInterface_DeleteAggregate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.DeleteAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.e.DeleteAggregate(ctx, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.DeleteAggregate() = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
 		})
@@ -370,7 +372,7 @@ func TestExternalInterface_AddElementsToAggregate(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-
+	ctx := mockContext()
 	req := agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
 			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
@@ -422,7 +424,7 @@ func TestExternalInterface_AddElementsToAggregate(t *testing.T) {
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
 
 	p := getMockExternalInterface()
-	UpdateSubscription = func(aggragateID string, systemID []agmodel.OdataID, session string) error {
+	UpdateSubscription = func(ctx context.Context, aggragateID string, systemID []agmodel.OdataID, session string) error {
 		return nil
 	}
 	type args struct {
@@ -517,7 +519,7 @@ func TestExternalInterface_AddElementsToAggregate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.AddElementsToAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
+			if got := tt.e.AddElementsToAggregate(ctx, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
 				t.Errorf("ExternalInterface.AddElementsToAggregate() = %v, want %v", got.StatusCode, tt.wantStatusCode)
 			}
 		})
@@ -543,7 +545,7 @@ func TestExternalInterface_RemoveElementsFromAggregate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-
+	ctx := mockContext()
 	successReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
 			agmodel.OdataID{OdataID: "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"},
@@ -574,7 +576,7 @@ func TestExternalInterface_RemoveElementsFromAggregate(t *testing.T) {
 	})
 
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
-	RemoveSubscription = func(aggragateID string, systemID []agmodel.OdataID, session string) error {
+	RemoveSubscription = func(ctx context.Context, aggragateID string, systemID []agmodel.OdataID, session string) error {
 		return nil
 	}
 	p := getMockExternalInterface()
@@ -674,7 +676,7 @@ func TestExternalInterface_RemoveElementsFromAggregate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.RemoveElementsFromAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
+			if got := tt.e.RemoveElementsFromAggregate(ctx, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
 				t.Errorf("ExternalInterface.RemoveElementsFromAggregate() = %v, want %v", got.StatusCode, tt.wantStatusCode)
 			}
 		})
@@ -711,7 +713,7 @@ func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
 	mockDeviceData("c14d91b5-3333-48bb-a7b7-75f74a137d48", device2)
 	mockDeviceData("6d4a0a66-7efa-578e-83cf-44dc68d2874e", device1)
 	mockPluginData(t, "GRF")
-
+	ctx := mockContext()
 	req := agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
 			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
@@ -830,7 +832,7 @@ func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.ResetElementsOfAggregate(tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
+			if got := tt.e.ResetElementsOfAggregate(ctx, tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
 				t.Errorf("ExternalInterface.ResetElementsOfAggregate() = %v, want %v", got.StatusCode, tt.wantStatusCode)
 			}
 		})
@@ -866,7 +868,7 @@ func TestExternalInterface_SetDefaultBootOrderElementsOfAggregate(t *testing.T) 
 	mockPluginData(t, "GRF")
 	mockDeviceData("c14d91b5-3333-48bb-a7b7-75f74a137d48", device2)
 	mockDeviceData("6d4a0a66-7efa-578e-83cf-44dc68d2874e", device1)
-
+	ctx := mockContext()
 	req := agmodel.Aggregate{
 		Elements: []agmodel.OdataID{
 			agmodel.OdataID{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
@@ -932,7 +934,7 @@ func TestExternalInterface_SetDefaultBootOrderElementsOfAggregate(t *testing.T) 
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.SetDefaultBootOrderElementsOfAggregate(tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
+			if got := tt.e.SetDefaultBootOrderElementsOfAggregate(ctx, tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
 				t.Errorf("ExternalInterface.SetDefaultBootOrderElementsOfAggregate() = %v, want %v", got.StatusCode, tt.wantStatusCode)
 			}
 		})

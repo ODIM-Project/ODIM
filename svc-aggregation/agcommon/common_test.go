@@ -16,6 +16,7 @@ package agcommon
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -33,6 +34,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
 func TestAddConnectionMethods(t *testing.T) {
 	var e = DBInterface{
 		GetAllKeysFromTableInterface: stubGetAllkeys,
@@ -277,10 +288,11 @@ func TestPluginHealthCheckInterface_GetPluginStatus(t *testing.T) {
 			want1: p,
 		},
 	}
+	ctx := mockContext()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := tt.phc.GetPluginStatus(tt.args.plugin)
+			got, _ := tt.phc.GetPluginStatus(ctx, tt.args.plugin)
 			if got != tt.want {
 				t.Errorf("PluginHealthCheckInterface.GetPluginStatus() got = %v, want %v", got, tt.want)
 			}
@@ -397,8 +409,9 @@ func TestLookupHost(t *testing.T) {
 }
 func TestLookupPlugin(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	var data = agmodel.Plugin{IP: "", Port: "", Username: "", Password: []uint8(nil), ID: "", PluginType: "", PreferredAuthType: "", ManagerUUID: ""}
-	res, _ := LookupPlugin("10.0.0.0")
+	res, _ := LookupPlugin(ctx, "10.0.0.0")
 	assert.Equal(t, res, data, "It should be same")
 
 }
@@ -465,9 +478,10 @@ func mockGetEventSubscriptionsFunc(key string) []string {
 
 func TestUpdateDeviceSubscriptionDetails(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	var data = make(map[string]string)
 	data["100.100.100.100"] = "location"
-	UpdateDeviceSubscriptionDetails(data)
+	UpdateDeviceSubscriptionDetails(ctx, data)
 }
 
 func TestGetPluginStatusRecord(t *testing.T) {
@@ -500,8 +514,8 @@ func TestGetAllPlugins(t *testing.T) {
 		}
 	}()
 	mockPlugins(t)
-
-	plugins, err := GetAllPlugins()
+	ctx := mockContext()
+	plugins, err := GetAllPlugins(ctx)
 	assert.Nil(t, err, "Error Should be nil")
 	assert.Equal(t, 3, len(plugins), "should be only 3 plugins")
 }
@@ -559,7 +573,8 @@ func mockPlugins(t *testing.T) {
 	}
 }
 
-func TestContactPlugin(t *testing.T) {
+func TestcontactPlugin(t *testing.T) {
+
 	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.InMemory)

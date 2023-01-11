@@ -165,15 +165,15 @@ func updateCacheMaps(key, value string, cacheData map[string]map[string]bool) {
 
 // getSubscriptions return list of subscription from cache corresponding to originOfCondition
 func getSubscriptions(originOfCondition, systemId, hostIp string) (subs []dmtf.EventDestination) {
-	getSystemSubscriptionList(hostIp, subs)
-	getAggregateSubscriptionList(systemId, subs)
-	getEmptyOriginResourceSubscriptionList(subs)
-	getCollectionSubscriptionList(originOfCondition, hostIp, subs)
+	subs = append(subs, getSystemSubscriptionList(hostIp)...)
+	subs = append(subs, getAggregateSubscriptionList(systemId)...)
+	subs = append(subs, getEmptyOriginResourceSubscriptionList()...)
+	subs = append(subs, getCollectionSubscriptionList(originOfCondition, hostIp)...)
 	return
 }
 
 //getSystemSubscriptionList return list of subscription corresponding to host
-func getSystemSubscriptionList(hostIp string, subs []dmtf.EventDestination) {
+func getSystemSubscriptionList(hostIp string) (subs []dmtf.EventDestination) {
 	systemSubscription, isExists := systemToSubscriptionsMap[hostIp]
 	if isExists {
 		for subId, _ := range systemSubscription {
@@ -184,12 +184,12 @@ func getSystemSubscriptionList(hostIp string, subs []dmtf.EventDestination) {
 
 		}
 	}
-
+	return
 }
 
 // getAggregateSubscriptionList return list of subscription corresponding to system
 // is members of different aggregate
-func getAggregateSubscriptionList(systemId string, subs []dmtf.EventDestination) {
+func getAggregateSubscriptionList(systemId string) (subs []dmtf.EventDestination) {
 	aggregateList, isExists := systemIdToAggregateIdsMap[systemId]
 	if isExists {
 		for aggregateID := range aggregateList {
@@ -205,39 +205,38 @@ func getAggregateSubscriptionList(systemId string, subs []dmtf.EventDestination)
 			}
 		}
 	}
+	return
 }
 
 // getCollectionSubscriptionList return list of subscription against
 // originOfCondition type
-func getCollectionSubscriptionList(originOfCondition, hostIp string,
-	subs []dmtf.EventDestination) {
+func getCollectionSubscriptionList(originOfCondition, hostIp string) (subs []dmtf.EventDestination) {
 	collectionsKey := getCollectionKey(originOfCondition, hostIp)
 	collectionSubscription, isExists := collectionToSubscriptionsMap[collectionsKey]
 	if isExists {
-		for subId, _ := range collectionSubscription {
+		for subId := range collectionSubscription {
 			sub, isValidSubId := getSubscriptionDetails(subId)
 			if isValidSubId {
 				subs = append(subs, sub)
 			}
 		}
 	}
-
+	return
 }
 
 // getEmptyOriginResourceSubscriptionList return list of subscription
 // whose originResources is empty
-func getEmptyOriginResourceSubscriptionList(subs []dmtf.EventDestination) {
-
+func getEmptyOriginResourceSubscriptionList() (subs []dmtf.EventDestination) {
 	emptyOriginResourceSubscription, isExists := emptyOriginResourceToSubscriptionsMap[evcommon.DefaultSubscriptionID]
 	if isExists {
-		for subId, _ := range emptyOriginResourceSubscription {
+		for subId := range emptyOriginResourceSubscription {
 			sub, isValidSubId := getSubscriptionDetails(subId)
 			if isValidSubId {
 				subs = append(subs, sub)
 			}
 		}
 	}
-
+	return
 }
 
 //getSubscriptionDetails this method return subscription details corresponding subscription Id

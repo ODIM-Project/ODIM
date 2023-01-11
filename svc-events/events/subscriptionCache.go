@@ -25,6 +25,7 @@ var (
 )
 
 func LoadSubscriptionData() {
+	l.Log.Debug("Cache loading invoked ")
 	getAllSubscriptions()
 	getAllAggregates()
 	getAllDeviceSubscriptions()

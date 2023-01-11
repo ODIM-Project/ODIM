@@ -286,6 +286,17 @@ func (subscriptionType SubscriptionType) IsSubscriptionTypeSupported() bool {
 		return false
 	}
 }
+func (subscriptionType SubscriptionType) ToString() string {
+	return string(subscriptionType)
+}
+
+func (deliveryRetryPolicy DeliveryRetryPolicy) ToString() string {
+	return string(deliveryRetryPolicy)
+}
+
+func (eventType EventType) ToString() string {
+	return string(eventType)
+}
 
 //IsValidEventType return true if event type is valid
 func (eventType EventType) IsValidEventType() bool {

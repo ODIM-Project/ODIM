@@ -70,55 +70,43 @@ const (
 )
 
 func getProcessLogDetails(ctx context.Context) logrus.Fields {
-	var auth bool
-	var statusCode int32
-	var transID, processName, threadID, actionName, threadName, actionID, sessionToken, sessionUserName, sessionRoleID string
+	var fields = make(map[string]interface{})
 	if val, ok := ctx.Value("transactionid").(string); ok {
-		transID = val
+		fields["transactionid"] = val
 	}
 	if val, ok := ctx.Value("processname").(string); ok {
-		processName = val
+		fields["processname"] = val
 	}
 	if val, ok := ctx.Value("threadid").(string); ok {
-		threadID = val
+		fields["threadid"] = val
 	}
 	if val, ok := ctx.Value("actionname").(string); ok {
-		actionName = val
+		fields["actionname"] = val
+		fields["messageid"] = val
 	}
 	if val, ok := ctx.Value("threadname").(string); ok {
-		threadName = val
+		fields["threadname"] = val
 	}
 	if val, ok := ctx.Value("actionid").(string); ok {
-		actionID = val
+		fields["actionid"] = val
 	}
 	if val, ok := ctx.Value("auth").(bool); ok {
-		auth = val
+		fields["auth"] = val
+	}
+	if val, ok := ctx.Value("audit").(bool); ok {
+		fields["audit"] = val
 	}
 	if val, ok := ctx.Value("statuscode").(int32); ok {
-		statusCode = val
+		fields["statuscode"] = val
 	}
 	if val, ok := ctx.Value("sessiontoken").(string); ok {
-		sessionToken = val
+		fields["sessiontoken"] = val
 	}
 	if val, ok := ctx.Value("sessionuserid").(string); ok {
-		sessionUserName = val
+		fields["sessionuserid"] = val
 	}
 	if val, ok := ctx.Value("sessionroleid").(string); ok {
-		sessionRoleID = val
-	}
-	fields := logrus.Fields{
-		"processname":   processName,
-		"transactionid": transID,
-		"actionid":      actionID,
-		"actionname":    actionName,
-		"threadid":      threadID,
-		"threadname":    threadName,
-		"messageid":     actionName,
-		"auth":          auth,
-		"statuscode":    statusCode,
-		"sessiontoken":  sessionToken,
-		"sessionuserid": sessionUserName,
-		"sessionroleid": sessionRoleID,
+		fields["sessionroleid"] = val
 	}
 
 	return fields
@@ -146,13 +134,17 @@ func (f *SysLogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	sysLogMsg := fmt.Sprintf("<%d>%s %s", priorityNumber, "1", entry.Time.UTC().Format(time.RFC3339))
 	sysLogMsg = formatPriorityFields(entry, sysLogMsg)
 	sysLogMsg = formatStructuredFields(entry, sysLogMsg)
-	if _, ok := entry.Data["auth"]; ok {
-		sysLogMsg = formatStructFields(entry, sysLogMsg, priorityNumber)
-	}
 	for k, v := range logFields {
 		if accountLog, present := formatSyslog(k, v, entry); present {
 			sysLogMsg = fmt.Sprintf("%s %s", sysLogMsg, accountLog)
 		}
+	}
+	if _, ok := entry.Data["auth"]; ok {
+		sysLogMsg = formatAuthStructFields(entry, sysLogMsg, priorityNumber)
+	}
+	if _, ok := entry.Data["audit"]; ok {
+		sysLogMsg = formatAuditStructFields(entry, sysLogMsg, priorityNumber)
+		return append([]byte(sysLogMsg), '\n'), nil
 	}
 
 	sysLogMsg = fmt.Sprintf("%s %s", sysLogMsg, entry.Message)
@@ -167,6 +159,13 @@ func findSysLogPriorityNumeric(entry *logrus.Entry, level string) int8 {
 			return 86
 		}
 		return 84
+	}
+	if _, ok := entry.Data["audit"].(bool); ok {
+		sCode := entry.Data["statuscode"].(int32)
+		if getResponseStatus(sCode) {
+			return 110
+		}
+		return 107
 	}
 	return syslogPriorityNumerics[level]
 }
@@ -185,8 +184,8 @@ func formatPriorityFields(entry *logrus.Entry, msg string) string {
 	return msg
 }
 
-// formatStructFields used to format the syslog message
-func formatStructFields(entry *logrus.Entry, msg string, priorityNo int8) string {
+// formatAuthStructFields used to format the syslog message
+func formatAuthStructFields(entry *logrus.Entry, msg string, priorityNo int8) string {
 	var sessionToken, sessionUserName, sessionRoleID string
 	respStatusCode := int32(http.StatusUnauthorized)
 	tokenMsg := ""

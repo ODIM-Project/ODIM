@@ -100,7 +100,7 @@ func (e *ExternalInterface) UpdateSystemState(ctx context.Context, updateReq *ag
 		return fmt.Errorf("error: failed to update the data computer system uuid not found")
 	}
 	computerSystemUUID := systemInfo["UUID"].(string)
-	searchForm := createServerSearchIndex(systemInfo, key, updateReq.SystemUUID)
+	searchForm := createServerSearchIndex(ctx, systemInfo, key, updateReq.SystemUUID)
 	if err := agmodel.UpdateIndex(searchForm, key, computerSystemUUID, target.ManagerAddress); err != nil {
 		return fmt.Errorf("error: updating server index failed with err %v", err)
 	}

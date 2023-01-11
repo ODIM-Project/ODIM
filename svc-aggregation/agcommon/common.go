@@ -100,17 +100,17 @@ func init() {
 }
 
 // GetStorageResources will get the resource details from the database for the given odata id
-func GetStorageResources(oid string) map[string]interface{} {
+func GetStorageResources(ctx context.Context, oid string) map[string]interface{} {
 	resourceData := make(map[string]interface{})
 	data, dbErr := GetResourceDetailsFunc(oid)
 	if dbErr != nil {
-		l.Log.Error("Unable to get system data : " + dbErr.Error())
+		l.LogWithFields(ctx).Error("Unable to get system data : " + dbErr.Error())
 		return resourceData
 	}
 	// unmarshall the resourceData
 	err := JSONUnMarshalFunc([]byte(data), &resourceData)
 	if err != nil {
-		l.Log.Error("Unable to unmarshall  the data: " + err.Error())
+		l.LogWithFields(ctx).Error("Unable to unmarshall  the data: " + err.Error())
 		return resourceData
 	}
 

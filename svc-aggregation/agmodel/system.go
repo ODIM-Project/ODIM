@@ -481,7 +481,6 @@ func SaveIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err)
 	}
-	l.Log.Info("Creating index")
 	searchForm["UUID"] = uuid
 	searchForm["BMCAddress"] = bmcAddress
 	if err := conn.CreateIndex(searchForm, table); err != nil {

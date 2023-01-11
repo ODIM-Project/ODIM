@@ -185,7 +185,7 @@ func (e *ExternalInterface) GetAllAggregates(ctx context.Context, req *aggregato
 func (e *ExternalInterface) GetAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {
 	aggregate, err := agmodel.GetAggregate(req.URL)
 	if err != nil {
-		l.Log.Error("error getting  Aggregate : " + err.Error())
+		l.LogWithFields(ctx).Error("error getting  Aggregate : " + err.Error())
 		errorMessage := err.Error()
 		if errors.DBKeyNotFound == err.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Aggregate", req.URL}, nil)
@@ -395,7 +395,7 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(ctx context.Context, req
 	}
 	err = RemoveSubscription(ctx, aggregateID, removeRequest.Elements, req.SessionToken)
 	if err != nil {
-		l.Log.Error("Error occured while update subscription ", err)
+		l.LogWithFields(ctx).Error("Error occured while update subscription ", err)
 	}
 	commonResponse := response.Response{
 		OdataType:    "#Aggregate.v1_0_1.Aggregate",
@@ -868,7 +868,7 @@ func addAggregateHost(uuid string, aggregate agmodel.Aggregate) (err error) {
 
 	err = agmodel.AddAggregateHostIndex(uuid, ips)
 	if err != nil {
-		l.Log.Info("Error while adding aggregate host ", err)
+		return err
 	}
 	return
 }
@@ -876,17 +876,17 @@ func addAggregateHost(uuid string, aggregate agmodel.Aggregate) (err error) {
 func updateSubscription(ctx context.Context, aggragateID string, systemID []agmodel.OdataID, session string) error {
 	conn, err := services.ODIMService.Client(services.Events)
 	if err != nil {
-		l.Log.Error("Error while Event ", err.Error())
+		l.LogWithFields(ctx).Error("Error while Event ", err.Error())
 		return nil
 	}
 	defer conn.Close()
 	event := eventproto.NewEventsClient(conn)
-	isSubscribe, err := event.IsAggregateHaveSubscription(context.TODO(), &eventproto.EventUpdateRequest{
+	isSubscribe, err := event.IsAggregateHaveSubscription(ctx, &eventproto.EventUpdateRequest{
 		AggregateId:  aggragateID,
 		SessionToken: session,
 	})
 	if err != nil {
-		l.Log.Info("Error while checking aggragte subscription ", err)
+		l.LogWithFields(ctx).Info("Error while checking aggragte subscription ", err)
 		return err
 	}
 
@@ -902,7 +902,7 @@ func updateSubscription(ctx context.Context, aggragateID string, systemID []agmo
 		if isSubscribe.Status {
 			err = agmodel.AddNewHostToAggregateHostIndex(aggragateID, target.ManagerAddress)
 			if err != nil {
-				l.Log.Info("system remove failed ", system.OdataID)
+				l.LogWithFields(ctx).Info("system remove failed ", system.OdataID)
 			}
 			_, err = event.UpdateEventSubscriptionsRPC(context.TODO(), &eventproto.EventUpdateRequest{
 				AggregateId:  aggragateID,
@@ -910,17 +910,17 @@ func updateSubscription(ctx context.Context, aggragateID string, systemID []agmo
 				SessionToken: session,
 			})
 			if err != nil {
-				l.Log.Error("Error while Update Subscription ", err.Error())
+				l.LogWithFields(ctx).Error("Error while Update Subscription ", err.Error())
 				return err
 			}
 		} else {
 			err = agmodel.AddNewHostToAggregateHostIndex(aggragateID, target.ManagerAddress)
 			if err != nil {
-				l.Log.Info("system remove failed ", system.OdataID)
+				l.LogWithFields(ctx).Info("system remove failed ", system.OdataID)
 			}
 		}
 	}
-	l.Log.Info("Updated Subscription ")
+	l.LogWithFields(ctx).Info("Updated Subscription ")
 	return nil
 }
 func removeSubscription(ctx context.Context, aggragateID string, systemID []agmodel.OdataID, session string) error {

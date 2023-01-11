@@ -704,7 +704,7 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 		return computeSystemID, oidKey, progress, err
 	}
 
-	searchForm := createServerSearchIndex(computeSystem, oidKey, req.DeviceUUID)
+	searchForm := createServerSearchIndex(ctx, computeSystem, oidKey, req.DeviceUUID)
 	//save the final search form here
 	if req.UpdateFlag {
 		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID, req.BMCAddress)
@@ -795,7 +795,7 @@ func (h *respHolder) getStorageInfo(ctx context.Context, progress int32, alotted
 		progress = h.getResourceDetails(ctx, "", progress, estimatedWork, req)
 	}
 	json.Unmarshal([]byte(updatedResourceData), &computeSystem)
-	searchForm := createServerSearchIndex(computeSystem, systemURI, req.DeviceUUID)
+	searchForm := createServerSearchIndex(ctx, computeSystem, systemURI, req.DeviceUUID)
 	//save the final search form here
 	if req.UpdateFlag {
 		err = agmodel.SaveIndex(searchForm, systemURI, computeSystemUUID, req.BMCAddress)
@@ -809,7 +809,7 @@ func (h *respHolder) getStorageInfo(ctx context.Context, progress int32, alotted
 	return oidKey, progress, nil
 }
 
-func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, deviceUUID string) map[string]interface{} {
+func createServerSearchIndex(ctx context.Context, computeSystem map[string]interface{}, oidKey, deviceUUID string) map[string]interface{} {
 	var searchForm = make(map[string]interface{})
 
 	if val, ok := computeSystem["MemorySummary"]; ok {
@@ -847,7 +847,7 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 			storage := val.(map[string]interface{})
 			storageCollectionOdataID = storage["@odata.id"].(string)
 		}
-		storageCollection := agcommon.GetStorageResources(strings.TrimSuffix(storageCollectionOdataID, "/"))
+		storageCollection := agcommon.GetStorageResources(ctx, strings.TrimSuffix(storageCollectionOdataID, "/"))
 		storageMembers := storageCollection["Members"]
 		if storageMembers != nil {
 			var capacity []float64
@@ -856,13 +856,13 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 			// Loop through all the storage members collection and discover all of them
 			for _, object := range storageMembers.([]interface{}) {
 				storageODataID := object.(map[string]interface{})["@odata.id"].(string)
-				storageRes := agcommon.GetStorageResources(strings.TrimSuffix(storageODataID, "/"))
+				storageRes := agcommon.GetStorageResources(ctx, strings.TrimSuffix(storageODataID, "/"))
 				drives := storageRes["Drives"]
 				if drives != nil {
 					quantity += len(drives.([]interface{}))
 					for _, drive := range drives.([]interface{}) {
 						driveODataID := drive.(map[string]interface{})["@odata.id"].(string)
-						driveRes := agcommon.GetStorageResources(strings.TrimSuffix(driveODataID, "/"))
+						driveRes := agcommon.GetStorageResources(ctx, strings.TrimSuffix(driveODataID, "/"))
 						capInBytes := driveRes["CapacityBytes"]
 						// convert bytes to gb in decimal format
 						if capInBytes != nil {

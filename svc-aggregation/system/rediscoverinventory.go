@@ -256,7 +256,7 @@ func (e *ExternalInterface) getTargetSystemCollection(ctx context.Context, targe
 	// get the plugin information
 	plugin, errs := agmodel.GetPluginData(target.PluginID)
 	if errs != nil {
-		l.Log.Error(errs.Error())
+		l.LogWithFields(ctx).Error(errs.Error())
 		return nil, errs
 	}
 

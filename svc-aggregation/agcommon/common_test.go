@@ -220,12 +220,13 @@ func TestGetStorageResources(t *testing.T) {
 	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
 		return "", errors.PackError(0, "error while trying to connecting to DB: ")
 	}
-	resp := GetStorageResources(storageURI)
+	ctx := mockContext()
+	resp := GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "There should be an error ")
 	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
 		return string([]byte(`{"user":"name"}`)), nil
 	}
-	resp = GetStorageResources(storageURI)
+	resp = GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "There should be no error ")
 }
 
@@ -235,7 +236,8 @@ func TestGetStorageResources_invalidJson(t *testing.T) {
 	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
 		return "", errors.PackError(0, "error while trying to connecting to DB: ")
 	}
-	resp := GetStorageResources(storageURI)
+	ctx := mockContext()
+	resp := GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "There should be an error ")
 	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
 		return string([]byte(`{"user":"name"}`)), nil
@@ -243,7 +245,7 @@ func TestGetStorageResources_invalidJson(t *testing.T) {
 	JSONUnMarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
-	resp = GetStorageResources(storageURI)
+	resp = GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "Invalid Json")
 }
 

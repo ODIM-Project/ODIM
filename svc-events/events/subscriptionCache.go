@@ -48,8 +48,8 @@ func getAllSubscriptions() {
 			continue
 		}
 		subCache := sub.EventDestination
-		subCache.Id = sub.SubscriptionID
-		subscriptionsCache[subCache.Id] = *subCache
+		subCache.ID = sub.SubscriptionID
+		subscriptionsCache[subCache.ID] = *subCache
 		if len(sub.EventDestination.OriginResources) == 0 && sub.SubscriptionID != evcommon.DefaultSubscriptionID {
 			emptySubscriptionIdMap[sub.SubscriptionID] = true
 		} else {

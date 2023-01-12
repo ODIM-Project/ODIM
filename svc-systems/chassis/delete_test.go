@@ -73,7 +73,8 @@ func Test_findAllPlugins(t *testing.T) {
 		res = append(res, &model)
 		return
 	}
-	response := delete.Handle(&req)
+	ctx := mockContext()
+	response := delete.Handle(ctx, &req)
 	assert.NotNil(t, response, "There should be an error ")
 
 	FindAllPluginsFunc = func(key string) (res []*smodel.Plugin, err error) {
@@ -84,7 +85,7 @@ func Test_findAllPlugins(t *testing.T) {
 		err = &errors.Error{}
 		return
 	}
-	response = delete.Handle(&req)
+	response = delete.Handle(ctx, &req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response status code should be StatusInternalServerError")
 
 	FindAllPluginsFunc = func(key string) (res []*smodel.Plugin, err error) {
@@ -98,7 +99,7 @@ func Test_findAllPlugins(t *testing.T) {
 	GetResourceFunc = func(Table, key string) (string, *errors.Error) {
 		return "", &errors.Error{}
 	}
-	response = delete.Handle(&req)
+	response = delete.Handle(ctx, &req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response status code should be StatusInternalServerError")
 	GetResourceFunc = func(Table, key string) (string, *errors.Error) {
 		return smodel.GetResource(Table, key)
@@ -107,7 +108,7 @@ func Test_findAllPlugins(t *testing.T) {
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
-	response = delete.Handle(&req)
+	response = delete.Handle(ctx, &req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response status code should be StatusInternalServerError")
 
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
@@ -116,7 +117,7 @@ func Test_findAllPlugins(t *testing.T) {
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
-	response = delete.Handle(&req)
+	response = delete.Handle(ctx, &req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response status code should be StatusInternalServerError")
 
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
@@ -125,7 +126,7 @@ func Test_findAllPlugins(t *testing.T) {
 	GenericSaveFunc = func(ctx context.Context, body []byte, table, key string) error {
 		return &errors.Error{}
 	}
-	response = delete.Handle(&req)
+	response = delete.Handle(ctx, &req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response status code should be StatusInternalServerError")
 
 	addChasis := []byte(`{"@odata.context":"/redfish/v1/$metadata#Chassis.Chassis","@odata.etag":"W59209823","@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1","@odata.type":"#Chassis.v1_20_0.Chassis","AssetTag":null,"ChassisType":"RackMount","Id":"1","IndicatorLED":"Off","Links":{"ComputerSystems":[{"@odata.id":"/redfish/v1/Systems/ba06875a-a292-445d-89ef-90e984e806ed.1"}],"ManagedBy":[{"@odata.id":"/redfish/v1/Managers/ba06875a-a292-445d-89ef-90e984e806ed.1"}]},"Manufacturer":"HPE","Model":"ProLiant DL360 Gen10","Name":"Computer System Chassis","NetworkAdapters":{"@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/NetworkAdapters"},"Oem":{"Hpe":{"@odata.context":"/redfish/v1/$metadata#HpeServerChassis.HpeServerChassis","@odata.type":"#HpeServerChassis.v2_3_1.HpeServerChassis","Actions":{"#HpeServerChassis.DisableMCTPOnServer":{"target":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/Actions/Oem/Hpe/HpeServerChassis.DisableMCTPOnServer"},"#HpeServerChassis.FactoryResetMCTP":{"target":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/Actions/Oem/Hpe/HpeServerChassis.FactoryResetMCTP"}},"ElConfigOverride":false,"Firmware":{"PlatformDefinitionTable":{"Current":{"VersionString":"9.8.0 Build 15"}},"PowerManagementController":{"Current":{"VersionString":"1.0.7"}},"PowerManagementControllerBootloader":{"Current":{"Family":"25","VersionString":"1.1"}},"SPSFirmwareVersionData":{"Current":{"VersionString":"4.1.4.601"}},"SystemProgrammableLogicDevice":{"Current":{"VersionString":"0x2A"}}},"Links":{"Devices":{"@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/Devices"}},"SmartStorageBattery":[{"ChargeLevelPercent":99,"FirmwareVersion":"0.70","Index":1,"MaximumCapWatts":96,"Model":"875241-B21","ProductName":"HPE Smart Storage Battery ","RemainingChargeTimeSeconds":48,"SerialNumber":"6WQXL0CB2BX63Z","SparePartNumber":"878643-001","Status":{"Health":"OK","State":"Enabled"}}],"SystemMaintenanceSwitches":{"Sw1":"Off","Sw10":"Off","Sw11":"Off","Sw12":"Off","Sw2":"Off","Sw3":"Off","Sw4":"Off","Sw5":"Off","Sw6":"Off","Sw7":"Off","Sw8":"Off","Sw9":"Off"}}},"PCIeDevices":{"@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/PCIeDevices"},"PCIeSlots":{"@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/PCIeSlots"},"PartNumber":null,"Power":{"@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/Power"},"PowerState":"On","SKU":"867959-B21","SerialNumber":"MXQ91100T6","Status":{"Health":"OK","State":"Starting"},"Thermal":{"@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/Thermal"}}`)
@@ -134,7 +135,7 @@ func Test_findAllPlugins(t *testing.T) {
 		t.Fatalf("Error in creating mock Manager :%v", err)
 	}
 
-	response = delete.Handle(&req)
+	response = delete.Handle(ctx, &req)
 	assert.Equal(t, http.StatusMethodNotAllowed, int(response.StatusCode), "Response status code should be StatusInternalServerError")
 
 }

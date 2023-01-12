@@ -470,6 +470,7 @@ func TestGetAllSystems(t *testing.T) {
 
 func TestGetSystems(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -585,7 +586,7 @@ func TestGetSystems(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			GetResourceInfoFromDeviceFunc = tt.GetResourceInfoFromDeviceFunc
-			got := tt.p.GetSystems(tt.args.req)
+			got := tt.p.GetSystems(ctx, tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSystems() = %v, want %v", got, tt.want)
 			}
@@ -602,7 +603,7 @@ func TestGetSystems(t *testing.T) {
 		return "", &errors.Error{}
 	}
 
-	resp := pluginContact.GetSystems(&req)
+	resp := pluginContact.GetSystems(ctx, &req)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusNotFound")
 
 	GetSystemResetInfoFunc = func(systemURI string) (map[string]string, *errors.Error) {
@@ -616,6 +617,7 @@ func TestGetSystems(t *testing.T) {
 
 func TestPluginContact_GetSystemResource(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -718,7 +720,7 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.p.GetSystemResource(tt.args.req)
+			got := tt.p.GetSystemResource(ctx, tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PluginContact.GetSystemResource() = %v, want %v", got, tt.want)
 			}
@@ -732,7 +734,7 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 	GetDeviceLoadInfoFunc = func(URL, systemID string) bool {
 		return true
 	}
-	resp := pluginContact.GetSystemResource(req)
+	resp := pluginContact.GetSystemResource(ctx, req)
 	assert.NotNil(t, resp, "Response should have error")
 
 	GetDeviceLoadInfoFunc = func(URL, systemID string) bool {

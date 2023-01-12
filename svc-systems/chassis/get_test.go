@@ -38,6 +38,7 @@ var internalError = common.GeneralError(http.StatusInternalServerError, response
 
 func TestNewGetHandler(t *testing.T) {
 	managedChassis := dmtf.Chassis{}
+	ctx := mockContext()
 	GetResourceInfoFromDeviceFunc = func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
 		return `{"@odata.id": ""}`, nil
 	}
@@ -53,7 +54,7 @@ func TestNewGetHandler(t *testing.T) {
 		RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 		URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	}
-	r := sut.Handle(&getChassisRPCRequest)
+	r := sut.Handle(ctx, &getChassisRPCRequest)
 	require.EqualValues(t, http.StatusOK, r.StatusCode)
 	require.Equal(t, managedChassis, r.Body)
 }
@@ -79,8 +80,8 @@ func TestNewGetHandler_WhenPluginClientFactoryReturnsNotFoundError(t *testing.T)
 		func(table, key string, r interface{}) *errors.Error {
 			return errors.PackError(errors.DBKeyNotFound, "there is no managed chassis with specified key")
 		})
-
-	r := sut.Handle(&chassisproto.GetChassisRequest{})
+	ctx := mockContext()
+	r := sut.Handle(ctx, &chassisproto.GetChassisRequest{})
 	require.EqualValues(t, http.StatusNotFound, r.StatusCode)
 	require.IsType(t, response.CommonError{}, r.Body)
 	require.EqualValues(t, response.ResourceNotFound, r.Body.(response.CommonError).Error.MessageExtendedInfo[0].MessageID)
@@ -94,8 +95,8 @@ func TestNewGetHandler_WhenPluginClientFactoryReturnsUnexpectedError(t *testing.
 		func(table, key string, r interface{}) *errors.Error {
 			return errors.PackError(errors.DBKeyNotFound, "there is no managed chassis with specified key")
 		})
-
-	r := sut.Handle(&chassisproto.GetChassisRequest{})
+	ctx := mockContext()
+	r := sut.Handle(ctx, &chassisproto.GetChassisRequest{})
 	require.EqualValues(t, http.StatusInternalServerError, r.StatusCode)
 	require.IsType(t, response.CommonError{}, r.Body)
 	require.EqualValues(t, response.InternalError, r.Body.(response.CommonError).Error.MessageExtendedInfo[0].MessageID)
@@ -112,8 +113,8 @@ func TestNewGetHandler_WhenPluginClientReturnsError(t *testing.T) {
 		func(table, key string, r interface{}) *errors.Error {
 			return errors.PackError(errors.DBKeyNotFound, "there is no managed chassis with specified key")
 		})
-
-	r := sut.Handle(&chassisproto.GetChassisRequest{})
+	ctx := mockContext()
+	r := sut.Handle(ctx, &chassisproto.GetChassisRequest{})
 	require.EqualValues(t, http.StatusInternalServerError, r.StatusCode)
 	require.IsType(t, response.CommonError{}, r.Body)
 	require.EqualValues(t, response.InternalError, r.Body.(response.CommonError).Error.MessageExtendedInfo[0].MessageID)
@@ -136,8 +137,8 @@ func TestNewGetHandler_WhenPluginClientReturnsNonErrorResponse(t *testing.T) {
 		func(table, key string, r interface{}) *errors.Error {
 			return errors.PackError(errors.DBKeyNotFound, "there is no managed chassis with specified key")
 		})
-
-	r := sut.Handle(&chassisproto.GetChassisRequest{})
+	ctx := mockContext()
+	r := sut.Handle(ctx, &chassisproto.GetChassisRequest{})
 	require.EqualValues(t, http.StatusOK, r.StatusCode)
 	require.IsType(t, dmtf.Chassis{}, r.Body)
 }

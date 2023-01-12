@@ -2332,7 +2332,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 1. Create a directory to store the backup rdb files and append-only files.
 
    ```
-   mkdir /backup
+   mkdir <backup directory>/backup
    ```
 
 2. Get the name of the master pod to collect the backup snapshot file and append-only file to restore them later (either ondisk or inmemory database).
@@ -2353,31 +2353,31 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 3. Copy the rdb files and aof files from the master pod.
 
    ```
-   kubectl cp odim/<pod-name>:/redis-data/dump.rdb [backup directory]/backups/dump.rdb
+   kubectl cp odim/<pod-name>:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
    ```
 
    ```
-   kubectl cp odim/<pod-name>:/redis-data/appendonly.aof [backup directory]/backups/appendonly.aof
+   kubectl cp odim/<pod-name>:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
    ```
 
    **For example (on-disk)**:
    
    ```
-kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/dump.rdb [backup directory]/backups/dump.rdb
+kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
    ```
 
    ```
-   kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/appendonly.aof [backup directory]/backups/appendonly.aof
+   kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
    ```
 
    **For example(in-memory)**:
    
    ```
-kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/dump.rdb [backup directory]/backups/dump.rdb
+kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
    ```
    
    ```
-kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof [backup directory]/backups/appendonly.aof
+kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
    ```
    
    These are the backup files to be restored.
@@ -2385,32 +2385,32 @@ kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof [backup d
 4. Copy the above backup files to the pod to restore them.
 
    ```
-   kubectl cp [Copied directory]/backups/dump.rdb odim/<pod-name>:/redis-data/dump.rdb-1
+   kubectl cp <Copied directory>/backup/dump.rdb odim/<pod-name>:/redis-data/dump.rdb-1
    ```
 
    ```
-   kubectl cp ./backups/appendonly.aof  odim/pod-name>:/redis-data/appendonly.aof.old
+   kubectl cp <Copied directory>/backup/appendonly.aof  odim/<pod-name>:/redis-data/appendonly.aof.old
    ```
 
    **For example**:
 
    ```
-   kubectl cp [Copied directory]/backups/dump.rdb odim/redis-ha-ondisk-primary-0:/redis-data/dump.rdb-1
+   kubectl cp <Copied directory>/backup/dump.rdb odim/redis-ha-ondisk-primary-0:/redis-data/dump.rdb-1
    ```
 
    ```
-   kubectl cp ./backups/appendonly.aof  odim/redis-ha-ondisk-primary-0/redis-data/appendonly.aof.old
+   kubectl cp <Copied directory>/backup/appendonly.aof odim/redis-ha-ondisk-primary-0/redis-data/appendonly.aof.old
    ```
 
    ```
-   kubectl cp [Copied directory]/backups/dump.rdb odim/redis-ha-inmemory-primary-0:/redis-data/dump.rdb-1
+   kubectl cp <Copied directory>/backup/dump.rdb odim/redis-ha-inmemory-primary-0:/redis-data/dump.rdb-1
    ```
 
    ```
-   kubectl cp ./backups/appendonly.aof  odim/redis-ha-inmemory-primary-0/redis-data/appendonly.aof.old
+   kubectl cp <Copied directory>/backup/appendonly.aof  odim/redis-ha-inmemory-primary-0/redis-data/appendonly.aof.old
    ```
 
-5. Log in to redis CLI and disable append-only configuration to restore the data back.
+5. Log in to the pod. 
 
    ```
    kubectl exec -it <podname> -nodim bash
@@ -2426,6 +2426,8 @@ kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof [backup d
    kubectl exec -it redis-ha-inmemory-primary-0 -nodim bash
    ```
 
+6. Log in to Redis CLI and disable append-only configuration to restore the data back.
+
    ```
    redis-cli --tls --cert /etc/odimra_certs/odimra_server.crt --key /etc/odimra_certs/odimra_server.key --cacert /etc/odimra_certs/rootCA.crt -a <password>
    ```
@@ -2434,7 +2436,7 @@ kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof [backup d
    CONFIG SET "appendonly" no
    ```
 
-6. Delete the data available to verify later, if the restore option works (optional).
+7. Delete the data available to verify later, if the restore option works (optional).
 
    ```
    keys *
@@ -2444,9 +2446,9 @@ kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof [backup d
    FLUSHALL
    ```
 
-7. Exit from the Redis CLI and move to the redis-data directory.
+8. Exit from the Redis CLI and move to the `redis-data` directory.
 
-8. Remove the existing rdb and aof files and replace the backed up ones with the name.
+9. Remove the existing rdb and aof files and replace the backed up ones with the name.
 
    ```
    cd /redis-data
@@ -2464,7 +2466,7 @@ kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof [backup d
    mv appendonly.aof.old appendonly.aof
    ```
 
-9. Get the pods of the Redis (either in-memory or on-disk) and restart  them.
+10. Get the pods of the Redis (either in-memory or on-disk) and restart  them.
 
    ```
    kubectl get pods -nodim | grep redis | grep inmemory
@@ -2484,7 +2486,7 @@ kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof [backup d
    kubectl delete pods redis-ha-inmemory-primary-0 redis-ha-inmemory-secondary-0 redis-ha-inmemory-secondary-1 -nodim
    ```
 
-10. Once all the pods have started and are in running state, login to the pod, log in to Redis CLI and check for the old data.
+11. Once all the pods have started and are in running state, log in to the pod.
 
     ```
     kubectl exec -it <podname> -nodim bash
@@ -2498,6 +2500,9 @@ kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof [backup d
     ```
     kubectl exec -it redis-ha-inmemory-primary-0 -nodim bash
     ```
+
+12. Log in to Redis CLI and check for the old data.
+
     ```
     redis-cli --tls --cert /etc/odimra_certs/odimra_server.crt --key /etc/odimra_certs/odimra_server.key --cacert /etc/odimra_certs/rootCA.crt -a <password>
     ```

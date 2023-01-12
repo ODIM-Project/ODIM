@@ -21,8 +21,6 @@ package datacommunicator
 import (
 	"encoding/json"
 	"fmt"
-
-	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 // BrokerType defines the underline MQ platform to be selected for the
@@ -97,19 +95,17 @@ func Encode(d interface{}) ([]byte, error) {
 
 	data, err := json.Marshal(d)
 	if err != nil {
-		l.Log.Error("Failed to encode the given event data: " + err.Error())
-		return nil, err
+		return nil, fmt.Errorf("failed to encode the given event data: %s", err.Error())
 	}
 	return data, nil
 }
 
 // Decode converts the byte stream into Data (DECODE).
-///data will  be masked as Interface before sent to Consumer or Requester.
+// /data will  be masked as Interface before sent to Consumer or Requester.
 func Decode(d []byte, a interface{}) error {
 	err := json.Unmarshal(d, &a)
 	if err != nil {
-		l.Log.Error("error: Failed to decode the event data: " + err.Error())
-		return err
+		return fmt.Errorf("error: Failed to decode the event data: %s", err.Error())
 	}
 	return nil
 }

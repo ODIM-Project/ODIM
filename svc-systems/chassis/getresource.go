@@ -49,7 +49,7 @@ func (p *PluginContact) GetChassisResource(ctx context.Context, req *chassisprot
 	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Chassis", req.RequestParam}, nil), nil
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Chassis", req.RequestParam}, nil), nil
 	}
 	uuid := requestData[0]
 	urlData := strings.Split(req.URL, "/")
@@ -79,11 +79,11 @@ func (p *PluginContact) GetChassisResource(ctx context.Context, req *chassisprot
 			if data, err = scommon.GetResourceInfoFromDevice(ctx, getDeviceInfoRequest, true); err != nil {
 				l.LogWithFields(ctx).Error("error while getting resource: " + err.Error())
 				errorMsg := err.Error()
-				return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, errorMsg, []interface{}{tableName, req.URL}, nil), nil
+				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMsg, []interface{}{tableName, req.URL}, nil), nil
 			}
 		} else {
 			l.LogWithFields(ctx).Error("error while getting resource: " + errorMessage)
-			return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil), nil
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil), nil
 		}
 	}
 	var resource map[string]interface{}

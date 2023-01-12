@@ -135,7 +135,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
-		fillSystemProtoResponse(ctx, &resp, common.GeneralError(ctx, http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
 		l.LogWithFields(ctx).Error(errMsg)
 		return &resp, nil
 	}
@@ -144,7 +144,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	taskURI, err := s.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
-		fillSystemProtoResponse(ctx, &resp, common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
 		l.LogWithFields(ctx).Error(errMsg)
 		return &resp, nil
 	}

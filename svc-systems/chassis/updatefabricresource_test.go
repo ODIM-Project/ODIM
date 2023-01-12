@@ -33,7 +33,7 @@ func Test_fabricFactory_updateFabricChassisResource(t *testing.T) {
 	var r response.RPC
 	successReq := json.RawMessage(`{"Name":"someNewName"}`)
 	ctx := mockContext()
-	initializeRPCResponse(&r, common.GeneralError(ctx, http.StatusOK, response.Success, "", nil, nil))
+	initializeRPCResponse(&r, common.GeneralError(http.StatusOK, response.Success, "", nil, nil))
 
 	errResp := response.RPC{
 		StatusCode:    http.StatusNotFound,

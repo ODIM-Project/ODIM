@@ -42,7 +42,7 @@ func (f *fabricFactory) getFabricChassisResource(ctx context.Context, rID string
 	managers, err := f.getFabricManagers(ctx)
 	if err != nil {
 		l.LogWithFields(ctx).Warn("while trying to collect fabric managers details from DB, got " + err.Error())
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
 	}
 
 	for _, manager := range managers {
@@ -56,7 +56,7 @@ func (f *fabricFactory) getFabricChassisResource(ctx context.Context, rID string
 		}
 	}
 
-	return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
+	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
 }
 
 // getResource is for collecting the fabric chassis from the individual plugin,
@@ -79,10 +79,10 @@ func collectChassisResource(ctx context.Context, f *fabricFactory, pluginRequest
 		body, _, statusCode, _, err = retryFabricsOperation(ctx, f, pluginRequest)
 	}
 	if err != nil {
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 	if !is2xx(int(statusCode)) {
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", pluginRequest.URL}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", pluginRequest.URL}, nil)
 	}
 
 	data := string(body)
@@ -94,7 +94,7 @@ func collectChassisResource(ctx context.Context, f *fabricFactory, pluginRequest
 	var resp dmtfmodel.Chassis
 	err = JSONUnmarshalFunc([]byte(data), &resp)
 	if err != nil {
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 
 	initializeRPCResponse(&r, resp)

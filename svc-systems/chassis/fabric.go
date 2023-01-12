@@ -121,7 +121,7 @@ func (f *fabricFactory) createChassisRequest(ctx context.Context, plugin smodel.
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		token = f.getPluginToken(ctx, plugin)
 		if token == "" {
-			*errResp = common.GeneralError(ctx, http.StatusUnauthorized, response.ResourceAtURIUnauthorized, "unable to create session for plugin "+plugin.ID, []interface{}{url}, nil)
+			*errResp = common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, "unable to create session for plugin "+plugin.ID, []interface{}{url}, nil)
 			return nil, errResp, fmt.Errorf("unable to create session for plugin " + plugin.ID)
 		}
 	} else {
@@ -206,7 +206,7 @@ func retryFabricsOperation(ctx context.Context, f *fabricFactory, req *pluginCon
 	var resp response.RPC
 	var token = f.createToken(ctx, req.Plugin)
 	if token == "" {
-		resp = common.GeneralError(ctx, http.StatusUnauthorized, response.NoValidSession, "error: Unable to create session with plugin "+req.Plugin.ID,
+		resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error: Unable to create session with plugin "+req.Plugin.ID,
 			[]interface{}{}, nil)
 		data, _ := json.Marshal(resp.Body)
 		return data, "", int(resp.StatusCode), response.NoValidSession, fmt.Errorf("error: Unable to create session with plugin")

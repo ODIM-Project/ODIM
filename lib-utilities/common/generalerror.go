@@ -15,7 +15,6 @@
 package common
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -46,7 +45,7 @@ type TaskUpdateInfo struct {
 // This function can be used only if the expected response have only
 // one extended info object. Error code for the response will be GeneralError
 // If there is no requirement of task updation pass a nil value for *TaskUpdateInfo
-func GeneralError(ctx context.Context, statusCode int32, statusMsg, errMsg string, msgArgs []interface{}, t *TaskUpdateInfo) response.RPC {
+func GeneralError(statusCode int32, statusMsg, errMsg string, msgArgs []interface{}, t *TaskUpdateInfo) response.RPC {
 	var resp response.RPC
 	resp.StatusCode = statusCode
 	resp.StatusMessage = statusMsg

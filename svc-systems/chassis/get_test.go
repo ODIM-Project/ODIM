@@ -34,7 +34,7 @@ import (
 )
 
 var ctx = mockContext()
-var internalError = common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, "error", nil, nil)
+var internalError = common.GeneralError(http.StatusInternalServerError, response.InternalError, "error", nil, nil)
 
 func TestNewGetHandler(t *testing.T) {
 	managedChassis := dmtf.Chassis{}

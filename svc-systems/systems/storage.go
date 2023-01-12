@@ -89,17 +89,17 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
 	}
 	uuid := requestData[0]
 	target, gerr := e.DB.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 	}
 	// Validating the storage instance
 	if strings.TrimSpace(req.StorageInstance) == "" {
 		errorMessage := "error: Storage instance is not found"
-		return common.GeneralError(ctx, http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Storage", req.StorageInstance}, nil)
+		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Storage", req.StorageInstance}, nil)
 	}
 
 	var volume smodel.Volume
@@ -111,7 +111,7 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 			errorMessage = "Error processing create volume request: @odata.id key(s) is missing in Drives list"
 		}
 		l.LogWithFields(ctx).Error(errorMessage)
-		resp = common.GeneralError(ctx, http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
+		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
 		return resp
 	}
 
@@ -120,32 +120,32 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 	if err != nil {
 		errMsg := "error while validating request parameters for volume creation: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 		l.LogWithFields(ctx).Error(errorMessage)
-		response := common.GeneralError(ctx, http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response
 	}
 	//fields validation
-	statuscode, statusMessage, messageArgs, err := e.validateProperties(&volume, req.SystemID)
+	statuscode, statusMessage, messageArgs, err := e.validateProperties(ctx, &volume, req.SystemID)
 	if err != nil {
 		errorMessage := "error: request payload validation failed: " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
-		resp = common.GeneralError(ctx, statuscode, statusMessage, errorMessage, messageArgs, nil)
+		resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
 		return resp
 	}
 	decryptedPasswordByte, err := e.DevicePassword(target.Password)
 	if err != nil {
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	target.Password = decryptedPasswordByte
 	// Get the Plugin info
 	plugin, gerr := e.DB.GetPluginData(target.PluginID)
 	if gerr != nil {
 		errorMessage := "error while trying to get plugin details"
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	var contactRequest scommon.PluginContactRequest
 	contactRequest.ContactClient = e.ContactClient
@@ -163,7 +163,7 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 		_, token, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
-			return common.GeneralError(ctx, getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
+			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
 		}
 		contactRequest.Token = token
 	} else {
@@ -189,7 +189,7 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 	resp.StatusMessage = response.Success
 	err = JSONUnmarshalFunc(body, &resp.Body)
 	if err != nil {
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 	return resp
 }
@@ -363,7 +363,7 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 	if err != nil {
 		errorMessage := "Error while unmarshaling the create volume request: " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
-		resp = common.GeneralError(ctx, http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
+		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
 		return resp
 	}
 
@@ -371,17 +371,17 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) != 2 || requestData[1] == "" {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
 	}
 	uuid := requestData[0]
 	target, gerr := e.DB.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 	}
 	// Validating the storage instance
 	if StringTrimSpace(req.VolumeID) == "" {
 		errorMessage := "error: Volume id is not found"
-		return common.GeneralError(ctx, http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Volume", req.VolumeID}, nil)
+		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Volume", req.VolumeID}, nil)
 	}
 
 	// Validating the request JSON properties for case sensitive
@@ -389,11 +389,11 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 	if err != nil {
 		errMsg := "error while validating request parameters for volume creation: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 		l.LogWithFields(ctx).Error(errorMessage)
-		response := common.GeneralError(ctx, http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response
 	}
 	key := fmt.Sprintf("/redfish/v1/Systems/%s/Storage/%s/Volumes/%s", req.SystemID, req.StorageInstance, req.VolumeID)
@@ -412,24 +412,24 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 			}
 			var err error
 			if _, err = scommon.GetResourceInfoFromDevice(ctx, getDeviceInfoRequest, true); err != nil {
-				return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Volumes", key}, nil)
+				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Volumes", key}, nil)
 			}
 
 		} else {
-			return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		}
 	}
 	decryptedPasswordByte, err := e.DevicePassword(target.Password)
 	if err != nil {
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	target.Password = decryptedPasswordByte
 	// Get the Plugin info
 	plugin, gerr := e.DB.GetPluginData(target.PluginID)
 	if gerr != nil {
 		errorMessage := "error while trying to get plugin details"
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	var contactRequest scommon.PluginContactRequest
 	contactRequest.ContactClient = e.ContactClient
@@ -446,7 +446,7 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 		_, token, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
-			return common.GeneralError(ctx, getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
+			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
 		}
 		contactRequest.Token = token
 	} else {
@@ -479,9 +479,9 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 		errMsg := "error while trying to delete volume: " + derr.Error()
 		l.LogWithFields(ctx).Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
-			return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Volumes", key}, nil)
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Volumes", key}, nil)
 		}
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
 	// adding volume collection uri and deleted volume uri to the AddSystemResetInfo

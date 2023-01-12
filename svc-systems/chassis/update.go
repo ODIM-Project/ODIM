@@ -34,17 +34,17 @@ import (
 func (h *Update) Handle(ctx context.Context, req *chassis.UpdateChassisRequest) response.RPC {
 	pc, e := h.createPluginClient("URP*")
 	if e != nil && e.ErrNo() == errors.DBKeyNotFound {
-		return common.GeneralError(ctx, http.StatusMethodNotAllowed, response.ActionNotSupported, "", []interface{}{"PATCH"}, nil)
+		return common.GeneralError(http.StatusMethodNotAllowed, response.ActionNotSupported, "", []interface{}{"PATCH"}, nil)
 	}
 	if e != nil {
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
 	body := new(json.RawMessage)
 	ue := json.Unmarshal(req.RequestBody, body)
 	if ue != nil {
 		l.LogWithFields(ctx).Error("while trying to unmarshal, got " + ue.Error())
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, "Cannot deserialize request body", nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, "Cannot deserialize request body", nil, nil)
 	}
 
 	resp := pc.Patch(req.URL, body)

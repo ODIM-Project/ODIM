@@ -126,7 +126,7 @@ func (e *PluginContact) monitorPluginTask(ctx context.Context, monitorTaskData *
 		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {
 			errMsg := "Unable to parse the reset respone" + err.Error()
 			l.LogWithFields(ctx).Warn(errMsg)
-			common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
 			return monitorTaskData.respBody, err
 		}
 		var updatetask = fillTaskData(monitorTaskData.taskID, monitorTaskData.serverURI, monitorTaskData.requestBody, monitorTaskData.resp, task.TaskState, task.TaskStatus, task.PercentComplete, http.MethodPost)
@@ -143,7 +143,7 @@ func (e *PluginContact) monitorPluginTask(ctx context.Context, monitorTaskData *
 		if err != nil {
 			errMsg := err.Error()
 			l.LogWithFields(ctx).Warn(errMsg)
-			common.GeneralError(ctx, monitorTaskData.getResponse.StatusCode, monitorTaskData.getResponse.StatusMessage, errMsg, nil, monitorTaskData.taskInfo)
+			common.GeneralError(monitorTaskData.getResponse.StatusCode, monitorTaskData.getResponse.StatusMessage, errMsg, nil, monitorTaskData.taskInfo)
 			return monitorTaskData.respBody, err
 		}
 		if monitorTaskData.getResponse.StatusCode == http.StatusOK {

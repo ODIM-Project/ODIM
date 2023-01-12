@@ -113,7 +113,7 @@ func (c *returnFirst) Collect(r response.RPC) error {
 
 func (c *returnFirst) GetResult(ctx context.Context) response.RPC {
 	if c.resp == nil {
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", c.ReqURI}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", c.ReqURI}, nil)
 	}
 	return *c.resp
 }
@@ -153,7 +153,7 @@ func (c *collectCollectionMembers) Collect(r response.RPC) error {
 func (c *collectCollectionMembers) GetResult(ctx context.Context) response.RPC {
 	collectionAsBytes, err := JSONMarshalFunc(c.collection)
 	if err != nil {
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, fmt.Sprintf("Unexpected error: %v", err), nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("Unexpected error: %v", err), nil, nil)
 	}
 	return response.RPC{
 		StatusCode: http.StatusOK,
@@ -212,7 +212,7 @@ func (m *multiTargetClient) Patch(ctx context.Context, uri string, body *json.Ra
 			l.LogWithFields(ctx).Warn("execution of PATCH " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(ctx, resp.Body))
 		}
 	}
-	return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
+	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
 }
 
 func (m *multiTargetClient) Delete(ctx context.Context, uri string) response.RPC {
@@ -230,7 +230,7 @@ func (m *multiTargetClient) Delete(ctx context.Context, uri string) response.RPC
 			l.LogWithFields(ctx).Warn("execution of DELETE " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(ctx, resp.Body))
 		}
 	}
-	return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
+	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
 }
 
 // Client ...
@@ -290,11 +290,11 @@ func (c *client) Get(ctx context.Context, uri string, _ ...CallOption) response.
 
 func (c *client) extractResp(ctx context.Context, httpResponse *http.Response, err error) response.RPC {
 	if err != nil {
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 	body, err := IoutilReadAllFunc(httpResponse.Body)
 	if err != nil {
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, fmt.Sprintf("Cannot read response body: %v", err), nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("Cannot read response body: %v", err), nil, nil)
 	}
 
 	if !is2xx(httpResponse.StatusCode) {
@@ -305,7 +305,7 @@ func (c *client) extractResp(ctx context.Context, httpResponse *http.Response, e
 		err := dec.Decode(ce)
 		if err != nil {
 			l.LogWithFields(ctx).Error("Cannot decode CommonError: " + err.Error())
-			return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, string(body), nil, nil)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, string(body), nil, nil)
 		}
 	}
 	return createRPCResponse(httpResponse.StatusCode, httpResponse.Header, body, c.translator.toNorthbound)

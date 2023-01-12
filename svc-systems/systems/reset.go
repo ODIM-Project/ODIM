@@ -55,7 +55,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 	if err != nil {
 		errMsg := "error while starting the task: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	percentComplete = 10
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
@@ -66,7 +66,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 	if err != nil {
 		errMsg := "error: unable to parse the computer system reset request" + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 
 	// Validating the request JSON properties for case sensitive
@@ -74,11 +74,11 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 		l.LogWithFields(ctx).Error(errorMessage)
-		resp := common.GeneralError(ctx, http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
 		return resp
 	}
 
@@ -86,20 +86,20 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, taskInfo)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, taskInfo)
 	}
 
 	uuid := requestData[0]
 
 	target, gerr := smodel.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"ComputerSystem", "/redfish/v1/Systems/" + req.SystemID}, taskInfo)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"ComputerSystem", "/redfish/v1/Systems/" + req.SystemID}, taskInfo)
 	}
 	decryptedPasswordByte, err := p.DevicePassword(target.Password)
 	if err != nil {
 		// Frame the RPC response body and response Header below
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
 	}
 	target.Password = decryptedPasswordByte
 	percentComplete = 30
@@ -110,7 +110,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 	plugin, gerr := smodel.GetPluginData(target.PluginID)
 	if gerr != nil {
 		errorMessage := "error while trying to get plugin details"
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	var contactRequest scommon.PluginContactRequest
 	contactRequest.ContactClient = p.ContactClient
@@ -127,7 +127,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 		_, token, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
-			return common.GeneralError(ctx, getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
+			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
 		}
 		contactRequest.Token = token
 	} else {
@@ -153,7 +153,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 		if err != nil {
 			errMsg := "error while starting the task: " + err.Error()
 			l.LogWithFields(ctx).Error(errMsg)
-			return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		}
 
 		return resp
@@ -182,7 +182,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 
 	err = JSONUnmarshalFunc(body, &resp.Body)
 	if err != nil {
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
 	}
 	smodel.AddSystemResetInfo("/redfish/v1/Systems/"+req.SystemID, resetCompSys.ResetType)
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, common.OK, 100, http.MethodPost)

@@ -94,7 +94,7 @@ func (c *sourceProviderImpl) findSources(ctx context.Context) ([]source, *respon
 		if dberr.ErrNo() == errors.DBKeyNotFound {
 			return sources, nil
 		}
-		ge := common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, dberr.Error(), nil, nil)
+		ge := common.GeneralError(http.StatusInternalServerError, response.InternalError, dberr.Error(), nil, nil)
 		return nil, &ge
 	}
 
@@ -114,7 +114,7 @@ func (m *managedChassisProvider) read(ctx context.Context) ([]dmtf.Link, *respon
 	keys, e := m.inMemoryKeysProvider("Chassis")
 	if e != nil {
 		l.LogWithFields(ctx).Error("while getting all keys of ChassisCollection table, got " + e.Error())
-		ge := common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
+		ge := common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 		return nil, &ge
 	}
 	var r []dmtf.Link
@@ -137,7 +137,7 @@ func (u unmanagedChassisProvider) read(ctx context.Context) ([]dmtf.Link, *respo
 
 	c := new(sresponse.Collection)
 	if e := json.Unmarshal(r.Body.([]byte), c); e != nil {
-		ge := common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
+		ge := common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 		return nil, &ge
 	}
 	return c.Members, nil

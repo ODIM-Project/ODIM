@@ -68,11 +68,10 @@ func mockDeviceData(uuid string, device smodel.Target) error {
 }
 
 func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
-	ctx := mockContext()
 	if sessionToken != "validToken" {
-		return common.GeneralError(ctx, http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
-	return common.GeneralError(ctx, http.StatusOK, response.Success, "", nil, nil), nil
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
 func mockContactClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
@@ -131,7 +130,6 @@ func mockContactClient(url, method, token string, odataID string, body interface
 
 func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	config.SetUpMockConfig(t)
-	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -228,7 +226,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			JSONUnMarshal: func(data []byte, v interface{}) error {
 				return json.Unmarshal(data, v)
 			},
-			want: common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 24b243cf-f1e3-5318-92d9-2d6737d6b0b found", []interface{}{"ComputerSystem", "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b.1"}, nil),
+			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 24b243cf-f1e3-5318-92d9-2d6737d6b0b found", []interface{}{"ComputerSystem", "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b.1"}, nil),
 		}, {
 			name: "invalid uuid without system id",
 			p:    &pluginContact,
@@ -241,7 +239,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			JSONUnMarshal: func(data []byte, v interface{}) error {
 				return json.Unmarshal(data, v)
 			},
-			want: common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", "24b243cf-f1e3-5318-92d9-2d6737d6b0b"}, nil),
+			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", "24b243cf-f1e3-5318-92d9-2d6737d6b0b"}, nil),
 		},
 		{
 			name: "if plugin id is not there in the db",

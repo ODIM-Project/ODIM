@@ -161,7 +161,6 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	// Modify the contents with http.StatusNotImplemented to the correct status
 	// and modify all other info accordingly after implementations
 	config.SetUpMockConfig(t)
-	ctx := mockContext()
 	var positiveResponse interface{}
 	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
 	pluginContact := mockGetExternalInterface()
@@ -230,7 +229,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 									    "Links":{
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0b.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
 			},
-			want: common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 54b243cf-f1e3-5319-92d9-2d6737d6b0b found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0b"}, nil),
+			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 54b243cf-f1e3-5319-92d9-2d6737d6b0b found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0b"}, nil),
 		}, {
 			name: "invalid storage instance",
 			p:    pluginContact,
@@ -246,7 +245,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"Links":{
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
 			},
-			want: common.GeneralError(ctx, http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
+			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
 		}, {
 			name: "invalid WriteCachePolicy",
 			p:    pluginContact,
@@ -262,7 +261,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"Links":{
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
 			},
-			want: common.GeneralError(ctx, http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
+			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
 		}, {
 			name: "invalid ReadCachePolicy instance",
 			p:    pluginContact,
@@ -278,7 +277,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"Links":{
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
 			},
-			want: common.GeneralError(ctx, http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
+			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
 		}, {
 			name: "invalid RaidType",
 			p:    pluginContact,
@@ -289,7 +288,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"RAIDType":"Invalid",
 										"Links":{"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
 			},
-			want: common.GeneralError(ctx, http.StatusBadRequest, response.PropertyValueNotInList, "error: request payload validation failed: RAIDType Invalid is invalid", []interface{}{"Invalid", "RAIDType"}, nil),
+			want: common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, "error: request payload validation failed: RAIDType Invalid is invalid", []interface{}{"Invalid", "RAIDType"}, nil),
 		}, {
 			name: "Invalid Drives format",
 			p:    pluginContact,
@@ -300,7 +299,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"RaidType":"Invalid",
 										"Links":{"Drives":["/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/12"]}`),
 			},
-			want: common.GeneralError(ctx, http.StatusBadRequest, response.MalformedJSON, "Error while unmarshaling the create volume request: unexpected end of JSON input", []interface{}{}, nil),
+			want: common.GeneralError(http.StatusBadRequest, response.MalformedJSON, "Error while unmarshaling the create volume request: unexpected end of JSON input", []interface{}{}, nil),
 		}, {
 			name: "Empty System ID",
 			p:    pluginContact,
@@ -311,7 +310,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"RaidType":"Invalid",
 										"Links":{"Drives":["/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/12"]}`),
 			},
-			want: common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", ""}, nil),
+			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", ""}, nil),
 		},
 	}
 	for _, tt := range tests {

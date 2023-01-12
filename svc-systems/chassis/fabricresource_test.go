@@ -68,7 +68,7 @@ func Test_fabricFactory_getFabricChassisResource(t *testing.T) {
 			args: args{
 				rID: "invalid",
 			},
-			want: common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", "invalid"}, nil),
+			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", "invalid"}, nil),
 		},
 		{
 			name: "GET with invalid resource manager",
@@ -76,7 +76,7 @@ func Test_fabricFactory_getFabricChassisResource(t *testing.T) {
 			args: args{
 				rID: "valid",
 			},
-			want: common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", "valid"}, nil),
+			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", "valid"}, nil),
 		},
 	}
 	for _, tt := range tests {

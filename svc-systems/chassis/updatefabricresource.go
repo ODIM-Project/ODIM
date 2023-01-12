@@ -43,7 +43,7 @@ func (f *fabricFactory) updateFabricChassisResource(ctx context.Context, url str
 	managers, err := f.getFabricManagers(ctx)
 	if err != nil {
 		l.LogWithFields(ctx).Warn("while trying to collect fabric managers details from DB, got " + err.Error())
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", url}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", url}, nil)
 	}
 
 	for _, manager := range managers {
@@ -79,7 +79,7 @@ func patchResource(ctx context.Context, f *fabricFactory, pluginRequest *pluginC
 		body, _, statusCode, statusMessage, err = retryFabricsOperation(ctx, f, pluginRequest)
 	}
 	if err != nil {
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 	if !is2xx(statusCode) {
 		json.Unmarshal(body, &r.Body)
@@ -88,7 +88,7 @@ func patchResource(ctx context.Context, f *fabricFactory, pluginRequest *pluginC
 		return
 	}
 
-	initializeRPCResponse(&r, common.GeneralError(ctx, http.StatusOK, response.Success, "", nil, nil))
+	initializeRPCResponse(&r, common.GeneralError(http.StatusOK, response.Success, "", nil, nil))
 	return
 }
 
@@ -100,20 +100,20 @@ func validateReqParamsCase(ctx context.Context, req *json.RawMessage) *response.
 	// parsing the fabricRequest
 	err := JSONUnmarshalFunc(*req, &chassisRequest)
 	if err != nil {
-		errResp = common.GeneralError(ctx, http.StatusBadRequest, response.PropertyUnknown, err.Error(), nil, nil)
+		errResp = common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, err.Error(), nil, nil)
 		return &errResp
 	}
 
 	// validating the request JSON properties for case sensitive
 	invalidProperties, err := RequestParamsCaseValidatorFunc(*req, chassisRequest)
 	if err != nil {
-		errResp = common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, "error while validating request parameters: "+err.Error(), nil, nil)
+		errResp = common.GeneralError(http.StatusInternalServerError, response.InternalError, "error while validating request parameters: "+err.Error(), nil, nil)
 		return &errResp
 	}
 
 	if invalidProperties != "" {
 		errMsg := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase"
-		errResp = common.GeneralError(ctx, http.StatusBadRequest, response.PropertyUnknown, errMsg, []interface{}{invalidProperties}, nil)
+		errResp = common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errMsg, []interface{}{invalidProperties}, nil)
 		return &errResp
 	}
 

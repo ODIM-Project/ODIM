@@ -54,7 +54,7 @@ func (h *Get) Handle(ctx context.Context, req *chassisproto.GetChassisRequest) r
 		requestData := strings.SplitN(req.RequestParam, ".", 2)
 		if len(requestData) <= 1 {
 			errorMessage := "error: SystemUUID not found"
-			return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
 		}
 		uuid := requestData[0]
 
@@ -74,7 +74,7 @@ func (h *Get) Handle(ctx context.Context, req *chassisproto.GetChassisRequest) r
 		}
 		data, err := GetResourceInfoFromDeviceFunc(ctx, getDeviceInfoRequest, true)
 		if err != nil {
-			return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 		}
 		data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`.`, -1)
 		var resource dmtf.Chassis
@@ -87,17 +87,17 @@ func (h *Get) Handle(ctx context.Context, req *chassisproto.GetChassisRequest) r
 	}
 
 	if e.ErrNo() != errors.DBKeyNotFound {
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
 	pluginClient, e := h.createPluginClient("URP*")
 	if e != nil && e.ErrNo() == errors.DBKeyNotFound {
 		//urp plugin is not registered, requested chassis unknown -> status not found
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", req.URL}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", req.URL}, nil)
 	}
 
 	if e != nil {
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
 	resp := pluginClient.Get("/ODIM/v1/Chassis/" + req.RequestParam)

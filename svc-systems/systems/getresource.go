@@ -66,7 +66,7 @@ func setRegexFlag(ctx context.Context, val string) bool {
 func errorResp(ctx context.Context, each string, resp response.RPC) (response.RPC, error) {
 	if each == "" {
 		errorMessage := " not a valid search/filter expression"
-		return common.GeneralError(ctx, http.StatusBadRequest, response.QueryCombinationInvalid, errorMessage, []interface{}{"ComputerSystem", ""}, nil), fmt.Errorf(errorMessage)
+		return common.GeneralError(http.StatusBadRequest, response.QueryCombinationInvalid, errorMessage, []interface{}{"ComputerSystem", ""}, nil), fmt.Errorf(errorMessage)
 	}
 	return resp, nil
 }
@@ -129,7 +129,7 @@ func validateLastParameter(expression []string) error {
 func GetMembers(ctx context.Context, allowed map[string]map[string]bool, expression []string, resp response.RPC) ([]dmtf.Link, response.RPC, error) {
 	err := validateLastParameter(expression)
 	if err != nil {
-		return nil, common.GeneralError(ctx, http.StatusBadRequest, response.QueryNotSupported, err.Error(), nil, nil), err
+		return nil, common.GeneralError(http.StatusBadRequest, response.QueryNotSupported, err.Error(), nil, nil), err
 	}
 
 	allowed["searchKeys"] = make(map[string]bool)
@@ -174,18 +174,18 @@ func GetMembers(ctx context.Context, allowed map[string]map[string]bool, express
 						if arrayFlag {
 							list, err = smodel.GetStorageList(key, "ne", 0, true)
 							if err != nil {
-								return nil, common.GeneralError(ctx, http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(), []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil), err
+								return nil, common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(), []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil), err
 							}
 						} else {
 							if !typeFlag {
 								list, err = getStringData(key, "", "eq", true)
 								if err != nil {
-									return nil, common.GeneralError(ctx, http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(), []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil), err
+									return nil, common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(), []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil), err
 								}
 							} else {
 								list, err = getRangeData(key, "ge", 0, true)
 								if err != nil {
-									return nil, common.GeneralError(ctx, http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(), []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil), err
+									return nil, common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(), []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil), err
 								}
 							}
 						}
@@ -193,7 +193,7 @@ func GetMembers(ctx context.Context, allowed map[string]map[string]bool, express
 						parsedList, err := parseRegexData(ctx, list, regex)
 						if err != nil {
 							errorMessage := " not a valid search/filter expression"
-							return nil, common.GeneralError(ctx, http.StatusBadRequest, response.QueryCombinationInvalid, errorMessage, []interface{}{"ComputerSystem", ""}, nil), fmt.Errorf(errorMessage)
+							return nil, common.GeneralError(http.StatusBadRequest, response.QueryCombinationInvalid, errorMessage, []interface{}{"ComputerSystem", ""}, nil), fmt.Errorf(errorMessage)
 						}
 						for i := 0; i < len(parsedList); i++ {
 							members = append(members, dmtf.Link{Oid: parsedList[i]})
@@ -201,11 +201,11 @@ func GetMembers(ctx context.Context, allowed map[string]map[string]bool, express
 					} else if arrayFlag {
 						searchValue, err := strconv.ParseFloat(val, 64)
 						if err != nil {
-							return nil, common.GeneralError(ctx, http.StatusBadRequest, response.PropertyValueFormatError, err.Error(), []interface{}{key, "Invalida value"}, nil), err
+							return nil, common.GeneralError(http.StatusBadRequest, response.PropertyValueFormatError, err.Error(), []interface{}{key, "Invalida value"}, nil), err
 						}
 						list, err := smodel.GetStorageList(key, expression[new], searchValue, false)
 						if err != nil {
-							return nil, common.GeneralError(ctx, http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(), []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil), err
+							return nil, common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(), []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil), err
 
 						}
 						for i := 0; i < len(list); i++ {
@@ -216,11 +216,11 @@ func GetMembers(ctx context.Context, allowed map[string]map[string]bool, express
 						if !typeFlag {
 							// rejecting the request if expression is not eq or ne
 							if !(expression[new] == "eq" || expression[new] == "ne") {
-								return nil, common.GeneralError(ctx, http.StatusBadRequest, response.QueryCombinationInvalid, "error:invalid expression", []interface{}{expression[new], "Invalid Expression for " + key}, nil), fmt.Errorf("error:invalid expression")
+								return nil, common.GeneralError(http.StatusBadRequest, response.QueryCombinationInvalid, "error:invalid expression", []interface{}{expression[new], "Invalid Expression for " + key}, nil), fmt.Errorf("error:invalid expression")
 							}
 							list, err := getStringData(key, val, expression[new], false)
 							if err != nil {
-								return nil, common.GeneralError(ctx, http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(), []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil), err
+								return nil, common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(), []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil), err
 							}
 							for i := 0; i < len(list); i++ {
 								members = append(members, dmtf.Link{Oid: list[i]})
@@ -229,11 +229,11 @@ func GetMembers(ctx context.Context, allowed map[string]map[string]bool, express
 							//validate the value
 							searchValue, err := strconv.Atoi(val)
 							if err != nil {
-								return nil, common.GeneralError(ctx, http.StatusBadRequest, response.PropertyValueFormatError, err.Error(), []interface{}{key, "Invalida value"}, nil), err
+								return nil, common.GeneralError(http.StatusBadRequest, response.PropertyValueFormatError, err.Error(), []interface{}{key, "Invalida value"}, nil), err
 							}
 							list, err := getRangeData(key, expression[new], searchValue, false)
 							if err != nil {
-								return nil, common.GeneralError(ctx, http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(), []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil), err
+								return nil, common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(), []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil), err
 							}
 							for i := 0; i < len(list); i++ {
 								members = append(members, dmtf.Link{Oid: list[i]})
@@ -259,9 +259,9 @@ func getAllSystemIDs(ctx context.Context, resp response.RPC) ([]dmtf.Link, respo
 		l.LogWithFields(ctx).Error("error getting all keys of systemcollection table : " + err.Error())
 		errorMessage := err.Error()
 		if errorMessage == "error while trying to get resource details: no data with the with table name SystemCollection found" {
-			return nil, common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", ""}, nil), err
+			return nil, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", ""}, nil), err
 		}
-		return nil, common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil), err
+		return nil, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil), err
 	}
 	for _, key := range systemKeys {
 		mems = append(mems, dmtf.Link{Oid: key})
@@ -322,11 +322,11 @@ func SearchAndFilter(ctx context.Context, paramStr []string, resp response.RPC) 
 	query := strings.Split(paramStr[1], "=")
 	if len(query) < 2 {
 		errorMessage := " not a valid search/filter expression"
-		return common.GeneralError(ctx, http.StatusBadRequest, response.QueryCombinationInvalid, errorMessage, []interface{}{"ComputerSystem", ""}, nil), fmt.Errorf(errorMessage)
+		return common.GeneralError(http.StatusBadRequest, response.QueryCombinationInvalid, errorMessage, []interface{}{"ComputerSystem", ""}, nil), fmt.Errorf(errorMessage)
 	}
 	if !allowed["queryKeys"][query[0]] {
 		errorMessage := " not a valid search/filter expression"
-		return common.GeneralError(ctx, http.StatusBadRequest, response.QueryCombinationInvalid, errorMessage, []interface{}{"ComputerSystem", ""}, nil), fmt.Errorf(errorMessage)
+		return common.GeneralError(http.StatusBadRequest, response.QueryCombinationInvalid, errorMessage, []interface{}{"ComputerSystem", ""}, nil), fmt.Errorf(errorMessage)
 	}
 	percentSpl := strings.Split(query[1], "%")
 	var strPara string
@@ -350,7 +350,7 @@ func SearchAndFilter(ctx context.Context, paramStr []string, resp response.RPC) 
 	if checkParentheses(strPara) {
 		if strings.Count(strPara, "(") != strings.Count(strPara, ")") {
 			errorMessage := " not a valid search/filter expression"
-			return common.GeneralError(ctx, http.StatusBadRequest, response.QueryCombinationInvalid, errorMessage, []interface{}{"ComputerSystem", ""}, nil), fmt.Errorf(errorMessage)
+			return common.GeneralError(http.StatusBadRequest, response.QueryCombinationInvalid, errorMessage, []interface{}{"ComputerSystem", ""}, nil), fmt.Errorf(errorMessage)
 		}
 
 		var sa []dmtf.Link
@@ -375,7 +375,7 @@ func SearchAndFilter(ctx context.Context, paramStr []string, resp response.RPC) 
 					s, err := json.Marshal(sa)
 					if err != nil {
 						errorMessage := " error while marshalling database data"
-						return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil), fmt.Errorf(errorMessage)
+						return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil), fmt.Errorf(errorMessage)
 					}
 					strPara = strings.Replace(strPara, each, string(s), -1)
 				}
@@ -387,7 +387,7 @@ func SearchAndFilter(ctx context.Context, paramStr []string, resp response.RPC) 
 				s, err := json.Marshal(sa)
 				if err != nil {
 					errorMessage := " error while marshalling database data"
-					return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil), fmt.Errorf(errorMessage)
+					return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil), fmt.Errorf(errorMessage)
 				}
 				strPara = strings.Replace(strPara, element, string(s), -1)
 			}
@@ -560,7 +560,7 @@ func (p *PluginContact) GetSystemResource(ctx context.Context, req *systemsproto
 	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
 	}
 	uuid := requestData[0]
 
@@ -583,7 +583,7 @@ func (p *PluginContact) GetSystemResource(ctx context.Context, req *systemsproto
 		l.LogWithFields(ctx).Debug("Getting resource data from device for URL ", req.URL)
 		var err error
 		if respData, err = scommon.GetResourceInfoFromDevice(ctx, getDeviceInfoRequest, saveRequired); err != nil {
-			return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 		}
 	} else {
 		saveRequired = true
@@ -614,13 +614,13 @@ func (p *PluginContact) GetSystemResource(ctx context.Context, req *systemsproto
 				var err error
 				l.LogWithFields(ctx).Debug("Getting the details from device for URL ", req.URL)
 				if data, err = scommon.GetResourceInfoFromDevice(ctx, getDeviceInfoRequest, saveRequired); err != nil {
-					return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
+					return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 				}
 				if saveRequired && strings.Contains(req.URL, "/Storage") {
 					rediscoverStorageInventory(ctx, uuid, "/redfish/v1/Systems/"+requestData[1]+"/Storage")
 				}
 			} else {
-				return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 			}
 		}
 		respData = data
@@ -751,9 +751,9 @@ func GetSystemsCollection(ctx context.Context, req *systemsproto.GetSystemsReque
 		l.LogWithFields(ctx).Error("error getting all keys of systemcollection table : " + err.Error())
 		errorMessage := err.Error()
 		if errorMessage == "error while trying to get resource details: no data with the with table name SystemCollection found" {
-			return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", ""}, nil)
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", ""}, nil)
 		}
-		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	systemCollection := sresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#ComputerSystemCollection.ComputerSystemCollection",
@@ -788,7 +788,7 @@ func (p *PluginContact) GetSystems(ctx context.Context, req *systemsproto.GetSys
 	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
 	}
 	uuid := requestData[0]
 	var data string
@@ -804,7 +804,7 @@ func (p *PluginContact) GetSystems(ctx context.Context, req *systemsproto.GetSys
 	}
 	data, err := GetResourceInfoFromDeviceFunc(ctx, getDeviceInfoRequest, true)
 	if err != nil {
-		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.RequestParam}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.RequestParam}, nil)
 	}
 	data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`.`, -1)
 	var resource map[string]interface{}

@@ -2468,23 +2468,23 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 
 10. Get the pods of the Redis (either in-memory or on-disk) and restart  them.
 
-   ```
-   kubectl get pods -nodim | grep redis | grep inmemory
-   ```
+    ```
+    kubectl get pods -nodim | grep redis | grep inmemory
+    ```
 
-   ```
-   kubectl get pods -nodim | grep redis | grep ondisk
-   ```
+    ```
+    kubectl get pods -nodim | grep redis | grep ondisk
+    ```
 
-   ```
-   kubectl delete pods <pod1> <pod2>..<pod3> -nodim
-   ```
+    ```
+    kubectl delete pods <pod1> <pod2>..<pod3> -nodim
+    ```
 
-   **For example**:
+    **For example**:
 
-   ```
-   kubectl delete pods redis-ha-inmemory-primary-0 redis-ha-inmemory-secondary-0 redis-ha-inmemory-secondary-1 -nodim
-   ```
+    ```
+    kubectl delete pods redis-ha-inmemory-primary-0 redis-ha-inmemory-secondary-0 redis-ha-inmemory-secondary-1 -nodim
+    ```
 
 11. Once all the pods have started and are in running state, log in to the pod.
 

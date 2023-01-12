@@ -190,7 +190,7 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 		ContactClient:  pmbhandle.ContactPlugin,
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
-	data := pc.SetDefaultBootOrder(req.SystemID)
+	data := pc.SetDefaultBootOrder(ctx, req.SystemID)
 	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
@@ -216,7 +216,7 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 		ContactClient:  pmbhandle.ContactPlugin,
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
-	data := pc.ChangeBiosSettings(req)
+	data := pc.ChangeBiosSettings(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
@@ -242,7 +242,7 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 		ContactClient:  pmbhandle.ContactPlugin,
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
-	data := pc.ChangeBootOrderSettings(req)
+	data := pc.ChangeBootOrderSettings(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
@@ -265,7 +265,7 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 		return &resp, nil
 	}
 
-	data := s.EI.CreateVolume(req)
+	data := s.EI.CreateVolume(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
@@ -288,7 +288,7 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 		return &resp, nil
 	}
 
-	data := s.EI.DeleteVolume(req)
+	data := s.EI.DeleteVolume(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }

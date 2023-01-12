@@ -76,10 +76,10 @@ type monitorTaskRequest struct {
 }
 
 // UpdateTaskData update the task with the given data
-func UpdateTaskData(ctx context.Context, taskData common.TaskData) error {
+func UpdateTaskData(taskData common.TaskData) error {
 	var res map[string]interface{}
 	if err := json.Unmarshal([]byte(taskData.TaskRequest), &res); err != nil {
-		l.LogWithFields(ctx).Error(err)
+		l.Log.Error(err)
 	}
 	reqStr := logs.MaskRequestBody(res)
 

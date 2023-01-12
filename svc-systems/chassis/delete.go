@@ -113,7 +113,7 @@ func (d *Delete) Handle(ctx context.Context, req *chassisproto.DeleteChassisRequ
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 
-	return c.Delete(req.URL)
+	return c.Delete(ctx, req.URL)
 }
 
 // NewDeleteHandler returns an instance of Delete struct

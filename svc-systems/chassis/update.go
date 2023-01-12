@@ -47,10 +47,10 @@ func (h *Update) Handle(ctx context.Context, req *chassis.UpdateChassisRequest) 
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, "Cannot deserialize request body", nil, nil)
 	}
 
-	resp := pc.Patch(req.URL, body)
+	resp := pc.Patch(ctx, req.URL, body)
 	if !is2xx(int(resp.StatusCode)) {
 		f := h.getFabricFactory(nil)
-		r := f.updateFabricChassisResource(req.URL, body)
+		r := f.updateFabricChassisResource(ctx, req.URL, body)
 		if is2xx(int(r.StatusCode)) || r.StatusCode == http.StatusBadRequest || r.StatusCode == http.StatusUnauthorized {
 			return r
 		}

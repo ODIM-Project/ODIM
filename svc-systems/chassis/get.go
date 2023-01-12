@@ -100,10 +100,10 @@ func (h *Get) Handle(ctx context.Context, req *chassisproto.GetChassisRequest) r
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
-	resp := pluginClient.Get("/ODIM/v1/Chassis/" + req.RequestParam)
+	resp := pluginClient.Get(ctx, "/ODIM/v1/Chassis/"+req.RequestParam)
 	if !is2xx(int(resp.StatusCode)) {
 		f := h.getFabricFactory(nil)
-		r := f.getFabricChassisResource(req.RequestParam)
+		r := f.getFabricChassisResource(ctx, req.RequestParam)
 		if is2xx(int(r.StatusCode)) {
 			return r
 		}

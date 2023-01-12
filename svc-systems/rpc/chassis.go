@@ -134,8 +134,8 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 		DecryptPassword: common.DecryptWithPrivateKey,
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
-	data, _ := pc.GetChassisResource(req)
-	rewrite(data, &resp)
+	data, _ := pc.GetChassisResource(ctx, req)
+	rewrite(ctx, data, &resp)
 	return &resp, nil
 }
 
@@ -145,10 +145,10 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 // to send back to requested user.
 func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	var resp chassisproto.GetChassisResponse
-	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeLogin}, func() response.RPC {
+	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeLogin}, func() response.RPC {
 		return cha.GetCollectionHandler.Handle(ctx)
 	})
-	rewrite(r, &resp)
+	rewrite(ctx, r, &resp)
 	return &resp, nil
 }
 
@@ -160,11 +160,11 @@ func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassispro
 // which is present in the request.
 func (cha *ChassisRPC) GetChassisInfo(ctx context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	var resp chassisproto.GetChassisResponse
-	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeLogin}, func() response.RPC {
-		return cha.GetHandler.Handle(req)
+	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeLogin}, func() response.RPC {
+		return cha.GetHandler.Handle(ctx, req)
 	})
 
-	rewrite(r, &resp)
+	rewrite(ctx, r, &resp)
 	return &resp, nil
 }
 

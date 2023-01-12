@@ -60,7 +60,7 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 		DevicePassword:  common.DecryptWithPrivateKey,
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
-	data := pc.GetSystemResource(req)
+	data := pc.GetSystemResource(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
@@ -110,7 +110,7 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 		DevicePassword:  common.DecryptWithPrivateKey,
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
-	data := pc.GetSystems(req)
+	data := pc.GetSystems(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
 	return &resp, nil
 }
@@ -164,7 +164,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 		DevicePassword: common.DecryptWithPrivateKey,
 		UpdateTask:     s.UpdateTask,
 	}
-	go pc.ComputerSystemReset(req, taskID, sessionUserName)
+	go pc.ComputerSystemReset(ctx, req, taskID, sessionUserName)
 
 	return &resp, nil
 }

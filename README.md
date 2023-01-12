@@ -2363,7 +2363,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    **For example (on-disk)**:
    
    ```
-kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
+   kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
    ```
 
    ```
@@ -2373,11 +2373,11 @@ kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/dump.rdb <backup directory
    **For example(in-memory)**:
    
    ```
-kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
+   kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
    ```
    
    ```
-kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
+   kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
    ```
    
    These are the backup files to be restored.

@@ -1738,6 +1738,7 @@ func (p *ConnPool) GetAllDataByIndex(index string) ([]string, error) {
 	return EvtSubscriptions, nil
 }
 
+//getAllDataFromSortedList function read all member from index
 func (p *ConnPool) getAllDataFromSortedList(index string) (data interface{}, err error) {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
@@ -1760,6 +1761,8 @@ func (p *ConnPool) getAllDataFromSortedList(index string) (data interface{}, err
 	return data, nil
 }
 
+// getDataAsStringList function convert list of interface into string
+// filter priority value from list
 func getDataAsStringList(d interface{}) ([]string, error) {
 	var dataList []string
 	var err error

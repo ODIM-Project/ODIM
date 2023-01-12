@@ -96,19 +96,6 @@ type SubscriptionResource struct {
 	Location         string                 `json:"location,omitempty"`
 }
 
-// //Subscription is a model to store subs set of subscription details which required properties for cache
-// type Subscription struct {
-// 	Id                   string
-// 	Destination          string
-// 	EventTypes           []string
-// 	MessageIds           []string
-// 	SubordinateResources bool
-// 	ResourceTypes        []string
-// 	SubscriptionType     dmtf.SubscriptionType
-// 	OriginResources      []string
-// 	DeliveryRetryPolicy  dmtf.DeliveryRetryPolicy
-// }
-
 //DeviceSubscription is a model to store the subscription details of a device
 type DeviceSubscription common.DeviceSubscription
 

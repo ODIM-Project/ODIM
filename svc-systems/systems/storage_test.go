@@ -164,7 +164,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	var positiveResponse interface{}
 	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
 	pluginContact := mockGetExternalInterface()
-	ctx := mockContext()l
+	ctx := mockContext()
 	tests := []struct {
 		name string
 		p    *ExternalInterface

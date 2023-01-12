@@ -57,9 +57,10 @@ func Test_checkPluginStatus(t *testing.T) {
 			},
 		},
 	}
+	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			checkPluginStatus(tt.args.phc, tt.args.plugin)
+			checkPluginStatus(ctx, tt.args.phc, tt.args.plugin)
 		})
 	}
 }
@@ -111,11 +112,11 @@ func TestPushPluginStartUpData(t *testing.T) {
 		ID: "10.0.0.0",
 	}
 	startUpData1 := &agmodel.PluginStartUpData{}
+	ctx := mockContext()
+	PushPluginStartUpData(ctx, agmodel.Plugin{}, startUpData)
+	PushPluginStartUpData(ctx, agmodel.Plugin{}, startUpData1)
 
-	PushPluginStartUpData(agmodel.Plugin{}, startUpData)
-	PushPluginStartUpData(agmodel.Plugin{}, startUpData1)
-
-	err := PushPluginStartUpData(plugin, startUpData)
+	err := PushPluginStartUpData(ctx, plugin, startUpData)
 	assert.NotNil(t, err, "There should be no error")
 
 }
@@ -136,17 +137,19 @@ func Test_sendPluginStartupRequest(t *testing.T) {
 		RequestType:           "full",
 		ResyncEvtSubscription: true,
 	}
+	ctx := mockContext()
 	var startUpData1 interface{}
-	_, err := sendPluginStartupRequest(agmodel.Plugin{}, startUpData1, "")
+	_, err := sendPluginStartupRequest(ctx, agmodel.Plugin{}, startUpData1, "")
 	assert.NotNil(t, err, "There should be error")
-	_, err = sendPluginStartupRequest(agmodel.Plugin{}, startUpData1, "ILO_v1.0.0")
+	_, err = sendPluginStartupRequest(ctx, agmodel.Plugin{}, startUpData1, "ILO_v1.0.0")
 	assert.NotNil(t, err, "There should be error")
-	_, err = sendPluginStartupRequest(agmodel.Plugin{}, startUpData, "ILO_v1.0.0")
+	_, err = sendPluginStartupRequest(ctx, agmodel.Plugin{}, startUpData, "ILO_v1.0.0")
 	assert.NotNil(t, err, "There should be error")
 
 }
 func Test_sendFullPluginInventory(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -157,17 +160,17 @@ func Test_sendFullPluginInventory(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	err := sendFullPluginInventory("", agmodel.Plugin{})
+	err := sendFullPluginInventory(ctx, "", agmodel.Plugin{})
 	assert.Nil(t, err, "There should be no error")
 	plugin := agmodel.Plugin{
 		ID: "localhost",
 	}
 
 	mockPlugins(t)
-	err = sendFullPluginInventory("", plugin)
+	err = sendFullPluginInventory(ctx, "", plugin)
 	assert.Nil(t, err, "There should be no error")
 
-	err = sendFullPluginInventory("10.0.0.0", plugin)
+	err = sendFullPluginInventory(ctx, "10.0.0.0", plugin)
 	assert.Nil(t, err, "There should be no error")
 
 }
@@ -184,10 +187,11 @@ func Test_sharePluginInventory(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	sharePluginInventory(agmodel.Plugin{}, false, "")
+	ctx := mockContext()
+	sharePluginInventory(ctx, agmodel.Plugin{}, false, "")
 
-	sharePluginInventory(agmodel.Plugin{}, false, "ILO_v1.0.0")
-	sharePluginInventory(agmodel.Plugin{}, true, "ILO_v1.0.0")
+	sharePluginInventory(ctx, agmodel.Plugin{}, false, "ILO_v1.0.0")
+	sharePluginInventory(ctx, agmodel.Plugin{}, true, "ILO_v1.0.0")
 }
 
 func TestSendPluginStartUpData(t *testing.T) {
@@ -215,9 +219,10 @@ func TestSendPluginStartUpData(t *testing.T) {
 	}
 
 	mockPlugins(t)
-	err := SendPluginStartUpData("", agmodel.Plugin{})
+	ctx := mockContext()
+	err := SendPluginStartUpData(ctx, "", agmodel.Plugin{})
 	assert.Nil(t, err, "There should be no error")
-	err = SendPluginStartUpData("", plugin)
+	err = SendPluginStartUpData(ctx, "", plugin)
 	assert.Nil(t, err, "There should be no error")
 
 }

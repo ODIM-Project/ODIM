@@ -224,6 +224,7 @@ func testUpdateContactClient(url, method, token string, odataID string, body int
 
 func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	mockPluginData(t, "ILO_v1.0.0")
 	mockPluginData(t, "GRF_v1.0.0")
 
@@ -484,7 +485,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.UpdateAggregationSource(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.e.UpdateAggregationSource(ctx, tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ExternalInterface.UpdateAggregationSource() = %v, want %v", got, tt.want)
 			}
 		})

@@ -16,6 +16,7 @@
 package agmodel
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -189,18 +190,18 @@ func GetResource(Table, key string) (string, *errors.Error) {
 }
 
 // Create connects to the persistencemgr and creates a system in db
-func (system *SaveSystem) Create(systemID string) *errors.Error {
+func (system *SaveSystem) Create(ctx context.Context, systemID string) *errors.Error {
 
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
-		l.Log.Error("error while trying to get Db connection : " + err.Error())
+		l.LogWithFields(ctx).Error("error while trying to get Db connection : " + err.Error())
 		return err
 	}
 	//Create a header for data entry
 	const table string = "System"
 	//Save data into Database
 	if err = conn.Create(table, systemID, system); err != nil {
-		l.Log.Error("error while trying to save system data in DB : " + err.Error())
+		l.LogWithFields(ctx).Error("error while trying to save system data in DB : " + err.Error())
 		return err
 	}
 	return nil
@@ -234,12 +235,12 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 }
 
 // GetComputeSystem will fetch the compute resource details
-func GetComputeSystem(deviceUUID string) (dmtfmodel.ComputerSystem, error) {
+func GetComputeSystem(ctx context.Context, deviceUUID string) (dmtfmodel.ComputerSystem, error) {
 	var compute dmtfmodel.ComputerSystem
 
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
-		l.Log.Error("GetComputeSystem : error while trying to get db conenction : " + err.Error())
+		l.LogWithFields(ctx).Error("GetComputeSystem : error while trying to get db conenction : " + err.Error())
 		return compute, err
 	}
 
@@ -249,7 +250,7 @@ func GetComputeSystem(deviceUUID string) (dmtfmodel.ComputerSystem, error) {
 	}
 
 	if err := json.Unmarshal([]byte(computeData), &compute); err != nil {
-		l.Log.Error("GetComputeSystem : error while Unmarshaling data : " + err.Error())
+		l.LogWithFields(ctx).Error("GetComputeSystem : error while Unmarshaling data : " + err.Error())
 		return compute, err
 	}
 	return compute, nil
@@ -257,24 +258,24 @@ func GetComputeSystem(deviceUUID string) (dmtfmodel.ComputerSystem, error) {
 }
 
 // SaveComputeSystem will save the compute server complete details into the database
-func SaveComputeSystem(computeServer dmtfmodel.ComputerSystem, deviceUUID string) error {
+func SaveComputeSystem(ctx context.Context, computeServer dmtfmodel.ComputerSystem, deviceUUID string) error {
 	//use dmtf logic to save data into database
-	l.Log.Info("Saving server details into database")
+	l.LogWithFields(ctx).Info("Saving server details into database")
 	err := computeServer.SaveInMemory(deviceUUID)
 	if err != nil {
-		l.Log.Error("error while trying to save server details in DB : " + err.Error())
+		l.LogWithFields(ctx).Error("error while trying to save server details in DB : " + err.Error())
 		return err
 	}
 	return nil
 }
 
 // SaveChassis will save the chassis details into the database
-func SaveChassis(chassis dmtfmodel.Chassis, deviceUUID string) error {
+func SaveChassis(ctx context.Context, chassis dmtfmodel.Chassis, deviceUUID string) error {
 	//use dmtf logic to save data into database
-	l.Log.Info("Saving chassis details into database")
+	l.LogWithFields(ctx).Info("Saving chassis details into database")
 	err := chassis.SaveInMemory(deviceUUID)
 	if err != nil {
-		l.Log.Error("error while trying to save chassis details in DB : " + err.Error())
+		l.LogWithFields(ctx).Error("error while trying to save chassis details in DB : " + err.Error())
 		return err
 	}
 	return nil
@@ -285,19 +286,17 @@ func GenericSave(body []byte, table string, key string) error {
 
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
-		l.Log.Error("GenericSave : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 
 	if err = connPool.AddResourceData(table, key, string(body)); err != nil {
-		l.Log.Error("GenericSave : error while trying to add resource date to DB: " + err.Error())
 		return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 	}
 	return nil
 }
 
 // SaveRegistryFile will save any Registry file in database OnDisk DB
-func SaveRegistryFile(body []byte, table string, key string) error {
+func SaveRegistryFile(ctx context.Context, body []byte, table string, key string) error {
 
 	connPool, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -307,7 +306,7 @@ func SaveRegistryFile(body []byte, table string, key string) error {
 		if errors.DBKeyAlreadyExist != err.ErrNo() {
 			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 		}
-		l.Log.Warn("Skipped saving of duplicate data with key " + key)
+		l.LogWithFields(ctx).Warn("Skipped saving of duplicate data with key " + key)
 		return nil
 	}
 	return nil
@@ -482,7 +481,6 @@ func SaveIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err)
 	}
-	l.Log.Info("Creating index")
 	searchForm["UUID"] = uuid
 	searchForm["BMCAddress"] = bmcAddress
 	if err := conn.CreateIndex(searchForm, table); err != nil {

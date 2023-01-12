@@ -17,6 +17,7 @@
 package chassis
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -32,11 +33,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var internalError = common.GeneralError(http.StatusInternalServerError, response.InternalError, "error", nil, nil)
+var ctx = mockContext()
+var internalError = common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, "error", nil, nil)
 
 func TestNewGetHandler(t *testing.T) {
 	managedChassis := dmtf.Chassis{}
-	GetResourceInfoFromDeviceFunc = func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+	GetResourceInfoFromDeviceFunc = func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
 		return `{"@odata.id": ""}`, nil
 	}
 	sut := NewGetHandler(

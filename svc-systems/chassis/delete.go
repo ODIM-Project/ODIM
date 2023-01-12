@@ -17,6 +17,7 @@
 package chassis
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"reflect"
@@ -38,30 +39,30 @@ var (
 )
 
 // Handle defines the operations which handle the RPC request-response for deleting a chassis
-func (d *Delete) Handle(req *chassisproto.DeleteChassisRequest) response.RPC {
+func (d *Delete) Handle(ctx context.Context, req *chassisproto.DeleteChassisRequest) response.RPC {
 	e := d.findInMemory("Chassis", req.URL, new(json.RawMessage))
 	if e == nil {
-		return common.GeneralError(http.StatusMethodNotAllowed, response.ActionNotSupported, "Managed Chassis cannot be deleted", []interface{}{"DELETE"}, nil)
+		return common.GeneralError(ctx, http.StatusMethodNotAllowed, response.ActionNotSupported, "Managed Chassis cannot be deleted", []interface{}{"DELETE"}, nil)
 	}
 
 	if e.ErrNo() != errors.DBKeyNotFound {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
+		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
 	//TODO: Handle multiple URP instances
 	c, e := d.createPluginClient("URP*")
 	if e != nil && e.ErrNo() == errors.DBKeyNotFound {
-		return common.GeneralError(http.StatusMethodNotAllowed, response.ActionNotSupported, "", []interface{}{"DELETE"}, nil)
+		return common.GeneralError(ctx, http.StatusMethodNotAllowed, response.ActionNotSupported, "", []interface{}{"DELETE"}, nil)
 	}
 	if e != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
+		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
 	plugins, err := FindAllPluginsFunc("URP*")
 	if err != nil {
 		errorMessage := "error while getting plugin details: " + err.Error()
-		l.Log.Error(errorMessage)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+		l.LogWithFields(ctx).Error(errorMessage)
+		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
 	managerURI := "/redfish/v1/Managers/" + plugins[0].ManagerUUID
@@ -69,16 +70,16 @@ func (d *Delete) Handle(req *chassisproto.DeleteChassisRequest) response.RPC {
 	data, jerr := GetResourceFunc("Managers", managerURI)
 	if jerr != nil {
 		errorMessage := "error while getting manager details: " + jerr.Error()
-		l.Log.Error(errorMessage)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+		l.LogWithFields(ctx).Error(errorMessage)
+		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
 	var managerData map[string]interface{}
 	err = JSONUnmarshalFunc([]byte(data), &managerData)
 	if err != nil {
 		errorMessage := "error unmarshalling manager details: " + err.Error()
-		l.Log.Error(errorMessage)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+		l.LogWithFields(ctx).Error(errorMessage)
+		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
 
@@ -101,15 +102,15 @@ func (d *Delete) Handle(req *chassisproto.DeleteChassisRequest) response.RPC {
 	detail, marshalErr := JSONMarshalFunc(managerData)
 	if marshalErr != nil {
 		errorMessage := "unable to marshal data for updating: " + marshalErr.Error()
-		l.Log.Error(errorMessage)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		l.LogWithFields(ctx).Error(errorMessage)
+		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 
-	genericErr := GenericSaveFunc([]byte(detail), "Managers", managerURI)
+	genericErr := GenericSaveFunc(ctx, []byte(detail), "Managers", managerURI)
 	if genericErr != nil {
 		errorMessage := "GenericSave : error while trying to add resource date to DB: " + genericErr.Error()
-		l.Log.Error(errorMessage)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		l.LogWithFields(ctx).Error(errorMessage)
+		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 
 	return c.Delete(req.URL)

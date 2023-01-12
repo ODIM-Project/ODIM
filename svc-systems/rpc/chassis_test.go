@@ -43,10 +43,11 @@ func mockResourceData(body []byte, table, key string) error {
 	return nil
 }
 func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+	ctx := mockContext()
 	if sessionToken != "validToken" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
+		return common.GeneralError(ctx, http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
+	return common.GeneralError(ctx, http.StatusOK, response.Success, "", nil, nil), nil
 }
 
 func TestChassisRPC_GetChassisResource(t *testing.T) {
@@ -345,12 +346,24 @@ func TestChassisRPC_CreateChassis(t *testing.T) {
 
 }
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func Test_jsonMarshal(t *testing.T) {
+	ctx := mockContext()
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
 	generateResponse(context.Background(), "dummy")
-	jsonMarshal("dummy")
+	jsonMarshal(ctx, "dummy")
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)
 	}

@@ -1,20 +1,21 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package systems
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -152,7 +153,7 @@ func mockGetResource(table, key string) (string, *errors.Error) {
 	return "body", nil
 }
 
-func mockPluginStatus(plugin smodel.Plugin) bool {
+func mockPluginStatus(ctx context.Context, plugin smodel.Plugin) bool {
 	return true
 }
 
@@ -160,6 +161,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	// Modify the contents with http.StatusNotImplemented to the correct status
 	// and modify all other info accordingly after implementations
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	var positiveResponse interface{}
 	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
 	pluginContact := mockGetExternalInterface()
@@ -228,7 +230,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 									    "Links":{
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0b.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
 			},
-			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 54b243cf-f1e3-5319-92d9-2d6737d6b0b found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0b"}, nil),
+			want: common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 54b243cf-f1e3-5319-92d9-2d6737d6b0b found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0b"}, nil),
 		}, {
 			name: "invalid storage instance",
 			p:    pluginContact,
@@ -244,7 +246,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"Links":{
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
 			},
-			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
+			want: common.GeneralError(ctx, http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
 		}, {
 			name: "invalid WriteCachePolicy",
 			p:    pluginContact,
@@ -260,7 +262,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"Links":{
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
 			},
-			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
+			want: common.GeneralError(ctx, http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
 		}, {
 			name: "invalid ReadCachePolicy instance",
 			p:    pluginContact,
@@ -276,7 +278,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"Links":{
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
 			},
-			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
+			want: common.GeneralError(ctx, http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
 		}, {
 			name: "invalid RaidType",
 			p:    pluginContact,
@@ -287,7 +289,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"RAIDType":"Invalid",
 										"Links":{"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"}]}}`),
 			},
-			want: common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, "error: request payload validation failed: RAIDType Invalid is invalid", []interface{}{"Invalid", "RAIDType"}, nil),
+			want: common.GeneralError(ctx, http.StatusBadRequest, response.PropertyValueNotInList, "error: request payload validation failed: RAIDType Invalid is invalid", []interface{}{"Invalid", "RAIDType"}, nil),
 		}, {
 			name: "Invalid Drives format",
 			p:    pluginContact,
@@ -298,7 +300,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"RaidType":"Invalid",
 										"Links":{"Drives":["/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/12"]}`),
 			},
-			want: common.GeneralError(http.StatusBadRequest, response.MalformedJSON, "Error while unmarshaling the create volume request: unexpected end of JSON input", []interface{}{}, nil),
+			want: common.GeneralError(ctx, http.StatusBadRequest, response.MalformedJSON, "Error while unmarshaling the create volume request: unexpected end of JSON input", []interface{}{}, nil),
 		}, {
 			name: "Empty System ID",
 			p:    pluginContact,
@@ -309,7 +311,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"RaidType":"Invalid",
 										"Links":{"Drives":["/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/12"]}`),
 			},
-			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", ""}, nil),
+			want: common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", ""}, nil),
 		},
 	}
 	for _, tt := range tests {
@@ -379,7 +381,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return false
 	}
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, status scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, status scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
@@ -394,8 +396,8 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	resp = storage.CreateVolume(&req)
 	assert.True(t, true, "Error: Plugin Contact")
 
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, status scommon.ResponseStatus, err error) {
-		return scommon.ContactPlugin(req, errorMessage)
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, status scommon.ResponseStatus, err error) {
+		return scommon.ContactPlugin(ctx, req, errorMessage)
 	}
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}

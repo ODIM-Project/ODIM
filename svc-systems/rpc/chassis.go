@@ -124,7 +124,7 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 	authResp, err := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
 		rewrite(authResp, &resp)
 		return &resp, nil
@@ -143,10 +143,10 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 // for getting all the server chassis added.
 // Retrieves all the keys with table name ChassisCollection and create the response
 // to send back to requested user.
-func (cha *ChassisRPC) GetChassisCollection(_ context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	var resp chassisproto.GetChassisResponse
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeLogin}, func() response.RPC {
-		return cha.GetCollectionHandler.Handle()
+		return cha.GetCollectionHandler.Handle(ctx)
 	})
 	rewrite(r, &resp)
 	return &resp, nil
@@ -168,21 +168,21 @@ func (cha *ChassisRPC) GetChassisInfo(ctx context.Context, req *chassisproto.Get
 	return &resp, nil
 }
 
-func rewrite(source response.RPC, target *chassisproto.GetChassisResponse) *chassisproto.GetChassisResponse {
+func rewrite(ctx context.Context, source response.RPC, target *chassisproto.GetChassisResponse) *chassisproto.GetChassisResponse {
 	target.Header = source.Header
 	target.StatusCode = source.StatusCode
 	target.StatusMessage = source.StatusMessage
-	target.Body = jsonMarshal(source.Body)
+	target.Body = jsonMarshal(ctx, source.Body)
 	return target
 }
 
-func jsonMarshal(input interface{}) []byte {
+func jsonMarshal(ctx context.Context, input interface{}) []byte {
 	if bytes, alreadyBytes := input.([]byte); alreadyBytes {
 		return bytes
 	}
 	bytes, err := JSONMarshalFunc(input)
 	if err != nil {
-		l.Log.Println("error in unmarshalling response object from util-libs", err.Error())
+		l.LogWithFields(ctx).Println("error in unmarshalling response object from util-libs", err.Error())
 	}
 	return bytes
 }

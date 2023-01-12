@@ -15,6 +15,7 @@
 package chassis
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -35,18 +36,18 @@ var (
 
 // updateFabricChassisResource will collect the all available fabric plugins available
 // in the DB and communicates with each one of them concurrently to update the resource
-func (f *fabricFactory) updateFabricChassisResource(url string, body *json.RawMessage) response.RPC {
+func (f *fabricFactory) updateFabricChassisResource(ctx context.Context, url string, body *json.RawMessage) response.RPC {
 	var resp response.RPC
 	ch := make(chan response.RPC)
 
-	managers, err := f.getFabricManagers()
+	managers, err := f.getFabricManagers(ctx)
 	if err != nil {
-		l.Log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", url}, nil)
+		l.LogWithFields(ctx).Warn("while trying to collect fabric managers details from DB, got " + err.Error())
+		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", url}, nil)
 	}
 
 	for _, manager := range managers {
-		go f.updateResource(manager, url, body, ch)
+		go f.updateResource(ctx, manager, url, body, ch)
 	}
 
 	for i := 0; i < len(managers); i++ {
@@ -60,25 +61,25 @@ func (f *fabricFactory) updateFabricChassisResource(url string, body *json.RawMe
 
 // updateResource will validate the request body, creates the request model for communicating
 // with the plugin and returns the response
-func (f *fabricFactory) updateResource(plugin smodel.Plugin, url string, body *json.RawMessage, ch chan response.RPC) {
-	req, errResp, err := f.createChassisRequest(plugin, url, http.MethodPatch, body)
+func (f *fabricFactory) updateResource(ctx context.Context, plugin smodel.Plugin, url string, body *json.RawMessage, ch chan response.RPC) {
+	req, errResp, err := f.createChassisRequest(ctx, plugin, url, http.MethodPatch, body)
 	if errResp != nil {
-		l.Log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
+		l.LogWithFields(ctx).Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		ch <- *errResp
 		return
 	}
-	ch <- patchResource(f, req)
+	ch <- patchResource(ctx, f, req)
 }
 
 // patchResource contacts the plugin with the details available in the
 // pluginContactRequest, and returns the RPC response
-func patchResource(f *fabricFactory, pluginRequest *pluginContactRequest) (r response.RPC) {
-	body, _, statusCode, statusMessage, err := contactPlugin(pluginRequest)
+func patchResource(ctx context.Context, f *fabricFactory, pluginRequest *pluginContactRequest) (r response.RPC) {
+	body, _, statusCode, statusMessage, err := contactPlugin(ctx, pluginRequest)
 	if statusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
-		body, _, statusCode, statusMessage, err = retryFabricsOperation(f, pluginRequest)
+		body, _, statusCode, statusMessage, err = retryFabricsOperation(ctx, f, pluginRequest)
 	}
 	if err != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 	if !is2xx(statusCode) {
 		json.Unmarshal(body, &r.Body)
@@ -87,32 +88,32 @@ func patchResource(f *fabricFactory, pluginRequest *pluginContactRequest) (r res
 		return
 	}
 
-	initializeRPCResponse(&r, common.GeneralError(http.StatusOK, response.Success, "", nil, nil))
+	initializeRPCResponse(&r, common.GeneralError(ctx, http.StatusOK, response.Success, "", nil, nil))
 	return
 }
 
 // validating if request properties are in uppercamelcase or not
-func validateReqParamsCase(req *json.RawMessage) *response.RPC {
+func validateReqParamsCase(ctx context.Context, req *json.RawMessage) *response.RPC {
 	var errResp response.RPC
 	var chassisRequest dmtfmodel.Chassis
 
 	// parsing the fabricRequest
 	err := JSONUnmarshalFunc(*req, &chassisRequest)
 	if err != nil {
-		errResp = common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, err.Error(), nil, nil)
+		errResp = common.GeneralError(ctx, http.StatusBadRequest, response.PropertyUnknown, err.Error(), nil, nil)
 		return &errResp
 	}
 
 	// validating the request JSON properties for case sensitive
 	invalidProperties, err := RequestParamsCaseValidatorFunc(*req, chassisRequest)
 	if err != nil {
-		errResp = common.GeneralError(http.StatusInternalServerError, response.InternalError, "error while validating request parameters: "+err.Error(), nil, nil)
+		errResp = common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, "error while validating request parameters: "+err.Error(), nil, nil)
 		return &errResp
 	}
 
 	if invalidProperties != "" {
 		errMsg := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase"
-		errResp = common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errMsg, []interface{}{invalidProperties}, nil)
+		errResp = common.GeneralError(ctx, http.StatusBadRequest, response.PropertyUnknown, errMsg, []interface{}{invalidProperties}, nil)
 		return &errResp
 	}
 

@@ -13,10 +13,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package smodel ....
+// Package smodel ....
 package smodel
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -29,7 +30,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-//Target is for sending the requst to south bound/plugin
+// Target is for sending the requst to south bound/plugin
 type Target struct {
 	ManagerAddress string `json:"ManagerAddress"`
 	Password       []byte `json:"Password"`
@@ -82,7 +83,7 @@ type OdataIDLink struct {
 	OdataID string `json:"@odata.id"`
 }
 
-//GetSystemByUUID fetches computer system details by UUID from database
+// GetSystemByUUID fetches computer system details by UUID from database
 func GetSystemByUUID(systemUUID string) (string, *errors.Error) {
 	var system string
 	conn, err := GetDBConnectionFunc(common.InMemory)
@@ -100,7 +101,7 @@ func GetSystemByUUID(systemUUID string) (string, *errors.Error) {
 	return system, nil
 }
 
-//GetResource fetches a resource from database using table and key
+// GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
 	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
@@ -192,7 +193,7 @@ func scan(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {
 	return results, nil
 }
 
-//GetAllKeysFromTable fetches all keys in a given table
+// GetAllKeysFromTable fetches all keys in a given table
 func GetAllKeysFromTable(table string) ([]string, error) {
 	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
@@ -205,7 +206,7 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 	return keysArray, nil
 }
 
-//GetPluginData will fetch plugin details
+// GetPluginData will fetch plugin details
 func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	var plugin Plugin
 
@@ -232,7 +233,7 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	return plugin, nil
 }
 
-//GetTarget fetches the System(Target Device Credentials) table details
+// GetTarget fetches the System(Target Device Credentials) table details
 func GetTarget(deviceUUID string) (*Target, *errors.Error) {
 	var target Target
 	conn, err := GetDBConnectionFunc(common.OnDisk)
@@ -249,8 +250,8 @@ func GetTarget(deviceUUID string) (*Target, *errors.Error) {
 	return &target, nil
 }
 
-//GenericSave will save any resource data into the database
-func GenericSave(body []byte, table string, key string) error {
+// GenericSave will save any resource data into the database
+func GenericSave(ctx context.Context, body []byte, table string, key string) error {
 	connPool, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
@@ -259,7 +260,7 @@ func GenericSave(body []byte, table string, key string) error {
 		if errors.DBKeyAlreadyExist == err.ErrNo() {
 			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 		}
-		l.Log.Warn("Skipped saving of duplicate data with key " + key)
+		l.LogWithFields(ctx).Warn("Skipped saving of duplicate data with key " + key)
 	}
 	return nil
 }
@@ -365,7 +366,7 @@ func GetSystemResetInfo(systemURI string) (map[string]string, *errors.Error) {
 	return resetInfo, nil
 }
 
-//DeleteVolume will delete the volume from InMemory
+// DeleteVolume will delete the volume from InMemory
 func DeleteVolume(key string) *errors.Error {
 	connPool, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {

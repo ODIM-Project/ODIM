@@ -127,7 +127,7 @@ func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
 }
 
-func mockPluginStatus(plugin smodel.Plugin) bool {
+func mockPluginStatus(ctx context.Context, plugin smodel.Plugin) bool {
 	return true
 }
 
@@ -738,7 +738,7 @@ func createTaskForTesting(sessionUserName string) (string, error) {
 	return "some/Task", nil
 }
 
-func mockUpdateTask(task common.TaskData) error {
+func mockUpdateTask(ctx context.Context, task common.TaskData) error {
 	if task.TaskID == "invalid" {
 		return fmt.Errorf(common.Cancelling)
 	}

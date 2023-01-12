@@ -15,6 +15,7 @@
 package chassis
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -34,18 +35,18 @@ var (
 
 // getFabricChassisResource will collect the individual
 // fabric chassis resourse from all the fabric plugin
-func (f *fabricFactory) getFabricChassisResource(rID string) response.RPC {
+func (f *fabricFactory) getFabricChassisResource(ctx context.Context, rID string) response.RPC {
 	var resp response.RPC
 	ch := make(chan response.RPC)
 
-	managers, err := f.getFabricManagers()
+	managers, err := f.getFabricManagers(ctx)
 	if err != nil {
-		l.Log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
+		l.LogWithFields(ctx).Warn("while trying to collect fabric managers details from DB, got " + err.Error())
+		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
 	}
 
 	for _, manager := range managers {
-		go f.getResource(manager, rID, ch)
+		go f.getResource(ctx, manager, rID, ch)
 	}
 
 	for i := 0; i < len(managers); i++ {
@@ -55,33 +56,33 @@ func (f *fabricFactory) getFabricChassisResource(rID string) response.RPC {
 		}
 	}
 
-	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
+	return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
 }
 
 // getResource is for collecting the fabric chassis from the individual plugin,
 // and returns the result through the channel ch
-func (f *fabricFactory) getResource(plugin smodel.Plugin, rID string, ch chan response.RPC) {
-	req, errResp, err := f.createChassisRequest(plugin, fmt.Sprintf("%s/%s", collectionURL, rID), http.MethodGet, nil)
+func (f *fabricFactory) getResource(ctx context.Context, plugin smodel.Plugin, rID string, ch chan response.RPC) {
+	req, errResp, err := f.createChassisRequest(ctx, plugin, fmt.Sprintf("%s/%s", collectionURL, rID), http.MethodGet, nil)
 	if errResp != nil {
-		l.Log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
+		l.LogWithFields(ctx).Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		ch <- *errResp
 		return
 	}
-	ch <- collectChassisResource(f, req)
+	ch <- collectChassisResource(ctx, f, req)
 }
 
 // collectChassisResource contacts the plugin with the details available in the
 // pluginContactRequest, and returns the RPC response
-func collectChassisResource(f *fabricFactory, pluginRequest *pluginContactRequest) (r response.RPC) {
-	body, _, statusCode, _, err := ContactPluginFunc(pluginRequest)
+func collectChassisResource(ctx context.Context, f *fabricFactory, pluginRequest *pluginContactRequest) (r response.RPC) {
+	body, _, statusCode, _, err := ContactPluginFunc(ctx, pluginRequest)
 	if statusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
-		body, _, statusCode, _, err = retryFabricsOperation(f, pluginRequest)
+		body, _, statusCode, _, err = retryFabricsOperation(ctx, f, pluginRequest)
 	}
 	if err != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 	if !is2xx(int(statusCode)) {
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", pluginRequest.URL}, nil)
+		return common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", pluginRequest.URL}, nil)
 	}
 
 	data := string(body)
@@ -93,7 +94,7 @@ func collectChassisResource(f *fabricFactory, pluginRequest *pluginContactReques
 	var resp dmtfmodel.Chassis
 	err = JSONUnmarshalFunc([]byte(data), &resp)
 	if err != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 
 	initializeRPCResponse(&r, resp)

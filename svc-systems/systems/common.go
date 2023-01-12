@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package systems ...
+// Package systems ...
 package systems
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -75,10 +76,10 @@ type monitorTaskRequest struct {
 }
 
 // UpdateTaskData update the task with the given data
-func UpdateTaskData(taskData common.TaskData) error {
+func UpdateTaskData(ctx context.Context, taskData common.TaskData) error {
 	var res map[string]interface{}
 	if err := json.Unmarshal([]byte(taskData.TaskRequest), &res); err != nil {
-		l.Log.Error(err)
+		l.LogWithFields(ctx).Error(err)
 	}
 	reqStr := logs.MaskRequestBody(res)
 
@@ -118,31 +119,31 @@ func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskStat
 	}
 }
 
-func (e *PluginContact) monitorPluginTask(monitorTaskData *monitorTaskRequest) ([]byte, error) {
+func (e *PluginContact) monitorPluginTask(ctx context.Context, monitorTaskData *monitorTaskRequest) ([]byte, error) {
 	for {
 
 		var task common.TaskData
 		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {
 			errMsg := "Unable to parse the reset respone" + err.Error()
-			l.Log.Warn(errMsg)
-			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
+			l.LogWithFields(ctx).Warn(errMsg)
+			common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
 			return monitorTaskData.respBody, err
 		}
 		var updatetask = fillTaskData(monitorTaskData.taskID, monitorTaskData.serverURI, monitorTaskData.requestBody, monitorTaskData.resp, task.TaskState, task.TaskStatus, task.PercentComplete, http.MethodPost)
-		err := e.UpdateTask(updatetask)
+		err := e.UpdateTask(ctx, updatetask)
 		if err != nil && err.Error() == common.Cancelling {
 			var updatetask = fillTaskData(monitorTaskData.taskID, monitorTaskData.serverURI, monitorTaskData.requestBody, monitorTaskData.resp, common.Cancelled, common.Critical, 100, http.MethodPost)
-			e.UpdateTask(updatetask)
+			e.UpdateTask(ctx, updatetask)
 			return monitorTaskData.respBody, err
 		}
 		time.Sleep(time.Second * 5)
 		monitorTaskData.pluginRequest.OID = monitorTaskData.location
 		monitorTaskData.pluginRequest.HTTPMethodType = http.MethodGet
-		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = ContactPluginFunc(monitorTaskData.pluginRequest, "error while reseting the computer system: ")
+		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = ContactPluginFunc(ctx, monitorTaskData.pluginRequest, "error while reseting the computer system: ")
 		if err != nil {
 			errMsg := err.Error()
-			l.Log.Warn(errMsg)
-			common.GeneralError(monitorTaskData.getResponse.StatusCode, monitorTaskData.getResponse.StatusMessage, errMsg, nil, monitorTaskData.taskInfo)
+			l.LogWithFields(ctx).Warn(errMsg)
+			common.GeneralError(ctx, monitorTaskData.getResponse.StatusCode, monitorTaskData.getResponse.StatusMessage, errMsg, nil, monitorTaskData.taskInfo)
 			return monitorTaskData.respBody, err
 		}
 		if monitorTaskData.getResponse.StatusCode == http.StatusOK {

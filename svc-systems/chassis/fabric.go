@@ -15,6 +15,7 @@
 package chassis
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -38,7 +39,7 @@ type fabricFactory struct {
 	chassisMap        map[string]bool
 	wg                *sync.WaitGroup
 	mu                *sync.RWMutex
-	getFabricManagers func() ([]smodel.Plugin, error)
+	getFabricManagers func(context.Context) ([]smodel.Plugin, error)
 	contactClient     func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 
@@ -73,32 +74,32 @@ type PluginToken struct {
 // Token variable hold the all the XAuthToken  against the plguin ID
 var Token PluginToken
 
-func (c *sourceProviderImpl) findFabricChassis(collection *sresponse.Collection) {
+func (c *sourceProviderImpl) findFabricChassis(ctx context.Context, collection *sresponse.Collection) {
 	f := c.getFabricFactory(collection)
-	managers, err := f.getFabricManagers()
+	managers, err := f.getFabricManagers(ctx)
 	if err != nil {
-		l.Log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
+		l.LogWithFields(ctx).Warn("while trying to collect fabric managers details from DB, got " + err.Error())
 		return
 	}
 	for _, manager := range managers {
 		f.wg.Add(1)
-		go f.getFabricManagerChassis(manager)
+		go f.getFabricManagerChassis(ctx, manager)
 	}
 	f.wg.Wait()
 }
 
 // getFabricManagerChassis will send a request to the plugin for the chassis collection,
 // and add them to the existing chassis collection.
-func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
+func (f *fabricFactory) getFabricManagerChassis(ctx context.Context, plugin smodel.Plugin) {
 	defer f.wg.Done()
-	req, errResp, err := f.createChassisRequest(plugin, collectionURL, http.MethodGet, nil)
+	req, errResp, err := f.createChassisRequest(ctx, plugin, collectionURL, http.MethodGet, nil)
 	if errResp != nil {
-		l.Log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
+		l.LogWithFields(ctx).Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
 	}
-	links, err := collectChassisCollection(f, req)
+	links, err := collectChassisCollection(ctx, f, req)
 	if err != nil {
-		l.Log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
+		l.LogWithFields(ctx).Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
 	}
 	for _, link := range links {
@@ -113,14 +114,14 @@ func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
 }
 
 // createChassisRequest creates the parameters ready for the plugin communication
-func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method string, body *json.RawMessage) (pReq *pluginContactRequest, errResp *response.RPC, err error) {
+func (f *fabricFactory) createChassisRequest(ctx context.Context, plugin smodel.Plugin, url, method string, body *json.RawMessage) (pReq *pluginContactRequest, errResp *response.RPC, err error) {
 	var token string
 	cred := make(map[string]string)
 
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
-		token = f.getPluginToken(plugin)
+		token = f.getPluginToken(ctx, plugin)
 		if token == "" {
-			*errResp = common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, "unable to create session for plugin "+plugin.ID, []interface{}{url}, nil)
+			*errResp = common.GeneralError(ctx, http.StatusUnauthorized, response.ResourceAtURIUnauthorized, "unable to create session for plugin "+plugin.ID, []interface{}{url}, nil)
 			return nil, errResp, fmt.Errorf("unable to create session for plugin " + plugin.ID)
 		}
 	} else {
@@ -130,7 +131,7 @@ func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method s
 
 	// validating Patch request properties are in uppercamelcase or not
 	if strings.EqualFold(method, http.MethodPatch) {
-		errResp = validateReqParamsCase(body)
+		errResp = validateReqParamsCase(ctx, body)
 		if errResp != nil {
 			return nil, errResp, fmt.Errorf("validation of request body failed")
 		}
@@ -156,10 +157,10 @@ func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method s
 }
 
 // collectChassisCollection contacts the plugin and collect the chassis response
-func collectChassisCollection(f *fabricFactory, pluginRequest *pluginContactRequest) ([]dmtf.Link, error) {
-	body, _, statusCode, _, err := ContactPluginFunc(pluginRequest)
+func collectChassisCollection(ctx context.Context, f *fabricFactory, pluginRequest *pluginContactRequest) ([]dmtf.Link, error) {
+	body, _, statusCode, _, err := ContactPluginFunc(ctx, pluginRequest)
 	if statusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
-		body, _, statusCode, _, err = retryFabricsOperation(f, pluginRequest)
+		body, _, statusCode, _, err = retryFabricsOperation(ctx, f, pluginRequest)
 	}
 	if err != nil {
 		return []dmtf.Link{}, fmt.Errorf("while trying contact plugin " + pluginRequest.Plugin.ID + ", got " + err.Error())
@@ -170,10 +171,10 @@ func collectChassisCollection(f *fabricFactory, pluginRequest *pluginContactRequ
 	return extractChassisCollection(body)
 }
 
-func contactPlugin(req *pluginContactRequest) ([]byte, string, int, string, error) {
+func contactPlugin(ctx context.Context, req *pluginContactRequest) ([]byte, string, int, string, error) {
 	pluginResponse, err := callPlugin(req)
 	if err != nil {
-		if getPluginStatus(req.Plugin) {
+		if getPluginStatus(ctx, req.Plugin) {
 			pluginResponse, err = callPlugin(req)
 		}
 		if err != nil {
@@ -201,17 +202,17 @@ func contactPlugin(req *pluginContactRequest) ([]byte, string, int, string, erro
 
 // retryFabricsOperation will be called whenever  the unauthorized status code during the plugin call
 // This function will create a new session token reexcutes the plugin call
-func retryFabricsOperation(f *fabricFactory, req *pluginContactRequest) ([]byte, string, int, string, error) {
+func retryFabricsOperation(ctx context.Context, f *fabricFactory, req *pluginContactRequest) ([]byte, string, int, string, error) {
 	var resp response.RPC
-	var token = f.createToken(req.Plugin)
+	var token = f.createToken(ctx, req.Plugin)
 	if token == "" {
-		resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error: Unable to create session with plugin "+req.Plugin.ID,
+		resp = common.GeneralError(ctx, http.StatusUnauthorized, response.NoValidSession, "error: Unable to create session with plugin "+req.Plugin.ID,
 			[]interface{}{}, nil)
 		data, _ := json.Marshal(resp.Body)
 		return data, "", int(resp.StatusCode), response.NoValidSession, fmt.Errorf("error: Unable to create session with plugin")
 	}
 	req.Token = token
-	return contactPlugin(req)
+	return contactPlugin(ctx, req)
 
 }
 
@@ -224,7 +225,7 @@ func callPlugin(req *pluginContactRequest) (*http.Response, error) {
 }
 
 // getPluginStatus checks the status of given plugin in configured interval
-func getPluginStatus(plugin smodel.Plugin) bool {
+func getPluginStatus(ctx context.Context, plugin smodel.Plugin) bool {
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{
@@ -239,23 +240,23 @@ func getPluginStatus(plugin smodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		l.Log.Warn("while getting the status for plugin " + plugin.ID + err.Error())
+		l.LogWithFields(ctx).Warn("while getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	l.Log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	l.LogWithFields(ctx).Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
 // getPluginToken will verify the if any token present to the plugin else it will create token for the new plugin
-func (f *fabricFactory) getPluginToken(plugin smodel.Plugin) string {
+func (f *fabricFactory) getPluginToken(ctx context.Context, plugin smodel.Plugin) string {
 	authToken := Token.getToken(plugin.ID)
 	if authToken == "" {
-		return f.createToken(plugin)
+		return f.createToken(ctx, plugin)
 	}
 	return authToken
 }
 
-func (f *fabricFactory) createToken(plugin smodel.Plugin) string {
+func (f *fabricFactory) createToken(ctx context.Context, plugin smodel.Plugin) string {
 	var contactRequest pluginContactRequest
 	contactRequest.ContactClient = f.contactClient
 	contactRequest.Plugin = plugin
@@ -265,9 +266,9 @@ func (f *fabricFactory) createToken(plugin smodel.Plugin) string {
 		"Password": string(plugin.Password),
 	}
 	contactRequest.URL = "/ODIM/v1/Sessions"
-	_, token, _, _, err := contactPlugin(&contactRequest)
+	_, token, _, _, err := contactPlugin(ctx, &contactRequest)
 	if err != nil {
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctx).Error(err.Error())
 	}
 	if token != "" {
 		Token.storeToken(plugin.ID, token)

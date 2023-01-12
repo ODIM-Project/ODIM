@@ -230,6 +230,7 @@ func TestGetPluginData(t *testing.T) {
 
 func TestGetSystemByUUID(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -243,7 +244,7 @@ func TestGetSystemByUUID(t *testing.T) {
 	body := `{"Id":"1","Status":{"State":"Enabled"}}`
 	table := "ComputerSystem"
 	key := "/redfish/v1/Systems/uuid.1"
-	GenericSave([]byte(body), table, key)
+	GenericSave(ctx, []byte(body), table, key)
 	data, _ := GetSystemByUUID("/redfish/v1/Systems/uuid.1")
 	assert.Equal(t, data, body, "should be same")
 
@@ -311,6 +312,7 @@ func TestGetTarget_negative(t *testing.T) {
 
 func TestGenericSave(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -325,14 +327,14 @@ func TestGenericSave(t *testing.T) {
 	body := []byte(`body`)
 	table := "EthernetInterfaces"
 	key := "/redfish/v1/Managers/uuid.1/EthernetInterfaces/1"
-	err := GenericSave(body, table, key)
+	err := GenericSave(ctx, body, table, key)
 	assert.Nil(t, err, "There should be no error")
 
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 
 	}
-	err = GenericSave(body, table, key)
+	err = GenericSave(ctx, body, table, key)
 	assert.NotNil(t, err, "There should be an error")
 
 	_, err = GetResource(table, key)
@@ -358,6 +360,7 @@ func TestGenericSave(t *testing.T) {
 
 func TestGetAllkeysFromTable(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -372,7 +375,7 @@ func TestGetAllkeysFromTable(t *testing.T) {
 	body := []byte(`body`)
 	table := "EthernetInterfaces"
 	key := "/redfish/v1/Managers/uuid.1/EthernetInterfaces/1"
-	err := GenericSave(body, table, key)
+	err := GenericSave(ctx, body, table, key)
 	assert.Nil(t, err, "There should be no error")
 
 	allKeys, err := GetAllKeysFromTable(table)

@@ -519,7 +519,7 @@ func TestGetSystems(t *testing.T) {
 		p                             *PluginContact
 		args                          args
 		want                          response.RPC
-		GetResourceInfoFromDeviceFunc func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error)
+		GetResourceInfoFromDeviceFunc func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error)
 		wantErr                       bool
 	}{
 		{
@@ -531,7 +531,7 @@ func TestGetSystems(t *testing.T) {
 					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 				},
 			},
-			GetResourceInfoFromDeviceFunc: func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+			GetResourceInfoFromDeviceFunc: func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
 				return `{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}`, nil
 			},
 			want: response.RPC{
@@ -555,8 +555,8 @@ func TestGetSystems(t *testing.T) {
 				StatusMessage: response.ResourceNotFound,
 				Body:          errArgs.CreateGenericErrorResponse(),
 			},
-			GetResourceInfoFromDeviceFunc: func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
-				return scommon.GetResourceInfoFromDevice(req, saveRequired)
+			GetResourceInfoFromDeviceFunc: func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+				return scommon.GetResourceInfoFromDevice(ctx, req, saveRequired)
 			},
 
 			wantErr: true,
@@ -570,8 +570,8 @@ func TestGetSystems(t *testing.T) {
 					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e1.1",
 				},
 			},
-			GetResourceInfoFromDeviceFunc: func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
-				return scommon.GetResourceInfoFromDevice(req, saveRequired)
+			GetResourceInfoFromDeviceFunc: func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+				return scommon.GetResourceInfoFromDevice(ctx, req, saveRequired)
 			},
 
 			want: response.RPC{
@@ -598,7 +598,7 @@ func TestGetSystems(t *testing.T) {
 	GetSystemResetInfoFunc = func(systemURI string) (map[string]string, *errors.Error) {
 		return nil, nil
 	}
-	GetResourceInfoFromDeviceFunc = func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+	GetResourceInfoFromDeviceFunc = func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
 		return "", &errors.Error{}
 	}
 
@@ -608,8 +608,8 @@ func TestGetSystems(t *testing.T) {
 	GetSystemResetInfoFunc = func(systemURI string) (map[string]string, *errors.Error) {
 		return smodel.GetSystemResetInfo(systemURI)
 	}
-	GetResourceInfoFromDeviceFunc = func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
-		return scommon.GetResourceInfoFromDevice(req, saveRequired)
+	GetResourceInfoFromDeviceFunc = func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+		return scommon.GetResourceInfoFromDevice(ctx, req, saveRequired)
 	}
 
 }
@@ -1071,21 +1071,23 @@ func Test_getRangeData(t *testing.T) {
 }
 
 func Test_rediscoverStorageInventory(t *testing.T) {
-	errorResp("", response.RPC{})
-	validate("and", response.RPC{})
-	validate("or", response.RPC{})
+	ctx := mockContext()
+	errorResp(ctx, "", response.RPC{})
+	validate(ctx, "and", response.RPC{})
+	validate(ctx, "or", response.RPC{})
 	validateLastParameter([]string{})
-	GetMembers(map[string]map[string]bool{}, []string{}, response.RPC{})
+	GetMembers(ctx, map[string]map[string]bool{}, []string{}, response.RPC{})
 
-	SearchAndFilter([]string{"", "dummy"}, response.RPC{})
-	SearchAndFilter([]string{"", "dummy=0"}, response.RPC{})
+	SearchAndFilter(ctx, []string{"", "dummy"}, response.RPC{})
+	SearchAndFilter(ctx, []string{"", "dummy=0"}, response.RPC{})
 }
 
 func Test_getAllSystemIDs(t *testing.T) {
+	ctx := mockContext()
 	GetAllKeysFromTableFunc = func(table string) ([]string, error) {
 		return nil, &errors.Error{}
 	}
-	getAllSystemIDs(response.RPC{})
+	getAllSystemIDs(ctx, response.RPC{})
 }
 
 func Test_getDeviceLoadInfo(t *testing.T) {

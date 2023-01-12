@@ -34,7 +34,7 @@ type Systems struct {
 	IsAuthorizedRPC    func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
 	GetSessionUserName func(string) (string, error)
 	CreateTask         func(string) (string, error)
-	UpdateTask         func(common.TaskData) error
+	UpdateTask         func(context.Context, common.TaskData) error
 	EI                 *systems.ExternalInterface
 }
 
@@ -50,7 +50,7 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
@@ -78,7 +78,7 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
@@ -100,7 +100,7 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
@@ -127,7 +127,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
@@ -135,8 +135,8 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
-		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
-		l.Log.Error(errMsg)
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(ctx, http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
 		return &resp, nil
 	}
 
@@ -144,8 +144,8 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	taskURI, err := s.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
-		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
-		l.Log.Error(errMsg)
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(ctx, http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
 		return &resp, nil
 	}
 	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
@@ -181,7 +181,7 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
@@ -207,7 +207,7 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
@@ -233,7 +233,7 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
@@ -259,7 +259,7 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
@@ -282,7 +282,7 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil

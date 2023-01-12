@@ -1,20 +1,21 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package systems
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -67,10 +68,11 @@ func mockDeviceData(uuid string, device smodel.Target) error {
 }
 
 func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+	ctx := mockContext()
 	if sessionToken != "validToken" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
+		return common.GeneralError(ctx, http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
+	return common.GeneralError(ctx, http.StatusOK, response.Success, "", nil, nil), nil
 }
 
 func mockContactClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
@@ -129,6 +131,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 
 func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -225,7 +228,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			JSONUnMarshal: func(data []byte, v interface{}) error {
 				return json.Unmarshal(data, v)
 			},
-			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 24b243cf-f1e3-5318-92d9-2d6737d6b0b found", []interface{}{"ComputerSystem", "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b.1"}, nil),
+			want: common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 24b243cf-f1e3-5318-92d9-2d6737d6b0b found", []interface{}{"ComputerSystem", "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b.1"}, nil),
 		}, {
 			name: "invalid uuid without system id",
 			p:    &pluginContact,
@@ -238,7 +241,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			JSONUnMarshal: func(data []byte, v interface{}) error {
 				return json.Unmarshal(data, v)
 			},
-			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", "24b243cf-f1e3-5318-92d9-2d6737d6b0b"}, nil),
+			want: common.GeneralError(ctx, http.StatusNotFound, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", "24b243cf-f1e3-5318-92d9-2d6737d6b0b"}, nil),
 		},
 		{
 			name: "if plugin id is not there in the db",
@@ -317,7 +320,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return true
 	}
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
@@ -332,15 +335,15 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return false
 	}
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
 	resp = pluginContact.ComputerSystemReset(&req, "task123453", "admin")
 	assert.NotNil(t, resp, "Response Should have error")
 
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) ([]byte, string, scommon.ResponseStatus, error) {
-		return scommon.ContactPlugin(req, errorMessage)
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) ([]byte, string, scommon.ResponseStatus, error) {
+		return scommon.ContactPlugin(ctx, req, errorMessage)
 	}
 	// Invalid Json
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
@@ -354,7 +357,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	}
 
 }
-func mockUpdateTask(task common.TaskData) error {
+func mockUpdateTask(ctx context.Context, task common.TaskData) error {
 	if task.TaskID == "invalid" {
 		return fmt.Errorf(common.Cancelling)
 	}

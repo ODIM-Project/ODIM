@@ -267,70 +267,6 @@ const (
 	DeliveryTerminateAfterRetries DeliveryRetryPolicy = "TerminateAfterRetries"
 )
 
-//IsValidSubscriptionType validate subscription type is valid,
-func (subscriptionType SubscriptionType) IsValidSubscriptionType() bool {
-	switch subscriptionType {
-	case SubscriptionTypeRedFishEvent, SubscriptionTypeOEM, SubscriptionTypeSNMPInform, SubscriptionTypeSNMPTrap, SubscriptionTypeSyslog, SubscriptionTySubscriptionTypeSSE:
-		return true
-	default:
-		return false
-	}
-}
-
-// IsSubscriptionTypeSupported method return true if subscription type is RedfishEvent
-func (subscriptionType SubscriptionType) IsSubscriptionTypeSupported() bool {
-	switch subscriptionType {
-	case SubscriptionTypeRedFishEvent:
-		return true
-	default:
-		return false
-	}
-}
-func (subscriptionType SubscriptionType) ToString() string {
-	return string(subscriptionType)
-}
-
-func (deliveryRetryPolicy DeliveryRetryPolicy) ToString() string {
-	return string(deliveryRetryPolicy)
-}
-
-func (eventType EventType) ToString() string {
-	return string(eventType)
-}
-
-//IsValidEventType return true if event type is valid
-func (eventType EventType) IsValidEventType() bool {
-	switch eventType {
-	case EventTypeAlert, EventTypeMetricReport, EventTypeOther, EventTypeResourceRemoved,
-		EventTypeResourceAdded, EventTypeResourceUpdated, EventTypeStatusChange:
-		return true
-	default:
-		return false
-	}
-}
-
-// IsValidDeliveryRetryPolicyType is validate DeliveryRetryPolicy value valid or not
-func (deliveryRetryPolicy DeliveryRetryPolicy) IsValidDeliveryRetryPolicyType() bool {
-	switch deliveryRetryPolicy {
-	case DeliveryRetryForever, DeliverySuspendRetries, DeliveryTerminateAfterRetries,
-		DeliveryRetryForeverWithBackoff:
-		return true
-	default:
-		return false
-	}
-}
-
-// IsDeliveryRetryPolicyTypeSupported is return true if DeliveryRetryPolicy
-// is RetryForever. Currently ODIM support RetryForever value
-func (deliveryRetryPolicy DeliveryRetryPolicy) IsDeliveryRetryPolicyTypeSupported() bool {
-	switch deliveryRetryPolicy {
-	case DeliveryRetryForever:
-		return true
-	default:
-		return false
-	}
-}
-
 // Event schema describes the JSON payload received by an event destination, which has
 // subscribed to event notification, when events occur. This resource contains data
 // about events, including descriptions, severity, and a message identifier to a
@@ -415,6 +351,73 @@ type EventDestination struct {
 	SubscriptionType             SubscriptionType    `json:"SubscriptionType,omitempty"`
 	SyslogFilters                SyslogFilter        `json:"SyslogFilters,omitempty"`
 	VerifyCertificate            bool                `json:"VerifyCertificate,omitempty"`
+}
+
+//IsValidSubscriptionType validate subscription type is valid,
+func (subscriptionType SubscriptionType) IsValidSubscriptionType() bool {
+	switch subscriptionType {
+	case SubscriptionTypeRedFishEvent, SubscriptionTypeOEM,
+		SubscriptionTypeSNMPInform, SubscriptionTypeSNMPTrap,
+		SubscriptionTypeSyslog, SubscriptionTySubscriptionTypeSSE:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsSubscriptionTypeSupported method return true if subscription type is RedfishEvent
+func (subscriptionType SubscriptionType) IsSubscriptionTypeSupported() bool {
+	switch subscriptionType {
+	case SubscriptionTypeRedFishEvent:
+		return true
+	default:
+		return false
+	}
+}
+func (subscriptionType SubscriptionType) ToString() string {
+	return string(subscriptionType)
+}
+
+func (deliveryRetryPolicy DeliveryRetryPolicy) ToString() string {
+	return string(deliveryRetryPolicy)
+}
+
+func (eventType EventType) ToString() string {
+	return string(eventType)
+}
+
+//IsValidEventType return true if event type is valid
+func (eventType EventType) IsValidEventType() bool {
+	switch eventType {
+	case EventTypeAlert, EventTypeMetricReport, EventTypeOther,
+		EventTypeResourceRemoved, EventTypeResourceAdded,
+		EventTypeResourceUpdated, EventTypeStatusChange:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsValidDeliveryRetryPolicyType is validate DeliveryRetryPolicy value valid or not
+func (deliveryRetryPolicy DeliveryRetryPolicy) IsValidDeliveryRetryPolicyType() bool {
+	switch deliveryRetryPolicy {
+	case DeliveryRetryForever, DeliverySuspendRetries,
+		DeliveryTerminateAfterRetries, DeliveryRetryForeverWithBackoff:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsDeliveryRetryPolicyTypeSupported is return true if DeliveryRetryPolicy
+// is RetryForever. Currently ODIM support RetryForever value
+func (deliveryRetryPolicy DeliveryRetryPolicy) IsDeliveryRetryPolicyTypeSupported() bool {
+	switch deliveryRetryPolicy {
+	case DeliveryRetryForever:
+		return true
+	default:
+		return false
+	}
 }
 
 // EventDestinationAction contain the available

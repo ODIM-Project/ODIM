@@ -420,9 +420,10 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			},
 		},
 	}
+	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.ChangeBiosSettings(tt.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.p.ChangeBiosSettings(ctx, tt.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PluginContact.ChangeBiosSettings() = %v, want %v", got, tt.want)
 			}
 		})
@@ -436,7 +437,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
-	res := pluginContact.ChangeBiosSettings(&req)
+	res := pluginContact.ChangeBiosSettings(ctx, &req)
 	assert.Equal(t, http.StatusInternalServerError, int(res.StatusCode), "status should be StatusInternalServerError")
 
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
@@ -447,7 +448,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 		RequestBody:  []byte(`{"attributes": {"bootMode": "mode"}}`),
 		SessionToken: "token",
 	}
-	res = pluginContact.ChangeBiosSettings(&req)
+	res = pluginContact.ChangeBiosSettings(ctx, &req)
 	assert.Equal(t, http.StatusBadRequest, int(res.StatusCode), "status should be StatusBadRequest")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
@@ -458,7 +459,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 		RequestBody:  request,
 		SessionToken: "token",
 	}
-	res = pluginContact.ChangeBiosSettings(&req)
+	res = pluginContact.ChangeBiosSettings(ctx, &req)
 	assert.Equal(t, http.StatusInternalServerError, int(res.StatusCode), "status should be StatusInternalServerError")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
@@ -471,7 +472,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 		err = &errors.Error{}
 		return
 	}
-	res = pluginContact.ChangeBiosSettings(&req)
+	res = pluginContact.ChangeBiosSettings(ctx, &req)
 	assert.NotNil(t, res, "Response should have error")
 
 	StringsEqualFold = func(s, t string) bool {
@@ -481,7 +482,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 		err = &errors.Error{}
 		return
 	}
-	res = pluginContact.ChangeBiosSettings(&req)
+	res = pluginContact.ChangeBiosSettings(ctx, &req)
 	assert.NotNil(t, res, "Response should have error")
 
 	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {

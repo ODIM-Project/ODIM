@@ -72,11 +72,11 @@ type ChassisRPC struct {
 // which is present in the request.
 func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	var resp chassisproto.GetChassisResponse
-	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
-		return cha.UpdateHandler.Handle(req)
+	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
+		return cha.UpdateHandler.Handle(ctx, req)
 	})
 
-	rewrite(r, &resp)
+	rewrite(ctx, r, &resp)
 	return &resp, nil
 }
 
@@ -88,11 +88,11 @@ func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.Upda
 // which is present in the request.
 func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	var resp chassisproto.GetChassisResponse
-	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
-		return cha.DeleteHandler.Handle(req)
+	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
+		return cha.DeleteHandler.Handle(ctx, req)
 	})
 
-	rewrite(r, &resp)
+	rewrite(ctx, r, &resp)
 	return &resp, nil
 }
 
@@ -102,13 +102,13 @@ func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.Dele
 // RPC according to the protoc file defined in the util-lib package.
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
-func (cha *ChassisRPC) CreateChassis(_ context.Context, req *chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+func (cha *ChassisRPC) CreateChassis(ctx context.Context, req *chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	var resp chassisproto.GetChassisResponse
-	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
-		return cha.CreateHandler.Handle(req)
+	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
+		return cha.CreateHandler.Handle(ctx, req)
 	})
 
-	rewrite(r, &resp)
+	rewrite(ctx, r, &resp)
 	return &resp, nil
 }
 
@@ -126,7 +126,7 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 		}
-		rewrite(authResp, &resp)
+		rewrite(ctx, authResp, &resp)
 		return &resp, nil
 	}
 	var pc = chassis.PluginContact{

@@ -66,8 +66,8 @@ func TestNewGetHandler_WhenManagedChassisFinderRespondsWithError(t *testing.T) {
 			return errors.PackError(errors.JSONUnmarshalFailed, "error")
 		},
 	)
-
-	r := sut.Handle(&chassisproto.GetChassisRequest{})
+	ctx := mockContext()
+	r := sut.Handle(ctx, &chassisproto.GetChassisRequest{})
 	require.EqualValues(t, http.StatusInternalServerError, r.StatusCode)
 	require.IsType(t, response.CommonError{}, r.Body)
 }

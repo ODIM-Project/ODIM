@@ -33,11 +33,22 @@ type Logging struct {
 // this function logs an info for successful operation and warning for failure auth operation
 // properties logged are prival, time, username, roleid and message
 func AuthLog(ctx context.Context) *logrus.Entry {
-	ctx = context.WithValue(ctx, "auth", true)
-	ctx = context.WithValue(ctx, "statuscode", ctx.Value("statuscode").(int32))
-	r := getProcessLogDetails(ctx)
+	fields := getProcessLogDetails(ctx)
+	if val, ok := ctx.Value("sessiontoken").(string); ok {
+		fields["sessiontoken"] = val
+	}
+	if val, ok := ctx.Value("sessionuserid").(string); ok {
+		fields["sessionuserid"] = val
+	}
+	if val, ok := ctx.Value("sessionroleid").(string); ok {
+		fields["sessionroleid"] = val
+	}
+	if val, ok := ctx.Value("statuscode").(int32); ok {
+		fields["statuscode"] = val
+	}
+	fields["auth"] = true
 
-	return Log.WithFields(r)
+	return Log.WithFields(fields)
 }
 
 // formatAuditStructFields is used to format audit log message with required values
@@ -86,9 +97,18 @@ func formatAuditStructFields(entry *logrus.Entry, msg string, priorityNo int8) s
 // properties logged are prival, time, host, username, roleid, request method, resource, requestbody, responsecode and message
 func AuditLog(l *Logging, ctx iris.Context, reqBody map[string]interface{}) *logrus.Entry {
 	ctxt := ctx.Request().Context()
-	ctxt = context.WithValue(ctxt, "audit", true)
-	ctxt = context.WithValue(ctxt, "statuscode", int32(ctx.GetStatusCode()))
 	fields := getProcessLogDetails(ctxt)
+	if val, ok := ctxt.Value("sessiontoken").(string); ok {
+		fields["sessiontoken"] = val
+	}
+	if val, ok := ctxt.Value("sessionuserid").(string); ok {
+		fields["sessionuserid"] = val
+	}
+	if val, ok := ctxt.Value("sessionroleid").(string); ok {
+		fields["sessionroleid"] = val
+	}
+	fields["statuscode"] = int32(ctx.GetStatusCode())
+	fields["audit"] = true
 	fields, err := l.auditLogEntry(ctx, reqBody, fields)
 	if err != nil {
 		Log.Error(err)

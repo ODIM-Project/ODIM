@@ -71,43 +71,13 @@ const (
 
 func getProcessLogDetails(ctx context.Context) logrus.Fields {
 	var fields = make(map[string]interface{})
-	if val, ok := ctx.Value("transactionid").(string); ok {
-		fields["transactionid"] = val
-	}
-	if val, ok := ctx.Value("processname").(string); ok {
-		fields["processname"] = val
-	}
-	if val, ok := ctx.Value("threadid").(string); ok {
-		fields["threadid"] = val
-	}
-	if val, ok := ctx.Value("actionname").(string); ok {
-		fields["actionname"] = val
-		fields["messageid"] = val
-	}
-	if val, ok := ctx.Value("threadname").(string); ok {
-		fields["threadname"] = val
-	}
-	if val, ok := ctx.Value("actionid").(string); ok {
-		fields["actionid"] = val
-	}
-	if val, ok := ctx.Value("auth").(bool); ok {
-		fields["auth"] = val
-	}
-	if val, ok := ctx.Value("audit").(bool); ok {
-		fields["audit"] = val
-	}
-	if val, ok := ctx.Value("statuscode").(int32); ok {
-		fields["statuscode"] = val
-	}
-	if val, ok := ctx.Value("sessiontoken").(string); ok {
-		fields["sessiontoken"] = val
-	}
-	if val, ok := ctx.Value("sessionuserid").(string); ok {
-		fields["sessionuserid"] = val
-	}
-	if val, ok := ctx.Value("sessionroleid").(string); ok {
-		fields["sessionroleid"] = val
-	}
+	fields["transactionid"] = ctx.Value("transactionid")
+	fields["processname"] = ctx.Value("processname")
+	fields["threadid"] = ctx.Value("threadid")
+	fields["actionname"] = ctx.Value("actionname")
+	fields["messageid"] = ctx.Value("actionname")
+	fields["threadname"] = ctx.Value("threadname")
+	fields["actionid"] = ctx.Value("actionid")
 
 	return fields
 }

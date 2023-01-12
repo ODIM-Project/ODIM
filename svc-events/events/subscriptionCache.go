@@ -30,6 +30,7 @@ var (
 )
 
 func LoadSubscriptionData() {
+	l.Log.Debug("Event cache is initialized")
 	getAllSubscriptions()
 	getAllAggregates()
 	getAllDeviceSubscriptions()
@@ -67,7 +68,7 @@ func getAllSubscriptions() {
 	if len(emptySubscriptionIdMap) > 0 {
 		emptyOriginResourceToSubscriptionsMap[evcommon.DefaultSubscriptionID] = emptySubscriptionIdMap
 	}
-
+	l.Log.Debug("Subscription cache updated ")
 }
 
 // getAllDeviceSubscriptions method fetch data from DeviceSubscription table
@@ -89,6 +90,7 @@ func getAllDeviceSubscriptions() {
 			updateCatchDeviceSubscriptionData(devSub[0], evmodel.GetSliceFromString(devSub[2]))
 		}
 	}
+	l.Log.Debug("DeviceSubscription cache updated ")
 }
 
 // updateCatchDeviceSubscriptionData update eventSourceToManagerMap for each key with their system IDs
@@ -143,6 +145,7 @@ func getAllAggregates() {
 		aggregateId := aggregateUrl[strings.LastIndexByte(aggregateUrl, '/')+1:]
 		addSystemIdToAggregateCache(aggregateId, aggregate)
 	}
+	l.Log.Debug("AggregateToHost cache updated ")
 }
 
 // addSystemIdToAggregateCache update cache for each aggregate member
@@ -275,13 +278,14 @@ func getCollectionKey(oid, host string) (key string) {
 	return
 }
 
+// initializeDbObserver function subscribe redis keyspace notifier
 func initializeDbObserver() {
 	l.Log.Debug("Initializing observer ")
 START:
 	conn, _ := common.GetDBConnection(common.OnDisk)
 	writeConn := conn.WritePool.Get()
 	defer writeConn.Close()
-	_, err := writeConn.Do("CONFIG", "SET", "notify-keyspace-events", "Kz") //published
+	_, err := writeConn.Do("CONFIG", "SET", evcommon.RedisNotifierType, evcommon.RedisNotifierFilterKey)
 	if err != nil {
 		l.Log.Error("error occurred configuring keyevent ", err)
 		time.Sleep(time.Second * 5)

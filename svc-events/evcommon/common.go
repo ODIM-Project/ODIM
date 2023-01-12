@@ -42,6 +42,8 @@ var (
 	SubscriptionChannelKey       = "__key*__:Subscription"
 	DeviceSubscriptionChannelKey = "__key*__:DeviceSubscription"
 	AggregateToHostChannelKey    = "__key*__:AggregateToHost"
+	RedisNotifierType            = "notify-keyspace-events"
+	RedisNotifierFilterKey       = "Kz"
 )
 
 //StartUpInteraface Holds the function pointer of  external interface functions

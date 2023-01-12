@@ -112,7 +112,7 @@ func main() {
 	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.OdimControlMessageQueue)
 
 	// Subscribe to EMBs of all the available plugins
-	startUPInterface := evcommon.StartUpInteraface{
+	startUPInterface := evcommon.StartUpInterface{
 		DecryptPassword: common.DecryptWithPrivateKey,
 		EMBConsume:      consumer.Consume,
 	}

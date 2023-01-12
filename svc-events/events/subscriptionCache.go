@@ -17,29 +17,36 @@ var (
 	systemToSubscriptionsMap              map[string]map[string]bool
 	aggregateIdToSubscriptionsMap         map[string]map[string]bool
 	collectionToSubscriptionsMap          map[string]map[string]bool
-	emptyOriginResourceToSubscriptionsMap map[string]map[string]bool
+	emptyOriginResourceToSubscriptionsMap map[string]bool
 	systemIdToAggregateIdsMap             map[string]map[string]bool
 	eventSourceToManagerIDMap             map[string]string
 	managerIDToSystemIDsMap               map[string][]string
 	managerIDToChassisIDsMap              map[string][]string
 )
 
+// LoadSubscriptionData method calls whenever service is started
+// Here we load Subscription, DeviceSubscription, AggregateToHost
+// table data into cache memory
 func LoadSubscriptionData() {
+	l.Log.Info("Event cache is initialized")
 	getAllSubscriptions()
 	getAllAggregates()
 	getAllDeviceSubscriptions()
 }
+
+// getAllSubscriptions this method read data from Subscription table and
+// load in corresponding cache
 func getAllSubscriptions() {
 	systemToSubscriptionsMap = make(map[string]map[string]bool)
 	aggregateIdToSubscriptionsMap = make(map[string]map[string]bool)
 	collectionToSubscriptionsMap = make(map[string]map[string]bool)
-	emptyOriginResourceToSubscriptionsMap = make(map[string]map[string]bool)
+	emptyOriginResourceToSubscriptionsMap = make(map[string]bool)
 	subscriptions, err := evmodel.GetAllEvtSubscriptions()
 	if err != nil {
 		l.Log.Error("Error while reading all subscription data ", err)
 		return
 	}
-	emptySubscriptionIdMap := make(map[string]bool)
+
 	subscriptionsCache = make(map[string]dmtf.EventDestination, len(subscriptions))
 	for _, subscription := range subscriptions {
 		var sub evmodel.SubscriptionResource
@@ -51,13 +58,10 @@ func getAllSubscriptions() {
 		subCache.ID = sub.SubscriptionID
 		subscriptionsCache[subCache.ID] = *subCache
 		if len(sub.EventDestination.OriginResources) == 0 && sub.SubscriptionID != evcommon.DefaultSubscriptionID {
-			emptySubscriptionIdMap[sub.SubscriptionID] = true
+			emptyOriginResourceToSubscriptionsMap[sub.SubscriptionID] = true
 		} else {
 			loadSubscriptionCacheData(sub.SubscriptionID, sub.Hosts)
 		}
-	}
-	if len(emptySubscriptionIdMap) > 0 {
-		emptyOriginResourceToSubscriptionsMap[evcommon.DefaultSubscriptionID] = emptySubscriptionIdMap
 	}
 
 }
@@ -227,13 +231,10 @@ func getCollectionSubscriptionList(originOfCondition, hostIp string) (subs []dmt
 // getEmptyOriginResourceSubscriptionList return list of subscription
 // whose originResources is empty
 func getEmptyOriginResourceSubscriptionList() (subs []dmtf.EventDestination) {
-	emptyOriginResourceSubscription, isExists := emptyOriginResourceToSubscriptionsMap[evcommon.DefaultSubscriptionID]
-	if isExists {
-		for subId := range emptyOriginResourceSubscription {
-			sub, isValidSubId := getSubscriptionDetails(subId)
-			if isValidSubId {
-				subs = append(subs, sub)
-			}
+	for subId := range emptyOriginResourceToSubscriptionsMap {
+		sub, isValidSubId := getSubscriptionDetails(subId)
+		if isValidSubId {
+			subs = append(subs, sub)
 		}
 	}
 	return

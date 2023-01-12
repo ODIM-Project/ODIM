@@ -141,7 +141,7 @@ func TestTasksRPC_GetTaskMonitor(t *testing.T) {
 				GetTaskStatusModel:    mockGetTaskStatusModel,
 			},
 			args: args{
-				ctx: nil,
+				ctx: mockContext(),
 				req: &taskproto.GetTaskRequest{
 					TaskID:       "RunningTaskID",
 					SubTaskID:    "",
@@ -161,7 +161,7 @@ func TestTasksRPC_GetTaskMonitor(t *testing.T) {
 				GetTaskStatusModel:    mockGetTaskStatusModel,
 			},
 			args: args{
-				ctx: nil,
+				ctx: mockContext(),
 				req: &taskproto.GetTaskRequest{
 					TaskID:       "CompletedTaskID",
 					SubTaskID:    "",
@@ -181,7 +181,7 @@ func TestTasksRPC_GetTaskMonitor(t *testing.T) {
 				GetTaskStatusModel:    mockGetTaskStatusModel,
 			},
 			args: args{
-				ctx: nil,
+				ctx: mockContext(),
 				req: &taskproto.GetTaskRequest{
 					TaskID:       "InvalidTaskID",
 					SubTaskID:    "",
@@ -201,7 +201,7 @@ func TestTasksRPC_GetTaskMonitor(t *testing.T) {
 				GetTaskStatusModel:    mockGetTaskStatusModel,
 			},
 			args: args{
-				ctx: nil,
+				ctx: mockContext(),
 				req: &taskproto.GetTaskRequest{
 					TaskID:       "CompletedTaskID",
 					SubTaskID:    "",

@@ -27,6 +27,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
+	"github.com/ODIM-Project/ODIM/svc-task/tcommon"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
@@ -145,7 +146,6 @@ func mockPersistTaskModel(ctx context.Context, task *tmodel.Task, db common.DbTy
 }
 func TestTasksRPC_GetTasks(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.GetTaskRequest
 		rsp *taskproto.TaskResponse
 	}
@@ -284,7 +284,7 @@ func TestTasksRPC_GetTasks(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rsp, err := tt.ts.GetTasks(tt.args.ctx, tt.args.req)
+			rsp, err := tt.ts.GetTasks(mockContext(), tt.args.req)
 			if err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.GetTasks() got = %v, want: %v", got.StatusCode, tt.want.StatusCode)
@@ -298,7 +298,6 @@ func mockGetAllTaskKeysModel(ctx context.Context) ([]string, error) {
 }
 func TestTasksRPC_TaskCollection(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.GetTaskRequest
 		rsp *taskproto.TaskResponse
 	}
@@ -346,7 +345,7 @@ func TestTasksRPC_TaskCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.TaskCollection(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.TaskCollection(mockContext(), tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.TaskCollection() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -356,7 +355,6 @@ func TestTasksRPC_TaskCollection(t *testing.T) {
 
 func TestTasksRPC_GetTaskService(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.GetTaskRequest
 		rsp *taskproto.TaskResponse
 	}
@@ -402,7 +400,7 @@ func TestTasksRPC_GetTaskService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.GetTaskService(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.GetTaskService(mockContext(), tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.GetTaskService() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -412,7 +410,6 @@ func TestTasksRPC_GetTaskService(t *testing.T) {
 
 func TestTasksRPC_GetSubTasks(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.GetTaskRequest
 		rsp *taskproto.TaskResponse
 	}
@@ -516,7 +513,7 @@ func TestTasksRPC_GetSubTasks(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.GetSubTasks(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.GetSubTasks(mockContext(), tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.GetSubTasks() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -526,7 +523,6 @@ func TestTasksRPC_GetSubTasks(t *testing.T) {
 
 func TestTasksRPC_GetSubTask(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.GetTaskRequest
 		rsp *taskproto.TaskResponse
 	}
@@ -654,7 +650,7 @@ func TestTasksRPC_GetSubTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.GetSubTask(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.GetSubTask(mockContext(), tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.GetSubTask() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -664,7 +660,6 @@ func TestTasksRPC_GetSubTask(t *testing.T) {
 
 func TestTasksRPC_DeleteTask(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.GetTaskRequest
 		rsp *taskproto.TaskResponse
 	}
@@ -792,7 +787,7 @@ func TestTasksRPC_DeleteTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.DeleteTask(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.DeleteTask(mockContext(), tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.DeleteTask() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -801,7 +796,6 @@ func TestTasksRPC_DeleteTask(t *testing.T) {
 }
 func TestTasksRPC_CreateTask(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.CreateTaskRequest
 		rsp *taskproto.CreateTaskResponse
 	}
@@ -850,7 +844,7 @@ func TestTasksRPC_CreateTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.CreateTask(tt.args.ctx, tt.args.req); !reflect.DeepEqual(rsp.TaskURI, tt.want.TaskURI) {
+			if rsp, err := tt.ts.CreateTask(mockContext(), tt.args.req); !reflect.DeepEqual(rsp.TaskURI, tt.want.TaskURI) {
 				t.Errorf("TasksRPC.CreateTask() got error = %v, wantError %v", err, tt.wantError)
 				t.Errorf("TasksRPC.CreateTask() got = %v, want %v", rsp, tt.want)
 			}
@@ -947,7 +941,6 @@ func TestTasksRPC_OverWriteCompletedTaskUtil(t *testing.T) {
 
 func TestTasksRPC_CreateChildTask(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.CreateTaskRequest
 		rsp *taskproto.CreateTaskResponse
 	}
@@ -992,7 +985,7 @@ func TestTasksRPC_CreateChildTask(t *testing.T) {
 				},
 				rsp: &taskproto.CreateTaskResponse{},
 			},
-			wantErr: fmt.Errorf("error parent task ID is empty"),
+			wantErr: fmt.Errorf("error empty/invalid input Parent Task ID"),
 			wantRsp: taskproto.CreateTaskResponse{
 				TaskURI: "",
 			},
@@ -1011,7 +1004,7 @@ func TestTasksRPC_CreateChildTask(t *testing.T) {
 				},
 				rsp: &taskproto.CreateTaskResponse{},
 			},
-			wantErr: fmt.Errorf("error while retrieing the task detais from DB: Resource not found"),
+			wantErr: fmt.Errorf("error while retrieving the task details from DB: Resource not found"),
 			wantRsp: taskproto.CreateTaskResponse{
 				TaskURI: "",
 			},
@@ -1038,7 +1031,7 @@ func TestTasksRPC_CreateChildTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.CreateChildTask(tt.args.ctx, tt.args.req); !reflect.DeepEqual(err, tt.wantErr) || !reflect.DeepEqual(rsp.TaskURI, tt.wantRsp.TaskURI) {
+			if rsp, err := tt.ts.CreateChildTask(mockContext(), tt.args.req); !reflect.DeepEqual(err, tt.wantErr) || !reflect.DeepEqual(rsp.TaskURI, tt.wantRsp.TaskURI) {
 				t.Errorf("TasksRPC.CreateChildTask() got error = %v, wantErr: %v", err, tt.wantErr)
 				t.Errorf("TasksRPC.CreateChildTask() got response = %v, want: %v", rsp, tt.wantRsp)
 			}
@@ -1051,7 +1044,6 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		Lock:           sync.Mutex{},
 	}
 	type args struct {
-		ctx context.Context
 		req *taskproto.UpdateTaskRequest
 		rsp *taskproto.UpdateTaskResponse
 	}
@@ -1656,7 +1648,7 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := tt.ts.UpdateTask(tt.args.ctx, tt.args.req); !reflect.DeepEqual(err, tt.wantErr) {
+			if _, err := tt.ts.UpdateTask(mockContext(), tt.args.req); !reflect.DeepEqual(err, tt.wantErr) {
 				t.Errorf("TasksRPC.UpdateTask() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -1695,7 +1687,7 @@ func TestTasksRPC_CreateTaskUtil(t *testing.T) {
 			args: args{
 				userName: "",
 			},
-			wantErr: fmt.Errorf("error invalid username"),
+			wantErr: fmt.Errorf("error invalid input argument for userName"),
 		},
 		{
 			name: "Negative case: Invalid Username",
@@ -1782,7 +1774,10 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.ts.taskCancelCallBack(mockContext(), tt.args.taskID)
+			ctx := mockContext()
+			iterCount := new(int)
+			ctxt := context.WithValue(ctx, tcommon.IterationCount, iterCount)
+			err := tt.ts.taskCancelCallBack(ctxt, tt.args.taskID)
 			if !reflect.DeepEqual(err, tt.wantErr) {
 				t.Errorf("TasksRPC.taskCancelCallBack() error = %v, wantErr %v", err, tt.wantErr)
 			}

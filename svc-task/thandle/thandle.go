@@ -936,7 +936,7 @@ func (ts *TasksRPC) CreateChildTaskUtil(ctx context.Context, userName string, pa
 	// Retrieve the task details from db
 	parentTask, err := ts.GetTaskStatusModel(ctx, parentTaskID, common.InMemory)
 	if err != nil {
-		return "", fmt.Errorf("error while retrieving the task detais from DB: " + err.Error())
+		return "", fmt.Errorf("error while retrieving the task details from DB: " + err.Error())
 	}
 	// Create the child/sub task with parent task's UserName
 	taskURI, err = ts.CreateTaskUtilHelper(ctx, parentTask.UserName)

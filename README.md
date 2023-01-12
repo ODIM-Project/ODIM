@@ -2416,11 +2416,15 @@ kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof [backup d
    kubectl exec -it <podname> -nodim bash
    ```
 
+   **For example**:
+
+   ```
+   kubectl exec -it redis-ha-ondisk-primary-0 -nodim bash
+   ```
+
    ```
    kubectl exec -it redis-ha-inmemory-primary-0 -nodim bash
    ```
-
-   
 
    ```
    redis-cli --tls --cert /etc/odimra_certs/odimra_server.crt --key /etc/odimra_certs/odimra_server.key --cacert /etc/odimra_certs/rootCA.crt -a <password>
@@ -2481,6 +2485,12 @@ kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof [backup d
    ```
 
 10. Once all the pods have started and are in running state, login to the pod, log in to Redis CLI and check for the old data.
+
+    ```
+    kubectl exec -it <podname> -nodim bash
+    ```
+
+    **For example**:
 
     ```
     kubectl exec -it redis-ha-ondisk-primary-0 -nodim bash

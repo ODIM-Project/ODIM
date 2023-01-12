@@ -39,7 +39,7 @@ type TaskUpdateInfo struct {
 	TaskID      string
 	TargetURI   string
 	TaskRequest string
-	UpdateTask  func(context.Context, TaskData) error
+	UpdateTask  func(TaskData) error
 }
 
 // GeneralError will create the error response and update task if required
@@ -73,7 +73,7 @@ func GeneralError(ctx context.Context, statusCode int32, statusMsg, errMsg strin
 			PercentComplete: 100,
 			HTTPMethod:      http.MethodPost,
 		}
-		t.UpdateTask(ctx, task)
+		t.UpdateTask(task)
 	}
 	return resp
 }

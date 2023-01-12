@@ -357,7 +357,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	}
 
 }
-func mockUpdateTask(ctx context.Context, task common.TaskData) error {
+func mockUpdateTask(task common.TaskData) error {
 	if task.TaskID == "invalid" {
 		return fmt.Errorf(common.Cancelling)
 	}

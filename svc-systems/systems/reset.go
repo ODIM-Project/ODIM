@@ -34,7 +34,7 @@ type PluginContact struct {
 	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DevicePassword  func([]byte) ([]byte, error)
 	GetPluginStatus func(context.Context, smodel.Plugin) bool
-	UpdateTask      func(context.Context, common.TaskData) error
+	UpdateTask      func(common.TaskData) error
 }
 
 var (
@@ -49,7 +49,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 	resp.StatusCode = http.StatusAccepted
 	var percentComplete int32
 	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	err := p.UpdateTask(ctx, task)
+	err := p.UpdateTask(task)
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: p.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	if err != nil {
@@ -59,7 +59,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 	}
 	percentComplete = 10
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	p.UpdateTask(ctx, task)
+	p.UpdateTask(task)
 	// parsing the ResetComputerSystem
 	var resetCompSys ResetComputerSystem
 	err = JSONUnMarshal(req.RequestBody, &resetCompSys)
@@ -104,7 +104,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 	target.Password = decryptedPasswordByte
 	percentComplete = 30
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	p.UpdateTask(ctx, task)
+	p.UpdateTask(task)
 
 	// Get the Plugin info
 	plugin, gerr := smodel.GetPluginData(target.PluginID)
@@ -149,7 +149,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
 		task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Exception, common.Critical, 100, http.MethodPost)
-		err = p.UpdateTask(ctx, task)
+		err = p.UpdateTask(task)
 		if err != nil {
 			errMsg := "error while starting the task: " + err.Error()
 			l.LogWithFields(ctx).Error(errMsg)
@@ -186,7 +186,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 	}
 	smodel.AddSystemResetInfo("/redfish/v1/Systems/"+req.SystemID, resetCompSys.ResetType)
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, common.OK, 100, http.MethodPost)
-	p.UpdateTask(ctx, task)
+	p.UpdateTask(task)
 
 	return resp
 }

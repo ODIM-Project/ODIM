@@ -130,10 +130,10 @@ func (e *PluginContact) monitorPluginTask(ctx context.Context, monitorTaskData *
 			return monitorTaskData.respBody, err
 		}
 		var updatetask = fillTaskData(monitorTaskData.taskID, monitorTaskData.serverURI, monitorTaskData.requestBody, monitorTaskData.resp, task.TaskState, task.TaskStatus, task.PercentComplete, http.MethodPost)
-		err := e.UpdateTask(ctx, updatetask)
+		err := e.UpdateTask(updatetask)
 		if err != nil && err.Error() == common.Cancelling {
 			var updatetask = fillTaskData(monitorTaskData.taskID, monitorTaskData.serverURI, monitorTaskData.requestBody, monitorTaskData.resp, common.Cancelled, common.Critical, 100, http.MethodPost)
-			e.UpdateTask(ctx, updatetask)
+			e.UpdateTask(updatetask)
 			return monitorTaskData.respBody, err
 		}
 		time.Sleep(time.Second * 5)

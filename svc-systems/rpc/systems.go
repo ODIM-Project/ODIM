@@ -34,7 +34,7 @@ type Systems struct {
 	IsAuthorizedRPC    func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
 	GetSessionUserName func(string) (string, error)
 	CreateTask         func(string) (string, error)
-	UpdateTask         func(context.Context, common.TaskData) error
+	UpdateTask         func(common.TaskData) error
 	EI                 *systems.ExternalInterface
 }
 

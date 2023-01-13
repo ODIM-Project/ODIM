@@ -153,7 +153,7 @@ func GetAccount(ctx context.Context, session *asmodel.Session, accountID string)
 		}
 	}
 
-	l.LogWithFields(ctx).Infof("Retrieving the user details from the database for the account %s", accountID)
+	l.LogWithFields(ctx).Info("Retrieving the user details from the database for the account", accountID)
 	user, err := asmodel.GetUserDetails(accountID)
 	if err != nil {
 		errorMessage := errLogPrefix + err.Error()

@@ -78,9 +78,9 @@ type ExternalInterface struct {
 	ContactClient            func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	Auth                     func(string, []string, []string) (response.RPC, error)
 	GetSessionUserName       func(string) (string, error)
-	CreateChildTask          func(string, string) (string, error)
-	CreateTask               func(string) (string, error)
-	UpdateTask               func(common.TaskData) error
+	CreateChildTask          func(context.Context, string, string) (string, error)
+	CreateTask               func(context.Context, string) (string, error)
+	UpdateTask               func(context.Context, common.TaskData) error
 	CreateSubcription        func(context.Context, []string)
 	PublishEvent             func(context.Context, []string, string)
 	PublishEventMB           func(context.Context, string, string, string)
@@ -135,7 +135,7 @@ type getResourceRequest struct {
 	GetPluginStatus   func(context.Context, agmodel.Plugin) bool
 	UpdateFlag        bool
 	TargetURI         string
-	UpdateTask        func(common.TaskData) error
+	UpdateTask        func(context.Context, common.TaskData) error
 	BMCAddress        string
 }
 
@@ -261,7 +261,7 @@ func genError(ctx context.Context, errorMessage string, respPtr *response.RPC, h
 }
 
 // UpdateTaskData update the task with the given data
-func UpdateTaskData(taskData common.TaskData) error {
+func UpdateTaskData(ctx context.Context, taskData common.TaskData) error {
 	var res map[string]interface{}
 	if err := json.Unmarshal([]byte(taskData.TaskRequest), &res); err != nil {
 		return err
@@ -278,11 +278,11 @@ func UpdateTaskData(taskData common.TaskData) error {
 		ResponseBody:  respBody,
 	}
 
-	err := services.UpdateTask(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	err := services.UpdateTask(ctx, taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
-		services.UpdateTask(taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+		services.UpdateTask(ctx, taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 		if taskData.PercentComplete == 0 {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}
@@ -1008,11 +1008,11 @@ func (h *respHolder) getResourceDetails(ctx context.Context, taskID string, prog
 	}
 	progress = progress + alottedWork
 	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
-	err = req.UpdateTask(task)
+	err = req.UpdateTask(ctx, task)
 
 	if err != nil && (err.Error() == common.Cancelling) {
 		var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Cancelled, common.OK, progress, http.MethodPost)
-		req.UpdateTask(task)
+		req.UpdateTask(ctx, task)
 
 	}
 	return progress
@@ -1375,7 +1375,7 @@ func (e *ExternalInterface) getTelemetryService(ctx context.Context, taskID, tar
 	}
 	percentComplete = progress
 	task := fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	e.UpdateTask(task)
+	e.UpdateTask(ctx, task)
 
 	// Populate the MetricReportDefinitions for telemetry service
 	progress = percentComplete
@@ -1386,7 +1386,7 @@ func (e *ExternalInterface) getTelemetryService(ctx context.Context, taskID, tar
 	}
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	e.UpdateTask(task)
+	e.UpdateTask(ctx, task)
 
 	// Populate the MetricReports for telemetry service
 	var metricReportEstimatedWork int32
@@ -1398,7 +1398,7 @@ func (e *ExternalInterface) getTelemetryService(ctx context.Context, taskID, tar
 	}
 	percentComplete = progress + metricReportEstimatedWork
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	e.UpdateTask(task)
+	e.UpdateTask(ctx, task)
 
 	// Populate the Triggers for telemetry service
 	pluginContactRequest.OID = "/redfish/v1/TelemetryService/Triggers"
@@ -1409,7 +1409,7 @@ func (e *ExternalInterface) getTelemetryService(ctx context.Context, taskID, tar
 	}
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	e.UpdateTask(task)
+	e.UpdateTask(ctx, task)
 	return percentComplete
 }
 
@@ -1532,7 +1532,7 @@ func (e *ExternalInterface) getTeleInfo(ctx context.Context, taskID string, prog
 	}
 	progress = progress + alottedWork
 	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
-	req.UpdateTask(task)
+	req.UpdateTask(ctx, task)
 	return progress
 }
 
@@ -1695,11 +1695,11 @@ func (e *ExternalInterface) monitorPluginTask(ctx context.Context, subTaskChanne
 			return monitorTaskData.getResponse, err
 		}
 		var updatetask = fillTaskData(monitorTaskData.subTaskID, monitorTaskData.serverURI, monitorTaskData.updateRequestBody, monitorTaskData.resp, task.TaskState, task.TaskStatus, task.PercentComplete, http.MethodPost)
-		err := e.UpdateTask(updatetask)
+		err := e.UpdateTask(ctx, updatetask)
 		if err != nil && err.Error() == common.Cancelling {
 			var updatetask = fillTaskData(monitorTaskData.subTaskID, monitorTaskData.serverURI, monitorTaskData.updateRequestBody, monitorTaskData.resp, common.Cancelled, common.Critical, 100, http.MethodPost)
 			subTaskChannel <- http.StatusInternalServerError
-			e.UpdateTask(updatetask)
+			e.UpdateTask(ctx, updatetask)
 			return monitorTaskData.getResponse, err
 		}
 		time.Sleep(time.Second * 5)

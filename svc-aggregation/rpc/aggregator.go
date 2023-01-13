@@ -158,7 +158,7 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 	}
 
 	// Task Service using RPC and get the taskID
-	taskURI, err := a.connector.CreateTask(sessionUserName)
+	taskURI, err := a.connector.CreateTask(ctx, sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
@@ -190,7 +190,7 @@ func (a *Aggregator) reset(ctx context.Context, taskID string, sessionUserName s
 	// TaskState: Running - This value shall represent that the operation is executing.
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
-	err := a.connector.UpdateTask(common.TaskData{
+	err := a.connector.UpdateTask(ctx, common.TaskData{
 		TaskID:          taskID,
 		TaskState:       common.Running,
 		TaskStatus:      common.OK,
@@ -200,7 +200,7 @@ func (a *Aggregator) reset(ctx context.Context, taskID string, sessionUserName s
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
-		a.connector.UpdateTask(common.TaskData{
+		a.connector.UpdateTask(ctx, common.TaskData{
 			TaskID:          taskID,
 			TaskState:       common.Cancelled,
 			TaskStatus:      common.OK,
@@ -242,7 +242,7 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 		l.LogWithFields(ctx).Error(errMsg)
 		return resp, nil
 	}
-	taskURI, err := a.connector.CreateTask(sessionUserName)
+	taskURI, err := a.connector.CreateTask(ctx, sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
@@ -256,7 +256,7 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 	} else {
 		taskID = strArray[len(strArray)-1]
 	}
-	err = a.connector.UpdateTask(common.TaskData{
+	err = a.connector.UpdateTask(ctx, common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       taskURI,
 		TaskState:       common.Running,
@@ -367,7 +367,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	}
 
 	// Task Service using RPC and get the taskID
-	taskURI, err := a.connector.CreateTask(sessionUserName)
+	taskURI, err := a.connector.CreateTask(ctx, sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create the task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
@@ -547,7 +547,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	}
 
 	// Task Service using RPC and get the taskID
-	taskURI, err := a.connector.CreateTask(sessionUserName)
+	taskURI, err := a.connector.CreateTask(ctx, sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
@@ -580,7 +580,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 }
 
 func deleteAggregationSource(ctx context.Context, taskID string, targetURI string, a *Aggregator, req *aggregatorproto.AggregatorRequest) error {
-	err := a.connector.UpdateTask(common.TaskData{
+	err := a.connector.UpdateTask(ctx, common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       targetURI,
 		TaskState:       common.Running,
@@ -591,7 +591,7 @@ func deleteAggregationSource(ctx context.Context, taskID string, targetURI strin
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
-		a.connector.UpdateTask(common.TaskData{
+		a.connector.UpdateTask(ctx, common.TaskData{
 			TaskID:          taskID,
 			TargetURI:       targetURI,
 			TaskState:       common.Cancelled,
@@ -602,7 +602,7 @@ func deleteAggregationSource(ctx context.Context, taskID string, targetURI strin
 		go runtime.Goexit()
 	}
 	data := a.connector.DeleteAggregationSource(ctx, req)
-	err = a.connector.UpdateTask(common.TaskData{
+	err = a.connector.UpdateTask(ctx, common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       targetURI,
 		TaskState:       common.Completed,
@@ -612,7 +612,7 @@ func deleteAggregationSource(ctx context.Context, taskID string, targetURI strin
 		HTTPMethod:      http.MethodDelete,
 	})
 	if err != nil && (err.Error() == common.Cancelling) {
-		a.connector.UpdateTask(common.TaskData{
+		a.connector.UpdateTask(ctx, common.TaskData{
 			TaskID:          taskID,
 			TargetURI:       targetURI,
 			TaskState:       common.Cancelled,
@@ -811,7 +811,7 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 	}
 
 	// Task Service using RPC and get the taskID
-	taskURI, err := a.connector.CreateTask(sessionUserName)
+	taskURI, err := a.connector.CreateTask(ctx, sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
@@ -842,7 +842,7 @@ func (a *Aggregator) resetElements(ctx context.Context, taskID string, sessionUs
 	// Update the task status here
 	// PercentComplete: 0% Completed
 	// TaskState: Running - This value shall represent that the operation is executing.
-	err := a.connector.UpdateTask(common.TaskData{
+	err := a.connector.UpdateTask(ctx, common.TaskData{
 		TaskID:          taskID,
 		TaskState:       common.Running,
 		TaskStatus:      common.OK,
@@ -852,7 +852,7 @@ func (a *Aggregator) resetElements(ctx context.Context, taskID string, sessionUs
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
-		a.connector.UpdateTask(common.TaskData{
+		a.connector.UpdateTask(ctx, common.TaskData{
 			TaskID:          taskID,
 			TaskState:       common.Cancelled,
 			TaskStatus:      common.OK,
@@ -893,7 +893,7 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 		l.LogWithFields(ctx).Error(errMsg)
 		return resp, nil
 	}
-	taskURI, err := a.connector.CreateTask(sessionUserName)
+	taskURI, err := a.connector.CreateTask(ctx, sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
@@ -907,7 +907,7 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 	} else {
 		taskID = strArray[len(strArray)-1]
 	}
-	err = a.connector.UpdateTask(common.TaskData{
+	err = a.connector.UpdateTask(ctx, common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       taskURI,
 		TaskState:       common.Running,

@@ -44,8 +44,8 @@ type CompletedTask struct {
 	EndTime  int64
 }
 
-// to be moved to dmtf
 // Task Model
+// to be moved to dmtf
 type Task struct {
 	ParentID     string
 	ChildTaskIDs []string

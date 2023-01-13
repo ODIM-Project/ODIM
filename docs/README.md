@@ -202,7 +202,7 @@
 - [License Service](#license-service)
   - [Viewing the LicenseService root](#viewing-the-licenseservice-root)
   - [Viewing the license collection](#viewing-the-license-collection)
-  - [Viewing single license](#viewing-single-license)
+  - [Viewing information about a license](#viewing-information-about-a-license)
   - [Installing a license](#installing-a-license)
 - [Audit logs](#audit-logs)
 - [Security logs](#security-logs)
@@ -12249,6 +12249,8 @@ curl -i GET \
    "Id":"8dd3fb4d-0429-4262-989f-906df092aefd.1.1",
    "Name":"iLO License",
    "Description":"iLO License View",
+   "ExpirationDate": "Activated until 14 Jan 2023",
+   "InstallDate": "16 May 2022",
    "LicenseType":"Perpetual",
    "SerialNumber":"CN704614C4",
 }

@@ -20,6 +20,7 @@ import glob, shutil, copy, getpass, socket
 
 import base64
 from cryptography.hazmat.primitives import hashes
+from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
@@ -61,6 +62,8 @@ MIN_REPLICA_COUNT = 0
 MAX_REPLICA_COUNT = 10
 MAX_LOG_FILE_SIZE = 5*1024*1024
 
+key = Fernet.generate_key()
+fernet = Fernet(key)
 # write_node_details is used for creating hosts.yaml required
 # for deploying kuberentes cluster using kubespray. hosts.yaml
 # is prepared based on the parameters provided in odim-controller conf
@@ -1140,7 +1143,8 @@ def store_vault_key():
 			exit(1)
 
 		fd = open(ODIMRA_VAULT_KEY_FILE, "wb")
-		fd.write(first_pw.encode('utf-8'))
+		encpass = fernet.encrypt(first_pw.encode('utf-8'))
+		fd.write(encpass)
 		fd.close()
 
 		encode_cmd = '{vault_bin} -encode {key_file}'.format(vault_bin=ODIMRA_VAULT_BIN, key_file=ODIMRA_VAULT_KEY_FILE)
@@ -1164,7 +1168,8 @@ def store_password_in_vault():
 		exit(1)
 
 	fd = open(ANSIBLE_SUDO_PW_FILE, "wb")
-	fd.write(first_pw.encode('utf-8'))
+	encpass = fernet.encrypt(first_pw.encode('utf-8'))
+	fd.write(encpass)
 	fd.close()
 
 	encrypt_cmd = '{vault_bin} -key {key_file} -encrypt {data_file}'.format(vault_bin=ODIMRA_VAULT_BIN,
@@ -1185,7 +1190,8 @@ def store_redis_password_in_vault(REDIS_PW_FILE_PATH, redis_db_name):
 		exit(1)
 
 	fd = open(REDIS_PW_FILE_PATH, "wb")
-	fd.write(first_pw.encode('utf-8'))
+	encpass = fernet.encrypt(first_pw.encode('utf-8'))
+	fd.write(encpass)
 	fd.close()
 
 	encrypt_cmd = '{vault_bin} -key {key_file} -encrypt {data_file}'.format(vault_bin=ODIMRA_VAULT_BIN,

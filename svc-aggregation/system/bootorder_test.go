@@ -144,7 +144,7 @@ func TestPluginContact_SetDefaultBootOrderSystems(t *testing.T) {
 	mockSystemData("/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1.1")
 	mockSystemData("/redfish/v1/Systems/2aca8daa-9c20-4a5b-9203-469a24f452c8.1")
 	mockSystemData("/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd.1")
-
+	ctx := mockContext()
 	type args struct {
 		taskID, sessionUserName string
 		req                     *aggregatorproto.AggregatorRequest
@@ -383,7 +383,7 @@ func TestPluginContact_SetDefaultBootOrderSystems(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.SetDefaultBootOrder(tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.p.SetDefaultBootOrder(ctx, tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.SetDefaultBootOrder() = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
 		})

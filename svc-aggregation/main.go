@@ -107,6 +107,7 @@ func main() {
 		DecryptPassword: common.DecryptWithPrivateKey,
 		UpdateTask:      system.UpdateTaskData,
 	}
+
 	go p.RediscoverResources()
 
 	agcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")

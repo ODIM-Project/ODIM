@@ -15,6 +15,7 @@
 package system
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -26,7 +27,7 @@ import (
 
 //UpdateSystemState is used for updating ComputerSystem table
 //and also the server search index, if required.
-func (e *ExternalInterface) UpdateSystemState(updateReq *aggregatorproto.UpdateSystemStateRequest) error {
+func (e *ExternalInterface) UpdateSystemState(ctx context.Context, updateReq *aggregatorproto.UpdateSystemStateRequest) error {
 
 	key := fmt.Sprintf("%s/%s.%s", strings.TrimSuffix(updateReq.SystemURI, "/"), updateReq.SystemUUID, updateReq.SystemID)
 
@@ -61,7 +62,7 @@ func (e *ExternalInterface) UpdateSystemState(updateReq *aggregatorproto.UpdateS
 			"Password": string(plugin.Password),
 		}
 		req.OID = "/ODIM/v1/Sessions"
-		_, token, _, err := contactPlugin(req, "error while getting the details "+req.OID+": ")
+		_, token, _, err := contactPlugin(ctx, req, "error while getting the details "+req.OID+": ")
 		if err != nil {
 			return err
 		}
@@ -78,7 +79,7 @@ func (e *ExternalInterface) UpdateSystemState(updateReq *aggregatorproto.UpdateS
 	req.DeviceInfo = target
 	req.OID = fmt.Sprintf("%s/%s", strings.TrimSuffix(updateReq.SystemURI, "/"), updateReq.SystemID)
 
-	rawData, _, getResponse, err := contactPlugin(req, "error while trying to get system details ")
+	rawData, _, getResponse, err := contactPlugin(ctx, req, "error while trying to get system details ")
 	if err != nil || getResponse.StatusCode != http.StatusOK {
 		return fmt.Errorf("error: while trying to get system details ")
 	}
@@ -99,7 +100,7 @@ func (e *ExternalInterface) UpdateSystemState(updateReq *aggregatorproto.UpdateS
 		return fmt.Errorf("error: failed to update the data computer system uuid not found")
 	}
 	computerSystemUUID := systemInfo["UUID"].(string)
-	searchForm := createServerSearchIndex(systemInfo, key, updateReq.SystemUUID)
+	searchForm := createServerSearchIndex(ctx, systemInfo, key, updateReq.SystemUUID)
 	if err := agmodel.UpdateIndex(searchForm, key, computerSystemUUID, target.ManagerAddress); err != nil {
 		return fmt.Errorf("error: updating server index failed with err %v", err)
 	}

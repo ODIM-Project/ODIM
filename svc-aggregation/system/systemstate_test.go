@@ -177,9 +177,10 @@ func TestExternalInterface_UpdateSystemState(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.e.UpdateSystemState(tt.args.updateReq); (err != nil) != tt.wantErr {
+			if err := tt.e.UpdateSystemState(ctx, tt.args.updateReq); (err != nil) != tt.wantErr {
 				t.Errorf("ExternalInterface.UpdateSystemState() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

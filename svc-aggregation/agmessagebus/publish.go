@@ -15,6 +15,7 @@
 package agmessagebus
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -27,11 +28,11 @@ import (
 )
 
 //Publish will takes the system id,Event type and publishes the data to message bus
-func Publish(systemID, eventType, collectionType string) {
+func Publish(ctx context.Context, systemID, eventType, collectionType string) {
 	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
 	k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
-		l.Log.Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
+		l.LogWithFields(ctx).Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
 		return
 	}
 
@@ -68,10 +69,10 @@ func Publish(systemID, eventType, collectionType string) {
 	}
 
 	if err := k.Distribute(mbevent); err != nil {
-		l.Log.Error("Unable Publish events to kafka" + err.Error())
+		l.LogWithFields(ctx).Error("Unable Publish events to kafka" + err.Error())
 		return
 	}
-	l.Log.Info("Event Published")
+	l.LogWithFields(ctx).Info("Event Published")
 
 }
 

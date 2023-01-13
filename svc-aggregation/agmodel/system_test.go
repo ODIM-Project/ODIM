@@ -15,6 +15,7 @@
 package agmodel
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -28,6 +29,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
 func getEncryptedKey(t *testing.T, key []byte) []byte {
 	cryptedKey, err := common.EncryptWithPublicKey(key)
 	if err != nil {
@@ -140,9 +151,10 @@ func TestSaveSystem_Create(t *testing.T) {
 			want:   errors.PackError(errors.DBKeyAlreadyExist, "error: data with key xyz already exists"),
 		},
 	}
+	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.system.Create(tt.args.systemID); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.system.Create(ctx, tt.args.systemID); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("SaveSystem.Create() = %v, want %v", got, tt.want)
 			}
 		})
@@ -151,7 +163,6 @@ func TestSaveSystem_Create(t *testing.T) {
 
 func TestGetPluginData(t *testing.T) {
 	config.SetUpMockConfig(t)
-
 	defer func() {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
@@ -271,9 +282,10 @@ func TestGetComputeSystem(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetComputeSystem(tt.args.deviceUUID)
+			got, err := GetComputeSystem(ctx, tt.args.deviceUUID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetComputeSystem() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -311,9 +323,10 @@ func TestSaveComputeSystem(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := SaveComputeSystem(tt.args.computeServer, tt.args.deviceUUID); (err != nil) != tt.wantErr {
+			if err := SaveComputeSystem(ctx, tt.args.computeServer, tt.args.deviceUUID); (err != nil) != tt.wantErr {
 				t.Errorf("SaveComputeSystem() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -346,9 +359,10 @@ func TestSaveChassis(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := SaveChassis(tt.args.chassis, tt.args.deviceUUID); (err != nil) != tt.wantErr {
+			if err := SaveChassis(ctx, tt.args.chassis, tt.args.deviceUUID); (err != nil) != tt.wantErr {
 				t.Errorf("SaveChassis() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -413,9 +427,10 @@ func TestSaveRegistryFile(t *testing.T) {
 			wantErr: false,
 		},
 	}
+	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := SaveRegistryFile(tt.args.body, tt.args.table, tt.args.key); (err != nil) != tt.wantErr {
+			if err := SaveRegistryFile(ctx, tt.args.body, tt.args.table, tt.args.key); (err != nil) != tt.wantErr {
 				t.Errorf("SaveRegistryFile() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

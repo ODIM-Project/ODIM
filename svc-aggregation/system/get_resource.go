@@ -12,6 +12,7 @@
 package system
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
@@ -25,11 +26,11 @@ import (
 
 // GetAggregationSourceCollection is to fetch all the AggregationSourceURI uri's and returns with created collection
 // of AggregationSource data from odim
-func (e *ExternalInterface) GetAggregationSourceCollection() response.RPC {
+func (e *ExternalInterface) GetAggregationSourceCollection(ctx context.Context) response.RPC {
 	aggregationSourceKeys, err := e.GetAllKeysFromTable("AggregationSource")
 	if err != nil {
 		errorMessage := err.Error()
-		l.Log.Error("Unable to get aggregation source : " + errorMessage)
+		l.LogWithFields(ctx).Error("Unable to get aggregation source : " + errorMessage)
 		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errorMessage, []interface{}{config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, nil)
 	}
 	var members = make([]agresponse.ListMember, 0)
@@ -64,11 +65,11 @@ func (e *ExternalInterface) GetAggregationSourceCollection() response.RPC {
 
 // GetAggregationSource is used  to fetch the AggregationSource with given aggregation source uri
 //and returns AggregationSource
-func (e *ExternalInterface) GetAggregationSource(reqURI string) response.RPC {
+func (e *ExternalInterface) GetAggregationSource(ctx context.Context, reqURI string) response.RPC {
 	aggregationSource, err := e.GetAggregationSourceInfo(reqURI)
 	if err != nil {
 		errorMessage := err.Error()
-		l.Log.Error("Unable to get aggregation source : " + errorMessage)
+		l.LogWithFields(ctx).Error("Unable to get aggregation source : " + errorMessage)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"AggregationSource", reqURI}, nil)
 		}
@@ -81,7 +82,7 @@ func (e *ExternalInterface) GetAggregationSource(reqURI string) response.RPC {
 	connectionMethod, err := e.GetConnectionMethod(connectionMethodOdataID)
 	if err != nil {
 		errorMessage := err.Error()
-		l.Log.Error("Unable to get connectionmethod : " + errorMessage)
+		l.LogWithFields(ctx).Error("Unable to get connectionmethod : " + errorMessage)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ConnectionMethod", connectionMethodOdataID}, nil)
 		}

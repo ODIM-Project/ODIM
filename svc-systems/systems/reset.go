@@ -16,6 +16,7 @@
 package systems
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -33,7 +34,7 @@ type PluginContact struct {
 	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DevicePassword  func([]byte) ([]byte, error)
 	GetPluginStatus func(smodel.Plugin) bool
-	UpdateTask      func(common.TaskData) error
+	UpdateTask      func(context.Context, common.TaskData) error
 }
 
 var (
@@ -43,12 +44,14 @@ var (
 
 // ComputerSystemReset performs a reset action on the requeseted computer system with the specified ResetType
 func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemResetRequest, taskID, sessionUserName string) response.RPC {
+	// TODO : should be removed when context from svc-api is passed to this function
+	ctx := context.TODO()
 	var targetURI = "/redfish/v1/Systems/" + req.SystemID + "/Actions/ComputerSystem.Reset"
 	var resp response.RPC
 	resp.StatusCode = http.StatusAccepted
 	var percentComplete int32
 	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	err := p.UpdateTask(task)
+	err := p.UpdateTask(ctx, task)
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: p.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	if err != nil {
@@ -58,7 +61,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	}
 	percentComplete = 10
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	p.UpdateTask(task)
+	p.UpdateTask(ctx, task)
 	// parsing the ResetComputerSystem
 	var resetCompSys ResetComputerSystem
 	err = JSONUnMarshal(req.RequestBody, &resetCompSys)
@@ -103,7 +106,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	target.Password = decryptedPasswordByte
 	percentComplete = 30
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	p.UpdateTask(task)
+	p.UpdateTask(ctx, task)
 
 	// Get the Plugin info
 	plugin, gerr := smodel.GetPluginData(target.PluginID)
@@ -148,7 +151,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
 		task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Exception, common.Critical, 100, http.MethodPost)
-		err = p.UpdateTask(task)
+		err = p.UpdateTask(ctx, task)
 		if err != nil {
 			errMsg := "error while starting the task: " + err.Error()
 			l.Log.Error(errMsg)
@@ -185,7 +188,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	}
 	smodel.AddSystemResetInfo("/redfish/v1/Systems/"+req.SystemID, resetCompSys.ResetType)
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, common.OK, 100, http.MethodPost)
-	p.UpdateTask(task)
+	p.UpdateTask(ctx, task)
 
 	return resp
 }

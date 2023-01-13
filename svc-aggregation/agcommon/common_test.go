@@ -575,7 +575,7 @@ func mockPlugins(t *testing.T) {
 	}
 }
 
-func TestcontactPlugin(t *testing.T) {
+func TestContactPlugin(t *testing.T) {
 
 	config.SetUpMockConfig(t)
 	defer func() {

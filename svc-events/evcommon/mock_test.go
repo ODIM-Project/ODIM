@@ -16,6 +16,7 @@
 package evcommon
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -126,7 +127,7 @@ func TestMockCreateTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := MockCreateTask(tt.args.sessionusername)
+			got, _ := MockCreateTask(context.TODO(), tt.args.sessionusername)
 			if got != tt.want {
 				t.Errorf("MockCreateTask() = %v, want %v", got, tt.want)
 			}
@@ -269,9 +270,9 @@ func TestMockContactClient(t *testing.T) {
 			}
 		})
 	}
-	_, err := MockCreateChildTask("", destinationIP)
+	_, err := MockCreateChildTask(context.TODO(), "", destinationIP)
 	assert.Nil(t, err)
-	err = MockUpdateTask(common.TaskData{})
+	err = MockUpdateTask(context.TODO(), common.TaskData{})
 	assert.Nil(t, err)
 }
 

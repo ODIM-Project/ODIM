@@ -188,9 +188,8 @@ func formatSyslog(logType string, logFields []string, entry *logrus.Entry) (stri
 func (format LogFormat) String() string {
 	if b, err := format.MarshalText(); err == nil {
 		return string(b)
-	} else {
-		return "unknown_log_format"
-	}
+	} 
+	return "unknown_log_format"
 }
 
 // ParseLogFormat takes a string level and returns the log format.

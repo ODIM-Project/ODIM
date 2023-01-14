@@ -245,6 +245,7 @@ jobs:
 
     - name: setup python dependencies
       run: |
+          sudo apt-get update
           sudo apt-get -y install python3 python3-venv python3-dev python3-pip python3-pytest redis-tools
           python3 -m pip install --upgrade pip
           sudo pip3 install redis==3.3.8 grpcio==1.42.0 grpcio-tools==1.42.0 protobuf==3.19.1 tenacity==8.0.1 etcd3==0.12.0

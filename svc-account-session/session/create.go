@@ -83,11 +83,9 @@ func CreateNewSession(ctx context.Context, req *sessionproto.SessionCreateReques
 			resp = common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errMsg, msgArgs, nil)
 		} else {
 			resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil)
-			logProperties := make(map[string]interface{})
-			logProperties["SessionUserID"] = createSession.UserName
-			logProperties["Message"] = "Invalid username or password"
-			logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
-			customLogs.AuthLog(logProperties)
+			ctx = context.WithValue(ctx, common.SessionUserID, createSession.UserName)
+			ctx = context.WithValue(ctx, common.StatusCode, int32(http.StatusUnauthorized))
+			customLogs.AuthLog(ctx).Error("Invalid username or password")
 		}
 		return resp, ""
 	}
@@ -106,12 +104,10 @@ func CreateNewSession(ctx context.Context, req *sessionproto.SessionCreateReques
 	//User requires Login privelege to create a session
 	if _, exist := rolePrivilege[common.PrivilegeLogin]; !exist {
 		errorMessage := errLogPrefix + "User doesn't have required privilege to create a session"
-		logProperties := make(map[string]interface{})
-		logProperties["SessionUserID"] = createSession.UserName
-		logProperties["SessionRoleID"] = role.ID
-		logProperties["Message"] = errorMessage
-		logProperties["ResponseStatusCode"] = int32(http.StatusForbidden)
-		customLogs.AuthLog(logProperties)
+		ctx = context.WithValue(ctx, common.SessionUserID, createSession.UserName)
+		ctx = context.WithValue(ctx, common.SessionRoleID, role.ID)
+		ctx = context.WithValue(ctx, common.StatusCode, int32(http.StatusForbidden))
+		customLogs.AuthLog(ctx).Error(errorMessage)
 		return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, errorMessage, nil, nil), ""
 	}
 

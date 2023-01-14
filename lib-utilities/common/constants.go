@@ -195,6 +195,11 @@ const (
 	SetDefaultBootOrderElementsOfAggregate = "SetDefaultBootOrderElementsOfAggregate"
 	RediscoverSystemInventory              = "RediscoverSystemInventory"
 	CheckPluginStatus                      = "CheckPluginStatus"
+	// constants for log
+	SessionToken  = "sessiontoken"
+	SessionUserID = "sessionuserid"
+	SessionRoleID = "sessionroleid"
+	StatusCode    = "statuscode"
 )
 
 // ActionType defines type of action

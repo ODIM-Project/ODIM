@@ -127,7 +127,7 @@ func mockData() error {
 	}
 	err = connPool.Create("Aggregate", "/redfish/v1/AggregationService/Aggregates/b98ab95b-9187-442a-817f-b9ec60046575", aggregateData)
 	if err != nil {
-		return fmt.Errorf("error while trying to save Aggregate %v", cErr.Error())
+		return fmt.Errorf("error while trying to save Aggregate %v", err.Error())
 	}
 	return nil
 }

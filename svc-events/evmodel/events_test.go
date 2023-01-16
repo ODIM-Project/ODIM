@@ -17,6 +17,7 @@ package evmodel
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -1241,4 +1242,176 @@ func TestInvalidDbConnection(t *testing.T) {
 	GetDbConnection = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
 	}
+}
+
+func Test_getSliceFromString(t *testing.T) {
+	type args struct {
+		sliceString string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getSliceFromString(tt.args.sliceString); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getSliceFromString() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetSliceFromString(t *testing.T) {
+	type args struct {
+		sliceString string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "Positive Test case",
+			args: args{
+				sliceString: "[SystemCollection ManagerCollection]",
+			},
+			want: []string{"SystemCollection", "ManagerCollection"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetSliceFromString(tt.args.sliceString); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetSliceFromString() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetAllEvtSubscriptions(t *testing.T) {
+	config.SetUpMockConfig(t)
+	tests := []struct {
+		name    string
+		want    []string
+		wantErr bool
+	}{
+		{
+			name:    "Positive Test case",
+			want:    []string{},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := GetAllEvtSubscriptions()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAllEvtSubscriptions() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+}
+
+func TestGetAllDeviceSubscriptions(t *testing.T) {
+	config.SetUpMockConfig(t)
+	tests := []struct {
+		name    string
+		want    []string
+		wantErr bool
+	}{
+		{
+			name:    "Positive Test case",
+			want:    []string{},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := GetAllDeviceSubscriptions()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAllDeviceSubscriptions() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+}
+
+func TestGetAllAggregates(t *testing.T) {
+	config.SetUpMockConfig(t)
+	tests := []struct {
+		name    string
+		want    []string
+		wantErr bool
+	}{
+		{
+			name:    "Positive Test case",
+			want:    []string{},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := GetAllAggregates()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAllAggregates() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+}
+
+func TestGetAggregate(t *testing.T) {
+	config.SetUpMockConfig(t)
+	mockAggregateList()
+	type args struct {
+		aggregateURI string
+	}
+	tests := []struct {
+		name string
+		args args
+		want Aggregate
+	}{
+		{
+			name: "Valid aggregate URL",
+			args: args{
+				aggregateURI: "/redfish/v1/AggregationService/Aggregates/b98ab95b-9187-442a-817f-b9ec60046575",
+			},
+			want: Aggregate{Elements: []OdataIDLink{
+				{
+					OdataID: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				},
+			}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, _ := GetAggregate(tt.args.aggregateURI)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetAggregate() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+func mockAggregateList() error {
+	connPool, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	aggregate := Aggregate{
+		Elements: []OdataIDLink{
+			{
+				OdataID: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+			},
+		},
+	}
+	err = connPool.Create("Aggregate", "/redfish/v1/AggregationService/Aggregates/b98ab95b-9187-442a-817f-b9ec60046575", aggregate)
+	if err != nil {
+		return fmt.Errorf("error while trying to save Aggregate %v", err.Error())
+	}
+	return nil
 }

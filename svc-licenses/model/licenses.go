@@ -14,7 +14,10 @@
 
 package model
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+)
 
 // PluginContactRequest ...
 type PluginContactRequest struct {
@@ -22,7 +25,7 @@ type PluginContactRequest struct {
 	OID              string
 	DeviceInfo       interface{}
 	BasicAuth        map[string]string
-	ContactClient    func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient    func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	PostBody         interface{}
 	Plugin           Plugin
 	HTTPMethodType   string

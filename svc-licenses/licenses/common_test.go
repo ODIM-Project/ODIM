@@ -16,6 +16,7 @@ package licenses
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -159,7 +160,7 @@ func mockGetResource(table, key string, dbtype persistencemgr.DbType) (interface
 	return "body", nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	baseURI := "/redfish/v1"
 
 	if url == "https://localhost:9091"+baseURI+"/LicenseService" {

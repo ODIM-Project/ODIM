@@ -118,7 +118,7 @@ func getDataFromDB(table, key string, db common.DbType) (string, error) {
 	return data, nil
 }
 
-func mockContactClientForDelete(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
+func mockContactClientForDelete(ctx context.Context, url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9092/ODIM/v1/Status" || (strings.Contains(url, "/ODIM/v1/Status") && credentials["UserName"] == "noStatusUser") {
 		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{

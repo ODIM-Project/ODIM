@@ -2,6 +2,7 @@ package telemetry
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,7 +21,7 @@ func MockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (
 	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
-func MockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func MockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Sessions" {
 		body := `{"Token": "12345"}`
 		return &http.Response{

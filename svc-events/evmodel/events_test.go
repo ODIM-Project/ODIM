@@ -1372,14 +1372,18 @@ func TestGetAggregate(t *testing.T) {
 		aggregateURI string
 	}
 	tests := []struct {
-		name string
-		args args
-		want Aggregate
+		name            string
+		args            args
+		want            Aggregate
+		GetDbConnection func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
 	}{
 		{
 			name: "Valid aggregate URL",
 			args: args{
 				aggregateURI: "/redfish/v1/AggregationService/Aggregates/b98ab95b-9187-442a-817f-b9ec60046575",
+			},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
 			},
 			want: Aggregate{Elements: []OdataIDLink{
 				{

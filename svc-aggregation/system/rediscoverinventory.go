@@ -208,13 +208,13 @@ func (e *ExternalInterface) RediscoverResources() error {
 		serverBatchSize = 1
 	}
 	threadID := 1
-	ctxt := context.WithValue(ctx, common.ThreadName, common.RediscoverResources)
+	ctxt := context.WithValue(ctx, common.ThreadName, common.RediscoverSystemInventory)
 	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	threadID++
 	var semaphoreChan = make(chan int, serverBatchSize)
 	for index := range targets {
 		semaphoreChan <- 1
-		go func(target agmodel.Target) {
+		go func(ctxt context.Context, target agmodel.Target) {
 			defer func() {
 				<-semaphoreChan
 			}()
@@ -240,7 +240,7 @@ func (e *ExternalInterface) RediscoverResources() error {
 				}
 			}
 			e.publishResourceUpdatedEvent(ctxt, systemURLArray, "SystemsCollection")
-		}(targets[index])
+		}(ctxt, targets[index])
 	}
 	// if everything is OK return success
 	return nil

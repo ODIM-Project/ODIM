@@ -82,8 +82,12 @@ func (c *sourceProviderImpl) findFabricChassis(ctx context.Context, collection *
 		return
 	}
 	for _, manager := range managers {
+		threadID := 1
+		ctxt := context.WithValue(ctx, common.ThreadName, common.GetFabricManagerChassis)
+		ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 		f.wg.Add(1)
 		go f.getFabricManagerChassis(ctx, manager)
+		threadID++
 	}
 	f.wg.Wait()
 }

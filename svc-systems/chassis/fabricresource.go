@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
@@ -46,7 +47,11 @@ func (f *fabricFactory) getFabricChassisResource(ctx context.Context, rID string
 	}
 
 	for _, manager := range managers {
+		threadID := 1
+		ctxt := context.WithValue(ctx, common.ThreadName, common.CollectChassisResource)
+		ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 		go f.getResource(ctx, manager, rID, ch)
+		threadID++
 	}
 
 	for i := 0; i < len(managers); i++ {

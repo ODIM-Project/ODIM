@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
@@ -45,9 +46,12 @@ func (f *fabricFactory) updateFabricChassisResource(ctx context.Context, url str
 		l.LogWithFields(ctx).Warn("while trying to collect fabric managers details from DB, got " + err.Error())
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", url}, nil)
 	}
-
+	var threadID int = 1
 	for _, manager := range managers {
+		ctxt := context.WithValue(ctx, common.ThreadName, common.UpdateChassisResource)
+		ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 		go f.updateResource(ctx, manager, url, body, ch)
+		threadID++
 	}
 
 	for i := 0; i < len(managers); i++ {

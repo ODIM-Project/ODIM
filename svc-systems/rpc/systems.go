@@ -18,6 +18,7 @@ package rpc
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
@@ -45,6 +46,8 @@ type Systems struct {
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
 func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -71,6 +74,7 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 // to send back to requested user.
 func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SystemService)
 	l.LogWithFields(ctx).Info("Inside GetSystemsCollection function (RPC)")
 	var resp systemsproto.SystemsResponse
@@ -95,6 +99,8 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
 func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -122,6 +128,8 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.ComputerSystemResetRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
@@ -164,7 +172,11 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 		DevicePassword: common.DecryptWithPrivateKey,
 		UpdateTask:     s.UpdateTask,
 	}
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.ComputerSystemReset)
+	ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	go pc.ComputerSystemReset(ctx, req, taskID, sessionUserName)
+	threadID++
 
 	return &resp, nil
 }
@@ -176,6 +188,8 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.DefaultBootOrderRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
@@ -202,6 +216,8 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.BiosSettingsRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
@@ -228,6 +244,8 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
@@ -254,6 +272,8 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
@@ -277,6 +297,8 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})

@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"os"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -29,6 +30,8 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 )
+
+var podName = os.Getenv("POD_NAME")
 
 var (
 	// JSONMarshalFunc function pointer for the json.Marshal
@@ -71,6 +74,8 @@ type ChassisRPC struct {
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
 func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp chassisproto.GetChassisResponse
 	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
 		return cha.UpdateHandler.Handle(ctx, req)
@@ -87,6 +92,8 @@ func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.Upda
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
 func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp chassisproto.GetChassisResponse
 	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
 		return cha.DeleteHandler.Handle(ctx, req)
@@ -103,6 +110,8 @@ func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.Dele
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
 func (cha *ChassisRPC) CreateChassis(ctx context.Context, req *chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp chassisproto.GetChassisResponse
 	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
 		return cha.CreateHandler.Handle(ctx, req)
@@ -119,6 +128,8 @@ func (cha *ChassisRPC) CreateChassis(ctx context.Context, req *chassisproto.Crea
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
 func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp chassisproto.GetChassisResponse
 	sessionToken := req.SessionToken
 	authResp, err := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -144,6 +155,8 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 // Retrieves all the keys with table name ChassisCollection and create the response
 // to send back to requested user.
 func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp chassisproto.GetChassisResponse
 	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeLogin}, func() response.RPC {
 		return cha.GetCollectionHandler.Handle(ctx)
@@ -159,6 +172,8 @@ func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassispro
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
 func (cha *ChassisRPC) GetChassisInfo(ctx context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	var resp chassisproto.GetChassisResponse
 	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeLogin}, func() response.RPC {
 		return cha.GetHandler.Handle(ctx, req)

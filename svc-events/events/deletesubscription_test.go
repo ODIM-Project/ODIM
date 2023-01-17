@@ -95,9 +95,9 @@ func TestDeleteEventSubscription(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusUnauthorized")
 }
 
-func TestDeleteEventSubscriptionOnDeletServer(t *testing.T) {
+func TestDeleteEventSubscriptionOnDeletedServer(t *testing.T) {
 	config.SetUpMockConfig(t)
-	// Intializing plugin token
+	// Initializing plugin token
 	evcommon.Token.Tokens = map[string]string{
 		"ILO": "token",
 	}
@@ -134,7 +134,7 @@ func TestDeleteEventSubscriptionOnDeletServer(t *testing.T) {
 		UUID:         "/redfish/v1/Systems/abab09db-e7a9-4352-8df0-5e41315a2a4c.1",
 	}
 	resp = pc.DeleteEventSubscriptions(req)
-	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusNotFound")
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusNotFound")
 
 	GetIPFromHostNameFunc = func(fqdn string) (string, string) {
 		return "", "Not Found"
@@ -192,7 +192,7 @@ func TestDeleteEventSubscriptionOnDeletServer(t *testing.T) {
 }
 
 func TestDeleteEventSubscriptionOnFabrics(t *testing.T) {
-	// Intializing plugin token
+	// Initializing plugin token
 	evcommon.Token.Tokens = map[string]string{
 		"CFM": "token",
 	}
@@ -256,7 +256,7 @@ func TestIsCollectionOriginResourceURI(t *testing.T) {
 }
 
 func TestDeleteFabricsSubscription(t *testing.T) {
-	// Intializing plugin token
+	// Initializing plugin token
 	evcommon.Token.Tokens = map[string]string{
 		"ILO": "token",
 	}

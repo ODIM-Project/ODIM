@@ -76,12 +76,14 @@ type ChassisRPC struct {
 func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming chassis update request with ", req)
 	var resp chassisproto.GetChassisResponse
 	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
 		return cha.UpdateHandler.Handle(ctx, req)
 	})
 
 	rewrite(ctx, r, &resp)
+	l.LogWithFields(ctx).Debugf("outgoing update chassis response: %s", string(resp))
 	return &resp, nil
 }
 
@@ -94,12 +96,14 @@ func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.Upda
 func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming chassis Delete request with ", req)
 	var resp chassisproto.GetChassisResponse
 	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
 		return cha.DeleteHandler.Handle(ctx, req)
 	})
 
 	rewrite(ctx, r, &resp)
+	l.LogWithFields(ctx).Debugf("outgoing chassis Delete response: %s", string(resp))
 	return &resp, nil
 }
 
@@ -112,12 +116,14 @@ func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.Dele
 func (cha *ChassisRPC) CreateChassis(ctx context.Context, req *chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming chassis create request with ", req)
 	var resp chassisproto.GetChassisResponse
 	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
 		return cha.CreateHandler.Handle(ctx, req)
 	})
 
 	rewrite(ctx, r, &resp)
+	l.LogWithFields(ctx).Debugf("outgoing Chassis create response: %s", string(resp))
 	return &resp, nil
 }
 
@@ -130,6 +136,7 @@ func (cha *ChassisRPC) CreateChassis(ctx context.Context, req *chassisproto.Crea
 func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming getchassisResource request with ", req)
 	var resp chassisproto.GetChassisResponse
 	sessionToken := req.SessionToken
 	authResp, err := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -147,6 +154,7 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 	}
 	data, _ := pc.GetChassisResource(ctx, req)
 	rewrite(ctx, data, &resp)
+	l.LogWithFields(ctx).Debugf("outgoing getchassisResource response: %s", string(resp))
 	return &resp, nil
 }
 
@@ -157,11 +165,13 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming GetChassisCollection request with ", req)
 	var resp chassisproto.GetChassisResponse
 	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeLogin}, func() response.RPC {
 		return cha.GetCollectionHandler.Handle(ctx)
 	})
 	rewrite(ctx, r, &resp)
+	l.LogWithFields(ctx).Debugf("outgoing GetChassisCollection response: %s", string(resp))
 	return &resp, nil
 }
 
@@ -174,12 +184,14 @@ func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassispro
 func (cha *ChassisRPC) GetChassisInfo(ctx context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming GetChassisInfo request with ", req)
 	var resp chassisproto.GetChassisResponse
 	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeLogin}, func() response.RPC {
 		return cha.GetHandler.Handle(ctx, req)
 	})
 
 	rewrite(ctx, r, &resp)
+	l.LogWithFields(ctx).Debugf("outgoing GetChassisInfo response: %s", string(resp))
 	return &resp, nil
 }
 

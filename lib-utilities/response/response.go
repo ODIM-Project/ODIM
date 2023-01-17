@@ -14,6 +14,8 @@
 
 package response
 
+import "context"
+
 const (
 	// BaseVersion defines the latest version of Base
 	BaseVersion = "Base.1.13.0."
@@ -111,22 +113,23 @@ type Response struct {
 // Header defines the headers required to create a proper response from the api gateway.
 // Body defines the actual response of the requested service operation.
 type RPC struct {
+	Context       context.Context
 	StatusCode    int32
 	StatusMessage string
 	Header        map[string]string
 	Body          interface{}
 }
 
-//CommonError holds the error response from odimra
+// CommonError holds the error response from odimra
 type CommonError struct {
 	Error ErrorClass `json:"error"`
 }
 
-//ErrorClass holds the properties that describe error from odimra
+// ErrorClass holds the properties that describe error from odimra
 //
-//Code indicates a specific MessageId from a Message Registry.
-//Message contains error message corresponding to the message in a Message Registry.
-//MessageExtendedInfo is an message objects describing one or more error messages.
+// Code indicates a specific MessageId from a Message Registry.
+// Message contains error message corresponding to the message in a Message Registry.
+// MessageExtendedInfo is an message objects describing one or more error messages.
 type ErrorClass struct {
 	Code                string `json:"code"`
 	Message             string `json:"message"`
@@ -143,7 +146,7 @@ type Msg struct {
 	Resolution  string        `json:"Resolution,omitempty"`
 }
 
-//Args holds the slice of ErrArgs
+// Args holds the slice of ErrArgs
 type Args struct {
 	Code      string `json:"code"`
 	Message   string `json:"message"`

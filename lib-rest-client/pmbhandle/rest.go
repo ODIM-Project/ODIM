@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package pmbhandle ...
+// Package pmbhandle ...
 package pmbhandle
 
 import (
@@ -25,7 +25,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
-//ContactPlugin is used to send a request to plugin to add a resource
+// ContactPlugin is used to send a request to plugin to add a resource
 func ContactPlugin(url, method, token string, odataID string, body interface{}, collaboratedInfo map[string]string) (*http.Response, error) {
 	jsonStr, err := json.Marshal(body)
 	if err != nil {

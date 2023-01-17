@@ -55,6 +55,12 @@ type DeliveryRetryPolicy string
 
 type SyslogSeverity string
 
+// This property shall contain the authentication method for the SMTP server.
+type SMTPAuthentication string
+
+// This property shall contain the connection type to the outgoing SMTP server.
+type SMTPConnectionProtocol string
+
 const (
 	// EventTypeAlert - "Alert": "A condition requires attention."
 	EventTypeAlert EventType = "Alert"
@@ -265,6 +271,29 @@ const (
 	// DeliveryTerminateAfterRetries : The subscription is terminated after the
 	// maximum number of retries is reached.
 	DeliveryTerminateAfterRetries DeliveryRetryPolicy = "TerminateAfterRetries"
+	//SMTP Authentcation method Auto-detect
+	SMTPAuthenticationAutoDetect SMTPAuthentication = "AutoDetect"
+
+	// SMTPAuthentication method CRAM_MD5
+	SMTPAuthenticationCRAM_MD5 SMTPAuthentication = "CRAM_MD5"
+
+	// SMTPAuthentication method None species no authentication
+	SMTPAuthenticationNone SMTPAuthentication = "None"
+
+	// SMTPAuthentication method Plain
+	SMTPAuthenticationPlain SMTPAuthentication = "Plain"
+
+	//SMTPConnection protocol type Auto-detect
+	SMTPConnectionProtocolAutoDetect SMTPConnectionProtocol = "AutoDetect"
+
+	//SMTPConnection Protocol type clear-text
+	SMTPConnectionProtocolNone SMTPConnectionProtocol = "None"
+
+	//SMTPConnection Protocol type start-TLS
+	SMTPConnectionProtocolStartTLS SMTPConnectionProtocol = "StartTLS"
+
+	//SMTPConnection Protocol type TLS_SSL
+	SMTPConnectionProtocolTLS_SSL SMTPConnectionProtocol = "TLS_SSL"
 )
 
 // Event schema describes the JSON payload received by an event destination, which has
@@ -468,4 +497,88 @@ type SuspendSubscription struct {
 type SyslogFilter struct {
 	LogFacilities  SyslogFacility `json:"LogFacilities,omitempty"`
 	LowestSeverity SyslogSeverity `json:"LowestSeverity,omitempty"`
+}
+
+// The EventService schema contains properties for
+// managing event subscriptions and generates the
+// events sent to subscribers. The resource has
+// links to the actual collection of subscriptions,
+// which are called event destinations.
+// Reference                    : EventService.v1_8_0.json
+type EventService struct {
+	ODataContext                      string                        `json:"@odata.context,omitempty"`
+	ODataEtag                         string                        `json:"@odata.etag,omitempty"`
+	ODataId                           string                        `json:"@odata.id"`
+	ODataType                         string                        `json:"@odata.type"`
+	Actions                           *EventServiceActions          `json:"Actions,omitempty"`
+	Id                                string                        `json:"Id"`
+	Name                              string                        `json:"Name"`
+	DeliveryRetryAttempts             int                           `json:"DeliveryRetryAttempts,omitempty"`
+	DeliveryRetryIntervalSeconds      int                           `json:"DeliveryRetryIntervalSeconds,omitempty"`
+	Description                       string                        `json:"Description,omitempty"`
+	EventFormatTypes                  []string                      `json:"EventFormatTypes,omitempty"`
+	EventTypesForSubscription         []string                      `json:"EventTypesForSubscription,omitempty"`
+	ExcludeMessageId                  bool                          `json:"ExcludeMessageId,omitempty"`
+	ExcludeRegistryPrefix             bool                          `json:"ExcludeRegistryPrefix,omitempty"`
+	IncludeOriginOfConditionSupported bool                          `json:"IncludeOriginOfConditionSupported,omitempty"`
+	RegistryPrefixes                  []string                      `json:"RegistryPrefixes,omitempty"`
+	ResourceTypes                     []string                      `json:"ResourceTypes,omitempty"`
+	ServerSentEventUri                string                        `json:"ServerSentEventUri,omitempty"`
+	ServiceEnabled                    bool                          `json:"ServiceEnabled,omitempty"`
+	SMTP                              *SMTPSettings                 `json:"SMTP,omitempty"`
+	SSEFilterPropertiesSupported      *SSEFilterPropertiesSupported `json:"SSEFilterPropertiesSupported,omitempty"`
+	Status                            *Status                       `json:"Status,omitempty"`
+	SubordinateResourcesSupported     bool                          `json:"SubordinateResourcesSupported,omitempty"`
+	Subscriptions                     *[]EventDestination           `json:"Subscriptions,omitempty"`
+	Oem                               interface{}                   `json:"Oem,omitempty"`
+}
+
+// This type shall contain settings for SMTP event delivery.
+// Reference                    : EventService.v1_8_0.json
+type SMTPSettings struct {
+	Authentication     SMTPAuthentication     `json:"Authentication,omitempty"`
+	ConnectionProtocol SMTPConnectionProtocol `json:"ConnectionProtocol,omitempty"`
+	FromAddress        string                 `json:"FromAddress,omitempty"`
+	Password           string                 `json:"Password,omitempty"`
+	Port               int                    `json:"Port,omitempty"`
+	ServerAddress      string                 `json:"ServerAddress,omitempty"`
+	ServiceEnabled     string                 `json:"ServiceEnabled,omitempty"`
+	Username           string                 `json:"Username,omitempty"`
+}
+
+// The type shall contain a set of properties that are supported
+// in the `$filter` query parameter for the URI indicated by the
+// ServerSentEventUri property, as described by the Redfish Specification.
+// Reference                    : EventService.v1_8_0.json
+type SSEFilterPropertiesSupported struct {
+	EventFormatType         bool `json:"EventFormatType,omitempty"`
+	EventType               bool `json:"EvenType,omitempty"`
+	MessageIds              bool `json:"MessageIds,omitempty"`
+	MetricReportDefinitions bool `json:"MetricReportDefinitions,omitempty"`
+	OriginResource          bool `json:"OriginResource,omitempty"`
+	RegistryPrefix          bool `json:"RegistryPrefix,omitempty"`
+	ResourceType            bool `json:"ResourceType,omitempty"`
+	SubordinateResources    bool `json:"SubordinateResources,omitempty"`
+}
+
+type EventServiceActions struct {
+	SubmitTestEvent *SubmitTestEvent `json:"SubmitTestEvent,omitempty"`
+	Oem             *OemActions      `json:"OemActions,omitempty"`
+}
+
+// This action shall add a test event to the event service
+// with the event data specified in the action parameter
+// action parameters.  Then, this message should be sent
+// to any appropriate event destinations.
+// Reference                    : EventService.v1_8_0.json
+type SubmitTestEvent struct {
+	EventGroupId      int             `json:"EventGroupId,omitempty"`
+	EventId           string          `json:"EventId,omitempty"`
+	EventTimestamp    string          `json:"EventTimestamp,omitempty"`
+	EventType         EventType       `json:"EventType,omitempty"`
+	Message           string          `json:"Message,omitempty"`
+	MessageArgs       []string        `json:"MessageArgs,omitempty"`
+	MessageId         string          `json:"MessageId"`
+	OriginOfCondition string          `json:"OriginOfCondition,omitempty"`
+	Severity          MessageSeverity `json:"Severity,omitempty"`
 }

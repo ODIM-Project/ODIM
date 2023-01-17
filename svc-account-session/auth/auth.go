@@ -91,11 +91,9 @@ func CustomAuthLog(ctx context.Context, sessionToken, msg string, respStatusCode
 			roleID = currentSession.RoleID
 		}
 	}
-	logProperties := make(map[string]interface{})
-	logProperties["SessionToken"] = sessionToken
-	logProperties["SessionUserID"] = userID
-	logProperties["SessionRoleID"] = roleID
-	logProperties["Message"] = msg
-	logProperties["ResponseStatusCode"] = respStatusCode
-	customLogs.AuthLog(logProperties)
+	ctx = context.WithValue(ctx, common.SessionToken, sessionToken)
+	ctx = context.WithValue(ctx, common.SessionUserID, userID)
+	ctx = context.WithValue(ctx, common.SessionRoleID, roleID)
+	ctx = context.WithValue(ctx, common.StatusCode, respStatusCode)
+	customLogs.AuthLog(ctx).Info(msg)
 }

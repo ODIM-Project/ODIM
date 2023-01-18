@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package fabrics ...
+// Package fabrics ...
 package fabrics
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -47,13 +48,13 @@ var (
 // Fabrics struct helps to hold the behaviours
 type Fabrics struct {
 	Auth          func(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error)
-	ContactClient func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 
 type pluginContactRequest struct {
 	URL             string
 	HTTPMethodType  string
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	PostBody        interface{}
 	LoginCredential map[string]string
 	Plugin          fabmodel.Plugin
@@ -78,7 +79,7 @@ type Zones struct {
 	Links    dmtf.Links `json:"Links"`
 }
 
-//Endpoints struct to check request body cases
+// Endpoints struct to check request body cases
 type Endpoints struct {
 	Name        string       `json:"Name"`
 	Description string       `json:"Description"`
@@ -86,7 +87,7 @@ type Endpoints struct {
 	Links       dmtf.Links   `json:"Links"`
 }
 
-//Redundancy struct to check request body cases
+// Redundancy struct to check request body cases
 type Redundancy struct {
 	Mode          string      `json:"Mode"`
 	RedundencySet []dmtf.Link `json:"RedundencySet"`
@@ -152,9 +153,9 @@ func contactPlugin(req pluginContactRequest, errorMessage string) ([]byte, strin
 func callPlugin(req pluginContactRequest) (*http.Response, error) {
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.URL
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		req.ContactClient(reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
+		req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
 	}
-	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
+	return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
 }
 
 // getPluginStatus checks the status of given plugin in configured interval

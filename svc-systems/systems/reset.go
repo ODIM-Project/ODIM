@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package systems ...
+// Package systems ...
 package systems
 
 import (
@@ -29,9 +29,9 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
 
-//PluginContact struct to inject the pmb client function into the handlers
+// PluginContact struct to inject the pmb client function into the handlers
 type PluginContact struct {
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DevicePassword  func([]byte) ([]byte, error)
 	GetPluginStatus func(smodel.Plugin) bool
 	UpdateTask      func(context.Context, common.TaskData) error

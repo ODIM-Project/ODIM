@@ -264,7 +264,7 @@ func TestMockContactClient(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := MockContactClient(tt.args.url, tt.args.method, tt.args.token, tt.args.odataID, tt.args.body, tt.args.credentials)
+			got, _ := MockContactClient(context.TODO(), tt.args.url, tt.args.method, tt.args.token, tt.args.odataID, tt.args.body, tt.args.credentials)
 			if got.StatusCode != tt.want.StatusCode {
 				t.Errorf("MockContactClient() = %v, want %v", got, tt.want)
 			}

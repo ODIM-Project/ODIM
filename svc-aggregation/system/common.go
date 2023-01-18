@@ -66,7 +66,7 @@ type WildCard struct {
 	Values []string
 }
 
-//Device struct to define the response from plugin for UUID
+// Device struct to define the response from plugin for UUID
 type Device struct {
 	ServerIP   string `json:"ServerIP"`
 	Username   string `json:"Username"`
@@ -75,7 +75,7 @@ type Device struct {
 
 // ExternalInterface struct holds the function pointers all outboud services
 type ExternalInterface struct {
-	ContactClient            func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient            func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	Auth                     func(string, []string, []string) (response.RPC, error)
 	GetSessionUserName       func(string) (string, error)
 	CreateChildTask          func(context.Context, string, string) (string, error)
@@ -123,7 +123,7 @@ type getResourceRequest struct {
 	LoginCredentials  map[string]string
 	ParentOID         string
 	OID               string
-	ContactClient     func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient     func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	OemFlag           bool
 	Plugin            agmodel.Plugin
 	TaskRequest       string
@@ -151,7 +151,7 @@ type respHolder struct {
 	InventoryData  map[string]interface{}
 }
 
-//AddResourceRequest is payload of adding a  resource
+// AddResourceRequest is payload of adding a  resource
 type AddResourceRequest struct {
 	ManagerAddress   string            `json:"ManagerAddress"`
 	UserName         string            `json:"UserName"`
@@ -159,7 +159,7 @@ type AddResourceRequest struct {
 	ConnectionMethod *ConnectionMethod `json:"ConnectionMethod"`
 }
 
-//ConnectionMethod struct definition for @odata.id
+// ConnectionMethod struct definition for @odata.id
 type ConnectionMethod struct {
 	OdataID string `json:"@odata.id"`
 }
@@ -251,7 +251,7 @@ func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskStat
 	}
 }
 
-//genError generates error response so as to reduce boiler plate code
+// genError generates error response so as to reduce boiler plate code
 func genError(ctx context.Context, errorMessage string, respPtr *response.RPC, httpStatusCode int32, StatusMessage string, header map[string]string) {
 	respPtr.StatusCode = httpStatusCode
 	respPtr.StatusMessage = StatusMessage
@@ -299,11 +299,11 @@ func UpdateTaskData(ctx context.Context, taskData common.TaskData) error {
 
 func contactPlugin(ctx context.Context, req getResourceRequest, errorMessage string) ([]byte, string, responseStatus, error) {
 	var resp responseStatus
-	pluginResp, err := callPlugin(req)
+	pluginResp, err := callPlugin(ctx, req)
 	if err != nil {
 		if req.StatusPoll {
 			if req.GetPluginStatus(ctx, req.Plugin) {
-				pluginResp, err = callPlugin(req)
+				pluginResp, err = callPlugin(ctx, req)
 			}
 		}
 		if err != nil {
@@ -420,7 +420,7 @@ func (h *respHolder) getAllSystemInfo(ctx context.Context, taskID string, progre
 	return computeSystemID, resourceURI, progress, nil
 }
 
-//Registries Discovery function
+// Registries Discovery function
 func (h *respHolder) getAllRegistries(ctx context.Context, taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
 
 	// Get all available file names in the registry store directory in a list
@@ -1107,16 +1107,16 @@ func removeRetrievalLinks(retrievalLinks map[string]bool, parentoid string, reso
 	return
 }
 
-func callPlugin(req getResourceRequest) (*http.Response, error) {
+func callPlugin(ctx context.Context, req getResourceRequest) (*http.Response, error) {
 	var oid string
 	for key, value := range getTranslationURL(southBoundURL) {
 		oid = strings.Replace(req.OID, key, value, -1)
 	}
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + oid
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.LoginCredentials)
+		return req.ContactClient(ctx, reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.LoginCredentials)
 	}
-	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+	return req.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
 
 func updateManagerName(data []byte, pluginID string) []byte {

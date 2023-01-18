@@ -597,7 +597,7 @@ func TestContactPlugin(t *testing.T) {
 
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
-	_, err = ContactPlugin(contactRequest, "")
+	_, err = ContactPlugin(context.TODO(), contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }
 
@@ -622,7 +622,7 @@ func TestContactPlugin_XAuth(t *testing.T) {
 
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
-	_, err = ContactPlugin(contactRequest, "")
+	_, err = ContactPlugin(context.TODO(), contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }
 

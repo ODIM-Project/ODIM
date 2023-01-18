@@ -16,6 +16,7 @@
 package scommon
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -53,7 +54,7 @@ type PluginContactRequest struct {
 	OID             string
 	DeviceInfo      interface{}
 	BasicAuth       map[string]string
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	GetPluginStatus func(smodel.Plugin) bool
 	Plugin          smodel.Plugin
 	HTTPMethodType  string
@@ -70,7 +71,7 @@ type ResourceInfoRequest struct {
 	URL             string
 	UUID            string
 	SystemID        string
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DevicePassword  func([]byte) ([]byte, error)
 	GetPluginStatus func(smodel.Plugin) bool
 	ResourceName    string
@@ -295,9 +296,9 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 	}
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + oid
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
+		return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
-	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+	return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
 
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy

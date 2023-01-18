@@ -174,6 +174,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 		},
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)
+	l.LogWithFields(ctx).Debugf("response from generateTaskRespone for id: %s , URI: %s , Is.. Response: %s ", string(taskID), string(taskURI), rpcResp.Body)
 	fillSystemProtoResponse(ctx, &resp, rpcResp)
 	var pc = systems.PluginContact{
 		ContactClient:  pmbhandle.ContactPlugin,

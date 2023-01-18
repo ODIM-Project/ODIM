@@ -15,6 +15,7 @@ package chassis
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -38,7 +39,7 @@ func mockChassisResourceData(body []byte, table, key string) error {
 	return nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
 	if url == "http://localhost:9091/redfishplugin/login" {
 		header := make(http.Header)
 		header.Set("X-Auth-Token", token)

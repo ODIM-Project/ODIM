@@ -365,7 +365,7 @@ func (phc *PluginHealthCheckInterface) getAllServers(pluginID string) ([]agmodel
 }
 
 // ContactPlugin is for sending requests to a plugin.
-func ContactPlugin(req agmodel.PluginContactRequest, serverName string) (*http.Response, error) {
+func ContactPlugin(ctx context.Context, req agmodel.PluginContactRequest, serverName string) (*http.Response, error) {
 	req.LoginCredential = map[string]string{}
 	//ToDo: Variable "LoginCredentials" to be changed
 	req.LoginCredential["ServerName"] = serverName
@@ -375,7 +375,7 @@ func ContactPlugin(req agmodel.PluginContactRequest, serverName string) (*http.R
 			"Password": string(req.Plugin.Password),
 		}
 		reqURL := fmt.Sprintf("https://%s/ODIM/v1/Sessions", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port))
-		response, err := pmbhandle.ContactPlugin(reqURL, http.MethodPost, "", "", payload, nil)
+		response, err := pmbhandle.ContactPlugin(ctx, reqURL, http.MethodPost, "", "", payload, nil)
 		if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
 			return nil,
 				fmt.Errorf("failed to get session token from %s: %s: %+v", req.Plugin.ID, err.Error(), response)
@@ -386,7 +386,7 @@ func ContactPlugin(req agmodel.PluginContactRequest, serverName string) (*http.R
 		req.LoginCredential["Password"] = string(req.Plugin.Password)
 	}
 	reqURL := fmt.Sprintf("https://%s%s", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port), req.URL)
-	return pmbhandle.ContactPlugin(reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, req.LoginCredential)
+	return pmbhandle.ContactPlugin(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, req.LoginCredential)
 }
 
 // GetDeviceSubscriptionDetails is for getting device event susbcription details

@@ -131,7 +131,7 @@ func mockPluginStatus(ctx context.Context, plugin smodel.Plugin) bool {
 	return true
 }
 
-func contactPluginClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
+func contactPluginClient(ctx context.Context, url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/1/Volumes/1" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{

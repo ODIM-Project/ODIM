@@ -32,7 +32,7 @@ import (
 
 // PluginContact struct to inject the pmb client function into the handlers
 type PluginContact struct {
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DecryptPassword func([]byte) ([]byte, error)
 	GetPluginStatus func(context.Context, smodel.Plugin) bool
 }

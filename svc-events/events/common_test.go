@@ -9,6 +9,7 @@ package events
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -88,7 +89,7 @@ func Test_removeElement(t *testing.T) {
 func TestExternalInterfaces_PluginCall(t *testing.T) {
 	config.SetUpMockConfig(t)
 	e := getMockMethods()
-	e.ContactClient = func(s1, s2, s3, s4 string, i interface{}, m map[string]string) (*http.Response, error) {
+	e.ContactClient = func(ctx context.Context, s1, s2, s3, s4 string, i interface{}, m map[string]string) (*http.Response, error) {
 		return &http.Response{Status: "Save", StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
 	}
 	IOUtilReadAllFunc = func(r io.Reader) ([]byte, error) {

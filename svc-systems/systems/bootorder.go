@@ -321,7 +321,7 @@ func (p *PluginContact) ChangeBootOrderSettings(ctx context.Context, req *system
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
-	smodel.AddSystemResetInfo("/redfish/v1/Systems/"+req.SystemID, "On")
+	smodel.AddSystemResetInfo(ctx, "/redfish/v1/Systems/"+req.SystemID, "On")
 	l.LogWithFields(ctx).Debugf("outgoing response ChangeBootOrderSettings statuscode: %d", resp.StatusCode)
 	return resp
 }

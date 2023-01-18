@@ -570,7 +570,7 @@ func (p *PluginContact) GetSystemResource(ctx context.Context, req *systemsproto
 	var respData string
 	var saveRequired bool
 	// Getting the reset flag details for the requested URL
-	deviceLoadFlag := GetDeviceLoadInfoFunc(req.URL, req.RequestParam)
+	deviceLoadFlag := GetDeviceLoadInfoFunc(ctx, req.URL, req.RequestParam)
 	// deviceLoadFlag is true means flag is set for requested URL or the SystemID URL, load from device
 	// deviceLoadFlag is false indicates flag is not set, load from DB
 	if deviceLoadFlag {
@@ -601,7 +601,7 @@ func (p *PluginContact) GetSystemResource(ctx context.Context, req *systemsproto
 		}
 
 		l.LogWithFields(ctx).Debug("Getting the details from DB for URL ", req.URL)
-		data, err := smodel.GetResource(tableName, req.URL)
+		data, err := smodel.GetResource(ctx, tableName, req.URL)
 		if err != nil {
 			l.LogWithFields(ctx).Error("getting system details from DB: " + err.Error())
 			errorMessage := err.Error()

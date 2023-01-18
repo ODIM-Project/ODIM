@@ -184,7 +184,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemspro
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
 	}
-	smodel.AddSystemResetInfo("/redfish/v1/Systems/"+req.SystemID, resetCompSys.ResetType)
+	smodel.AddSystemResetInfo(ctx, "/redfish/v1/Systems/"+req.SystemID, resetCompSys.ResetType)
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, common.OK, 100, http.MethodPost)
 	p.UpdateTask(task)
 

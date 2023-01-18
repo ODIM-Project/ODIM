@@ -135,23 +135,6 @@ func validateDBConnection(conn *db.Conn) *db.Conn {
 	return conn
 }
 
-// GetCompletedTasksIndex Searches Complete Tasks in the db using secondary index with provided search Key
-func GetCompletedTasksIndex(searchKey string) ([]string, error) {
-	var taskData []string
-	conn, err := common.GetDBConnection(common.InMemory)
-	if err != nil {
-		l.Log.Error("GetCompletedTasksIndex : error while trying to get DB Connection : " + err.Error())
-		return taskData, fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
-	}
-	list, getErr := conn.GetTaskList(CompletedTaskIndex, 0, -1)
-	if getErr != nil && getErr.Error() != "no data with ID found" {
-		l.Log.Error("GetCompletedTasksIndex : error while trying to get task list : " + getErr.Error())
-		return taskData, nil
-	}
-	taskData = list
-	return taskData, nil
-}
-
 // Oem Model
 type Oem struct {
 }
@@ -313,13 +296,12 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	var (
 		i             int           = 0
 		updatedTasks  bool          = false
-		createdIndex  bool          = false
 		mapSize       int           = config.Data.TaskQueueConf.QueueSize
 		retryInterval time.Duration = time.Duration(config.Data.TaskQueueConf.RetryInterval) * time.Millisecond
 	)
 
 	tasks := make(map[string]interface{}, mapSize)
-	completedTasks := make(map[string]int64, mapSize)
+	completedTasks := []string{}
 
 	if len(*queue) <= 0 {
 		return
@@ -338,8 +320,8 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 			saveID := Table + ":" + task.ID
 			tasks[saveID] = task
 			if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
-				key := task.UserName + "::" + task.EndTime.String() + "::" + task.ID
-				completedTasks[key] = task.EndTime.UnixNano()
+				//key := task.UserName + "::" + task.EndTime.String() + "::" + task.ID
+				completedTasks = append(completedTasks, saveID)
 			}
 		}
 
@@ -375,30 +357,22 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	if len(completedTasks) > 0 {
 		i = 0
 		for i < MaxRetry {
-			if err := conn.CreateIndexTransaction(CompletedTaskIndex, completedTasks); err != nil {
+			if err := conn.AddExpiryForTasks(completedTasks); err != nil {
 				if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
 					time.Sleep(retryInterval)
 					conn = validateDBConnection(conn)
 				} else {
-					l.Log.Error("ProcessTaskQueue() : create index transaction failed : " + err.Error())
+					l.Log.Error("ProcessTaskQueue() : create expiry for completed tasks failed : " + err.Error())
 					break
 				}
 				i++
 			} else {
-				createdIndex = true
 				break
-			}
-		}
-
-		if !createdIndex {
-			for task := range completedTasks {
-				l.Log.Errorf("Failed to create index for the task : %s", task)
 			}
 		}
 	}
 
 	tasks = nil
-	completedTasks = nil
 }
 
 // dequeueTask dequeue a task from channel and returns. If no elements is present in the queue it returns nil.

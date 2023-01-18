@@ -50,7 +50,6 @@ type TasksRPC struct {
 	TransactionModel                 func(key string, cb func(string) error) error
 	OverWriteCompletedTaskUtilHelper func(userName string) error
 	CreateTaskUtilHelper             func(userName string) (string, error)
-	GetCompletedTasksIndexModel      func(userName string) ([]string, error)
 	DeleteTaskFromDBModel            func(t *tmodel.Task) error
 	DeleteTaskIndex                  func(taskID string) error
 	UpdateTaskQueue                  func(t *tmodel.Task)
@@ -75,7 +74,6 @@ func (t *TaskCollectionData) getTaskFromCollectionData(taskID string, percentCom
 			delete(t.TaskCollection, taskID)
 			return false
 		}
-
 	}
 	t.TaskCollection[taskID] = int32(percentComplete)
 
@@ -90,47 +88,9 @@ var (
 //CreateTask is a rpc handler which intern call actual CreatTask to create new task
 func (ts *TasksRPC) CreateTask(ctx context.Context, req *taskproto.CreateTaskRequest) (*taskproto.CreateTaskResponse, error) {
 	var rsp taskproto.CreateTaskResponse
-	// Check for completed task if there are any, get the oldest Completed
-	//Task and Delete from the db along with it subtask as well.
-	// Search for the Completed tasks
-	go func() {
-		err := ts.OverWriteCompletedTaskUtilHelper(req.UserName)
-		if err != nil {
-			l.Log.Error("error: failed to over write the completed task: " + err.Error())
-		}
-	}()
 	taskURI, err := ts.CreateTaskUtilHelper(req.UserName)
 	rsp.TaskURI = taskURI
 	return &rsp, err
-}
-
-//OverWriteCompletedTaskUtil is helper method to find and delete eligible completed task
-func (ts *TasksRPC) OverWriteCompletedTaskUtil(userName string) error {
-	var taskID string
-
-	taskList, err := ts.GetCompletedTasksIndexModel(userName)
-	if err != nil {
-		l.Log.Error("error while getting the completed task: " + err.Error())
-		return err
-	}
-	inputTimeStringformat := "2006-01-02 15:04:05 +0000 UTC"
-	for _, value := range taskList {
-		endTimeString := (strings.Split(value, "::"))[1]
-		endTime, _ := time.Parse(inputTimeStringformat, endTimeString)
-		timeNow := time.Now().UnixNano()
-		elapsedTimeNano := timeNow - endTime.UnixNano()
-		timeToLeaveString, _ := time.ParseDuration("24h")
-		timeToLeaveNano := timeToLeaveString.Nanoseconds()
-		taskID = (strings.Split(value, "::"))[2]
-		if elapsedTimeNano > timeToLeaveNano {
-			err = ts.deleteCompletedTask(taskID)
-			if err != nil {
-				l.Log.Error("error while deleting the completed task: " + err.Error())
-
-			}
-		}
-	}
-	return nil
 }
 
 func (ts *TasksRPC) deleteCompletedTask(taskID string) error {

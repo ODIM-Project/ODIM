@@ -782,12 +782,12 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 2."scores" is of type map[string]int64 and is the user data sent to be updated in DB.
 key of map should be the member for which we create the index. the value is score of that member
 */
-func (c *Conn) CreateIndexTransaction(key string, scores map[string]int64) *errors.Error {
+func (c *Conn) AddExpiryForTasks(taskKeys []string) *errors.Error {
 	var partialFailure bool = false
-	members := getSortedMapKeys(scores)
+	//members := getSortedMapKeys(scores)
 	c.WriteConn.Send("MULTI")
-	for _, member := range members {
-		createErr := c.WriteConn.Send("ZADD", key, scores[member], member)
+	for _, taskkey := range taskKeys {
+		createErr := c.WriteConn.Send("EXPIRE", taskkey, 86400)
 		if createErr != nil {
 			c.WriteConn.Send("DISCARD")
 			if isTimeOutError(createErr) {
@@ -804,11 +804,10 @@ func (c *Conn) CreateIndexTransaction(key string, scores map[string]int64) *erro
 		}
 		return errors.PackError(errors.DBUpdateFailed, err.Error())
 	}
-
-	for i, member := range members {
+	for i := range taskKeys {
 		res, ok := result[i].(int64)
 		if ok && res == 1 {
-			delete(scores, member)
+			taskKeys = append(taskKeys[:i], taskKeys[i+1:]...)
 		} else {
 			partialFailure = true
 		}

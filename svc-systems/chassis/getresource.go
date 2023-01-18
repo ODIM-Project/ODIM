@@ -61,7 +61,7 @@ func (p *PluginContact) GetChassisResource(ctx context.Context, req *chassisprot
 	} else {
 		tableName = urlData[len(urlData)-2]
 	}
-	data, gerr := smodel.GetResource(tableName, req.URL)
+	data, gerr := smodel.GetResource(ctx, tableName, req.URL)
 	l.LogWithFields(ctx).Debugf("Response from GetResource for %s and %s is: %s", tableName, string(req.URL), string(data))
 	if gerr != nil {
 		l.LogWithFields(ctx).Error("error getting system details : " + gerr.Error())

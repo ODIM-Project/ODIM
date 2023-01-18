@@ -68,12 +68,12 @@ func getAllSubscriptions() {
 
 // getAllDeviceSubscriptions method fetch data from DeviceSubscription table
 func getAllDeviceSubscriptions() {
-	eventSourceToManagerIDMap = make(map[string]string)
 	deviceSubscriptionList, err := evmodel.GetAllDeviceSubscriptions()
 	if err != nil {
 		l.Log.Error("Error while reading all aggregate data ", err)
 		return
 	}
+	eventSourceToManagerIDMap = make(map[string]string, len(deviceSubscriptionList))
 	for _, device := range deviceSubscriptionList {
 		devSub := strings.Split(device, "||")
 		if strings.Contains(devSub[0], "Collection") {

@@ -112,7 +112,7 @@ func (d *Delete) Handle(ctx context.Context, req *chassisproto.DeleteChassisRequ
 		l.LogWithFields(ctx).Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
-
+	l.LogWithFields(ctx).Debugf("Deleting URI: %s", string(req.URL))
 	return c.Delete(ctx, req.URL)
 }
 

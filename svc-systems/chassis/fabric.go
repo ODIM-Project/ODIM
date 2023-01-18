@@ -75,6 +75,7 @@ type PluginToken struct {
 var Token PluginToken
 
 func (c *sourceProviderImpl) findFabricChassis(ctx context.Context, collection *sresponse.Collection) {
+	l.LogWithFields(ctx).Debug("Inside svc-systems/chassis/fabric.go.findFabricChassis")
 	f := c.getFabricFactory(collection)
 	managers, err := f.getFabricManagers(ctx)
 	if err != nil {
@@ -95,6 +96,7 @@ func (c *sourceProviderImpl) findFabricChassis(ctx context.Context, collection *
 // getFabricManagerChassis will send a request to the plugin for the chassis collection,
 // and add them to the existing chassis collection.
 func (f *fabricFactory) getFabricManagerChassis(ctx context.Context, plugin smodel.Plugin) {
+	l.LogWithFields(ctx).Debug("Inside svc-systems/chassis/fabric.go.getFabricManagerChassis")
 	defer f.wg.Done()
 	req, errResp, err := f.createChassisRequest(ctx, plugin, collectionURL, http.MethodGet, nil)
 	if errResp != nil {
@@ -114,11 +116,13 @@ func (f *fabricFactory) getFabricManagerChassis(ctx context.Context, plugin smod
 		}
 		f.mu.Unlock()
 	}
+	l.LogWithFields(ctx).Debugf("Response from getFabricManagerChassis: %s", f)
 
 }
 
 // createChassisRequest creates the parameters ready for the plugin communication
 func (f *fabricFactory) createChassisRequest(ctx context.Context, plugin smodel.Plugin, url, method string, body *json.RawMessage) (pReq *pluginContactRequest, errResp *response.RPC, err error) {
+	l.LogWithFields(ctx).Debug("Inside svc-systems/chassis/fabric.go.createChassisRequest")
 	var token string
 	cred := make(map[string]string)
 
@@ -162,6 +166,7 @@ func (f *fabricFactory) createChassisRequest(ctx context.Context, plugin smodel.
 
 // collectChassisCollection contacts the plugin and collect the chassis response
 func collectChassisCollection(ctx context.Context, f *fabricFactory, pluginRequest *pluginContactRequest) ([]dmtf.Link, error) {
+	l.LogWithFields(ctx).Debug("Inside svc-systems/chassis/fabric.go.collectChassisCollection")
 	body, _, statusCode, _, err := ContactPluginFunc(ctx, pluginRequest)
 	if statusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
 		body, _, statusCode, _, err = retryFabricsOperation(ctx, f, pluginRequest)
@@ -172,7 +177,7 @@ func collectChassisCollection(ctx context.Context, f *fabricFactory, pluginReque
 	if !is2xx(statusCode) {
 		return []dmtf.Link{}, fmt.Errorf("while trying contact plugin " + pluginRequest.Plugin.ID + ", got " + strconv.Itoa(statusCode))
 	}
-	return extractChassisCollection(body)
+	return extractChassisCollection(ctx, body)
 }
 
 func contactPlugin(ctx context.Context, req *pluginContactRequest) ([]byte, string, int, string, error) {
@@ -243,6 +248,7 @@ func getPluginStatus(ctx context.Context, plugin smodel.Plugin) bool {
 		CACertificate:    &config.Data.KeyCertConf.RootCACertificate,
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
+	l.LogWithFields(ctx).Debugf("status of plugin: %s is %s", plugin.ID, strconv.FormatBool(status))
 	if err != nil && !status {
 		l.LogWithFields(ctx).Warn("while getting the status for plugin " + plugin.ID + err.Error())
 		return status
@@ -293,7 +299,7 @@ func (p *PluginToken) getToken(pluginID string) string {
 }
 
 // extractChassisCollection unmarshals the plugin response and returns the collection members
-func extractChassisCollection(body []byte) ([]dmtf.Link, error) {
+func extractChassisCollection(ctx context.Context, body []byte) ([]dmtf.Link, error) {
 	var resp sresponse.Collection
 	data := string(body)
 	//replacing the resposne with north bound translation URL
@@ -304,7 +310,7 @@ func extractChassisCollection(body []byte) ([]dmtf.Link, error) {
 	if err != nil {
 		return resp.Members, fmt.Errorf("while unmarshalling the chassis fabric collection, got: %v", err)
 	}
-
+	l.LogWithFields(ctx).Debugf("outgoing members response from extractChassisCollection: %s", resp.Members)
 	return resp.Members, nil
 
 }

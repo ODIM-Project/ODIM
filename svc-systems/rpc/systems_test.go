@@ -79,15 +79,15 @@ func getEncryptKey(key []byte) ([]byte, error) {
 	return cryptedKey, nil
 }
 
-func mockAddSystemResetInfo(systemID, resetType string) *errors.Error {
+func mockAddSystemResetInfo(ctx context.Context, systemID, resetType string) *errors.Error {
 	return nil
 }
 
-func mockDeleteVolume(key string) *errors.Error {
+func mockDeleteVolume(ctx context.Context, key string) *errors.Error {
 	return nil
 }
 
-func mockGetResource(table, key string) (string, *errors.Error) {
+func mockGetResource(ctx context.Context, table, key string) (string, *errors.Error) {
 	var reqData = `{"@odata.id":"/redfish/v1/Systems/1/Storage/1/Volumes/1"}`
 	switch key {
 	case "/redfish/v1/Systems/6d5a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage/1/Volumes/1":

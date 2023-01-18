@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"

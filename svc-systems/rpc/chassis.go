@@ -116,7 +116,7 @@ func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.Dele
 func (cha *ChassisRPC) CreateChassis(ctx context.Context, req *chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
-	l.LogWithFields(ctx).Debugf("incoming chassis create request with %s", req.URL)
+	l.LogWithFields(ctx).Debugln("incoming chassis create request")
 	var resp chassisproto.GetChassisResponse
 	r := auth(ctx, cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
 		return cha.CreateHandler.Handle(ctx, req)

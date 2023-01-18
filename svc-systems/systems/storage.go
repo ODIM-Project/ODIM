@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package systems ...
+// Package systems ...
 package systems
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -49,7 +50,7 @@ var (
 
 // ExternalInterface holds all the external connections managers package functions uses
 type ExternalInterface struct {
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DevicePassword  func([]byte) ([]byte, error)
 	DB              DB
 	GetPluginStatus func(smodel.Plugin) bool

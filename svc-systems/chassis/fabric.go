@@ -15,6 +15,7 @@
 package chassis
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -39,7 +40,7 @@ type fabricFactory struct {
 	wg                *sync.WaitGroup
 	mu                *sync.RWMutex
 	getFabricManagers func() ([]smodel.Plugin, error)
-	contactClient     func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	contactClient     func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 
 func getFabricFactory(collection *sresponse.Collection) *fabricFactory {
@@ -57,7 +58,7 @@ func getFabricFactory(collection *sresponse.Collection) *fabricFactory {
 type pluginContactRequest struct {
 	URL             string
 	HTTPMethodType  string
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	PostBody        interface{}
 	LoginCredential map[string]string
 	Plugin          smodel.Plugin
@@ -218,9 +219,9 @@ func retryFabricsOperation(f *fabricFactory, req *pluginContactRequest) ([]byte,
 func callPlugin(req *pluginContactRequest) (*http.Response, error) {
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.URL
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return req.ContactClient(reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
+		return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
 	}
-	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
+	return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
 }
 
 // getPluginStatus checks the status of given plugin in configured interval

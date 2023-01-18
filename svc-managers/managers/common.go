@@ -36,7 +36,7 @@ type ExternalInterface struct {
 type Device struct {
 	GetDeviceInfo         func(context.Context, mgrcommon.ResourceInfoRequest) (string, error)
 	DeviceRequest         func(context.Context, mgrcommon.ResourceInfoRequest) response.RPC
-	ContactClient         func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient         func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DecryptDevicePassword func([]byte) ([]byte, error)
 }
 

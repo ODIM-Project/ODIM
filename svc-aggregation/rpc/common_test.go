@@ -279,7 +279,7 @@ func mockDeviceData(uuid string, device agmodel.Target) error {
 	return nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	var bData agmodel.SaveSystem
 	bBytes, _ := json.Marshal(body)
 	json.Unmarshal(bBytes, &bData)

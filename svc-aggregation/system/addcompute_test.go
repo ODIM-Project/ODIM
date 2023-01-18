@@ -40,7 +40,7 @@ func mockSubscribeEMB(pluginID string, list []string) error {
 	return nil
 }
 
-func mockContactClientForDuplicate(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
+func mockContactClientForDuplicate(ctx context.Context, url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	var bData agmodel.SaveSystem
 	bBytes, _ := json.Marshal(body)
 	json.Unmarshal(bBytes, &bData)

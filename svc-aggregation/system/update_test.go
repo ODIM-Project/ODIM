@@ -28,6 +28,7 @@ package system
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -58,7 +59,7 @@ func testSystemIndex(uuid string, indexData map[string]interface{}) error {
 	return nil
 
 }
-func testUpdateContactClient(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
+func testUpdateContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	if url == "" {
 		return nil, fmt.Errorf("InvalidRequest")
 	}

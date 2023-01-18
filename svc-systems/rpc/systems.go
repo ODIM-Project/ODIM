@@ -48,6 +48,8 @@ type Systems struct {
 func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming GetSystemResource request with ", req)
+	l.LogWithFields(ctx).Info("Inside GetSystemResource function (RPC)")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -65,6 +67,7 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 	}
 	data := pc.GetSystemResource(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
+	l.LogWithFields(ctx).Debugf("outgoing GetSystemResource response: %s", string(resp))
 	return &resp, nil
 }
 
@@ -76,6 +79,7 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SystemService)
+	l.LogWithFields(ctx).Debugf("incoming GetSystemsCollection request with ", req)
 	l.LogWithFields(ctx).Info("Inside GetSystemsCollection function (RPC)")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
@@ -89,6 +93,7 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 	}
 	data := systems.GetSystemsCollection(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
+	l.LogWithFields(ctx).Debugf("outgoing GetSystemsCollection response: %s", string(resp))
 	return &resp, nil
 }
 
@@ -101,6 +106,7 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming GetSystems request with ", req)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -118,6 +124,7 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 	}
 	data := pc.GetSystems(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
+	l.LogWithFields(ctx).Debugf("outgoing GetSystems response: %s", string(resp))
 	return &resp, nil
 }
 
@@ -130,6 +137,7 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.ComputerSystemResetRequest) (*systemsproto.SystemsResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming ComputerSystemReset request with ", req)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
@@ -178,6 +186,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	go pc.ComputerSystemReset(ctx, req, taskID, sessionUserName)
 	threadID++
 
+	l.LogWithFields(ctx).Debugf("outgoing ComputerSystemReset response: %s", string(resp))
 	return &resp, nil
 }
 
@@ -190,6 +199,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.DefaultBootOrderRequest) (*systemsproto.SystemsResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming SetDefaultBootOrder request with ", req)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
@@ -206,6 +216,7 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 	}
 	data := pc.SetDefaultBootOrder(ctx, req.SystemID)
 	fillSystemProtoResponse(ctx, &resp, data)
+	l.LogWithFields(ctx).Debugf("outgoing SetDefaultBootOrder response: %s", string(resp))
 	return &resp, nil
 }
 
@@ -218,6 +229,7 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.BiosSettingsRequest) (*systemsproto.SystemsResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming ChangeBiosSettings request with ", req)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
@@ -234,6 +246,7 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 	}
 	data := pc.ChangeBiosSettings(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
+	l.LogWithFields(ctx).Debugf("outgoing ChangeBiosSettings response: %s", string(resp))
 	return &resp, nil
 }
 
@@ -246,6 +259,7 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming ChangeBootOrderSettings request with ", req)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
@@ -262,6 +276,7 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 	}
 	data := pc.ChangeBootOrderSettings(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
+	l.LogWithFields(ctx).Debugf("outgoing ChangeBootOrderSettings response: %s", string(resp))
 	return &resp, nil
 }
 
@@ -274,6 +289,7 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming CreateVolume request with ", req)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
@@ -287,6 +303,7 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 
 	data := s.EI.CreateVolume(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
+	l.LogWithFields(ctx).Debugf("outgoing CreateVolume response: %s", string(resp))
 	return &resp, nil
 }
 
@@ -299,6 +316,7 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming DeleteVolume request with ", req)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
@@ -312,6 +330,7 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 
 	data := s.EI.DeleteVolume(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
+	l.LogWithFields(ctx).Debugf("outgoing DeleteVolume response: %s", string(resp))
 	return &resp, nil
 }
 

@@ -245,7 +245,7 @@ func sendPluginStartupRequest(ctx context.Context, plugin agmodel.Plugin, startu
 	contactRequest.URL = "/ODIM/v1/Startup"
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.PostBody = startupData
-	response, err := agcommon.ContactPlugin(contactRequest, serverName)
+	response, err := agcommon.ContactPlugin(ctx, contactRequest, serverName)
 	if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
 		l.LogWithFields(ctx).Errorf("failed to send startup data to %s(%s): %s: %+v", plugin.ID, plugin.IP, err, response)
 		return nil, err

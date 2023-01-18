@@ -39,7 +39,7 @@ func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (
 	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	return nil, fmt.Errorf("InvalidRequest")
 }
 

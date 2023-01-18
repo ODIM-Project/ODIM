@@ -45,7 +45,7 @@ type PluginContact struct {
 // status code, status message, headers and body and the second value is error.
 func (p *PluginContact) GetChassisResource(ctx context.Context, req *chassisproto.GetChassisRequest) (response.RPC, error) {
 	var resp response.RPC
-
+	l.LogWithFields(ctx).Debugln("Inside GetChassisResource")
 	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
@@ -62,6 +62,7 @@ func (p *PluginContact) GetChassisResource(ctx context.Context, req *chassisprot
 		tableName = urlData[len(urlData)-2]
 	}
 	data, gerr := smodel.GetResource(tableName, req.URL)
+	l.LogWithFields(ctx).Debugf("Response from GetResource for %s and %s is: %s", tableName, string(req.URL), string(data))
 	if gerr != nil {
 		l.LogWithFields(ctx).Error("error getting system details : " + gerr.Error())
 		errorMessage := gerr.Error()
@@ -77,6 +78,7 @@ func (p *PluginContact) GetChassisResource(ctx context.Context, req *chassisprot
 			l.LogWithFields(ctx).Info("Request Url" + req.URL)
 			var err error
 			if data, err = scommon.GetResourceInfoFromDevice(ctx, getDeviceInfoRequest, true); err != nil {
+				l.LogWithFields(ctx).Debugf("Response from GetResourceInfoFromDevice for %s is: %s", req.URL, string(data))
 				l.LogWithFields(ctx).Error("error while getting resource: " + err.Error())
 				errorMsg := err.Error()
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMsg, []interface{}{tableName, req.URL}, nil), nil
@@ -91,6 +93,7 @@ func (p *PluginContact) GetChassisResource(ctx context.Context, req *chassisprot
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
+	l.LogWithFields(ctx).Debugf("Outgoing Response from GetChassisResource for %s is StatusCode: %d response: %s ", req.URL, resp.StatusCode, string(data))
 	return resp, nil
 
 }

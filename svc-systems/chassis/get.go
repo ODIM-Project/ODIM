@@ -26,6 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
@@ -47,6 +48,7 @@ var (
 // status code, status message, headers and body and the second value is error.
 func (h *Get) Handle(ctx context.Context, req *chassisproto.GetChassisRequest) response.RPC {
 	//managed chassis lookup
+	l.LogWithFields(ctx).Debugln("Inside GetChassisRequest Handle")
 	managedChassis := new(dmtf.Chassis)
 	e := h.findInMemoryDB("Chassis", req.URL, managedChassis)
 	managedChassis.ID = req.RequestParam
@@ -77,6 +79,7 @@ func (h *Get) Handle(ctx context.Context, req *chassisproto.GetChassisRequest) r
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 		}
 		data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`.`, -1)
+		l.LogWithFields(ctx).Debugf("data response from GetResourceInfoFromDeviceFunc for %s is %s", getDeviceInfoRequest.SystemID, data)
 		var resource dmtf.Chassis
 		json.Unmarshal([]byte(data), &resource)
 		return response.RPC{
@@ -89,7 +92,7 @@ func (h *Get) Handle(ctx context.Context, req *chassisproto.GetChassisRequest) r
 	if e.ErrNo() != errors.DBKeyNotFound {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
-
+	l.LogWithFields(ctx).Debugln("Built 'Chassis' table information from lib-dmtf chassis model")
 	pluginClient, e := h.createPluginClient("URP*")
 	if e != nil && e.ErrNo() == errors.DBKeyNotFound {
 		//urp plugin is not registered, requested chassis unknown -> status not found

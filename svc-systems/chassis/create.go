@@ -156,7 +156,7 @@ func (h *Create) Handle(ctx context.Context, req *chassisproto.CreateChassisRequ
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
-	l.LogWithFields(ctx).Debugf("outgoing Chassisupdater handle response: %s", resp)
+	l.LogWithFields(ctx).Debugf("outgoing Chassisupdater handle response: %s", resp.Body.(string))
 	return resp
 }
 

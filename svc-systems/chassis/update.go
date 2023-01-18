@@ -32,6 +32,7 @@ import (
 
 // Handle defines the operations which handle the RPC request-response for updating a chassis
 func (h *Update) Handle(ctx context.Context, req *chassis.UpdateChassisRequest) response.RPC {
+	l.LogWithFields(ctx).Debugln("Inside UpdateChassisRequest Handle")
 	pc, e := h.createPluginClient("URP*")
 	if e != nil && e.ErrNo() == errors.DBKeyNotFound {
 		return common.GeneralError(http.StatusMethodNotAllowed, response.ActionNotSupported, "", []interface{}{"PATCH"}, nil)

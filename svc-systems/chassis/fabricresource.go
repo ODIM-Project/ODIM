@@ -41,6 +41,7 @@ func (f *fabricFactory) getFabricChassisResource(ctx context.Context, rID string
 	ch := make(chan response.RPC)
 
 	managers, err := f.getFabricManagers(ctx)
+	l.LogWithFields(ctx).Debugf("Inside getFabricChassisResource")
 	if err != nil {
 		l.LogWithFields(ctx).Warn("while trying to collect fabric managers details from DB, got " + err.Error())
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)

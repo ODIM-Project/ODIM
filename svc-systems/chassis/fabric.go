@@ -248,7 +248,6 @@ func getPluginStatus(ctx context.Context, plugin smodel.Plugin) bool {
 		CACertificate:    &config.Data.KeyCertConf.RootCACertificate,
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
-	l.LogWithFields(ctx).Debugf("status of plugin: %s is %s", plugin.ID, strconv.FormatBool(status))
 	if err != nil && !status {
 		l.LogWithFields(ctx).Warn("while getting the status for plugin " + plugin.ID + err.Error())
 		return status
@@ -260,9 +259,11 @@ func getPluginStatus(ctx context.Context, plugin smodel.Plugin) bool {
 // getPluginToken will verify the if any token present to the plugin else it will create token for the new plugin
 func (f *fabricFactory) getPluginToken(ctx context.Context, plugin smodel.Plugin) string {
 	authToken := Token.getToken(plugin.ID)
+	l.LogWithFields(ctx).Debug("Inside getPluginToken")
 	if authToken == "" {
 		return f.createToken(ctx, plugin)
 	}
+	l.LogWithFields(ctx).Debugf("Plugin Token: " + authToken)
 	return authToken
 }
 

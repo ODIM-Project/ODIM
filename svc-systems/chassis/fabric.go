@@ -116,7 +116,6 @@ func (f *fabricFactory) getFabricManagerChassis(ctx context.Context, plugin smod
 		}
 		f.mu.Unlock()
 	}
-	l.LogWithFields(ctx).Debugf("Response from getFabricManagerChassis: %s", f)
 
 }
 

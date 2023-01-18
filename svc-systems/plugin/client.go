@@ -25,7 +25,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
@@ -248,7 +247,7 @@ type client struct {
 }
 
 func (c *client) Delete(ctx context.Context, uri string) response.RPC {
-	l.LogWithFields(ctx).Debugf("incoming Delete request with ", uri)
+	l.LogWithFields(ctx).Debugf("incoming Delete request with: %s", uri)
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	url = c.translator.toSouthbound(url)
 	resp, err := pmbhandle.ContactPlugin(context.TODO(), url, http.MethodDelete, "", "", nil, map[string]string{
@@ -261,7 +260,7 @@ func (c *client) Delete(ctx context.Context, uri string) response.RPC {
 }
 
 func (c *client) Post(ctx context.Context, uri string, body *json.RawMessage) response.RPC {
-	l.LogWithFields(ctx).Debugf("incoming Post request with ", uri)
+	l.LogWithFields(ctx).Debugf("incoming Post request with %s", uri)
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	url = c.translator.toSouthbound(url)
 	*body = json.RawMessage(c.translator.toSouthbound(string(*body)))
@@ -275,7 +274,7 @@ func (c *client) Post(ctx context.Context, uri string, body *json.RawMessage) re
 }
 
 func (c *client) Patch(ctx context.Context, uri string, body *json.RawMessage) response.RPC {
-	l.LogWithFields(ctx).Debugf("incoming Patch request with ", uri)
+	l.LogWithFields(ctx).Debugf("incoming Patch request with %s", uri)
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	url = c.translator.toSouthbound(url)
 	*body = json.RawMessage(c.translator.toSouthbound(string(*body)))
@@ -289,7 +288,7 @@ func (c *client) Patch(ctx context.Context, uri string, body *json.RawMessage) r
 }
 
 func (c *client) Get(ctx context.Context, uri string, _ ...CallOption) response.RPC {
-	l.LogWithFields(ctx).Debugf("incoming Get request with ", uri)
+	l.LogWithFields(ctx).Debugf("incoming Get request with %s", uri)
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	url = c.translator.toSouthbound(url)
 	resp, err := pmbhandle.ContactPlugin(context.TODO(), url, http.MethodGet, "", "", nil, map[string]string{
@@ -297,7 +296,7 @@ func (c *client) Get(ctx context.Context, uri string, _ ...CallOption) response.
 		"Password": string(c.plugin.Password),
 	})
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	l.LogWithFields(ctx).Debugf("http response of Get for: %s response: %s statuscode: %d", url, string(respBody), strconv.Itoa(resp.StatusCode))
+	l.LogWithFields(ctx).Debugf("http response of Get for: %s response: %s statuscode: %d", url, string(respBody), resp.StatusCode)
 	return c.extractResp(ctx, resp, err)
 }
 

@@ -269,7 +269,7 @@ func getAllSystemIDs(ctx context.Context, resp response.RPC) ([]dmtf.Link, respo
 	for _, key := range systemKeys {
 		mems = append(mems, dmtf.Link{Oid: key})
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response getAllSystemIDs members: %v, statuscode: %s", mems, resp.StatusCode)
+	l.LogWithFields(ctx).Debugf("outgoing response getAllSystemIDs members: %v, statuscode: %d", mems, resp.StatusCode)
 	return mems, resp, nil
 
 }

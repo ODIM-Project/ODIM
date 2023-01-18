@@ -67,7 +67,7 @@ func (d *Delete) Handle(ctx context.Context, req *chassisproto.DeleteChassisRequ
 	}
 	managerURI := "/redfish/v1/Managers/" + plugins[0].ManagerUUID
 
-	data, jerr := GetResourceFunc("Managers", managerURI)
+	data, jerr := GetResourceFunc(ctx, "Managers", managerURI)
 	if jerr != nil {
 		errorMessage := "error while getting manager details: " + jerr.Error()
 		l.LogWithFields(ctx).Error(errorMessage)

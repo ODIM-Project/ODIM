@@ -596,7 +596,7 @@ func TestGetSystems(t *testing.T) {
 		RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 		URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	}
-	GetSystemResetInfoFunc = func(systemURI string) (map[string]string, *errors.Error) {
+	GetSystemResetInfoFunc = func(ctx context.Context, systemURI string) (map[string]string, *errors.Error) {
 		return nil, nil
 	}
 	GetResourceInfoFromDeviceFunc = func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
@@ -606,8 +606,8 @@ func TestGetSystems(t *testing.T) {
 	resp := pluginContact.GetSystems(ctx, &req)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusNotFound")
 
-	GetSystemResetInfoFunc = func(systemURI string) (map[string]string, *errors.Error) {
-		return smodel.GetSystemResetInfo(systemURI)
+	GetSystemResetInfoFunc = func(ctx context.Context, systemURI string) (map[string]string, *errors.Error) {
+		return smodel.GetSystemResetInfo(ctx, systemURI)
 	}
 	GetResourceInfoFromDeviceFunc = func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
 		return scommon.GetResourceInfoFromDevice(ctx, req, saveRequired)
@@ -731,14 +731,14 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 		RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 		URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot",
 	}
-	GetDeviceLoadInfoFunc = func(URL, systemID string) bool {
+	GetDeviceLoadInfoFunc = func(ctx context.Context, URL, systemID string) bool {
 		return true
 	}
 	resp := pluginContact.GetSystemResource(ctx, req)
 	assert.NotNil(t, resp, "Response should have error")
 
-	GetDeviceLoadInfoFunc = func(URL, systemID string) bool {
-		return getDeviceLoadInfo(URL, systemID)
+	GetDeviceLoadInfoFunc = func(ctx context.Context, URL, systemID string) bool {
+		return getDeviceLoadInfo(ctx, URL, systemID)
 	}
 
 }
@@ -1093,10 +1093,11 @@ func Test_getAllSystemIDs(t *testing.T) {
 }
 
 func Test_getDeviceLoadInfo(t *testing.T) {
-	GetSystemResetInfoFunc = func(systemURI string) (map[string]string, *errors.Error) {
+	ctx := mockContext()
+	GetSystemResetInfoFunc = func(ctx context.Context, systemURI string) (map[string]string, *errors.Error) {
 		return make(map[string]string), nil
 	}
-	resp := getDeviceLoadInfo("", "")
+	resp := getDeviceLoadInfo(ctx, "", "")
 	assert.Equal(t, false, resp, "Status should be false")
 }
 

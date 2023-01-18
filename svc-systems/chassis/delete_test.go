@@ -96,13 +96,13 @@ func Test_findAllPlugins(t *testing.T) {
 		return
 	}
 
-	GetResourceFunc = func(Table, key string) (string, *errors.Error) {
+	GetResourceFunc = func(ctx context.Context, Table, key string) (string, *errors.Error) {
 		return "", &errors.Error{}
 	}
 	response = delete.Handle(ctx, &req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response status code should be StatusInternalServerError")
-	GetResourceFunc = func(Table, key string) (string, *errors.Error) {
-		return smodel.GetResource(Table, key)
+	GetResourceFunc = func(ctx context.Context, Table, key string) (string, *errors.Error) {
+		return smodel.GetResource(ctx, Table, key)
 	}
 
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {

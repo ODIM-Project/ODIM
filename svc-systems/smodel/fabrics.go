@@ -33,6 +33,7 @@ var (
 
 // GetFabricManagers fetches all the fabrics details from DB
 func GetFabricManagers(ctx context.Context) ([]Plugin, error) {
+	l.LogWithFields(ctx).Debugf("incoming GetFabricManagers request")
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -61,5 +62,6 @@ func GetFabricManagers(ctx context.Context) ([]Plugin, error) {
 		managers = append(managers, manager)
 
 	}
+	l.LogWithFields(ctx).Debugf("outgoing response from GetFabricManagers, managers: %v", managers)
 	return managers, nil
 }

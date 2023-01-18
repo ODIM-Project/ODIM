@@ -84,7 +84,8 @@ type OdataIDLink struct {
 }
 
 // GetSystemByUUID fetches computer system details by UUID from database
-func GetSystemByUUID(systemUUID string) (string, *errors.Error) {
+func GetSystemByUUID(ctx context.Context, systemUUID string) (string, *errors.Error) {
+	l.LogWithFields(ctx).Debugf("incoming GetSystemByUUID request with systemUUID: %s", systemUUID)
 	var system string
 	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
@@ -98,11 +99,13 @@ func GetSystemByUUID(systemUUID string) (string, *errors.Error) {
 	if errs := JSONUnmarshalFunc([]byte(systemData), &system); errs != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
 	}
+	l.LogWithFields(ctx).Debugf("Outgoing response for GetSystemByUUID systemUUID: %s, is system: %s", systemUUID, system)
 	return system, nil
 }
 
 // GetResource fetches a resource from database using table and key
-func GetResource(Table, key string) (string, *errors.Error) {
+func GetResource(ctx context.Context, Table, key string) (string, *errors.Error) {
+	l.LogWithFields(ctx).Debugf("incoming GetResource request with Table: %s, key: %s", Table, key)
 	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return "", err
@@ -115,6 +118,7 @@ func GetResource(Table, key string) (string, *errors.Error) {
 	if errs := JSONUnmarshalFunc([]byte(resourceData), &resource); errs != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
 	}
+	l.LogWithFields(ctx).Debugf("Outgoing response for GetResource with Table: %s, key: %s, is resource: %s", Table, key, resource)
 	return resource, nil
 }
 
@@ -326,8 +330,8 @@ func GetRange(index string, min, max int, regexFlag bool) ([]string, error) {
 1.systemURI: computer system uri for which system operation is maintained
 2.resetType : reset type which is performed
 */
-func AddSystemResetInfo(systemID, resetType string) *errors.Error {
-
+func AddSystemResetInfo(ctx context.Context, systemID, resetType string) *errors.Error {
+	l.LogWithFields(ctx).Debugf("incoming AddSystemResetInfo request for SystemID: %s, resetType: %s", systemID, resetType)
 	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return err
@@ -347,7 +351,8 @@ func AddSystemResetInfo(systemID, resetType string) *errors.Error {
 /* Inputs:
 1.systemURI: computer system uri for which system operation is maintained
 */
-func GetSystemResetInfo(systemURI string) (map[string]string, *errors.Error) {
+func GetSystemResetInfo(ctx context.Context, systemURI string) (map[string]string, *errors.Error) {
+	l.LogWithFields(ctx).Debugf("incoming GetSystemResetInfo request for URI: %s", systemURI)
 	var resetInfo map[string]string
 
 	conn, err := GetDBConnectionFunc(common.InMemory)
@@ -367,7 +372,8 @@ func GetSystemResetInfo(systemURI string) (map[string]string, *errors.Error) {
 }
 
 // DeleteVolume will delete the volume from InMemory
-func DeleteVolume(key string) *errors.Error {
+func DeleteVolume(ctx context.Context, key string) *errors.Error {
+	l.LogWithFields(ctx).Debugf("incoming DeleteVolume request for key: %s", key)
 	connPool, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return errors.PackError(err.ErrNo(), "error while trying to connecting to DB: ", err.Error())

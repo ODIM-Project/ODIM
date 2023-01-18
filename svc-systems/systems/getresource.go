@@ -127,6 +127,7 @@ func validateLastParameter(expression []string) error {
 
 // GetMembers will fetch the resource members based on the filter expression
 func GetMembers(ctx context.Context, allowed map[string]map[string]bool, expression []string, resp response.RPC) ([]dmtf.Link, response.RPC, error) {
+	l.LogWithFields(ctx).Debugf("incoming GetMembers request for expression: %v", expression)
 	err := validateLastParameter(expression)
 	if err != nil {
 		return nil, common.GeneralError(http.StatusBadRequest, response.QueryNotSupported, err.Error(), nil, nil), err
@@ -248,11 +249,13 @@ func GetMembers(ctx context.Context, allowed map[string]map[string]bool, express
 
 		}
 	}
+	l.LogWithFields(ctx).Debugf("outgoing response GetMembers members: %v, statuscode: %d", members, resp.StatusCode)
 	return members, resp, nil
 }
 
 // getAllSystemIDs will fetch all the document ID's present in the DB
 func getAllSystemIDs(ctx context.Context, resp response.RPC) ([]dmtf.Link, response.RPC, error) {
+	l.LogWithFields(ctx).Debugln("incoming getAllSystemIDs request ")
 	var mems []dmtf.Link
 	systemKeys, err := GetAllKeysFromTableFunc("ComputerSystem")
 	if err != nil {
@@ -266,7 +269,7 @@ func getAllSystemIDs(ctx context.Context, resp response.RPC) ([]dmtf.Link, respo
 	for _, key := range systemKeys {
 		mems = append(mems, dmtf.Link{Oid: key})
 	}
-
+	l.LogWithFields(ctx).Debugf("outgoing response getAllSystemIDs members: %v, statuscode: %s", mems, resp.StatusCode)
 	return mems, resp, nil
 
 }
@@ -672,12 +675,12 @@ func fillCapabilitiesResponse(respMap map[string]interface{}, oid string) (body 
 // returns true if exact URL entry is found in the DeviceLoad
 // returns true if System ID entry is found in the DeviceLoad
 // returns false if no entry is found in the DeviceLoad for the requested URL and System ID
-func getDeviceLoadInfo(URL, systemID string) bool {
+func getDeviceLoadInfo(ctx context.Context, URL, systemID string) bool {
 	systemURL := "/redfish/v1/Systems/" + systemID
 	var resetFlag bool
-	if _, err := GetSystemResetInfoFunc(URL); err == nil {
+	if _, err := GetSystemResetInfoFunc(ctx, URL); err == nil {
 		resetFlag = true
-	} else if _, err := smodel.GetSystemResetInfo(systemURL); err == nil {
+	} else if _, err := smodel.GetSystemResetInfo(ctx, systemURL); err == nil {
 		resetFlag = true
 	}
 	if resetFlag {

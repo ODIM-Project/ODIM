@@ -58,9 +58,9 @@ type ExternalInterface struct {
 
 // DB struct to inject the contact DB function into the handlers
 type DB struct {
-	GetResource        func(string, string) (string, *errors.Error)
-	DeleteVolume       func(string) *errors.Error
-	AddSystemResetInfo func(string, string) *errors.Error
+	GetResource        func(context.Context, string, string) (string, *errors.Error)
+	DeleteVolume       func(context.Context, string) *errors.Error
+	AddSystemResetInfo func(context.Context, string, string) *errors.Error
 	GetPluginData      func(string) (smodel.Plugin, *errors.Error)
 	GetTarget          func(string) (*smodel.Target, *errors.Error)
 }
@@ -233,7 +233,7 @@ func (e *ExternalInterface) validateProperties(ctx context.Context, request *smo
 			if driveURI == "" {
 				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf("Error processing create volume request: @odata.id key(s) is missing in Drives list")
 			}
-			_, err := e.DB.GetResource("Drives", driveURI)
+			_, err := e.DB.GetResource(ctx, "Drives", driveURI)
 			if err != nil {
 				l.LogWithFields(ctx).Error(err.Error())
 				if errors.DBKeyNotFound == err.ErrNo() {
@@ -268,7 +268,7 @@ func (e *ExternalInterface) validateProperties(ctx context.Context, request *smo
 			if driveURI == "" {
 				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf("Error processing create volume request: @odata.id key(s) is missing in Drives list")
 			}
-			_, err := e.DB.GetResource("Drives", driveURI)
+			_, err := e.DB.GetResource(ctx, "Drives", driveURI)
 			if err != nil {
 				l.LogWithFields(ctx).Error(err.Error())
 				if errors.DBKeyNotFound == err.ErrNo() {
@@ -397,7 +397,7 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 		return response
 	}
 	key := fmt.Sprintf("/redfish/v1/Systems/%s/Storage/%s/Volumes/%s", req.SystemID, req.StorageInstance, req.VolumeID)
-	_, dbErr := e.DB.GetResource("Volumes", key)
+	_, dbErr := e.DB.GetResource(ctx, "Volumes", key)
 	if dbErr != nil {
 		l.LogWithFields(ctx).Error("error getting volumes details : " + dbErr.Error())
 		errorMessage := dbErr.Error()
@@ -475,7 +475,7 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 	}
 
 	// delete a volume in db
-	if derr := e.DB.DeleteVolume(key); derr != nil {
+	if derr := e.DB.DeleteVolume(ctx, key); derr != nil {
 		errMsg := "error while trying to delete volume: " + derr.Error()
 		l.LogWithFields(ctx).Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
@@ -487,8 +487,8 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 	// adding volume collection uri and deleted volume uri to the AddSystemResetInfo
 	// for avoiding storing or retrieving them from DB before a BMC reset.
 	collectionKey := fmt.Sprintf("/redfish/v1/Systems/%s/Storage/%s/Volumes", req.SystemID, req.StorageInstance)
-	e.DB.AddSystemResetInfo(key, "On")
-	e.DB.AddSystemResetInfo(collectionKey, "On")
+	e.DB.AddSystemResetInfo(ctx, key, "On")
+	e.DB.AddSystemResetInfo(ctx, collectionKey, "On")
 
 	resp.StatusCode = http.StatusNoContent
 	resp.StatusMessage = response.Success

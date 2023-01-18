@@ -153,13 +153,13 @@ func TestNewCreateHandler(t *testing.T) {
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)
 	}
-	GetResourceFunc = func(Table, key string) (string, *errors.Error) {
+	GetResourceFunc = func(ctx context.Context, Table, key string) (string, *errors.Error) {
 		return "", &errors.Error{}
 	}
 	response = create.Handle(ctx, &req)
 	assert.NotNil(t, response, "Response Status code StatusInternalServerError")
-	GetResourceFunc = func(Table, key string) (string, *errors.Error) {
-		return smodel.GetResource(Table, key)
+	GetResourceFunc = func(ctx context.Context, Table, key string) (string, *errors.Error) {
+		return smodel.GetResource(ctx, Table, key)
 	}
 
 	JSONUnmarshalFunc1 = func(data []byte, v interface{}) error {

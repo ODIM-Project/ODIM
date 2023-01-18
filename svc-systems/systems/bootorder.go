@@ -33,6 +33,7 @@ import (
 // SetDefaultBootOrder defines the logic for setting the boot order to the default
 func (p *PluginContact) SetDefaultBootOrder(ctx context.Context, systemID string) response.RPC {
 	var resp response.RPC
+	l.LogWithFields(ctx).Debugf("incoming SetDefaultBootOrder request for SystemID: %s", systemID)
 
 	// spliting the uuid and system id
 	requestData := strings.SplitN(systemID, ".", 2)
@@ -105,12 +106,14 @@ func (p *PluginContact) SetDefaultBootOrder(ctx context.Context, systemID string
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
+	l.LogWithFields(ctx).Debugf("outgoing response SetDefaultBootOrder statuscode: %d", resp.StatusCode)
 	return resp
 }
 
 // ChangeBiosSettings defines the logic for change bios settings
 func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsproto.BiosSettingsRequest) response.RPC {
 	var resp response.RPC
+	l.LogWithFields(ctx).Debugf("incoming ChangeBiosSettings request for SystemID: %s", req.SystemID)
 
 	// spliting the uuid and system id
 	requestData := strings.SplitN(req.SystemID, ".", 2)
@@ -207,13 +210,15 @@ func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsprot
 
 	// Adding Settings URL to the DB to fetch data from device
 	URL := fmt.Sprintf("/redfish/v1/Systems/%s/Bios/Settings", req.SystemID)
-	smodel.AddSystemResetInfo(URL, "None")
+	smodel.AddSystemResetInfo(ctx, URL, "None")
+	l.LogWithFields(ctx).Debugf("outgoing response ChangeBiosSettings statuscode: %d", resp.StatusCode)
 	return resp
 }
 
 // ChangeBootOrderSettings defines the logic for change boot order settings
 func (p *PluginContact) ChangeBootOrderSettings(ctx context.Context, req *systemsproto.BootOrderSettingsRequest) response.RPC {
 	var resp response.RPC
+	l.LogWithFields(ctx).Debugf("incoming ChangeBiosSettings request for SystemID: %s", req.SystemID)
 
 	// spliting the uuid and system id
 	requestData := strings.SplitN(req.SystemID, ".", 2)
@@ -317,5 +322,6 @@ func (p *PluginContact) ChangeBootOrderSettings(ctx context.Context, req *system
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 	smodel.AddSystemResetInfo("/redfish/v1/Systems/"+req.SystemID, "On")
+	l.LogWithFields(ctx).Debugf("outgoing response ChangeBootOrderSettings statuscode: %d", resp.StatusCode)
 	return resp
 }

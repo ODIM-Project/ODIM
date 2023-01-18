@@ -83,6 +83,7 @@ type ResourceInfoRequest struct {
 // eg: Delete volume requires reset of the BMC to take its effect. Before a reset, volumes retrieval
 // request can provide the deleted volume. We can avoid storing such a data with the use of saveRequired.
 func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest, saveRequired bool) (string, error) {
+	l.LogWithFields(ctx).Debugf("incoming GetResourceInfoFromDevice request with %s", req.URL)
 	target, gerr := smodel.GetTarget(req.UUID)
 	if gerr != nil {
 		return "", gerr
@@ -175,6 +176,7 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest, sav
 			return "", err
 		}
 	}
+	l.LogWithFields(ctx).Debugf("Outgoing response from GetResourceInfoFromDevice for url: %s is updatedData: %s", req.URL, updatedData)
 	return updatedData, nil
 }
 
@@ -209,6 +211,7 @@ func getResourceName(oDataID string, memberFlag bool) string {
 
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
 func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
+	l.LogWithFields(ctx).Debugf("incoming ContactPlugin request with token: %s, OID: %s", req.Token, req.OID)
 	var resp ResponseStatus
 	var response *http.Response
 	var err error
@@ -250,6 +253,7 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 	if response.StatusCode == http.StatusAccepted {
 		return []byte(data), response.Header.Get("Location"), resp, nil
 	}
+	l.LogWithFields(ctx).Debugf("Outgoing response from ContactPlugin data: %s, X-Auth-Token: %s ", data, response.Header.Get("X-Auth-Token"))
 	return []byte(data), response.Header.Get("X-Auth-Token"), resp, nil
 }
 

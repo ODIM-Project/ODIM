@@ -115,11 +115,11 @@ func mockGetPluginData(pluginID string) (smodel.Plugin, *errors.Error) {
 	return plugin, nil
 }
 
-func mockAddSystemResetInfo(systemID, resetType string) *errors.Error {
+func mockAddSystemResetInfo(ctx context.Context, systemID, resetType string) *errors.Error {
 	return nil
 }
 
-func mockDeleteVolume(key string) *errors.Error {
+func mockDeleteVolume(ctx context.Context, key string) *errors.Error {
 	return nil
 }
 
@@ -138,7 +138,7 @@ func mockGetExternalInterface() *ExternalInterface {
 	}
 }
 
-func mockGetResource(table, key string) (string, *errors.Error) {
+func mockGetResource(ctx context.Context, table, key string) (string, *errors.Error) {
 	var reqData = `{"@odata.id":"/redfish/v1/Systems/1/Storage/1/Volumes/1"}`
 	switch key {
 	case "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0":

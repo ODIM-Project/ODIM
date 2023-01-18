@@ -92,7 +92,7 @@ func (h *Create) Handle(ctx context.Context, req *chassisproto.CreateChassisRequ
 	}
 	managerURI := managingMgrData["@odata.id"]
 	var managerData map[string]interface{}
-	data, jerr := GetResourceFunc("Managers", managerURI.(string))
+	data, jerr := GetResourceFunc(ctx, "Managers", managerURI.(string))
 	if jerr != nil {
 		errorMessage := "error while getting manager details: " + jerr.Error()
 		l.LogWithFields(ctx).Error(errorMessage)

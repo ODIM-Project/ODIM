@@ -38,6 +38,7 @@ var (
 // updateFabricChassisResource will collect the all available fabric plugins available
 // in the DB and communicates with each one of them concurrently to update the resource
 func (f *fabricFactory) updateFabricChassisResource(ctx context.Context, url string, body *json.RawMessage) response.RPC {
+	l.LogWithFields(ctx).Debugf("Inside updateFabricChassisResource for URI: %s", url)
 	var resp response.RPC
 	ch := make(chan response.RPC)
 
@@ -66,6 +67,7 @@ func (f *fabricFactory) updateFabricChassisResource(ctx context.Context, url str
 // updateResource will validate the request body, creates the request model for communicating
 // with the plugin and returns the response
 func (f *fabricFactory) updateResource(ctx context.Context, plugin smodel.Plugin, url string, body *json.RawMessage, ch chan response.RPC) {
+	l.LogWithFields(ctx).Debugf("Inside updateResource for URI: %s", url)
 	req, errResp, err := f.createChassisRequest(ctx, plugin, url, http.MethodPatch, body)
 	if errResp != nil {
 		l.LogWithFields(ctx).Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
@@ -78,6 +80,7 @@ func (f *fabricFactory) updateResource(ctx context.Context, plugin smodel.Plugin
 // patchResource contacts the plugin with the details available in the
 // pluginContactRequest, and returns the RPC response
 func patchResource(ctx context.Context, f *fabricFactory, pluginRequest *pluginContactRequest) (r response.RPC) {
+	l.LogWithFields(ctx).Debugf("Inside patchResource")
 	body, _, statusCode, statusMessage, err := contactPlugin(ctx, pluginRequest)
 	if statusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
 		body, _, statusCode, statusMessage, err = retryFabricsOperation(ctx, f, pluginRequest)

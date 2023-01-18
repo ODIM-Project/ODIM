@@ -21,7 +21,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -563,8 +562,8 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	}
 	var threadID int = 1
 	ctxt := context.WithValue(ctx, common.ThreadName, common.DeleteAggregationSource)
-	ctxt = context.WithValue(ctxt, common.ThreadID, threadID)
-	go deleteAggregationSource(ctxt, taskID, targetURI, a, req)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go a.connector.DeleteAggregationSources(ctxt, taskID, targetURI, req)
 	threadID++
 	// return 202 Accepted
 	var rpcResp = response.RPC{
@@ -577,52 +576,6 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateResponse(rpcResp, resp)
 	return resp, nil
-}
-
-func deleteAggregationSource(ctx context.Context, taskID string, targetURI string, a *Aggregator, req *aggregatorproto.AggregatorRequest) error {
-	err := a.connector.UpdateTask(ctx, common.TaskData{
-		TaskID:          taskID,
-		TargetURI:       targetURI,
-		TaskState:       common.Running,
-		TaskStatus:      common.OK,
-		PercentComplete: 0,
-		HTTPMethod:      http.MethodDelete,
-	})
-	if err != nil && (err.Error() == common.Cancelling) {
-		// We cant do anything here as the task has done it work completely, we cant reverse it.
-		//Unless if we can do opposite/reverse action for delete server which is add server.
-		a.connector.UpdateTask(ctx, common.TaskData{
-			TaskID:          taskID,
-			TargetURI:       targetURI,
-			TaskState:       common.Cancelled,
-			TaskStatus:      common.OK,
-			PercentComplete: 0,
-			HTTPMethod:      http.MethodDelete,
-		})
-		go runtime.Goexit()
-	}
-	data := a.connector.DeleteAggregationSource(ctx, req)
-	err = a.connector.UpdateTask(ctx, common.TaskData{
-		TaskID:          taskID,
-		TargetURI:       targetURI,
-		TaskState:       common.Completed,
-		TaskStatus:      common.OK,
-		Response:        data,
-		PercentComplete: 100,
-		HTTPMethod:      http.MethodDelete,
-	})
-	if err != nil && (err.Error() == common.Cancelling) {
-		a.connector.UpdateTask(ctx, common.TaskData{
-			TaskID:          taskID,
-			TargetURI:       targetURI,
-			TaskState:       common.Cancelled,
-			TaskStatus:      common.OK,
-			PercentComplete: 100,
-			HTTPMethod:      http.MethodDelete,
-		})
-		go runtime.Goexit()
-	}
-	return nil
 }
 
 // CreateAggregate defines the operations which handles the RPC request response

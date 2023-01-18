@@ -263,12 +263,18 @@ func genError(ctx context.Context, errorMessage string, respPtr *response.RPC, h
 // UpdateTaskData update the task with the given data
 func UpdateTaskData(taskData common.TaskData) error {
 	var res map[string]interface{}
-	if err := json.Unmarshal([]byte(taskData.TaskRequest), &res); err != nil {
-		return err
+	if taskData.TaskRequest != "" {
+		r := strings.NewReader(taskData.TaskRequest)
+		if err := json.NewDecoder(r).Decode(&res); err != nil {
+			return err
+		}
 	}
 	reqStr := logs.MaskRequestBody(res)
 
-	respBody, _ := json.Marshal(taskData.Response.Body)
+	respBody, err := json.Marshal(taskData.Response.Body)
+	if err != nil {
+		return err
+	}
 	payLoad := &taskproto.Payload{
 		HTTPHeaders:   taskData.Response.Header,
 		HTTPOperation: taskData.HTTPMethod,
@@ -278,7 +284,7 @@ func UpdateTaskData(taskData common.TaskData) error {
 		ResponseBody:  respBody,
 	}
 
-	err := services.UpdateTask(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	err = services.UpdateTask(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
@@ -287,7 +293,6 @@ func UpdateTaskData(taskData common.TaskData) error {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}
 		runtime.Goexit()
-		//		return fmt.Errorf(common.Cancelled)
 	}
 	return nil
 }

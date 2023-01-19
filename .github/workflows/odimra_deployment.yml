@@ -25,8 +25,8 @@ jobs:
         echo "=========checking docker status================"
         sudo service docker status
         
-        sudo dpkg -l|grep docker
-        sleep 50
+        d=`sudo dpkg -l|grep docker`
+        echo "the docker pkgs are $d"
         
         echo "[$(date)] -- INFO  -- running actions as ${USER}"
         echo
@@ -58,7 +58,7 @@ jobs:
         export host_name=$(hostname)
         export FQDN="odim.controller.com"
         
-        exit
+        exit -1
         export SSHPASS=${PASSWD}
         export ODIMRA_USER_ID=2021
         export ODIMRA_GROUP_ID=2021

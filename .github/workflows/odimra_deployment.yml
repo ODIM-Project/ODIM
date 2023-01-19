@@ -26,8 +26,8 @@ jobs:
         sudo service docker status
         
         sudo dpkg -l|grep docker
-        sleep 300
-        exit -1
+        sleep 50
+        
         echo "[$(date)] -- INFO  -- running actions as ${USER}"
         echo
         
@@ -58,6 +58,7 @@ jobs:
         export host_name=$(hostname)
         export FQDN="odim.controller.com"
         
+        exit
         export SSHPASS=${PASSWD}
         export ODIMRA_USER_ID=2021
         export ODIMRA_GROUP_ID=2021

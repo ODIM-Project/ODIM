@@ -286,7 +286,7 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	)
 
 	tasks := make(map[string]interface{}, maxSize)
-	completedTasks := make(map[string]int8, maxSize)
+	completedTasks := make(map[string]int64, maxSize)
 
 	if len(*queue) <= 0 {
 		return
@@ -357,6 +357,8 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	}
 
 	tasks = nil
+	completedTasks = nil
+
 }
 
 // dequeueTask dequeue a task from channel and returns. If no elements is present in the queue it returns nil.

@@ -286,7 +286,7 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	)
 
 	tasks := make(map[string]interface{}, maxSize)
-	completedTasks := make([]string, maxSize)
+	completedTasks := make(map[string]int8, maxSize)
 
 	if len(*queue) <= 0 {
 		return
@@ -305,7 +305,7 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 			saveID := Table + ":" + task.ID
 			tasks[saveID] = task
 			if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
-				completedTasks = append(completedTasks, saveID)
+				completedTasks[saveID] = 1
 			}
 		}
 

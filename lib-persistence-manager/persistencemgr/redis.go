@@ -779,10 +779,11 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 // AddExpiryForTasks will create the expiry time using pipelined transaction
 /* AddExpiryForTasks takes the taskID  as input:
  */
-func (c *Conn) AddExpiryForTasks(taskKeys []string) *errors.Error {
+func (c *Conn) AddExpiryForTasks(taskKeys map[string]int8) *errors.Error {
 	var partialFailure bool = false
 	c.WriteConn.Send("MULTI")
-	for _, taskkey := range taskKeys {
+	members := getSortedMapKeys(taskKeys)
+	for _, taskkey := range members {
 		createErr := c.WriteConn.Send("EXPIRE", taskkey, 86400)
 		if createErr != nil {
 			c.WriteConn.Send("DISCARD")
@@ -800,10 +801,10 @@ func (c *Conn) AddExpiryForTasks(taskKeys []string) *errors.Error {
 		}
 		return errors.PackError(errors.DBUpdateFailed, err.Error())
 	}
-	for i := range taskKeys {
+	for i, member := range members {
 		res, ok := result[i].(int64)
 		if ok && res == 1 {
-			taskKeys = append(taskKeys[:i], taskKeys[i+1:]...)
+			delete(taskKeys, member)
 		} else {
 			partialFailure = true
 		}

@@ -20,6 +20,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"math/big"
 	"net"
@@ -334,7 +335,8 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 			return nil, errors.PackError(errors.UndefinedErrorType, err.Error())
 		}
 	}
-
+	fmt.Println("Password", c.Password)
+	fmt.Println("PasswordEscaped", html.EscapeString(c.Password))
 	connPools.ReadPool, err = getPool(c.Host, c.Port, c.Password)
 	//Check if any connection error occured
 	if err != nil {

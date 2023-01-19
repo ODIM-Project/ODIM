@@ -15,6 +15,7 @@
 package common
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -36,7 +37,7 @@ var (
 	ConfigFilePath string
 )
 
-//GetAllKeysFromTable fetches all keys in a given table
+// GetAllKeysFromTable fetches all keys in a given table
 func GetAllKeysFromTable(table string, dbtype persistencemgr.DbType) ([]string, error) {
 	conn, err := persistencemgr.GetDBConnection(dbtype)
 	if err != nil {
@@ -49,7 +50,7 @@ func GetAllKeysFromTable(table string, dbtype persistencemgr.DbType) ([]string, 
 	return keysArray, nil
 }
 
-//GetResource fetches a resource from database using table and key
+// GetResource fetches a resource from database using table and key
 func GetResource(Table, key string, dbtype persistencemgr.DbType) (interface{}, *errors.Error) {
 	conn, err := persistencemgr.GetDBConnection(dbtype)
 	if err != nil {
@@ -66,7 +67,7 @@ func GetResource(Table, key string, dbtype persistencemgr.DbType) (interface{}, 
 	return resource, nil
 }
 
-//GetTarget fetches the System(Target Device Credentials) table details
+// GetTarget fetches the System(Target Device Credentials) table details
 func GetTarget(deviceUUID string) (*model.Target, *errors.Error) {
 	var target model.Target
 	conn, err := persistencemgr.GetDBConnection(persistencemgr.OnDisk)
@@ -83,7 +84,7 @@ func GetTarget(deviceUUID string) (*model.Target, *errors.Error) {
 	return &target, nil
 }
 
-//GetPluginData will fetch plugin details
+// GetPluginData will fetch plugin details
 func GetPluginData(pluginID string) (*model.Plugin, *errors.Error) {
 	var plugin model.Plugin
 
@@ -194,12 +195,12 @@ func callPlugin(req model.PluginContactRequest) (*http.Response, error) {
 	}
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + oid
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
+		return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
-	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+	return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
 
-//GenericSave will save any resource data into the database
+// GenericSave will save any resource data into the database
 func GenericSave(body []byte, table string, key string) error {
 	connPool, err := persistencemgr.GetDBConnection(persistencemgr.OnDisk)
 	if err != nil {

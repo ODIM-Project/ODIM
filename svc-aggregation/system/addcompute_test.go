@@ -16,6 +16,7 @@ package system
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -30,16 +31,16 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
-func EventFunctionsForTesting(s []string)                 {}
-func PostEventFunctionForTesting(s []string, name string) {}
-func GetPluginStatusForTesting(plugin agmodel.Plugin) bool {
+func EventFunctionsForTesting(ctx context.Context, s []string)                 {}
+func PostEventFunctionForTesting(ctx context.Context, s []string, name string) {}
+func GetPluginStatusForTesting(ctx context.Context, plugin agmodel.Plugin) bool {
 	return true
 }
 func mockSubscribeEMB(pluginID string, list []string) error {
 	return nil
 }
 
-func mockContactClientForDuplicate(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
+func mockContactClientForDuplicate(ctx context.Context, url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	var bData agmodel.SaveSystem
 	bBytes, _ := json.Marshal(body)
 	json.Unmarshal(bBytes, &bData)
@@ -265,7 +266,7 @@ func TestExternalInterface_addcompute(t *testing.T) {
 		"Name": "NoStatusPlugin_v1.0.0",
 		"UUID": "1234877451-1235",
 	})
-
+	ctx := mockContext()
 	reqSuccess := AddResourceRequest{
 		ManagerAddress: "100.0.0.1",
 		UserName:       "admin",
@@ -350,7 +351,7 @@ func TestExternalInterface_addcompute(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, _, _ := tt.p.addCompute(tt.args.taskID, targetURI, tt.args.pluginID, percentComplete, tt.args.req, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got, _, _ := tt.p.addCompute(ctx, tt.args.taskID, targetURI, tt.args.pluginID, percentComplete, tt.args.req, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.addCompute = %v, want %v", got, tt.want)
 			}
 		})

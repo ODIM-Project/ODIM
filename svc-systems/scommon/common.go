@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package scommon ...
+// Package scommon ...
 package scommon
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -47,30 +48,30 @@ type Schema struct {
 // SF holds the schema data for search/filter
 var SF Schema
 
-//PluginContactRequest  hold the request of contact plugin
+// PluginContactRequest  hold the request of contact plugin
 type PluginContactRequest struct {
 	Token           string
 	OID             string
 	DeviceInfo      interface{}
 	BasicAuth       map[string]string
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	GetPluginStatus func(smodel.Plugin) bool
 	Plugin          smodel.Plugin
 	HTTPMethodType  string
 }
 
-//ResponseStatus holds the response of Contact Plugin
+// ResponseStatus holds the response of Contact Plugin
 type ResponseStatus struct {
 	StatusCode    int32
 	StatusMessage string
 }
 
-//ResourceInfoRequest  hold the request of getting  Resource
+// ResourceInfoRequest  hold the request of getting  Resource
 type ResourceInfoRequest struct {
 	URL             string
 	UUID            string
 	SystemID        string
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DevicePassword  func([]byte) ([]byte, error)
 	GetPluginStatus func(smodel.Plugin) bool
 	ResourceName    string
@@ -194,7 +195,7 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	return strings.Join(key, "/")
 }
 
-//getResourceName fetches the table name for storing the particualar resource
+// getResourceName fetches the table name for storing the particualar resource
 func getResourceName(oDataID string, memberFlag bool) string {
 	str := strings.Split(oDataID, "/")
 	if memberFlag {
@@ -295,9 +296,9 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 	}
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + oid
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
+		return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
-	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+	return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
 
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy

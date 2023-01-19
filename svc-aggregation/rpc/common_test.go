@@ -16,6 +16,7 @@ package rpc
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -130,7 +131,7 @@ func mockDeleteSubscription(uuid string) (*eventsproto.EventSubResponse, error) 
 	}, nil
 }
 
-func mockEventNotification(systemID, eventType, collectionType string) {
+func mockEventNotification(ctx context.Context, systemID, eventType, collectionType string) {
 	return
 }
 
@@ -158,11 +159,11 @@ func mockContactClientForDelete(url, method, token string, odataID string, body 
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
-func EventFunctionsForTesting(s []string) {}
+func EventFunctionsForTesting(ctx context.Context, s []string) {}
 
-func PostEventFunctionForTesting(s []string, name string) {}
+func PostEventFunctionForTesting(ctx context.Context, s []string, name string) {}
 
-func GetPluginStatusForTesting(plugin agmodel.Plugin) bool {
+func GetPluginStatusForTesting(ctx context.Context, plugin agmodel.Plugin) bool {
 	return true
 }
 
@@ -278,7 +279,7 @@ func mockDeviceData(uuid string, device agmodel.Target) error {
 	return nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	var bData agmodel.SaveSystem
 	bBytes, _ := json.Marshal(body)
 	json.Unmarshal(bBytes, &bData)

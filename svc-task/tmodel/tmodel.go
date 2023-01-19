@@ -305,7 +305,6 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 			saveID := Table + ":" + task.ID
 			tasks[saveID] = task
 			if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
-				//key := task.UserName + "::" + task.EndTime.String() + "::" + task.ID
 				completedTasks = append(completedTasks, saveID)
 			}
 		}

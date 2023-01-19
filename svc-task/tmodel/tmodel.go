@@ -281,12 +281,12 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	var (
 		i             int           = 0
 		updatedTasks  bool          = false
-		mapSize       int           = config.Data.TaskQueueConf.QueueSize
+		maxSize       int           = config.Data.TaskQueueConf.QueueSize
 		retryInterval time.Duration = time.Duration(config.Data.TaskQueueConf.RetryInterval) * time.Millisecond
 	)
 
-	tasks := make(map[string]interface{}, mapSize)
-	completedTasks := []string{}
+	tasks := make(map[string]interface{}, maxSize)
+	completedTasks := make([]string, maxSize)
 
 	if len(*queue) <= 0 {
 		return

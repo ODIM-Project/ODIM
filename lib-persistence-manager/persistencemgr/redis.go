@@ -189,7 +189,7 @@ func getInMemoryDBConfig() *Config {
 		Host:         config.Data.DBConf.InMemoryHost,
 		SentinelPort: config.Data.DBConf.InMemorySentinelPort,
 		MasterSet:    config.Data.DBConf.InMemoryPrimarySet,
-		Password:     fmt.Sprintf("\\\"%s\"\\", string(config.Data.DBConf.RedisInMemoryPassword)),
+		Password:     string(config.Data.DBConf.RedisInMemoryPassword),
 	}
 }
 
@@ -200,7 +200,7 @@ func getOnDiskDBConfig() *Config {
 		Host:         config.Data.DBConf.OnDiskHost,
 		SentinelPort: config.Data.DBConf.OnDiskSentinelPort,
 		MasterSet:    config.Data.DBConf.OnDiskPrimarySet,
-		Password:     fmt.Sprintf("\\\"%s\"\\", string(config.Data.DBConf.RedisOnDiskPassword)),
+		Password:     string(config.Data.DBConf.RedisOnDiskPassword),
 	}
 }
 

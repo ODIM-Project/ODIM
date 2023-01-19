@@ -648,7 +648,6 @@ func (p *PluginContact) GetSystemResource(ctx context.Context, req *systemsproto
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	l.LogWithFields(ctx).Debug("Exiting the GetSystemResource with response ", resp)
 	return resp
 
 }

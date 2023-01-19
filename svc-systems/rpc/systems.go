@@ -67,7 +67,6 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 	}
 	data := pc.GetSystemResource(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
-	l.LogWithFields(ctx).Debugf("outgoing GetSystemResource response: %s", string(resp.Body))
 	return &resp, nil
 }
 

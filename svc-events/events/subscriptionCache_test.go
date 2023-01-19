@@ -2,8 +2,10 @@ package events
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
@@ -247,6 +249,83 @@ func Test_getSubscriptions(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if gotSubs := getSubscriptions(tt.args.originOfCondition, tt.args.systemId, tt.args.hostIp); len(gotSubs) == tt.numberOfSubscription {
 				t.Errorf("getSubscriptions() = %v, want %v", gotSubs, tt.numberOfSubscription)
+			}
+		})
+	}
+}
+
+func Test_updateCacheMaps(t *testing.T) {
+	cacheDataMap := map[string]map[string]bool{}
+	type args struct {
+		key       string
+		value     string
+		cacheData map[string]map[string]bool
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "New Key",
+			args: args{
+				key:       "Aggregate",
+				value:     "asas-sdcsa2caa-sca2casca2s-scsc",
+				cacheData: cacheDataMap,
+			},
+		},
+		{
+			name: "Existing Key",
+			args: args{
+				key:       "Aggregate",
+				value:     "asas-sdcsa2caa-sca2casca2s-scsc",
+				cacheData: cacheDataMap,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			updateCacheMaps(tt.args.key, tt.args.value, tt.args.cacheData)
+		})
+	}
+}
+
+func Test_getSubscriptionDetails(t *testing.T) {
+	subscriptionsCache = make(map[string]dmtf.EventDestination, 2)
+	subscriptionsCache["Test"] = dmtf.EventDestination{}
+	type args struct {
+		subscriptionID string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  dmtf.EventDestination
+		want1 bool
+	}{
+		{
+			name: "Positive case ",
+			args: args{
+				subscriptionID: "Test",
+			},
+			want:  dmtf.EventDestination{},
+			want1: true,
+		},
+		{
+			name: "Negative case ",
+			args: args{
+				subscriptionID: "Test1",
+			},
+			want:  dmtf.EventDestination{},
+			want1: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := getSubscriptionDetails(tt.args.subscriptionID)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getSubscriptionDetails() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("getSubscriptionDetails() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

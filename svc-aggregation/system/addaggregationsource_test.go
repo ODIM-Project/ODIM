@@ -15,6 +15,7 @@
 package system
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"reflect"
@@ -32,8 +33,19 @@ import (
 func mockUpdateConnectionMethod(connectionMethod agmodel.ConnectionMethod, cmURI string) *errors.Error {
 	return nil
 }
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
 
 func TestExternalInterface_AddBMC(t *testing.T) {
+	ctx := mockContext()
 	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
@@ -253,7 +265,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			time.Sleep(2 * time.Second)
-			if got := tt.p.AddAggregationSource(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.p.AddAggregationSource(ctx, tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AddAggregationSource = %v, want %v", got, tt.want)
 			}
 		})
@@ -268,6 +280,7 @@ func TestExternalInterface_AddBMCForPasswordEncryptFail(t *testing.T) {
 		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -319,7 +332,7 @@ func TestExternalInterface_AddBMCForPasswordEncryptFail(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			time.Sleep(2 * time.Second)
-			if got := tt.p.AddAggregationSource(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.p.AddAggregationSource(ctx, tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AddAggregationSource = %v, want %v", got, tt.want)
 			}
 		})
@@ -331,6 +344,7 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
+	ctx := mockContext()
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
@@ -397,7 +411,7 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := p.AddAggregationSource("123", "validUserName", req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := p.AddAggregationSource(ctx, "123", "validUserName", req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AddAggregationSource = %v, want %v", got, tt.want)
 			}
 		})
@@ -415,6 +429,7 @@ func TestExternalInterface_Manager(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}
+	ctx := mockContext()
 
 	// create plugin with bad password for decryption failure
 	pluginData := agmodel.Plugin{
@@ -592,7 +607,7 @@ func TestExternalInterface_Manager(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.AddAggregationSource(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.p.AddAggregationSource(ctx, tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AddAggregationSource() = %v, want %v", got, tt.want)
 			}
 		})
@@ -610,6 +625,7 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}
+	ctx := mockContext()
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
@@ -789,7 +805,7 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.AddAggregationSource(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.p.AddAggregationSource(ctx, tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AddAggregationSource() = %v, want %v", got, tt.want)
 			}
 		})
@@ -800,6 +816,7 @@ func TestExternalInterface_ManagerWithMultipleRequest(t *testing.T) {
 	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
+	ctx := mockContext()
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
@@ -867,9 +884,9 @@ func TestExternalInterface_ManagerWithMultipleRequest(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			go p.AddAggregationSource("123", "validUserName", tt.req)
+			go p.AddAggregationSource(ctx, "123", "validUserName", tt.req)
 			time.Sleep(time.Second)
-			if got := p.AddAggregationSource("123", "validUserName", tt.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := p.AddAggregationSource(ctx, "123", "validUserName", tt.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AddAggregationSource() = %v, want %v", got, tt.want)
 			}
 		})

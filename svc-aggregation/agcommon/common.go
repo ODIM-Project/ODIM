@@ -15,6 +15,7 @@
 package agcommon
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -99,17 +100,17 @@ func init() {
 }
 
 // GetStorageResources will get the resource details from the database for the given odata id
-func GetStorageResources(oid string) map[string]interface{} {
+func GetStorageResources(ctx context.Context, oid string) map[string]interface{} {
 	resourceData := make(map[string]interface{})
 	data, dbErr := GetResourceDetailsFunc(oid)
 	if dbErr != nil {
-		l.Log.Error("Unable to get system data : " + dbErr.Error())
+		l.LogWithFields(ctx).Error("Unable to get system data : " + dbErr.Error())
 		return resourceData
 	}
 	// unmarshall the resourceData
 	err := JSONUnMarshalFunc([]byte(data), &resourceData)
 	if err != nil {
-		l.Log.Error("Unable to unmarshall  the data: " + err.Error())
+		l.LogWithFields(ctx).Error("Unable to unmarshall  the data: " + err.Error())
 		return resourceData
 	}
 
@@ -238,10 +239,10 @@ func (phc *PluginHealthCheckInterface) DupPluginConf() {
 }
 
 // GetPluginStatus checks the status of given plugin
-func GetPluginStatus(plugin agmodel.Plugin) bool {
+func GetPluginStatus(ctx context.Context, plugin agmodel.Plugin) bool {
 	phc := &PluginHealthCheckInterface{}
 	phc.DupPluginConf()
-	status, _ := phc.GetPluginStatus(plugin)
+	status, _ := phc.GetPluginStatus(ctx, plugin)
 	return status
 }
 
@@ -249,7 +250,6 @@ func GetPluginStatus(plugin agmodel.Plugin) bool {
 func LookupHost(addr string) (ip, host, port string, err error) {
 	host, port, err = SplitHostPortfunc(addr)
 	if err != nil {
-		l.Log.Warn("splitting host address failed with " + err.Error())
 		host = addr
 	}
 
@@ -268,17 +268,17 @@ func LookupHost(addr string) (ip, host, port string, err error) {
 
 // LookupPlugin is for fetching the plugin data
 // using the plugin address for lookup
-func LookupPlugin(addr string) (agmodel.Plugin, error) {
+func LookupPlugin(ctx context.Context, addr string) (agmodel.Plugin, error) {
 	phc := &PluginHealthCheckInterface{}
 	phc.DupPluginConf()
-	plugins, errs := GetAllPlugins()
+	plugins, errs := GetAllPlugins(ctx)
 	if errs != nil {
 		return agmodel.Plugin{}, errs
 	}
 
 	resolvedAddr, host, port, err := LookupHost(addr)
 	if err != nil {
-		l.Log.Warn("plugin address lookup failed with " + err.Error())
+		l.LogWithFields(ctx).Warn("plugin address lookup failed with " + err.Error())
 	}
 
 	for _, plugin := range plugins {
@@ -290,7 +290,7 @@ func LookupPlugin(addr string) (agmodel.Plugin, error) {
 }
 
 // GetAllPlugins is for fetching all the plugins added andn stored in db.
-func GetAllPlugins() ([]agmodel.Plugin, error) {
+func GetAllPlugins(ctx context.Context) ([]agmodel.Plugin, error) {
 	keys, err := GetAllKeysFromTableFunc("Plugin")
 	if err != nil {
 		return nil, err
@@ -299,7 +299,7 @@ func GetAllPlugins() ([]agmodel.Plugin, error) {
 	for _, key := range keys {
 		plugin, err := agmodel.GetPluginData(key)
 		if err != nil {
-			l.Log.Error("failed to get details of " + key + " plugin: " + err.Error())
+			l.LogWithFields(ctx).Error("failed to get details of " + key + " plugin: " + err.Error())
 			continue
 		}
 		plugins = append(plugins, plugin)
@@ -308,7 +308,7 @@ func GetAllPlugins() ([]agmodel.Plugin, error) {
 }
 
 // GetPluginStatus is for checking the status of a plugin
-func (phc *PluginHealthCheckInterface) GetPluginStatus(plugin agmodel.Plugin) (bool, []string) {
+func (phc *PluginHealthCheckInterface) GetPluginStatus(ctx context.Context, plugin agmodel.Plugin) (bool, []string) {
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{
@@ -326,10 +326,10 @@ func (phc *PluginHealthCheckInterface) GetPluginStatus(plugin agmodel.Plugin) (b
 	}
 	status, _, topics, err := pluginStatus.CheckStatus()
 	if err != nil {
-		l.Log.Error("failed to get the status of plugin " + plugin.ID + err.Error())
+		l.LogWithFields(ctx).Error("failed to get the status of plugin " + plugin.ID + err.Error())
 		return false, nil
 	}
-	l.Log.Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
+	l.LogWithFields(ctx).Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
 	return status, topics
 }
 
@@ -365,7 +365,7 @@ func (phc *PluginHealthCheckInterface) getAllServers(pluginID string) ([]agmodel
 }
 
 // ContactPlugin is for sending requests to a plugin.
-func ContactPlugin(req agmodel.PluginContactRequest, serverName string) (*http.Response, error) {
+func ContactPlugin(ctx context.Context, req agmodel.PluginContactRequest, serverName string) (*http.Response, error) {
 	req.LoginCredential = map[string]string{}
 	//ToDo: Variable "LoginCredentials" to be changed
 	req.LoginCredential["ServerName"] = serverName
@@ -375,7 +375,7 @@ func ContactPlugin(req agmodel.PluginContactRequest, serverName string) (*http.R
 			"Password": string(req.Plugin.Password),
 		}
 		reqURL := fmt.Sprintf("https://%s/ODIM/v1/Sessions", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port))
-		response, err := pmbhandle.ContactPlugin(reqURL, http.MethodPost, "", "", payload, nil)
+		response, err := pmbhandle.ContactPlugin(ctx, reqURL, http.MethodPost, "", "", payload, nil)
 		if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
 			return nil,
 				fmt.Errorf("failed to get session token from %s: %s: %+v", req.Plugin.ID, err.Error(), response)
@@ -386,7 +386,7 @@ func ContactPlugin(req agmodel.PluginContactRequest, serverName string) (*http.R
 		req.LoginCredential["Password"] = string(req.Plugin.Password)
 	}
 	reqURL := fmt.Sprintf("https://%s%s", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port), req.URL)
-	return pmbhandle.ContactPlugin(reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, req.LoginCredential)
+	return pmbhandle.ContactPlugin(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, req.LoginCredential)
 }
 
 // GetDeviceSubscriptionDetails is for getting device event susbcription details
@@ -456,7 +456,7 @@ func GetSubscribedEvtTypes(searchKey string) ([]string, error) {
 }
 
 // UpdateDeviceSubscriptionDetails is for updating the event subscription details fo a device
-func UpdateDeviceSubscriptionDetails(subsData map[string]string) {
+func UpdateDeviceSubscriptionDetails(ctx context.Context, subsData map[string]string) {
 	for serverAddress, location := range subsData {
 		if location != "" {
 			deviceIPAddress, _, _, err := LookupHost(serverAddress)
@@ -466,13 +466,13 @@ func UpdateDeviceSubscriptionDetails(subsData map[string]string) {
 			searchKey := GetSearchKey(deviceIPAddress, common.DeviceSubscriptionIndex)
 			deviceSubscription, err := GetDeviceSubscriptionsFunc(searchKey)
 			if err != nil {
-				l.Log.Error("Error getting the device event subscription from DB " +
+				l.LogWithFields(ctx).Error("Error getting the device event subscription from DB " +
 					" for server address : " + serverAddress + err.Error())
 				continue
 			}
 			deviceSubscription.Location = location
 			if err = UpdateDeviceSubscriptionFunc(*deviceSubscription); err != nil {
-				l.Log.Error("Error updating the subscription location in to DB for " +
+				l.LogWithFields(ctx).Error("Error updating the subscription location in to DB for " +
 					"server address : " + serverAddress + err.Error())
 				continue
 			}
@@ -495,4 +495,15 @@ func SetPluginStatusRecord(plugin string, count int) {
 	PSRecord.InactiveCount[plugin] = count
 	PSRecord.Lock.Unlock()
 	return
+}
+
+func CreateContext(transactionId, actionId, actionName, threadId, threadName, ProcessName string) context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, transactionId)
+	ctx = context.WithValue(ctx, common.ActionID, actionId)
+	ctx = context.WithValue(ctx, common.ActionName, actionName)
+	ctx = context.WithValue(ctx, common.ThreadID, threadId)
+	ctx = context.WithValue(ctx, common.ThreadName, threadName)
+	ctx = context.WithValue(ctx, common.ProcessName, ProcessName)
+	return ctx
 }

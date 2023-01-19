@@ -646,7 +646,7 @@ func GetAggregateList(hostIP string) ([]string, error) {
 // GetAggregate fetches the aggregate info for the given aggregateURI
 func GetAggregate(aggregateURI string) (Aggregate, *errors.Error) {
 	var aggregate Aggregate
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return aggregate, err
 	}
@@ -663,7 +663,7 @@ func GetAggregate(aggregateURI string) (Aggregate, *errors.Error) {
 
 //GetAllAggregates return all aggregate url added in DB
 func GetAllAggregates() ([]string, error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}

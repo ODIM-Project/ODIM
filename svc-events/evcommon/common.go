@@ -16,6 +16,7 @@
 package evcommon
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -46,8 +47,8 @@ var (
 	RedisNotifierFilterKey       = "Kz"
 )
 
-//StartUpInteraface Holds the function pointer of  external interface functions
-type StartUpInteraface struct {
+//StartUpInterface Holds the function pointer of  external interface functions
+type StartUpInterface struct {
 	DecryptPassword                  func([]byte) ([]byte, error)
 	EMBConsume                       func(string)
 	GetAllPlugins                    func() ([]evmodel.Plugin, *errors.Error)
@@ -73,7 +74,7 @@ type EmbTopic struct {
 	EMBConsume func(string)
 }
 
-//SavedSystems holds the resource details of the saved system
+// SavedSystems holds the resource details of the saved system
 type SavedSystems struct {
 	ManagerAddress string
 	Password       []byte
@@ -82,7 +83,7 @@ type SavedSystems struct {
 	PluginID       string
 }
 
-//PluginContactRequest holds the details required to contact the plugin
+// PluginContactRequest holds the details required to contact the plugin
 type PluginContactRequest struct {
 	URL             string
 	HTTPMethodType  string
@@ -93,7 +94,7 @@ type PluginContactRequest struct {
 	Plugin          *evmodel.Plugin
 }
 
-//StartUpMap holds required data for plugin startup
+// StartUpMap holds required data for plugin startup
 type StartUpMap struct {
 	Location   string
 	EventTypes []string
@@ -137,11 +138,11 @@ func (e *EmbTopic) ConsumeTopic(topicName string) {
 // EMBTopics used to store the list of all topics
 var EMBTopics EmbTopic
 
-//PluginStartUp is used to call plugin "Startup" only on plugin restart and not on every status check
+// PluginStartUp is used to call plugin "Startup" only on plugin restart and not on every status check
 var PluginStartUp = false
 
 // GetAllPluginStatus ...
-func (st *StartUpInteraface) GetAllPluginStatus() {
+func (st *StartUpInterface) GetAllPluginStatus() {
 	for {
 		pluginList, err := evmodel.GetAllPlugins()
 		if err != nil {
@@ -149,7 +150,7 @@ func (st *StartUpInteraface) GetAllPluginStatus() {
 			return
 		}
 		for i := 0; i < len(pluginList); i++ {
-			go st.getPluginStatus(pluginList[i])
+			go st.getPluginStatus(context.TODO(), pluginList[i]) //TODO: Pass context
 		}
 		var pollingTime int
 		config.TLSConfMutex.RLock()
@@ -160,7 +161,7 @@ func (st *StartUpInteraface) GetAllPluginStatus() {
 
 }
 
-func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
+func (st *StartUpInterface) getPluginStatus(ctx context.Context, plugin evmodel.Plugin) {
 	PluginsMap := make(map[string]bool)
 	StartUpResourceBatchSize := config.Data.PluginStatusPolling.StartUpResouceBatchSize
 	config.TLSConfMutex.RLock()
@@ -198,7 +199,7 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 			}
 			for {
 				if len(allServers) < StartUpResourceBatchSize {
-					err = st.callPluginStartUp(allServers, pluginID)
+					err = st.callPluginStartUp(ctx, allServers, pluginID)
 					if err != nil {
 						l.Log.Error("Error While trying call plugin startup" +
 							pluginID + err.Error())
@@ -206,7 +207,7 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 					break
 				}
 				batchServers := allServers[:StartUpResourceBatchSize]
-				err = st.callPluginStartUp(batchServers, pluginID)
+				err = st.callPluginStartUp(ctx, batchServers, pluginID)
 				if err != nil {
 					l.Log.Error("Error While trying call plugin startup" + pluginID + err.Error())
 					continue
@@ -226,7 +227,7 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 	return
 }
 
-func (st *StartUpInteraface) getAllServers(pluginID string) ([]SavedSystems, error) {
+func (st *StartUpInterface) getAllServers(pluginID string) ([]SavedSystems, error) {
 	var matchedServers []SavedSystems
 	allServers, err := st.GetAllSystems()
 	if err != nil {
@@ -281,7 +282,7 @@ func GetPluginStatus(plugin *evmodel.Plugin) bool {
 	return status
 }
 
-func (st *StartUpInteraface) callPluginStartUp(servers []SavedSystems, pluginID string) error {
+func (st *StartUpInterface) callPluginStartUp(ctx context.Context, servers []SavedSystems, pluginID string) error {
 	var startUpMap []StartUpMap
 	plugin, errs := st.GetPluginData(pluginID)
 	if errs != nil {
@@ -314,7 +315,7 @@ func (st *StartUpInteraface) callPluginStartUp(servers []SavedSystems, pluginID 
 			"Password": string(plugin.Password),
 		}
 		contactRequest.URL = "/ODIM/v1/Sessions"
-		response, err := callPlugin(contactRequest)
+		response, err := callPlugin(ctx, contactRequest)
 		if err != nil {
 			return err
 		}
@@ -325,7 +326,7 @@ func (st *StartUpInteraface) callPluginStartUp(servers []SavedSystems, pluginID 
 			"Password": string(plugin.Password),
 		}
 	}
-	response, err := callPlugin(contactRequest)
+	response, err := callPlugin(ctx, contactRequest)
 	if err != nil {
 		return err
 	}
@@ -341,19 +342,19 @@ func (st *StartUpInteraface) callPluginStartUp(servers []SavedSystems, pluginID 
 	return updateDeviceSubscriptionLocation(r)
 }
 
-func callPlugin(req PluginContactRequest) (*http.Response, error) {
+func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, error) {
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.URL
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "XAuthToken") {
-		return pmbhandle.ContactPlugin(reqURL, req.HTTPMethodType, "", "", req.PostBody, nil)
+		return pmbhandle.ContactPlugin(ctx, reqURL, req.HTTPMethodType, "", "", req.PostBody, nil)
 	}
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return pmbhandle.ContactPlugin(reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
+		return pmbhandle.ContactPlugin(ctx, reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
 	}
-	return pmbhandle.ContactPlugin(reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
+	return pmbhandle.ContactPlugin(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
 
 }
 
-func (st *StartUpInteraface) getSubscribedEventsDetails(serverAddress string) (string, []string, error) {
+func (st *StartUpInterface) getSubscribedEventsDetails(serverAddress string) (string, []string, error) {
 	var location string
 	var eventTypes []string
 	var emptyListFlag bool
@@ -453,7 +454,7 @@ func GenErrorResponse(errorMessage string, statusMessage string, httpStatusCode 
 		Code:    response.GeneralError,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
+			{
 				StatusMessage: statusMessage,
 				ErrorMessage:  errorMessage,
 				MessageArgs:   msgArgs,
@@ -470,7 +471,7 @@ func GenEventErrorResponse(errorMessage string, StatusMessage string, httpStatus
 		Code:    response.GeneralError,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
+			{
 				StatusMessage: StatusMessage,
 				ErrorMessage:  errorMessage,
 				MessageArgs:   argsParams,
@@ -533,7 +534,7 @@ func ProcessCtrlMsg(data interface{}) bool {
 }
 
 // SubscribePluginEMB is for subscribing to plugin EMB
-func (st *StartUpInteraface) SubscribePluginEMB() {
+func (st *StartUpInterface) SubscribePluginEMB() {
 	time.Sleep(time.Second * 2)
 	pluginList, err := GetAllPluginsFunc()
 	if err != nil {
@@ -545,7 +546,7 @@ func (st *StartUpInteraface) SubscribePluginEMB() {
 	}
 }
 
-func (st *StartUpInteraface) getPluginEMB(plugin evmodel.Plugin) {
+func (st *StartUpInterface) getPluginEMB(plugin evmodel.Plugin) {
 	config.TLSConfMutex.RLock()
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
@@ -574,7 +575,6 @@ func (st *StartUpInteraface) getPluginEMB(plugin evmodel.Plugin) {
 	for j := 0; j < len(topicsList); j++ {
 		EMBTopics.ConsumeTopic(topicsList[j])
 	}
-	return
 }
 
 func TrackConfigFileChanges(errChan chan error) {

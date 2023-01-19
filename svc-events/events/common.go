@@ -8,6 +8,7 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -44,7 +45,7 @@ var (
 
 // External struct to inject the contact external function into the handlers
 type External struct {
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	Auth            func(string, []string, []string) (response.RPC, error)
 	CreateTask      func(string) (string, error)
 	UpdateTask      func(common.TaskData) error
@@ -168,10 +169,10 @@ func removeElement(slice []string, element string) []string {
 // and validate the response and return
 func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
 	var resp errResponse.RPC
-	response, err := e.callPlugin(req)
+	response, err := e.callPlugin(context.TODO(), req)
 	if err != nil {
 		if evcommon.GetPluginStatus(req.Plugin) {
-			response, err = e.callPlugin(req)
+			response, err = e.callPlugin(context.TODO(), req)
 		}
 		if err != nil {
 			errorMessage := "Error : " + err.Error()
@@ -364,7 +365,7 @@ func (e *ExternalInterfaces) retryEventSubscriptionOperation(req evcommon.Plugin
 	}
 	req.Token = token
 
-	response, err := e.callPlugin(req)
+	response, err := e.callPlugin(context.TODO(), req) // TODO: Pass context
 	if err != nil {
 		errorMessage := "error while unmarshaling the body : " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
@@ -412,12 +413,12 @@ func getAggregateID(origin string) string {
 }
 
 // callPlugin check the given request url and PreferAuth type plugin
-func (e *ExternalInterfaces) callPlugin(req evcommon.PluginContactRequest) (*http.Response, error) {
+func (e *ExternalInterfaces) callPlugin(ctx context.Context, req evcommon.PluginContactRequest) (*http.Response, error) {
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.URL
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return e.ContactClient(reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
+		return e.ContactClient(ctx, reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
 	}
-	return e.ContactClient(reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
+	return e.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
 }
 
 // checkCollection verifies if the given origin is collection and extracts all the suboridinate resources

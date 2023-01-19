@@ -42,7 +42,7 @@ func TestPublishEventsToDestiantion(t *testing.T) {
 		{
 			OdataType: "#Event",
 			Events: []common.Event{
-				common.Event{
+				{
 					MemberID:       "1",
 					EventType:      "Alert",
 					EventID:        "123",
@@ -59,6 +59,7 @@ func TestPublishEventsToDestiantion(t *testing.T) {
 	}
 
 	ip := []string{"100.100.100.100", "100.100.100.100", "10.10.1.3", "10.10.1.3"}
+	mockCacheData()
 	pc := getMockMethods()
 	for i, v := range messages {
 		var event common.Events
@@ -89,7 +90,7 @@ func TestPublishEventsWithEmptyOriginOfCondition(t *testing.T) {
 	message := common.MessageData{
 		OdataType: "#Event",
 		Events: []common.Event{
-			common.Event{
+			{
 				MemberID:       "1",
 				EventType:      "Alert",
 				EventID:        "123",
@@ -134,13 +135,13 @@ func TestPublishEventsWithEmptyOriginOfCondition(t *testing.T) {
 
 }
 
-func TestPublishEventsToDestiantionWithMultipleEvents(t *testing.T) {
+func TestPublishEventsToDestinationWithMultipleEvents(t *testing.T) {
 	config.SetUpMockConfig(t)
 	messages := []common.MessageData{
 		{
 			OdataType: "#Event",
 			Events: []common.Event{
-				common.Event{
+				{
 					MemberID:       "1",
 					EventType:      "Alert",
 					EventID:        "123",
@@ -152,7 +153,7 @@ func TestPublishEventsToDestiantionWithMultipleEvents(t *testing.T) {
 						Oid: "/redfish/v1/Systems/1",
 					},
 				},
-				common.Event{
+				{
 					MemberID:       "1",
 					EventType:      "ResourceAdded",
 					EventID:        "1234",
@@ -167,7 +168,7 @@ func TestPublishEventsToDestiantionWithMultipleEvents(t *testing.T) {
 			},
 		},
 	}
-
+	mockCacheData()
 	ip := []string{"100.100.100.100", "100.100.100.100", "10.10.1.3", "10.10.1.3"}
 	pc := getMockMethods()
 	for i, v := range messages {
@@ -298,4 +299,16 @@ func Test_isResourceTypeSubscribed(t *testing.T) {
 	status = isResourceTypeSubscribed(resourceType, "/redfish/v1/Systems/uuid:1/processors/1", false)
 	assert.Equal(t, true, status, "There shoud be no error ")
 
+}
+func mockCacheData() {
+	eventSourceToManagerIDMap = make(map[string]string, 2)
+	eventSourceToManagerIDMap["100.100.100.100"] = "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"
+	eventSourceToManagerIDMap["10.10.1.3"] = "11081de0-4859-984c-c35a-6c50732d72da.1"
+
+	subscriptionsCache = make(map[string]model.EventDestination, 1)
+	subscriptionsCache["11081de0-4859-984c-c35a-6c50732d7"] = model.EventDestination{
+		Destination: "https://10.10.10.10:8080/Destination",
+	}
+	emptyOriginResourceToSubscriptionsMap = make(map[string]bool, 0)
+	emptyOriginResourceToSubscriptionsMap["11081de0-4859-984c-c35a-6c50732d7"] = true
 }

@@ -179,7 +179,7 @@ jobs:
         
         echo "==============updating the docker handler========="
         cd ${ODIM_CONTROLLER_PATH}/kubespray
-        tar -xvzf kubespray-2.18.1.tar.gz
+        tar -xvzf kubespray-2.20.0.tar.gz
         cd kubespray-2.20.0/roles/container-engine/docker/handlers
         sed -i "22,32d" main.yml
         sed -i "7,8d" main.yml

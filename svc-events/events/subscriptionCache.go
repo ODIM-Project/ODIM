@@ -241,7 +241,7 @@ func getEmptyOriginResourceSubscriptionList() (subs []dmtf.EventDestination) {
 }
 
 //getSubscriptionDetails this method return subscription details corresponding subscription Id
-func getSubscriptionDetails(subscriptionID string) (dmtf.EventDestination, bool) {
+func getSubscriptionDetails(subscriptionID string) (sub dmtf.EventDestination, status bool) {
 	if sub, isExists := subscriptionsCache[subscriptionID]; isExists {
 		return sub, true
 	}

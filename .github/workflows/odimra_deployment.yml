@@ -103,7 +103,7 @@ jobs:
         python3 -m pip install --upgrade pip
         pip3 install pycrypto==2.6.1
         pip3 install pycryptodome==3.9.8
-        pip3 install ansible==2.9.6
+        pip3 install ansible==5.7.1
         pip3 install jinja2==2.11.1
         pip3 install netaddr==0.7.19
         pip3 install pbr==5.4.4
@@ -180,15 +180,15 @@ jobs:
         echo "==============updating the docker handler========="
         cd ${ODIM_CONTROLLER_PATH}/kubespray
         tar -xvzf kubespray-2.18.1.tar.gz
-        cd kubespray-2.18.1/roles/container-engine/docker/handlers
-        sed -i "20,30d" main.yml
+        cd kubespray-2.20.0/roles/container-engine/docker/handlers
+        sed -i "22,32d" main.yml
         sed -i "7,8d" main.yml
         
         cat main.yml
         cd ${ODIM_CONTROLLER_PATH}/kubespray
-        tar -cvzf kubespray-2.18.1.tar.gz kubespray-2.18.1
+        tar -cvzf kubespray-2.20.0.tar.gz kubespray-2.20.0
       
-        rm -rf kubespray-2.18.1
+        rm -rf kubespray-2.20.0
         
         ls
         

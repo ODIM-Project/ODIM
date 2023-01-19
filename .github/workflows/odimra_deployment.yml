@@ -193,7 +193,8 @@ jobs:
         ls
         
         
-        sudo apt remove docker-ce docker-ce-cli containerd.io -y
+        sudo service docker stop
+        sudo apt-get remove -y --allow-change-held-packages containerd.io docker-ce docker-ce-cli docker-ce-rootless-extras
         
         cd ${ODIM_CONTROLLER_PATH}/scripts/
         echo "[$(date)] -- INFO  -- install kubernetes using odim-controller"

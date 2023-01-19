@@ -99,11 +99,17 @@ func UpdateTask(ctx context.Context, taskID string, taskState string, taskStatus
 
 func CreateNewRequestContext(ctx context.Context) context.Context {
 	reqCtx := context.Background()
-	reqCtx = context.WithValue(reqCtx, common.ProcessName, ctx.Value(common.ProcessName).(string))
-	reqCtx = context.WithValue(reqCtx, common.TransactionID, ctx.Value(common.TransactionID).(string))
-	reqCtx = context.WithValue(reqCtx, common.ActionID, ctx.Value(common.ActionID).(string))
-	reqCtx = context.WithValue(reqCtx, common.ActionName, ctx.Value(common.ActionName).(string))
-	reqCtx = context.WithValue(reqCtx, common.ThreadID, ctx.Value(common.ThreadID).(string))
-	reqCtx = context.WithValue(reqCtx, common.ThreadName, ctx.Value(common.ThreadName).(string))
+	processName, _ := ctx.Value(common.ProcessName).(string)
+	transactionID, _ := ctx.Value(common.TransactionID).(string)
+	actionID, _ := ctx.Value(common.ActionID).(string)
+	actionName, _ := ctx.Value(common.ActionName).(string)
+	threadID, _ := ctx.Value(common.ThreadID).(string)
+	threadName, _ := ctx.Value(common.ThreadName).(string)
+	reqCtx = context.WithValue(reqCtx, common.ProcessName, processName)
+	reqCtx = context.WithValue(reqCtx, common.TransactionID, transactionID)
+	reqCtx = context.WithValue(reqCtx, common.ActionID, actionID)
+	reqCtx = context.WithValue(reqCtx, common.ActionName, actionName)
+	reqCtx = context.WithValue(reqCtx, common.ThreadID, threadID)
+	reqCtx = context.WithValue(reqCtx, common.ThreadName, threadName)
 	return reqCtx
 }

@@ -51,7 +51,6 @@ type TasksRPC struct {
 	OverWriteCompletedTaskUtilHelper func(userName string) error
 	CreateTaskUtilHelper             func(userName string) (string, error)
 	DeleteTaskFromDBModel            func(t *tmodel.Task) error
-	DeleteTaskIndex                  func(taskID string) error
 	UpdateTaskQueue                  func(t *tmodel.Task)
 	PersistTaskModel                 func(t *tmodel.Task, db common.DbType) error
 	ValidateTaskUserNameModel        func(userName string) error
@@ -112,11 +111,6 @@ func (ts *TasksRPC) deleteCompletedTask(taskID string) error {
 	}
 	err = ts.DeleteTaskFromDBModel(task)
 	if err != nil {
-		l.Log.Error("error while deleting the main task: " + err.Error())
-		return err
-	}
-	err = ts.DeleteTaskIndex(taskID)
-	if err != nil && !strings.Contains(err.Error(), "no data with ID found") {
 		l.Log.Error("error while deleting the main task: " + err.Error())
 		return err
 	}

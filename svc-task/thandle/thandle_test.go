@@ -88,11 +88,6 @@ func mockDeleteTaskFromDBModel(task *tmodel.Task) error {
 	return nil
 }
 
-func mockDeleteTaskIndex(task string) error {
-
-	return nil
-}
-
 func mockUpdateTaskStatusModel(task *tmodel.Task) {
 }
 

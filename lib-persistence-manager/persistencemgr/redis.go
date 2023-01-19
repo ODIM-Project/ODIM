@@ -776,15 +776,11 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 	return nil
 }
 
-// CreateIndexTransaction will create the indices using pipelined transaction
-/* CreateIndexTransaction takes the following keys as input:
-1. "key" is the key of the sorted set.
-2."scores" is of type map[string]int64 and is the user data sent to be updated in DB.
-key of map should be the member for which we create the index. the value is score of that member
-*/
+// AddExpiryForTasks will create the expiry time using pipelined transaction
+/* AddExpiryForTasks takes the taskID  as input:
+ */
 func (c *Conn) AddExpiryForTasks(taskKeys []string) *errors.Error {
 	var partialFailure bool = false
-	//members := getSortedMapKeys(scores)
 	c.WriteConn.Send("MULTI")
 	for _, taskkey := range taskKeys {
 		createErr := c.WriteConn.Send("EXPIRE", taskkey, 86400)

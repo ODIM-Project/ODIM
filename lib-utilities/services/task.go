@@ -77,7 +77,6 @@ func UpdateTask(taskID string, taskState string, taskStatus string, percentCompl
 	}
 	defer conn.Close()
 	taskService := taskproto.NewGetTaskServiceClient(conn)
-	fmt.Println("in update task", taskID, taskState, taskStatus, percentComplete)
 	_, err = taskService.UpdateTask(
 		context.TODO(),
 		&taskproto.UpdateTaskRequest{

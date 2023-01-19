@@ -96,7 +96,6 @@ func main() {
 	task.TransactionModel = tmodel.Transaction
 	task.CreateTaskUtilHelper = task.CreateTaskUtil
 	task.DeleteTaskFromDBModel = tmodel.DeleteTaskFromDB
-	task.DeleteTaskIndex = tmodel.DeleteTaskIndex
 	task.UpdateTaskQueue = tqueue.EnqueueTask
 	task.PersistTaskModel = tmodel.PersistTask
 	task.ValidateTaskUserNameModel = tmodel.ValidateTaskUserName

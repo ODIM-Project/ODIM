@@ -176,21 +176,6 @@ func DeleteTaskFromDB(t *Task) error {
 	return nil
 }
 
-//DeleteTaskIndex is used to delete the completed task index
-//taskID is the ID with which the completed task index is deleted
-func DeleteTaskIndex(taskID string) error {
-	connPool, err := common.GetDBConnection(common.InMemory)
-	if err != nil {
-		l.Log.Error("DeleteTaskIndex : error while trying to get DB Connection : " + err.Error())
-		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
-	}
-	if delErr := connPool.Del(CompletedTaskIndex, taskID); delErr != nil {
-		l.Log.Error("DeleteTaskIndex : Unable to delete task index: " + delErr.Error())
-		return fmt.Errorf("error while trying to delete the completed task index: %v", delErr.Error())
-	}
-	return nil
-}
-
 // GetTaskStatus is to retrieve the task data already present in db
 // Takes:
 //	taskID of type string contains the task ID of the task to be retrieved from the db

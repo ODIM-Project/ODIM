@@ -46,7 +46,7 @@ type PluginContactRequest struct {
 	OID            string
 	DeviceInfo     interface{}
 	BasicAuth      map[string]string
-	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient  func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	Plugin         mgrmodel.Plugin
 	HTTPMethodType string
 }
@@ -62,7 +62,7 @@ type ResourceInfoRequest struct {
 	URL                   string
 	UUID                  string
 	SystemID              string
-	ContactClient         func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient         func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DecryptDevicePassword func([]byte) ([]byte, error)
 	HTTPMethod            string
 	RequestBody           []byte
@@ -243,10 +243,10 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 	var resp ResponseStatus
 	var response *http.Response
 	var err error
-	response, err = callPlugin(req)
+	response, err = callPlugin(ctx, req)
 	if err != nil {
 		if getPluginStatus(ctx, req.Plugin) {
-			response, err = callPlugin(req)
+			response, err = callPlugin(ctx, req)
 		}
 		if err != nil {
 			errorMessage = errorMessage + err.Error()
@@ -305,16 +305,16 @@ func getPluginStatus(ctx context.Context, plugin mgrmodel.Plugin) bool {
 	return status
 }
 
-func callPlugin(req PluginContactRequest) (*http.Response, error) {
+func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, error) {
 	var oid string
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		oid = strings.Replace(req.OID, key, value, -1)
 	}
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + oid
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
+		return req.ContactClient(ctx, reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
-	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+	return req.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
 
 // GetPluginToken will verify the if any token present to the plugin else it will create token for the new plugin

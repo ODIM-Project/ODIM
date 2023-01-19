@@ -16,6 +16,7 @@ package chassis
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -112,7 +113,7 @@ func getFabricManagersErrorMock() ([]smodel.Plugin, error) {
 	return nil, errors.New("")
 }
 
-func contactClientMock(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
+func contactClientMock(ctx context.Context, url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	tokenBody := `{"Members": [{"@odata.id":"/ODIM/v1/Chassis/1"}]}`
 	basicAuthBody := `{"Members": [{"@odata.id":"/ODIM/v1/Chassis/2"}]}`
 	chassisResource := `{"ChassisType":"valid_type","SerialNumber":"valid_serial_number"}`

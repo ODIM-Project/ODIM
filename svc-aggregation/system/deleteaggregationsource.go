@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"runtime"
 	"strings"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
@@ -30,6 +31,54 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
+
+// DeleteAggregationSources is used to delete aggregation sources
+func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID string, targetURI string, req *aggregatorproto.AggregatorRequest) error {
+	var task = common.TaskData{
+		TaskID:          taskID,
+		TargetURI:       targetURI,
+		TaskState:       common.Running,
+		TaskStatus:      common.OK,
+		PercentComplete: 0,
+		HTTPMethod:      http.MethodDelete,
+	}
+	err := e.UpdateTask(task)
+	if err != nil && (err.Error() == common.Cancelling) {
+		// We cant do anything here as the task has done it work completely, we cant reverse it.
+		//Unless if we can do opposite/reverse action for delete server which is add server.
+		e.UpdateTask(common.TaskData{
+			TaskID:          taskID,
+			TargetURI:       targetURI,
+			TaskState:       common.Cancelled,
+			TaskStatus:      common.OK,
+			PercentComplete: 0,
+			HTTPMethod:      http.MethodDelete,
+		})
+		go runtime.Goexit()
+	}
+	data := e.DeleteAggregationSource(ctx, req)
+	err = e.UpdateTask(common.TaskData{
+		TaskID:          taskID,
+		TargetURI:       targetURI,
+		TaskState:       common.Completed,
+		TaskStatus:      common.OK,
+		Response:        data,
+		PercentComplete: 100,
+		HTTPMethod:      http.MethodDelete,
+	})
+	if err != nil && (err.Error() == common.Cancelling) {
+		e.UpdateTask(common.TaskData{
+			TaskID:          taskID,
+			TargetURI:       targetURI,
+			TaskState:       common.Cancelled,
+			TaskStatus:      common.OK,
+			PercentComplete: 100,
+			HTTPMethod:      http.MethodDelete,
+		})
+		go runtime.Goexit()
+	}
+	return nil
+}
 
 // DeleteAggregationSource is the handler for removing  bmc or manager
 func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {

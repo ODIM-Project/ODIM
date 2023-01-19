@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package tcommon ...
+// Package tcommon ...
 package tcommon
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -33,28 +34,28 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-telemetry/tmodel"
 )
 
-//PluginContactRequest  hold the request of contact plugin
+// PluginContactRequest  hold the request of contact plugin
 type PluginContactRequest struct {
 	Token           string
 	OID             string
 	DeviceInfo      interface{}
 	BasicAuth       map[string]string
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	GetPluginStatus func(tmodel.Plugin) bool
 	Plugin          tmodel.Plugin
 	HTTPMethodType  string
 }
 
-//ResponseStatus holds the response of Contact Plugin
+// ResponseStatus holds the response of Contact Plugin
 type ResponseStatus struct {
 	StatusCode    int32
 	StatusMessage string
 }
 
-//ResourceInfoRequest  hold the request of getting  Resource
+// ResourceInfoRequest  hold the request of getting  Resource
 type ResourceInfoRequest struct {
 	URL                 string
-	ContactClient       func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient       func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DevicePassword      func([]byte) ([]byte, error)
 	GetPluginStatus     func(tmodel.Plugin) bool
 	ResourceName        string
@@ -224,9 +225,9 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 	}
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + oid
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
+		return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
-	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+	return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
 
 func removeNonExistingID(req ResourceInfoRequest) {

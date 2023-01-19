@@ -17,6 +17,7 @@ package evcommon
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -77,7 +78,7 @@ func GetEncryptedKey(key []byte) ([]byte, error) {
 }
 
 // MockContactClient is for mocking up of contacting client
-func MockContactClient(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
+func MockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	if url == "https://localhost:1234/ODIM/v1/Subscriptions" {
 		if method == http.MethodDelete {
 			body := `{"MessageId": "` + response.Success + `"}`

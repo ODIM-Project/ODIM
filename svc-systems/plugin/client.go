@@ -19,6 +19,7 @@ package plugin
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -248,7 +249,7 @@ type client struct {
 func (c *client) Delete(uri string) response.RPC {
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	url = c.translator.toSouthbound(url)
-	resp, err := pmbhandle.ContactPlugin(url, http.MethodDelete, "", "", nil, map[string]string{
+	resp, err := pmbhandle.ContactPlugin(context.TODO(), url, http.MethodDelete, "", "", nil, map[string]string{
 		"UserName": c.plugin.Username,
 		"Password": string(c.plugin.Password),
 	})
@@ -259,7 +260,7 @@ func (c *client) Post(uri string, body *json.RawMessage) response.RPC {
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	url = c.translator.toSouthbound(url)
 	*body = json.RawMessage(c.translator.toSouthbound(string(*body)))
-	resp, err := pmbhandle.ContactPlugin(url, http.MethodPost, "", "", body, map[string]string{
+	resp, err := pmbhandle.ContactPlugin(context.TODO(), url, http.MethodPost, "", "", body, map[string]string{
 		"UserName": c.plugin.Username,
 		"Password": string(c.plugin.Password),
 	})
@@ -270,7 +271,7 @@ func (c *client) Patch(uri string, body *json.RawMessage) response.RPC {
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	url = c.translator.toSouthbound(url)
 	*body = json.RawMessage(c.translator.toSouthbound(string(*body)))
-	resp, err := pmbhandle.ContactPlugin(url, http.MethodPatch, "", "", body, map[string]string{
+	resp, err := pmbhandle.ContactPlugin(context.TODO(), url, http.MethodPatch, "", "", body, map[string]string{
 		"UserName": c.plugin.Username,
 		"Password": string(c.plugin.Password),
 	})
@@ -280,7 +281,7 @@ func (c *client) Patch(uri string, body *json.RawMessage) response.RPC {
 func (c *client) Get(uri string, _ ...CallOption) response.RPC {
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	url = c.translator.toSouthbound(url)
-	resp, err := pmbhandle.ContactPlugin(url, http.MethodGet, "", "", nil, map[string]string{
+	resp, err := pmbhandle.ContactPlugin(context.TODO(), url, http.MethodGet, "", "", nil, map[string]string{
 		"UserName": c.plugin.Username,
 		"Password": string(c.plugin.Password),
 	})

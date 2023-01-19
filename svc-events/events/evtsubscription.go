@@ -22,6 +22,7 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -417,10 +418,10 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 	contactRequest.PostBody = target
 
 	l.Log.Debug("Subscription Request: " + reqData)
-	response, err := e.callPlugin(contactRequest)
+	response, err := e.callPlugin(context.TODO(), contactRequest)
 	if err != nil {
 		if evcommon.GetPluginStatus(plugin) {
-			response, err = e.callPlugin(contactRequest)
+			response, err = e.callPlugin(context.TODO(), contactRequest)
 		}
 		if err != nil {
 			errorMessage := "error while unmarshal the body : " + err.Error()
@@ -1093,10 +1094,10 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 	contactRequest.HTTPMethodType = http.MethodPost
 	err = json.Unmarshal([]byte(reqData), &contactRequest.PostBody)
 
-	response, err := e.callPlugin(contactRequest)
+	response, err := e.callPlugin(context.TODO(), contactRequest)
 	if err != nil {
 		if evcommon.GetPluginStatus(plugin) {
-			response, err = e.callPlugin(contactRequest)
+			response, err = e.callPlugin(context.TODO(), contactRequest)
 		}
 		if err != nil {
 			evcommon.GenEventErrorResponse(err.Error(), errResponse.InternalError, http.StatusInternalServerError,
@@ -1243,10 +1244,10 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpda
 	contactRequest.PostBody = target
 
 	l.Log.Debug("Subscription Request: " + reqData)
-	response, err := e.callPlugin(contactRequest)
+	response, err := e.callPlugin(context.TODO(), contactRequest)
 	if err != nil {
 		if evcommon.GetPluginStatus(plugin) {
-			response, err = e.callPlugin(contactRequest)
+			response, err = e.callPlugin(context.TODO(), contactRequest)
 		}
 		if err != nil {
 			errorMessage := "error while unmarshal the body : " + err.Error()

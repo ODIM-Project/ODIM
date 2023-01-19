@@ -211,6 +211,16 @@ jobs:
         echo "[$(date)] -- INFO  -- list pods in kube-system namespace"
         kubectl get pods -n kube-system -o wide
         echo
+        echo Installing docker service again
+        sudo apt-get install -y docker-ce docker-ce-cli docker-ce-rootless-extras
+        
+        sudo systemctl status docker.service
+        
+        echo "=========reloading docker ================"
+        sudo service docker reload
+        echo "=========checking docker status================"
+        sudo service docker status
+        
         cd ${ODIM_SOURCE_PATH}/
         time ./build_images.sh
         echo "the images that got built are :"

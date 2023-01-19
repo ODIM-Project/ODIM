@@ -84,13 +84,6 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(req *eventsproto.EventRequ
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
 		return resp
 	}
-	if len(subscriptionDetails) < 1 {
-		errorMessage := fmt.Sprintf("Subscription details not found for the requested device")
-		msgArgs := []interface{}{"Host", target.ManagerAddress}
-		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
-		l.Log.Error(errorMessage)
-		return resp
-	}
 	l.Log.Info("Number of subscription present :", strconv.Itoa(len(subscriptionDetails)))
 	decryptedPasswordByte, err := DecryptWithPrivateKeyFunc(target.Password)
 	if err != nil {
@@ -143,7 +136,7 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(req *eventsproto.EventRequ
 		} else {
 			// Delete the host and origin resource from the respective entry
 			evtSubscription.Hosts = removeElement(evtSubscription.Hosts, target.ManagerAddress)
-			evtSubscription.OriginResources = removeElement(evtSubscription.OriginResources, originResource)
+			evtSubscription.EventDestination.OriginResources = removeElement(evtSubscription.EventDestination.OriginResources, originResource)
 			err = e.UpdateEventSubscription(evtSubscription)
 			if err != nil {
 				errorMessage := "Error while Updating event subscription : " + err.Error()
@@ -255,8 +248,8 @@ func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(req *eventsproto.Ev
 }
 
 // This function is to delete and re subscribe for Event Subscriptions
-func (e *ExternalInterfaces) deleteAndReSubscribetoEvents(evtSubscription evmodel.Subscription, sessionToken string) error {
-	originResources := evtSubscription.OriginResources
+func (e *ExternalInterfaces) deleteAndReSubscribetoEvents(evtSubscription evmodel.SubscriptionResource, sessionToken string) error {
+	originResources := evtSubscription.EventDestination.OriginResources
 	for _, origin := range originResources {
 		// ignore if origin is empty
 		if origin == "" {
@@ -284,27 +277,27 @@ func (e *ExternalInterfaces) deleteAndReSubscribetoEvents(evtSubscription evmode
 
 		for index, evtSub := range subscriptionDetails {
 			if evtSubscription.SubscriptionID != evtSub.SubscriptionID {
-				if len(evtSub.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
-					eventTypes = append(eventTypes, evtSub.EventTypes...)
+				if len(evtSub.EventDestination.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
+					eventTypes = append(eventTypes, evtSub.EventDestination.EventTypes...)
 				} else {
 					eventTypes = []string{}
 				}
 
-				if len(evtSub.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
-					messageIDs = append(messageIDs, evtSub.MessageIds...)
+				if len(evtSub.EventDestination.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
+					messageIDs = append(messageIDs, evtSub.EventDestination.MessageIds...)
 				} else {
 					messageIDs = []string{}
 				}
 
-				if len(evtSub.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
-					resourceTypes = append(resourceTypes, evtSub.ResourceTypes...)
+				if len(evtSub.EventDestination.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
+					resourceTypes = append(resourceTypes, evtSub.EventDestination.ResourceTypes...)
 				} else {
 					resourceTypes = []string{}
 				}
-				name = evtSub.Name
-				context = evtSub.Context
-				protocol = evtSub.Protocol
-				destination = evtSub.Destination
+				name = evtSub.EventDestination.Name
+				context = evtSub.EventDestination.Context
+				protocol = evtSub.EventDestination.Protocol
+				destination = evtSub.EventDestination.Destination
 			}
 		}
 
@@ -627,7 +620,7 @@ func (e *ExternalInterfaces) getSuboridanteResourcesFromCollection(originResourc
 	return data
 }
 
-func (e *ExternalInterfaces) getAllSubscriptions(origin string, subscriptionDetails []evmodel.Subscription) []evmodel.Subscription {
+func (e *ExternalInterfaces) getAllSubscriptions(origin string, subscriptionDetails []evmodel.SubscriptionResource) []evmodel.SubscriptionResource {
 	if origin == "/redfish/v1/Fabrics" {
 		return subscriptionDetails
 	}
@@ -638,9 +631,9 @@ func (e *ExternalInterfaces) getAllSubscriptions(origin string, subscriptionDeta
 		return subscriptionDetails
 	}
 	// Checking the collection based subscription
-	var collectionSubscription = make([]evmodel.Subscription, 0)
+	var collectionSubscription = make([]evmodel.SubscriptionResource, 0)
 	for _, evtSubscription := range subscriptions {
-		for _, originResource := range evtSubscription.OriginResources {
+		for _, originResource := range evtSubscription.EventDestination.OriginResources {
 			if strings.Contains(origin, "Fabrics") && originResource == "/redfish/v1/Fabrics" {
 				collectionSubscription = append(collectionSubscription, evtSubscription)
 			}
@@ -657,9 +650,9 @@ func (e *ExternalInterfaces) getAllSubscriptions(origin string, subscriptionDeta
 
 // remove duplicate elements in string slice.
 // Takes string slice and length, and updates the same with new values
-func removeDuplicatesFromSubscription(subscriptions []evmodel.Subscription) []evmodel.Subscription {
+func removeDuplicatesFromSubscription(subscriptions []evmodel.SubscriptionResource) []evmodel.SubscriptionResource {
 	uniqueElementsDs := make(map[string]bool)
-	var uniqueElemenstsList []evmodel.Subscription
+	var uniqueElemenstsList []evmodel.SubscriptionResource
 	for _, sub := range subscriptions {
 		if exist := uniqueElementsDs[sub.SubscriptionID]; !exist {
 			uniqueElemenstsList = append(uniqueElemenstsList, sub)
@@ -680,9 +673,9 @@ func (e *ExternalInterfaces) DeleteAggregateSubscriptions(req *eventsproto.Event
 	}
 	for _, evtSubscription := range subscriptionList {
 		evtSubscription.Hosts = removeElement(evtSubscription.Hosts, aggregateID)
-		evtSubscription.OriginResources = removeElement(evtSubscription.OriginResources, "/redfish/v1/AggregationService/Aggregates/"+aggregateID)
+		evtSubscription.EventDestination.OriginResources = removeElement(evtSubscription.EventDestination.OriginResources, "/redfish/v1/AggregationService/Aggregates/"+aggregateID)
 
-		if len(evtSubscription.OriginResources) == 0 {
+		if len(evtSubscription.EventDestination.OriginResources) == 0 {
 			err = e.DeleteEvtSubscription(evtSubscription.SubscriptionID)
 			if err != nil {
 				errorMessage := "Error while delete event subscription : " + err.Error()

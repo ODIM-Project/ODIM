@@ -31,6 +31,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -117,7 +118,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 		return resp
 	}
 	for _, evtSubscription := range subscriptionDetails {
-		if evtSubscription.Destination == postRequest.Destination {
+		if evtSubscription.EventDestination.Destination == postRequest.Destination {
 			errorMessage := "Subscription already present for the requested destination"
 			evcommon.GenErrorResponse(errorMessage, errResponse.ResourceInUse, http.StatusConflict,
 				[]interface{}{}, &resp)
@@ -261,22 +262,25 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 			successfulSubscriptionList = []string{}
 			hosts = []string{}
 		}
-		evtSubscription := evmodel.Subscription{
-			UserName:             sessionUserName,
-			SubscriptionID:       subscriptionID,
-			Destination:          postRequest.Destination,
-			Name:                 postRequest.Name,
-			Context:              postRequest.Context,
-			EventTypes:           postRequest.EventTypes,
-			MessageIds:           postRequest.MessageIds,
-			ResourceTypes:        postRequest.ResourceTypes,
-			EventFormatType:      postRequest.EventFormatType,
-			SubordinateResources: postRequest.SubordinateResources,
-			Protocol:             postRequest.Protocol,
-			SubscriptionType:     postRequest.SubscriptionType,
-			OriginResources:      successfulSubscriptionList,
-			Hosts:                hosts,
-			DeliveryRetryPolicy:  postRequest.DeliveryRetryPolicy,
+		evtSubscription := evmodel.SubscriptionResource{
+			UserName:       sessionUserName,
+			SubscriptionID: subscriptionID,
+			EventDestination: &model.EventDestination{
+				Destination:          postRequest.Destination,
+				Name:                 postRequest.Name,
+				Context:              postRequest.Context,
+				EventTypes:           postRequest.EventTypes,
+				MessageIds:           postRequest.MessageIds,
+				ResourceTypes:        postRequest.ResourceTypes,
+				EventFormatType:      postRequest.EventFormatType,
+				SubordinateResources: postRequest.SubordinateResources,
+				Protocol:             postRequest.Protocol,
+				SubscriptionType:     postRequest.SubscriptionType,
+				OriginResources:      successfulSubscriptionList,
+				DeliveryRetryPolicy:  postRequest.DeliveryRetryPolicy,
+			},
+
+			Hosts: hosts,
 		}
 
 		if err = e.SaveEventSubscription(evtSubscription); err != nil {
@@ -383,7 +387,7 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 			resp.Response = createEventSubscriptionResponse()
 			return collectionName, resp
 		}
-		err = e.saveDeviceSubscriptionDetails(evmodel.Subscription{
+		err = e.saveDeviceSubscriptionDetails(evmodel.DeviceSubscription{
 			Location:       "",
 			EventHostIP:    collectionName,
 			OriginResource: origin,
@@ -472,7 +476,7 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 		return "", resp
 	}
 	l.Log.Debug("Saving device subscription details : ", deviceIPAddress)
-	evtSubscription := evmodel.Subscription{
+	evtSubscription := evmodel.DeviceSubscription{
 		Location:       locationHdr,
 		EventHostIP:    deviceIPAddress,
 		OriginResource: origin,
@@ -576,20 +580,20 @@ func (e *ExternalInterfaces) IsEventsSubscribed(token, origin string, subscripti
 		if isHostPresent(evtSubscriptions.Hosts, host) {
 			subscriptionPresent = true
 
-			if len(evtSubscriptions.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
-				eventTypes = append(eventTypes, evtSubscriptions.EventTypes...)
+			if len(evtSubscriptions.EventDestination.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
+				eventTypes = append(eventTypes, evtSubscriptions.EventDestination.EventTypes...)
 			} else {
 				eventTypes = []string{}
 			}
 
-			if len(evtSubscriptions.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
-				messageIDs = append(messageIDs, evtSubscriptions.MessageIds...)
+			if len(evtSubscriptions.EventDestination.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
+				messageIDs = append(messageIDs, evtSubscriptions.EventDestination.MessageIds...)
 			} else {
 				messageIDs = []string{}
 			}
 
-			if len(evtSubscriptions.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
-				resourceTypes = append(resourceTypes, evtSubscriptions.ResourceTypes...)
+			if len(evtSubscriptions.EventDestination.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
+				resourceTypes = append(resourceTypes, evtSubscriptions.EventDestination.ResourceTypes...)
 			} else {
 				resourceTypes = []string{}
 			}
@@ -694,7 +698,7 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 // saveDeviceSubscriptionDetails will first check if already origin resource details present
 // if its present then Update location
 // otherwise add an entry to redis
-func (e *ExternalInterfaces) saveDeviceSubscriptionDetails(evtSubscription evmodel.Subscription) error {
+func (e *ExternalInterfaces) saveDeviceSubscriptionDetails(evtSubscription evmodel.DeviceSubscription) error {
 	searchKey := evcommon.GetSearchKey(evtSubscription.EventHostIP, evmodel.DeviceSubscriptionIndex)
 	deviceSubscription, _ := e.GetDeviceSubscriptions(searchKey)
 	var newDevSubscription = evmodel.DeviceSubscription{
@@ -889,7 +893,7 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 	if err != nil {
 		return
 	}
-	var chassisSubscriptions, managersSubscriptions []evmodel.Subscription
+	var chassisSubscriptions, managersSubscriptions []evmodel.SubscriptionResource
 	if bmcFlag {
 		chassisSubscriptions, _ = e.GetEvtSubscriptions("/redfish/v1/Chassis")
 		subscriptions = append(subscriptions, chassisSubscriptions...)
@@ -897,9 +901,9 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 		subscriptions = append(subscriptions, managersSubscriptions...)
 	}
 	// Checking the collection based subscription
-	var collectionSubscription = make([]evmodel.Subscription, 0)
+	var collectionSubscription = make([]evmodel.SubscriptionResource, 0)
 	for _, evtSubscription := range subscriptions {
-		for _, originResource := range evtSubscription.OriginResources {
+		for _, originResource := range evtSubscription.EventDestination.OriginResources {
 			if strings.Contains(origin, "Systems") && (originResource == "/redfish/v1/Systems" || originResource == "/redfish/v1/Chassis" || originResource == "/redfish/v1/Managers") {
 				collectionSubscription = append(collectionSubscription, evtSubscription)
 			} else if strings.Contains(origin, "Fabrics") && originResource == "/redfish/v1/Fabrics" {
@@ -915,21 +919,21 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 	var context string
 	var eventTypes, messageIDs, resourceTypes []string
 	for index, evtSubscription := range collectionSubscription {
-		destination = evtSubscription.Destination
-		if len(evtSubscription.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
-			eventTypes = append(eventTypes, evtSubscription.EventTypes...)
+		destination = evtSubscription.EventDestination.Destination
+		if len(evtSubscription.EventDestination.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
+			eventTypes = append(eventTypes, evtSubscription.EventDestination.EventTypes...)
 		} else {
 			eventTypes = []string{}
 		}
 
-		if len(evtSubscription.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
-			messageIDs = append(messageIDs, evtSubscription.MessageIds...)
+		if len(evtSubscription.EventDestination.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
+			messageIDs = append(messageIDs, evtSubscription.EventDestination.MessageIds...)
 		} else {
 			messageIDs = []string{}
 		}
 
-		if len(evtSubscription.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
-			resourceTypes = append(resourceTypes, evtSubscription.ResourceTypes...)
+		if len(evtSubscription.EventDestination.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
+			resourceTypes = append(resourceTypes, evtSubscription.EventDestination.ResourceTypes...)
 		} else {
 			resourceTypes = []string{}
 		}
@@ -1138,7 +1142,7 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 		return "", resp
 	}
 
-	evtSubscription := evmodel.Subscription{
+	evtSubscription := evmodel.DeviceSubscription{
 		EventHostIP:    deviceIPAddress,
 		OriginResource: origin,
 	}
@@ -1285,7 +1289,7 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpda
 		l.Log.Info(errorMessage)
 	}
 	l.Log.Info("Saving device subscription details : ", deviceIPAddress)
-	evtSubscription := evmodel.Subscription{
+	evtSubscription := evmodel.DeviceSubscription{
 		Location:       locationHdr,
 		EventHostIP:    deviceIPAddress,
 		OriginResource: req.SystemID,
@@ -1358,7 +1362,7 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 		return resp, err
 	}
 	var subscriptionPresent, isAggregateSubscriptionPresent bool
-	var aggregateSubscriptionDetails []evmodel.Subscription
+	var aggregateSubscriptionDetails []evmodel.SubscriptionResource
 	// get all aggregate subscription
 	if isAggregate {
 		searchKeyAgg := evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
@@ -1381,14 +1385,14 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 			for index, evtSubscriptions := range aggregateSubscriptionDetails {
 				if isHostPresent(evtSubscriptions.Hosts, aggregateID) {
 					isAggregateSubscriptionPresent = true
-					if len(evtSubscriptions.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
-						eventTypes = append(eventTypes, evtSubscriptions.EventTypes...)
+					if len(evtSubscriptions.EventDestination.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
+						eventTypes = append(eventTypes, evtSubscriptions.EventDestination.EventTypes...)
 					}
-					if len(evtSubscriptions.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
-						messageIDs = append(messageIDs, evtSubscriptions.MessageIds...)
+					if len(evtSubscriptions.EventDestination.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
+						messageIDs = append(messageIDs, evtSubscriptions.EventDestination.MessageIds...)
 					}
-					if len(evtSubscriptions.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
-						resourceTypes = append(resourceTypes, evtSubscriptions.ResourceTypes...)
+					if len(evtSubscriptions.EventDestination.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
+						resourceTypes = append(resourceTypes, evtSubscriptions.EventDestination.ResourceTypes...)
 					}
 				}
 			}
@@ -1404,15 +1408,15 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 	for index, evtSubscriptions := range subscriptionDetails {
 		if isHostPresent(evtSubscriptions.Hosts, host) {
 			subscriptionPresent = true
-			if len(evtSubscriptions.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
-				eventTypes = append(eventTypes, evtSubscriptions.EventTypes...)
+			if len(evtSubscriptions.EventDestination.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
+				eventTypes = append(eventTypes, evtSubscriptions.EventDestination.EventTypes...)
 			}
-			if len(evtSubscriptions.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
-				messageIDs = append(messageIDs, evtSubscriptions.MessageIds...)
+			if len(evtSubscriptions.EventDestination.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
+				messageIDs = append(messageIDs, evtSubscriptions.EventDestination.MessageIds...)
 			}
 
-			if len(evtSubscriptions.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
-				resourceTypes = append(resourceTypes, evtSubscriptions.ResourceTypes...)
+			if len(evtSubscriptions.EventDestination.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
+				resourceTypes = append(resourceTypes, evtSubscriptions.EventDestination.ResourceTypes...)
 			}
 
 		}

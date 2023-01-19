@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -217,11 +218,13 @@ func TestExternalInterfaces_checkUndeliveredEvents(t *testing.T) {
 func Test_callPluginStartUp(t *testing.T) {
 	pc := getMockMethods()
 	pc.publishMetricReport("")
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
-		return []evmodel.Subscription{{
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
+		return []evmodel.SubscriptionResource{{
 			UserName:       "admin",
 			SubscriptionID: "test",
-			Destination:    "dummy",
+			EventDestination: &model.EventDestination{
+				Destination: "dummy",
+			},
 		}}, nil
 	}
 	pc.publishMetricReport("")

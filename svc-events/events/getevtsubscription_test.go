@@ -94,8 +94,8 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 	resp = pc.GetEventSubscriptionsCollection(req1)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusUnauthorized")
 
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
-		return []evmodel.Subscription{}, errors.New("")
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
+		return []evmodel.SubscriptionResource{}, errors.New("")
 	}
 	resp = pc.GetEventSubscriptionsCollection(req)
 
@@ -133,14 +133,14 @@ func TestGetEventSubscription(t *testing.T) {
 	resp = pc.GetEventSubscriptionsDetails(req)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusNotFound")
 
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
-		return []evmodel.Subscription{}, errors.New("")
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
+		return []evmodel.SubscriptionResource{}, errors.New("")
 	}
 	resp = pc.GetEventSubscriptionsDetails(req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusOK")
 
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
-		return []evmodel.Subscription{{UserName: "Admin", SubscriptionID: "test"}}, nil
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
+		return []evmodel.SubscriptionResource{{UserName: "Admin", SubscriptionID: "test"}}, nil
 	}
 	resp = pc.GetEventSubscriptionsDetails(req)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusOK")
@@ -162,8 +162,8 @@ func TestExternalInterfaces_IsAggregateHaveSubscription(t *testing.T) {
 		}, nil
 	}
 	pc.IsAggregateHaveSubscription(&eventsproto.EventUpdateRequest{})
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
-		return []evmodel.Subscription{{UserName: "admin"}}, nil
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
+		return []evmodel.SubscriptionResource{{UserName: "admin"}}, nil
 	}
 	pc.IsAggregateHaveSubscription(&eventsproto.EventUpdateRequest{})
 }

@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -385,144 +386,162 @@ func MockGetAggregateDatacData(aggregateID string) (evmodel.Aggregate, error) {
 }
 
 // MockGetEvtSubscriptions is for mocking up of get event  subscription
-func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
-	var subarr []evmodel.Subscription
+func MockGetEvtSubscriptions(searchKey string) ([]evmodel.SubscriptionResource, error) {
+	var subarr []evmodel.SubscriptionResource
 	switch searchKey {
 	case "81de0110-c35a-4859-984c-072d6c5a32d7", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "[^0-9]100.100.100.100[^0-9]":
-		subarr = []evmodel.Subscription{
+		subarr = []evmodel.SubscriptionResource{
 			{
-				UserName:             "admin",
-				SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d7",
-				Destination:          "https://odim.destination.com:9090/events",
-				Name:                 "Subscription",
-				Location:             "https://odim.2.com/EventService/Subscriptions/1",
-				Context:              "context",
-				EventTypes:           []string{"Alert", "ResourceAdded"},
-				MessageIds:           []string{"IndicatorChanged"},
-				ResourceTypes:        []string{"ComputerSystem"},
-				OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-				Hosts:                []string{"100.100.100.100"},
-				SubordinateResources: true,
+				UserName:       "admin",
+				SubscriptionID: "81de0110-c35a-4859-984c-072d6c5a32d7",
+				EventDestination: &model.EventDestination{
+					Destination:          "https://odim.destination.com:9090/events",
+					Name:                 "Subscription",
+					Context:              "context",
+					EventTypes:           []string{"Alert", "ResourceAdded"},
+					MessageIds:           []string{"IndicatorChanged"},
+					ResourceTypes:        []string{"ComputerSystem"},
+					OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+					SubordinateResources: true,
+				},
+				Hosts:    []string{"100.100.100.100"},
+				Location: "https://odim.2.com/EventService/Subscriptions/1",
 			},
 		}
 	case "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874d.1", "[^0-9]100.100.100.101[^0-9]":
-		subarr = []evmodel.Subscription{
+		subarr = []evmodel.SubscriptionResource{
 			{
-				UserName:             "admin",
-				SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d7",
-				Destination:          "https://odim.destination.com:9090/events",
-				Name:                 "Subscription",
-				Location:             "https://odim.2.com/EventService/Subscriptions/1",
-				Context:              "context",
-				EventTypes:           []string{"Alert", "ResourceAdded"},
-				MessageIds:           []string{"IndicatorChanged"},
-				ResourceTypes:        []string{"ComputerSystem"},
-				OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-				Hosts:                []string{"100.100.100.100", "100.100.100.101"},
-				SubordinateResources: true,
+				UserName:       "admin",
+				SubscriptionID: "81de0110-c35a-4859-984c-072d6c5a32d7",
+				EventDestination: &model.EventDestination{
+					Destination:          "https://odim.destination.com:9090/events",
+					Name:                 "Subscription",
+					Context:              "context",
+					EventTypes:           []string{"Alert", "ResourceAdded"},
+					MessageIds:           []string{"IndicatorChanged"},
+					ResourceTypes:        []string{"ComputerSystem"},
+					OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+					SubordinateResources: true,
+				},
+				Location: "https://odim.2.com/EventService/Subscriptions/1",
+
+				Hosts: []string{"100.100.100.100", "100.100.100.101"},
 			},
 		}
 	case "11081de0-4859-984c-c35a-6c50732d72da", "/redfish/v1/Systems", "https://odim.destination.com:9090/events", "*", "":
-		subarr = []evmodel.Subscription{
+		subarr = []evmodel.SubscriptionResource{
 			{
-				UserName:             "admin",
-				SubscriptionID:       "11081de0-4859-984c-c35a-6c50732d72da",
-				Destination:          "https://odim.destination.com:9090/events",
-				Name:                 "Subscription",
-				Location:             "https://odim.2.com/EventService/Subscriptions/1",
-				Context:              "context",
-				EventTypes:           []string{"Alert", "StatusChange"},
-				MessageIds:           []string{"IndicatorChanged", "StateChanged"},
-				ResourceTypes:        []string{"ComputerSystem"},
-				OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
-				Hosts:                []string{"100.100.100.100", "10.10.1.3"},
-				SubordinateResources: true,
+				UserName:       "admin",
+				SubscriptionID: "11081de0-4859-984c-c35a-6c50732d72da",
+				EventDestination: &model.EventDestination{
+					Destination:          "https://odim.destination.com:9090/events",
+					Name:                 "Subscription",
+					Context:              "context",
+					EventTypes:           []string{"Alert", "StatusChange"},
+					MessageIds:           []string{"IndicatorChanged", "StateChanged"},
+					ResourceTypes:        []string{"ComputerSystem"},
+					OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
+					SubordinateResources: true,
+				},
+				Location: "https://odim.2.com/EventService/Subscriptions/1",
+				Hosts:    []string{"100.100.100.100", "10.10.1.3"},
 			},
 		}
 	case "71de0110-c35a-4859-984c-072d6c5a32d8", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1", "[^0-9]10.10.1.3[^0-9]":
-		subarr = []evmodel.Subscription{
+		subarr = []evmodel.SubscriptionResource{
 			{
-				UserName:             "admin",
-				SubscriptionID:       "71de0110-c35a-4859-984c-072d6c5a32d8",
-				Destination:          "https://localhost:9090/events",
-				Name:                 "Subscription",
-				Location:             "https://10.10.10.3/EventService/Subscriptions/1",
-				Context:              "context",
-				EventTypes:           []string{"Alert", "ResourceAdded"},
-				MessageIds:           []string{},
-				ResourceTypes:        []string{},
-				OriginResources:      []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
-				Hosts:                []string{"10.10.1.3"},
-				SubordinateResources: false,
+				UserName:       "admin",
+				SubscriptionID: "71de0110-c35a-4859-984c-072d6c5a32d8",
+				EventDestination: &model.EventDestination{
+					Destination:          "https://localhost:9090/events",
+					Name:                 "Subscription",
+					Context:              "context",
+					EventTypes:           []string{"Alert", "ResourceAdded"},
+					MessageIds:           []string{},
+					ResourceTypes:        []string{},
+					OriginResources:      []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
+					SubordinateResources: false,
+				},
+				Location: "https://10.10.10.3/EventService/Subscriptions/1",
+				Hosts:    []string{"10.10.1.3"},
 			},
 		}
 	case "71de0110-c35a-4859-984c-072d6c5a32d9", "/redfish/v1/Fabrics/123456":
-		subarr = []evmodel.Subscription{
+		subarr = []evmodel.SubscriptionResource{
 			{
-				SubscriptionID:       "71de0110-c35a-4859-984c-072d6c5a32d9",
-				Destination:          "https://localhost:9090/events",
-				Name:                 "Subscription",
-				Location:             "/ODIM/v1/Subscriptions/12345",
-				Context:              "context",
-				EventTypes:           []string{"Alert"},
-				MessageIds:           []string{},
-				ResourceTypes:        []string{},
-				OriginResources:      []string{"/redfish/v1/Fabrics/123456"},
-				Hosts:                []string{"localhost"},
-				SubordinateResources: true,
+				SubscriptionID: "71de0110-c35a-4859-984c-072d6c5a32d9",
+				EventDestination: &model.EventDestination{
+					Destination:          "https://localhost:9090/events",
+					Name:                 "Subscription",
+					Context:              "context",
+					EventTypes:           []string{"Alert"},
+					MessageIds:           []string{},
+					ResourceTypes:        []string{},
+					OriginResources:      []string{"/redfish/v1/Fabrics/123456"},
+					SubordinateResources: true,
+				},
+				Location: "/ODIM/v1/Subscriptions/12345",
+				Hosts:    []string{"localhost"},
 			},
 		}
 	case "5a321010-c35a-4859-984c-072d6c":
-		subarr = []evmodel.Subscription{
+		subarr = []evmodel.SubscriptionResource{
 			{
-				SubscriptionID:       "5a321010-c35a-4859-984c-072d6c",
-				Destination:          "https://localhost:9090/events",
-				Name:                 "Subscription",
-				Location:             "/ODIM/v1/Subscriptions/123",
-				Context:              "context",
-				EventTypes:           []string{"Alert", "ResourceAdded"},
-				MessageIds:           []string{},
-				ResourceTypes:        []string{},
-				OriginResources:      []string{"/redfish/v1/Fabrics/123"},
-				Hosts:                []string{domainIP},
-				SubordinateResources: true,
+				SubscriptionID: "5a321010-c35a-4859-984c-072d6c",
+				EventDestination: &model.EventDestination{
+					Destination:          "https://localhost:9090/events",
+					Name:                 "Subscription",
+					Context:              "context",
+					EventTypes:           []string{"Alert", "ResourceAdded"},
+					MessageIds:           []string{},
+					ResourceTypes:        []string{},
+					OriginResources:      []string{"/redfish/v1/Fabrics/123"},
+					SubordinateResources: true,
+				},
+				Location: "/ODIM/v1/Subscriptions/123",
+
+				Hosts: []string{domainIP},
 			},
 		}
 	case "71de0110-c35a-4859-984c-072d6c5a3211", "/redfish/v1/Fabrics", "/redfish/v1/Managers", "/redfish/v1/TaskService/Tasks", "/redfish/v1/Chassis":
-		subarr = []evmodel.Subscription{
+		subarr = []evmodel.SubscriptionResource{
 			{
 				SubscriptionID: "71de0110-c35a-4859-984c-072d6c5a3211",
-				Destination:    "https://localhost:1234/eventsListener",
-				Name:           "Subscription",
-				Location:       "/ODIM/v1/Subscriptions/12345",
-				Context:        "context",
-				EventTypes:     []string{"Alert"},
-				MessageIds:     []string{},
-				ResourceTypes:  []string{},
-				OriginResources: []string{"/redfish/v1/Systems",
-					"/redfish/v1/Chassis",
-					"/redfish/v1/Fabrics",
-					"/redfish/v1/Managers",
-					"/redfish/v1/TaskService/Tasks"},
-				Hosts:                []string{"localhost"},
-				SubordinateResources: true,
+				EventDestination: &model.EventDestination{
+					Destination:   "https://localhost:1234/eventsListener",
+					Name:          "Subscription",
+					Context:       "context",
+					EventTypes:    []string{"Alert"},
+					MessageIds:    []string{},
+					ResourceTypes: []string{},
+					OriginResources: []string{"/redfish/v1/Systems",
+						"/redfish/v1/Chassis",
+						"/redfish/v1/Fabrics",
+						"/redfish/v1/Managers",
+						"/redfish/v1/TaskService/Tasks"},
+					SubordinateResources: true,
+				},
+				Location: "/ODIM/v1/Subscriptions/12345",
+				Hosts:    []string{"localhost"},
 			},
 		}
 	case "81de0110-c35a-4859-984c-072d6c5a32d8", "admin":
-		subarr = []evmodel.Subscription{
+		subarr = []evmodel.SubscriptionResource{
 			{
-				UserName:             "admin",
-				SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d8",
-				Destination:          "https://odim.t.com:9090/events",
-				Name:                 "Subscription",
-				Location:             "https://odim.2.com/EventService/Subscriptions/1",
-				Context:              "context",
-				EventTypes:           []string{"Alert"},
-				MessageIds:           []string{"IndicatorChanged"},
-				ResourceTypes:        []string{"ComputerSystem"},
-				OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-				Hosts:                []string{"100.100.100.100"},
-				SubordinateResources: true,
+				UserName:       "admin",
+				SubscriptionID: "81de0110-c35a-4859-984c-072d6c5a32d8",
+				EventDestination: &model.EventDestination{
+					Destination:          "https://odim.t.com:9090/events",
+					Name:                 "Subscription",
+					Context:              "context",
+					EventTypes:           []string{"Alert"},
+					MessageIds:           []string{"IndicatorChanged"},
+					ResourceTypes:        []string{"ComputerSystem"},
+					OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+					SubordinateResources: true,
+				},
+				Location: "https://odim.2.com/EventService/Subscriptions/1",
+				Hosts:    []string{"100.100.100.100"},
 			},
 		}
 	default:
@@ -590,12 +609,12 @@ func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, err
 }
 
 // MockSaveEventSubscription is for mocking up of save event subscription
-func MockSaveEventSubscription(evtSubscription evmodel.Subscription) error {
+func MockSaveEventSubscription(evtSubscription evmodel.SubscriptionResource) error {
 	return nil
 }
 
 // MockUpdateEventSubscription is for mocking up of update event subscription
-func MockUpdateEventSubscription(evtSubscription evmodel.Subscription) error {
+func MockUpdateEventSubscription(evtSubscription evmodel.SubscriptionResource) error {
 	return nil
 }
 

@@ -138,7 +138,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 	if err != nil {
 		l.Log.Info("No Aggregate subscription Found ", err)
 	}
-	var aggregateSubscriptionList []evmodel.Subscription
+	var aggregateSubscriptionList []evmodel.SubscriptionResource
 	for _, aggregateID := range aggregateList {
 		searchKeyAgg := evcommon.GetSearchKey(aggregateID, evmodel.SubscriptionIndex)
 
@@ -174,7 +174,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 		subscriptions = append(subscriptions, collectionSubscriptions...)
 		for _, sub := range aggregateSubscriptionList {
 			if filterEventsToBeForwarded(sub, inEvent, deviceSubscription.OriginResources) {
-				eventMap[sub.Destination] = append(eventMap[sub.Destination], inEvent)
+				eventMap[sub.EventDestination.Destination] = append(eventMap[sub.EventDestination.Destination], inEvent)
 				flag = true
 			}
 		}
@@ -182,11 +182,11 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 
 			// filter and send events to destination if destination is not empty
 			// in case of default event subscription destination will be empty
-			if sub.Destination != "" {
+			if sub.EventDestination.Destination != "" {
 				// check if hostip present in the hosts slice to make sure that it doesn't filter with the destination ip
 				if isHostPresentInEventForward(sub.Hosts, host) {
 					if filterEventsToBeForwarded(sub, inEvent, deviceSubscription.OriginResources) {
-						eventMap[sub.Destination] = append(eventMap[sub.Destination], inEvent)
+						eventMap[sub.EventDestination.Destination] = append(eventMap[sub.EventDestination.Destination], inEvent)
 						flag = true
 					}
 				} else {
@@ -234,23 +234,23 @@ func (e *ExternalInterfaces) publishMetricReport(requestData string) bool {
 		return false
 	}
 	for _, sub := range subscriptions {
-		go e.postEvent(sub.Destination, eventUniqueID, []byte(requestData))
+		go e.postEvent(sub.EventDestination.Destination, eventUniqueID, []byte(requestData))
 	}
 	return true
 }
 
-func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.Event, originResources []string) bool {
-	eventTypes := subscription.EventTypes
-	messageIds := subscription.MessageIds
-	resourceTypes := subscription.ResourceTypes
+func filterEventsToBeForwarded(subscription evmodel.SubscriptionResource, event common.Event, originResources []string) bool {
+	eventTypes := subscription.EventDestination.EventTypes
+	messageIds := subscription.EventDestination.MessageIds
+	resourceTypes := subscription.EventDestination.ResourceTypes
 	originCondition := strings.TrimSuffix(event.OriginOfCondition.Oid, "/")
 	if (len(eventTypes) == 0 || isStringPresentInSlice(eventTypes, event.EventType, "event type")) &&
 		(len(messageIds) == 0 || isStringPresentInSlice(messageIds, event.MessageID, "message id")) &&
-		(len(resourceTypes) == 0 || isResourceTypeSubscribed(resourceTypes, event.OriginOfCondition.Oid, subscription.SubordinateResources)) {
+		(len(resourceTypes) == 0 || isResourceTypeSubscribed(resourceTypes, event.OriginOfCondition.Oid, subscription.EventDestination.SubordinateResources)) {
 		// if SubordinateResources is true then check if originofresource is top level of originofcondition
 		// if SubordinateResources is flase then check originofresource is same as originofcondition
 		for _, origin := range originResources {
-			if subscription.SubordinateResources {
+			if subscription.EventDestination.SubordinateResources {
 				if strings.Contains(originCondition, origin) {
 					return true
 				}
@@ -591,7 +591,7 @@ func (e *ExternalInterfaces) checkUndeliveredEvents(destination string) {
 	}
 }
 
-func (e *ExternalInterfaces) getCollectionSubscriptionInfoForOID(oid, host string) []evmodel.Subscription {
+func (e *ExternalInterfaces) getCollectionSubscriptionInfoForOID(oid, host string) []evmodel.SubscriptionResource {
 	var key string
 	if strings.Contains(oid, "Systems") && host != "SystemsCollection" {
 		key = "SystemsCollection"
@@ -602,7 +602,7 @@ func (e *ExternalInterfaces) getCollectionSubscriptionInfoForOID(oid, host strin
 	} else if strings.Contains(oid, "Fabrics") && host != "FabricsCollection" {
 		key = "FabricsCollection"
 	} else {
-		return []evmodel.Subscription{}
+		return []evmodel.SubscriptionResource{}
 	}
 
 	searchKey := evcommon.GetSearchKey(key, evmodel.SubscriptionIndex)

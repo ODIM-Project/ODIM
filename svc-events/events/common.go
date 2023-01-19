@@ -54,8 +54,8 @@ type External struct {
 // DB struct to inject the contact DB function into the handlers
 type DB struct {
 	GetSessionUserName               func(sessionToken string) (string, error)
-	GetEvtSubscriptions              func(string) ([]evmodel.Subscription, error)
-	SaveEventSubscription            func(evmodel.Subscription) error
+	GetEvtSubscriptions              func(string) ([]evmodel.SubscriptionResource, error)
+	SaveEventSubscription            func(evmodel.SubscriptionResource) error
 	GetPluginData                    func(string) (*evmodel.Plugin, *errors.Error)
 	GetDeviceSubscriptions           func(string) (*evmodel.DeviceSubscription, error)
 	GetTarget                        func(string) (*evmodel.Target, error)
@@ -66,7 +66,7 @@ type DB struct {
 	GetFabricData                    func(string) (evmodel.Fabric, error)
 	DeleteEvtSubscription            func(string) error
 	DeleteDeviceSubscription         func(hostIP string) error
-	UpdateEventSubscription          func(evmodel.Subscription) error
+	UpdateEventSubscription          func(evmodel.SubscriptionResource) error
 	SaveUndeliveredEvents            func(string, []byte) error
 	SaveDeviceSubscription           func(evmodel.DeviceSubscription) error
 	GetUndeliveredEvents             func(string) (string, error)
@@ -230,7 +230,7 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 
 	for _, eventType := range request.EventTypes {
 		if _, ok := validEventTypes[eventType]; !ok {
-			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{eventType, "EventTypes"}, fmt.Errorf("Invalid EventTypes")
+			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{eventType, "EventTypes"}, fmt.Errorf("invalid EventTypes")
 		}
 	}
 
@@ -243,12 +243,11 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 		}
 	}
 
-	if request.SubscriptionType == "" {
-		request.SubscriptionType = evmodel.SubscriptionType
-	} else if request.SubscriptionType == "SSE" || request.SubscriptionType == "SNMPTrap" || request.SubscriptionType == "SNMPInform" {
-		return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"SubscriptionType"}, fmt.Errorf("Unsupported SubscriptionType")
-	} else if request.SubscriptionType != evmodel.SubscriptionType {
-		return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"SubscriptionType"}, fmt.Errorf("Invalid SubscriptionType")
+	if !request.SubscriptionType.IsValidSubscriptionType() {
+		return http.StatusBadRequest, errResponse.PropertyUnknown, []interface{}{"SubscriptionType"}, fmt.Errorf("invalid SubscriptionType")
+	}
+	if !request.SubscriptionType.IsSubscriptionTypeSupported() {
+		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.SubscriptionType.ToString(), "SubscriptionType"}, fmt.Errorf("unsupported SubscriptionType")
 	}
 
 	if request.Context == "" {
@@ -257,12 +256,14 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 
 	if request.DeliveryRetryPolicy == "" {
 		request.DeliveryRetryPolicy = evmodel.DeliveryRetryPolicy
-	} else if request.DeliveryRetryPolicy == "TerminateAfterRetries" || request.DeliveryRetryPolicy == "SuspendRetries" || request.DeliveryRetryPolicy == "RetryForeverWithBackoff" {
-		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.DeliveryRetryPolicy, "DeliveryRetryPolicy"}, fmt.Errorf("Unsupported DeliveryRetryPolicy")
-	} else if request.DeliveryRetryPolicy != evmodel.DeliveryRetryPolicy {
-		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.DeliveryRetryPolicy, "DeliveryRetryPolicy"}, fmt.Errorf("Invalid DeliveryRetryPolicy")
+	} else {
+		if !request.DeliveryRetryPolicy.IsValidDeliveryRetryPolicyType() {
+			return http.StatusBadRequest, errResponse.PropertyUnknown, []interface{}{"DeliveryRetryPolicy"}, fmt.Errorf("invalid deliveryRetryPolicy")
+		}
+		if !request.DeliveryRetryPolicy.IsDeliveryRetryPolicyTypeSupported() {
+			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.DeliveryRetryPolicy.ToString(), "deliveryRetryPolicy"}, fmt.Errorf("unsupported DeliveryRetryPolicy")
+		}
 	}
-
 	availableProtocols := []string{"Redfish"}
 	var validProtocol bool
 	validProtocol = false
@@ -272,13 +273,13 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 		}
 	}
 	if !validProtocol {
-		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.Protocol, "Protocol"}, fmt.Errorf("Protocol %v is invalid", request.Protocol)
+		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.Protocol, "Protocol"}, fmt.Errorf("protocol %v is invalid", request.Protocol)
 	}
 
 	// check the All ResourceTypes are supported
 	for _, resourceType := range request.ResourceTypes {
 		if _, ok := common.ResourceTypes[resourceType]; !ok {
-			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{resourceType, "ResourceType"}, fmt.Errorf("Unsupported ResourceType")
+			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{resourceType, "ResourceType"}, fmt.Errorf("unsupported ResourceType")
 		}
 	}
 
@@ -472,7 +473,7 @@ func isHostPresentInEventForward(hosts []string, hostip string) bool {
 }
 
 // updateOriginResourceswithOdataID is for to create array of odata id
-func updateOriginResourceswithOdataID(originResources []string) []evresponse.ListMember {
+func updateOriginResourcesWithOdataID(originResources []string) []evresponse.ListMember {
 	var originRes []evresponse.ListMember
 	for _, origin := range originResources {
 		originRes = append(originRes, evresponse.ListMember{OdataID: origin})

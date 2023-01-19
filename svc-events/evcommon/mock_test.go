@@ -605,10 +605,10 @@ func TestMockGetDeviceSubscriptions(t *testing.T) {
 	}
 }
 func TestFunc(t *testing.T) {
-	err := MockSaveEventSubscription(evmodel.Subscription{})
+	err := MockSaveEventSubscription(evmodel.SubscriptionResource{})
 	assert.Nil(t, err)
 
-	err = MockUpdateEventSubscription(evmodel.Subscription{})
+	err = MockUpdateEventSubscription(evmodel.SubscriptionResource{})
 	assert.Nil(t, err)
 
 	err = MockDeleteEvtSubscription("")

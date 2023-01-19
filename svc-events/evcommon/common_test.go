@@ -282,7 +282,7 @@ func TestGenErrorResponse(t *testing.T) {
 
 func TestGetAllServers(t *testing.T) {
 	config.SetUpMockConfig(t)
-	st := StartUpInteraface{
+	st := StartUpInterface{
 		DecryptPassword: stubDevicePassword,
 		GetAllSystems:   MockGetAllSystems,
 		GetSingleSystem: MockGetSingleSystem,
@@ -308,7 +308,7 @@ func TestCallPluginStartUp(t *testing.T) {
 			PluginID:       "ILO",
 		},
 	}
-	st := StartUpInteraface{
+	st := StartUpInterface{
 		DecryptPassword:                  stubDevicePassword,
 		EMBConsume:                       stubEMBConsume,
 		GetAllSystems:                    MockGetAllSystems,
@@ -371,7 +371,7 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 	defer ts.Close()
 	// Intializing the TopicsList
 	EMBTopics.TopicsList = make(map[string]bool)
-	st := StartUpInteraface{
+	st := StartUpInterface{
 		DecryptPassword:                  stubDevicePassword,
 		EMBConsume:                       stubEMBConsume,
 		GetAllSystems:                    MockGetAllSystems,
@@ -400,7 +400,7 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 }
 
 func TestStartUpInteraface_SubscribePluginEMB(t *testing.T) {
-	pc := StartUpInteraface{}
+	pc := StartUpInterface{}
 	GetAllPluginsFunc = func() ([]evmodel.Plugin, *errors.Error) { return nil, &errors.Error{} }
 	pc.SubscribePluginEMB()
 

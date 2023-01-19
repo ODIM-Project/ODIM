@@ -25,7 +25,8 @@ jobs:
         echo "=========checking docker status================"
         sudo service docker status
         
-        
+        dpkg -l|grep docker
+        exit -1
         echo "[$(date)] -- INFO  -- running actions as ${USER}"
         echo
         

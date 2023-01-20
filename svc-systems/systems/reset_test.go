@@ -130,7 +130,6 @@ func mockContactClient(ctx context.Context, url, method, token string, odataID s
 
 func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	config.SetUpMockConfig(t)
-	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {

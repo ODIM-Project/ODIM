@@ -124,10 +124,10 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 					if i < len(resetRequest.TargetURIs)-1 {
 						percentComplete = int32(((i + 1) / len(resetRequest.TargetURIs)) * 100)
 						var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-						err := e.UpdateTask(task)
+						err := e.UpdateTask(ctx, task)
 						if err != nil && err.Error() == common.Cancelling {
 							task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
-							e.UpdateTask(task)
+							e.UpdateTask(ctx, task)
 							cancelled = true
 						}
 					}
@@ -185,10 +185,10 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 	}
 	resp.Body = args.CreateGenericErrorResponse()
 	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
-	err = e.UpdateTask(task)
+	err = e.UpdateTask(ctx, task)
 	if err != nil && err.Error() == common.Cancelling {
 		task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
-		e.UpdateTask(task)
+		e.UpdateTask(ctx, task)
 		runtime.Goexit()
 	}
 	return resp
@@ -197,7 +197,7 @@ func (e *ExternalInterface) aggregateSystems(ctx context.Context, requestType, u
 	var resp response.RPC
 	var percentComplete int32
 	defer wg.Done()
-	subTaskURI, err := e.CreateChildTask(sessionUserName, taskID)
+	subTaskURI, err := e.CreateChildTask(ctx, sessionUserName, taskID)
 	if err != nil {
 		subTaskChan <- http.StatusInternalServerError
 		l.LogWithFields(ctx).Error("error while trying to create sub task")
@@ -256,10 +256,10 @@ func (e *ExternalInterface) aggregateSystems(ctx context.Context, requestType, u
 					if i < len(aggregate.Elements)-1 {
 						percentComplete = int32(((i + 1) / len(aggregate.Elements)) * 100)
 						var task = fillTaskData(subTaskID, url, reqBody, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-						err := e.UpdateTask(task)
+						err := e.UpdateTask(ctx, task)
 						if err != nil && err.Error() == common.Cancelling {
 							task = fillTaskData(subTaskID, url, reqBody, resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
-							e.UpdateTask(task)
+							e.UpdateTask(ctx, task)
 							cancelled = true
 						}
 					}
@@ -302,7 +302,7 @@ func (e *ExternalInterface) aggregateSystems(ctx context.Context, requestType, u
 	}
 	resp.Body = args.CreateGenericErrorResponse()
 	var task = fillTaskData(subTaskID, url, reqBody, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
-	err = e.UpdateTask(task)
+	err = e.UpdateTask(ctx, task)
 	if err != nil && err.Error() == common.Cancelling {
 		common.GeneralError(http.StatusNotFound, common.Cancelled, "", []interface{}{"Aggregate", url}, taskInfo)
 		return

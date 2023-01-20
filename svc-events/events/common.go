@@ -47,9 +47,9 @@ var (
 type External struct {
 	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	Auth            func(string, []string, []string) (response.RPC, error)
-	CreateTask      func(string) (string, error)
-	UpdateTask      func(common.TaskData) error
-	CreateChildTask func(string, string) (string, error)
+	CreateTask      func(context.Context, string) (string, error)
+	UpdateTask      func(context.Context, common.TaskData) error
+	CreateChildTask func(context.Context, string, string) (string, error)
 }
 
 // DB struct to inject the contact DB function into the handlers
@@ -97,7 +97,7 @@ func fillTaskData(taskID, targetURI, request string, resp errResponse.RPC, taskS
 }
 
 // UpdateTaskData update the task with the given data
-func UpdateTaskData(taskData common.TaskData) error {
+func UpdateTaskData(ctx context.Context, taskData common.TaskData) error {
 	respBody, _ := json.Marshal(taskData.Response.Body)
 	payLoad := &taskproto.Payload{
 		HTTPHeaders:   taskData.Response.Header,
@@ -108,11 +108,11 @@ func UpdateTaskData(taskData common.TaskData) error {
 		ResponseBody:  respBody,
 	}
 
-	err := UpdateTaskService(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	err := UpdateTaskService(ctx, taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
-		UpdateTaskService(taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+		UpdateTaskService(ctx, taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 		if taskData.PercentComplete == 0 {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}

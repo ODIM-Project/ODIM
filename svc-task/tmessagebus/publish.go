@@ -15,6 +15,7 @@
 package tmessagebus
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 
@@ -26,11 +27,11 @@ import (
 )
 
 //Publish will takes the taskURI, messageID, Event type and publishes the data to message bus
-func Publish(taskURI, messageID, eventType, taskMessage string) {
+func Publish(ctx context.Context, taskURI, messageID, eventType, taskMessage string) {
 	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
 	k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
-		l.Log.Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
+		l.LogWithFields(ctx).Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
 		return
 	}
 
@@ -60,7 +61,7 @@ func Publish(taskURI, messageID, eventType, taskMessage string) {
 	}
 
 	if err := k.Distribute(mbevent); err != nil {
-		l.Log.Error("TaskURI:" + taskURI + ", EventID:" + eventID + ", MessageID:" + messageID + " : unable to publish the event to message bus: " + err.Error())
+		l.LogWithFields(ctx).Error("TaskURI:" + taskURI + ", EventID:" + eventID + ", MessageID:" + messageID + " : unable to publish the event to message bus: " + err.Error())
 		return
 	}
 }

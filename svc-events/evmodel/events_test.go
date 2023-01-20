@@ -1127,8 +1127,8 @@ func TestGetAggregateData(t *testing.T) {
 		aggreagetKey string
 	}
 	var aggregate = Aggregate{
-		Elements: []OdataIDLink{
-			OdataIDLink{OdataID: "dummy"},
+		Elements: []common.Link{
+			{Oid: "dummy"},
 		},
 	}
 	mockData(t, common.OnDisk, "Aggregate", "3bd1f589-117a-4cf9-89f2-da44ee8e012b", aggregate)
@@ -1145,7 +1145,7 @@ func TestGetAggregateData(t *testing.T) {
 			args:    args{},
 			wantErr: true,
 			want: Aggregate{
-				Elements: []OdataIDLink{{OdataID: ""}},
+				Elements: []common.Link{{Oid: ""}},
 			},
 			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 				return nil, &errors.Error{}
@@ -1156,7 +1156,7 @@ func TestGetAggregateData(t *testing.T) {
 			args:    args{aggreagetKey: ""},
 			wantErr: true,
 			want: Aggregate{
-				Elements: []OdataIDLink{{OdataID: ""}},
+				Elements: []common.Link{{Oid: ""}},
 			},
 			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 				return common.GetDBConnection(dbFlag)
@@ -1167,7 +1167,7 @@ func TestGetAggregateData(t *testing.T) {
 			args:    args{aggreagetKey: "3bd1f589-117a-4cf9-89f2-da44ee8e012b"},
 			wantErr: false,
 			want: Aggregate{
-				Elements: []OdataIDLink{{OdataID: ""}},
+				Elements: []common.Link{{Oid: ""}},
 			},
 			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 				return common.GetDBConnection(dbFlag)
@@ -1178,7 +1178,7 @@ func TestGetAggregateData(t *testing.T) {
 			args:    args{aggreagetKey: "3bd1f589-117a-4cf9-89f2-da44ee8e012c"},
 			wantErr: true,
 			want: Aggregate{
-				Elements: []OdataIDLink{{OdataID: ""}},
+				Elements: []common.Link{{Oid: ""}},
 			},
 			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 				return common.GetDBConnection(dbFlag)
@@ -1405,9 +1405,9 @@ func TestGetAggregate(t *testing.T) {
 			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 				return common.GetDBConnection(dbFlag)
 			},
-			want: Aggregate{Elements: []OdataIDLink{
+			want: Aggregate{Elements: []common.Link{
 				{
-					OdataID: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+					Oid: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
 				},
 			}},
 		},
@@ -1448,9 +1448,9 @@ func mockAggregateList() error {
 		return err
 	}
 	aggregate := Aggregate{
-		Elements: []OdataIDLink{
+		Elements: []common.Link{
 			{
-				OdataID: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				Oid: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
 			},
 		},
 	}

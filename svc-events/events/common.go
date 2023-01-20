@@ -123,10 +123,10 @@ func UpdateTaskData(taskData common.TaskData) error {
 }
 
 // this function is for to create array of originofresources without odata id
-func removeOdataIDfromOriginResources(originResources []evmodel.OdataIDLink) []string {
+func removeOdataIDfromOriginResources(originResources []common.Link) []string {
 	var originRes []string
 	for _, origin := range originResources {
-		originRes = append(originRes, origin.OdataID)
+		originRes = append(originRes, origin.Oid)
 	}
 	return originRes
 }
@@ -445,7 +445,7 @@ func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, b
 		}
 		var collection []string = []string{}
 		for _, system := range aggregateCollection.Elements {
-			var systemID string = system.OdataID
+			var systemID string = system.Oid
 			collection = append(collection, systemID)
 		}
 		return collection, "AggregateCollections", true, origin, true, err

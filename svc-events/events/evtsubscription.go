@@ -961,9 +961,9 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 		Protocol:             protocol,
 		SubordinateResources: subordinateFlag,
 	}
-	subscriptionPost.OriginResources = []evmodel.OdataIDLink{
+	subscriptionPost.OriginResources = []common.Link{
 		{
-			OdataID: origin,
+			Oid: origin,
 		},
 	}
 
@@ -1049,9 +1049,9 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 		SubordinateResources: postRequest.SubordinateResources,
 		HTTPHeaders:          httpHeadersSlice,
 		Context:              postRequest.Context,
-		OriginResources: []evmodel.OdataIDLink{
+		OriginResources: []common.Link{
 			{
-				OdataID: origin,
+				Oid: origin,
 			},
 		},
 	}
@@ -1213,9 +1213,9 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpda
 		EventTypes:    []string{},
 		MessageIds:    []string{},
 		ResourceTypes: []string{},
-		OriginResources: []evmodel.OdataIDLink{
+		OriginResources: []common.Link{
 			{
-				OdataID: req.SystemID,
+				Oid: req.SystemID,
 			},
 		},
 		SubordinateResources: true,

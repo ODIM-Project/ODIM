@@ -152,8 +152,8 @@ func getAllAggregates() {
 // addSystemIdToAggregateCache update cache for each aggregate member
 func addSystemIdToAggregateCache(aggregateId string, aggregate evmodel.Aggregate) {
 	for _, ids := range aggregate.Elements {
-		ids.OdataID = ids.OdataID[strings.LastIndexByte(strings.TrimSuffix(ids.OdataID, "/"), '/')+1:]
-		updateCacheMaps(ids.OdataID, aggregateId, systemIdToAggregateIdsMap)
+		ids.Oid = ids.Oid[strings.LastIndexByte(strings.TrimSuffix(ids.Oid, "/"), '/')+1:]
+		updateCacheMaps(ids.Oid, aggregateId, systemIdToAggregateIdsMap)
 	}
 }
 

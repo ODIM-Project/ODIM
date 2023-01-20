@@ -65,11 +65,6 @@ var (
 	GetDbConnection = common.GetDBConnection
 )
 
-// OdataIDLink containes link to a resource
-type OdataIDLink struct {
-	OdataID string `json:"@odata.id"`
-}
-
 //RequestBody is required to receive the post request payload
 type RequestBody struct {
 	Name                 string                   `json:"Name"`
@@ -82,7 +77,7 @@ type RequestBody struct {
 	SubscriptionType     dmtf.SubscriptionType    `json:"SubscriptionType"`
 	EventFormatType      string                   `json:"EventFormatType"`
 	SubordinateResources bool                     `json:"SubordinateResources"`
-	OriginResources      []OdataIDLink            `json:"OriginResources"`
+	OriginResources      []common.Link            `json:"OriginResources"`
 	DeliveryRetryPolicy  dmtf.DeliveryRetryPolicy `json:"DeliveryRetryPolicy"`
 }
 
@@ -112,7 +107,7 @@ type EvtSubPost struct {
 	SubordinateResources bool                     `json:"SubordinateResources"`
 	HTTPHeaders          []HTTPHeaders            `json:"HttpHeaders"`
 	Context              string                   `json:"Context"`
-	OriginResources      []OdataIDLink            `json:"OriginResources"`
+	OriginResources      []common.Link            `json:"OriginResources"`
 	DeliveryRetryPolicy  dmtf.DeliveryRetryPolicy `json:"DeliveryRetryPolicy,omitempty"`
 }
 
@@ -151,7 +146,7 @@ type Fabric struct {
 
 //Aggregate is the model for Aggregate information
 type Aggregate struct {
-	Elements []OdataIDLink `json:"Elements"`
+	Elements []common.Link `json:"Elements"`
 }
 
 //GetResource fetches a resource from database using table and key

@@ -559,9 +559,9 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(subscriptionPost evm
 
 		}
 		// filling origin resource
-		subscriptionPost.OriginResources = []evmodel.OdataIDLink{
-			evmodel.OdataIDLink{
-				OdataID: originResource,
+		subscriptionPost.OriginResources = []common.Link{
+			{
+				Oid: originResource,
 			},
 		}
 		postBody, _ := json.Marshal(subscriptionPost)
@@ -695,7 +695,7 @@ func (e *ExternalInterfaces) DeleteAggregateSubscriptions(req *eventsproto.Event
 	return nil
 }
 
-func getAggregateList(origin string, sessionToken string) ([]evmodel.OdataIDLink, error) {
+func getAggregateList(origin string, sessionToken string) ([]common.Link, error) {
 	conn, err := services.ODIMService.Client(services.Aggregator)
 	if err != nil {
 		l.Log.Error("Error while Event ", err.Error())
@@ -726,7 +726,7 @@ func (e *ExternalInterfaces) resubscribeAggregateSubscription(subscriptionPost e
 		return nil
 	}
 	for _, system := range systems {
-		err = e.subscribe(subscriptionPost, system.OdataID, deleteflag, sessionToken)
+		err = e.subscribe(subscriptionPost, system.Oid, deleteflag, sessionToken)
 		if err != nil {
 			return err
 		}

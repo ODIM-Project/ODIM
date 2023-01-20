@@ -52,9 +52,9 @@ func TestCreateEventSubscriptionForAgregate(t *testing.T) {
 		"SubscriptionType":     "RedfishEvent",
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
-		"OriginResources": []evmodel.OdataIDLink{
-			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da"},
-			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da2"},
+		"OriginResources": []common.Link{
+			{Oid: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da"},
+			{Oid: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da2"},
 		},
 	}
 	postBody, _ := json.Marshal(&SubscriptionReq)
@@ -76,9 +76,9 @@ func TestCreateEventSubscriptionForAgregate(t *testing.T) {
 		"SubscriptionType":     "RedfishEvent",
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
-		"OriginResources": []evmodel.OdataIDLink{
-			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da"},
-			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da2"},
+		"OriginResources": []common.Link{
+			{Oid: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da"},
+			{Oid: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da2"},
 		},
 		"DeliveryRetryPolicy": "TerminateAfterRetries",
 	}
@@ -101,9 +101,9 @@ func TestCreateEventSubscriptionForAgregate(t *testing.T) {
 		"SubscriptionType":     "RedfishEvent",
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
-		"OriginResources": []evmodel.OdataIDLink{
-			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da"},
-			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da2"},
+		"OriginResources": []common.Link{
+			{Oid: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da"},
+			{Oid: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da2"},
 		},
 		"DeliveryRetryPolicy": "TerminateAfterRetries1",
 	}
@@ -134,9 +134,9 @@ func TestCreateEventSubscription(t *testing.T) {
 		"SubscriptionType":     "RedfishEvent",
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
-		"OriginResources": []evmodel.OdataIDLink{
-			{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-			{OdataID: "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
+		"OriginResources": []common.Link{
+			{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			{Oid: "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
 		},
 	}
 	postBody, _ := json.Marshal(&SubscriptionReq)
@@ -174,8 +174,8 @@ func TestCreateEventSubscription(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// test another subscription with other OriginResources
-	SubscriptionReq["OriginResources"] = []evmodel.OdataIDLink{
-		{OdataID: "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
+	SubscriptionReq["OriginResources"] = []common.Link{
+		{Oid: "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
 	}
 	SubscriptionReq["Destination"] = "https://10.10.10.25:8070/Destination3"
 	SubscriptionReq["EventTypes"] = []string{"Alert"}
@@ -189,7 +189,7 @@ func TestCreateEventSubscription(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// test case for collection
-	SubscriptionReq["OriginResources"] = []evmodel.OdataIDLink{}
+	SubscriptionReq["OriginResources"] = []common.Link{}
 	SubscriptionReq["Destination"] = "https://10.10.10.25:8070/Destination4"
 	postBody, _ = json.Marshal(&SubscriptionReq)
 
@@ -215,9 +215,9 @@ func TestCreateEventSubscriptionwithHostName(t *testing.T) {
 		"SubscriptionType":     "RedfishEvent",
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
-		"OriginResources": []evmodel.OdataIDLink{
+		"OriginResources": []common.Link{
 			{
-				OdataID: "/redfish/v1/Systems/abab09db-e7a9-4352-8df0-5e41315a2a4c.1",
+				Oid: "/redfish/v1/Systems/abab09db-e7a9-4352-8df0-5e41315a2a4c.1",
 			},
 		},
 	}
@@ -248,8 +248,8 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		"SubscriptionType":     "RedfishEvent",
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
-		"OriginResources": []evmodel.OdataIDLink{
-			{OdataID: "/redfish/v1/Systems/d72dade0-c35a-984c-4859-1108132d72da.1"},
+		"OriginResources": []common.Link{
+			{Oid: "/redfish/v1/Systems/d72dade0-c35a-984c-4859-1108132d72da.1"},
 		},
 	}
 
@@ -399,8 +399,8 @@ func TestCreateDefaultEventSubscription(t *testing.T) {
 		"SubscriptionType":     "RedfishEvent",
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
-		"OriginResources": []evmodel.OdataIDLink{
-			{OdataID: "/redfish/v1/Systems"},
+		"OriginResources": []common.Link{
+			{Oid: "/redfish/v1/Systems"},
 		},
 	}
 
@@ -441,8 +441,8 @@ func TestFabricEventSubscription(t *testing.T) {
 		"SubscriptionType":     "RedfishEvent",
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
-		"OriginResources": []evmodel.OdataIDLink{
-			{OdataID: "/redfish/v1/Fabrics/6d4a0a66-7efa-578e-83cf-44dc68d2874e"},
+		"OriginResources": []common.Link{
+			{Oid: "/redfish/v1/Fabrics/6d4a0a66-7efa-578e-83cf-44dc68d2874e"},
 		},
 	}
 
@@ -459,8 +459,8 @@ func TestFabricEventSubscription(t *testing.T) {
 	// Negative test cases
 
 	// Invalid Fabric ID
-	SubscriptionReq["OriginResources"] = []evmodel.OdataIDLink{
-		{OdataID: "/redfish/v1/Fabrics/11081de0-4859-984c-c35a-6c50732d72da"},
+	SubscriptionReq["OriginResources"] = []common.Link{
+		{Oid: "/redfish/v1/Fabrics/11081de0-4859-984c-c35a-6c50732d72da"},
 	}
 	SubscriptionReq["Destination"] = "https://10.10.10.24:8070/Destination2"
 	postBody, _ = json.Marshal(&SubscriptionReq)
@@ -476,8 +476,8 @@ func TestFabricEventSubscription(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// Unauthorized token
-	SubscriptionReq["OriginResources"] = []evmodel.OdataIDLink{
-		{OdataID: "/redfish/v1/Fabrics/48591de0-4859-1108-c35a-6c50110872da"},
+	SubscriptionReq["OriginResources"] = []common.Link{
+		{Oid: "/redfish/v1/Fabrics/48591de0-4859-1108-c35a-6c50110872da"},
 	}
 	SubscriptionReq["Destination"] = "https://10.10.10.24:8070/Destination4"
 	postBody, _ = json.Marshal(&SubscriptionReq)
@@ -613,8 +613,8 @@ func TestExternalInterfaces_createFabricSubscription(t *testing.T) {
 		SubscriptionType:     "RedfishEvent",
 		EventFormatType:      "Event",
 		SubordinateResources: true,
-		OriginResources: []evmodel.OdataIDLink{
-			{OdataID: "/redfish/v1/Systems"},
+		OriginResources: []common.Link{
+			{Oid: "/redfish/v1/Systems"},
 		},
 	}
 

@@ -259,10 +259,10 @@ func mockGetSessionUserNamefunc(sessionToken string) (string, error) {
 	}
 	return sessionToken, nil
 }
-func mockUpdateTask(common.TaskData) error {
+func mockUpdateTask(context.Context, common.TaskData) error {
 	return &errors.Error{}
 }
-func mockCreateTaskfunc(sessionToken string) (string, error) {
+func mockCreateTaskfunc(ctx context.Context, sessionToken string) (string, error) {
 	if sessionToken == "invalidTask" {
 		return "", &errors.Error{}
 	}

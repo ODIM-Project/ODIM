@@ -104,10 +104,10 @@ func (e *ExternalInterface) SetDefaultBootOrder(ctx context.Context, taskID stri
 			if i < len(setOrderReq.Systems)-1 {
 				percentComplete := int32(((i + 1) / len(setOrderReq.Systems)) * 100)
 				var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-				err := e.UpdateTask(task)
+				err := e.UpdateTask(ctx, task)
 				if err != nil && err.Error() == common.Cancelling {
 					task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
-					e.UpdateTask(task)
+					e.UpdateTask(ctx, task)
 					runtime.Goexit()
 				}
 
@@ -143,10 +143,10 @@ func (e *ExternalInterface) SetDefaultBootOrder(ctx context.Context, taskID stri
 	resp.Body = args.CreateGenericErrorResponse()
 
 	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
-	err = e.UpdateTask(task)
+	err = e.UpdateTask(ctx, task)
 	if err != nil && err.Error() == common.Cancelling {
 		task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
-		e.UpdateTask(task)
+		e.UpdateTask(ctx, task)
 		runtime.Goexit()
 	}
 	return resp
@@ -155,7 +155,7 @@ func (e *ExternalInterface) SetDefaultBootOrder(ctx context.Context, taskID stri
 
 func (e *ExternalInterface) collectAndSetDefaultOrder(ctx context.Context, taskID, serverURI, reqJSON string, subTaskChannel chan<- int32, sessionUserName string) {
 	var resp response.RPC
-	subTaskURI, err := e.CreateChildTask(sessionUserName, taskID)
+	subTaskURI, err := e.CreateChildTask(ctx, sessionUserName, taskID)
 	if err != nil {
 		subTaskChannel <- http.StatusInternalServerError
 		l.LogWithFields(ctx).Error("error while trying to create sub task")
@@ -266,10 +266,10 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(ctx context.Context, taskI
 	percentComplete = 100
 	subTaskChannel <- int32(getResponse.StatusCode)
 	var task = fillTaskData(subTaskID, serverURI, reqJSON, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
-	err = e.UpdateTask(task)
+	err = e.UpdateTask(ctx, task)
 	if err != nil && err.Error() == common.Cancelling {
 		var task = fillTaskData(subTaskID, serverURI, reqJSON, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
-		err = e.UpdateTask(task)
+		err = e.UpdateTask(ctx, task)
 	}
 	return
 }

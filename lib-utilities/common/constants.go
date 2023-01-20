@@ -160,6 +160,7 @@ const (
 	ActionName    = "actionname"
 	ActionID      = "actionid"
 	ProcessName   = "processname"
+	RequestBody   = "requestbody"
 	// Below fields define Service Name
 	ManagerService     = "svc-managers"
 	AccountService     = "svc-account"
@@ -167,6 +168,7 @@ const (
 	SessionService     = "svc-account-session"
 	ApiService         = "svc-api"
 	UpdateService      = "svc-update"
+	TaskService        = "svc-task"
 	AggregationService = "svc-aggregation"
 	// DefaultThreadID to be used for apis
 	DefaultThreadID = "0"
@@ -181,6 +183,8 @@ const (
 	StartRequest                           = "StartRequest"
 	SimpleUpdate                           = "SimpleUpdate"
 	StartUpdate                            = "StartUpdate"
+	OverWriteCompletedTaskUtil             = "OverWriteCompletedTaskUtil"
+	AsyncTaskDelete                        = "AsyncTaskDelete"
 	ResetAggregates                        = "Reset-Aggregates"
 	ResetAggregate                         = "Reset-Aggregate"
 	SetBootOrder                           = "SettingBootOrder"

@@ -185,7 +185,7 @@ func getSessionUserNameForTesting(sessionToken string) (string, error) {
 	return "someUserName", nil
 }
 
-func createTaskForTesting(sessionUserName string) (string, error) {
+func createTaskForTesting(ctx context.Context, sessionUserName string) (string, error) {
 	if sessionUserName == "noTaskUser" {
 		return "", fmt.Errorf("no details")
 	} else if sessionUserName == "taskWithSlashUser" {
@@ -198,7 +198,7 @@ func mockSubscribeEMB(pluginID string, list []string) error {
 	return nil
 }
 
-func mockCreateChildTask(sessionID, taskID string) (string, error) {
+func mockCreateChildTask(ctx context.Context, sessionID, taskID string) (string, error) {
 	switch taskID {
 	case "taskWithoutChild":
 		return "", fmt.Errorf("subtask cannot created")
@@ -224,7 +224,7 @@ func mockSystemData(systemID string) error {
 	return nil
 }
 
-func mockUpdateTask(task common.TaskData) error {
+func mockUpdateTask(ctx context.Context, task common.TaskData) error {
 	if task.TaskID == "invalid" {
 		return fmt.Errorf(common.Cancelling)
 	}

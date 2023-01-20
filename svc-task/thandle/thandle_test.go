@@ -83,7 +83,7 @@ func mockCreateTaskUtil(ctx context.Context, userName string) (string, error) {
 	return "/redfish/v1/TaskService/Tasks/validTaskID", nil
 }
 
-func mockDeleteTaskFromDBModel(task *tmodel.Task) error {
+func mockDeleteTaskFromDBModel(ctx context.Context, task *tmodel.Task) error {
 
 	return nil
 }

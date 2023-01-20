@@ -55,9 +55,7 @@ type TasksRPC struct {
 	TransactionModel                 func(ctx context.Context, key string, cb func(context.Context, string) error) error
 	OverWriteCompletedTaskUtilHelper func(ctx context.Context, userName string) error
 	CreateTaskUtilHelper             func(ctx context.Context, userName string) (string, error)
-	GetCompletedTasksIndexModel      func(ctx context.Context, userName string) ([]string, error)
 	DeleteTaskFromDBModel            func(ctx context.Context, t *tmodel.Task) error
-	DeleteTaskIndex                  func(ctx context.Context, taskID string) error
 	UpdateTaskQueue                  func(t *tmodel.Task)
 	PersistTaskModel                 func(ctx context.Context, t *tmodel.Task, db common.DbType) error
 	ValidateTaskUserNameModel        func(ctx context.Context, userName string) error
@@ -80,7 +78,6 @@ func (t *TaskCollectionData) getTaskFromCollectionData(taskID string, percentCom
 			delete(t.TaskCollection, taskID)
 			return false
 		}
-
 	}
 	t.TaskCollection[taskID] = int32(percentComplete)
 
@@ -101,15 +98,6 @@ func (ts *TasksRPC) CreateTask(ctx context.Context, req *taskproto.CreateTaskReq
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.TaskService, podName)
 	l.LogWithFields(ctx).Debugf("Incoming request to create task for user %v", req.UserName)
-	go func() {
-		var threadID int = 1
-		ctxt := context.WithValue(ctx, common.ThreadName, common.OverWriteCompletedTaskUtil)
-		ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
-		err := ts.OverWriteCompletedTaskUtilHelper(ctx, req.UserName)
-		if err != nil {
-			l.LogWithFields(ctx).Error("error: failed to over write the completed task: " + err.Error())
-		}
-	}()
 	taskURI, err := ts.CreateTaskUtilHelper(ctx, req.UserName)
 	if err != nil {
 		l.LogWithFields(ctx).Error("failed to create task: " + err.Error())
@@ -117,35 +105,6 @@ func (ts *TasksRPC) CreateTask(ctx context.Context, req *taskproto.CreateTaskReq
 	rsp.TaskURI = taskURI
 	l.LogWithFields(ctx).Debugf("Outgoing response for create task request : %v", taskURI)
 	return &rsp, err
-}
-
-//OverWriteCompletedTaskUtil is helper method to find and delete eligible completed task
-func (ts *TasksRPC) OverWriteCompletedTaskUtil(ctx context.Context, userName string) error {
-	var taskID string
-
-	taskList, err := ts.GetCompletedTasksIndexModel(ctx, userName)
-	if err != nil {
-		l.LogWithFields(ctx).Error("failed to delete eligible completed task : error while getting the completed task: " + err.Error())
-		return err
-	}
-	inputTimeStringformat := "2006-01-02 15:04:05 +0000 UTC"
-	for _, value := range taskList {
-		endTimeString := (strings.Split(value, "::"))[1]
-		endTime, _ := time.Parse(inputTimeStringformat, endTimeString)
-		timeNow := time.Now().UnixNano()
-		elapsedTimeNano := timeNow - endTime.UnixNano()
-		timeToLeaveString, _ := time.ParseDuration("24h")
-		timeToLeaveNano := timeToLeaveString.Nanoseconds()
-		taskID = (strings.Split(value, "::"))[2]
-		if elapsedTimeNano > timeToLeaveNano {
-			err = ts.deleteCompletedTask(ctx, taskID)
-			if err != nil {
-				l.LogWithFields(ctx).Error("failed to delete eligible completed task: " + err.Error())
-
-			}
-		}
-	}
-	return nil
 }
 
 func (ts *TasksRPC) deleteCompletedTask(ctx context.Context, taskID string) error {
@@ -165,11 +124,6 @@ func (ts *TasksRPC) deleteCompletedTask(ctx context.Context, taskID string) erro
 		}
 	}
 	err = ts.DeleteTaskFromDBModel(ctx, task)
-	if err != nil {
-		l.LogWithFields(ctx).Errorf("error while deleting the main task %s: %s", taskID, err.Error())
-		return err
-	}
-	err = ts.DeleteTaskIndex(ctx, taskID)
 	if err != nil {
 		l.LogWithFields(ctx).Errorf("error while deleting the main task %s: %s", taskID, err.Error())
 		return err

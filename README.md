@@ -482,7 +482,6 @@ The following table lists the software components and versions that are compatib
     | fabrics               | 3.1         | fabrics.tar                  |
     | managers              | 4.0         | managers.tar                 |
     | systems               | 4.0         | systems.tar                  |
-    | composition-service   | 1.0         | composition-service.tar      |
     | licenses              | 1.0         | licenses.tar                 |
     | task                  | 3.1         | task.tar                     |
     | update                | 3.1         | update.tar                   |
@@ -497,7 +496,7 @@ The following table lists the software components and versions that are compatib
     | urplugin              | 3.1         | urplugin.tar                 |
     | grfplugin             | 3.1         | grfplugin.tar                |
     | telemetry             | 2.1         | telemetry.tar                |
-
+    
 3. To install the Docker images of all services on the cluster nodes, create a directory called `odimra_images` on the deployment node and copy each tar archive to this directory. 
     For example: `cp /home/<user>/ODIM/*.tar /home/<user>/odimra_images`
 

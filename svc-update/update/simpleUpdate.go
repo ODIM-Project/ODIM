@@ -51,7 +51,7 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 	var percentComplete int32
 	targetURI := "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	var updateRequest SimpleUpdateRequest
 	err := json.Unmarshal(req.RequestBody, &updateRequest)
@@ -119,10 +119,10 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 			if i < len(targetList)-1 {
 				percentComplete := int32(((i + 1) / len(targetList)) * 100)
 				var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-				err := e.External.UpdateTask(task)
+				err := e.External.UpdateTask(ctx, task)
 				if err != nil && err.Error() == common.Cancelling {
 					task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
-					e.External.UpdateTask(task)
+					e.External.UpdateTask(ctx, task)
 					runtime.Goexit()
 				}
 
@@ -162,10 +162,10 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 	resp.Body = args.CreateGenericErrorResponse()
 
 	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
-	err = e.External.UpdateTask(task)
+	err = e.External.UpdateTask(ctx, task)
 	if err != nil && err.Error() == common.Cancelling {
 		task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
-		e.External.UpdateTask(task)
+		e.External.UpdateTask(ctx, task)
 		runtime.Goexit()
 	}
 	return resp
@@ -173,10 +173,10 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 
 func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serverURI, updateRequestBody string, applyTime string, subTaskChannel chan<- int32, sessionUserName string) {
 	var resp response.RPC
-	subTaskURI, err := e.External.CreateChildTask(sessionUserName, taskID)
+	subTaskURI, err := e.External.CreateChildTask(ctx, sessionUserName, taskID)
 	if err != nil {
 		subTaskChannel <- http.StatusInternalServerError
-		l.LogWithFields(ctx).Warn("Unable to create sub task")
+		l.LogWithFields(ctx).Warn("Unable to create sub task: " + err.Error())
 		return
 	}
 	var subTaskID string
@@ -187,7 +187,7 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 		subTaskID = strArray[len(strArray)-1]
 	}
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: serverURI, UpdateTask: e.External.UpdateTask, TaskRequest: updateRequestBody}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: subTaskID, TargetURI: serverURI, UpdateTask: e.External.UpdateTask, TaskRequest: updateRequestBody}
 
 	var percentComplete int32
 	target, gerr := e.External.GetTarget(uuid)
@@ -297,10 +297,10 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 
 	subTaskChannel <- int32(getResponse.StatusCode)
 	var task = fillTaskData(subTaskID, serverURI, updateRequestBody, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
-	err = e.External.UpdateTask(task)
+	err = e.External.UpdateTask(ctx, task)
 	if err != nil && err.Error() == common.Cancelling {
 		var task = fillTaskData(subTaskID, serverURI, updateRequestBody, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
-		e.External.UpdateTask(task)
+		e.External.UpdateTask(ctx, task)
 	}
 	return
 }

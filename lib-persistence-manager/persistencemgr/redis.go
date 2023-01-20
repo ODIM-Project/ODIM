@@ -779,7 +779,7 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 // AddExpiryForTasks will create the expiry time using pipelined transaction
 /* AddExpiryForTasks takes the taskID  as input:
  */
-func (c *Conn) AddExpiryForTasks(taskKeys map[string]int8) *errors.Error {
+func (c *Conn) AddExpiryForTasks(taskKeys map[string]int64) *errors.Error {
 	var partialFailure bool = false
 	c.WriteConn.Send("MULTI")
 	members := getSortedMapKeys(taskKeys)

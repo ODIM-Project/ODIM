@@ -33,8 +33,8 @@ import (
 type Systems struct {
 	IsAuthorizedRPC    func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
 	GetSessionUserName func(string) (string, error)
-	CreateTask         func(string) (string, error)
-	UpdateTask         func(common.TaskData) error
+	CreateTask         func(ctx context.Context, sessionUserName string) (string, error)
+	UpdateTask         func(ctx context.Context, task common.TaskData) error
 	EI                 *systems.ExternalInterface
 }
 
@@ -141,7 +141,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	}
 
 	// Task Service using RPC and get the taskID
-	taskURI, err := s.CreateTask(sessionUserName)
+	taskURI, err := s.CreateTask(ctx, sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))

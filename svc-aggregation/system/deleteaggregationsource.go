@@ -42,11 +42,11 @@ func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID
 		PercentComplete: 0,
 		HTTPMethod:      http.MethodDelete,
 	}
-	err := e.UpdateTask(task)
+	err := e.UpdateTask(ctx, task)
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
-		e.UpdateTask(common.TaskData{
+		e.UpdateTask(ctx, common.TaskData{
 			TaskID:          taskID,
 			TargetURI:       targetURI,
 			TaskState:       common.Cancelled,
@@ -57,7 +57,7 @@ func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID
 		go runtime.Goexit()
 	}
 	data := e.DeleteAggregationSource(ctx, req)
-	err = e.UpdateTask(common.TaskData{
+	err = e.UpdateTask(ctx, common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       targetURI,
 		TaskState:       common.Completed,
@@ -67,7 +67,7 @@ func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID
 		HTTPMethod:      http.MethodDelete,
 	})
 	if err != nil && (err.Error() == common.Cancelling) {
-		e.UpdateTask(common.TaskData{
+		e.UpdateTask(ctx, common.TaskData{
 			TaskID:          taskID,
 			TargetURI:       targetURI,
 			TaskState:       common.Cancelled,

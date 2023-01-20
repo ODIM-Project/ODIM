@@ -282,7 +282,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.ComputerSystemReset(ctx, tt.args.req, "task123453", "admin"); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.p.ComputerSystemReset(tt.args.req, "task123453", "admin"); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PluginContact.ComputerSystemReset() = %v, want %v", got, tt.want)
 			}
 		})

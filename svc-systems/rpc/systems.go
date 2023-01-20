@@ -183,7 +183,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	var threadID int = 1
 	ctxt := context.WithValue(ctx, common.ThreadName, common.ComputerSystemReset)
 	ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
-	go pc.ComputerSystemReset(ctx, req, taskID, sessionUserName)
+	go pc.ComputerSystemReset(req, taskID, sessionUserName)
 	threadID++
 
 	l.LogWithFields(ctx).Debugf("outgoing ComputerSystemReset response: %s", string(resp.Body))

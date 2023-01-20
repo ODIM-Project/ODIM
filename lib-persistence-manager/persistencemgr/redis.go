@@ -16,6 +16,7 @@
 package persistencemgr
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -609,7 +610,7 @@ func (p *ConnPool) GetAllMatchingDetails(table, pattern string) ([]string, *erro
 }
 
 // Transaction is to do a atomic operation using optimistic lock
-func (p *ConnPool) Transaction(key string, cb func(string) error) *errors.Error {
+func (p *ConnPool) Transaction(ctx context.Context, key string, cb func(context.Context, string) error) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
 		return errors.PackError(errors.UndefinedErrorType, "error while trying to Write Transaction data: WritePool is nil")
@@ -624,7 +625,7 @@ func (p *ConnPool) Transaction(key string, cb func(string) error) *errors.Error 
 		return errors.PackError(errors.UndefinedErrorType, err)
 	}
 	writeConn.Send("MULTI")
-	if err := cb(key); err != nil {
+	if err := cb(ctx, key); err != nil {
 		return errors.PackError(errors.UndefinedErrorType, err)
 	}
 	_, err := writeConn.Do("EXEC")

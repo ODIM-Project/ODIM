@@ -15,6 +15,7 @@
 package common
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -35,10 +36,11 @@ type TaskData struct {
 
 // TaskUpdateInfo holds the info for updating a task during error response
 type TaskUpdateInfo struct {
+	Context     context.Context
 	TaskID      string
 	TargetURI   string
 	TaskRequest string
-	UpdateTask  func(TaskData) error
+	UpdateTask  func(context.Context, TaskData) error
 }
 
 // GeneralError will create the error response and update task if required
@@ -72,7 +74,7 @@ func GeneralError(statusCode int32, statusMsg, errMsg string, msgArgs []interfac
 			PercentComplete: 100,
 			HTTPMethod:      http.MethodPost,
 		}
-		t.UpdateTask(task)
+		t.UpdateTask(t.Context, task)
 	}
 	return resp
 }

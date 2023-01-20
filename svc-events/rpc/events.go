@@ -229,7 +229,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 	}
 	// Create the task and get the taskID
 	// Contact Task Service using RPC and get the taskID
-	taskURI, err := e.Connector.CreateTask(sessionUserName)
+	taskURI, err := e.Connector.CreateTask(ctx, sessionUserName)
 	if err != nil {
 		// print err here as we are unbale to contact svc-task service
 		errorMessage := "error while trying to create the task: " + err.Error()

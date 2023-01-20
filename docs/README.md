@@ -5090,7 +5090,7 @@ curl -i -X POST \
       }
    ]
   },
-   "DisplayName":"name1"
+   "DisplayName":"<volume_name>"
    "@Redfish.OperationApplyTime":"OnReset"
 }
 ```

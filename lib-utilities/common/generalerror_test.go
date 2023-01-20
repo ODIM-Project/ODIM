@@ -15,6 +15,7 @@
 package common
 
 import (
+	"context"
 	"net/http"
 	"reflect"
 	"testing"
@@ -25,7 +26,7 @@ import (
 // this flag is for checking whether the function call actually happened
 var functionCallFlag bool
 
-func mockUpdateTask(task TaskData) error {
+func mockUpdateTask(ctx context.Context, task TaskData) error {
 	functionCallFlag = true
 	return nil
 }

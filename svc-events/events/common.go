@@ -133,8 +133,9 @@ func removeOdataIDfromOriginResources(originResources []common.Link) []string {
 
 // remove duplicate elements in string slice.
 // Takes string slice and length, and updates the same with new values
-func removeDuplicatesFromSlice(slc *[]string, slcLen *int) {
-	if *slcLen > 1 {
+func removeDuplicatesFromSlice(slc *[]string) {
+
+	if len(*slc) > 1 {
 		uniqueElementsDs := make(map[string]bool)
 		var uniqueElementsList []string
 		for _, element := range *slc {
@@ -145,12 +146,10 @@ func removeDuplicatesFromSlice(slc *[]string, slcLen *int) {
 		}
 		// length of uniqueElementsList will be less than passed string slice,
 		// only if duplicates existed, so will assign slc with modified list and update length
-		if len(uniqueElementsList) < *slcLen {
+		if len(uniqueElementsList) < len(*slc) {
 			*slc = uniqueElementsList
-			*slcLen = len(*slc)
 		}
 	}
-	return
 }
 
 // removeElement will remove the element from the slice return

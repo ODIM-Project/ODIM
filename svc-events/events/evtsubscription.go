@@ -141,14 +141,13 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 
 	// remove odataid in the originresources
 	originResources := removeOdataIDfromOriginResources(postRequest.OriginResources)
-	originResourcesCount := len(originResources)
 
 	// check and remove if duplicate OriginResources exist in the request
-	removeDuplicatesFromSlice(&originResources, &originResourcesCount)
+	removeDuplicatesFromSlice(&originResources)
 
 	// If origin resource is nil then subscribe to all collection
 	isDefaultOriginResource := false
-	if originResourcesCount == 0 {
+	if len(originResources) == 0 {
 		isDefaultOriginResource = true
 		originResources = []string{
 			"/redfish/v1/Systems",
@@ -157,10 +156,10 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 			"/redfish/v1/Managers",
 			"/redfish/v1/TaskService/Tasks",
 		}
-		originResourcesCount = len(originResources)
+
 	}
 	var collectionList = make([]string, 0)
-	subTaskChan := make(chan int32, originResourcesCount)
+	subTaskChan := make(chan int32, len(originResources))
 	taskCollectionWG.Add(1)
 	bubbleUpStatusCode := int32(http.StatusCreated)
 	go func() {
@@ -174,8 +173,8 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 			if statusCode > bubbleUpStatusCode {
 				bubbleUpStatusCode = statusCode
 			}
-			if i <= originResourcesCount {
-				percentComplete = int32((i*100)/originResourcesCount - 1)
+			if i <= len(originResources) {
+				percentComplete = int32((i*100)/len(originResources) - 1)
 				if resp.StatusCode == 0 {
 					resp.StatusCode = http.StatusAccepted
 				}
@@ -620,12 +619,9 @@ func (e *ExternalInterfaces) IsEventsSubscribed(token, origin string, subscripti
 	}
 	// updating the subscription information
 
-	eventTypesCount := len(eventTypes)
-	messageIDsCount := len(messageIDs)
-	resourceTypesCount := len(resourceTypes)
-	removeDuplicatesFromSlice(&eventTypes, &eventTypesCount)
-	removeDuplicatesFromSlice(&messageIDs, &messageIDsCount)
-	removeDuplicatesFromSlice(&resourceTypes, &resourceTypesCount)
+	removeDuplicatesFromSlice(&eventTypes)
+	removeDuplicatesFromSlice(&messageIDs)
+	removeDuplicatesFromSlice(&resourceTypes)
 	subscription.EventTypes = eventTypes
 	subscription.MessageIds = messageIDs
 	subscription.ResourceTypes = resourceTypes
@@ -939,13 +935,10 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 			resourceTypes = []string{}
 		}
 	}
-	eventTypesCount := len(eventTypes)
-	messageIDsCount := len(messageIDs)
-	resourceTypesCount := len(resourceTypes)
 
-	removeDuplicatesFromSlice(&eventTypes, &eventTypesCount)
-	removeDuplicatesFromSlice(&messageIDs, &messageIDsCount)
-	removeDuplicatesFromSlice(&resourceTypes, &resourceTypesCount)
+	removeDuplicatesFromSlice(&eventTypes)
+	removeDuplicatesFromSlice(&messageIDs)
+	removeDuplicatesFromSlice(&resourceTypes)
 
 	subordinateFlag := false
 	if strings.Contains(origin, "Fabrics") {
@@ -1440,12 +1433,9 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 		}
 	}
 	// updating the subscription information
-	eventTypesCount := len(eventTypes)
-	messageIDsCount := len(messageIDs)
-	resourceTypesCount := len(resourceTypes)
-	removeDuplicatesFromSlice(&eventTypes, &eventTypesCount)
-	removeDuplicatesFromSlice(&messageIDs, &messageIDsCount)
-	removeDuplicatesFromSlice(&resourceTypes, &resourceTypesCount)
+	removeDuplicatesFromSlice(&eventTypes)
+	removeDuplicatesFromSlice(&messageIDs)
+	removeDuplicatesFromSlice(&resourceTypes)
 	subscription.EventTypes = eventTypes
 	subscription.MessageIds = messageIDs
 	subscription.ResourceTypes = resourceTypes

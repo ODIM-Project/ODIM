@@ -301,12 +301,9 @@ func (e *ExternalInterfaces) deleteAndReSubscribetoEvents(evtSubscription evmode
 			}
 		}
 
-		eventTypesCount := len(eventTypes)
-		messageIDsCount := len(messageIDs)
-		resourceTypesCount := len(resourceTypes)
-		removeDuplicatesFromSlice(&eventTypes, &eventTypesCount)
-		removeDuplicatesFromSlice(&messageIDs, &messageIDsCount)
-		removeDuplicatesFromSlice(&resourceTypes, &resourceTypesCount)
+		removeDuplicatesFromSlice(&eventTypes)
+		removeDuplicatesFromSlice(&messageIDs)
+		removeDuplicatesFromSlice(&resourceTypes)
 		var httpHeadersSlice = make([]evmodel.HTTPHeaders, 0)
 		httpHeadersSlice = append(httpHeadersSlice, evmodel.HTTPHeaders{ContentType: "application/json"})
 		subscriptionPost := evmodel.EvtSubPost{

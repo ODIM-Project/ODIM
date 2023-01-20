@@ -494,45 +494,35 @@ func TestRmDupEleStrSlc(t *testing.T) {
 	tests := []struct {
 		name  string
 		arg1  []string
-		arg2  int
 		want1 []string
-		want2 int
 	}{
 		{
 			name:  "Empty string slice",
 			arg1:  []string{},
-			arg2:  0,
 			want1: []string{},
-			want2: 0,
 		},
 		{
 			name:  "String slice with single element",
 			arg1:  []string{"1"},
-			arg2:  1,
 			want1: []string{"1"},
-			want2: 1,
 		},
 		{
 			name:  "String slice with no duplicate elements",
 			arg1:  []string{"1", "2", "3", "4", "5"},
-			arg2:  5,
 			want1: []string{"1", "2", "3", "4", "5"},
-			want2: 5,
 		},
 		{
 			name:  "String slice with duplicate elements",
 			arg1:  []string{"1", "2", "3", "4", "5", "5", "4", "3", "2", "1"},
-			arg2:  10,
 			want1: []string{"1", "2", "3", "4", "5"},
-			want2: 5,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			removeDuplicatesFromSlice(&tt.arg1, &tt.arg2)
-			if tt.arg2 != tt.want2 && !reflect.DeepEqual(tt.arg1, tt.want1) {
-				t.Errorf("TestRmDupEleStrSlc got1 = %v, want1 = %v", tt.arg1, tt.want2)
-				t.Errorf("TestRmDupEleStrSlc got2 = %v, want2 = %v", tt.arg2, tt.want2)
+			removeDuplicatesFromSlice(&tt.arg1)
+			if !reflect.DeepEqual(tt.arg1, tt.want1) {
+				t.Errorf("TestRmDupEleStrSlc got1 = %v, want1 = %v", tt.arg1, tt.want1)
+
 			}
 		})
 	}

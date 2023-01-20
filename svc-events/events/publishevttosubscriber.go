@@ -312,7 +312,6 @@ func (e *ExternalInterfaces) postEvent(destination, eventUniqueID string, event 
 		go e.checkUndeliveredEvents(destination)
 		return
 	}
-	fmt.Println("Error while send ", err)
 	undeliveredEventID := destination + ":" + eventUniqueID
 	serr := e.SaveUndeliveredEvents(undeliveredEventID, event)
 	if serr != nil {

@@ -47,8 +47,8 @@ func (f *fabricFactory) getFabricChassisResource(ctx context.Context, rID string
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
 	}
 
+	threadID := 1
 	for _, manager := range managers {
-		threadID := 1
 		ctxt := context.WithValue(ctx, common.ThreadName, common.CollectChassisResource)
 		ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 		go f.getResource(ctx, manager, rID, ch)

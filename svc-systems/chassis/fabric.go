@@ -82,8 +82,8 @@ func (c *sourceProviderImpl) findFabricChassis(ctx context.Context, collection *
 		l.LogWithFields(ctx).Warn("while trying to collect fabric managers details from DB, got " + err.Error())
 		return
 	}
+	threadID := 1
 	for _, manager := range managers {
-		threadID := 1
 		ctxt := context.WithValue(ctx, common.ThreadName, common.GetFabricManagerChassis)
 		ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 		f.wg.Add(1)

@@ -334,7 +334,6 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 			return nil, errors.PackError(errors.UndefinedErrorType, err.Error())
 		}
 	}
-
 	connPools.ReadPool, err = getPool(c.Host, c.Port, c.Password)
 	//Check if any connection error occured
 	if err != nil {

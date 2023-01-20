@@ -106,11 +106,11 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 	eventUniqueID := uuid.NewV4().String()
 	for _, sub := range subscriptions {
 
-		for _, origin := range sub.OriginResources {
-			if sub.Destination != "" {
+		for _, origin := range sub.EventDestination.OriginResources {
+			if sub.EventDestination.Destination != "" {
 				if filterEventsToBeForwarded(sub, message.Events[0], []string{origin}) {
-					l.Log.Info("Destination: " + sub.Destination)
-					go e.postEvent(sub.Destination, eventUniqueID, messageBytes)
+					l.Log.Info("Destination: " + sub.EventDestination.Destination)
+					go e.postEvent(sub.EventDestination.Destination, eventUniqueID, messageBytes)
 				}
 			}
 		}

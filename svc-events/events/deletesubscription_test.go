@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -53,7 +54,7 @@ func TestDeleteEventSubscription(t *testing.T) {
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status Code should be StatusOK")
 	assert.Equal(t, "81de0110-c35a-4859-984c-072d6c5a32d7", data.ID, "ID should be 81de0110-c35a-4859-984c-072d6c5a32d7")
 
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) { return nil, &errors.Error{} }
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) { return nil, &errors.Error{} }
 	resp = pc.DeleteEventSubscriptionsDetails(req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusOK")
 	pc = getMockMethods()
@@ -145,7 +146,7 @@ func TestDeleteEventSubscriptionOnDeletedServer(t *testing.T) {
 	GetIPFromHostNameFunc = func(fqdn string) (string, string) {
 		return evcommon.GetIPFromHostName(fqdn)
 	}
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
 		return nil, &errors.Error{}
 	}
 	resp = pc.DeleteEventSubscriptions(req)
@@ -181,7 +182,7 @@ func TestDeleteEventSubscriptionOnDeletedServer(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusNoContent")
 
 	pc = getMockMethods()
-	pc.DB.UpdateEventSubscription = func(s evmodel.Subscription) error {
+	pc.DB.UpdateEventSubscription = func(s evmodel.SubscriptionResource) error {
 		return &errors.Error{}
 	}
 
@@ -325,41 +326,45 @@ func TestExternalInterfaces_DeleteAggregateSubscriptions(t *testing.T) {
 		AggregateId: "71de0110-c35a-4859-984c-072d6c5a32d9",
 	}
 	pc.DeleteAggregateSubscriptions(&req, true)
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
 
-		return []evmodel.Subscription{
+		return []evmodel.SubscriptionResource{
 			{
-				SubscriptionID:       "71de0110-c35a-4859-984c-072d6c5a32d9",
-				Destination:          "https://localhost:9090/events",
-				Name:                 "Subscription",
-				Location:             "/ODIM/v1/Subscriptions/12345",
-				Context:              "context",
-				EventTypes:           []string{"Alert"},
-				MessageIds:           []string{},
-				ResourceTypes:        []string{},
-				OriginResources:      []string{"/redfish/v1/Fabrics/123456"},
-				Hosts:                []string{"localhost"},
-				SubordinateResources: true,
+				EventDestination: &model.EventDestination{
+					Destination: "https://localhost:9090/events",
+					Name:        "Subscription",
+
+					Context:              "context",
+					EventTypes:           []string{"Alert"},
+					MessageIds:           []string{},
+					ResourceTypes:        []string{},
+					OriginResources:      []string{"/redfish/v1/Fabrics/123456"},
+					SubordinateResources: true,
+				},
+				SubscriptionID: "71de0110-c35a-4859-984c-072d6c5a32d9",
+
+				Hosts: []string{"localhost"},
 			},
 		}, nil
 	}
 	pc.DeleteAggregateSubscriptions(&req, true)
 
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
 
-		return []evmodel.Subscription{
+		return []evmodel.SubscriptionResource{
 			{
-				SubscriptionID:       "71de0110-c35a-4859-984c-072d6c5a32d9",
-				Destination:          "https://localhost:9090/events",
-				Name:                 "Subscription",
-				Location:             "/ODIM/v1/Subscriptions/12345",
-				Context:              "context",
-				EventTypes:           []string{"Alert"},
-				MessageIds:           []string{},
-				ResourceTypes:        []string{},
-				OriginResources:      []string{""},
-				Hosts:                []string{"localhost"},
-				SubordinateResources: true,
+				EventDestination: &model.EventDestination{
+					Destination:          "https://localhost:9090/events",
+					Name:                 "Subscription",
+					Context:              "context",
+					EventTypes:           []string{"Alert"},
+					MessageIds:           []string{},
+					ResourceTypes:        []string{},
+					OriginResources:      []string{""},
+					SubordinateResources: true,
+				},
+				SubscriptionID: "71de0110-c35a-4859-984c-072d6c5a32d9",
+				Hosts:          []string{"localhost"},
 			},
 		}, nil
 	}

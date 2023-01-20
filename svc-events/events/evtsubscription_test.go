@@ -27,6 +27,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 
@@ -562,28 +563,34 @@ func TestExternalInterfaces_UpdateEventSubscriptions(t *testing.T) {
 	assert.Nil(t, res, "there shoud be an error ")
 
 	pc.DB.GetAggregateList = func(hostIP string) ([]string, error) { return []string{"6d4a0a66-7efa-578e-83cf-44dc68d2874e"}, nil }
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
-		return []evmodel.Subscription{
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
+		return []evmodel.SubscriptionResource{
 			{
-				UserName:             "admin",
-				SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d7",
-				Destination:          "https://odim.destination.com:9090/events",
-				Name:                 "Subscription",
-				Location:             "https://odim.2.com/EventService/Subscriptions/1",
-				Context:              "context",
-				EventTypes:           []string{"Alert", "ResourceAdded"},
-				MessageIds:           []string{"IndicatorChanged"},
-				ResourceTypes:        []string{"ComputerSystem"},
-				OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-				Hosts:                []string{"6d4a0a66-7efa-578e-83cf-44dc68d2874e"},
-				SubordinateResources: true,
+				UserName:       "admin",
+				SubscriptionID: "81de0110-c35a-4859-984c-072d6c5a32d7",
+				EventDestination: &model.EventDestination{
+					Destination:          "https://odim.destination.com:9090/events",
+					Name:                 "Subscription",
+					Context:              "context",
+					EventTypes:           []string{"Alert", "ResourceAdded"},
+					MessageIds:           []string{"IndicatorChanged"},
+					ResourceTypes:        []string{"ComputerSystem"},
+					OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+					SubordinateResources: true,
+				},
+
+				Location: "https://odim.2.com/EventService/Subscriptions/1",
+
+				Hosts: []string{"6d4a0a66-7efa-578e-83cf-44dc68d2874e"},
 			},
 		}, nil
 	}
 	res = pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
 	assert.Nil(t, res, "there shoud be an error ")
 
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) { return []evmodel.Subscription{}, errors.New("error") }
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
+		return []evmodel.SubscriptionResource{}, errors.New("error")
+	}
 	res = pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
 	assert.True(t, true, "there shoud be an error ")
 

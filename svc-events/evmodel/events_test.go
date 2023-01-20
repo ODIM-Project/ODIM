@@ -17,9 +17,11 @@ package evmodel
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -563,12 +565,14 @@ func TestSaveEventSubscription(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	sub := Subscription{
-		SubscriptionID:  "1",
-		Destination:     "https://10.10.10.23:8080/destination",
-		Name:            "Event Subscription",
-		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+	sub := SubscriptionResource{
+		SubscriptionID: "1",
+		EventDestination: &model.EventDestination{
+			Destination:     "https://10.10.10.23:8080/destination",
+			Name:            "Event Subscription",
+			EventTypes:      []string{"Alert", "StatusChange"},
+			OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+		},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions : %v\n", cerr.Error())
@@ -583,12 +587,14 @@ func TestSaveEventSubscription_existingData(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	sub := Subscription{
-		SubscriptionID:  "123456",
-		Destination:     "https://10.10.10.23:8080/destination",
-		Name:            "Event Subscription",
-		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+	sub := SubscriptionResource{
+		SubscriptionID: "123456",
+		EventDestination: &model.EventDestination{
+			Destination:     "https://10.10.10.23:8080/destination",
+			Name:            "Event Subscription",
+			EventTypes:      []string{"Alert", "StatusChange"},
+			OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+		},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())
@@ -607,12 +613,13 @@ func TestGetEvtSubscriptions(t *testing.T) {
 		}
 	}()
 
-	sub := Subscription{
-		SubscriptionID:  "1",
-		Destination:     "https://10.10.10.23:8080/destination",
-		Name:            "Event Subscription",
-		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+	sub := SubscriptionResource{
+		SubscriptionID: "1",
+		EventDestination: &model.EventDestination{
+			Destination:     "https://10.10.10.23:8080/destination",
+			Name:            "Event Subscription",
+			EventTypes:      []string{"Alert", "StatusChange"},
+			OriginResources: []string{"/redfish/v1/Systems/uuid.1"}},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())
@@ -623,13 +630,13 @@ func TestGetEvtSubscriptions(t *testing.T) {
 		t.Errorf("Error while getting event subscriptions: %v\n", err.Error())
 	}
 	assert.Equal(t, sub.SubscriptionID, evtSub[0].SubscriptionID, "SubscriptionID should be 1")
-	assert.Equal(t, sub.Destination, evtSub[0].Destination, "Destination should be https://10.10.10.23:8080/destination")
-	assert.Equal(t, sub.Name, evtSub[0].Name, "Name should be Event Subscription")
-	assert.Equal(t, sub.Destination, evtSub[0].Destination, "Destination should be https://10.10.10.23:8080/destination")
-	if !reflect.DeepEqual(sub.EventTypes, evtSub[0].EventTypes) {
+	assert.Equal(t, sub.EventDestination.Destination, evtSub[0].EventDestination.Destination, "Destination should be https://10.10.10.23:8080/destination")
+	assert.Equal(t, sub.EventDestination.Name, evtSub[0].EventDestination.Name, "Name should be Event Subscription")
+	assert.Equal(t, sub.EventDestination.Destination, evtSub[0].EventDestination.Destination, "Destination should be https://10.10.10.23:8080/destination")
+	if !reflect.DeepEqual(sub.EventDestination.EventTypes, evtSub[0].EventDestination.EventTypes) {
 		t.Errorf("Event Types are not same")
 	}
-	if !reflect.DeepEqual(sub.OriginResources, evtSub[0].OriginResources) {
+	if !reflect.DeepEqual(sub.EventDestination.OriginResources, evtSub[0].EventDestination.OriginResources) {
 		t.Errorf("OriginResources are not same")
 	}
 }
@@ -643,12 +650,14 @@ func TestDeleteEvtSubscription(t *testing.T) {
 		}
 	}()
 
-	sub := Subscription{
-		SubscriptionID:  "112345",
-		Destination:     "https://10.10.10.23:8080/destination",
-		Name:            "Event Subscription",
-		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+	sub := SubscriptionResource{
+		SubscriptionID: "112345",
+		EventDestination: &model.EventDestination{
+			Destination:     "https://10.10.10.23:8080/destination",
+			Name:            "Event Subscription",
+			EventTypes:      []string{"Alert", "StatusChange"},
+			OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+		},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())
@@ -670,18 +679,20 @@ func TestUpdateEvtSubscription(t *testing.T) {
 		}
 	}()
 
-	sub := Subscription{
-		SubscriptionID:  "112345",
-		Destination:     "https://10.10.10.23:8080/destination",
-		Name:            "Event Subscription",
-		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+	sub := SubscriptionResource{
+		SubscriptionID: "112345",
+		EventDestination: &model.EventDestination{
+			Destination:     "https://10.10.10.23:8080/destination",
+			Name:            "Event Subscription",
+			EventTypes:      []string{"Alert", "StatusChange"},
+			OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+		},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())
 	}
 
-	sub.Destination = "https://10.10.10.23:8080/destination1"
+	sub.EventDestination.Destination = "https://10.10.10.23:8080/destination1"
 	if err := UpdateEventSubscription(sub); err != nil {
 		t.Errorf("Error while updating event subscriptions: %v\n", err.Error())
 	}
@@ -690,7 +701,7 @@ func TestUpdateEvtSubscription(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error while getting event subscriptions: %v\n", err.Error())
 	}
-	assert.Equal(t, "https://10.10.10.23:8080/destination1", evtSub[0].Destination, "Destination should be https://10.10.10.23:8080/destination1")
+	assert.Equal(t, "https://10.10.10.23:8080/destination1", evtSub[0].EventDestination.Destination, "Destination should be https://10.10.10.23:8080/destination1")
 
 }
 func TestSaveUndeliveredEvents(t *testing.T) {
@@ -796,7 +807,11 @@ func TestDeleteUndeliveredEventsFlag(t *testing.T) {
 
 	GetDbConnection = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) { return nil, &errors.Error{} }
 	_, err = GetUndeliveredEventsFlag("destination")
+
 	assert.NotNil(t, err, "error should be nil")
+	err = DeleteUndeliveredEventsFlag("destination")
+	assert.NotNil(t, err, "error should be not nil")
+
 	GetDbConnection = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
 	}
@@ -1218,17 +1233,230 @@ func TestInvalidDbConnection(t *testing.T) {
 	assert.NotNil(t, "there should be an error ", err1)
 	err1 = DeleteDeviceSubscription("")
 	assert.NotNil(t, "there should be an error ", err1)
-	err1 = SaveEventSubscription(Subscription{})
+	err1 = SaveEventSubscription(SubscriptionResource{})
 	assert.NotNil(t, "there should be an error ", err1)
 	_, err1 = GetEvtSubscriptions("")
 	assert.NotNil(t, "there should be an error ", err1)
 	err1 = DeleteEvtSubscription("")
 	assert.NotNil(t, "there should be an error ", err1)
-	err1 = UpdateEventSubscription(Subscription{})
+	err1 = UpdateEventSubscription(SubscriptionResource{})
 	assert.NotNil(t, "there should be an error ", err1)
 	err1 = SaveUndeliveredEvents("", []byte{})
 	assert.NotNil(t, "there should be an error ", err1)
 	GetDbConnection = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
 	}
+}
+
+func TestGetSliceFromString(t *testing.T) {
+	type args struct {
+		sliceString string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "Positive Test case",
+			args: args{
+				sliceString: "[SystemCollection ManagerCollection]",
+			},
+			want: []string{"SystemCollection", "ManagerCollection"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetSliceFromString(tt.args.sliceString); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetSliceFromString() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetAllEvtSubscriptions(t *testing.T) {
+	config.SetUpMockConfig(t)
+	tests := []struct {
+		name            string
+		want            []string
+		wantErr         bool
+		GetDbConnection func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+	}{{
+		name:            "Invalid Db Connection",
+		want:            []string{},
+		wantErr:         true,
+		GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) { return nil, &errors.Error{} },
+	},
+		{
+			name:    "Positive Test case",
+			want:    []string{},
+			wantErr: false,
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetDbConnection = tt.GetDbConnection
+			_, err := GetAllEvtSubscriptions()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAllEvtSubscriptions() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+}
+
+func TestGetAllDeviceSubscriptions(t *testing.T) {
+	config.SetUpMockConfig(t)
+	tests := []struct {
+		name            string
+		want            []string
+		wantErr         bool
+		GetDbConnection func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+	}{
+		{
+			name:    "Invalid Db connection",
+			want:    []string{},
+			wantErr: true,
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+		},
+		{
+			name:    "Positive Test case",
+			want:    []string{},
+			wantErr: false,
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetDbConnection = tt.GetDbConnection
+			_, err := GetAllDeviceSubscriptions()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAllDeviceSubscriptions() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+}
+
+func TestGetAllAggregates(t *testing.T) {
+	config.SetUpMockConfig(t)
+	tests := []struct {
+		name            string
+		want            []string
+		wantErr         bool
+		GetDbConnection func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+	}{
+		{
+			name:    "Invalid Db connection",
+			want:    []string{},
+			wantErr: true,
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+		},
+		{
+			name:    "Positive Test case",
+			want:    []string{},
+			wantErr: false,
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetDbConnection = tt.GetDbConnection
+			_, err := GetAllAggregates()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAllAggregates() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+}
+
+func TestGetAggregate(t *testing.T) {
+	config.SetUpMockConfig(t)
+	mockAggregateList()
+	type args struct {
+		aggregateURI string
+	}
+	tests := []struct {
+		name            string
+		args            args
+		want            Aggregate
+		GetDbConnection func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+	}{
+		{
+			name: "Valid aggregate URL",
+			args: args{
+				aggregateURI: "/redfish/v1/AggregationService/Aggregates/b98ab95b-9187-442a-817f-b9ec60046575",
+			},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+			want: Aggregate{Elements: []OdataIDLink{
+				{
+					OdataID: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				},
+			}},
+		},
+		{
+			name: "Invalid aggregate URL",
+			args: args{
+				aggregateURI: "/redfish/v1/AggregationService/Aggregates/b98ab95b-9187-442a-817f-b9ec600465",
+			},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
+			want: Aggregate{},
+		},
+		{
+			name: "Invalid db connection ",
+			args: args{
+				aggregateURI: "/redfish/v1/AggregationService/Aggregates/b98ab95b-9187-442a-817f-b9ec60046575",
+			},
+			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+			want: Aggregate{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetDbConnection = tt.GetDbConnection
+			got, _ := GetAggregate(tt.args.aggregateURI)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetAggregate() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+func mockAggregateList() error {
+	connPool, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	aggregate := Aggregate{
+		Elements: []OdataIDLink{
+			{
+				OdataID: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+			},
+		},
+	}
+	err = connPool.Create("Aggregate", "/redfish/v1/AggregationService/Aggregates/b98ab95b-9187-442a-817f-b9ec60046575", aggregate)
+	if err != nil {
+		return fmt.Errorf("error while trying to save Aggregate %v", err.Error())
+	}
+	return nil
 }

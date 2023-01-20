@@ -1722,3 +1722,60 @@ func (p *ConnPool) DeleteAggregateHosts(index, aggregateID string) error {
 	}
 	return nil
 }
+
+// This function retrieves all data for a given index from sorted sets
+// This maybe used to get all event/device subscriptions and aggregate hosts
+func (p *ConnPool) GetAllDataByIndex(index string) ([]string, error) {
+	dList, ferror := p.getAllDataFromSortedList(index)
+	if ferror != nil {
+		return []string{}, ferror
+	}
+	EvtSubscriptions, extracterr := getDataAsStringList(dList)
+	if extracterr != nil {
+		return []string{}, ferror
+	}
+
+	return EvtSubscriptions, nil
+}
+
+//getAllDataFromSortedList function read all member from index
+func (p *ConnPool) getAllDataFromSortedList(index string) (data interface{}, err error) {
+	readConn := p.ReadPool.Get()
+	defer readConn.Close()
+	const cursor float64 = 0
+
+	d, getErr := readConn.Do("ZCOUNT", index, 0, 0)
+	if getErr != nil {
+		return nil, fmt.Errorf("Unable to fetch count of data for index : " +
+			index + " : " +
+			getErr.Error())
+	}
+	countData := d.(int64)
+
+	data, getErr = readConn.Do("ZSCAN", index, cursor, "MATCH",
+		"*", "COUNT", countData)
+	if getErr != nil {
+		return []string{},
+			fmt.Errorf("Error while fetching data for " + index + " : " + getErr.Error())
+	}
+	return data, nil
+}
+
+// getDataAsStringList function convert list of interface into string
+// filter priority value from list
+func getDataAsStringList(d interface{}) ([]string, error) {
+	var dataList []string
+	var err error
+	if len(d.([]interface{})) > 1 {
+		data, err := redis.Strings(d.([]interface{})[1], err)
+		if err != nil {
+			return []string{}, fmt.Errorf("error while marshaling data : " + err.Error())
+		}
+		for i := 0; i < len(data); i++ {
+			if data[i] != "0" {
+				dataList = append(dataList, data[i])
+			}
+		}
+	}
+	return dataList, nil
+}

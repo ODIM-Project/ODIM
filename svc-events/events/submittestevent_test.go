@@ -207,7 +207,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     message,
 	}
-	p.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+	p.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
 		return nil, errors.New("")
 	}
 	resp = p.SubmitTestEvent(req)

@@ -55,14 +55,6 @@ jobs:
         export VM_IP=$(hostname -I | awk '{print $1}')
         export host_name=$(hostname)
         export FQDN="odim.controller.com"
-        
-        export ODIM_SOURCE_PATH=${cur_path}
-        cd ${ODIM_SOURCE_PATH}/
-        time ./build_images.sh
-        echo "the images that got built are :"
-        docker images
-        sleep 30
-        exit 
 
         export SSHPASS=${PASSWD}
         export ODIMRA_USER_ID=2021
@@ -184,6 +176,13 @@ jobs:
         echo "[$(date)] -- INFO  -- configured values in kube_deploy_nodes.yaml"
         cat kube_deploy_nodes.yaml
         echo
+        
+        cd ${ODIM_SOURCE_PATH}/
+        time ./build_images.sh
+        echo "the images that got built are :"
+        sleep 30
+        docker images
+        exit -1
         
         echo "==============updating the docker handler========="
         cd ${ODIM_CONTROLLER_PATH}/kubespray

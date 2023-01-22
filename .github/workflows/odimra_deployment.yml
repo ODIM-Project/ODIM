@@ -235,11 +235,11 @@ jobs:
         for i in `echo lenovoplugin dellplugin grfplugin urplugin licenses update task systems managers telemetry fabrics events api aggregation account-session zookeeper kafka redis etcd`
         do
             echo $i
-            which ctr
             sudo ctr -n=k8s.io images list
             
-            sudo ctr -n=k8s.io image  import  ${i}.tar
+            sudo ctr -n=k8s.io image import ${i}.tar
         done
+        sleep 60
         sudo ctr -n=k8s.io images list
 
         cd ${ODIM_CONTROLLER_PATH}/scripts/

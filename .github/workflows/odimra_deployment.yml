@@ -25,9 +25,7 @@ jobs:
         echo "=========checking docker status================"
         sudo service docker status
         
-        d=`sudo dpkg -l|grep docker`
-        echo "the docker pkgs are $d"
-        
+              
         echo "[$(date)] -- INFO  -- running actions as ${USER}"
         echo
         
@@ -58,7 +56,14 @@ jobs:
         export host_name=$(hostname)
         export FQDN="odim.controller.com"
         
-        exit -1
+        export ODIM_SOURCE_PATH=${cur_path}
+        cd ${ODIM_SOURCE_PATH}/
+        time ./build_images.sh
+        echo "the images that got built are :"
+        docker images
+        sleep 30
+        exit 
+
         export SSHPASS=${PASSWD}
         export ODIMRA_USER_ID=2021
         export ODIMRA_GROUP_ID=2021
@@ -214,20 +219,11 @@ jobs:
         echo "[$(date)] -- INFO  -- list pods in kube-system namespace"
         kubectl get pods -n kube-system -o wide
         echo
-        echo Installing docker service again
-        sudo apt-get install -y docker-ce docker-ce-cli docker-ce-rootless-extras
         
-        sudo systemctl status docker.service
-        
-        echo "=========reloading docker ================"
-        sudo service docker reload
-        echo "=========checking docker status================"
-        sudo service docker status
-        
-        cd ${ODIM_SOURCE_PATH}/
-        time ./build_images.sh
-        echo "the images that got built are :"
-        docker images
+        #cd ${ODIM_SOURCE_PATH}/
+        #time ./build_images.sh
+        #echo "the images that got built are :"
+        #docker images
         
         cd ${ODIM_CONTROLLER_PATH}/scripts/
         python3 odim-controller.py --deploy odimra --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml

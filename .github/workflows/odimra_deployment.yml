@@ -237,8 +237,8 @@ jobs:
             echo $i
             sudo ctr -n=k8s.io images list
             
-            echo sudo ctr -n=k8s.io image import ${ODIM_SOURCE_PATH}/odimra_images/${i}.tar
-            sudo ctr -n=k8s.io image import ${ODIM_SOURCE_PATH}/odimra_images/${i}.tar
+            echo sudo ctr -n=k8s.io images import ${ODIM_SOURCE_PATH}/odimra_images/${i}.tar
+            sudo ctr -n=k8s.io images import ${ODIM_SOURCE_PATH}/odimra_images/${i}.tar
         done
         sleep 60
         sudo ctr -n=k8s.io images list

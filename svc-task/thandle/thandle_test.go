@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/svc-task/tcommon"
@@ -74,14 +73,7 @@ func mockGetTaskStatus(taskID string, db common.DbType) (*tmodel.Task, error) {
 	return &task, nil
 }
 
-func mockOverWriteCompletedTaskUtil(ctx context.Context, userName string) error {
-	if userName != "validUser" {
-		return fmt.Errorf("user does not exist")
-	}
-	return nil
-}
 func mockCreateTaskUtil(ctx context.Context, userName string) (string, error) {
-
 	if userName == "" {
 		return "", fmt.Errorf("error invalid input argument for userName")
 	}
@@ -91,37 +83,7 @@ func mockCreateTaskUtil(ctx context.Context, userName string) (string, error) {
 	return "/redfish/v1/TaskService/Tasks/validTaskID", nil
 }
 
-func mockGetCompletedTasksIndexModel(ctx context.Context, searchKey string) ([]string, error) {
-	var taskList []string
-	switch searchKey {
-	case "validUserWithNoCompletedTasks":
-	case "validUserWithCompletedTasksNotReadyForDelete":
-		elapsedTime := "2h"
-		timeNowNano := time.Now().UnixNano()
-		elapsedHours, _ := time.ParseDuration(elapsedTime)
-		endTimeNano := timeNowNano - elapsedHours.Nanoseconds()
-		endTime := time.Unix(0, endTimeNano).UTC()
-		taskData1 := "validUserWithCompletedTasksNotReadyForDelete::" + endTime.String() + "::1"
-		taskData2 := "validUserWithCompletedTasksNotReadyForDelete::" + endTime.String() + "::2"
-		taskList = append(taskList, taskData1)
-		taskList = append(taskList, taskData2)
-	case "validUserWithCompletedTasksReadyForDelete":
-		elapsedTime := "5h"
-		timeNowNano := time.Now().UnixNano()
-		elapsedHours, _ := time.ParseDuration(elapsedTime)
-		endTimeNano := timeNowNano - elapsedHours.Nanoseconds()
-		endTime := time.Unix(0, endTimeNano).UTC()
-		taskData1 := "validUserWithCompletedTasksNotReadyForDelete::" + endTime.String() + "::CompletedTaskID"
-		taskList = append(taskList, taskData1)
-	}
-	return taskList, nil
-}
-
 func mockDeleteTaskFromDBModel(ctx context.Context, task *tmodel.Task) error {
-	return nil
-}
-
-func mockDeleteTaskIndex(ctx context.Context, task string) error {
 
 	return nil
 }
@@ -810,8 +772,7 @@ func TestTasksRPC_CreateTask(t *testing.T) {
 		{
 			name: "Positive test case, All is well",
 			ts: &TasksRPC{
-				OverWriteCompletedTaskUtilHelper: mockOverWriteCompletedTaskUtil,
-				CreateTaskUtilHelper:             mockCreateTaskUtil,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
 			},
 			args: args{
 				req: &taskproto.CreateTaskRequest{
@@ -827,8 +788,7 @@ func TestTasksRPC_CreateTask(t *testing.T) {
 		{
 			name: "Negative test case, userName is empty",
 			ts: &TasksRPC{
-				OverWriteCompletedTaskUtilHelper: mockOverWriteCompletedTaskUtil,
-				CreateTaskUtilHelper:             mockCreateTaskUtil,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
 			},
 			args: args{
 				req: &taskproto.CreateTaskRequest{
@@ -847,93 +807,6 @@ func TestTasksRPC_CreateTask(t *testing.T) {
 			if rsp, err := tt.ts.CreateTask(mockContext(), tt.args.req); !reflect.DeepEqual(rsp.TaskURI, tt.want.TaskURI) {
 				t.Errorf("TasksRPC.CreateTask() got error = %v, wantError %v", err, tt.wantError)
 				t.Errorf("TasksRPC.CreateTask() got = %v, want %v", rsp, tt.want)
-			}
-		})
-	}
-}
-func TestTasksRPC_OverWriteCompletedTaskUtil(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	common.SetUpMockConfig()
-	task := tmodel.Task{
-		UserName:     "admin",
-		ParentID:     "",
-		ChildTaskIDs: nil,
-		ID:           "CompletedTaskID",
-		TaskState:    "Completed",
-		TaskStatus:   "OK",
-		StartTime:    time.Now(),
-		EndTime:      time.Time{},
-	}
-	task.Name = "Task " + task.ID
-	// Persist in the in-memory DB
-	err := tmodel.PersistTask(mockContext(), &task, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while trying to insert the task details: %v", err)
-		return
-	}
-	fmt.Println(task)
-	type args struct {
-		userName string
-	}
-	tests := []struct {
-		name      string
-		ts        *TasksRPC
-		args      args
-		wantError error
-	}{
-		// TODO: Add test cases.
-		{
-			name: "Positive test case, with valid userName but no completed tasks",
-			ts: &TasksRPC{
-				GetCompletedTasksIndexModel: mockGetCompletedTasksIndexModel,
-				GetTaskStatusModel:          mockGetTaskStatusModel,
-				DeleteTaskFromDBModel:       mockDeleteTaskFromDBModel,
-			},
-			args: args{
-				userName: "validUserWithNoCompletedTasks",
-			},
-			wantError: nil,
-		},
-		{
-			name: "Positive test case, with valid userName with completed tasks, not elizible to delete",
-			ts: &TasksRPC{
-				GetCompletedTasksIndexModel: mockGetCompletedTasksIndexModel,
-				GetTaskStatusModel:          mockGetTaskStatusModel,
-				DeleteTaskFromDBModel:       mockDeleteTaskFromDBModel,
-			},
-			args: args{
-				userName: "validUserWithCompletedTasksNotReadyForDelete",
-			},
-			wantError: nil,
-		},
-		{
-			name: "Positive test case, with valid userName with completed tasks, not    elizible to delete",
-			ts: &TasksRPC{
-				GetCompletedTasksIndexModel: mockGetCompletedTasksIndexModel,
-				GetTaskStatusModel:          mockGetTaskStatusModel,
-				DeleteTaskFromDBModel:       mockDeleteTaskFromDBModel,
-				DeleteTaskIndex:             mockDeleteTaskIndex,
-			},
-			args: args{
-				userName: "validUserWithCompletedTasksReadyForDelete",
-			},
-			wantError: nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.ts.OverWriteCompletedTaskUtil(mockContext(), tt.args.userName); !(err != nil && tt.wantError != nil) && !(err == nil && tt.wantError == nil) {
-				t.Errorf("TasksRPC.OverWriteCompletedTaskUtil() error = %v, wantErr %v", err, tt.wantError)
 			}
 		})
 	}

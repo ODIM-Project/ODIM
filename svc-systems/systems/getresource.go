@@ -249,7 +249,7 @@ func GetMembers(ctx context.Context, allowed map[string]map[string]bool, express
 
 		}
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response GetMembers members: %v, statuscode: %d", members, resp.StatusCode)
+	l.LogWithFields(ctx).Debugf("outgoing response for GetMembers members: %v, statuscode: %d", members, resp.StatusCode)
 	return members, resp, nil
 }
 
@@ -269,7 +269,7 @@ func getAllSystemIDs(ctx context.Context, resp response.RPC) ([]dmtf.Link, respo
 	for _, key := range systemKeys {
 		mems = append(mems, dmtf.Link{Oid: key})
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response getAllSystemIDs members: %v, statuscode: %d", mems, resp.StatusCode)
+	l.LogWithFields(ctx).Debugf("outgoing response for getAllSystemIDs members: %v, statuscode: %d", mems, resp.StatusCode)
 	return mems, resp, nil
 
 }
@@ -707,7 +707,7 @@ func rediscoverStorageInventory(ctx context.Context, systemID, systemURL string)
 	defer conn.Close()
 	aggregator := aggregatorproto.NewAggregatorClient(conn)
 
-	_, err = aggregator.RediscoverSystemInventory(context.TODO(), &aggregatorproto.RediscoverSystemInventoryRequest{
+	_, err = aggregator.RediscoverSystemInventory(ctx, &aggregatorproto.RediscoverSystemInventoryRequest{
 		SystemID:  systemID,
 		SystemURL: systemURL,
 	})

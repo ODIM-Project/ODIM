@@ -83,7 +83,8 @@ func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.Upda
 	})
 
 	rewrite(ctx, r, &resp)
-	l.LogWithFields(ctx).Debugf("outgoing update chassis response: %s", string(resp.Body))
+	Body, _ := string(resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing response from update chassis request %s", Body)
 	return &resp, nil
 }
 
@@ -103,7 +104,8 @@ func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.Dele
 	})
 
 	rewrite(ctx, r, &resp)
-	l.LogWithFields(ctx).Debugf("outgoing chassis Delete response: %s", string(resp.Body))
+	Body, _ := string(resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing response Delete Chassis request: %s", Body)
 	return &resp, nil
 }
 
@@ -123,7 +125,8 @@ func (cha *ChassisRPC) CreateChassis(ctx context.Context, req *chassisproto.Crea
 	})
 
 	rewrite(ctx, r, &resp)
-	l.LogWithFields(ctx).Debugf("outgoing Chassis create response: %s", string(resp.Body))
+	Body, _ := string(resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing response for Create Chassis: %s", Body)
 	return &resp, nil
 }
 
@@ -154,7 +157,8 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 	}
 	data, _ := pc.GetChassisResource(ctx, req)
 	rewrite(ctx, data, &resp)
-	l.LogWithFields(ctx).Debugf("outgoing getchassisResource response: %s", string(resp.Body))
+	Body, _ := string(resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing response for get chassisResource : %s", Body)
 	return &resp, nil
 }
 
@@ -171,7 +175,8 @@ func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassispro
 		return cha.GetCollectionHandler.Handle(ctx)
 	})
 	rewrite(ctx, r, &resp)
-	l.LogWithFields(ctx).Debugf("outgoing GetChassisCollection response: %s", string(resp.Body))
+	Body, _ := string(resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing response Get ChassisCollection : %s", Body)
 	return &resp, nil
 }
 
@@ -191,7 +196,6 @@ func (cha *ChassisRPC) GetChassisInfo(ctx context.Context, req *chassisproto.Get
 	})
 
 	rewrite(ctx, r, &resp)
-	l.LogWithFields(ctx).Debugf("outgoing GetChassisInfo response: %s", string(resp.Body))
 	return &resp, nil
 }
 

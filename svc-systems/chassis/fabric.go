@@ -310,7 +310,7 @@ func extractChassisCollection(ctx context.Context, body []byte) ([]dmtf.Link, er
 	if err != nil {
 		return resp.Members, fmt.Errorf("while unmarshalling the chassis fabric collection, got: %v", err)
 	}
-	l.LogWithFields(ctx).Debugf("outgoing members response from extractChassisCollection: %s", resp.Members)
+	l.LogWithFields(ctx).Debugf("outgoing response for get Chassis Collection request: %s", resp.Members)
 	return resp.Members, nil
 
 }

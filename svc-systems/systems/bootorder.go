@@ -106,7 +106,7 @@ func (p *PluginContact) SetDefaultBootOrder(ctx context.Context, systemID string
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response SetDefaultBootOrder statuscode: %d", resp.StatusCode)
+	l.LogWithFields(ctx).Debugf("outgoing response for SetDefaultBootOrder statuscode: %d", resp.StatusCode)
 	return resp
 }
 
@@ -211,7 +211,7 @@ func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsprot
 	// Adding Settings URL to the DB to fetch data from device
 	URL := fmt.Sprintf("/redfish/v1/Systems/%s/Bios/Settings", req.SystemID)
 	smodel.AddSystemResetInfo(ctx, URL, "None")
-	l.LogWithFields(ctx).Debugf("outgoing response ChangeBiosSettings statuscode: %d", resp.StatusCode)
+	l.LogWithFields(ctx).Debugf("outgoing response for ChangeBiosSettings statuscode: %d", resp.StatusCode)
 	return resp
 }
 
@@ -322,6 +322,6 @@ func (p *PluginContact) ChangeBootOrderSettings(ctx context.Context, req *system
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 	smodel.AddSystemResetInfo(ctx, "/redfish/v1/Systems/"+req.SystemID, "On")
-	l.LogWithFields(ctx).Debugf("outgoing response ChangeBootOrderSettings statuscode: %d", resp.StatusCode)
+	l.LogWithFields(ctx).Debugf("outgoing response for ChangeBootOrderSettings statuscode: %d", resp.StatusCode)
 	return resp
 }

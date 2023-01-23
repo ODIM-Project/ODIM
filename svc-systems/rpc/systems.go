@@ -92,7 +92,8 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 	}
 	data := systems.GetSystemsCollection(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
-	l.LogWithFields(ctx).Debugf("outgoing GetSystemsCollection response: %s", string(resp.Body))
+	Body, _ := string(resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing response for Get SystemsCollection : %s", Body)
 	return &resp, nil
 }
 
@@ -123,7 +124,8 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 	}
 	data := pc.GetSystems(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
-	l.LogWithFields(ctx).Debugf("outgoing GetSystems response: %s", string(resp.Body))
+	Body, _ := string(resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing response for GetSystems : %s", Body)
 	return &resp, nil
 }
 
@@ -185,8 +187,8 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	go pc.ComputerSystemReset(req, taskID, sessionUserName)
 	threadID++
-
-	l.LogWithFields(ctx).Debugf("outgoing ComputerSystemReset response: %s", string(resp.Body))
+	Body, _ := string(resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing response for ComputerSystemReset: %s", Body)
 	return &resp, nil
 }
 
@@ -216,7 +218,8 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 	}
 	data := pc.SetDefaultBootOrder(ctx, req.SystemID)
 	fillSystemProtoResponse(ctx, &resp, data)
-	l.LogWithFields(ctx).Debugf("outgoing SetDefaultBootOrder response: %s", string(resp.Body))
+	Body, _ := string(resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing response for SetDefaultBootOrder : %s", Body)
 	return &resp, nil
 }
 
@@ -246,7 +249,8 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 	}
 	data := pc.ChangeBiosSettings(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
-	l.LogWithFields(ctx).Debugf("outgoing ChangeBiosSettings response: %s", string(resp.Body))
+	Body, _ := string(resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing response for ChangeBiosSettings : %s", Body)
 	return &resp, nil
 }
 
@@ -276,7 +280,8 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 	}
 	data := pc.ChangeBootOrderSettings(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
-	l.LogWithFields(ctx).Debugf("outgoing ChangeBootOrderSettings response: %s", string(resp.Body))
+	Body, _ := string(resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing response for ChangeBootOrderSettings : %s", Body)
 	return &resp, nil
 }
 
@@ -303,7 +308,8 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 
 	data := s.EI.CreateVolume(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
-	l.LogWithFields(ctx).Debugf("outgoing CreateVolume response: %s", string(resp.Body))
+	Body, _ := string(resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing response for CreateVolume: %s", Body)
 	return &resp, nil
 }
 
@@ -330,7 +336,8 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 
 	data := s.EI.DeleteVolume(ctx, req)
 	fillSystemProtoResponse(ctx, &resp, data)
-	l.LogWithFields(ctx).Debugf("outgoing DeleteVolume response: %s", string(resp.Body))
+	Body, _ := string(resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing response DeleteVolume: %s", Body)
 	return &resp, nil
 }
 

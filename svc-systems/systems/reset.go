@@ -43,9 +43,8 @@ var (
 )
 
 // ComputerSystemReset performs a reset action on the requeseted computer system with the specified ResetType
-func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemResetRequest, taskID, sessionUserName string) response.RPC {
+func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemsproto.ComputerSystemResetRequest, taskID, sessionUserName string) response.RPC {
 	// TODO : should be removed when context from svc-api is passed to this function
-	ctx := context.TODO()
 	var targetURI = "/redfish/v1/Systems/" + req.SystemID + "/Actions/ComputerSystem.Reset"
 	var resp response.RPC
 	resp.StatusCode = http.StatusAccepted
@@ -162,7 +161,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
 
-		body, err = p.monitorPluginTask(&monitorTaskRequest{
+		body, err = p.monitorPluginTask(ctx, &monitorTaskRequest{
 			taskID:        taskID,
 			serverURI:     targetURI,
 			requestBody:   string(postBody),

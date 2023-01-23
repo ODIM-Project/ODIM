@@ -160,6 +160,7 @@ const (
 	ActionName    = "actionname"
 	ActionID      = "actionid"
 	ProcessName   = "processname"
+	RequestBody   = "requestbody"
 	// Below fields define Service Name
 	ManagerService     = "svc-managers"
 	AccountService     = "svc-account"

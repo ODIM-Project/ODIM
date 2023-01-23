@@ -180,10 +180,10 @@ func collectChassisCollection(ctx context.Context, f *fabricFactory, pluginReque
 }
 
 func contactPlugin(ctx context.Context, req *pluginContactRequest) ([]byte, string, int, string, error) {
-	pluginResponse, err := callPlugin(req)
+	pluginResponse, err := callPlugin(ctx, req)
 	if err != nil {
 		if getPluginStatus(ctx, req.Plugin) {
-			pluginResponse, err = callPlugin(req)
+			pluginResponse, err = callPlugin(ctx, req)
 		}
 		if err != nil {
 			return nil, "", http.StatusInternalServerError, response.InternalError, fmt.Errorf(err.Error())
@@ -224,12 +224,12 @@ func retryFabricsOperation(ctx context.Context, f *fabricFactory, req *pluginCon
 
 }
 
-func callPlugin(req *pluginContactRequest) (*http.Response, error) {
+func callPlugin(ctx context.Context, req *pluginContactRequest) (*http.Response, error) {
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.URL
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
+		return req.ContactClient(ctx, reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
 	}
-	return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
+	return req.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
 }
 
 // getPluginStatus checks the status of given plugin in configured interval

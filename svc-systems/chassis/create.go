@@ -156,8 +156,7 @@ func (h *Create) Handle(ctx context.Context, req *chassisproto.CreateChassisRequ
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
-	Body, _ := resp.Body.(string)
-	l.LogWithFields(ctx).Debugf("outgoing response from create chassis request: %s", Body)
+	l.LogWithFields(ctx).Debugf("outgoing response from create chassis request: %s", resp.Body.(string))
 	return resp
 }
 

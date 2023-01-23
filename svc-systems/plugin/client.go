@@ -250,12 +250,10 @@ func (c *client) Delete(ctx context.Context, uri string) response.RPC {
 	l.LogWithFields(ctx).Debugf("incoming Delete request with: %s", uri)
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	url = c.translator.toSouthbound(url)
-	resp, err := pmbhandle.ContactPlugin(context.TODO(), url, http.MethodDelete, "", "", nil, map[string]string{
+	resp, err := pmbhandle.ContactPlugin(ctx, url, http.MethodDelete, "", "", nil, map[string]string{
 		"UserName": c.plugin.Username,
 		"Password": string(c.plugin.Password),
 	})
-	respBody, _ := ioutil.ReadAll(resp.Body)
-	l.LogWithFields(ctx).Debugf("http response of Delete for: %s response: %s statuscode: %d", url, string(respBody), resp.StatusCode)
 	return c.extractResp(ctx, resp, err)
 }
 
@@ -264,12 +262,10 @@ func (c *client) Post(ctx context.Context, uri string, body *json.RawMessage) re
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	url = c.translator.toSouthbound(url)
 	*body = json.RawMessage(c.translator.toSouthbound(string(*body)))
-	resp, err := pmbhandle.ContactPlugin(context.TODO(), url, http.MethodPost, "", "", body, map[string]string{
+	resp, err := pmbhandle.ContactPlugin(ctx, url, http.MethodPost, "", "", body, map[string]string{
 		"UserName": c.plugin.Username,
 		"Password": string(c.plugin.Password),
 	})
-	respBody, _ := ioutil.ReadAll(resp.Body)
-	l.LogWithFields(ctx).Debugf("http response of POST for: %s response: %s statuscode: %d", url, string(respBody), resp.StatusCode)
 	return c.extractResp(ctx, resp, err)
 }
 
@@ -278,12 +274,10 @@ func (c *client) Patch(ctx context.Context, uri string, body *json.RawMessage) r
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	url = c.translator.toSouthbound(url)
 	*body = json.RawMessage(c.translator.toSouthbound(string(*body)))
-	resp, err := pmbhandle.ContactPlugin(context.TODO(), url, http.MethodPatch, "", "", body, map[string]string{
+	resp, err := pmbhandle.ContactPlugin(ctx, url, http.MethodPatch, "", "", body, map[string]string{
 		"UserName": c.plugin.Username,
 		"Password": string(c.plugin.Password),
 	})
-	respBody, _ := ioutil.ReadAll(resp.Body)
-	l.LogWithFields(ctx).Debugf("http response of Patch for: %s response: %s statuscode: %d", url, string(respBody), resp.StatusCode)
 	return c.extractResp(ctx, resp, err)
 }
 
@@ -291,12 +285,10 @@ func (c *client) Get(ctx context.Context, uri string, _ ...CallOption) response.
 	l.LogWithFields(ctx).Debugf("incoming Get request with %s", uri)
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	url = c.translator.toSouthbound(url)
-	resp, err := pmbhandle.ContactPlugin(context.TODO(), url, http.MethodGet, "", "", nil, map[string]string{
+	resp, err := pmbhandle.ContactPlugin(ctx, url, http.MethodGet, "", "", nil, map[string]string{
 		"UserName": c.plugin.Username,
 		"Password": string(c.plugin.Password),
 	})
-	respBody, _ := ioutil.ReadAll(resp.Body)
-	l.LogWithFields(ctx).Debugf("http response of Get for: %s response: %s statuscode: %d", url, string(respBody), resp.StatusCode)
 	return c.extractResp(ctx, resp, err)
 }
 

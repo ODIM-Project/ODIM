@@ -83,8 +83,7 @@ func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.Upda
 	})
 
 	rewrite(ctx, r, &resp)
-	Body, _ := string(resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing response from update chassis request %s", Body)
+	l.LogWithFields(ctx).Debugf("outgoing response from update chassis request %s", string(resp.Body))
 	return &resp, nil
 }
 
@@ -104,8 +103,7 @@ func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.Dele
 	})
 
 	rewrite(ctx, r, &resp)
-	Body, _ := string(resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing response Delete Chassis request: %s", Body)
+	l.LogWithFields(ctx).Debugf("outgoing response Delete Chassis request: %s", resp.Body.(string))
 	return &resp, nil
 }
 
@@ -125,8 +123,7 @@ func (cha *ChassisRPC) CreateChassis(ctx context.Context, req *chassisproto.Crea
 	})
 
 	rewrite(ctx, r, &resp)
-	Body, _ := string(resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing response for Create Chassis: %s", Body)
+	l.LogWithFields(ctx).Debugf("outgoing response for Create Chassis: %s", string(resp.Body))
 	return &resp, nil
 }
 
@@ -157,8 +154,7 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 	}
 	data, _ := pc.GetChassisResource(ctx, req)
 	rewrite(ctx, data, &resp)
-	Body, _ := string(resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing response for get chassisResource : %s", Body)
+	l.LogWithFields(ctx).Debugf("outgoing response for get chassisResource : %s", string(resp.Body))
 	return &resp, nil
 }
 
@@ -175,8 +171,7 @@ func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassispro
 		return cha.GetCollectionHandler.Handle(ctx)
 	})
 	rewrite(ctx, r, &resp)
-	Body, _ := string(resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing response Get ChassisCollection : %s", Body)
+	l.LogWithFields(ctx).Debugf("outgoing response Get ChassisCollection : %s", string(resp.Body))
 	return &resp, nil
 }
 

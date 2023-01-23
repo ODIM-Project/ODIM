@@ -33,7 +33,7 @@ func TestUpdateTaskData(t *testing.T) {
 	tests := []struct {
 		name              string
 		args              args
-		UpdateTaskService func(taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error
+		UpdateTaskService func(ctx context.Context, taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error
 		wantErr           error
 	}{
 		{
@@ -41,7 +41,7 @@ func TestUpdateTaskData(t *testing.T) {
 			args: args{
 				taskData: common.TaskData{},
 			},
-			UpdateTaskService: func(taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error {
+			UpdateTaskService: func(ctx context.Context, taskID, taskState, taskStatus string, percentComplete int32, payLoad *task.Payload, endTime time.Time) error {
 				return errors.New(common.Cancelling)
 			},
 			wantErr: errors.New(common.Cancelling),
@@ -50,7 +50,7 @@ func TestUpdateTaskData(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			UpdateTaskService = tt.UpdateTaskService
-			if err := UpdateTaskData(tt.args.taskData); errors.Is(err, tt.wantErr) {
+			if err := UpdateTaskData(mockContext(), tt.args.taskData); errors.Is(err, tt.wantErr) {
 				t.Errorf("UpdateTaskData() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -101,4 +101,15 @@ func TestExternalInterfaces_PluginCall(t *testing.T) {
 	}
 	isHostPresentInEventForward([]string{}, "test")
 	isHostPresent([]string{}, "test")
+}
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
 }

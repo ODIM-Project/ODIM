@@ -140,7 +140,9 @@ func MaskRequestBody(reqBody map[string]interface{}) string {
 	var jsonStr []byte
 	var err error
 	if len(reqBody) > 0 {
-		reqBody["Password"] = "null"
+		if reqBody["Password"] != nil {
+			reqBody["Password"] = "null"
+		}
 		jsonStr, err = json.Marshal(reqBody)
 		if err != nil {
 			Log.Error("while marshalling request body", err.Error())

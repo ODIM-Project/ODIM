@@ -103,7 +103,7 @@ func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.Dele
 	})
 
 	rewrite(ctx, r, &resp)
-	l.LogWithFields(ctx).Debugf("outgoing response Delete Chassis request: %s", resp.Body.(string))
+	l.LogWithFields(ctx).Debugf("outgoing response Delete Chassis request: %s", string(resp.Body))
 	return &resp, nil
 }
 

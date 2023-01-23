@@ -84,6 +84,7 @@ func TestChassisRPC_GetChassisResource(t *testing.T) {
 			name: "Request with valid token",
 			cha:  cha,
 			args: args{
+				ctx: context.Background(),
 				req: &chassisproto.GetChassisRequest{
 					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
@@ -96,6 +97,7 @@ func TestChassisRPC_GetChassisResource(t *testing.T) {
 			name: "Request with invalid token",
 			cha:  cha,
 			args: args{
+				ctx: context.Background(),
 				req: &chassisproto.GetChassisRequest{
 					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
@@ -108,6 +110,7 @@ func TestChassisRPC_GetChassisResource(t *testing.T) {
 			name: "Request with invalid url",
 			cha:  cha,
 			args: args{
+				ctx: context.Background(),
 				req: &chassisproto.GetChassisRequest{
 					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power1",

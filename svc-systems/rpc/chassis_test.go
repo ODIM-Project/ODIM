@@ -254,7 +254,7 @@ func TestChassis_GetResourceInfo(t *testing.T) {
 }
 
 func TestChassisRPC_UpdateChassis(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
@@ -288,7 +288,7 @@ func TestChassisRPC_UpdateChassis(t *testing.T) {
 }
 
 func TestChassisRPC_DeleteChassis(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
@@ -322,7 +322,7 @@ func TestChassisRPC_DeleteChassis(t *testing.T) {
 }
 
 func TestChassisRPC_CreateChassis(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)

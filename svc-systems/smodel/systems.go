@@ -118,7 +118,6 @@ func GetResource(ctx context.Context, Table, key string) (string, *errors.Error)
 	if errs := JSONUnmarshalFunc([]byte(resourceData), &resource); errs != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
 	}
-	l.LogWithFields(ctx).Debugf("Outgoing response for GetResource with Table: %s, key: %s, is resource: %s", Table, key, resource)
 	return resource, nil
 }
 

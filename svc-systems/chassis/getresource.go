@@ -93,7 +93,6 @@ func (p *PluginContact) GetChassisResource(ctx context.Context, req *chassisprot
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	l.LogWithFields(ctx).Debugf("Outgoing Response from GetChassisResource for %s is StatusCode: %d response: %s ", req.URL, resp.StatusCode, string(data))
 	return resp, nil
 
 }

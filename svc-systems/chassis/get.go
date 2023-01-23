@@ -79,7 +79,6 @@ func (h *Get) Handle(ctx context.Context, req *chassisproto.GetChassisRequest) r
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 		}
 		data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`.`, -1)
-		l.LogWithFields(ctx).Debugf("data response from GetResourceInfoFromDeviceFunc for %s is %s", getDeviceInfoRequest.SystemID, data)
 		var resource dmtf.Chassis
 		json.Unmarshal([]byte(data), &resource)
 		return response.RPC{

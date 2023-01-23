@@ -68,12 +68,12 @@ func getAllSubscriptions() {
 
 // getAllDeviceSubscriptions method fetch data from DeviceSubscription table
 func getAllDeviceSubscriptions() {
-	eventSourceToManagerIDMap = make(map[string]string)
 	deviceSubscriptionList, err := evmodel.GetAllDeviceSubscriptions()
 	if err != nil {
 		l.Log.Error("Error while reading all aggregate data ", err)
 		return
 	}
+	eventSourceToManagerIDMap = make(map[string]string, len(deviceSubscriptionList))
 	for _, device := range deviceSubscriptionList {
 		devSub := strings.Split(device, "||")
 		if strings.Contains(devSub[0], "Collection") {
@@ -156,6 +156,7 @@ func getSourceId(host string) (string, error) {
 	return data, nil
 }
 
+//updateCacheMaps update map value corresponding key
 func updateCacheMaps(key, value string, cacheData map[string]map[string]bool) {
 	elements, isExists := cacheData[key]
 	if isExists {
@@ -164,4 +165,99 @@ func updateCacheMaps(key, value string, cacheData map[string]map[string]bool) {
 	} else {
 		cacheData[key] = map[string]bool{value: true}
 	}
+}
+
+// getSubscriptions return list of subscription from cache corresponding to originOfCondition
+func getSubscriptions(originOfCondition, systemId, hostIp string) (subs []dmtf.EventDestination) {
+	subs = append(subs, getSystemSubscriptionList(hostIp)...)
+	subs = append(subs, getAggregateSubscriptionList(systemId)...)
+	subs = append(subs, getEmptyOriginResourceSubscriptionList()...)
+	subs = append(subs, getCollectionSubscriptionList(originOfCondition, hostIp)...)
+	return
+}
+
+//getSystemSubscriptionList return list of subscription corresponding to host
+func getSystemSubscriptionList(hostIp string) (subs []dmtf.EventDestination) {
+	systemSubscription, isExists := systemToSubscriptionsMap[hostIp]
+	if isExists {
+		for subId, _ := range systemSubscription {
+			sub, isValidSubId := getSubscriptionDetails(subId)
+			if isValidSubId {
+				subs = append(subs, sub)
+			}
+
+		}
+	}
+	return
+}
+
+// getAggregateSubscriptionList return list of subscription corresponding to system
+// is members of different aggregate
+func getAggregateSubscriptionList(systemId string) (subs []dmtf.EventDestination) {
+	aggregateList, isExists := systemIdToAggregateIdsMap[systemId]
+	if isExists {
+		for aggregateID := range aggregateList {
+			subscriptions, isValidAggregateId := aggregateIdToSubscriptionsMap[aggregateID]
+			if isValidAggregateId {
+				for subId := range subscriptions {
+					sub, isValidSubId := getSubscriptionDetails(subId)
+					sub.OriginResources = append(sub.OriginResources, "/redfish/v1/Systems/"+systemId)
+					if isValidSubId {
+						subs = append(subs, sub)
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
+// getCollectionSubscriptionList return list of subscription against
+// originOfCondition type
+func getCollectionSubscriptionList(originOfCondition, hostIp string) (subs []dmtf.EventDestination) {
+	collectionsKey := getCollectionKey(originOfCondition, hostIp)
+	collectionSubscription, isExists := collectionToSubscriptionsMap[collectionsKey]
+	if isExists {
+		for subId := range collectionSubscription {
+			sub, isValidSubId := getSubscriptionDetails(subId)
+			if isValidSubId {
+				subs = append(subs, sub)
+			}
+		}
+	}
+	return
+}
+
+// getEmptyOriginResourceSubscriptionList return list of subscription
+// whose originResources is empty
+func getEmptyOriginResourceSubscriptionList() (subs []dmtf.EventDestination) {
+	for subId := range emptyOriginResourceToSubscriptionsMap {
+		sub, isValidSubId := getSubscriptionDetails(subId)
+		if isValidSubId {
+			subs = append(subs, sub)
+		}
+	}
+	return
+}
+
+//getSubscriptionDetails this method return subscription details corresponding subscription Id
+func getSubscriptionDetails(subscriptionID string) (sub dmtf.EventDestination, status bool) {
+	if sub, isExists := subscriptionsCache[subscriptionID]; isExists {
+		return sub, true
+	}
+	return dmtf.EventDestination{}, false
+}
+
+// getCollectionKey return collection key corresponding originOfCondition uri
+func getCollectionKey(oid, host string) (key string) {
+	if strings.Contains(oid, "Systems") && host != "SystemsCollection" {
+		key = "SystemsCollection"
+	} else if strings.Contains(oid, "Chassis") && host != "ChassisCollection" {
+		key = "ChassisCollection"
+	} else if strings.Contains(oid, "Managers") && host != "ManagerCollection" {
+		key = "ManagerCollection"
+	} else if strings.Contains(oid, "Fabrics") && host != "FabricsCollection" {
+		key = "FabricsCollection"
+	}
+	return
 }

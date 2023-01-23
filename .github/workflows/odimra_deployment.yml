@@ -496,6 +496,16 @@ jobs:
         flag=0
         echo "Create Session using the URI /redfish/v1/Sessionservice/Sessions"
         
+        sudo kubectl get pods -n odim
+        echo ls -l var/log/odimra/
+        ls -l var/log/odimra/
+        echo account_session.log
+        tail /var/log/odimra/account_session.log
+        echo api log
+        tail /var/log/odimra/api.log
+        echo system  log
+        tail /var/log/odimra/system.log
+        
         cat /etc/hosts
         
         echo "==========================================================="

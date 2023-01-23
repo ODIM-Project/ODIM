@@ -335,7 +335,6 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 			return nil, errors.PackError(errors.UndefinedErrorType, err.Error())
 		}
 	}
-
 	connPools.ReadPool, err = getPool(c.Host, c.Port, c.Password)
 	//Check if any connection error occured
 	if err != nil {
@@ -777,18 +776,15 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 	return nil
 }
 
-// CreateIndexTransaction will create the indices using pipelined transaction
-/* CreateIndexTransaction takes the following keys as input:
-1. "key" is the key of the sorted set.
-2."scores" is of type map[string]int64 and is the user data sent to be updated in DB.
-key of map should be the member for which we create the index. the value is score of that member
-*/
-func (c *Conn) CreateIndexTransaction(key string, scores map[string]int64) *errors.Error {
+// SetExpiryTimeForKeys will create the expiry time using pipelined transaction
+/* SetExpiryTimeForKeys takes the taskID  as input:
+ */
+func (c *Conn) SetExpiryTimeForKeys(taskKeys map[string]int64) *errors.Error {
 	var partialFailure bool = false
-	members := getSortedMapKeys(scores)
 	c.WriteConn.Send("MULTI")
-	for _, member := range members {
-		createErr := c.WriteConn.Send("ZADD", key, scores[member], member)
+	members := getSortedMapKeys(taskKeys)
+	for _, taskkey := range members {
+		createErr := c.WriteConn.Send("EXPIRE", taskkey, 86400)
 		if createErr != nil {
 			c.WriteConn.Send("DISCARD")
 			if isTimeOutError(createErr) {
@@ -805,11 +801,10 @@ func (c *Conn) CreateIndexTransaction(key string, scores map[string]int64) *erro
 		}
 		return errors.PackError(errors.DBUpdateFailed, err.Error())
 	}
-
 	for i, member := range members {
 		res, ok := result[i].(int64)
 		if ok && res == 1 {
-			delete(scores, member)
+			delete(taskKeys, member)
 		} else {
 			partialFailure = true
 		}

@@ -39,7 +39,12 @@ import (
 )
 
 var (
-	DefaultSubscriptionID = "0"
+	DefaultSubscriptionID        = "0"
+	SubscriptionChannelKey       = "__key*__:Subscription"
+	DeviceSubscriptionChannelKey = "__key*__:DeviceSubscription"
+	AggregateToHostChannelKey    = "__key*__:AggregateToHost"
+	RedisNotifierType            = "notify-keyspace-events"
+	RedisNotifierFilterKey       = "Kz"
 )
 
 //StartUpInterface Holds the function pointer of  external interface functions

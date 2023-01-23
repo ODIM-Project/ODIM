@@ -4,11 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
+	"time"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
+	"github.com/gomodule/redigo/redis"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -22,21 +26,25 @@ var (
 	eventSourceToManagerIDMap             map[string]string
 	managerIDToSystemIDsMap               map[string][]string
 	managerIDToChassisIDsMap              map[string][]string
+	subscribeCacheLock                    sync.Mutex
 )
 
 // LoadSubscriptionData method calls whenever service is started
 // Here we load Subscription, DeviceSubscription, AggregateToHost
 // table data into cache memory
 func LoadSubscriptionData() {
-	l.Log.Info("Event cache is initialized")
+	l.Log.Debug("Event cache is initialized")
 	getAllSubscriptions()
 	getAllAggregates()
 	getAllDeviceSubscriptions()
+	go initializeDbObserver()
 }
 
 // getAllSubscriptions this method read data from Subscription table and
 // load in corresponding cache
 func getAllSubscriptions() {
+	subscribeCacheLock.Lock()
+	defer subscribeCacheLock.Unlock()
 	systemToSubscriptionsMap = make(map[string]map[string]bool)
 	aggregateIdToSubscriptionsMap = make(map[string]map[string]bool)
 	collectionToSubscriptionsMap = make(map[string]map[string]bool)
@@ -63,11 +71,12 @@ func getAllSubscriptions() {
 			loadSubscriptionCacheData(sub.SubscriptionID, sub.Hosts)
 		}
 	}
-
 }
 
 // getAllDeviceSubscriptions method fetch data from DeviceSubscription table
 func getAllDeviceSubscriptions() {
+	subscribeCacheLock.Lock()
+	defer subscribeCacheLock.Unlock()
 	deviceSubscriptionList, err := evmodel.GetAllDeviceSubscriptions()
 	if err != nil {
 		l.Log.Error("Error while reading all aggregate data ", err)
@@ -82,6 +91,7 @@ func getAllDeviceSubscriptions() {
 			updateCatchDeviceSubscriptionData(devSub[0], evmodel.GetSliceFromString(devSub[2]))
 		}
 	}
+	l.Log.Debug("DeviceSubscription cache updated ")
 }
 
 // updateCatchDeviceSubscriptionData update eventSourceToManagerMap for each key with their system IDs
@@ -119,6 +129,9 @@ func addSubscriptionCache(key string, subscriptionId string) {
 // getAllAggregates method will read all aggregate from db and
 // update systemIdToAggregateIdsMap to corresponding member in aggregate
 func getAllAggregates() {
+	subscribeCacheLock.Lock()
+	defer subscribeCacheLock.Unlock()
+
 	systemIdToAggregateIdsMap = make(map[string]map[string]bool)
 	aggregateUrls, err := evmodel.GetAllAggregates()
 	if err != nil {
@@ -133,6 +146,7 @@ func getAllAggregates() {
 		aggregateId := aggregateUrl[strings.LastIndexByte(aggregateUrl, '/')+1:]
 		addSystemIdToAggregateCache(aggregateId, aggregate)
 	}
+	l.Log.Debug("AggregateToHost cache updated ")
 }
 
 // addSystemIdToAggregateCache update cache for each aggregate member
@@ -260,4 +274,39 @@ func getCollectionKey(oid, host string) (key string) {
 		key = "FabricsCollection"
 	}
 	return
+}
+
+// initializeDbObserver function subscribe redis keyspace notifier
+func initializeDbObserver() {
+	l.Log.Debug("Initializing observer ")
+START:
+	conn, _ := common.GetDBConnection(common.OnDisk)
+	writeConn := conn.WritePool.Get()
+	defer writeConn.Close()
+	_, err := writeConn.Do("CONFIG", "SET", evcommon.RedisNotifierType, evcommon.RedisNotifierFilterKey)
+	if err != nil {
+		l.Log.Error("error occurred configuring keyevent ", err)
+		time.Sleep(time.Second * 5)
+		goto START
+	}
+	psc := redis.PubSubConn{Conn: writeConn}
+
+	psc.PSubscribe(evcommon.AggregateToHostChannelKey, evcommon.DeviceSubscriptionChannelKey,
+		evcommon.SubscriptionChannelKey)
+	for {
+		switch v := psc.Receive().(type) {
+		case redis.Message:
+			switch string(v.Pattern) {
+			case evcommon.DeviceSubscriptionChannelKey:
+				getAllDeviceSubscriptions()
+			case evcommon.SubscriptionChannelKey:
+				getAllSubscriptions()
+			case evcommon.AggregateToHostChannelKey:
+				getAllAggregates()
+			}
+		case error:
+			l.Log.Error("Error occurred in redis keyspace notifier publisher ", v)
+			goto START
+		}
+	}
 }

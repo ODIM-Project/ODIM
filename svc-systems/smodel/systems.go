@@ -99,7 +99,7 @@ func GetSystemByUUID(ctx context.Context, systemUUID string) (string, *errors.Er
 	if errs := JSONUnmarshalFunc([]byte(systemData), &system); errs != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
 	}
-	l.LogWithFields(ctx).Debugf("Outgoing response for GetSystemByUUID systemUUID: %s, is system: %s", systemUUID, &system)
+	l.LogWithFields(ctx).Debugf("Outgoing response for GetSystemByUUID systemUUID: %s, is system: %s", systemUUID, system)
 	return system, nil
 }
 

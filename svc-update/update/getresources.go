@@ -12,13 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package update ...
+// Package update ...
 package update
 
 // ---------------------------------------------------------------------------------------
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -39,7 +40,7 @@ import (
 //
 // As return parameters RPC response, which contains status code, message, headers and data,
 // error will be passed back.
-func (e *ExternalInterface) GetUpdateService() response.RPC {
+func (e *ExternalInterface) GetUpdateService(ctx context.Context) response.RPC {
 	commonResponse := response.Response{
 		OdataType:    common.UpdateServiceType,
 		OdataID:      "/redfish/v1/UpdateService",
@@ -105,7 +106,7 @@ func (e *ExternalInterface) GetUpdateService() response.RPC {
 
 // GetAllFirmwareInventory is a functioanlity to retrive all the available inventory
 // resources from the added BMC's
-func (e *ExternalInterface) GetAllFirmwareInventory(req *updateproto.UpdateRequest) response.RPC {
+func (e *ExternalInterface) GetAllFirmwareInventory(ctx context.Context, req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
 	firmwareCollection := uresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#FirmwareInventoryCollection.FirmwareCollection",
@@ -118,7 +119,7 @@ func (e *ExternalInterface) GetAllFirmwareInventory(req *updateproto.UpdateReque
 	members := []dmtf.Link{}
 	firmwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("FirmwareInventory", common.InMemory)
 	if err != nil || len(firmwareCollectionKeysArray) == 0 {
-		l.Log.Warn("odimra doesnt have servers")
+		l.LogWithFields(ctx).Warn("odimra doesnt have servers")
 	}
 
 	for _, key := range firmwareCollectionKeysArray {
@@ -137,7 +138,7 @@ func (e *ExternalInterface) GetAllFirmwareInventory(req *updateproto.UpdateReque
 // Url will be parsed from that search key will created
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
-func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest) response.RPC {
+func (e *ExternalInterface) GetFirmwareInventory(ctx context.Context, req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
 
 	requestData := strings.Split(req.ResourceID, ".")
@@ -147,7 +148,7 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 	}
 	data, gerr := e.DB.GetResource("FirmwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
-		l.Log.Warn("Unable to get firmware inventory details : " + gerr.Error())
+		l.LogWithFields(ctx).Warn("Unable to get firmware inventory details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = ucommon.ResourceInfoRequest{
@@ -163,7 +164,7 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 				GetPluginData: e.External.GetPluginData,
 				ContactPlugin: e.External.ContactPlugin,
 			}
-			if data, err = i.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
+			if data, err = i.GetResourceInfoFromDevice(ctx, getDeviceInfoRequest); err != nil {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"FirmwareInventory", req.URL}, nil)
 			}
 		} else {
@@ -182,7 +183,7 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 
 // GetAllSoftwareInventory is a functioanlity to retrive all the available inventory
 // resources from the added BMC's
-func (e *ExternalInterface) GetAllSoftwareInventory(req *updateproto.UpdateRequest) response.RPC {
+func (e *ExternalInterface) GetAllSoftwareInventory(ctx context.Context, req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
 	softwareCollection := uresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#SoftwareInventoryCollection.SoftwareCollection",
@@ -195,7 +196,7 @@ func (e *ExternalInterface) GetAllSoftwareInventory(req *updateproto.UpdateReque
 	members := []dmtf.Link{}
 	softwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("SoftwareInventory", common.InMemory)
 	if err != nil || len(softwareCollectionKeysArray) == 0 {
-		l.Log.Warn("odimra doesnt have servers")
+		l.LogWithFields(ctx).Warn("odimra doesnt have servers")
 	}
 
 	for _, key := range softwareCollectionKeysArray {
@@ -214,7 +215,7 @@ func (e *ExternalInterface) GetAllSoftwareInventory(req *updateproto.UpdateReque
 // Url will be parsed from that search key will created
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
-func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest) response.RPC {
+func (e *ExternalInterface) GetSoftwareInventory(ctx context.Context, req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
 
 	requestData := strings.Split(req.ResourceID, ".")
@@ -224,7 +225,7 @@ func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest)
 	}
 	data, gerr := e.DB.GetResource("SoftwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
-		l.Log.Warn("Unable to get software inventory details : " + gerr.Error())
+		l.LogWithFields(ctx).Warn("Unable to get software inventory details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = ucommon.ResourceInfoRequest{
@@ -240,7 +241,7 @@ func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest)
 				GetPluginData: e.External.GetPluginData,
 				ContactPlugin: e.External.ContactPlugin,
 			}
-			if data, err = i.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
+			if data, err = i.GetResourceInfoFromDevice(ctx, getDeviceInfoRequest); err != nil {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"SoftwareInventory", req.URL}, nil)
 			}
 		} else {

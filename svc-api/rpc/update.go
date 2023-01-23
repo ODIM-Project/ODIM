@@ -39,7 +39,7 @@ func DoGetUpdateService(ctx context.Context, req updateproto.UpdateRequest) (*up
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.GetUpdateService(context.TODO(), &req)
+	resp, err := update.GetUpdateService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -58,7 +58,7 @@ func DoGetFirmwareInventory(ctx context.Context, req updateproto.UpdateRequest) 
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.GetFirmwareInventory(context.TODO(), &req)
+	resp, err := update.GetFirmwareInventory(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -77,7 +77,7 @@ func DoGetSoftwareInventory(ctx context.Context, req updateproto.UpdateRequest) 
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.GetSoftwareInventory(context.TODO(), &req)
+	resp, err := update.GetSoftwareInventory(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -96,7 +96,7 @@ func DoGetFirmwareInventoryCollection(ctx context.Context, req updateproto.Updat
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.GetFirmwareInventoryCollection(context.TODO(), &req)
+	resp, err := update.GetFirmwareInventoryCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -115,7 +115,7 @@ func DoGetSoftwareInventoryCollection(ctx context.Context, req updateproto.Updat
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.GetSoftwareInventoryCollection(context.TODO(), &req)
+	resp, err := update.GetSoftwareInventoryCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -134,7 +134,7 @@ func DoSimpleUpdate(ctx context.Context, req updateproto.UpdateRequest) (*update
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.SimepleUpdate(context.TODO(), &req)
+	resp, err := update.SimepleUpdate(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -153,7 +153,7 @@ func DoStartUpdate(ctx context.Context, req updateproto.UpdateRequest) (*updatep
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.StartUpdate(context.TODO(), &req)
+	resp, err := update.StartUpdate(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}

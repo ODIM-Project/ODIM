@@ -2,6 +2,7 @@ package telemetry
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,14 +14,14 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-telemetry/tmodel"
 )
 
-func MockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
+func MockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken == "InvalidToken" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
-func MockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func MockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Sessions" {
 		body := `{"Token": "12345"}`
 		return &http.Response{

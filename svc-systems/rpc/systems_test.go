@@ -131,7 +131,7 @@ func mockPluginStatus(plugin smodel.Plugin) bool {
 	return true
 }
 
-func contactPluginClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
+func contactPluginClient(ctx context.Context, url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/1/Volumes/1" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
@@ -271,6 +271,7 @@ func TestSystems_GetAllSystems(t *testing.T) {
 	ctx = context.WithValue(ctx, common.ActionName, "xyz")
 	ctx = context.WithValue(ctx, common.ThreadID, "0")
 	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	ctx = common.CreateMetadata(ctx)
 	type args struct {
 		ctx  context.Context
@@ -728,7 +729,7 @@ func getSessionUserNameForTesting(sessionToken string) (string, error) {
 	return "someUserName", nil
 }
 
-func createTaskForTesting(sessionUserName string) (string, error) {
+func createTaskForTesting(ctx context.Context, sessionUserName string) (string, error) {
 	if sessionUserName == "noTaskUser" {
 		return "", fmt.Errorf("no details")
 	} else if sessionUserName == "taskWithSlashUser" {
@@ -737,7 +738,7 @@ func createTaskForTesting(sessionUserName string) (string, error) {
 	return "some/Task", nil
 }
 
-func mockUpdateTask(task common.TaskData) error {
+func mockUpdateTask(ctx context.Context, task common.TaskData) error {
 	if task.TaskID == "invalid" {
 		return fmt.Errorf(common.Cancelling)
 	}

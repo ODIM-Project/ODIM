@@ -84,13 +84,6 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(req *eventsproto.EventRequ
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
 		return resp
 	}
-	if len(subscriptionDetails) < 1 {
-		errorMessage := fmt.Sprintf("Subscription details not found for the requested device")
-		msgArgs := []interface{}{"Host", target.ManagerAddress}
-		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
-		l.Log.Error(errorMessage)
-		return resp
-	}
 	l.Log.Info("Number of subscription present :", strconv.Itoa(len(subscriptionDetails)))
 	decryptedPasswordByte, err := DecryptWithPrivateKeyFunc(target.Password)
 	if err != nil {
@@ -184,9 +177,13 @@ func (e *ExternalInterfaces) deleteSubscription(target *evmodel.Target, originRe
 // DeleteEventSubscriptionsDetails delete subscription data against given subscription id
 func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(req *eventsproto.EventRequest) response.RPC {
 	var resp response.RPC
-	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		l.Log.Error("error while trying to authenticate session: status code: " + string(authResp.StatusCode) + ", status message: " + authResp.StatusMessage)
+		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
+		l.Log.Error(errMsg)
 		return authResp
 	}
 	subscriptionDetails, err := e.GetEvtSubscriptions(req.EventSubscriptionID)

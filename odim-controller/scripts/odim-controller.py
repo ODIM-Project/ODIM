@@ -20,6 +20,7 @@ import glob, shutil, copy, getpass, socket
 
 import base64
 from cryptography.hazmat.primitives import hashes
+from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
@@ -61,6 +62,8 @@ MIN_REPLICA_COUNT = 0
 MAX_REPLICA_COUNT = 10
 MAX_LOG_FILE_SIZE = 5*1024*1024
 
+key = Fernet.generate_key()
+fernet = Fernet(key)
 # write_node_details is used for creating hosts.yaml required
 # for deploying kuberentes cluster using kubespray. hosts.yaml
 # is prepared based on the parameters provided in odim-controller conf
@@ -184,6 +187,15 @@ def perform_checks(skip_opt_param_check=False):
 			logger.critical("Log level value is invalid, allowed values are 'panic', 'fatal', 'error', 'warn','info','debug','trace'")
 			exit(1)
 		logger.info("Log level is %s ",CONTROLLER_CONF_DATA['odimra']['logLevel'])
+	if 'logFormat' not in CONTROLLER_CONF_DATA['odimra'] or CONTROLLER_CONF_DATA['odimra']['logFormat'] == None or CONTROLLER_CONF_DATA['odimra']['logFormat'] == "": 
+		logger.info("Log format is not set, Setting default value syslog")
+		CONTROLLER_CONF_DATA['odimra']['logFormat']="syslog"
+	else :
+		log_formats = ['syslog', 'json']
+		if CONTROLLER_CONF_DATA['odimra']['logFormat'] not in log_formats:
+			logger.critical("Log format value is invalid, allowed values are 'syslog', 'json'")
+			exit(1)
+		logger.info("Log format is %s ",CONTROLLER_CONF_DATA['odimra']['logFormat'])
 		
 	if not skip_opt_param_check:
 		logger.debug("Checking if the local user matches with the configured nodes user")
@@ -1131,7 +1143,8 @@ def store_vault_key():
 			exit(1)
 
 		fd = open(ODIMRA_VAULT_KEY_FILE, "wb")
-		fd.write(first_pw.encode('utf-8'))
+		encpass = fernet.encrypt(first_pw.encode('utf-8'))
+		fd.write(encpass)
 		fd.close()
 
 		encode_cmd = '{vault_bin} -encode {key_file}'.format(vault_bin=ODIMRA_VAULT_BIN, key_file=ODIMRA_VAULT_KEY_FILE)
@@ -1155,7 +1168,8 @@ def store_password_in_vault():
 		exit(1)
 
 	fd = open(ANSIBLE_SUDO_PW_FILE, "wb")
-	fd.write(first_pw.encode('utf-8'))
+	encpass = fernet.encrypt(first_pw.encode('utf-8'))
+	fd.write(encpass)
 	fd.close()
 
 	encrypt_cmd = '{vault_bin} -key {key_file} -encrypt {data_file}'.format(vault_bin=ODIMRA_VAULT_BIN,
@@ -1176,7 +1190,8 @@ def store_redis_password_in_vault(REDIS_PW_FILE_PATH, redis_db_name):
 		exit(1)
 
 	fd = open(REDIS_PW_FILE_PATH, "wb")
-	fd.write(first_pw.encode('utf-8'))
+	encpass = fernet.encrypt(first_pw.encode('utf-8'))
+	fd.write(encpass)
 	fd.close()
 
 	encrypt_cmd = '{vault_bin} -key {key_file} -encrypt {data_file}'.format(vault_bin=ODIMRA_VAULT_BIN,
@@ -1734,6 +1749,15 @@ def deploy_plugin(plugin_name):
 						logger.critical("Log level value is invalid, allowed values are 'panic', 'fatal', 'error', 'warn','info','debug','trace'")
 						exit(1)
 				logger.info("Log level for %s is %s ",plugin_name,pluginConf[plugin_name]['logLevel'])
+				if 'logFormat' not in pluginConf[plugin_name] or pluginConf[plugin_name]['logFormat'] == None or pluginConf[plugin_name]['logFormat'] == "": 
+					logger.info("Log format is not set for %s, Setting default value syslog",plugin_name)
+					pluginConf[plugin_name]['logFormat']="syslog"
+				else :
+					log_formats = ['syslog', 'json']
+					if pluginConf[plugin_name]['logFormat'] not in log_formats:
+						logger.critical("Log format value is invalid, allowed values are 'syslog', 'json'")
+						exit(1)
+				logger.info("Log format for %s is %s ",plugin_name,pluginConf[plugin_name]['logFormat'])
 
 			except yaml.YAMLError as exc:
 				logger.error(exc)

@@ -270,7 +270,7 @@ func TestSetConfiguration(t *testing.T) {
 			os.Setenv("CONFIG_FILE_PATH", cfgFilePath)
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if err := SetConfiguration(); (err != nil) != tt.wantErr {
+			if _, err := SetConfiguration(); (err != nil) != tt.wantErr {
 				t.Errorf("SetConfiguration() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -353,7 +353,7 @@ func TestValidateConfigurationGroup1(t *testing.T) {
 			}
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {
+			if _, err := ValidateConfiguration(); (err != nil) != tt.wantErr {
 				t.Errorf("TestValidateConfigurationGroup1() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -457,7 +457,7 @@ func TestValidateConfigurationGroup2(t *testing.T) {
 			Data.MessageBusConf.OdimControlMessageQueue = "ODIM-CONTROL-MESSAGES"
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {
+			if _, err := ValidateConfiguration(); (err != nil) != tt.wantErr {
 				t.Errorf("TestValidateConfigurationGroup2() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -579,7 +579,7 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			Data.AddComputeSkipResources.SkipResourceListUnderManager = []string{"Chassis", "Systems", "LogServices"}
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {
+			if _, err := ValidateConfiguration(); (err != nil) != tt.wantErr {
 				t.Errorf("TestValidateConfigurationGroup3() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -614,7 +614,7 @@ func TestValidateConfigurationForEventConf(t *testing.T) {
 			}
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {
+			if _, err := ValidateConfiguration(); (err != nil) != tt.wantErr {
 				t.Errorf("TestValidateConfigurationForEventConf()  = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
@@ -29,8 +29,8 @@ import (
 
 // Fabrics struct helps to register service
 type Fabrics struct {
-	IsAuthorizedRPC  func(sessionToken string, privileges []string, oemPrivileges []string) response.RPC
-	ContactClientRPC func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	IsAuthorizedRPC  func(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error)
+	ContactClientRPC func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 
 // GetFabricResource defines the operation which handled the RPC request response

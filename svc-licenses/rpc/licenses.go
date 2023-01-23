@@ -19,14 +19,18 @@ import (
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	lgr "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	licenseproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/licenses"
 )
 
 // GetLicenseService to get license service details
 func (l *Licenses) GetLicenseService(ctx context.Context, req *licenseproto.GetLicenseServiceRequest) (*licenseproto.GetLicenseResponse, error) {
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -37,8 +41,11 @@ func (l *Licenses) GetLicenseService(ctx context.Context, req *licenseproto.GetL
 // GetLicenseCollection to get license collection
 func (l *Licenses) GetLicenseCollection(ctx context.Context, req *licenseproto.GetLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -49,8 +56,11 @@ func (l *Licenses) GetLicenseCollection(ctx context.Context, req *licenseproto.G
 // GetLicenseResource to get license resource
 func (l *Licenses) GetLicenseResource(ctx context.Context, req *licenseproto.GetLicenseResourceRequest) (*licenseproto.GetLicenseResponse, error) {
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -61,8 +71,11 @@ func (l *Licenses) GetLicenseResource(ctx context.Context, req *licenseproto.Get
 // InstallLicenseService to install license
 func (l *Licenses) InstallLicenseService(ctx context.Context, req *licenseproto.InstallLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}

@@ -18,6 +18,7 @@ package router
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -242,11 +243,9 @@ func Router() *iris.Application {
 				authRequired = true
 			}
 			if authRequired {
-				logProperties := make(map[string]interface{})
-				logProperties["SessionToken"] = sessionToken
-				logProperties["Message"] = "X-Auth-Token is missing in the request header"
-				logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
-				customLogs.AuthLog(logProperties)
+				ctx = context.WithValue(ctx, common.SessionToken, sessionToken)
+				ctx = context.WithValue(ctx, common.StatusCode, int32(http.StatusUnauthorized))
+				customLogs.AuthLog(ctx).Info("X-Auth-Token is missing in the request header")
 			}
 		}
 
@@ -280,8 +279,11 @@ func Router() *iris.Application {
 	})
 	router.Done(func(ctx iris.Context) {
 		var reqBody map[string]interface{}
-		ctx.ReadJSON(&reqBody)
-		logService.AuditLog(ctx, reqBody)
+		ctxt := ctx.Request().Context()
+		if ctxt.Value(common.RequestBody) != nil {
+			reqBody = ctxt.Value(common.RequestBody).(map[string]interface{})
+		}
+		l.AuditLog(&logService, ctx, reqBody).Info()
 		// before returning response, decrement the session limit counter
 		sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 		if sessionToken != "" && config.Data.RequestLimitCountPerSession > 0 {

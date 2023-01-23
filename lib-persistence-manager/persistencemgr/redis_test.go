@@ -1,15 +1,15 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package persistencemgr
 
@@ -335,10 +335,10 @@ func TestDelete_nonExistingKey(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
-
+	want := errors.PackError(errors.DBKeyNotFound, "no data with the with key key found")
 	derr := c.Delete("table", "key")
-	if derr.ErrNo() != errors.DBKeyNotFound {
-		t.Errorf("table should not exist: %v\n", derr.Error())
+	if !reflect.DeepEqual(derr, want) {
+		t.Errorf("table should not exist: %v, want: %v\n", derr.Error(), want)
 	}
 }
 
@@ -1165,7 +1165,7 @@ func TestGetCurrentMasterHostPort(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := GetCurrentMasterHostPort(tt.args.dbConfig)
+			got, got1, _ := GetCurrentMasterHostPort(tt.args.dbConfig)
 			if got != tt.want {
 				t.Errorf("GetCurrentMasterHostPort() got = %v, want %v", got, tt.want)
 			}

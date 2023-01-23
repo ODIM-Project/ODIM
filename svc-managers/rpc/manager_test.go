@@ -32,14 +32,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken != "validToken" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
@@ -128,7 +128,18 @@ func mockGetResource(table, key string) (string, *errors.Error) {
 	return "body", nil
 }
 
-func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
+func mockGetDeviceInfo(ctx context.Context, req mgrcommon.ResourceInfoRequest) (string, error) {
 	if req.URL == "/redfish/v1/Managers/deviceAbsent.1" || req.URL == "/redfish/v1/Managers/uuid1.1/Ethernet" {
 		return "", fmt.Errorf("error")
 	} else if req.URL == "/redfish/v1/Managers/uuid1.1/Virtual" {
@@ -145,7 +156,7 @@ func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
 	return string(dataByte), err
 }
 
-func mockDeviceRequest(req mgrcommon.ResourceInfoRequest) response.RPC {
+func mockDeviceRequest(ctx context.Context, req mgrcommon.ResourceInfoRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 	if req.URL == "/redfish/v1/Managers/deviceAbsent.1" || req.URL == "/redfish/v1/Managers/uuid1.1/Virtual" {
@@ -193,8 +204,8 @@ func TestGetManagerCollection(t *testing.T) {
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
+	ctx := mockContext()
 	type args struct {
-		ctx  context.Context
 		req  *managersproto.ManagerRequest
 		resp *managersproto.ManagerResponse
 	}
@@ -227,7 +238,7 @@ func TestGetManagerCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := tt.mgr.GetManagersCollection(tt.args.ctx, tt.args.req)
+			resp, err := tt.mgr.GetManagersCollection(ctx, tt.args.req)
 			if err != nil {
 				t.Errorf("Manager.GetManagersCollection() got = %v, want %v", err, nil)
 			}
@@ -240,7 +251,7 @@ func TestGetManagerCollection(t *testing.T) {
 
 func TestGetManagerwithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
@@ -253,7 +264,7 @@ func TestGetManagerwithInValidtoken(t *testing.T) {
 }
 func TestGetManagerwithValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
@@ -276,7 +287,7 @@ func TestGetManagerwithValidtoken(t *testing.T) {
 
 func TestGetManagerResourcewithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
@@ -289,7 +300,7 @@ func TestGetManagerResourcewithInValidtoken(t *testing.T) {
 }
 func TestGetManagerResourcewithValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
@@ -306,7 +317,7 @@ func TestGetManagerResourcewithValidtoken(t *testing.T) {
 }
 func TestVirtualMediaEject(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
@@ -336,7 +347,7 @@ func TestVirtualMediaEject(t *testing.T) {
 }
 func TestVirtualMediaInsert(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
@@ -371,7 +382,7 @@ func TestVirtualMediaInsert(t *testing.T) {
 
 func TestGetRemoteAccountService(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
@@ -401,7 +412,7 @@ func TestGetRemoteAccountService(t *testing.T) {
 
 func TestCreateRemoteAccountService(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
@@ -438,7 +449,7 @@ func TestCreateRemoteAccountService(t *testing.T) {
 
 func TestDeleteRemoteAccountService(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
@@ -468,7 +479,7 @@ func TestDeleteRemoteAccountService(t *testing.T) {
 
 func TestUpdateRemoteAccountService(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()

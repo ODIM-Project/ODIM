@@ -31,10 +31,10 @@ import (
 
 // Systems struct helps to register service
 type Systems struct {
-	IsAuthorizedRPC    func(sessionToken string, privileges, oemPrivileges []string) response.RPC
+	IsAuthorizedRPC    func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
 	GetSessionUserName func(string) (string, error)
-	CreateTask         func(string) (string, error)
-	UpdateTask         func(common.TaskData) error
+	CreateTask         func(ctx context.Context, sessionUserName string) (string, error)
+	UpdateTask         func(ctx context.Context, task common.TaskData) error
 	EI                 *systems.ExternalInterface
 }
 
@@ -47,9 +47,11 @@ type Systems struct {
 func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		l.Log.Error("error while trying to authenticate session")
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
@@ -73,8 +75,11 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 	l.LogWithFields(ctx).Info("Inside GetSystemsCollection function (RPC)")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
@@ -92,8 +97,11 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
@@ -116,8 +124,11 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.ComputerSystemResetRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
@@ -130,7 +141,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	}
 
 	// Task Service using RPC and get the taskID
-	taskURI, err := s.CreateTask(sessionUserName)
+	taskURI, err := s.CreateTask(ctx, sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
@@ -167,8 +178,11 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.DefaultBootOrderRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
@@ -190,8 +204,11 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.BiosSettingsRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
@@ -213,8 +230,11 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
@@ -236,8 +256,11 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
@@ -256,8 +279,11 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}

@@ -45,18 +45,20 @@ func main() {
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
-	log := logs.Log
 	logs.Adorn(logrus.Fields{
 		"host":   hostName,
 		"procid": podName + fmt.Sprintf("_%d", pid),
 	})
 
-	if err := config.SetConfiguration(); err != nil {
+	// log should be initialized after Adorn is invoked
+	// as Adorn will assign new pointer to Log variable in logs package.
+	log := logs.Log
+	configWarnings, err := config.SetConfiguration()
+	if err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
-		log.Fatal("error while trying to set configuration: " + err.Error())
+		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
-
-	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	logs.SetFormatter(config.Data.LogFormat)
 	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(config.Data.LogLevel)
 
@@ -65,7 +67,10 @@ func main() {
 		log.Fatal("Aggregation Service should not be run as the root user")
 	}
 
-	config.CollectCLArgs()
+	config.CollectCLArgs(&configWarnings)
+	for _, warning := range configWarnings {
+		log.Warn(warning)
+	}
 
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
 		log.Fatal("error while trying to set message bus configuration: " + err.Error())
@@ -83,7 +88,8 @@ func main() {
 		log.Fatal("error while trying add connection method: " + err.Error())
 	}
 
-	if err := services.InitializeService(services.Aggregator); err != nil {
+	errChan := make(chan error)
+	if err := services.InitializeService(services.Aggregator, errChan); err != nil {
 		log.Fatal("fatal: error while trying to initialize service: " + err.Error())
 	}
 
@@ -101,13 +107,14 @@ func main() {
 		DecryptPassword: common.DecryptWithPrivateKey,
 		UpdateTask:      system.UpdateTaskData,
 	}
+
 	go p.RediscoverResources()
 
 	agcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
 	if agcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	go agcommon.TrackConfigFileChanges(connectionMethodInterface)
+	go agcommon.TrackConfigFileChanges(connectionMethodInterface, errChan)
 
 	go system.PerformPluginHealthCheck()
 

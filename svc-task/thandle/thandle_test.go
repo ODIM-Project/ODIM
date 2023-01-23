@@ -24,9 +24,9 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
+	"github.com/ODIM-Project/ODIM/svc-task/tcommon"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
@@ -73,14 +73,7 @@ func mockGetTaskStatus(taskID string, db common.DbType) (*tmodel.Task, error) {
 	return &task, nil
 }
 
-func mockOverWriteCompletedTaskUtil(userName string) error {
-	if userName != "validUser" {
-		return fmt.Errorf("user does not exist")
-	}
-	return nil
-}
-func mockCreateTaskUtil(userName string) (string, error) {
-
+func mockCreateTaskUtil(ctx context.Context, userName string) (string, error) {
 	if userName == "" {
 		return "", fmt.Errorf("error invalid input argument for userName")
 	}
@@ -90,38 +83,7 @@ func mockCreateTaskUtil(userName string) (string, error) {
 	return "/redfish/v1/TaskService/Tasks/validTaskID", nil
 }
 
-func mockGetCompletedTasksIndexModel(searchKey string) ([]string, error) {
-	var taskList []string
-	switch searchKey {
-	case "validUserWithNoCompletedTasks":
-	case "validUserWithCompletedTasksNotReadyForDelete":
-		elapsedTime := "2h"
-		timeNowNano := time.Now().UnixNano()
-		elapsedHours, _ := time.ParseDuration(elapsedTime)
-		endTimeNano := timeNowNano - elapsedHours.Nanoseconds()
-		endTime := time.Unix(0, endTimeNano).UTC()
-		taskData1 := "validUserWithCompletedTasksNotReadyForDelete::" + endTime.String() + "::1"
-		taskData2 := "validUserWithCompletedTasksNotReadyForDelete::" + endTime.String() + "::2"
-		taskList = append(taskList, taskData1)
-		taskList = append(taskList, taskData2)
-	case "validUserWithCompletedTasksReadyForDelete":
-		elapsedTime := "5h"
-		timeNowNano := time.Now().UnixNano()
-		elapsedHours, _ := time.ParseDuration(elapsedTime)
-		endTimeNano := timeNowNano - elapsedHours.Nanoseconds()
-		endTime := time.Unix(0, endTimeNano).UTC()
-		taskData1 := "validUserWithCompletedTasksNotReadyForDelete::" + endTime.String() + "::CompletedTaskID"
-		taskList = append(taskList, taskData1)
-	}
-	return taskList, nil
-}
-
-func mockDeleteTaskFromDBModel(task *tmodel.Task) error {
-
-	return nil
-}
-
-func mockDeleteTaskIndex(task string) error {
+func mockDeleteTaskFromDBModel(ctx context.Context, task *tmodel.Task) error {
 
 	return nil
 }
@@ -129,16 +91,16 @@ func mockDeleteTaskIndex(task string) error {
 func mockUpdateTaskStatusModel(task *tmodel.Task) {
 }
 
-func mockPublishToMessageBus(taskURI, taskEvenMessageID, eventType, taskMessage string) {
+func mockPublishToMessageBus(ctx context.Context, taskURI, taskEvenMessageID, eventType, taskMessage string) {
 
 }
-func mockValidateTaskUserNameModel(userName string) error {
+func mockValidateTaskUserNameModel(ctx context.Context, userName string) error {
 	if userName != "validUser" {
 		return fmt.Errorf("error while trying to read from DB: %v", errors.PackError(errors.DBKeyNotFound, "no data with the with key ", userName, " found").Error())
 	}
 	return nil
 }
-func mockPersistTaskModel(task *tmodel.Task, db common.DbType) error {
+func mockPersistTaskModel(ctx context.Context, task *tmodel.Task, db common.DbType) error {
 	if db != common.InMemory {
 		return fmt.Errorf("error while trying to connecting to DB: error invalid db type selection")
 	}
@@ -146,7 +108,6 @@ func mockPersistTaskModel(task *tmodel.Task, db common.DbType) error {
 }
 func TestTasksRPC_GetTasks(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.GetTaskRequest
 		rsp *taskproto.TaskResponse
 	}
@@ -285,7 +246,7 @@ func TestTasksRPC_GetTasks(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rsp, err := tt.ts.GetTasks(tt.args.ctx, tt.args.req)
+			rsp, err := tt.ts.GetTasks(mockContext(), tt.args.req)
 			if err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.GetTasks() got = %v, want: %v", got.StatusCode, tt.want.StatusCode)
@@ -293,13 +254,12 @@ func TestTasksRPC_GetTasks(t *testing.T) {
 		})
 	}
 }
-func mockGetAllTaskKeysModel() ([]string, error) {
+func mockGetAllTaskKeysModel(ctx context.Context) ([]string, error) {
 	keys := []string{"task:key1", "task:key2"}
 	return keys, nil
 }
 func TestTasksRPC_TaskCollection(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.GetTaskRequest
 		rsp *taskproto.TaskResponse
 	}
@@ -347,7 +307,7 @@ func TestTasksRPC_TaskCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.TaskCollection(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.TaskCollection(mockContext(), tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.TaskCollection() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -357,7 +317,6 @@ func TestTasksRPC_TaskCollection(t *testing.T) {
 
 func TestTasksRPC_GetTaskService(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.GetTaskRequest
 		rsp *taskproto.TaskResponse
 	}
@@ -403,7 +362,7 @@ func TestTasksRPC_GetTaskService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.GetTaskService(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.GetTaskService(mockContext(), tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.GetTaskService() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -413,7 +372,6 @@ func TestTasksRPC_GetTaskService(t *testing.T) {
 
 func TestTasksRPC_GetSubTasks(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.GetTaskRequest
 		rsp *taskproto.TaskResponse
 	}
@@ -517,7 +475,7 @@ func TestTasksRPC_GetSubTasks(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.GetSubTasks(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.GetSubTasks(mockContext(), tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.GetSubTasks() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -527,7 +485,6 @@ func TestTasksRPC_GetSubTasks(t *testing.T) {
 
 func TestTasksRPC_GetSubTask(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.GetTaskRequest
 		rsp *taskproto.TaskResponse
 	}
@@ -655,7 +612,7 @@ func TestTasksRPC_GetSubTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.GetSubTask(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.GetSubTask(mockContext(), tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.GetSubTask() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -665,7 +622,6 @@ func TestTasksRPC_GetSubTask(t *testing.T) {
 
 func TestTasksRPC_DeleteTask(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.GetTaskRequest
 		rsp *taskproto.TaskResponse
 	}
@@ -793,7 +749,7 @@ func TestTasksRPC_DeleteTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.DeleteTask(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.DeleteTask(mockContext(), tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.DeleteTask() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -802,7 +758,6 @@ func TestTasksRPC_DeleteTask(t *testing.T) {
 }
 func TestTasksRPC_CreateTask(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.CreateTaskRequest
 		rsp *taskproto.CreateTaskResponse
 	}
@@ -817,8 +772,7 @@ func TestTasksRPC_CreateTask(t *testing.T) {
 		{
 			name: "Positive test case, All is well",
 			ts: &TasksRPC{
-				OverWriteCompletedTaskUtilHelper: mockOverWriteCompletedTaskUtil,
-				CreateTaskUtilHelper:             mockCreateTaskUtil,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
 			},
 			args: args{
 				req: &taskproto.CreateTaskRequest{
@@ -834,8 +788,7 @@ func TestTasksRPC_CreateTask(t *testing.T) {
 		{
 			name: "Negative test case, userName is empty",
 			ts: &TasksRPC{
-				OverWriteCompletedTaskUtilHelper: mockOverWriteCompletedTaskUtil,
-				CreateTaskUtilHelper:             mockCreateTaskUtil,
+				CreateTaskUtilHelper: mockCreateTaskUtil,
 			},
 			args: args{
 				req: &taskproto.CreateTaskRequest{
@@ -851,96 +804,9 @@ func TestTasksRPC_CreateTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.CreateTask(tt.args.ctx, tt.args.req); !reflect.DeepEqual(rsp.TaskURI, tt.want.TaskURI) {
+			if rsp, err := tt.ts.CreateTask(mockContext(), tt.args.req); !reflect.DeepEqual(rsp.TaskURI, tt.want.TaskURI) {
 				t.Errorf("TasksRPC.CreateTask() got error = %v, wantError %v", err, tt.wantError)
 				t.Errorf("TasksRPC.CreateTask() got = %v, want %v", rsp, tt.want)
-			}
-		})
-	}
-}
-func TestTasksRPC_OverWriteCompletedTaskUtil(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	common.SetUpMockConfig()
-	task := tmodel.Task{
-		UserName:     "admin",
-		ParentID:     "",
-		ChildTaskIDs: nil,
-		ID:           "CompletedTaskID",
-		TaskState:    "Completed",
-		TaskStatus:   "OK",
-		StartTime:    time.Now(),
-		EndTime:      time.Time{},
-	}
-	task.Name = "Task " + task.ID
-	// Persist in the in-memory DB
-	err := tmodel.PersistTask(&task, common.InMemory)
-	if err != nil {
-		t.Fatalf("error while trying to insert the task details: %v", err)
-		return
-	}
-	fmt.Println(task)
-	type args struct {
-		userName string
-	}
-	tests := []struct {
-		name      string
-		ts        *TasksRPC
-		args      args
-		wantError error
-	}{
-		// TODO: Add test cases.
-		{
-			name: "Positive test case, with valid userName but no completed tasks",
-			ts: &TasksRPC{
-				GetCompletedTasksIndexModel: mockGetCompletedTasksIndexModel,
-				GetTaskStatusModel:          mockGetTaskStatusModel,
-				DeleteTaskFromDBModel:       mockDeleteTaskFromDBModel,
-			},
-			args: args{
-				userName: "validUserWithNoCompletedTasks",
-			},
-			wantError: nil,
-		},
-		{
-			name: "Positive test case, with valid userName with completed tasks, not elizible to delete",
-			ts: &TasksRPC{
-				GetCompletedTasksIndexModel: mockGetCompletedTasksIndexModel,
-				GetTaskStatusModel:          mockGetTaskStatusModel,
-				DeleteTaskFromDBModel:       mockDeleteTaskFromDBModel,
-			},
-			args: args{
-				userName: "validUserWithCompletedTasksNotReadyForDelete",
-			},
-			wantError: nil,
-		},
-		{
-			name: "Positive test case, with valid userName with completed tasks, not    elizible to delete",
-			ts: &TasksRPC{
-				GetCompletedTasksIndexModel: mockGetCompletedTasksIndexModel,
-				GetTaskStatusModel:          mockGetTaskStatusModel,
-				DeleteTaskFromDBModel:       mockDeleteTaskFromDBModel,
-				DeleteTaskIndex:             mockDeleteTaskIndex,
-			},
-			args: args{
-				userName: "validUserWithCompletedTasksReadyForDelete",
-			},
-			wantError: nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.ts.OverWriteCompletedTaskUtil(tt.args.userName); !(err != nil && tt.wantError != nil) && !(err == nil && tt.wantError == nil) {
-				t.Errorf("TasksRPC.OverWriteCompletedTaskUtil() error = %v, wantErr %v", err, tt.wantError)
 			}
 		})
 	}
@@ -948,7 +814,6 @@ func TestTasksRPC_OverWriteCompletedTaskUtil(t *testing.T) {
 
 func TestTasksRPC_CreateChildTask(t *testing.T) {
 	type args struct {
-		ctx context.Context
 		req *taskproto.CreateTaskRequest
 		rsp *taskproto.CreateTaskResponse
 	}
@@ -993,7 +858,7 @@ func TestTasksRPC_CreateChildTask(t *testing.T) {
 				},
 				rsp: &taskproto.CreateTaskResponse{},
 			},
-			wantErr: fmt.Errorf("error parent task ID is empty"),
+			wantErr: fmt.Errorf("error empty/invalid input Parent Task ID"),
 			wantRsp: taskproto.CreateTaskResponse{
 				TaskURI: "",
 			},
@@ -1012,7 +877,7 @@ func TestTasksRPC_CreateChildTask(t *testing.T) {
 				},
 				rsp: &taskproto.CreateTaskResponse{},
 			},
-			wantErr: fmt.Errorf("error while retrieing the task detais from DB: Resource not found"),
+			wantErr: fmt.Errorf("error while retrieving the task details from DB: Resource not found"),
 			wantRsp: taskproto.CreateTaskResponse{
 				TaskURI: "",
 			},
@@ -1039,7 +904,7 @@ func TestTasksRPC_CreateChildTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if rsp, err := tt.ts.CreateChildTask(tt.args.ctx, tt.args.req); !reflect.DeepEqual(err, tt.wantErr) || !reflect.DeepEqual(rsp.TaskURI, tt.wantRsp.TaskURI) {
+			if rsp, err := tt.ts.CreateChildTask(mockContext(), tt.args.req); !reflect.DeepEqual(err, tt.wantErr) || !reflect.DeepEqual(rsp.TaskURI, tt.wantRsp.TaskURI) {
 				t.Errorf("TasksRPC.CreateChildTask() got error = %v, wantErr: %v", err, tt.wantErr)
 				t.Errorf("TasksRPC.CreateChildTask() got response = %v, want: %v", rsp, tt.wantRsp)
 			}
@@ -1052,7 +917,6 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 		Lock:           sync.Mutex{},
 	}
 	type args struct {
-		ctx context.Context
 		req *taskproto.UpdateTaskRequest
 		rsp *taskproto.UpdateTaskResponse
 	}
@@ -1657,7 +1521,7 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := tt.ts.UpdateTask(tt.args.ctx, tt.args.req); !reflect.DeepEqual(err, tt.wantErr) {
+			if _, err := tt.ts.UpdateTask(mockContext(), tt.args.req); !reflect.DeepEqual(err, tt.wantErr) {
 				t.Errorf("TasksRPC.UpdateTask() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -1696,7 +1560,7 @@ func TestTasksRPC_CreateTaskUtil(t *testing.T) {
 			args: args{
 				userName: "",
 			},
-			wantErr: fmt.Errorf("error invalid username"),
+			wantErr: fmt.Errorf("error invalid input argument for userName"),
 		},
 		{
 			name: "Negative case: Invalid Username",
@@ -1712,7 +1576,7 @@ func TestTasksRPC_CreateTaskUtil(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.ts.CreateTaskUtil(tt.args.userName)
+			_, err := tt.ts.CreateTaskUtil(mockContext(), tt.args.userName)
 			if !reflect.DeepEqual(err, tt.wantErr) {
 				t.Errorf("TasksRPC.CreateTaskUtil() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1783,10 +1647,24 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.ts.taskCancelCallBack(tt.args.taskID)
+			ctx := mockContext()
+			iterCount := new(int)
+			ctxt := context.WithValue(ctx, tcommon.IterationCount, iterCount)
+			err := tt.ts.taskCancelCallBack(ctxt, tt.args.taskID)
 			if !reflect.DeepEqual(err, tt.wantErr) {
 				t.Errorf("TasksRPC.taskCancelCallBack() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
+}
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
 }

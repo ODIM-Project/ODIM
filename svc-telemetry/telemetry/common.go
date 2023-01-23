@@ -15,6 +15,7 @@
 package telemetry
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
@@ -34,8 +35,8 @@ type ExternalInterface struct {
 
 // External struct holds the function pointers all outboud services
 type External struct {
-	ContactClient      func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth               func(string, []string, []string) response.RPC
+	ContactClient      func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	Auth               func(string, []string, []string) (response.RPC, error)
 	DevicePassword     func([]byte) ([]byte, error)
 	GetPluginData      func(string) (tmodel.Plugin, *errors.Error)
 	ContactPlugin      func(tcommon.PluginContactRequest, string) ([]byte, string, tcommon.ResponseStatus, error)

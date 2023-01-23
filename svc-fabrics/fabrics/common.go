@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package fabrics ...
+// Package fabrics ...
 package fabrics
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -46,14 +47,14 @@ var (
 
 // Fabrics struct helps to hold the behaviours
 type Fabrics struct {
-	Auth          func(sessionToken string, privileges []string, oemPrivileges []string) response.RPC
-	ContactClient func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	Auth          func(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error)
+	ContactClient func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 
 type pluginContactRequest struct {
 	URL             string
 	HTTPMethodType  string
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	PostBody        interface{}
 	LoginCredential map[string]string
 	Plugin          fabmodel.Plugin
@@ -78,7 +79,7 @@ type Zones struct {
 	Links    dmtf.Links `json:"Links"`
 }
 
-//Endpoints struct to check request body cases
+// Endpoints struct to check request body cases
 type Endpoints struct {
 	Name        string       `json:"Name"`
 	Description string       `json:"Description"`
@@ -86,7 +87,7 @@ type Endpoints struct {
 	Links       dmtf.Links   `json:"Links"`
 }
 
-//Redundancy struct to check request body cases
+// Redundancy struct to check request body cases
 type Redundancy struct {
 	Mode          string      `json:"Mode"`
 	RedundencySet []dmtf.Link `json:"RedundencySet"`
@@ -152,9 +153,9 @@ func contactPlugin(req pluginContactRequest, errorMessage string) ([]byte, strin
 func callPlugin(req pluginContactRequest) (*http.Response, error) {
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.URL
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		req.ContactClient(reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
+		req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
 	}
-	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
+	return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
 }
 
 // getPluginStatus checks the status of given plugin in configured interval
@@ -232,9 +233,12 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	var contactRequest pluginContactRequest
 	var resp response.RPC
 	sessionToken := req.SessionToken
-	authResp := f.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := f.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := "error while trying to authenticate session"
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
 		l.Log.Error(errMsg)
 		return contactRequest, authResp, fmt.Errorf(errMsg)
 	}
@@ -451,15 +455,25 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	return resp, nil
 }
 
-func TrackConfigFileChanges() {
+func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
-	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	format := config.Data.LogFormat
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, errChan)
 	for {
-		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
-		if l.Log.Level != config.Data.LogLevel {
-			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
-			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		select {
+		case info := <-eventChan:
+			l.Log.Info(info) // new data arrives through eventChan channel
+			if l.Log.Level != config.Data.LogLevel {
+				l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+				l.Log.Logger.SetLevel(config.Data.LogLevel)
+			}
+			if format != config.Data.LogFormat {
+				l.SetFormatter(config.Data.LogFormat)
+				format = config.Data.LogFormat
+				l.Log.Info("Log format is updated, new log format is ", config.Data.LogFormat)
+			}
+		case err := <-errChan:
+			l.Log.Error(err)
 		}
-
 	}
 }

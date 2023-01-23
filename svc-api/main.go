@@ -14,10 +14,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -42,19 +44,20 @@ func main() {
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
-	log := logs.Log
 	logs.Adorn(logrus.Fields{
 		"host":   hostName,
 		"procid": podName + fmt.Sprintf("_%d", pid),
 	})
 
-	err := config.SetConfiguration()
+	// log should be initialized after Adorn is invoked
+	// as Adorn will assign new pointer to Log variable in logs package.
+	log := logs.Log
+	configWarnings, err := config.SetConfiguration()
 	if err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
-		log.Fatal(err.Error())
+		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
-
-	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	logs.SetFormatter(config.Data.LogFormat)
 	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(config.Data.LogLevel)
 
@@ -177,7 +180,10 @@ func main() {
 	})
 
 	// TODO: uncomment the following line after the migration
-	config.CollectCLArgs()
+	config.CollectCLArgs(&configWarnings)
+	for _, warning := range configWarnings {
+		log.Warn(warning)
+	}
 
 	err = services.InitializeClient(services.APIClient)
 	if err != nil {
@@ -201,8 +207,9 @@ func main() {
 		logs.Log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 
+	errChan := make(chan error)
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go apicommon.TrackConfigFileChanges()
+	go apicommon.TrackConfigFileChanges(errChan)
 
 	router.Run(iris.Server(apiServer))
 }
@@ -220,6 +227,7 @@ func invalidAuthResp(errMsg string, w http.ResponseWriter) {
 func createContext(r *http.Request, transactionID uuid.UUID, podName string) context.Context {
 	ctx := context.Background()
 	var serviceName string
+	var reqBody map[string]interface{}
 	val := strings.Split(r.URL.Path, "/")
 	if len(val) >= 4 && val[2] != "" {
 		serviceName = val[3]
@@ -242,6 +250,12 @@ func createContext(r *http.Request, transactionID uuid.UUID, podName string) con
 	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	ctx = context.WithValue(ctx, common.ThreadName, common.ApiService)
 	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
+	if r.Body != nil {
+		body, _ := ioutil.ReadAll(r.Body)
+		json.Unmarshal(body, &reqBody)
+		ctx = context.WithValue(ctx, common.RequestBody, reqBody)
+		r.Body = ioutil.NopCloser(bytes.NewReader(body))
+	}
 
 	return ctx
 }

@@ -12,16 +12,18 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package update ...
+// Package update ...
 package update
 
 // ---------------------------------------------------------------------------------------
 // IMPORT Section
 //
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -39,17 +41,17 @@ var (
 )
 
 // StartUpdate function handler for on start update process
-func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, req *updateproto.UpdateRequest) response.RPC {
+func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sessionUserName string, req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
 	var percentComplete int32
 	targetURI := "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate"
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
 	// Read all the requests from database
 	targetList, err := GetAllKeysFromTableFunc("SimpleUpdate", common.OnDisk)
 	if err != nil {
 		errMsg := "Unable to read SimpleUpdate requests from database: " + err.Error()
-		l.Log.Warn(errMsg)
+		l.LogWithFields(ctx).Warn(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	partialResultFlag := false
@@ -65,10 +67,10 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 		}
 		resp.Body = args.CreateGenericErrorResponse()
 		var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
-		err = e.External.UpdateTask(task)
+		err = e.External.UpdateTask(ctx, task)
 		if err != nil && err.Error() == common.Cancelling {
 			task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
-			e.External.UpdateTask(task)
+			e.External.UpdateTask(ctx, task)
 			runtime.Goexit()
 		}
 		return resp
@@ -77,10 +79,14 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 		data, gerr := e.DB.GetResource("SimpleUpdate", target, common.OnDisk)
 		if gerr != nil {
 			errMsg := "Unable to retrive the start update request" + gerr.Error()
-			l.Log.Warn(errMsg)
+			l.LogWithFields(ctx).Warn(errMsg)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		}
-		go e.startRequest(target, taskID, data, subTaskChannel, sessionUserName)
+		var threadID int = 1
+		ctxt := context.WithValue(ctx, common.ThreadName, common.StartRequest)
+		ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+		go e.startRequest(ctx, target, taskID, data, subTaskChannel, sessionUserName)
+		threadID++
 	}
 	resp.StatusCode = http.StatusOK
 	for i := 0; i < len(targetList); i++ {
@@ -95,10 +101,10 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 			if i < len(targetList)-1 {
 				percentComplete := int32(((i + 1) / len(targetList)) * 100)
 				var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-				err := e.External.UpdateTask(task)
+				err := e.External.UpdateTask(ctx, task)
 				if err != nil && err.Error() == common.Cancelling {
 					task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
-					e.External.UpdateTask(task)
+					e.External.UpdateTask(ctx, task)
 					runtime.Goexit()
 				}
 
@@ -112,7 +118,7 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 	percentComplete = 100
 	if resp.StatusCode != http.StatusOK {
 		errMsg := "One or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
-		l.Log.Warn(errMsg)
+		l.LogWithFields(ctx).Warn(errMsg)
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
 			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{fmt.Sprintf("%v", targetList)}, taskInfo)
@@ -125,7 +131,7 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 		}
 	}
 
-	l.Log.Info("All SimpleUpdate requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
+	l.LogWithFields(ctx).Info("All SimpleUpdate requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
 	resp.StatusMessage = response.Success
 	resp.StatusCode = http.StatusOK
 	args := response.Args{
@@ -135,21 +141,21 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 	resp.Body = args.CreateGenericErrorResponse()
 
 	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
-	err = e.External.UpdateTask(task)
+	err = e.External.UpdateTask(ctx, task)
 	if err != nil && err.Error() == common.Cancelling {
 		task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
-		e.External.UpdateTask(task)
+		e.External.UpdateTask(ctx, task)
 		runtime.Goexit()
 	}
 	return resp
 }
 
-func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChannel chan<- int32, sessionUserName string) {
+func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data string, subTaskChannel chan<- int32, sessionUserName string) {
 	var resp response.RPC
-	subTaskURI, err := e.External.CreateChildTask(sessionUserName, taskID)
+	subTaskURI, err := e.External.CreateChildTask(ctx, sessionUserName, taskID)
 	if err != nil {
 		subTaskChannel <- http.StatusInternalServerError
-		l.Log.Warn("Unable to create sub task")
+		l.LogWithFields(ctx).Warn("Unable to create sub task")
 		return
 	}
 	var subTaskID string
@@ -160,7 +166,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 		subTaskID = strArray[len(strArray)-1]
 	}
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: uuid, UpdateTask: e.External.UpdateTask, TaskRequest: data}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: subTaskID, TargetURI: uuid, UpdateTask: e.External.UpdateTask, TaskRequest: data}
 
 	var percentComplete int32
 	updateRequestBody := strings.Replace(data, uuid+":", "", -1)
@@ -172,7 +178,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	if gerr != nil {
 		subTaskChannel <- http.StatusBadRequest
 		errMsg := gerr.Error()
-		l.Log.Warn(errMsg)
+		l.LogWithFields(ctx).Warn(errMsg)
 		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, taskInfo)
 		return
 	}
@@ -181,7 +187,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	if passwdErr != nil {
 		subTaskChannel <- http.StatusInternalServerError
 		errMsg := "Unable to decrypt device password: " + passwdErr.Error()
-		l.Log.Warn(errMsg)
+		l.LogWithFields(ctx).Warn(errMsg)
 		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		return
 	}
@@ -192,7 +198,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	if gerr != nil {
 		subTaskChannel <- http.StatusNotFound
 		errMsg := "Unable to get plugin data: " + gerr.Error()
-		l.Log.Warn(errMsg)
+		l.LogWithFields(ctx).Warn(errMsg)
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, taskInfo)
 		return
 	}
@@ -208,12 +214,12 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := e.External.ContactPlugin(contactRequest, "error while creating session with the plugin: ")
+		_, token, getResponse, err := e.External.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			subTaskChannel <- getResponse.StatusCode
 			errMsg := err.Error()
-			l.Log.Info(errMsg)
+			l.LogWithFields(ctx).Info(errMsg)
 			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 			return
 		}
@@ -230,16 +236,16 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.StartUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost
-	respBody, location, getResponse, contactErr := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
+	respBody, location, getResponse, contactErr := e.External.ContactPlugin(ctx, contactRequest, "error while performing simple update action: ")
 	if contactErr != nil {
 		subTaskChannel <- getResponse.StatusCode
 		errMsg := contactErr.Error()
-		l.Log.Info(errMsg)
+		l.LogWithFields(ctx).Info(errMsg)
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
-		getResponse, err = e.monitorPluginTask(subTaskChannel, &monitorTaskRequest{
+		getResponse, err = e.monitorPluginTask(ctx, subTaskChannel, &monitorTaskRequest{
 			subTaskID:         subTaskID,
 			serverURI:         uuid,
 			updateRequestBody: data,
@@ -259,10 +265,10 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	percentComplete = 100
 	subTaskChannel <- int32(getResponse.StatusCode)
 	var task = fillTaskData(subTaskID, uuid, data, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
-	err = e.External.UpdateTask(task)
+	err = e.External.UpdateTask(ctx, task)
 	if err != nil && err.Error() == common.Cancelling {
 		var task = fillTaskData(subTaskID, uuid, data, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
-		e.External.UpdateTask(task)
+		e.External.UpdateTask(ctx, task)
 	}
 	return
 }

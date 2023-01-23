@@ -32,18 +32,20 @@ func main() {
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
-	log := logs.Log
 	logs.Adorn(logrus.Fields{
 		"host":   hostName,
 		"procid": podName + fmt.Sprintf("_%d", pid),
 	})
 
-	if err := config.SetConfiguration(); err != nil {
+	// log should be initialized after Adorn is invoked
+	// as Adorn will assign new pointer to Log variable in logs package.
+	log := logs.Log
+	configWarnings, err := config.SetConfiguration()
+	if err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
-		log.Error("fatal: error while trying set up configuration: " + err.Error())
+		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
-
-	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	logs.SetFormatter(config.Data.LogFormat)
 	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(config.Data.LogLevel)
 
@@ -52,7 +54,10 @@ func main() {
 		log.Error("Update Service should not be run as the root user")
 	}
 
-	config.CollectCLArgs()
+	config.CollectCLArgs(&configWarnings)
+	for _, warning := range configWarnings {
+		log.Warn(warning)
+	}
 
 	if err := common.CheckDBConnection(); err != nil {
 		log.Error("error while trying to check DB connection health: " + err.Error())
@@ -61,10 +66,12 @@ func main() {
 	if ucommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go ucommon.TrackConfigFileChanges()
 
-	registerHandlers()
+	errChan := make(chan error)
+	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+	go ucommon.TrackConfigFileChanges(errChan)
+
+	registerHandlers(errChan)
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {
 		log.Error(err)
@@ -72,9 +79,9 @@ func main() {
 
 }
 
-func registerHandlers() {
+func registerHandlers(errChan chan error) {
 	log := logs.Log
-	if err := services.InitializeService(services.Update); err != nil {
+	if err := services.InitializeService(services.Update, errChan); err != nil {
 		log.Error("fatal: error while trying to initialize service: " + err.Error())
 	}
 	updater := rpc.GetUpdater()

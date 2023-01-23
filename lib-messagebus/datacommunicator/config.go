@@ -27,8 +27,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
-
 	"github.com/BurntSushi/toml"
 )
 
@@ -112,7 +110,6 @@ func SetConfiguration(filePath string) error {
 			return fmt.Errorf("no value found for KServersInfo in messagebus config file")
 		}
 		if MQ.KafkaF.KTimeout == 0 {
-			l.Log.Warn("no value found for KTimeout in messagebus config file, using default time 10 seconds")
 			MQ.KafkaF.KTimeout = 10
 		}
 		if MQ.KafkaF.KAFKACertFile == "" {

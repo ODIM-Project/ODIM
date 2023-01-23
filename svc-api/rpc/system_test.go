@@ -49,6 +49,7 @@ func TestGetSystemsCollection(t *testing.T) {
 	ctx = context.WithValue(ctx, common.ActionName, "xyz")
 	ctx = context.WithValue(ctx, common.ThreadID, "0")
 	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	ctx = common.CreateMetadata(ctx)
 	tests := []struct {
 		name                 string

@@ -38,7 +38,7 @@ func GetFabricResource(ctx context.Context, req fabricsproto.FabricRequest) (*fa
 	}
 
 	fab := NewFabricsClientFunc(conn)
-	resp, err := fab.GetFabricResource(context.TODO(), &req)
+	resp, err := fab.GetFabricResource(ctx, &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}
@@ -57,7 +57,7 @@ func UpdateFabricResource(ctx context.Context, req fabricsproto.FabricRequest) (
 
 	fab := NewFabricsClientFunc(conn)
 
-	resp, err := fab.UpdateFabricResource(context.TODO(), &req)
+	resp, err := fab.UpdateFabricResource(ctx, &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}
@@ -76,7 +76,7 @@ func DeleteFabricResource(ctx context.Context, req fabricsproto.FabricRequest) (
 
 	fab := NewFabricsClientFunc(conn)
 
-	resp, err := fab.DeleteFabricResource(context.TODO(), &req)
+	resp, err := fab.DeleteFabricResource(ctx, &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}

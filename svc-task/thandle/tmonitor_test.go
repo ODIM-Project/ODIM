@@ -30,24 +30,24 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 )
 
-func mockIsAuthorized(sessionToken string, privileges []string) response.RPC {
+func mockIsAuthorized(sessionToken string, privileges []string) (response.RPC, error) {
 	switch sessionToken {
 	case "validToken":
-		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 	case "NotTaskUserToken":
 		// this session user does not have ConfigureUses Privilege
 		for _, privilege := range privileges {
 			if privilege == common.PrivilegeConfigureUsers {
 				fmt.Printf("UnAuthorized %v", privileges)
-				return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
+				return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 			}
 		}
 		fmt.Printf("Autherized %v", privileges)
-		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 	case "NotTaskUserButAdminToken":
-		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 	default:
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 
 	}
 }
@@ -65,7 +65,7 @@ func mockGetSessionUserName(sessionToken string) (string, error) {
 	}
 	return user, nil
 }
-func mockGetTaskStatusModel(taskID string, db common.DbType) (*tmodel.Task, error) {
+func mockGetTaskStatusModel(ctx context.Context, taskID string, db common.DbType) (*tmodel.Task, error) {
 	if db != common.InMemory {
 		return nil, fmt.Errorf("Resource not found")
 	}
@@ -117,7 +117,7 @@ func mockGetTaskStatusModel(taskID string, db common.DbType) (*tmodel.Task, erro
 	return &task, nil
 
 }
-func mockTransactionModel(taskID string, cb func(string) error) error {
+func mockTransactionModel(ctx context.Context, taskID string, cb func(context.Context, string) error) error {
 	return nil
 }
 func TestTasksRPC_GetTaskMonitor(t *testing.T) {
@@ -141,7 +141,7 @@ func TestTasksRPC_GetTaskMonitor(t *testing.T) {
 				GetTaskStatusModel:    mockGetTaskStatusModel,
 			},
 			args: args{
-				ctx: nil,
+				ctx: mockContext(),
 				req: &taskproto.GetTaskRequest{
 					TaskID:       "RunningTaskID",
 					SubTaskID:    "",
@@ -161,7 +161,7 @@ func TestTasksRPC_GetTaskMonitor(t *testing.T) {
 				GetTaskStatusModel:    mockGetTaskStatusModel,
 			},
 			args: args{
-				ctx: nil,
+				ctx: mockContext(),
 				req: &taskproto.GetTaskRequest{
 					TaskID:       "CompletedTaskID",
 					SubTaskID:    "",
@@ -181,7 +181,7 @@ func TestTasksRPC_GetTaskMonitor(t *testing.T) {
 				GetTaskStatusModel:    mockGetTaskStatusModel,
 			},
 			args: args{
-				ctx: nil,
+				ctx: mockContext(),
 				req: &taskproto.GetTaskRequest{
 					TaskID:       "InvalidTaskID",
 					SubTaskID:    "",
@@ -201,7 +201,7 @@ func TestTasksRPC_GetTaskMonitor(t *testing.T) {
 				GetTaskStatusModel:    mockGetTaskStatusModel,
 			},
 			args: args{
-				ctx: nil,
+				ctx: mockContext(),
 				req: &taskproto.GetTaskRequest{
 					TaskID:       "CompletedTaskID",
 					SubTaskID:    "",

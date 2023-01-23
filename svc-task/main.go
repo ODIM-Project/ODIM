@@ -40,18 +40,20 @@ func main() {
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
-	log := logs.Log
 	logs.Adorn(logrus.Fields{
 		"host":   hostName,
 		"procid": podName + fmt.Sprintf("_%d", pid),
 	})
 
-	if err := config.SetConfiguration(); err != nil {
+	// log should be initialized after Adorn is invoked
+	// as Adorn will assign new pointer to Log variable in logs package.
+	log := logs.Log
+	configWarnings, err := config.SetConfiguration()
+	if err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
-		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
+		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
-
-	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	logs.SetFormatter(config.Data.LogFormat)
 	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(config.Data.LogLevel)
 
@@ -60,7 +62,10 @@ func main() {
 		log.Fatal("Task Service should not be run as the root user")
 	}
 
-	config.CollectCLArgs()
+	config.CollectCLArgs(&configWarnings)
+	for _, warning := range configWarnings {
+		log.Warn(warning)
+	}
 
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
 		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
@@ -72,10 +77,12 @@ func main() {
 	if tcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go tcommon.TrackConfigFileChanges()
 
-	if err := services.InitializeService(services.Tasks); err != nil {
+	errChan := make(chan error)
+	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+	go tcommon.TrackConfigFileChanges(errChan)
+
+	if err := services.InitializeService(services.Tasks, errChan); err != nil {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
 
@@ -87,12 +94,8 @@ func main() {
 	task.GetTaskStatusModel = tmodel.GetTaskStatus
 	task.GetAllTaskKeysModel = tmodel.GetAllTaskKeys
 	task.TransactionModel = tmodel.Transaction
-	task.OverWriteCompletedTaskUtilHelper = task.OverWriteCompletedTaskUtil
 	task.CreateTaskUtilHelper = task.CreateTaskUtil
-	task.GetCompletedTasksIndexModel = tmodel.GetCompletedTasksIndex
-
 	task.DeleteTaskFromDBModel = tmodel.DeleteTaskFromDB
-	task.DeleteTaskIndex = tmodel.DeleteTaskIndex
 	task.UpdateTaskQueue = tqueue.EnqueueTask
 	task.PersistTaskModel = tmodel.PersistTask
 	task.ValidateTaskUserNameModel = tmodel.ValidateTaskUserName

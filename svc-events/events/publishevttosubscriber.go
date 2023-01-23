@@ -31,13 +31,13 @@ import (
 	"strings"
 	"time"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	fabricproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
-	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	uuid "github.com/satori/go.uuid"
 )
@@ -74,11 +74,13 @@ func (e *ExternalInterfaces) addFabric(message common.MessageData, host string) 
 //Returns:
 //	bool: return false if any error occurred during execution, else returns true
 func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
+	subscribeCacheLock.Lock()
+	defer subscribeCacheLock.Unlock()
+
 	if data == nil {
 		l.Log.Info("invalid input params")
 		return false
 	}
-
 	event := data.(common.Events)
 	if event.EventType == "PluginStartUp" {
 		l.Log.Info("received plugin started event from ", event.IP)
@@ -114,39 +116,15 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 	}
 
 	e.addFabric(rawMessage, host)
-	searchKey := evcommon.GetSearchKey(host, evmodel.DeviceSubscriptionIndex)
-
-	deviceSubscription, err := e.GetDeviceSubscriptions(searchKey)
+	systemId, err := getSourceId(host)
 	if err != nil {
-		l.Log.Error("Failed to get the event destinations: ", err.Error())
-		return false
-	}
-
-	if len(deviceSubscription.OriginResources) < 1 {
 		l.Log.Info("no origin resources found in device subscriptions")
 		return false
 	}
-	message, deviceUUID = formatEvent(rawMessage, deviceSubscription.OriginResources[0], host)
-	searchKey = evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
-	subscriptions, err := e.GetEvtSubscriptions(searchKey)
-	if err != nil {
-		return false
-	}
-	// Getting Aggregate List
-	searchKeyAgg := evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
-	aggregateList, err := e.GetAggregateList(searchKeyAgg)
-	if err != nil {
-		l.Log.Info("No Aggregate subscription Found ", err)
-	}
-	var aggregateSubscriptionList []evmodel.SubscriptionResource
-	for _, aggregateID := range aggregateList {
-		searchKeyAgg := evcommon.GetSearchKey(aggregateID, evmodel.SubscriptionIndex)
-
-		subscription, _ := e.GetEvtSubscriptions(searchKeyAgg)
-		aggregateSubscriptionList = append(aggregateSubscriptionList, subscription...)
-	}
+	message, deviceUUID = formatEvent(rawMessage, systemId, host)
 	eventUniqueID := uuid.NewV4().String()
 	eventMap := make(map[string][]common.Event)
+
 	for index, inEvent := range message.Events {
 		if inEvent.OriginOfCondition == nil || len(inEvent.OriginOfCondition.Oid) < 1 {
 			l.Log.Info("event not forwarded as Originofcondition is empty in incoming event: ", requestData)
@@ -170,30 +148,11 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 			l.Log.Info("event not forwarded as resource type of originofcondition not supported in incoming event: ", requestData)
 			continue
 		}
-		collectionSubscriptions := e.getCollectionSubscriptionInfoForOID(inEvent.OriginOfCondition.Oid, host)
-		subscriptions = append(subscriptions, collectionSubscriptions...)
-		for _, sub := range aggregateSubscriptionList {
-			if filterEventsToBeForwarded(sub, inEvent, deviceSubscription.OriginResources) {
-				eventMap[sub.EventDestination.Destination] = append(eventMap[sub.EventDestination.Destination], inEvent)
-				flag = true
-			}
-		}
+		subscriptions := getSubscriptions(inEvent.OriginOfCondition.Oid, systemId, host)
 		for _, sub := range subscriptions {
-
-			// filter and send events to destination if destination is not empty
-			// in case of default event subscription destination will be empty
-			if sub.EventDestination.Destination != "" {
-				// check if hostip present in the hosts slice to make sure that it doesn't filter with the destination ip
-				if isHostPresentInEventForward(sub.Hosts, host) {
-					if filterEventsToBeForwarded(sub, inEvent, deviceSubscription.OriginResources) {
-						eventMap[sub.EventDestination.Destination] = append(eventMap[sub.EventDestination.Destination], inEvent)
-						flag = true
-					}
-				} else {
-					l.Log.Info("event not forwarded : No subscription for the incoming event's originofcondition")
-					flag = false
-				}
-
+			if filterEventsToBeForwarded(sub, inEvent, sub.OriginResources) {
+				eventMap[sub.Destination] = append(eventMap[sub.Destination], inEvent)
+				flag = true
 			}
 		}
 		if strings.EqualFold("Alert", inEvent.EventType) {
@@ -239,18 +198,22 @@ func (e *ExternalInterfaces) publishMetricReport(requestData string) bool {
 	return true
 }
 
-func filterEventsToBeForwarded(subscription evmodel.SubscriptionResource, event common.Event, originResources []string) bool {
-	eventTypes := subscription.EventDestination.EventTypes
-	messageIds := subscription.EventDestination.MessageIds
-	resourceTypes := subscription.EventDestination.ResourceTypes
+func filterEventsToBeForwarded(subscription dmtf.EventDestination, event common.Event, originResources []string) bool {
+	eventTypes := subscription.EventTypes
+	messageIds := subscription.MessageIds
+	resourceTypes := subscription.ResourceTypes
 	originCondition := strings.TrimSuffix(event.OriginOfCondition.Oid, "/")
 	if (len(eventTypes) == 0 || isStringPresentInSlice(eventTypes, event.EventType, "event type")) &&
 		(len(messageIds) == 0 || isStringPresentInSlice(messageIds, event.MessageID, "message id")) &&
-		(len(resourceTypes) == 0 || isResourceTypeSubscribed(resourceTypes, event.OriginOfCondition.Oid, subscription.EventDestination.SubordinateResources)) {
+		(len(resourceTypes) == 0 || isResourceTypeSubscribed(resourceTypes, event.OriginOfCondition.Oid, subscription.SubordinateResources)) {
 		// if SubordinateResources is true then check if originofresource is top level of originofcondition
 		// if SubordinateResources is flase then check originofresource is same as originofcondition
+
+		if len(subscription.OriginResources) == 0 {
+			return true
+		}
 		for _, origin := range originResources {
-			if subscription.EventDestination.SubordinateResources {
+			if subscription.SubordinateResources {
 				if strings.Contains(originCondition, origin) {
 					return true
 				}
@@ -589,27 +552,4 @@ func (e *ExternalInterfaces) checkUndeliveredEvents(destination string) {
 			l.Log.Error("error while deleting undelivered events flag: ", derr.Error())
 		}
 	}
-}
-
-func (e *ExternalInterfaces) getCollectionSubscriptionInfoForOID(oid, host string) []evmodel.SubscriptionResource {
-	var key string
-	if strings.Contains(oid, "Systems") && host != "SystemsCollection" {
-		key = "SystemsCollection"
-	} else if strings.Contains(oid, "Chassis") && host != "ChassisCollection" {
-		key = "ChassisCollection"
-	} else if strings.Contains(oid, "Managers") && host != "ManagerCollection" {
-		key = "ManagerCollection"
-	} else if strings.Contains(oid, "Fabrics") && host != "FabricsCollection" {
-		key = "FabricsCollection"
-	} else {
-		return []evmodel.SubscriptionResource{}
-	}
-
-	searchKey := evcommon.GetSearchKey(key, evmodel.SubscriptionIndex)
-
-	subscriptions, _ := e.GetEvtSubscriptions(searchKey)
-	var empty = "\\\"Hosts\\\":\\[\\]"
-	globalSubscriber, _ := e.GetEvtSubscriptions(empty)
-	subscriptions = append(subscriptions, globalSubscriber...)
-	return subscriptions
 }

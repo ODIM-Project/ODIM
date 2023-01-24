@@ -50,8 +50,8 @@ func (f *fabricFactory) updateFabricChassisResource(ctx context.Context, url str
 	var threadID int = 1
 	for _, manager := range managers {
 		ctxt := context.WithValue(ctx, common.ThreadName, common.UpdateChassisResource)
-		ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
-		go f.updateResource(ctx, manager, url, body, ch)
+		ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+		go f.updateResource(ctxt, manager, url, body, ch)
 		threadID++
 	}
 

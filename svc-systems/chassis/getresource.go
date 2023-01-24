@@ -34,7 +34,7 @@ import (
 type PluginContact struct {
 	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DecryptPassword func([]byte) ([]byte, error)
-	GetPluginStatus func(smodel.Plugin) bool
+	GetPluginStatus func(context.Context, smodel.Plugin) bool
 }
 
 // GetChassisResource is used to fetch resource data. The function is supposed to be used as part of RPC
@@ -43,9 +43,9 @@ type PluginContact struct {
 // Url will be parsed from that search key will created
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
-func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) (response.RPC, error) {
+func (p *PluginContact) GetChassisResource(ctx context.Context, req *chassisproto.GetChassisRequest) (response.RPC, error) {
 	var resp response.RPC
-
+	l.LogWithFields(ctx).Debugln("Inside GetChassisResource")
 	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
@@ -61,9 +61,10 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 	} else {
 		tableName = urlData[len(urlData)-2]
 	}
-	data, gerr := smodel.GetResource(tableName, req.URL)
+	data, gerr := smodel.GetResource(ctx, tableName, req.URL)
+	l.LogWithFields(ctx).Debugf("Response from GetResource for %s and %s is: %s", tableName, string(req.URL), string(data))
 	if gerr != nil {
-		l.Log.Error("error getting system details : " + gerr.Error())
+		l.LogWithFields(ctx).Error("error getting system details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = scommon.ResourceInfoRequest{
@@ -74,15 +75,16 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 				DevicePassword:  p.DecryptPassword,
 				GetPluginStatus: p.GetPluginStatus,
 			}
-			l.Log.Info("Request Url" + req.URL)
+			l.LogWithFields(ctx).Info("Request Url" + req.URL)
 			var err error
-			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true); err != nil {
-				l.Log.Error("error while getting resource: " + err.Error())
+			if data, err = scommon.GetResourceInfoFromDevice(ctx, getDeviceInfoRequest, true); err != nil {
+				l.LogWithFields(ctx).Debugf("Response from GetResourceInfoFromDevice for %s is: %s", req.URL, string(data))
+				l.LogWithFields(ctx).Error("error while getting resource: " + err.Error())
 				errorMsg := err.Error()
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMsg, []interface{}{tableName, req.URL}, nil), nil
 			}
 		} else {
-			l.Log.Error("error while getting resource: " + errorMessage)
+			l.LogWithFields(ctx).Error("error while getting resource: " + errorMessage)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil), nil
 		}
 	}

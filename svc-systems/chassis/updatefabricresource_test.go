@@ -32,7 +32,7 @@ func Test_fabricFactory_updateFabricChassisResource(t *testing.T) {
 	f := getFabricFactoryMock(nil)
 	var r response.RPC
 	successReq := json.RawMessage(`{"Name":"someNewName"}`)
-
+	ctx := mockContext()
 	initializeRPCResponse(&r, common.GeneralError(http.StatusOK, response.Success, "", nil, nil))
 
 	errResp := response.RPC{
@@ -71,7 +71,7 @@ func Test_fabricFactory_updateFabricChassisResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.f.updateFabricChassisResource(tt.args.url, tt.args.body); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.f.updateFabricChassisResource(ctx, tt.args.url, tt.args.body); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("fabricFactory.updateFabricChassisResource() = %v, want %v", got, tt.want)
 			}
 		})
@@ -83,13 +83,13 @@ func Test_validateReqParamsCase(t *testing.T) {
 	// config.SetUpMockConfig(t)
 
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error { return nil }
-
+	ctx := mockContext()
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", errors.New("")
 	}
-	validateReqParamsCase(&json.RawMessage{})
+	validateReqParamsCase(ctx, &json.RawMessage{})
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "dummy", nil
 	}
-	validateReqParamsCase(&json.RawMessage{})
+	validateReqParamsCase(ctx, &json.RawMessage{})
 }

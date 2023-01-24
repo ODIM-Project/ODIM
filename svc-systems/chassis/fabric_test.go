@@ -34,6 +34,7 @@ func Test_sourceProviderImpl_findFabricChassis(t *testing.T) {
 	Token.Tokens = make(map[string]string)
 	config.SetUpMockConfig(t)
 	col := sresponse.NewChassisCollection()
+	ctx := mockContext()
 	type args struct {
 		collection *sresponse.Collection
 	}
@@ -64,7 +65,7 @@ func Test_sourceProviderImpl_findFabricChassis(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.c.findFabricChassis(tt.args.collection)
+			tt.c.findFabricChassis(ctx, tt.args.collection)
 			assert.Equal(t, 2, tt.args.collection.MembersCount)
 		})
 	}
@@ -93,7 +94,7 @@ func getFabricFactoryErrorMock(collection *sresponse.Collection) *fabricFactory 
 	}
 }
 
-func getFabricManagersMock() ([]smodel.Plugin, error) {
+func getFabricManagersMock(context.Context) ([]smodel.Plugin, error) {
 	return []smodel.Plugin{
 		{
 			ID:                "1",
@@ -109,7 +110,7 @@ func getFabricManagersMock() ([]smodel.Plugin, error) {
 		},
 	}, nil
 }
-func getFabricManagersErrorMock() ([]smodel.Plugin, error) {
+func getFabricManagersErrorMock(context.Context) ([]smodel.Plugin, error) {
 	return nil, errors.New("")
 }
 
@@ -147,11 +148,13 @@ func contactClientMock(ctx context.Context, url, method, token string, odataID s
 func Test_getPluginStatus(t *testing.T) {
 	Token.Tokens = make(map[string]string)
 	config.SetUpMockConfig(t)
-	getPluginStatus(smodel.Plugin{})
+	ctx := mockContext()
+	getPluginStatus(ctx, smodel.Plugin{})
 }
 
 func Test_contactPlugin(t *testing.T) {
 	req := smodel.Plugin{}
-	res := getPluginStatus(req)
+	ctx := mockContext()
+	res := getPluginStatus(ctx, req)
 	assert.NotNil(t, res, "There should be an error")
 }

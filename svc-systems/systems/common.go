@@ -120,7 +120,6 @@ func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskStat
 }
 
 func (e *PluginContact) monitorPluginTask(ctx context.Context, monitorTaskData *monitorTaskRequest) ([]byte, error) {
-	// TODO : should be removed when context from svc-api is passed to this function
 	for {
 		var task common.TaskData
 		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {

@@ -3032,7 +3032,7 @@ Run the following commands:
 1. Run the following commands:
    
    1. ```
-      sudo apt-get install -y apt-transport-https=2.0.9 ca-certificates=20211016~20.04.1 curl=7.68.0-1ubuntu2.12
+      sudo apt-get install -y apt-transport-https=2.0.9 ca-certificates=20211016ubuntu0.20.04.1 curl=7.68.0-1ubuntu2.15
       ```
 	  
    2. ```

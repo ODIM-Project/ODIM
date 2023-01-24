@@ -160,6 +160,7 @@ const (
 	ActionName    = "actionname"
 	ActionID      = "actionid"
 	ProcessName   = "processname"
+	RequestBody   = "requestbody"
 	// Below fields define Service Name
 	ManagerService     = "svc-managers"
 	AccountService     = "svc-account"
@@ -196,10 +197,14 @@ const (
 	RediscoverSystemInventory              = "RediscoverSystemInventory"
 	CheckPluginStatus                      = "CheckPluginStatus"
 	// constants for log
-	SessionToken  = "sessiontoken"
-	SessionUserID = "sessionuserid"
-	SessionRoleID = "sessionroleid"
-	StatusCode    = "statuscode"
+	SessionToken            = "sessiontoken"
+	SessionUserID           = "sessionuserid"
+	SessionRoleID           = "sessionroleid"
+	StatusCode              = "statuscode"
+	ComputerSystemReset     = "ComputerSystemReset"
+	GetFabricManagerChassis = "GetFabricManagerChassis"
+	CollectChassisResource  = "CollectChassisResource"
+	UpdateChassisResource   = "UpdateChassisResource"
 )
 
 // ActionType defines type of action

@@ -262,7 +262,7 @@ The following table lists the software components and versions that are compatib
       ```
       
    3. ```
-      sudo apt-get install python3.8=3.8.10-0ubuntu1~20.04.5 -y
+      sudo apt-get install python3.8=3.8.10-0ubuntu1~20.04.6 -y
       ```
 
    4. ```
@@ -278,7 +278,7 @@ The following table lists the software components and versions that are compatib
       ```
 
    7. ```
-      sudo apt-get install openjdk-11-jre-headless=11.0.16+8-0ubuntu1~20.04 -y
+      sudo apt-get install openjdk-11-jre-headless=11.0.17+8-1ubuntu2~20.04 -y
       ```
 
    8. ```
@@ -3032,7 +3032,7 @@ Run the following commands:
 1. Run the following commands:
    
    1. ```
-      sudo apt-get install -y apt-transport-https=2.0.9 ca-certificates=20211016~20.04.1 curl=7.68.0-1ubuntu2.12
+      sudo apt-get install -y apt-transport-https=2.0.9 ca-certificates=20211016ubuntu0.20.04.1 curl=7.68.0-1ubuntu2.15
       ```
 	  
    2. ```
@@ -4364,5 +4364,4 @@ These checks run in parallel and take a few minutes to complete.
 ![screenshot](docs/images/check_2.png)
 
 ![screenshot](docs/images/check_3.png)
-
 

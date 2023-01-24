@@ -1,20 +1,21 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package systems
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -53,8 +54,20 @@ func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
 }
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -206,7 +219,7 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.SetDefaultBootOrder(tt.args.systemID); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.p.SetDefaultBootOrder(ctx, tt.args.systemID); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PluginContact.SetDefaultBootOrder() = %v, want %v", got, tt.want)
 			}
 		})
@@ -215,29 +228,29 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return true
 	}
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
-	resp := pluginContact.SetDefaultBootOrder("7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
+	resp := pluginContact.SetDefaultBootOrder(ctx, "7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
 	assert.NotNil(t, resp, "Response should have error")
 
 	StringsEqualFold = func(s, t string) bool {
 		return false
 	}
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
-	resp = pluginContact.SetDefaultBootOrder("7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
+	resp = pluginContact.SetDefaultBootOrder(ctx, "7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
 	assert.NotNil(t, resp, "Response should have error")
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
-		return scommon.ContactPlugin(req, errorMessage)
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+		return scommon.ContactPlugin(ctx, req, errorMessage)
 	}
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
-	resp = pluginContact.SetDefaultBootOrder("7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
+	resp = pluginContact.SetDefaultBootOrder(ctx, "7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
 
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
@@ -407,9 +420,10 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			},
 		},
 	}
+	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.ChangeBiosSettings(tt.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.p.ChangeBiosSettings(ctx, tt.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PluginContact.ChangeBiosSettings() = %v, want %v", got, tt.want)
 			}
 		})
@@ -423,7 +437,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
-	res := pluginContact.ChangeBiosSettings(&req)
+	res := pluginContact.ChangeBiosSettings(ctx, &req)
 	assert.Equal(t, http.StatusInternalServerError, int(res.StatusCode), "status should be StatusInternalServerError")
 
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
@@ -434,7 +448,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 		RequestBody:  []byte(`{"attributes": {"bootMode": "mode"}}`),
 		SessionToken: "token",
 	}
-	res = pluginContact.ChangeBiosSettings(&req)
+	res = pluginContact.ChangeBiosSettings(ctx, &req)
 	assert.Equal(t, http.StatusBadRequest, int(res.StatusCode), "status should be StatusBadRequest")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
@@ -445,7 +459,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 		RequestBody:  request,
 		SessionToken: "token",
 	}
-	res = pluginContact.ChangeBiosSettings(&req)
+	res = pluginContact.ChangeBiosSettings(ctx, &req)
 	assert.Equal(t, http.StatusInternalServerError, int(res.StatusCode), "status should be StatusInternalServerError")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
@@ -454,25 +468,25 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return true
 	}
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
-	res = pluginContact.ChangeBiosSettings(&req)
+	res = pluginContact.ChangeBiosSettings(ctx, &req)
 	assert.NotNil(t, res, "Response should have error")
 
 	StringsEqualFold = func(s, t string) bool {
 		return false
 	}
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
-	res = pluginContact.ChangeBiosSettings(&req)
+	res = pluginContact.ChangeBiosSettings(ctx, &req)
 	assert.NotNil(t, res, "Response should have error")
 
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
-		return scommon.ContactPlugin(req, errorMessage)
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+		return scommon.ContactPlugin(ctx, req, errorMessage)
 	}
 
 }
@@ -514,6 +528,7 @@ func mockPluginClient(url, method, token string, odataID string, body interface{
 
 func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -671,7 +686,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.ChangeBootOrderSettings(tt.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.p.ChangeBootOrderSettings(ctx, tt.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PluginContact.ChangeBootOrderSettings() = %v, want %v", got, tt.want)
 			}
 		})
@@ -685,7 +700,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 		RequestBody:  request,
 		SessionToken: "token",
 	}
-	resp := pluginContact.ChangeBootOrderSettings(&req)
+	resp := pluginContact.ChangeBootOrderSettings(ctx, &req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status code should be StatusBadRequest")
 
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
@@ -699,7 +714,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 		RequestBody:  []byte(`{"attributes": {"bootMode": "mode"}}`),
 		SessionToken: "token",
 	}
-	resp = pluginContact.ChangeBootOrderSettings(&req)
+	resp = pluginContact.ChangeBootOrderSettings(ctx, &req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status code should be StatusBadRequest")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
@@ -710,7 +725,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 		RequestBody:  request,
 		SessionToken: "token",
 	}
-	resp = pluginContact.ChangeBootOrderSettings(&req)
+	resp = pluginContact.ChangeBootOrderSettings(ctx, &req)
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
@@ -720,24 +735,24 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return true
 	}
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
-	resp = pluginContact.ChangeBootOrderSettings(&req)
+	resp = pluginContact.ChangeBootOrderSettings(ctx, &req)
 	assert.NotNil(t, resp, "Response should have error")
 	StringsEqualFold = func(s, t string) bool {
 		return false
 	}
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
-	resp = pluginContact.ChangeBootOrderSettings(&req)
+	resp = pluginContact.ChangeBootOrderSettings(ctx, &req)
 	assert.NotNil(t, resp, "Response should have error")
 
-	ContactPluginFunc = func(req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 scommon.ResponseStatus, err error) {
-		return scommon.ContactPlugin(req, errorMessage)
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 scommon.ResponseStatus, err error) {
+		return scommon.ContactPlugin(ctx, req, errorMessage)
 	}
 
 }

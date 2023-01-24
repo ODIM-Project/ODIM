@@ -76,6 +76,7 @@ func mockContactClient(ctx context.Context, url, method, token string, odataID s
 
 func TestPluginContact_GetChassisResource(t *testing.T) {
 	common.SetUpMockConfig()
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -222,7 +223,7 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := tt.p.GetChassisResource(tt.args.req)
+			got, _ := tt.p.GetChassisResource(ctx, tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PluginContact.GetChassisResource() = %v, want %v", got, tt.want)
 			}

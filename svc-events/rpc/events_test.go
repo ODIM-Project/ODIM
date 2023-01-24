@@ -22,11 +22,11 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/events"
-	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 	"github.com/stretchr/testify/assert"
 )
@@ -106,8 +106,8 @@ func TestCreateEventSubscription(t *testing.T) {
 		"SubscriptionType":     "RedfishEvent",
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
-		"OriginResources": []evmodel.OdataIDLink{
-			{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+		"OriginResources": []common.Link{
+			{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 		},
 	}
 	postBody, _ := json.Marshal(&SubscriptionReq)

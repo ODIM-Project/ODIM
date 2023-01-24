@@ -50,7 +50,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	var (
 		err             error
 		resp            errResponse.RPC
-		postRequest     evmodel.RequestBody
+		postRequest     model.EventDestination
 		percentComplete int32 = 100
 		targetURI             = "/redfish/v1/EventService/Subscriptions"
 	)
@@ -141,14 +141,13 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 
 	// remove odataid in the originresources
 	originResources := removeOdataIDfromOriginResources(postRequest.OriginResources)
-	originResourcesCount := len(originResources)
 
 	// check and remove if duplicate OriginResources exist in the request
-	removeDuplicatesFromSlice(&originResources, &originResourcesCount)
+	removeDuplicatesFromSlice(&originResources)
 
 	// If origin resource is nil then subscribe to all collection
 	isDefaultOriginResource := false
-	if originResourcesCount == 0 {
+	if len(originResources) == 0 {
 		isDefaultOriginResource = true
 		originResources = []string{
 			"/redfish/v1/Systems",
@@ -157,10 +156,10 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 			"/redfish/v1/Managers",
 			"/redfish/v1/TaskService/Tasks",
 		}
-		originResourcesCount = len(originResources)
+
 	}
 	var collectionList = make([]string, 0)
-	subTaskChan := make(chan int32, originResourcesCount)
+	subTaskChan := make(chan int32, len(originResources))
 	taskCollectionWG.Add(1)
 	bubbleUpStatusCode := int32(http.StatusCreated)
 	go func() {
@@ -174,8 +173,8 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 			if statusCode > bubbleUpStatusCode {
 				bubbleUpStatusCode = statusCode
 			}
-			if i <= originResourcesCount {
-				percentComplete = int32((i*100)/originResourcesCount - 1)
+			if i <= len(originResources) {
+				percentComplete = int32((i*100)/len(originResources) - 1)
 				if resp.StatusCode == 0 {
 					resp.StatusCode = http.StatusAccepted
 				}
@@ -213,7 +212,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 
 	var (
 		locationHeader             string
-		successfulSubscriptionList = make([]string, 0)
+		successfulSubscriptionList = make([]model.Link, 0)
 		successfulResponses        = make(map[string]evresponse.EventResponse)
 	)
 
@@ -228,11 +227,11 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 			resourceID = originResourceID
 		}
 		if originResourceID == resourceID && i > 0 {
-			successfulSubscriptionList = append(successfulSubscriptionList, originResource)
+			successfulSubscriptionList = append(successfulSubscriptionList, model.Link{Oid: originResource})
 		}
 		i = i + 1
 		if evtResponse.StatusCode == http.StatusCreated {
-			successfulSubscriptionList = append(successfulSubscriptionList, originResource)
+			successfulSubscriptionList = append(successfulSubscriptionList, model.Link{Oid: originResource})
 			successfulResponses[originResource] = evtResponse
 		}
 	}
@@ -242,7 +241,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	// remove the underlying resource uri's from successfulSubscriptionList
 	for i := 0; i < len(collectionList); i++ {
 		for j := 0; j < len(successfulSubscriptionList); j++ {
-			if collectionList[i] == successfulSubscriptionList[j] {
+			if collectionList[i] == successfulSubscriptionList[j].Oid {
 				originResourceProcessedCount--
 				successfulSubscriptionList = append(successfulSubscriptionList[:j], successfulSubscriptionList[j+1:]...)
 				break
@@ -260,7 +259,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 		var hosts []string
 		resp, hosts = result.ReadResponse(subscriptionID)
 		if isDefaultOriginResource {
-			successfulSubscriptionList = []string{}
+			successfulSubscriptionList = []model.Link{}
 			hosts = []string{}
 		}
 		evtSubscription := evmodel.SubscriptionResource{
@@ -317,12 +316,12 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 	return resp
 }
 
-func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, origin, collectionName string, collectionFlag bool) (string, evresponse.EventResponse) {
+func (e *ExternalInterfaces) eventSubscription(postRequest model.EventDestination, origin, collectionName string, collectionFlag bool) (string, evresponse.EventResponse) {
 	var resp evresponse.EventResponse
 	var err error
-	var plugin *evmodel.Plugin
+	var plugin *common.Plugin
 	var contactRequest evcommon.PluginContactRequest
-	var target *evmodel.Target
+	var target *common.Target
 	if !collectionFlag {
 		if strings.Contains(origin, "Fabrics") {
 			return e.createFabricSubscription(postRequest, origin, collectionName, collectionFlag)
@@ -359,9 +358,8 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 			}
 		}
 	}
-	var httpHeadersSlice = make([]evmodel.HTTPHeaders, 0)
-	httpHeadersSlice = append(httpHeadersSlice, evmodel.HTTPHeaders{ContentType: "application/json"})
-	subscriptionPost := evmodel.EvtSubPost{
+
+	subscriptionPost := model.EventDestination{
 		Name:                 postRequest.Name,
 		Destination:          postRequest.Destination,
 		EventTypes:           postRequest.EventTypes,
@@ -371,7 +369,6 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 		SubscriptionType:     postRequest.SubscriptionType,
 		EventFormatType:      postRequest.EventFormatType,
 		SubordinateResources: postRequest.SubordinateResources,
-		HTTPHeaders:          httpHeadersSlice,
 		Context:              postRequest.Context,
 		DeliveryRetryPolicy:  postRequest.DeliveryRetryPolicy,
 	}
@@ -388,7 +385,7 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 			resp.Response = createEventSubscriptionResponse()
 			return collectionName, resp
 		}
-		err = e.saveDeviceSubscriptionDetails(evmodel.DeviceSubscription{
+		err = e.saveDeviceSubscriptionDetails(common.DeviceSubscription{
 			Location:       "",
 			EventHostIP:    collectionName,
 			OriginResource: origin,
@@ -477,7 +474,7 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 		return "", resp
 	}
 	l.Log.Debug("Saving device subscription details : ", deviceIPAddress)
-	evtSubscription := evmodel.DeviceSubscription{
+	evtSubscription := common.DeviceSubscription{
 		Location:       locationHdr,
 		EventHostIP:    deviceIPAddress,
 		OriginResource: origin,
@@ -527,7 +524,7 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 // and also delete the subscription on device also
 // subscription: New Subscription
 // subscriptionDetails : subscription details stored in db for the particular device
-func (e *ExternalInterfaces) IsEventsSubscribed(token, origin string, subscription *evmodel.EvtSubPost, plugin *evmodel.Plugin, target *evmodel.Target, collectionFlag bool, collectionName string) (errResponse.RPC, error) {
+func (e *ExternalInterfaces) IsEventsSubscribed(token, origin string, subscription *model.EventDestination, plugin *common.Plugin, target *common.Target, collectionFlag bool, collectionName string) (errResponse.RPC, error) {
 	var resp errResponse.RPC
 	var err error
 	var host, originResource, searchKey string
@@ -620,12 +617,9 @@ func (e *ExternalInterfaces) IsEventsSubscribed(token, origin string, subscripti
 	}
 	// updating the subscription information
 
-	eventTypesCount := len(eventTypes)
-	messageIDsCount := len(messageIDs)
-	resourceTypesCount := len(resourceTypes)
-	removeDuplicatesFromSlice(&eventTypes, &eventTypesCount)
-	removeDuplicatesFromSlice(&messageIDs, &messageIDsCount)
-	removeDuplicatesFromSlice(&resourceTypes, &resourceTypesCount)
+	removeDuplicatesFromSlice(&eventTypes)
+	removeDuplicatesFromSlice(&messageIDs)
+	removeDuplicatesFromSlice(&resourceTypes)
 	subscription.EventTypes = eventTypes
 	subscription.MessageIds = messageIDs
 	subscription.ResourceTypes = resourceTypes
@@ -643,7 +637,7 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 		protocol = "Redfish"
 	}
 	bubbleUpStatusCode := http.StatusCreated
-	var postRequest evmodel.RequestBody
+	var postRequest model.EventDestination
 	postRequest.Destination = ""
 	postRequest.EventTypes = eventTypes
 	postRequest.MessageIds = messageIDs
@@ -699,10 +693,10 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(originResources, eve
 // saveDeviceSubscriptionDetails will first check if already origin resource details present
 // if its present then Update location
 // otherwise add an entry to redis
-func (e *ExternalInterfaces) saveDeviceSubscriptionDetails(evtSubscription evmodel.DeviceSubscription) error {
+func (e *ExternalInterfaces) saveDeviceSubscriptionDetails(evtSubscription common.DeviceSubscription) error {
 	searchKey := evcommon.GetSearchKey(evtSubscription.EventHostIP, evmodel.DeviceSubscriptionIndex)
 	deviceSubscription, _ := e.GetDeviceSubscriptions(searchKey)
-	var newDevSubscription = evmodel.DeviceSubscription{
+	var newDevSubscription = common.DeviceSubscription{
 		EventHostIP:     evtSubscription.EventHostIP,
 		Location:        evtSubscription.Location,
 		OriginResources: []string{evtSubscription.OriginResource},
@@ -732,7 +726,7 @@ func (e *ExternalInterfaces) saveDeviceSubscriptionDetails(evtSubscription evmod
 	return nil
 }
 
-func (e *ExternalInterfaces) getTargetDetails(origin string) (*evmodel.Target, evresponse.EventResponse, error) {
+func (e *ExternalInterfaces) getTargetDetails(origin string) (*common.Target, evresponse.EventResponse, error) {
 	var resp evresponse.EventResponse
 	uuid, err := getUUID(origin)
 	if err != nil {
@@ -767,10 +761,10 @@ func (e *ExternalInterfaces) getTargetDetails(origin string) (*evmodel.Target, e
 }
 
 // DeleteSubscriptions will delete subscription from device
-func (e *ExternalInterfaces) DeleteSubscriptions(originResource, token string, plugin *evmodel.Plugin, target *evmodel.Target) (errResponse.RPC, error) {
+func (e *ExternalInterfaces) DeleteSubscriptions(originResource, token string, plugin *common.Plugin, target *common.Target) (errResponse.RPC, error) {
 	var resp errResponse.RPC
 	var err error
-	var deviceSubscription *evmodel.DeviceSubscription
+	var deviceSubscription *common.DeviceSubscription
 
 	addr, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
 	if errorMessage != "" {
@@ -828,7 +822,9 @@ func (e *ExternalInterfaces) DeleteSubscriptions(originResource, token string, p
 	return resp, nil
 }
 
-func (e *ExternalInterfaces) createEventSubscription(taskID string, subTaskChan chan<- int32, reqSessionToken string, targetURI string, request evmodel.RequestBody, originResource string, result *evresponse.MutexLock, wg *sync.WaitGroup, collectionFlag bool, collectionName string, aggregateResource string, isAggregateCollection bool) {
+func (e *ExternalInterfaces) createEventSubscription(taskID string, subTaskChan chan<- int32, reqSessionToken string,
+	targetURI string, request model.EventDestination, originResource string, result *evresponse.MutexLock,
+	wg *sync.WaitGroup, collectionFlag bool, collectionName string, aggregateResource string, isAggregateCollection bool) {
 	var (
 		subTaskURI      string
 		subTaskID       string
@@ -905,9 +901,9 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 	var collectionSubscription = make([]evmodel.SubscriptionResource, 0)
 	for _, evtSubscription := range subscriptions {
 		for _, originResource := range evtSubscription.EventDestination.OriginResources {
-			if strings.Contains(origin, "Systems") && (originResource == "/redfish/v1/Systems" || originResource == "/redfish/v1/Chassis" || originResource == "/redfish/v1/Managers") {
+			if strings.Contains(origin, "Systems") && (originResource.Oid == "/redfish/v1/Systems" || originResource.Oid == "/redfish/v1/Chassis" || originResource.Oid == "/redfish/v1/Managers") {
 				collectionSubscription = append(collectionSubscription, evtSubscription)
-			} else if strings.Contains(origin, "Fabrics") && originResource == "/redfish/v1/Fabrics" {
+			} else if strings.Contains(origin, "Fabrics") && originResource.Oid == "/redfish/v1/Fabrics" {
 				collectionSubscription = append(collectionSubscription, evtSubscription)
 			}
 		}
@@ -939,20 +935,17 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 			resourceTypes = []string{}
 		}
 	}
-	eventTypesCount := len(eventTypes)
-	messageIDsCount := len(messageIDs)
-	resourceTypesCount := len(resourceTypes)
 
-	removeDuplicatesFromSlice(&eventTypes, &eventTypesCount)
-	removeDuplicatesFromSlice(&messageIDs, &messageIDsCount)
-	removeDuplicatesFromSlice(&resourceTypes, &resourceTypesCount)
+	removeDuplicatesFromSlice(&eventTypes)
+	removeDuplicatesFromSlice(&messageIDs)
+	removeDuplicatesFromSlice(&resourceTypes)
 
 	subordinateFlag := false
 	if strings.Contains(origin, "Fabrics") {
 		subordinateFlag = true
 	}
 
-	subscriptionPost := evmodel.RequestBody{
+	subscriptionPost := model.EventDestination{
 		EventTypes:           eventTypes,
 		MessageIds:           messageIDs,
 		ResourceTypes:        resourceTypes,
@@ -961,9 +954,9 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 		Protocol:             protocol,
 		SubordinateResources: subordinateFlag,
 	}
-	subscriptionPost.OriginResources = []evmodel.OdataIDLink{
+	subscriptionPost.OriginResources = []model.Link{
 		{
-			OdataID: origin,
+			Oid: origin,
 		},
 	}
 
@@ -980,7 +973,7 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 		data := strings.Split(origin, "/redfish/v1/Systems/")
 		chassisList, _ := e.GetAllMatchingDetails("Chassis", data[1], common.InMemory)
 		managersList, _ := e.GetAllMatchingDetails("Managers", data[1], common.InMemory)
-		var newDevSubscription = evmodel.DeviceSubscription{
+		var newDevSubscription = common.DeviceSubscription{
 			EventHostIP:     deviceSubscription.EventHostIP,
 			Location:        deviceSubscription.Location,
 			OriginResources: deviceSubscription.OriginResources,
@@ -995,10 +988,10 @@ func (e *ExternalInterfaces) checkCollectionSubscription(origin, protocol string
 	}
 }
 
-func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.RequestBody, origin, collectionName string, collectionFlag bool) (string, evresponse.EventResponse) {
+func (e *ExternalInterfaces) createFabricSubscription(postRequest model.EventDestination, origin, collectionName string, collectionFlag bool) (string, evresponse.EventResponse) {
 	var resp evresponse.EventResponse
 	var err error
-	var plugin *evmodel.Plugin
+	var plugin *common.Plugin
 	var contactRequest evcommon.PluginContactRequest
 	// Extract the fabric id from the Origin
 	fabricID := getFabricID(origin)
@@ -1035,9 +1028,8 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 			"Password": string(plugin.Password),
 		}
 	}
-	var httpHeadersSlice = make([]evmodel.HTTPHeaders, 0)
-	httpHeadersSlice = append(httpHeadersSlice, evmodel.HTTPHeaders{ContentType: "application/json"})
-	subscriptionPost := evmodel.EvtSubPost{
+
+	subscriptionPost := model.EventDestination{
 		Name:                 postRequest.Name,
 		Destination:          postRequest.Destination,
 		EventTypes:           postRequest.EventTypes,
@@ -1047,11 +1039,11 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 		SubscriptionType:     postRequest.SubscriptionType,
 		EventFormatType:      postRequest.EventFormatType,
 		SubordinateResources: postRequest.SubordinateResources,
-		HTTPHeaders:          httpHeadersSlice,
-		Context:              postRequest.Context,
-		OriginResources: []evmodel.OdataIDLink{
+
+		Context: postRequest.Context,
+		OriginResources: []model.Link{
 			{
-				OdataID: origin,
+				Oid: origin,
 			},
 		},
 	}
@@ -1074,7 +1066,7 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 		l.Log.Error(errorMessage)
 		return "", resp
 	}
-	var target = evmodel.Target{
+	var target = common.Target{
 		ManagerAddress: deviceIPAddress,
 	}
 	res, err := e.IsEventsSubscribed("", origin, &subscriptionPost, plugin, &target, collectionFlag, collectionName)
@@ -1143,7 +1135,7 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 		return "", resp
 	}
 
-	evtSubscription := evmodel.DeviceSubscription{
+	evtSubscription := common.DeviceSubscription{
 		EventHostIP:    deviceIPAddress,
 		OriginResource: origin,
 	}
@@ -1175,9 +1167,9 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpda
 		l.Log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		return nil
 	}
-	var plugin *evmodel.Plugin
+	var plugin *common.Plugin
 	var contactRequest evcommon.PluginContactRequest
-	var target *evmodel.Target
+	var target *common.Target
 
 	target, _, err = e.getTargetDetails(req.SystemID)
 	if err != nil {
@@ -1207,21 +1199,18 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpda
 		}
 	}
 
-	var httpHeadersSlice = make([]evmodel.HTTPHeaders, 0)
-	httpHeadersSlice = append(httpHeadersSlice, evmodel.HTTPHeaders{ContentType: "application/json"})
-	subscriptionPost := evmodel.EvtSubPost{
+	subscriptionPost := model.EventDestination{
 		EventTypes:    []string{},
 		MessageIds:    []string{},
 		ResourceTypes: []string{},
-		OriginResources: []evmodel.OdataIDLink{
+		OriginResources: []model.Link{
 			{
-				OdataID: req.SystemID,
+				Oid: req.SystemID,
 			},
 		},
 		SubordinateResources: true,
 		Protocol:             "Redfish",
 		SubscriptionType:     evmodel.SubscriptionType,
-		HTTPHeaders:          httpHeadersSlice,
 		Context:              evmodel.Context,
 		DeliveryRetryPolicy:  "RetryForever",
 		EventFormatType:      "Event",
@@ -1290,7 +1279,7 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpda
 		l.Log.Info(errorMessage)
 	}
 	l.Log.Info("Saving device subscription details : ", deviceIPAddress)
-	evtSubscription := evmodel.DeviceSubscription{
+	evtSubscription := common.DeviceSubscription{
 		Location:       locationHdr,
 		EventHostIP:    deviceIPAddress,
 		OriginResource: req.SystemID,
@@ -1319,7 +1308,7 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpda
 // and also delete the subscription on device also
 // subscription: New Subscription
 // subscriptionDetails : subscription details stored in db for the particular device
-func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscription *evmodel.EvtSubPost, plugin *evmodel.Plugin, target *evmodel.Target, collectionFlag bool, collectionName string, isAggregate bool, aggregateID string, isRemove bool) (errResponse.RPC, error) {
+func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscription *model.EventDestination, plugin *common.Plugin, target *common.Target, collectionFlag bool, collectionName string, isAggregate bool, aggregateID string, isRemove bool) (errResponse.RPC, error) {
 	var resp errResponse.RPC
 	var err error
 	var host, originResource, searchKey string
@@ -1440,12 +1429,9 @@ func (e *ExternalInterfaces) UpdateEventsSubscribed(token, origin string, subscr
 		}
 	}
 	// updating the subscription information
-	eventTypesCount := len(eventTypes)
-	messageIDsCount := len(messageIDs)
-	resourceTypesCount := len(resourceTypes)
-	removeDuplicatesFromSlice(&eventTypes, &eventTypesCount)
-	removeDuplicatesFromSlice(&messageIDs, &messageIDsCount)
-	removeDuplicatesFromSlice(&resourceTypes, &resourceTypesCount)
+	removeDuplicatesFromSlice(&eventTypes)
+	removeDuplicatesFromSlice(&messageIDs)
+	removeDuplicatesFromSlice(&resourceTypes)
 	subscription.EventTypes = eventTypes
 	subscription.MessageIds = messageIDs
 	subscription.ResourceTypes = resourceTypes

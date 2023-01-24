@@ -31,6 +31,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -198,7 +199,7 @@ func (e *ExternalInterfaces) publishMetricReport(requestData string) bool {
 	return true
 }
 
-func filterEventsToBeForwarded(subscription dmtf.EventDestination, event common.Event, originResources []string) bool {
+func filterEventsToBeForwarded(subscription dmtf.EventDestination, event common.Event, originResources []model.Link) bool {
 	eventTypes := subscription.EventTypes
 	messageIds := subscription.MessageIds
 	resourceTypes := subscription.ResourceTypes
@@ -214,11 +215,11 @@ func filterEventsToBeForwarded(subscription dmtf.EventDestination, event common.
 		}
 		for _, origin := range originResources {
 			if subscription.SubordinateResources {
-				if strings.Contains(originCondition, origin) {
+				if strings.Contains(originCondition, origin.Oid) {
 					return true
 				}
 			} else {
-				if origin == originCondition {
+				if origin.Oid == originCondition {
 					return true
 				}
 			}

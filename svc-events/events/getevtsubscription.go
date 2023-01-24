@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
@@ -90,7 +91,7 @@ func (e *ExternalInterfaces) GetEventSubscriptionsDetails(req *eventsproto.Event
 			SubscriptionType:    evtSubscription.EventDestination.SubscriptionType,
 			MessageIds:          evtSubscription.EventDestination.MessageIds,
 			ResourceTypes:       evtSubscription.EventDestination.ResourceTypes,
-			OriginResources:     updateOriginResourcesWithOdataID(evtSubscription.EventDestination.OriginResources),
+			OriginResources:     evtSubscription.EventDestination.OriginResources,
 			DeliveryRetryPolicy: evtSubscription.EventDestination.DeliveryRetryPolicy,
 		}
 	}
@@ -112,7 +113,7 @@ func (e *ExternalInterfaces) GetEventSubscriptionsCollection(req *eventsproto.Ev
 		l.Log.Error(errMsg)
 		return authResp
 	}
-	listMembers := []evresponse.ListMember{}
+	listMembers := []model.Link{}
 	searchKey := "*"
 
 	subscriptionDetails, err := e.GetEvtSubscriptions(searchKey)
@@ -127,8 +128,8 @@ func (e *ExternalInterfaces) GetEventSubscriptionsCollection(req *eventsproto.Ev
 		if destination == "" {
 			continue
 		}
-		member := evresponse.ListMember{
-			OdataID: "/redfish/v1/EventService/Subscriptions/" + subscriptionID + "/",
+		member := model.Link{
+			Oid: "/redfish/v1/EventService/Subscriptions/" + subscriptionID + "/",
 		}
 
 		listMembers = append(listMembers, member)

@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
@@ -57,19 +58,19 @@ type DB struct {
 	GetSessionUserName               func(sessionToken string) (string, error)
 	GetEvtSubscriptions              func(string) ([]evmodel.SubscriptionResource, error)
 	SaveEventSubscription            func(evmodel.SubscriptionResource) error
-	GetPluginData                    func(string) (*evmodel.Plugin, *errors.Error)
-	GetDeviceSubscriptions           func(string) (*evmodel.DeviceSubscription, error)
-	GetTarget                        func(string) (*evmodel.Target, error)
+	GetPluginData                    func(string) (*common.Plugin, *errors.Error)
+	GetDeviceSubscriptions           func(string) (*common.DeviceSubscription, error)
+	GetTarget                        func(string) (*common.Target, error)
 	GetAllKeysFromTable              func(string) ([]string, error)
 	GetAllFabrics                    func() ([]string, error)
 	GetAllMatchingDetails            func(string, string, common.DbType) ([]string, *errors.Error)
-	UpdateDeviceSubscriptionLocation func(evmodel.DeviceSubscription) error
+	UpdateDeviceSubscriptionLocation func(common.DeviceSubscription) error
 	GetFabricData                    func(string) (evmodel.Fabric, error)
 	DeleteEvtSubscription            func(string) error
 	DeleteDeviceSubscription         func(hostIP string) error
 	UpdateEventSubscription          func(evmodel.SubscriptionResource) error
 	SaveUndeliveredEvents            func(string, []byte) error
-	SaveDeviceSubscription           func(evmodel.DeviceSubscription) error
+	SaveDeviceSubscription           func(common.DeviceSubscription) error
 	GetUndeliveredEvents             func(string) (string, error)
 	DeleteUndeliveredEvents          func(string) error
 	GetUndeliveredEventsFlag         func(string) (bool, error)
@@ -123,18 +124,19 @@ func UpdateTaskData(taskData common.TaskData) error {
 }
 
 // this function is for to create array of originofresources without odata id
-func removeOdataIDfromOriginResources(originResources []evmodel.OdataIDLink) []string {
+func removeOdataIDfromOriginResources(originResources []model.Link) []string {
 	var originRes []string
 	for _, origin := range originResources {
-		originRes = append(originRes, origin.OdataID)
+		originRes = append(originRes, origin.Oid)
 	}
 	return originRes
 }
 
 // remove duplicate elements in string slice.
 // Takes string slice and length, and updates the same with new values
-func removeDuplicatesFromSlice(slc *[]string, slcLen *int) {
-	if *slcLen > 1 {
+func removeDuplicatesFromSlice(slc *[]string) {
+
+	if len(*slc) > 1 {
 		uniqueElementsDs := make(map[string]bool)
 		var uniqueElementsList []string
 		for _, element := range *slc {
@@ -145,12 +147,10 @@ func removeDuplicatesFromSlice(slc *[]string, slcLen *int) {
 		}
 		// length of uniqueElementsList will be less than passed string slice,
 		// only if duplicates existed, so will assign slc with modified list and update length
-		if len(uniqueElementsList) < *slcLen {
+		if len(uniqueElementsList) < len(*slc) {
 			*slc = uniqueElementsList
-			*slcLen = len(*slc)
 		}
 	}
-	return
 }
 
 // removeElement will remove the element from the slice return
@@ -159,6 +159,18 @@ func removeElement(slice []string, element string) []string {
 	var elements []string
 	for _, val := range slice {
 		if val != element {
+			elements = append(elements, val)
+		}
+	}
+	return elements
+}
+
+// removeElement will remove the element from the slice return
+// slice of remaining elements
+func removeLinks(slice []model.Link, element string) []model.Link {
+	var elements []model.Link
+	for _, val := range slice {
+		if val.Oid != element {
 			elements = append(elements, val)
 		}
 	}
@@ -204,7 +216,7 @@ func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errR
 }
 
 // validateFields is for validating subscription parameters
-func validateFields(request *evmodel.RequestBody) (int32, string, []interface{}, error) {
+func validateFields(request *model.EventDestination) (int32, string, []interface{}, error) {
 	validEventFormatTypes := map[string]bool{"Event": true, "MetricReport": true}
 	validEventTypes := map[string]bool{"Alert": true, "MetricReport": true, "ResourceAdded": true, "ResourceRemoved": true, "ResourceUpdated": true, "StatusChange": true, "Other": true}
 
@@ -312,7 +324,7 @@ func createEventSubscriptionResponse() interface{} {
 }
 
 // getPluginToken will verify the if any token present to the plugin else it will create token for the new plugin
-func (e *ExternalInterfaces) getPluginToken(plugin *evmodel.Plugin) string {
+func (e *ExternalInterfaces) getPluginToken(plugin *common.Plugin) string {
 	authToken := evcommon.Token.GetToken(plugin.ID)
 	if authToken == "" {
 		return e.createToken(plugin)
@@ -320,7 +332,7 @@ func (e *ExternalInterfaces) getPluginToken(plugin *evmodel.Plugin) string {
 	return authToken
 }
 
-func (e *ExternalInterfaces) createToken(plugin *evmodel.Plugin) string {
+func (e *ExternalInterfaces) createToken(plugin *common.Plugin) string {
 	var contactRequest evcommon.PluginContactRequest
 
 	contactRequest.Plugin = plugin
@@ -445,7 +457,7 @@ func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, b
 		}
 		var collection []string = []string{}
 		for _, system := range aggregateCollection.Elements {
-			var systemID string = system.OdataID
+			var systemID string = system.Oid
 			collection = append(collection, systemID)
 		}
 		return collection, "AggregateCollections", true, origin, true, err
@@ -471,13 +483,4 @@ func isHostPresentInEventForward(hosts []string, hostip string) bool {
 		rear--
 	}
 	return false
-}
-
-// updateOriginResourceswithOdataID is for to create array of odata id
-func updateOriginResourcesWithOdataID(originResources []string) []evresponse.ListMember {
-	var originRes []evresponse.ListMember
-	for _, origin := range originResources {
-		originRes = append(originRes, evresponse.ListMember{OdataID: origin})
-	}
-	return originRes
 }

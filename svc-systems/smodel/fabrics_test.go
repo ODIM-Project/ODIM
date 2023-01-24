@@ -15,6 +15,7 @@
 package smodel
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -57,8 +58,20 @@ func mockPlugin(t *testing.T, pluginID, PreferredAuthType, port string) error {
 	return nil
 }
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func TestGetFabricManagers(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		common.TruncateDB(common.OnDisk)
 	}()
@@ -69,13 +82,13 @@ func TestGetFabricManagers(t *testing.T) {
 	f := map[string]interface{}{"FabricUUID": "794ef789-f54b-460c-8f30-03779d8403bc", "PluginID": "AFC_v6.0.1"}
 	mockFabricData(t, "Fabric", "794ef789-f54b-460c-8f30-03779d8403bc", f)
 
-	_, err = GetFabricManagers()
+	_, err = GetFabricManagers(ctx)
 	assert.Nil(t, err, "should be no error ")
 
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
-	_, err = GetFabricManagers()
+	_, err = GetFabricManagers(ctx)
 	assert.NotNil(t, err, "should be an error ")
 
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
@@ -84,7 +97,7 @@ func TestGetFabricManagers(t *testing.T) {
 	GetPluginDataFunc = func(pluginID string) (Plugin, *errors.Error) {
 		return Plugin{}, nil
 	}
-	_, err = GetFabricManagers()
+	_, err = GetFabricManagers(ctx)
 	assert.Nil(t, err, "should be no error ")
 
 }

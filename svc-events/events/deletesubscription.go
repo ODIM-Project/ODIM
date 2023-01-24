@@ -29,6 +29,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -136,7 +137,7 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(req *eventsproto.EventRequ
 		} else {
 			// Delete the host and origin resource from the respective entry
 			evtSubscription.Hosts = removeElement(evtSubscription.Hosts, target.ManagerAddress)
-			evtSubscription.EventDestination.OriginResources = removeElement(evtSubscription.EventDestination.OriginResources, originResource)
+			evtSubscription.EventDestination.OriginResources = removeLinks(evtSubscription.EventDestination.OriginResources, originResource)
 			err = e.UpdateEventSubscription(evtSubscription)
 			if err != nil {
 				errorMessage := "Error while Updating event subscription : " + err.Error()
@@ -160,9 +161,9 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(req *eventsproto.EventRequ
 }
 
 // deleteSubscription to the Event Subsciption
-func (e *ExternalInterfaces) deleteSubscription(target *evmodel.Target, originResource string) error {
+func (e *ExternalInterfaces) deleteSubscription(target *common.Target, originResource string) error {
 
-	var plugin *evmodel.Plugin
+	var plugin *common.Plugin
 	plugin, err := e.GetPluginData(target.PluginID)
 	if err != nil {
 		return err
@@ -252,16 +253,16 @@ func (e *ExternalInterfaces) deleteAndReSubscribetoEvents(evtSubscription evmode
 	originResources := evtSubscription.EventDestination.OriginResources
 	for _, origin := range originResources {
 		// ignore if origin is empty
-		if origin == "" {
+		if origin.Oid == "" {
 			continue
 		}
-		subscriptionDetails, err := e.GetEvtSubscriptions(origin)
+		subscriptionDetails, err := e.GetEvtSubscriptions(origin.Oid)
 		if err != nil {
 			return err
 		}
 		// if origin contains fabrics then get all the collection and individual subscription details
 		// for Systems need to add same later
-		subscriptionDetails = e.getAllSubscriptions(origin, subscriptionDetails)
+		subscriptionDetails = e.getAllSubscriptions(origin.Oid, subscriptionDetails)
 		// if deleteflag is true then only one document is there
 		// so dont re subscribe again
 
@@ -304,20 +305,18 @@ func (e *ExternalInterfaces) deleteAndReSubscribetoEvents(evtSubscription evmode
 		removeDuplicatesFromSlice(&eventTypes)
 		removeDuplicatesFromSlice(&messageIDs)
 		removeDuplicatesFromSlice(&resourceTypes)
-		var httpHeadersSlice = make([]evmodel.HTTPHeaders, 0)
-		httpHeadersSlice = append(httpHeadersSlice, evmodel.HTTPHeaders{ContentType: "application/json"})
-		subscriptionPost := evmodel.EvtSubPost{
+
+		subscriptionPost := model.EventDestination{
 			Name:          name,
 			EventTypes:    eventTypes,
 			MessageIds:    messageIDs,
 			ResourceTypes: resourceTypes,
-			HTTPHeaders:   httpHeadersSlice,
 			Context:       context,
 			Protocol:      protocol,
 			Destination:   destination,
 		}
 
-		err = e.subscribe(subscriptionPost, origin, deleteflag, sessionToken)
+		err = e.subscribe(subscriptionPost, origin.Oid, deleteflag, sessionToken)
 		if err != nil {
 			return err
 		}
@@ -354,7 +353,7 @@ func isCollectionOriginResourceURI(origin string) bool {
 }
 
 // Subscribe to the Event Subsciption
-func (e *ExternalInterfaces) subscribe(subscriptionPost evmodel.EvtSubPost, origin string, deleteflag bool, sessionToken string) error {
+func (e *ExternalInterfaces) subscribe(subscriptionPost model.EventDestination, origin string, deleteflag bool, sessionToken string) error {
 	if strings.Contains(origin, "Fabrics") {
 		return e.resubscribeFabricsSubscription(subscriptionPost, origin, deleteflag)
 	}
@@ -426,7 +425,7 @@ func (e *ExternalInterfaces) subscribe(subscriptionPost evmodel.EvtSubPost, orig
 	if err != nil {
 		return err
 	}
-	deviceSub := evmodel.DeviceSubscription{
+	deviceSub := common.DeviceSubscription{
 		EventHostIP:     devSub.EventHostIP,
 		Location:        loc,
 		OriginResources: devSub.OriginResources,
@@ -436,7 +435,7 @@ func (e *ExternalInterfaces) subscribe(subscriptionPost evmodel.EvtSubPost, orig
 }
 
 // DeleteFabricsSubscription will delete fabric subscription
-func (e *ExternalInterfaces) DeleteFabricsSubscription(originResource string, plugin *evmodel.Plugin) (response.RPC, error) {
+func (e *ExternalInterfaces) DeleteFabricsSubscription(originResource string, plugin *common.Plugin) (response.RPC, error) {
 	var resp response.RPC
 	addr, errorMessage := GetIPFromHostNameFunc(plugin.IP)
 	if errorMessage != "" {
@@ -505,7 +504,7 @@ func (e *ExternalInterfaces) DeleteFabricsSubscription(originResource string, pl
 }
 
 //  resubscribeFabricsSubscription updates subscription fabric subscription details  by forming the super set of MessageIDs,EventTypes and ResourceTypes
-func (e *ExternalInterfaces) resubscribeFabricsSubscription(subscriptionPost evmodel.EvtSubPost, origin string, deleteflag bool) error {
+func (e *ExternalInterfaces) resubscribeFabricsSubscription(subscriptionPost model.EventDestination, origin string, deleteflag bool) error {
 	originResources := e.getSuboridanteResourcesFromCollection(origin)
 	for _, origin := range originResources {
 		originResource := origin
@@ -556,7 +555,7 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(subscriptionPost evm
 
 		}
 		// filling origin resource
-		subscriptionPost.OriginResources = []common.Link{
+		subscriptionPost.OriginResources = []model.Link{
 			{
 				Oid: originResource,
 			},
@@ -595,7 +594,7 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(subscriptionPost evm
 		if err != nil {
 			return err
 		}
-		deviceSub := evmodel.DeviceSubscription{
+		deviceSub := common.DeviceSubscription{
 			EventHostIP:     devSub.EventHostIP,
 			Location:        loc,
 			OriginResources: devSub.OriginResources,
@@ -631,7 +630,7 @@ func (e *ExternalInterfaces) getAllSubscriptions(origin string, subscriptionDeta
 	var collectionSubscription = make([]evmodel.SubscriptionResource, 0)
 	for _, evtSubscription := range subscriptions {
 		for _, originResource := range evtSubscription.EventDestination.OriginResources {
-			if strings.Contains(origin, "Fabrics") && originResource == "/redfish/v1/Fabrics" {
+			if strings.Contains(origin, "Fabrics") && originResource.Oid == "/redfish/v1/Fabrics" {
 				collectionSubscription = append(collectionSubscription, evtSubscription)
 			}
 		}
@@ -670,7 +669,7 @@ func (e *ExternalInterfaces) DeleteAggregateSubscriptions(req *eventsproto.Event
 	}
 	for _, evtSubscription := range subscriptionList {
 		evtSubscription.Hosts = removeElement(evtSubscription.Hosts, aggregateID)
-		evtSubscription.EventDestination.OriginResources = removeElement(evtSubscription.EventDestination.OriginResources, "/redfish/v1/AggregationService/Aggregates/"+aggregateID)
+		evtSubscription.EventDestination.OriginResources = removeLinks(evtSubscription.EventDestination.OriginResources, "/redfish/v1/AggregationService/Aggregates/"+aggregateID)
 
 		if len(evtSubscription.EventDestination.OriginResources) == 0 {
 			err = e.DeleteEvtSubscription(evtSubscription.SubscriptionID)
@@ -692,7 +691,7 @@ func (e *ExternalInterfaces) DeleteAggregateSubscriptions(req *eventsproto.Event
 	return nil
 }
 
-func getAggregateList(origin string, sessionToken string) ([]common.Link, error) {
+func getAggregateList(origin string, sessionToken string) ([]model.Link, error) {
 	conn, err := services.ODIMService.Client(services.Aggregator)
 	if err != nil {
 		l.Log.Error("Error while Event ", err.Error())
@@ -716,7 +715,7 @@ func getAggregateList(origin string, sessionToken string) ([]common.Link, error)
 	return data.Elements, nil
 
 }
-func (e *ExternalInterfaces) resubscribeAggregateSubscription(subscriptionPost evmodel.EvtSubPost, origin string, deleteflag bool, sessionToken string) error {
+func (e *ExternalInterfaces) resubscribeAggregateSubscription(subscriptionPost model.EventDestination, origin string, deleteflag bool, sessionToken string) error {
 	originResource := origin
 	systems, err := getAggregateList(originResource, sessionToken)
 	if err != nil {

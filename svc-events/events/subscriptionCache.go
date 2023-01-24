@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
@@ -215,7 +216,7 @@ func getAggregateSubscriptionList(systemId string) (subs []dmtf.EventDestination
 			if isValidAggregateId {
 				for subId := range subscriptions {
 					sub, isValidSubId := getSubscriptionDetails(subId)
-					sub.OriginResources = append(sub.OriginResources, "/redfish/v1/Systems/"+systemId)
+					sub.OriginResources = append(sub.OriginResources, model.Link{Oid: "/redfish/v1/Systems/" + systemId})
 					if isValidSubId {
 						subs = append(subs, sub)
 					}

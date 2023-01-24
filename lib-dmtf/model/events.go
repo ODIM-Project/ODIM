@@ -368,17 +368,17 @@ type EventDestination struct {
 	OEMProtocol                  string              `json:"OEMProtocol,omitempty"`
 	OEMSubscriptionType          string              `json:"OEMSubscriptionType"`
 	Oem                          interface{}         `json:"Oem,omitempty"`
-	OriginResources              []string            `json:"OriginResources,omitempty"`
-	OriginResourcesCount         int                 `json:MetricReportDefinitions@odata.count,omitempty`
+	OriginResources              []Link              `json:"OriginResources,omitempty"`
+	OriginResourcesCount         int                 `json:OriginResources@odata.count,omitempty`
 	Protocol                     string              `json:"Protocol"`
 	RegistryPrefixes             []string            `json:"RegistryPrefixes,omitempty"`
 	ResourceTypes                []string            `json:"ResourceTypes,omitempty"`
-	SNMP                         SNMPSettings        `json:"SNMP,omitempty"`
+	SNMP                         *SNMPSettings       `json:"SNMP,omitempty"`
 	SendHeartbeat                bool                `json:"SendHeartbeat,omitempty"`
-	Status                       Status              `json:"Status,omitempty"`
+	Status                       *Status             `json:"Status,omitempty"`
 	SubordinateResources         bool                `json:"SubordinateResources,omitempty"`
 	SubscriptionType             SubscriptionType    `json:"SubscriptionType,omitempty"`
-	SyslogFilters                SyslogFilter        `json:"SyslogFilters,omitempty"`
+	SyslogFilters                *SyslogFilter       `json:"SyslogFilters,omitempty"`
 	VerifyCertificate            bool                `json:"VerifyCertificate,omitempty"`
 }
 

@@ -45,7 +45,7 @@ func mockTarget(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	target := &Target{
+	target := &common.Target{
 		ManagerAddress: "10.10.0.14",
 		Password:       []byte("Password"),
 		UserName:       "admin",
@@ -66,7 +66,7 @@ func mockPlugins(t *testing.T) {
 	}
 
 	password := getEncryptedKey(t, []byte("Password"))
-	pluginArr := []Plugin{
+	pluginArr := []common.Plugin{
 		{
 			IP:                "localhost",
 			Port:              "1234",
@@ -123,7 +123,7 @@ func mockFabricData(t *testing.T, fabuuid, pluginID string) {
 
 func TestGetTarget(t *testing.T) {
 	config.SetUpMockConfig(t)
-	target := &Target{
+	target := &common.Target{
 		ManagerAddress: "10.10.0.14",
 		Password:       []byte("Password"),
 		UserName:       "admin",
@@ -146,7 +146,7 @@ func TestGetTarget(t *testing.T) {
 	assert.Nil(t, resp, "resp Should not nil")
 }
 
-func create(target *Target) *errors.Error {
+func create(target *common.Target) *errors.Error {
 
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -212,7 +212,7 @@ func TestGetPluginData(t *testing.T) {
 	invalidPassword := []byte("invalid")
 	validPasswordEnc := getEncryptedKey(t, []byte("password"))
 
-	pluginData := Plugin{
+	pluginData := common.Plugin{
 		IP:                "localhost",
 		Port:              "45001",
 		Username:          "admin",
@@ -232,14 +232,14 @@ func TestGetPluginData(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		exec    func(*Plugin)
-		want    *Plugin
+		exec    func(*common.Plugin)
+		want    *common.Plugin
 		wantErr bool
 	}{
 		{
 			name: "Positive Case",
 			args: args{pluginID: "validPlugin"},
-			exec: func(want *Plugin) {
+			exec: func(want *common.Plugin) {
 				want.Password = validPassword
 			},
 			want:    &pluginData,
@@ -362,7 +362,7 @@ func TestGetSingleSystem(t *testing.T) {
 
 	resp, err := GetSingleSystem("6d4a0a66-7efa-578e-83cf-44dc68d2874e")
 	assert.Nil(t, err, "Error Should be nil")
-	var system Target
+	var system common.Target
 	json.Unmarshal([]byte(resp), &system)
 	assert.Equal(t, "10.10.0.14", system.ManagerAddress, "ManagerAddress should be 10.10.0.14")
 	assert.Equal(t, "admin", system.UserName, "UserName should be admin")
@@ -435,7 +435,7 @@ func TestSaveDeviceSubscription(t *testing.T) {
 		}
 	}()
 
-	var devSubscription = DeviceSubscription{
+	var devSubscription = common.DeviceSubscription{
 		EventHostIP:     "10.10.0.1",
 		Location:        "https://10.10.10.23/redfish/v1/EventService/Subscriptions/123",
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
@@ -454,7 +454,7 @@ func TestSaveDeviceSubscription_existing_subscription(t *testing.T) {
 		}
 	}()
 
-	var devSubscription = DeviceSubscription{
+	var devSubscription = common.DeviceSubscription{
 		EventHostIP:     "10.10.0.1",
 		Location:        "https://10.10.10.23/redfish/v1/EventService/Subscriptions/123",
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
@@ -477,7 +477,7 @@ func TestGetDeviceSubscriptions(t *testing.T) {
 		}
 	}()
 
-	var devSubscription = DeviceSubscription{
+	var devSubscription = common.DeviceSubscription{
 		EventHostIP:     "10.10.0.1",
 		Location:        "https://10.10.10.23/redfish/v1/EventService/Subscriptions/123",
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
@@ -507,7 +507,7 @@ func TestDeleteDeviceSubscription(t *testing.T) {
 		}
 	}()
 
-	var devSubscription = DeviceSubscription{
+	var devSubscription = common.DeviceSubscription{
 		EventHostIP:     "10.10.0.1",
 		Location:        "https://10.10.10.23/redfish/v1/EventService/Subscriptions/123",
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
@@ -530,7 +530,7 @@ func TestUpdateDeviceSubscriptionLocation(t *testing.T) {
 		}
 	}()
 
-	var devSubscription = DeviceSubscription{
+	var devSubscription = common.DeviceSubscription{
 		EventHostIP:     "10.10.0.1",
 		Location:        "https://10.10.10.23/redfish/v1/EventService/Subscriptions/123",
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
@@ -571,7 +571,7 @@ func TestSaveEventSubscription(t *testing.T) {
 			Destination:     "https://10.10.10.23:8080/destination",
 			Name:            "Event Subscription",
 			EventTypes:      []string{"Alert", "StatusChange"},
-			OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+			OriginResources: []model.Link{{Oid: "/redfish/v1/Systems/uuid.1"}},
 		},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
@@ -593,7 +593,7 @@ func TestSaveEventSubscription_existingData(t *testing.T) {
 			Destination:     "https://10.10.10.23:8080/destination",
 			Name:            "Event Subscription",
 			EventTypes:      []string{"Alert", "StatusChange"},
-			OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+			OriginResources: []model.Link{{Oid: "/redfish/v1/Systems/uuid.1"}},
 		},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
@@ -619,7 +619,7 @@ func TestGetEvtSubscriptions(t *testing.T) {
 			Destination:     "https://10.10.10.23:8080/destination",
 			Name:            "Event Subscription",
 			EventTypes:      []string{"Alert", "StatusChange"},
-			OriginResources: []string{"/redfish/v1/Systems/uuid.1"}},
+			OriginResources: []model.Link{{Oid: "/redfish/v1/Systems/uuid.1"}}},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())
@@ -656,7 +656,7 @@ func TestDeleteEvtSubscription(t *testing.T) {
 			Destination:     "https://10.10.10.23:8080/destination",
 			Name:            "Event Subscription",
 			EventTypes:      []string{"Alert", "StatusChange"},
-			OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+			OriginResources: []model.Link{model.Link{Oid: "/redfish/v1/Systems/uuid.1"}},
 		},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
@@ -685,7 +685,7 @@ func TestUpdateEvtSubscription(t *testing.T) {
 			Destination:     "https://10.10.10.23:8080/destination",
 			Name:            "Event Subscription",
 			EventTypes:      []string{"Alert", "StatusChange"},
-			OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+			OriginResources: []model.Link{{Oid: "/redfish/v1/Systems/uuid.1"}},
 		},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
@@ -1127,7 +1127,7 @@ func TestGetAggregateData(t *testing.T) {
 		aggreagetKey string
 	}
 	var aggregate = Aggregate{
-		Elements: []common.Link{
+		Elements: []model.Link{
 			{Oid: "dummy"},
 		},
 	}
@@ -1145,7 +1145,7 @@ func TestGetAggregateData(t *testing.T) {
 			args:    args{},
 			wantErr: true,
 			want: Aggregate{
-				Elements: []common.Link{{Oid: ""}},
+				Elements: []model.Link{{Oid: ""}},
 			},
 			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 				return nil, &errors.Error{}
@@ -1156,7 +1156,7 @@ func TestGetAggregateData(t *testing.T) {
 			args:    args{aggreagetKey: ""},
 			wantErr: true,
 			want: Aggregate{
-				Elements: []common.Link{{Oid: ""}},
+				Elements: []model.Link{{Oid: ""}},
 			},
 			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 				return common.GetDBConnection(dbFlag)
@@ -1167,7 +1167,7 @@ func TestGetAggregateData(t *testing.T) {
 			args:    args{aggreagetKey: "3bd1f589-117a-4cf9-89f2-da44ee8e012b"},
 			wantErr: false,
 			want: Aggregate{
-				Elements: []common.Link{{Oid: ""}},
+				Elements: []model.Link{{Oid: ""}},
 			},
 			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 				return common.GetDBConnection(dbFlag)
@@ -1178,7 +1178,7 @@ func TestGetAggregateData(t *testing.T) {
 			args:    args{aggreagetKey: "3bd1f589-117a-4cf9-89f2-da44ee8e012c"},
 			wantErr: true,
 			want: Aggregate{
-				Elements: []common.Link{{Oid: ""}},
+				Elements: []model.Link{{Oid: ""}},
 			},
 			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 				return common.GetDBConnection(dbFlag)
@@ -1227,9 +1227,9 @@ func TestInvalidDbConnection(t *testing.T) {
 	assert.NotNil(t, "there should be an error ", err1)
 	_, err1 = GetDeviceSubscriptions("")
 	assert.NotNil(t, "there should be an error ", err1)
-	err1 = UpdateDeviceSubscriptionLocation(DeviceSubscription{})
+	err1 = UpdateDeviceSubscriptionLocation(common.DeviceSubscription{})
 	assert.NotNil(t, "there should be an error ", err1)
-	err1 = SaveDeviceSubscription(DeviceSubscription{})
+	err1 = SaveDeviceSubscription(common.DeviceSubscription{})
 	assert.NotNil(t, "there should be an error ", err1)
 	err1 = DeleteDeviceSubscription("")
 	assert.NotNil(t, "there should be an error ", err1)
@@ -1405,7 +1405,7 @@ func TestGetAggregate(t *testing.T) {
 			GetDbConnection: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 				return common.GetDBConnection(dbFlag)
 			},
-			want: Aggregate{Elements: []common.Link{
+			want: Aggregate{Elements: []model.Link{
 				{
 					Oid: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
 				},
@@ -1448,7 +1448,7 @@ func mockAggregateList() error {
 		return err
 	}
 	aggregate := Aggregate{
-		Elements: []common.Link{
+		Elements: []model.Link{
 			{
 				Oid: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
 			},

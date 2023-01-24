@@ -22,7 +22,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
-	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 )
 
 func TestUpdateTaskData(t *testing.T) {
@@ -95,7 +94,7 @@ func TestExternalInterfaces_PluginCall(t *testing.T) {
 	IOUtilReadAllFunc = func(r io.Reader) ([]byte, error) {
 		return nil, errors.New("")
 	}
-	e.PluginCall(evcommon.PluginContactRequest{Plugin: &evmodel.Plugin{IP: "10.10.10"}, HTTPMethodType: http.MethodPost})
+	e.PluginCall(evcommon.PluginContactRequest{Plugin: &common.Plugin{IP: "10.10.10"}, HTTPMethodType: http.MethodPost})
 	IOUtilReadAllFunc = func(r io.Reader) ([]byte, error) {
 		return ioutil.ReadAll(r)
 	}

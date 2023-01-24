@@ -50,8 +50,8 @@ const (
 	// UndeliveredEvents holds table for UndeliveredEvent
 	UndeliveredEvents = "UndeliveredEvents"
 
-	// ReadInProgres holds table for ReadInProgres
-	ReadInProgres = "ReadInProgres"
+	// ReadInProgress holds table for ReadInProgress
+	ReadInProgress = "ReadInProgress"
 	// DeliveryRetryPolicy is set to default value incase if its empty
 	DeliveryRetryPolicy = "RetryForever"
 
@@ -61,25 +61,9 @@ const (
 )
 
 var (
-	//GetDbConnection alies for common.GetDBConnection
+	//GetDbConnection alias for common.GetDBConnection
 	GetDbConnection = common.GetDBConnection
 )
-
-//RequestBody is required to receive the post request payload
-type RequestBody struct {
-	Name                 string                   `json:"Name"`
-	Destination          string                   `json:"Destination" validate:"required"`
-	EventTypes           []string                 `json:"EventTypes,omitempty"`
-	MessageIds           []string                 `json:"MessageIds,omitempty"`
-	ResourceTypes        []string                 `json:"ResourceTypes,omitempty"`
-	Context              string                   `json:"Context"`
-	Protocol             string                   `json:"Protocol" validate:"required"`
-	SubscriptionType     dmtf.SubscriptionType    `json:"SubscriptionType"`
-	EventFormatType      string                   `json:"EventFormatType"`
-	SubordinateResources bool                     `json:"SubordinateResources"`
-	OriginResources      []common.Link            `json:"OriginResources"`
-	DeliveryRetryPolicy  dmtf.DeliveryRetryPolicy `json:"DeliveryRetryPolicy"`
-}
 
 //SubscriptionResource is a model to store the subscription details
 type SubscriptionResource struct {
@@ -91,53 +75,6 @@ type SubscriptionResource struct {
 	Location         string                 `json:"location,omitempty"`
 }
 
-//DeviceSubscription is a model to store the subscription details of a device
-type DeviceSubscription common.DeviceSubscription
-
-//EvtSubPost is required to frame the post payload for the target device (South Bound)
-type EvtSubPost struct {
-	Name                 string                   `json:"Name"`
-	Destination          string                   `json:"Destination"`
-	EventTypes           []string                 `json:"EventTypes,omitempty"`
-	MessageIds           []string                 `json:"MessageIds,omitempty"`
-	ResourceTypes        []string                 `json:"ResourceTypes,omitempty"`
-	Protocol             string                   `json:"Protocol"`
-	EventFormatType      string                   `json:"EventFormatType"`
-	SubscriptionType     dmtf.SubscriptionType    `json:"SubscriptionType"`
-	SubordinateResources bool                     `json:"SubordinateResources"`
-	HTTPHeaders          []HTTPHeaders            `json:"HttpHeaders"`
-	Context              string                   `json:"Context"`
-	OriginResources      []common.Link            `json:"OriginResources"`
-	DeliveryRetryPolicy  dmtf.DeliveryRetryPolicy `json:"DeliveryRetryPolicy,omitempty"`
-}
-
-//HTTPHeaders required for the subscribing for events
-type HTTPHeaders struct {
-	ContentType string `json:"Content-Type"`
-}
-
-//Target is for sending the request to south bound/plugin
-type Target struct {
-	ManagerAddress string `json:"ManagerAddress"`
-	Password       []byte `json:"Password"`
-	UserName       string `json:"UserName"`
-	PostBody       []byte `json:"PostBody"`
-	DeviceUUID     string `json:"DeviceUUID"`
-	PluginID       string `json:"PluginID"`
-	Location       string `json:"Location"`
-}
-
-// Plugin is the model for plugin information
-type Plugin struct {
-	IP                string
-	Port              string
-	Username          string
-	Password          []byte
-	ID                string
-	PluginType        string
-	PreferredAuthType string
-}
-
 // Fabric is the model for fabrics information
 type Fabric struct {
 	FabricUUID string
@@ -146,7 +83,7 @@ type Fabric struct {
 
 //Aggregate is the model for Aggregate information
 type Aggregate struct {
-	Elements []common.Link `json:"Elements"`
+	Elements []dmtf.Link `json:"Elements"`
 }
 
 //GetResource fetches a resource from database using table and key
@@ -167,8 +104,8 @@ func GetResource(Table, key string) (string, *errors.Error) {
 }
 
 //GetTarget fetches the System(Target Device Credentials) table details
-func GetTarget(deviceUUID string) (*Target, error) {
-	var target Target
+func GetTarget(deviceUUID string) (*common.Target, error) {
+	var target common.Target
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -186,8 +123,8 @@ func GetTarget(deviceUUID string) (*Target, error) {
 }
 
 //GetPluginData will fetch plugin details
-func GetPluginData(pluginID string) (*Plugin, *errors.Error) {
-	var plugin Plugin
+func GetPluginData(pluginID string) (*common.Plugin, *errors.Error) {
+	var plugin common.Plugin
 
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -213,7 +150,7 @@ func GetPluginData(pluginID string) (*Plugin, *errors.Error) {
 }
 
 //GetAllPlugins gets all the Plugin from the db
-func GetAllPlugins() ([]Plugin, *errors.Error) {
+func GetAllPlugins() ([]common.Plugin, *errors.Error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -222,9 +159,9 @@ func GetAllPlugins() ([]Plugin, *errors.Error) {
 	if err != nil {
 		return nil, err
 	}
-	var plugins []Plugin
+	var plugins []common.Plugin
 	for _, key := range keys {
-		var plugin Plugin
+		var plugin common.Plugin
 		plugindata, err := conn.Read("Plugin", key)
 		if err != nil {
 			return nil, errors.PackError(err.ErrNo(), "error while trying to fetch plugin data: ", err.Error())
@@ -342,7 +279,7 @@ func GetAllFabrics() ([]string, error) {
 }
 
 // GetDeviceSubscriptions is to get subscription details of device
-func GetDeviceSubscriptions(hostIP string) (*DeviceSubscription, error) {
+func GetDeviceSubscriptions(hostIP string) (*common.DeviceSubscription, error) {
 
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -353,7 +290,7 @@ func GetDeviceSubscriptions(hostIP string) (*DeviceSubscription, error) {
 		return nil, fmt.Errorf("error while trying to get subscription of device %v", gerr.Error())
 	}
 	devSub := strings.Split(devSubscription[0], "||")
-	var deviceSubscription = &DeviceSubscription{
+	var deviceSubscription = &common.DeviceSubscription{
 		EventHostIP:     devSub[0],
 		Location:        devSub[1],
 		OriginResources: getSliceFromString(devSub[2]),
@@ -363,7 +300,7 @@ func GetDeviceSubscriptions(hostIP string) (*DeviceSubscription, error) {
 }
 
 // UpdateDeviceSubscriptionLocation is to update subscription details of device
-func UpdateDeviceSubscriptionLocation(devSubscription DeviceSubscription) error {
+func UpdateDeviceSubscriptionLocation(devSubscription common.DeviceSubscription) error {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
@@ -376,7 +313,7 @@ func UpdateDeviceSubscriptionLocation(devSubscription DeviceSubscription) error 
 }
 
 // SaveDeviceSubscription is to save subscription details of device
-func SaveDeviceSubscription(devSubscription DeviceSubscription) error {
+func SaveDeviceSubscription(devSubscription common.DeviceSubscription) error {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
@@ -539,10 +476,10 @@ func SetUndeliveredEventsFlag(destination string) error {
 	if err != nil {
 		return fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
-	if err = conn.AddResourceData(ReadInProgres, destination, "true"); err != nil {
-		return fmt.Errorf("error while trying to create new %v resource: %v", ReadInProgres, err.Error())
+	if err = conn.AddResourceData(ReadInProgress, destination, "true"); err != nil {
+		return fmt.Errorf("error while trying to create new %v resource: %v", ReadInProgress, err.Error())
 	}
-	_, err = conn.Read(ReadInProgres, destination)
+	_, err = conn.Read(ReadInProgress, destination)
 	if err != nil {
 		l.Log.Error(err)
 	}
@@ -556,7 +493,7 @@ func GetUndeliveredEventsFlag(destination string) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
-	_, err = conn.Read(ReadInProgres, destination)
+	_, err = conn.Read(ReadInProgress, destination)
 	if err != nil {
 		return false, err
 	}
@@ -569,7 +506,7 @@ func DeleteUndeliveredEventsFlag(destination string) error {
 	if err != nil {
 		return fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
-	if err := conn.Delete(ReadInProgres, destination); err != nil {
+	if err := conn.Delete(ReadInProgress, destination); err != nil {
 		return fmt.Errorf("%v", err.Error())
 	}
 	return nil

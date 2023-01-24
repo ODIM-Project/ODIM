@@ -565,7 +565,7 @@ func TestExternalInterfaces_UpdateEventSubscriptions(t *testing.T) {
 					EventTypes:           []string{"Alert", "ResourceAdded"},
 					MessageIds:           []string{"IndicatorChanged"},
 					ResourceTypes:        []string{"ComputerSystem"},
-					OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+					OriginResources:      []model.Link{model.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}},
 					SubordinateResources: true,
 				},
 
@@ -594,7 +594,7 @@ func TestExternalInterfaces_UpdateEventSubscriptions(t *testing.T) {
 func TestExternalInterfaces_createFabricSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
 	p := getMockMethods()
-	postBody := evmodel.RequestBody{
+	postBody := model.EventDestination{
 		Name:                 "EventSubscription",
 		Destination:          "https://odim.test24.com:8070/Destination1",
 		EventTypes:           []string{"Alert"},
@@ -603,7 +603,7 @@ func TestExternalInterfaces_createFabricSubscription(t *testing.T) {
 		SubscriptionType:     "RedfishEvent",
 		EventFormatType:      "Event",
 		SubordinateResources: true,
-		OriginResources: []common.Link{
+		OriginResources: []model.Link{
 			{Oid: "/redfish/v1/Systems"},
 		},
 	}

@@ -29,6 +29,7 @@ import (
 
 	uuid "github.com/satori/go.uuid"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
@@ -111,7 +112,7 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 				subscription := *sub.EventDestination
 				subscription.ID = sub.SubscriptionID
 
-				if filterEventsToBeForwarded(subscription, message.Events[0], []string{origin}) {
+				if filterEventsToBeForwarded(subscription, message.Events[0], []model.Link{{Oid: origin.Oid}}) {
 					l.Log.Info("Destination: " + sub.EventDestination.Destination)
 					go e.postEvent(sub.EventDestination.Destination, eventUniqueID, messageBytes)
 				}

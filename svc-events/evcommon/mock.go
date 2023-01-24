@@ -88,7 +88,7 @@ func MockContactClient(ctx context.Context, url, method, token string, odataID s
 			}
 			return response, nil
 		}
-		b := body.(*evmodel.Target)
+		b := body.(*common.Target)
 		if b.DeviceUUID == "d72dade0-c35a-984c-4859-1108132d72da" {
 			body := `{"MessageId": "` + response.Failure + `"}`
 			return &http.Response{
@@ -185,15 +185,15 @@ func MockUpdateTask(task common.TaskData) error {
 }
 
 // MockGetTarget is for mocking up of getting target info
-func MockGetTarget(uuid string) (*evmodel.Target, error) {
-	var target *evmodel.Target
+func MockGetTarget(uuid string) (*common.Target, error) {
+	var target *common.Target
 	encryptedData, keyErr := GetEncryptedKey([]byte("testData"))
 	if keyErr != nil {
 		return target, keyErr
 	}
 	switch uuid {
 	case "6d4a0a66-7efa-578e-83cf-44dc68d2874e":
-		target = &evmodel.Target{
+		target = &common.Target{
 			ManagerAddress: "100.100.100.100",
 			Password:       encryptedData,
 			UserName:       "admin",
@@ -201,7 +201,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 			PluginID:       "GRF",
 		}
 	case "11081de0-4859-984c-c35a-6c50732d72da":
-		target = &evmodel.Target{
+		target = &common.Target{
 			ManagerAddress: "10.10.1.3",
 			Password:       encryptedData,
 			UserName:       "admin",
@@ -209,7 +209,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 			PluginID:       "ILO",
 		}
 	case "d72dade0-c35a-984c-4859-1108132d72da":
-		target = &evmodel.Target{
+		target = &common.Target{
 			ManagerAddress: "odim.test1.com",
 			Password:       encryptedData,
 			UserName:       "admin",
@@ -217,7 +217,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 			PluginID:       "ILO",
 		}
 	case "110813e0-4859-984c-984c-d72da32d72da":
-		target = &evmodel.Target{
+		target = &common.Target{
 			ManagerAddress: domainIP,
 			Password:       encryptedData,
 			UserName:       "admin",
@@ -225,7 +225,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 			PluginID:       "ILO",
 		}
 	case "abab09db-e7a9-4352-8df0-5e41315a2a4c":
-		target = &evmodel.Target{
+		target = &common.Target{
 			ManagerAddress: "localhost",
 			Password:       encryptedData,
 			UserName:       "admin",
@@ -233,7 +233,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 			PluginID:       "ILO",
 		}
 	case "6d4a0a66-7efa-578e-83cf-44dc68d2874d":
-		target = &evmodel.Target{
+		target = &common.Target{
 			ManagerAddress: "100.100.100.101",
 			Password:       encryptedData,
 			UserName:       "admin",
@@ -247,15 +247,15 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 }
 
 // MockGetPluginData is for mocking up of get plugin data of particural plugin id
-func MockGetPluginData(pluginID string) (*evmodel.Plugin, *errors.Error) {
-	var plugin *evmodel.Plugin
+func MockGetPluginData(pluginID string) (*common.Plugin, *errors.Error) {
+	var plugin *common.Plugin
 	password, keyErr := GetEncryptedKey([]byte("Password"))
 	if keyErr != nil {
 		return plugin, errors.PackError(errors.UndefinedErrorType, keyErr.Error())
 	}
 	switch pluginID {
 	case "GRF":
-		plugin = &evmodel.Plugin{
+		plugin = &common.Plugin{
 			IP:                "localhost",
 			Port:              "1234",
 			Password:          password,
@@ -265,7 +265,7 @@ func MockGetPluginData(pluginID string) (*evmodel.Plugin, *errors.Error) {
 			PluginType:        "GRF",
 		}
 	case "ILO":
-		plugin = &evmodel.Plugin{
+		plugin = &common.Plugin{
 			IP:                "localhost",
 			Port:              "1234",
 			Password:          password,
@@ -275,7 +275,7 @@ func MockGetPluginData(pluginID string) (*evmodel.Plugin, *errors.Error) {
 			PluginType:        "ILO",
 		}
 	case "CFM":
-		plugin = &evmodel.Plugin{
+		plugin = &common.Plugin{
 			IP:                "10.10.1.6",
 			Port:              "4321",
 			Password:          password,
@@ -285,7 +285,7 @@ func MockGetPluginData(pluginID string) (*evmodel.Plugin, *errors.Error) {
 			PluginType:        "CFM",
 		}
 	case "CFMPlugin":
-		plugin = &evmodel.Plugin{
+		plugin = &common.Plugin{
 			IP:                "10.10.10.23",
 			Port:              "4321",
 			Password:          password,
@@ -376,7 +376,7 @@ func MockGetFabricData(fabricID string) (evmodel.Fabric, error) {
 // MockGetAggregateDatacData is for mocking up of get aggregate data against the aggregate id
 func MockGetAggregateDatacData(aggregateID string) (evmodel.Aggregate, error) {
 	aggregate := evmodel.Aggregate{
-		Elements: []common.Link{{
+		Elements: []model.Link{{
 			Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 		}},
 	}
@@ -400,7 +400,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.SubscriptionResource, 
 					EventTypes:           []string{"Alert", "ResourceAdded"},
 					MessageIds:           []string{"IndicatorChanged"},
 					ResourceTypes:        []string{"ComputerSystem"},
-					OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+					OriginResources:      []model.Link{{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}},
 					SubordinateResources: true,
 				},
 				Hosts:    []string{"100.100.100.100"},
@@ -419,7 +419,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.SubscriptionResource, 
 					EventTypes:           []string{"Alert", "ResourceAdded"},
 					MessageIds:           []string{"IndicatorChanged"},
 					ResourceTypes:        []string{"ComputerSystem"},
-					OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+					OriginResources:      []model.Link{{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}},
 					SubordinateResources: true,
 				},
 				Location: "https://odim.2.com/EventService/Subscriptions/1",
@@ -439,7 +439,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.SubscriptionResource, 
 					EventTypes:           []string{"Alert", "StatusChange"},
 					MessageIds:           []string{"IndicatorChanged", "StateChanged"},
 					ResourceTypes:        []string{"ComputerSystem"},
-					OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
+					OriginResources:      []model.Link{{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, {Oid: "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"}},
 					SubordinateResources: true,
 				},
 				Location: "https://odim.2.com/EventService/Subscriptions/1",
@@ -458,7 +458,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.SubscriptionResource, 
 					EventTypes:           []string{"Alert", "ResourceAdded"},
 					MessageIds:           []string{},
 					ResourceTypes:        []string{},
-					OriginResources:      []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
+					OriginResources:      []model.Link{{Oid: "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"}},
 					SubordinateResources: false,
 				},
 				Location: "https://10.10.10.3/EventService/Subscriptions/1",
@@ -476,7 +476,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.SubscriptionResource, 
 					EventTypes:           []string{"Alert"},
 					MessageIds:           []string{},
 					ResourceTypes:        []string{},
-					OriginResources:      []string{"/redfish/v1/Fabrics/123456"},
+					OriginResources:      []model.Link{{Oid: "/redfish/v1/Fabrics/123456"}},
 					SubordinateResources: true,
 				},
 				Location: "/ODIM/v1/Subscriptions/12345",
@@ -494,7 +494,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.SubscriptionResource, 
 					EventTypes:           []string{"Alert", "ResourceAdded"},
 					MessageIds:           []string{},
 					ResourceTypes:        []string{},
-					OriginResources:      []string{"/redfish/v1/Fabrics/123"},
+					OriginResources:      []model.Link{{Oid: "/redfish/v1/Fabrics/123"}},
 					SubordinateResources: true,
 				},
 				Location: "/ODIM/v1/Subscriptions/123",
@@ -513,11 +513,12 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.SubscriptionResource, 
 					EventTypes:    []string{"Alert"},
 					MessageIds:    []string{},
 					ResourceTypes: []string{},
-					OriginResources: []string{"/redfish/v1/Systems",
-						"/redfish/v1/Chassis",
-						"/redfish/v1/Fabrics",
-						"/redfish/v1/Managers",
-						"/redfish/v1/TaskService/Tasks"},
+					OriginResources: []model.Link{
+						{Oid: "/redfish/v1/Systems"},
+						{Oid: "/redfish/v1/Chassis"},
+						{Oid: "/redfish/v1/Fabrics"},
+						{Oid: "/redfish/v1/Managers"},
+						{Oid: "/redfish/v1/TaskService/Tasks"}},
 					SubordinateResources: true,
 				},
 				Location: "/ODIM/v1/Subscriptions/12345",
@@ -536,7 +537,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.SubscriptionResource, 
 					EventTypes:           []string{"Alert"},
 					MessageIds:           []string{"IndicatorChanged"},
 					ResourceTypes:        []string{"ComputerSystem"},
-					OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+					OriginResources:      []model.Link{{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}},
 					SubordinateResources: true,
 				},
 				Location: "https://odim.2.com/EventService/Subscriptions/1",
@@ -550,52 +551,52 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.SubscriptionResource, 
 }
 
 // MockGetDeviceSubscriptions is for mocking up of get device subscription
-func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, error) {
-	var deviceSub *evmodel.DeviceSubscription
+func MockGetDeviceSubscriptions(hostIP string) (*common.DeviceSubscription, error) {
+	var deviceSub *common.DeviceSubscription
 	if strings.Contains(hostIP, "100.100.100.100") || hostIP == "*" {
-		deviceSub = &evmodel.DeviceSubscription{
+		deviceSub = &common.DeviceSubscription{
 			Location:        "https://odim.2.com/EventService/Subscriptions/1",
 			EventHostIP:     "100.100.100.100",
 			OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 		}
 	} else if strings.Contains(hostIP, "100.100.100.101") || hostIP == "*" {
-		deviceSub = &evmodel.DeviceSubscription{
+		deviceSub = &common.DeviceSubscription{
 			Location:        "https://odim.2.com/EventService/Subscriptions/1",
 			EventHostIP:     "100.100.100.100",
 			OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 		}
 	} else if strings.Contains(hostIP, "10.10.1.3") {
-		deviceSub = &evmodel.DeviceSubscription{
+		deviceSub = &common.DeviceSubscription{
 			Location:        "https://10.10.10.3/EventService/Subscriptions/1",
 			EventHostIP:     "10.10.1.3",
 			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
 		}
 	} else if strings.Contains(hostIP, "odim.ip.com") {
-		deviceSub = &evmodel.DeviceSubscription{
+		deviceSub = &common.DeviceSubscription{
 			Location:        "/ODIM/v1/Subscriptions/12345",
 			EventHostIP:     "odim.ip.com",
 			OriginResources: []string{"/redfish/v1/Fabrics/123456"},
 		}
 	} else if strings.Contains(hostIP, domainIP) {
-		deviceSub = &evmodel.DeviceSubscription{
+		deviceSub = &common.DeviceSubscription{
 			Location:        "/ODIM/v1/Subscriptions/123",
 			EventHostIP:     domainIP,
 			OriginResources: []string{"/redfish/v1/Fabrics/123"},
 		}
 	} else if strings.Contains(hostIP, "localhost") {
-		deviceSub = &evmodel.DeviceSubscription{
+		deviceSub = &common.DeviceSubscription{
 			Location:        "/ODIM/v1/Subscriptions/12345",
 			EventHostIP:     "localhost",
 			OriginResources: []string{""},
 		}
 	} else if strings.Contains(hostIP, "odim.t.com") {
-		deviceSub = &evmodel.DeviceSubscription{
+		deviceSub = &common.DeviceSubscription{
 			Location:        "https://odim.t.com/EventService/Subscriptions/1",
 			EventHostIP:     "odim.t.com",
 			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72ea.1"},
 		}
 	} else if hostIP == "*/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1" {
-		deviceSub = &evmodel.DeviceSubscription{
+		deviceSub = &common.DeviceSubscription{
 			Location:        "https://100.100.100.100/ODIM/v1/Subscriptions/1",
 			EventHostIP:     "100.100.100.100",
 			OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
@@ -628,7 +629,7 @@ func MockDeleteDeviceSubscription(hostIP string) error {
 }
 
 // MockUpdateDeviceSubscriptionLocation is for mocking up of updating device subscription based on location
-func MockUpdateDeviceSubscriptionLocation(devSubscription evmodel.DeviceSubscription) error {
+func MockUpdateDeviceSubscriptionLocation(devSubscription common.DeviceSubscription) error {
 	return nil
 }
 
@@ -663,7 +664,7 @@ func MockSaveUndeliveredEvents(key string, event []byte) error {
 }
 
 // MockSaveDeviceSubscription is for mocking up of save undelivered events
-func MockSaveDeviceSubscription(evmodel.DeviceSubscription) error {
+func MockSaveDeviceSubscription(common.DeviceSubscription) error {
 	return nil
 }
 

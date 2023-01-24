@@ -172,15 +172,6 @@ func NewCreateHandler(createPluginClient plugin.ClientFactory) *Create {
 	}
 }
 
-//			{
-//				"Links" : {
-//					"ManagedBy": [
-//						"@odata.id": "/redfish/v1/Managers/1"
-//					]
-//				}
-//			}
-//		}
-//	}
 type linksManagedByCollection struct {
 	Links struct {
 		ManagedBy []struct {

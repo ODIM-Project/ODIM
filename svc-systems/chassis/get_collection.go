@@ -17,6 +17,7 @@
 package chassis
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -51,15 +52,15 @@ type GetCollection struct {
 }
 
 // Handle defines the operations which handle the RPC request-response for getting chassis collection information
-func (h *GetCollection) Handle() (r response.RPC) {
-	sources, e := h.sourcesProvider.findSources()
+func (h *GetCollection) Handle(ctx context.Context) (r response.RPC) {
+	sources, e := h.sourcesProvider.findSources(ctx)
 	if e != nil {
 		return *e
 	}
 
 	allChassisCollection := sresponse.NewChassisCollection()
 	for _, s := range sources {
-		r, e := s.read()
+		r, e := s.read(ctx)
 		if e != nil {
 			return *e
 		}
@@ -68,15 +69,15 @@ func (h *GetCollection) Handle() (r response.RPC) {
 		}
 	}
 
-	h.sourcesProvider.findFabricChassis(&allChassisCollection)
+	h.sourcesProvider.findFabricChassis(ctx, &allChassisCollection)
 
 	initializeRPCResponse(&r, allChassisCollection)
 	return
 }
 
 type sourceProvider interface {
-	findSources() ([]source, *response.RPC)
-	findFabricChassis(c *sresponse.Collection)
+	findSources(ctx context.Context) ([]source, *response.RPC)
+	findFabricChassis(ctx context.Context, c *sresponse.Collection)
 }
 
 type sourceProviderImpl struct {
@@ -85,7 +86,7 @@ type sourceProviderImpl struct {
 	getFabricFactory    func(collection *sresponse.Collection) *fabricFactory
 }
 
-func (c *sourceProviderImpl) findSources() ([]source, *response.RPC) {
+func (c *sourceProviderImpl) findSources(ctx context.Context) ([]source, *response.RPC) {
 	sources := []source{&managedChassisProvider{c.getAllKeys}}
 
 	pc, dberr := c.pluginClientFactory("URP*")
@@ -102,17 +103,17 @@ func (c *sourceProviderImpl) findSources() ([]source, *response.RPC) {
 }
 
 type source interface {
-	read() ([]dmtf.Link, *response.RPC)
+	read(context.Context) ([]dmtf.Link, *response.RPC)
 }
 
 type managedChassisProvider struct {
 	inMemoryKeysProvider func(table string) ([]string, error)
 }
 
-func (m *managedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
+func (m *managedChassisProvider) read(ctx context.Context) ([]dmtf.Link, *response.RPC) {
 	keys, e := m.inMemoryKeysProvider("Chassis")
 	if e != nil {
-		l.Log.Error("while getting all keys of ChassisCollection table, got " + e.Error())
+		l.LogWithFields(ctx).Error("while getting all keys of ChassisCollection table, got " + e.Error())
 		ge := common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 		return nil, &ge
 	}
@@ -128,8 +129,8 @@ type unmanagedChassisProvider struct {
 	c plugin.Client
 }
 
-func (u unmanagedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
-	r := u.c.Get(collectionURL, plugin.AggregateResults)
+func (u unmanagedChassisProvider) read(ctx context.Context) ([]dmtf.Link, *response.RPC) {
+	r := u.c.Get(ctx, collectionURL, plugin.AggregateResults)
 	if r.StatusCode != http.StatusOK {
 		return nil, &r
 	}

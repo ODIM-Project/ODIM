@@ -470,6 +470,7 @@ func TestGetAllSystems(t *testing.T) {
 
 func TestGetSystems(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -519,7 +520,7 @@ func TestGetSystems(t *testing.T) {
 		p                             *PluginContact
 		args                          args
 		want                          response.RPC
-		GetResourceInfoFromDeviceFunc func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error)
+		GetResourceInfoFromDeviceFunc func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error)
 		wantErr                       bool
 	}{
 		{
@@ -531,7 +532,7 @@ func TestGetSystems(t *testing.T) {
 					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 				},
 			},
-			GetResourceInfoFromDeviceFunc: func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+			GetResourceInfoFromDeviceFunc: func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
 				return `{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}`, nil
 			},
 			want: response.RPC{
@@ -555,8 +556,8 @@ func TestGetSystems(t *testing.T) {
 				StatusMessage: response.ResourceNotFound,
 				Body:          errArgs.CreateGenericErrorResponse(),
 			},
-			GetResourceInfoFromDeviceFunc: func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
-				return scommon.GetResourceInfoFromDevice(req, saveRequired)
+			GetResourceInfoFromDeviceFunc: func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+				return scommon.GetResourceInfoFromDevice(ctx, req, saveRequired)
 			},
 
 			wantErr: true,
@@ -570,8 +571,8 @@ func TestGetSystems(t *testing.T) {
 					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e1.1",
 				},
 			},
-			GetResourceInfoFromDeviceFunc: func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
-				return scommon.GetResourceInfoFromDevice(req, saveRequired)
+			GetResourceInfoFromDeviceFunc: func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+				return scommon.GetResourceInfoFromDevice(ctx, req, saveRequired)
 			},
 
 			want: response.RPC{
@@ -585,7 +586,7 @@ func TestGetSystems(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			GetResourceInfoFromDeviceFunc = tt.GetResourceInfoFromDeviceFunc
-			got := tt.p.GetSystems(tt.args.req)
+			got := tt.p.GetSystems(ctx, tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSystems() = %v, want %v", got, tt.want)
 			}
@@ -595,27 +596,28 @@ func TestGetSystems(t *testing.T) {
 		RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 		URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	}
-	GetSystemResetInfoFunc = func(systemURI string) (map[string]string, *errors.Error) {
+	GetSystemResetInfoFunc = func(ctx context.Context, systemURI string) (map[string]string, *errors.Error) {
 		return nil, nil
 	}
-	GetResourceInfoFromDeviceFunc = func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+	GetResourceInfoFromDeviceFunc = func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
 		return "", &errors.Error{}
 	}
 
-	resp := pluginContact.GetSystems(&req)
+	resp := pluginContact.GetSystems(ctx, &req)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusNotFound")
 
-	GetSystemResetInfoFunc = func(systemURI string) (map[string]string, *errors.Error) {
-		return smodel.GetSystemResetInfo(systemURI)
+	GetSystemResetInfoFunc = func(ctx context.Context, systemURI string) (map[string]string, *errors.Error) {
+		return smodel.GetSystemResetInfo(ctx, systemURI)
 	}
-	GetResourceInfoFromDeviceFunc = func(req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
-		return scommon.GetResourceInfoFromDevice(req, saveRequired)
+	GetResourceInfoFromDeviceFunc = func(ctx context.Context, req scommon.ResourceInfoRequest, saveRequired bool) (string, error) {
+		return scommon.GetResourceInfoFromDevice(ctx, req, saveRequired)
 	}
 
 }
 
 func TestPluginContact_GetSystemResource(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -718,7 +720,7 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.p.GetSystemResource(tt.args.req)
+			got := tt.p.GetSystemResource(ctx, tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PluginContact.GetSystemResource() = %v, want %v", got, tt.want)
 			}
@@ -729,14 +731,14 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 		RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 		URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot",
 	}
-	GetDeviceLoadInfoFunc = func(URL, systemID string) bool {
+	GetDeviceLoadInfoFunc = func(ctx context.Context, URL, systemID string) bool {
 		return true
 	}
-	resp := pluginContact.GetSystemResource(req)
+	resp := pluginContact.GetSystemResource(ctx, req)
 	assert.NotNil(t, resp, "Response should have error")
 
-	GetDeviceLoadInfoFunc = func(URL, systemID string) bool {
-		return getDeviceLoadInfo(URL, systemID)
+	GetDeviceLoadInfoFunc = func(ctx context.Context, URL, systemID string) bool {
+		return getDeviceLoadInfo(ctx, URL, systemID)
 	}
 
 }
@@ -1071,28 +1073,31 @@ func Test_getRangeData(t *testing.T) {
 }
 
 func Test_rediscoverStorageInventory(t *testing.T) {
-	errorResp("", response.RPC{})
-	validate("and", response.RPC{})
-	validate("or", response.RPC{})
+	ctx := mockContext()
+	errorResp(ctx, "", response.RPC{})
+	validate(ctx, "and", response.RPC{})
+	validate(ctx, "or", response.RPC{})
 	validateLastParameter([]string{})
-	GetMembers(map[string]map[string]bool{}, []string{}, response.RPC{})
+	GetMembers(ctx, map[string]map[string]bool{}, []string{}, response.RPC{})
 
-	SearchAndFilter([]string{"", "dummy"}, response.RPC{})
-	SearchAndFilter([]string{"", "dummy=0"}, response.RPC{})
+	SearchAndFilter(ctx, []string{"", "dummy"}, response.RPC{})
+	SearchAndFilter(ctx, []string{"", "dummy=0"}, response.RPC{})
 }
 
 func Test_getAllSystemIDs(t *testing.T) {
+	ctx := mockContext()
 	GetAllKeysFromTableFunc = func(table string) ([]string, error) {
 		return nil, &errors.Error{}
 	}
-	getAllSystemIDs(response.RPC{})
+	getAllSystemIDs(ctx, response.RPC{})
 }
 
 func Test_getDeviceLoadInfo(t *testing.T) {
-	GetSystemResetInfoFunc = func(systemURI string) (map[string]string, *errors.Error) {
+	ctx := mockContext()
+	GetSystemResetInfoFunc = func(ctx context.Context, systemURI string) (map[string]string, *errors.Error) {
 		return make(map[string]string), nil
 	}
-	resp := getDeviceLoadInfo("", "")
+	resp := getDeviceLoadInfo(ctx, "", "")
 	assert.Equal(t, false, resp, "Status should be false")
 }
 

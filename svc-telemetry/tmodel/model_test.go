@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package tmodel ....
+// Package tmodel ....
 package tmodel
 
 import (
+	"context"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
@@ -243,6 +244,7 @@ func TestGetTarget(t *testing.T) {
 
 func TestGenericSave(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
@@ -261,16 +263,27 @@ func TestGenericSave(t *testing.T) {
 		PreferredAuthType: "BasicAuth",
 	}
 	mockData(t, common.OnDisk, "System", "system_id", pluginData)
-	err := GenericSave([]byte("system_id"), "System", "dummy")
+	err := GenericSave(ctx, []byte("system_id"), "System", "dummy")
 	assert.Nil(t, err, "There should be no error ")
 
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
-	GenericSave([]byte("system_id"), "System", "dummy")
+	GenericSave(ctx, []byte("system_id"), "System", "dummy")
 
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
 	}
 
+}
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
 }

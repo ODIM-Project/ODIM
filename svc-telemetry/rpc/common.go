@@ -15,6 +15,7 @@
 package rpc
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -37,18 +38,18 @@ func GetTele() *Telemetry {
 	}
 }
 
-func generateResponse(input interface{}) []byte {
+func generateResponse(ctx context.Context, input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		l.Log.Warn("Unable to unmarshall response object from util-libs " + err.Error())
+		l.LogWithFields(ctx).Warn("Unable to unmarshall response object from util-libs " + err.Error())
 	}
 	return bytes
 }
 
-func fillProtoResponse(resp *teleproto.TelemetryResponse, data response.RPC) {
+func fillProtoResponse(ctx context.Context, resp *teleproto.TelemetryResponse, data response.RPC) {
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(data.Body)
+	resp.Body = generateResponse(ctx, data.Body)
 	resp.Header = data.Header
 
 }

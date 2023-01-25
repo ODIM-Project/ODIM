@@ -84,7 +84,7 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) ([]
 		wg.Add(1)
 		ctxt := context.WithValue(ctx, common.ThreadName, common.GetTelemetryResource)
 		ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
-		go getResourceInfo(ctx, value, &metricReportData, req, &lock, &wg)
+		go getResourceInfo(ctxt, value, &metricReportData, req, &lock, &wg)
 		threadID++
 	}
 	wg.Wait()

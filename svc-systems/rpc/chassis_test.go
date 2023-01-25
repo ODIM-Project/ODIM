@@ -84,6 +84,7 @@ func TestChassisRPC_GetChassisResource(t *testing.T) {
 			name: "Request with valid token",
 			cha:  cha,
 			args: args{
+				ctx: context.Background(),
 				req: &chassisproto.GetChassisRequest{
 					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
@@ -96,6 +97,7 @@ func TestChassisRPC_GetChassisResource(t *testing.T) {
 			name: "Request with invalid token",
 			cha:  cha,
 			args: args{
+				ctx: context.Background(),
 				req: &chassisproto.GetChassisRequest{
 					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
@@ -108,6 +110,7 @@ func TestChassisRPC_GetChassisResource(t *testing.T) {
 			name: "Request with invalid url",
 			cha:  cha,
 			args: args{
+				ctx: context.Background(),
 				req: &chassisproto.GetChassisRequest{
 					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power1",
@@ -152,6 +155,7 @@ func TestChassis_GetAllChassis(t *testing.T) {
 			name: "Request with valid token",
 			cha:  cha,
 			args: args{
+				ctx: context.Background(),
 				req: &chassisproto.GetChassisRequest{
 					URL:          "/redfish/v1/Chassis",
 					SessionToken: "validToken",
@@ -163,6 +167,7 @@ func TestChassis_GetAllChassis(t *testing.T) {
 			name: "Request with invalid token",
 			cha:  cha,
 			args: args{
+				ctx: context.Background(),
 				req: &chassisproto.GetChassisRequest{
 					URL:          "/redfish/v1/Chassis",
 					SessionToken: "invalidToken",
@@ -218,6 +223,7 @@ func TestChassis_GetResourceInfo(t *testing.T) {
 			name: "Request with valid token",
 			cha:  cha,
 			args: args{
+				ctx: context.Background(),
 				req: &chassisproto.GetChassisRequest{
 					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "validToken",
@@ -229,6 +235,7 @@ func TestChassis_GetResourceInfo(t *testing.T) {
 			name: "Request with invalid token",
 			cha:  cha,
 			args: args{
+				ctx: context.Background(),
 				req: &chassisproto.GetChassisRequest{
 					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "invalidToken",
@@ -247,7 +254,7 @@ func TestChassis_GetResourceInfo(t *testing.T) {
 }
 
 func TestChassisRPC_UpdateChassis(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
@@ -281,7 +288,7 @@ func TestChassisRPC_UpdateChassis(t *testing.T) {
 }
 
 func TestChassisRPC_DeleteChassis(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
@@ -315,7 +322,7 @@ func TestChassisRPC_DeleteChassis(t *testing.T) {
 }
 
 func TestChassisRPC_CreateChassis(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
@@ -345,12 +352,24 @@ func TestChassisRPC_CreateChassis(t *testing.T) {
 
 }
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func Test_jsonMarshal(t *testing.T) {
+	ctx := mockContext()
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
 	generateResponse(context.Background(), "dummy")
-	jsonMarshal("dummy")
+	jsonMarshal(ctx, "dummy")
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)
 	}

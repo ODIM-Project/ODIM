@@ -242,7 +242,7 @@ func TestTelemetry_GetTriggerCollection(t *testing.T) {
 
 func TestGetMetricDefinitionwithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
 	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
@@ -255,7 +255,7 @@ func TestGetMetricDefinitionwithInValidtoken(t *testing.T) {
 }
 
 func TestGetMetricDefinitionwithValidtoken(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
 	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
@@ -269,7 +269,7 @@ func TestGetMetricDefinitionwithValidtoken(t *testing.T) {
 
 func TestGetMetricReportDefinitionwithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
 	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
@@ -282,7 +282,7 @@ func TestGetMetricReportDefinitionwithInValidtoken(t *testing.T) {
 }
 
 func TestGetMetricReportDefinitionwithValidtoken(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
 	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
@@ -296,7 +296,7 @@ func TestGetMetricReportDefinitionwithValidtoken(t *testing.T) {
 
 func TestGetMetricReportwithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
 	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
@@ -309,7 +309,7 @@ func TestGetMetricReportwithInValidtoken(t *testing.T) {
 
 func TestGetMetricReportwithValidtoken(t *testing.T) {
 	config.SetUpMockConfig(t)
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
 	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
@@ -323,7 +323,7 @@ func TestGetMetricReportwithValidtoken(t *testing.T) {
 
 func TestGetTriggerwithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
 	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
@@ -336,7 +336,7 @@ func TestGetTriggerwithInValidtoken(t *testing.T) {
 }
 
 func TestGetTriggerwithValidtoken(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
 	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{

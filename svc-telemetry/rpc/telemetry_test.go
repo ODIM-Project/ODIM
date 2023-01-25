@@ -44,6 +44,7 @@ func TestTelemetry_GetTelemetryService(t *testing.T) {
 			name: "positive GetTelemetryService",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{SessionToken: "validToken"},
 			},
 			wantErr: false,
@@ -52,6 +53,7 @@ func TestTelemetry_GetTelemetryService(t *testing.T) {
 			name: "auth fail",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{SessionToken: "InvalidToken"},
 			},
 			wantErr: false,
@@ -83,6 +85,7 @@ func TestTelemetry_GetMetricDefinitionCollection(t *testing.T) {
 			name: "Request with valid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "validToken",
 				},
@@ -92,6 +95,7 @@ func TestTelemetry_GetMetricDefinitionCollection(t *testing.T) {
 			name: "Request with invalid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "InvalidToken",
 				},
@@ -124,6 +128,7 @@ func TestTelemetry_GetMetricReportDefinitionCollection(t *testing.T) {
 			name: "Request with valid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "validToken",
 				},
@@ -133,6 +138,7 @@ func TestTelemetry_GetMetricReportDefinitionCollection(t *testing.T) {
 			name: "Request with invalid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "InvalidToken",
 				},
@@ -165,6 +171,7 @@ func TestTelemetry_GetMetricReportCollection(t *testing.T) {
 			name: "Request with valid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "validToken",
 				},
@@ -174,6 +181,7 @@ func TestTelemetry_GetMetricReportCollection(t *testing.T) {
 			name: "Request with invalid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "InvalidToken",
 				},
@@ -206,6 +214,7 @@ func TestTelemetry_GetTriggerCollection(t *testing.T) {
 			name: "Request with valid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "validToken",
 				},
@@ -215,6 +224,7 @@ func TestTelemetry_GetTriggerCollection(t *testing.T) {
 			name: "Request with invalid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "InvalidToken",
 				},
@@ -343,7 +353,6 @@ func TestTelemetry_UpdateTrigger(t *testing.T) {
 		ctx context.Context
 		req *teleproto.TelemetryRequest
 	}
-	var ctx context.Context
 	telemetry := new(Telemetry)
 	telemetry.connector = tm.MockGetExternalInterface()
 	reqValid := &teleproto.TelemetryRequest{
@@ -365,7 +374,7 @@ func TestTelemetry_UpdateTrigger(t *testing.T) {
 			name: "Update trigger with valid token",
 			a:    telemetry,
 			args: args{
-				ctx: ctx,
+				ctx: context.Background(),
 				req: reqValid,
 			},
 			want:    0, // as update trigger is not implemented. Need to be changed with http.StatusOK once update trigger operation is implemented
@@ -375,7 +384,7 @@ func TestTelemetry_UpdateTrigger(t *testing.T) {
 			name: "Update trigger with invalid token",
 			a:    telemetry,
 			args: args{
-				ctx: ctx,
+				ctx: context.Background(),
 				req: reqInValid,
 			},
 			want:    http.StatusUnauthorized,

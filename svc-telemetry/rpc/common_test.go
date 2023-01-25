@@ -1,17 +1,30 @@
 package rpc
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	teleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-telemetry/telemetry"
 	tm "github.com/ODIM-Project/ODIM/svc-telemetry/telemetry"
 )
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
 
 func Test_GetTele(t *testing.T) {
 	testCases := []struct {
@@ -36,6 +49,7 @@ func Test_GetTele(t *testing.T) {
 }
 
 func Test_generateResponse(t *testing.T) {
+	ctx := mockContext()
 	testCases := []struct {
 		desc  string
 		input interface{}
@@ -57,7 +71,7 @@ func Test_generateResponse(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			got := generateResponse(tC.input)
+			got := generateResponse(ctx, tC.input)
 			if string(got) != tC.want {
 				t.Error(fmt.Errorf("generateResponse()- want: %+v, Got: %+v", tC.want, string(got)))
 			}

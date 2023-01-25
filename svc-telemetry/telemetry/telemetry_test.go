@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package telemetry ...
+// Package telemetry ...
 package telemetry
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -262,6 +263,7 @@ func TestExternalInterface_GetMetricReportDefinition(t *testing.T) {
 func TestExternalInterface_GetMetricReport(t *testing.T) {
 	config.SetUpMockConfig(t)
 	type args struct {
+		ctx context.Context
 		req *teleproto.TelemetryRequest
 	}
 	tests := []struct {
@@ -274,6 +276,7 @@ func TestExternalInterface_GetMetricReport(t *testing.T) {
 			name: "success",
 			e:    MockGetExternalInterface(),
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					ResourceID:   "custom1",
 					SessionToken: "validToken",
@@ -285,7 +288,7 @@ func TestExternalInterface_GetMetricReport(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetMetricReport(tt.args.req); int(got.StatusCode) != tt.want {
+			if got := tt.e.GetMetricReport(tt.args.ctx, tt.args.req); int(got.StatusCode) != tt.want {
 				t.Errorf("ExternalInterface.GetMetricReport() = %v, want %v", int(got.StatusCode), tt.want)
 			}
 		})
@@ -294,6 +297,7 @@ func TestExternalInterface_GetMetricReport(t *testing.T) {
 
 func TestExternalInterface_GetMetricDefinition(t *testing.T) {
 	type args struct {
+		ctx context.Context
 		req *teleproto.TelemetryRequest
 	}
 	tests := []struct {
@@ -306,6 +310,7 @@ func TestExternalInterface_GetMetricDefinition(t *testing.T) {
 			name: "success",
 			e:    MockGetExternalInterface(),
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					ResourceID:   "custom1",
 					SessionToken: "validToken",
@@ -317,6 +322,7 @@ func TestExternalInterface_GetMetricDefinition(t *testing.T) {
 			name: "error",
 			e:    MockGetExternalInterface(),
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					ResourceID:   "custom1",
 					SessionToken: "validToken",
@@ -328,7 +334,7 @@ func TestExternalInterface_GetMetricDefinition(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetMetricDefinition(tt.args.req); int(got.StatusCode) != tt.want {
+			if got := tt.e.GetMetricDefinition(tt.args.ctx, tt.args.req); int(got.StatusCode) != tt.want {
 				t.Errorf("ExternalInterface.GetMetricDefinition() = %v, want %v", int(got.StatusCode), tt.want)
 			}
 		})
@@ -337,6 +343,7 @@ func TestExternalInterface_GetMetricDefinition(t *testing.T) {
 
 func TestExternalInterface_GetTrigger(t *testing.T) {
 	type args struct {
+		ctx context.Context
 		req *teleproto.TelemetryRequest
 	}
 	tests := []struct {
@@ -349,6 +356,7 @@ func TestExternalInterface_GetTrigger(t *testing.T) {
 			name: "success",
 			e:    MockGetExternalInterface(),
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					ResourceID:   "custom1",
 					SessionToken: "validToken",
@@ -360,6 +368,7 @@ func TestExternalInterface_GetTrigger(t *testing.T) {
 			name: "error",
 			e:    MockGetExternalInterface(),
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					ResourceID:   "custom1",
 					SessionToken: "validToken",
@@ -371,7 +380,7 @@ func TestExternalInterface_GetTrigger(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetTrigger(tt.args.req); int(got.StatusCode) != tt.want {
+			if got := tt.e.GetTrigger(tt.args.ctx, tt.args.req); int(got.StatusCode) != tt.want {
 				t.Errorf("ExternalInterface.GetTrigger() = %v, want %v", int(got.StatusCode), tt.want)
 			}
 		})

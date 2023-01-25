@@ -253,6 +253,36 @@ The error is displayed if the `odimraServerCertIPSan` and `odimraKafkaClientCert
 2. Specify valid values for `odimraServerCertIPSan` and `odimraKafkaClientCertIPSan`, else specify
    both their values as `""` (empty double quotation marks).
 
+------
+
+**12. When I deploy Resource Aggregator for ODIM or when I scale up a node, nginx installation fails with the following error:**
+
+**`TASK [pre-install : Install packages required by nginx] ************************`**
+
+**`changed: [containerd5]`**
+
+**`Tuesday 20 December 2022 17:29:31 +0000 (0:00:11.971)    0:05:19.037 ******`**
+
+**Workaround**:
+
+1. Identify the process by running the following command on the affected server and note down the process id:
+
+   ```
+   ps -ef|grep "apt install curl" 
+   ```
+
+   The following sample output is displayed:
+
+   ```
+   root       <process-id>   21151  0 Dec20 pts/1    00:00:00 apt install curl gnupg2 ca-certificates lsb-release ubuntu-keyring
+   ```
+
+2. Kill the process by running the following command:
+
+   ```
+   sudo kill -9 <process-id>
+   ```
+
 
 
 ## Other Frequently Asked Questions

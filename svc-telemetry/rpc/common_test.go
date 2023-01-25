@@ -81,6 +81,7 @@ func Test_generateResponse(t *testing.T) {
 
 func Test_fillProtoResponse(t *testing.T) {
 	type args struct {
+		ctx  context.Context
 		resp *teleproto.TelemetryResponse
 		data response.RPC
 	}
@@ -93,6 +94,7 @@ func Test_fillProtoResponse(t *testing.T) {
 		{
 			desc: "fill proto response",
 			args: &args{
+				ctx:  context.Background(),
 				resp: &teleproto.TelemetryResponse{},
 				data: telemetry.connector.GetTelemetryService(),
 			},
@@ -100,7 +102,7 @@ func Test_fillProtoResponse(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			fillProtoResponse(tC.args.resp, tC.args.data)
+			fillProtoResponse(tC.args.ctx, tC.args.resp, tC.args.data)
 		})
 	}
 }

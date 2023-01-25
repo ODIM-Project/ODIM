@@ -15,6 +15,8 @@
 package smodel
 
 import (
+	"context"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
@@ -30,7 +32,8 @@ var (
 )
 
 // GetFabricManagers fetches all the fabrics details from DB
-func GetFabricManagers() ([]Plugin, error) {
+func GetFabricManagers(ctx context.Context) ([]Plugin, error) {
+	l.LogWithFields(ctx).Debugf("incoming GetFabricManagers request")
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -44,16 +47,16 @@ func GetFabricManagers() ([]Plugin, error) {
 		var fabric Fabric
 		fabricData, err := conn.Read("Fabric", key)
 		if err != nil {
-			l.Log.Warn("while trying to read DB contents for " + key + " in Fabric table, got " + err.Error())
+			l.LogWithFields(ctx).Warn("while trying to read DB contents for " + key + " in Fabric table, got " + err.Error())
 			continue
 		}
 		if errs := JSONUnmarshalFunc([]byte(fabricData), &fabric); errs != nil {
-			l.Log.Warn("while trying to unmarshal DB contents for " + key + " in Fabric table, got " + err.Error())
+			l.LogWithFields(ctx).Warn("while trying to unmarshal DB contents for " + key + " in Fabric table, got " + err.Error())
 			continue
 		}
 		manager, err := GetPluginDataFunc(fabric.PluginID)
 		if err != nil {
-			l.Log.Warn("while trying to collect DB contents for " + fabric.PluginID + " in Plugin table, got " + err.Error())
+			l.LogWithFields(ctx).Warn("while trying to collect DB contents for " + fabric.PluginID + " in Plugin table, got " + err.Error())
 			continue
 		}
 		managers = append(managers, manager)

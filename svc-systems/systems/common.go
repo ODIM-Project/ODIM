@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package systems ...
+// Package systems ...
 package systems
 
 import (
@@ -119,14 +119,12 @@ func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskStat
 	}
 }
 
-func (e *PluginContact) monitorPluginTask(monitorTaskData *monitorTaskRequest) ([]byte, error) {
-	// TODO : should be removed when context from svc-api is passed to this function
-	ctx := context.TODO()
+func (e *PluginContact) monitorPluginTask(ctx context.Context, monitorTaskData *monitorTaskRequest) ([]byte, error) {
 	for {
 		var task common.TaskData
 		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {
 			errMsg := "Unable to parse the reset respone" + err.Error()
-			l.Log.Warn(errMsg)
+			l.LogWithFields(ctx).Warn(errMsg)
 			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, monitorTaskData.taskInfo)
 			return monitorTaskData.respBody, err
 		}
@@ -140,10 +138,10 @@ func (e *PluginContact) monitorPluginTask(monitorTaskData *monitorTaskRequest) (
 		time.Sleep(time.Second * 5)
 		monitorTaskData.pluginRequest.OID = monitorTaskData.location
 		monitorTaskData.pluginRequest.HTTPMethodType = http.MethodGet
-		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = ContactPluginFunc(monitorTaskData.pluginRequest, "error while reseting the computer system: ")
+		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = ContactPluginFunc(ctx, monitorTaskData.pluginRequest, "error while reseting the computer system: ")
 		if err != nil {
 			errMsg := err.Error()
-			l.Log.Warn(errMsg)
+			l.LogWithFields(ctx).Warn(errMsg)
 			common.GeneralError(monitorTaskData.getResponse.StatusCode, monitorTaskData.getResponse.StatusMessage, errMsg, nil, monitorTaskData.taskInfo)
 			return monitorTaskData.respBody, err
 		}

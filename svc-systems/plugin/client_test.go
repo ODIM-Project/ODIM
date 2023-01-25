@@ -18,6 +18,7 @@ package plugin
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -33,6 +34,17 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 	"github.com/stretchr/testify/assert"
 )
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
 
 func getEncryptedKey(t *testing.T, key []byte) []byte {
 
@@ -101,12 +113,13 @@ func Test_uriTranslator(t *testing.T) {
 }
 
 func Test_convertToString(t *testing.T) {
-	res := convertToString(125544)
+	ctx := mockContext()
+	res := convertToString(ctx, 125544)
 	assert.True(t, res == "125544", "There should be no error ")
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
-	res = convertToString("")
+	res = convertToString(ctx, "")
 	assert.NotNil(t, res, "There should be an error ")
 
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
@@ -180,17 +193,17 @@ func Test_createRPCResponse(t *testing.T) {
 
 func Test_client_extractResp(t *testing.T) {
 	c := &client{}
-
-	resp := c.extractResp(&http.Response{}, &errors.Error{})
+	ctx := mockContext()
+	resp := c.extractResp(ctx, &http.Response{}, &errors.Error{})
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status should be StatusInternalServerError")
 
 	fbUserData := []byte("data")
-	resp = c.extractResp(&http.Response{StatusCode: 300, Body: ioutil.NopCloser(bytes.NewBufferString(string(fbUserData)))}, nil)
+	resp = c.extractResp(ctx, &http.Response{StatusCode: 300, Body: ioutil.NopCloser(bytes.NewBufferString(string(fbUserData)))}, nil)
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status should be StatusInternalServerError")
 	IoutilReadAllFunc = func(r io.Reader) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
-	resp = c.extractResp(&http.Response{StatusCode: 300, Body: ioutil.NopCloser(bytes.NewBufferString(string(fbUserData)))}, nil)
+	resp = c.extractResp(ctx, &http.Response{StatusCode: 300, Body: ioutil.NopCloser(bytes.NewBufferString(string(fbUserData)))}, nil)
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status should be StatusInternalServerError")
 	IoutilReadAllFunc = func(r io.Reader) ([]byte, error) {
 		return ioutil.ReadAll(r)
@@ -199,6 +212,7 @@ func Test_client_extractResp(t *testing.T) {
 }
 
 func Test_client_Get(t *testing.T) {
+	ctx := mockContext()
 	client := client{
 		plugin: smodel.Plugin{
 			Port: "90093",
@@ -213,18 +227,19 @@ func Test_client_Get(t *testing.T) {
 			},
 		}},
 	}
-	resp := client.Get("/redis/v1/session")
+	resp := client.Get(ctx, "/redis/v1/session")
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Response status should be StatusInternalServerError")
-	resp = client.Delete("/redis/v1/session")
+	resp = client.Delete(ctx, "/redis/v1/session")
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Response status should be StatusInternalServerError")
 
-	resp = client.Patch("/redis/v1/session", &json.RawMessage{})
+	resp = client.Patch(ctx, "/redis/v1/session", &json.RawMessage{})
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Response status should be StatusInternalServerError")
-	resp = client.Post("/redis/v1/session", &json.RawMessage{})
+	resp = client.Post(ctx, "/redis/v1/session", &json.RawMessage{})
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Response status should be StatusInternalServerError")
 }
 
 func Test_multiTargetClient_Delete(t *testing.T) {
+	ctx := mockContext()
 	config := &config.URLTranslation{
 		NorthBoundURL: map[string]string{
 			"ODIM": "redfish",
@@ -250,10 +265,10 @@ func Test_multiTargetClient_Delete(t *testing.T) {
 		},
 		call: ReturnFirstResponse(&CallConfig{}),
 	}
-	multiTargetClient.Get("redish/v1/session")
-	multiTargetClient.Post("redish/v1/session", &json.RawMessage{})
-	multiTargetClient.Patch("redish/v1/session", &json.RawMessage{})
-	multiTargetClient.Delete("redish/v1/session")
+	multiTargetClient.Get(ctx, "redish/v1/session")
+	multiTargetClient.Post(ctx, "redish/v1/session", &json.RawMessage{})
+	multiTargetClient.Patch(ctx, "redish/v1/session", &json.RawMessage{})
+	multiTargetClient.Delete(ctx, "redish/v1/session")
 }
 
 func TestNewClientFactory(t *testing.T) {
@@ -280,17 +295,18 @@ func Test_returnFirst_Collect(t *testing.T) {
 		ReqURI: "/redfish/v1/session",
 		resp:   &response.RPC{},
 	}
+	ctx := mockContext()
 	resp := response.RPC{}
 	res := returnFirst.Collect(resp)
 	assert.Nil(t, res, "There should be no error ")
-	res1 := returnFirst.GetResult()
+	res1 := returnFirst.GetResult(ctx)
 	assert.Equal(t, 0, int(res1.StatusCode), "There should be no error ")
 	AggregateResults(&CallConfig{})
 	res2 := ReturnFirstResponse(&CallConfig{})
 	assert.NotNil(t, res2, "There should be an error ")
 
 	returnFirst.resp = nil
-	res1 = returnFirst.GetResult()
+	res1 = returnFirst.GetResult(ctx)
 	assert.Equal(t, http.StatusNotFound, int(res1.StatusCode), "Status code should be StatusNotFound")
 
 	collectCollectionMembers := collectCollectionMembers{
@@ -312,12 +328,12 @@ func Test_returnFirst_Collect(t *testing.T) {
 	collectionRes = collectCollectionMembers.Collect(response.RPC{StatusCode: 200, Body: []byte(`{"Members":[{"@@odata.id":"/redish/v1/session/1"}]}`)})
 	assert.Nil(t, collectionRes, "There should be no error ")
 
-	resultRes := collectCollectionMembers.GetResult()
+	resultRes := collectCollectionMembers.GetResult(ctx)
 	assert.NotNil(t, resultRes, "There should be an error ")
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
-	res3 := collectCollectionMembers.GetResult()
+	res3 := collectCollectionMembers.GetResult(ctx)
 	assert.NotNil(t, res3, "There should be an error ")
 	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)

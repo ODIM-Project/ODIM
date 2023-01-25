@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -129,9 +130,9 @@ func mockData() error {
 		return fmt.Errorf("error while trying to save subscription of device %v", cErr.Error())
 	}
 	aggregateData := evmodel.Aggregate{
-		Elements: []evmodel.OdataIDLink{
+		Elements: []model.Link{
 			{
-				OdataID: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				Oid: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
 			},
 		},
 	}

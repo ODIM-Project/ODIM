@@ -632,3 +632,25 @@ var URIWithNoAuth = []string{
 }
 
 var SessionURI = "/redfish/v1/SessionService/Sessions"
+
+//Target is for sending the request to south bound/plugin
+type Target struct {
+	ManagerAddress string `json:"ManagerAddress"`
+	Password       []byte `json:"Password"`
+	UserName       string `json:"UserName"`
+	PostBody       []byte `json:"PostBody"`
+	DeviceUUID     string `json:"DeviceUUID"`
+	PluginID       string `json:"PluginID"`
+	Location       string `json:"Location"`
+}
+
+// Plugin is the model for plugin information
+type Plugin struct {
+	IP                string
+	Port              string
+	Username          string
+	Password          []byte
+	ID                string
+	PluginType        string
+	PreferredAuthType string
+}

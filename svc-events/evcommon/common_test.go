@@ -344,7 +344,7 @@ func TestGetPluginStatus(t *testing.T) {
 	ts.StartTLS()
 	defer ts.Close()
 	password, _ := GetEncryptedKey([]byte("Password"))
-	result := GetPluginStatus(&evmodel.Plugin{
+	result := GetPluginStatus(&common.Plugin{
 		IP:                "localhost",
 		Port:              "1234",
 		Password:          password,
@@ -383,7 +383,7 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 		UpdateDeviceSubscriptionLocation: MockUpdateDeviceSubscriptionLocation,
 	}
 	password, _ := GetEncryptedKey([]byte("Password"))
-	st.getPluginStatus(context.TODO(), evmodel.Plugin{
+	st.getPluginStatus(context.TODO(), common.Plugin{
 		IP:                "localhost",
 		Port:              "1234",
 		Password:          password,
@@ -402,17 +402,17 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 
 func TestStartUpInteraface_SubscribePluginEMB(t *testing.T) {
 	pc := StartUpInterface{}
-	GetAllPluginsFunc = func() ([]evmodel.Plugin, *errors.Error) { return nil, &errors.Error{} }
+	GetAllPluginsFunc = func() ([]common.Plugin, *errors.Error) { return nil, &errors.Error{} }
 	pc.SubscribePluginEMB()
 
-	GetAllPluginsFunc = func() ([]evmodel.Plugin, *errors.Error) {
-		return []evmodel.Plugin{{IP: ""}}, nil
+	GetAllPluginsFunc = func() ([]common.Plugin, *errors.Error) {
+		return []common.Plugin{{IP: ""}}, nil
 	}
 	pc.SubscribePluginEMB()
 	getTypes("[alert statuschange]")
 	getTypes("[]")
 
-	callPlugin(context.TODO(), PluginContactRequest{Plugin: &evmodel.Plugin{PreferredAuthType: "BasicAuth"}})
+	callPlugin(context.TODO(), PluginContactRequest{Plugin: &common.Plugin{PreferredAuthType: "BasicAuth"}})
 
 	common.SetUpMockConfig()
 	defer func() {
@@ -422,7 +422,7 @@ func TestStartUpInteraface_SubscribePluginEMB(t *testing.T) {
 		}
 	}()
 
-	var devSubscription = evmodel.DeviceSubscription{
+	var devSubscription = common.DeviceSubscription{
 		EventHostIP:     "10.10.0.1",
 		Location:        "https://10.10.10.23/redfish/v1/EventService/Subscriptions/123",
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},

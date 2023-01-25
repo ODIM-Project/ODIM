@@ -51,13 +51,13 @@ var (
 type StartUpInterface struct {
 	DecryptPassword                  func([]byte) ([]byte, error)
 	EMBConsume                       func(string)
-	GetAllPlugins                    func() ([]evmodel.Plugin, *errors.Error)
+	GetAllPlugins                    func() ([]common.Plugin, *errors.Error)
 	GetAllSystems                    func() ([]string, error)
 	GetSingleSystem                  func(string) (string, error)
-	GetPluginData                    func(string) (*evmodel.Plugin, *errors.Error)
+	GetPluginData                    func(string) (*common.Plugin, *errors.Error)
 	GetEvtSubscriptions              func(string) ([]evmodel.SubscriptionResource, error)
-	GetDeviceSubscriptions           func(string) (*evmodel.DeviceSubscription, error)
-	UpdateDeviceSubscriptionLocation func(evmodel.DeviceSubscription) error
+	GetDeviceSubscriptions           func(string) (*common.DeviceSubscription, error)
+	UpdateDeviceSubscriptionLocation func(common.DeviceSubscription) error
 }
 
 var (
@@ -91,7 +91,7 @@ type PluginContactRequest struct {
 	PostBody        interface{}
 	LoginCredential map[string]string
 	Token           string
-	Plugin          *evmodel.Plugin
+	Plugin          *common.Plugin
 }
 
 // StartUpMap holds required data for plugin startup
@@ -161,7 +161,7 @@ func (st *StartUpInterface) GetAllPluginStatus() {
 
 }
 
-func (st *StartUpInterface) getPluginStatus(ctx context.Context, plugin evmodel.Plugin) {
+func (st *StartUpInterface) getPluginStatus(ctx context.Context, plugin common.Plugin) {
 	PluginsMap := make(map[string]bool)
 	StartUpResourceBatchSize := config.Data.PluginStatusPolling.StartUpResouceBatchSize
 	config.TLSConfMutex.RLock()
@@ -257,7 +257,7 @@ func (st *StartUpInterface) getAllServers(pluginID string) ([]SavedSystems, erro
 }
 
 // GetPluginStatus checks the status of given plugin in configured interval
-func GetPluginStatus(plugin *evmodel.Plugin) bool {
+func GetPluginStatus(plugin *common.Plugin) bool {
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{
@@ -430,7 +430,7 @@ func updateDeviceSubscriptionLocation(r map[string]string) error {
 					" for server address : " + serverAddress + err.Error())
 				continue
 			}
-			var updatedDeviceSubscription evmodel.DeviceSubscription
+			var updatedDeviceSubscription common.DeviceSubscription
 
 			updatedDeviceSubscription.Location = location
 			updatedDeviceSubscription.EventHostIP = deviceSubscription.EventHostIP
@@ -546,7 +546,7 @@ func (st *StartUpInterface) SubscribePluginEMB() {
 	}
 }
 
-func (st *StartUpInterface) getPluginEMB(plugin evmodel.Plugin) {
+func (st *StartUpInterface) getPluginEMB(plugin common.Plugin) {
 	config.TLSConfMutex.RLock()
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,

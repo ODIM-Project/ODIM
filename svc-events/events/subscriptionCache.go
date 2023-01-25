@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
@@ -152,8 +153,8 @@ func getAllAggregates() {
 // addSystemIdToAggregateCache update cache for each aggregate member
 func addSystemIdToAggregateCache(aggregateId string, aggregate evmodel.Aggregate) {
 	for _, ids := range aggregate.Elements {
-		ids.OdataID = ids.OdataID[strings.LastIndexByte(strings.TrimSuffix(ids.OdataID, "/"), '/')+1:]
-		updateCacheMaps(ids.OdataID, aggregateId, systemIdToAggregateIdsMap)
+		ids.Oid = ids.Oid[strings.LastIndexByte(strings.TrimSuffix(ids.Oid, "/"), '/')+1:]
+		updateCacheMaps(ids.Oid, aggregateId, systemIdToAggregateIdsMap)
 	}
 }
 
@@ -215,7 +216,7 @@ func getAggregateSubscriptionList(systemId string) (subs []dmtf.EventDestination
 			if isValidAggregateId {
 				for subId := range subscriptions {
 					sub, isValidSubId := getSubscriptionDetails(subId)
-					sub.OriginResources = append(sub.OriginResources, "/redfish/v1/Systems/"+systemId)
+					sub.OriginResources = append(sub.OriginResources, model.Link{Oid: "/redfish/v1/Systems/" + systemId})
 					if isValidSubId {
 						subs = append(subs, sub)
 					}

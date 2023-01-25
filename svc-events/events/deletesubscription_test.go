@@ -168,7 +168,7 @@ func TestDeleteEventSubscriptionOnDeletedServer(t *testing.T) {
 	DecryptWithPrivateKeyFunc = func(ciphertext []byte) ([]byte, error) {
 		return common.DecryptWithPrivateKey(ciphertext)
 	}
-	pc.DB.GetDeviceSubscriptions = func(s string) (*evmodel.DeviceSubscription, error) {
+	pc.DB.GetDeviceSubscriptions = func(s string) (*common.DeviceSubscription, error) {
 		return nil, &errors.Error{}
 	}
 	resp = pc.DeleteEventSubscriptions(req)
@@ -269,7 +269,7 @@ func TestDeleteFabricsSubscription(t *testing.T) {
 		t.Fatalf("%v", err.Error())
 	}
 	// positive test case with basic auth type
-	plugin := &evmodel.Plugin{
+	plugin := &common.Plugin{
 		IP:                "odim.controller.com",
 		Port:              "1234",
 		Password:          password,
@@ -303,7 +303,7 @@ func TestDeleteSubscription(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%v", err.Error())
 	}
-	target := evmodel.Target{
+	target := common.Target{
 		ManagerAddress: "100.100.100.100",
 		Password:       encryptedData,
 		UserName:       "admin",
@@ -338,7 +338,7 @@ func TestExternalInterfaces_DeleteAggregateSubscriptions(t *testing.T) {
 					EventTypes:           []string{"Alert"},
 					MessageIds:           []string{},
 					ResourceTypes:        []string{},
-					OriginResources:      []string{"/redfish/v1/Fabrics/123456"},
+					OriginResources:      []model.Link{model.Link{Oid: "/redfish/v1/Fabrics/123456"}},
 					SubordinateResources: true,
 				},
 				SubscriptionID: "71de0110-c35a-4859-984c-072d6c5a32d9",
@@ -360,7 +360,7 @@ func TestExternalInterfaces_DeleteAggregateSubscriptions(t *testing.T) {
 					EventTypes:           []string{"Alert"},
 					MessageIds:           []string{},
 					ResourceTypes:        []string{},
-					OriginResources:      []string{""},
+					OriginResources:      []model.Link{model.Link{Oid: ""}},
 					SubordinateResources: true,
 				},
 				SubscriptionID: "71de0110-c35a-4859-984c-072d6c5a32d9",
@@ -374,7 +374,7 @@ func TestExternalInterfaces_DeleteAggregateSubscriptions(t *testing.T) {
 func TestExternalInterfaces_resubscribeFabricsSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
 	pc := getMockMethods()
-	event := evmodel.EvtSubPost{}
+	event := model.EventDestination{}
 	err := pc.resubscribeFabricsSubscription(event, "/fabric/scascascsaa", false)
 	assert.Nil(t, err)
 	err = pc.resubscribeFabricsSubscription(event, "/redfish/v1/Fabrics/6d4a0a66-7efa-578e-83cf-44dc68d2874e", false)
@@ -384,7 +384,7 @@ func TestExternalInterfaces_resubscribeFabricsSubscription(t *testing.T) {
 func TestExternalInterfaces_subscribe(t *testing.T) {
 	config.SetUpMockConfig(t)
 	pc := getMockMethods()
-	event := evmodel.EvtSubPost{}
+	event := model.EventDestination{}
 
 	err := pc.subscribe(event, "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", false, "valid")
 	assert.Nil(t, err)

@@ -20,6 +20,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
@@ -34,7 +35,7 @@ type SubscriptionResponse struct {
 	SubscriptionType        dmtf.SubscriptionType    `json:"SubscriptionType,omitempty"`
 	MessageIds              []string                 `json:"MessageIds,omitempty"`
 	ResourceTypes           []string                 `json:"ResourceTypes,omitempty"`
-	OriginResources         []ListMember             `json:"OriginResources,omitempty"`
+	OriginResources         []model.Link             `json:"OriginResources,omitempty"`
 	ExcludeMessageIds       []string                 `json:"ExcludeMessageIds,omitempty"`
 	ExcludeRegistryPrefixes []string                 `json:"ExcludeRegistryPrefixes,omitempty"`
 	DeliveryRetryPolicy     dmtf.DeliveryRetryPolicy `json:"DeliveryRetryPolicy,omitempty"`
@@ -49,12 +50,7 @@ type ListResponse struct {
 	Name         string       `json:"Name,omitempty"`
 	Description  string       `json:"Description,omitempty"`
 	MembersCount int          `json:"Members@odata.count"`
-	Members      []ListMember `json:"Members"`
-}
-
-// ListMember containes link to a resource
-type ListMember struct {
-	OdataID string `json:"@odata.id"`
+	Members      []model.Link `json:"Members"`
 }
 
 // EventServiceResponse is struct for event service response

@@ -336,7 +336,9 @@ func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.Even
 func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
 	fmt.Println("Pod Name ", podName)
 	ctx = common.GetContextData(ctx)
-	fmt.Printf("COntext Details %+v \n ", ctx)
+	ctx = common.ModifyContext(ctx, common.EventService, podName)
+
+	fmt.Printf("Context Details %+v \n ", ctx)
 	var resp eventsproto.EventSubResponse
 	var err error
 	var data response.RPC

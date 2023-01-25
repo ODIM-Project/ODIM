@@ -17,6 +17,7 @@ package common
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	iris "github.com/kataras/iris/v12"
@@ -53,6 +54,7 @@ func SetCommonHeaders(w http.ResponseWriter) {
 func GetContextData(ctx context.Context) context.Context {
 	md, _ := metadata.FromIncomingContext(ctx)
 	ctx = metadata.NewIncomingContext(ctx, md)
+	fmt.Printf("Adding Context *** %+v \n\n ", md)
 	if len(md[TransactionID]) > 0 {
 		ctx = context.WithValue(ctx, ProcessName, md[ProcessName][0])
 		ctx = context.WithValue(ctx, TransactionID, md[TransactionID][0])

@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
@@ -40,6 +41,7 @@ type Events struct {
 	Connector *events.ExternalInterfaces
 }
 
+var podName = os.Getenv("POD_NAME")
 var (
 	//JSONMarshal ...
 	JSONMarshal = json.Marshal
@@ -207,6 +209,10 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 	var resp eventsproto.EventSubResponse
 	var err error
 	var taskID string
+	fmt.Println("Pod Name ", podName)
+	ctx = common.GetContextData(ctx)
+	fmt.Printf("COntext Details %+v \n ", ctx)
+
 	// Athorize the request here
 	authResp, err := e.Connector.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
@@ -328,6 +334,9 @@ func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.Even
 // for the delete event subscription RPC call to events micro service.
 // The functionality is to delete the subscrription details.
 func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+	fmt.Println("Pod Name ", podName)
+	ctx = common.GetContextData(ctx)
+	fmt.Printf("COntext Details %+v \n ", ctx)
 	var resp eventsproto.EventSubResponse
 	var err error
 	var data response.RPC

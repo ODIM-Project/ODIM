@@ -65,13 +65,13 @@ func mockGetExternalInterface() *ExternalInterface {
 	}
 }
 
-func mockContactPlugin(req model.PluginContactRequest, errorMessage string) ([]byte, string, model.ResponseStatus, error) {
+func mockContactPlugin(ctx context.Context, req model.PluginContactRequest, errorMessage string) ([]byte, string, model.ResponseStatus, error) {
 	var responseStatus model.ResponseStatus
 
 	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, nil
 }
 
-func stubGenericSave(reqBody []byte, table string, uuid string) error {
+func stubGenericSave(ctx context.Context, reqBody []byte, table string, uuid string) error {
 	return nil
 }
 

@@ -15,11 +15,13 @@
 package licenses
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	licenseproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/licenses"
 	"github.com/stretchr/testify/assert"
 )
@@ -61,6 +63,17 @@ var licenseResourceResponse = dmtf.License{
 	LicenseType:  "Perpetual",
 }
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func TestGetLicenseService(t *testing.T) {
 	req := &licenseproto.GetLicenseServiceRequest{}
 	e := mockGetExternalInterface()
@@ -72,9 +85,10 @@ func TestGetLicenseService(t *testing.T) {
 }
 
 func TestGetLicenseCollection(t *testing.T) {
+	ctx := mockContext()
 	req := &licenseproto.GetLicenseRequest{}
 	e := mockGetExternalInterface()
-	response := e.GetLicenseCollection(req)
+	response := e.GetLicenseCollection(ctx, req)
 
 	license := response.Body.(dmtf.LicenseCollection)
 	assert.Equal(t, int(response.StatusCode), http.StatusOK, "Status code should be StatusOK.")
@@ -82,11 +96,12 @@ func TestGetLicenseCollection(t *testing.T) {
 }
 
 func TestGetLicenseResource(t *testing.T) {
+	ctx := mockContext()
 	req := &licenseproto.GetLicenseResourceRequest{
 		URL: "/redfish/v1/LicenseService/Licenses/uuid.1.1",
 	}
 	e := mockGetExternalInterface()
-	response := e.GetLicenseResource(req)
+	response := e.GetLicenseResource(ctx, req)
 	fmt.Println(response)
 	license := response.Body.(dmtf.License)
 	assert.Equal(t, int(response.StatusCode), http.StatusOK, "Status code should be StatusOK.")
@@ -94,6 +109,7 @@ func TestGetLicenseResource(t *testing.T) {
 }
 
 func TestInstallLicenseService(t *testing.T) {
+	ctx := mockContext()
 	req := &licenseproto.InstallLicenseRequest{
 		RequestBody: []byte(`{
 			"LicenseString": "XXX-XXX-XXX-XXX-XXX",
@@ -104,31 +120,34 @@ func TestInstallLicenseService(t *testing.T) {
 			}
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(req)
+	response := e.InstallLicenseService(ctx, req)
 
 	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
 }
 
 func TestInstallLicenseService_InvalidRequest(t *testing.T) {
+	ctx := mockContext()
 	req := &licenseproto.InstallLicenseRequest{}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(req)
+	response := e.InstallLicenseService(ctx, req)
 
 	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
 }
 
 func TestInstallLicenseService_EmptyLinks(t *testing.T) {
+	ctx := mockContext()
 	req := &licenseproto.InstallLicenseRequest{
 		RequestBody: []byte(`{
 			"LicenseString": "XXX-XXX-XXX-XXX-XXX"
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(req)
+	response := e.InstallLicenseService(ctx, req)
 
 	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
 }
 
 func TestInstallLicenseService_InvalidManager(t *testing.T) {
+	ctx := mockContext()
 	req := &licenseproto.InstallLicenseRequest{
 		RequestBody: []byte(`{
 			"LicenseString": "XXX-XXX-XXX-XXX-XXX",
@@ -139,12 +158,13 @@ func TestInstallLicenseService_InvalidManager(t *testing.T) {
 			}
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(req)
+	response := e.InstallLicenseService(ctx, req)
 
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
 }
 
 func TestInstallLicenseService_InvalidAuthorizedDevices(t *testing.T) {
+	ctx := mockContext()
 	req := &licenseproto.InstallLicenseRequest{
 		RequestBody: []byte(`{
 			"LicenseString": "XXX-XXX-XXX-XXX-XXX",
@@ -155,12 +175,13 @@ func TestInstallLicenseService_InvalidAuthorizedDevices(t *testing.T) {
 			}
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(req)
+	response := e.InstallLicenseService(ctx, req)
 
 	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
 }
 
 func TestInstallLicenseService_ManagerURL(t *testing.T) {
+	ctx := mockContext()
 	req := &licenseproto.InstallLicenseRequest{
 		RequestBody: []byte(`{
 			"LicenseString": "XXX-XXX-XXX-XXX-XXX",
@@ -171,12 +192,13 @@ func TestInstallLicenseService_ManagerURL(t *testing.T) {
 			}
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(req)
+	response := e.InstallLicenseService(ctx, req)
 
 	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
 }
 
 func TestInstallLicenseService_Agrregates(t *testing.T) {
+	ctx := mockContext()
 	req := &licenseproto.InstallLicenseRequest{
 		RequestBody: []byte(`{
 			"LicenseString": "XXX-XXX-XXX-XXX-XXX",
@@ -190,12 +212,13 @@ func TestInstallLicenseService_Agrregates(t *testing.T) {
 			}
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(req)
+	response := e.InstallLicenseService(ctx, req)
 
 	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
 }
 
 func TestInstallLicenseService_Agrregates_InvalidURI(t *testing.T) {
+	ctx := mockContext()
 	req := &licenseproto.InstallLicenseRequest{
 		RequestBody: []byte(`{
 			"LicenseString": "XXX-XXX-XXX-XXX-XXX",
@@ -207,7 +230,7 @@ func TestInstallLicenseService_Agrregates_InvalidURI(t *testing.T) {
 			}
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(req)
+	response := e.InstallLicenseService(ctx, req)
 
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusNoContent.")
 }

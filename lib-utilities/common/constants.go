@@ -170,6 +170,7 @@ const (
 	UpdateService      = "svc-update"
 	TaskService        = "svc-task"
 	AggregationService = "svc-aggregation"
+	TelemetryService   = "svc-telemetry"
 	// DefaultThreadID to be used for apis
 	DefaultThreadID = "0"
 	// Invalid Action
@@ -196,6 +197,7 @@ const (
 	SetDefaultBootOrderElementsOfAggregate = "SetDefaultBootOrderElementsOfAggregate"
 	RediscoverSystemInventory              = "RediscoverSystemInventory"
 	CheckPluginStatus                      = "CheckPluginStatus"
+	GetTelemetryResource                   = "GetTelemetryResource"
 	// constants for log
 	SessionToken            = "sessiontoken"
 	SessionUserID           = "sessionuserid"

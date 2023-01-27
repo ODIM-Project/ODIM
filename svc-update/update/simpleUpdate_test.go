@@ -14,6 +14,7 @@
 package update
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -33,7 +34,7 @@ type args struct {
 	req                     *updateproto.UpdateRequest
 }
 
-func mockCreateChildTask(sessionID, taskID string) (string, error) {
+func mockCreateChildTask(ctx context.Context, sessionID, taskID string) (string, error) {
 	switch taskID {
 	case "taskWithoutChild":
 		return "", fmt.Errorf("subtask cannot created")
@@ -43,17 +44,17 @@ func mockCreateChildTask(sessionID, taskID string) (string, error) {
 		return "someSubTaskID", nil
 	}
 }
-func mockCreateChildTaskError(sessionID, taskID string) (string, error) {
+func mockCreateChildTaskError(ctx context.Context, sessionID, taskID string) (string, error) {
 	return "", errors.New("")
 }
 
-func mockUpdateTask(task common.TaskData) error {
+func mockUpdateTask(ctx context.Context, task common.TaskData) error {
 	if task.TaskID == "invalid" {
 		return fmt.Errorf("task with this ID not found")
 	}
 	return nil
 }
-func mockUpdateErrorTask(task common.TaskData) error {
+func mockUpdateErrorTask(ctx context.Context, task common.TaskData) error {
 	return fmt.Errorf("Cancelling")
 
 }

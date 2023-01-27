@@ -248,7 +248,7 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
-		errorMessage := "error while trying to get JSON body from the system reset request body: " + err.Error()
+		errorMessage := "error while trying to get JSON body from bios setting request body: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
@@ -306,7 +306,7 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
-		errorMessage := "error while trying to get JSON body from the system reset request body: " + err.Error()
+		errorMessage := "error while trying to get JSON body from change boot order setting request body: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)

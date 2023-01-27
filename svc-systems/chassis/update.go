@@ -17,6 +17,7 @@
 package chassis
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -30,7 +31,8 @@ import (
 )
 
 // Handle defines the operations which handle the RPC request-response for updating a chassis
-func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
+func (h *Update) Handle(ctx context.Context, req *chassis.UpdateChassisRequest) response.RPC {
+	l.LogWithFields(ctx).Debugln("Inside UpdateChassisRequest Handle")
 	pc, e := h.createPluginClient("URP*")
 	if e != nil && e.ErrNo() == errors.DBKeyNotFound {
 		return common.GeneralError(http.StatusMethodNotAllowed, response.ActionNotSupported, "", []interface{}{"PATCH"}, nil)
@@ -42,14 +44,14 @@ func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
 	body := new(json.RawMessage)
 	ue := json.Unmarshal(req.RequestBody, body)
 	if ue != nil {
-		l.Log.Error("while trying to unmarshal, got " + ue.Error())
+		l.LogWithFields(ctx).Error("while trying to unmarshal, got " + ue.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, "Cannot deserialize request body", nil, nil)
 	}
 
-	resp := pc.Patch(req.URL, body)
+	resp := pc.Patch(ctx, req.URL, body)
 	if !is2xx(int(resp.StatusCode)) {
 		f := h.getFabricFactory(nil)
-		r := f.updateFabricChassisResource(req.URL, body)
+		r := f.updateFabricChassisResource(ctx, req.URL, body)
 		if is2xx(int(r.StatusCode)) || r.StatusCode == http.StatusBadRequest || r.StatusCode == http.StatusUnauthorized {
 			return r
 		}

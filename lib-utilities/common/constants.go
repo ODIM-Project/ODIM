@@ -160,6 +160,7 @@ const (
 	ActionName    = "actionname"
 	ActionID      = "actionid"
 	ProcessName   = "processname"
+	RequestBody   = "requestbody"
 	// Below fields define Service Name
 	ManagerService     = "svc-managers"
 	AccountService     = "svc-account"
@@ -167,7 +168,9 @@ const (
 	SessionService     = "svc-account-session"
 	ApiService         = "svc-api"
 	UpdateService      = "svc-update"
+	TaskService        = "svc-task"
 	AggregationService = "svc-aggregation"
+	TelemetryService   = "svc-telemetry"
 	// DefaultThreadID to be used for apis
 	DefaultThreadID = "0"
 	// Invalid Action
@@ -181,6 +184,8 @@ const (
 	StartRequest                           = "StartRequest"
 	SimpleUpdate                           = "SimpleUpdate"
 	StartUpdate                            = "StartUpdate"
+	OverWriteCompletedTaskUtil             = "OverWriteCompletedTaskUtil"
+	AsyncTaskDelete                        = "AsyncTaskDelete"
 	ResetAggregates                        = "Reset-Aggregates"
 	ResetAggregate                         = "Reset-Aggregate"
 	SetBootOrder                           = "SettingBootOrder"
@@ -192,11 +197,16 @@ const (
 	SetDefaultBootOrderElementsOfAggregate = "SetDefaultBootOrderElementsOfAggregate"
 	RediscoverSystemInventory              = "RediscoverSystemInventory"
 	CheckPluginStatus                      = "CheckPluginStatus"
+	GetTelemetryResource                   = "GetTelemetryResource"
 	// constants for log
-	SessionToken  = "sessiontoken"
-	SessionUserID = "sessionuserid"
-	SessionRoleID = "sessionroleid"
-	StatusCode    = "statuscode"
+	SessionToken            = "sessiontoken"
+	SessionUserID           = "sessionuserid"
+	SessionRoleID           = "sessionroleid"
+	StatusCode              = "statuscode"
+	ComputerSystemReset     = "ComputerSystemReset"
+	GetFabricManagerChassis = "GetFabricManagerChassis"
+	CollectChassisResource  = "CollectChassisResource"
+	UpdateChassisResource   = "UpdateChassisResource"
 )
 
 // ActionType defines type of action

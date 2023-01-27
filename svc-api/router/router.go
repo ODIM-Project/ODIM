@@ -279,7 +279,10 @@ func Router() *iris.Application {
 	})
 	router.Done(func(ctx iris.Context) {
 		var reqBody map[string]interface{}
-		ctx.ReadJSON(&reqBody)
+		ctxt := ctx.Request().Context()
+		if ctxt.Value(common.RequestBody) != nil {
+			reqBody = ctxt.Value(common.RequestBody).(map[string]interface{})
+		}
 		l.AuditLog(&logService, ctx, reqBody).Info()
 		// before returning response, decrement the session limit counter
 		sessionToken := ctx.Request().Header.Get("X-Auth-Token")

@@ -17,6 +17,7 @@
 package chassis
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -52,7 +53,7 @@ var (
 )
 
 // Handle defines the operations which handle the RPC request-response for creating a chassis
-func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
+func (h *Create) Handle(ctx context.Context, req *chassisproto.CreateChassisRequest) response.RPC {
 	mbc := new(linksManagedByCollection)
 	e := json.Unmarshal(req.RequestBody, mbc)
 	if e != nil {
@@ -85,16 +86,16 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	unmarshalErr := JSONUnmarshalFunc1([]byte(managingManager), &managingMgrData)
 	if unmarshalErr != nil {
 		errorMessage := "error unmarshalling managing manager details: " + unmarshalErr.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
 	managerURI := managingMgrData["@odata.id"]
 	var managerData map[string]interface{}
-	data, jerr := GetResourceFunc("Managers", managerURI.(string))
+	data, jerr := GetResourceFunc(ctx, "Managers", managerURI.(string))
 	if jerr != nil {
 		errorMessage := "error while getting manager details: " + jerr.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
@@ -102,7 +103,7 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	err := JSONUnmarshalFunc2([]byte(data), &managerData)
 	if err != nil {
 		errorMessage := "error unmarshalling manager details: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
@@ -122,7 +123,7 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, pe.Error(), nil, nil)
 	}
 
-	resp := pc.Post("/redfish/v1/Chassis", body)
+	resp := pc.Post(ctx, "/redfish/v1/Chassis", body)
 	chassisID := resp.Header["Location"]
 	managerLinks := make(map[string]interface{})
 	var chassisLink, listOfChassis []interface{}
@@ -144,18 +145,18 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	if err != nil {
 		fmt.Println("Error occured ", managerData)
 		errorMessage := "unable to marshal data for updating: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
-	err = GenericSaveFunc([]byte(mgrData), "Managers", managerURI.(string))
+	err = GenericSaveFunc(ctx, []byte(mgrData), "Managers", managerURI.(string))
 	if err != nil {
 		errorMessage := "GenericSave : error while trying to add resource date to DB: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 	}
-
+	l.LogWithFields(ctx).Debugf("outgoing response from create chassis request: %v", resp.Body)
 	return resp
 }
 
@@ -171,13 +172,6 @@ func NewCreateHandler(createPluginClient plugin.ClientFactory) *Create {
 	}
 }
 
-//{
-//	"Links" : {
-//		"ManagedBy": [
-//			"@odata.id": "/redfish/v1/Managers/1"
-//		]
-//	}
-//}
 type linksManagedByCollection struct {
 	Links struct {
 		ManagedBy []struct {
@@ -186,9 +180,9 @@ type linksManagedByCollection struct {
 	}
 }
 
-//{
-//	"Name" : "name"
-//}
+//	{
+//		"Name" : "name"
+//	}
 type nameCarrier struct {
 	Name string
 }

@@ -37,7 +37,7 @@ func (e *ExternalInterface) AddAggregationSource(ctx context.Context, taskID str
 	var resp response.RPC
 	var percentComplete int32
 	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	err := e.UpdateTask(task)
+	err := e.UpdateTask(ctx, task)
 	if err != nil {
 		errMsg := "error while starting the task: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
@@ -111,7 +111,7 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 		resp.Body = args.CreateGenericErrorResponse()
 		resp.StatusCode = http.StatusConflict
 		percentComplete = 100
-		e.UpdateTask(fillTaskData(taskID, targetURI, reqBody, resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
+		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, reqBody, resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
 		return resp
 	}
 	err = e.GenericSave(nil, "ActiveAddBMCRequest", ipAddr)
@@ -212,6 +212,6 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 	percentComplete = 100
 
 	task := fillTaskData(taskID, targetURI, reqBody, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
-	e.UpdateTask(task)
+	e.UpdateTask(ctx, task)
 	return resp
 }

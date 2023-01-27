@@ -55,7 +55,7 @@ type PluginContactRequest struct {
 	DeviceInfo      interface{}
 	BasicAuth       map[string]string
 	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	GetPluginStatus func(smodel.Plugin) bool
+	GetPluginStatus func(context.Context, smodel.Plugin) bool
 	Plugin          smodel.Plugin
 	HTTPMethodType  string
 }
@@ -73,7 +73,7 @@ type ResourceInfoRequest struct {
 	SystemID        string
 	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DevicePassword  func([]byte) ([]byte, error)
-	GetPluginStatus func(smodel.Plugin) bool
+	GetPluginStatus func(context.Context, smodel.Plugin) bool
 	ResourceName    string
 }
 
@@ -82,7 +82,8 @@ type ResourceInfoRequest struct {
 // Some specific cases may not require the data to be stored in DB,
 // eg: Delete volume requires reset of the BMC to take its effect. Before a reset, volumes retrieval
 // request can provide the deleted volume. We can avoid storing such a data with the use of saveRequired.
-func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (string, error) {
+func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest, saveRequired bool) (string, error) {
+	l.LogWithFields(ctx).Debugf("incoming GetResourceInfoFromDevice request with %s", req.URL)
 	target, gerr := smodel.GetTarget(req.UUID)
 	if gerr != nil {
 		return "", gerr
@@ -105,7 +106,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, _, err := ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
+		_, token, _, err := ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
 		if err != nil {
 
 			return "", err
@@ -133,7 +134,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 	//replace the uuid:system id with the system to the @odata.id from request url
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet
-	body, _, _, err := ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
+	body, _, _, err := ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
 	if err != nil {
 		return "", err
 	}
@@ -170,7 +171,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 			resourceName = getResourceName(contactRequest.OID, memberFlag)
 		}
 		// persist the response with table resourceName and key as system UUID + Oid Needs relook TODO
-		err = smodel.GenericSave([]byte(updatedData), resourceName, oidKey)
+		err = smodel.GenericSave(ctx, []byte(updatedData), resourceName, oidKey)
 		if err != nil {
 			return "", err
 		}
@@ -208,20 +209,21 @@ func getResourceName(oDataID string, memberFlag bool) string {
 }
 
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
-func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
+func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
+	l.LogWithFields(ctx).Debugf("incoming ContactPlugin request with token: %s, OID: %s", req.Token, req.OID)
 	var resp ResponseStatus
 	var response *http.Response
 	var err error
-	response, err = callPlugin(req)
+	response, err = callPlugin(ctx, req)
 	if err != nil {
-		if req.GetPluginStatus(req.Plugin) {
-			response, err = callPlugin(req)
+		if req.GetPluginStatus(ctx, req.Plugin) {
+			response, err = callPlugin(ctx, req)
 		}
 		if err != nil {
 			errorMessage = errorMessage + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = errors.InternalError
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
@@ -231,14 +233,14 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
-	l.Log.Info("response.StatusCode: " + fmt.Sprintf("%d", response.StatusCode))
+	l.LogWithFields(ctx).Info("response.StatusCode: " + fmt.Sprintf("%d", response.StatusCode))
 	resp.StatusCode = int32(response.StatusCode)
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted {
 		resp.StatusCode = int32(response.StatusCode)
-		l.Log.Println(errorMessage)
+		l.LogWithFields(ctx).Println(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -264,7 +266,7 @@ func checkRetrievalInfo(oid string) bool {
 }
 
 // GetPluginStatus checks the status of given plugin in configured interval
-func GetPluginStatus(plugin smodel.Plugin) bool {
+func GetPluginStatus(ctx context.Context, plugin smodel.Plugin) bool {
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{
@@ -282,23 +284,23 @@ func GetPluginStatus(plugin smodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		l.Log.Error("Error While getting the status for plugin " + plugin.ID + ": " + err.Error())
+		l.LogWithFields(ctx).Error("Error While getting the status for plugin " + plugin.ID + ": " + err.Error())
 		return status
 	}
-	l.Log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	l.LogWithFields(ctx).Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
-func callPlugin(req PluginContactRequest) (*http.Response, error) {
+func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, error) {
 	var oid string
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		oid = strings.Replace(req.OID, key, value, -1)
 	}
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + oid
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
+		return req.ContactClient(ctx, reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
-	return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+	return req.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
 
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy

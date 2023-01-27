@@ -133,7 +133,7 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 		l.LogWithFields(ctx).Warn(errMsg)
 		return resp, nil
 	}
-	taskURI, err := a.connector.External.CreateTask(sessionUserName)
+	taskURI, err := a.connector.External.CreateTask(ctx, sessionUserName)
 	if err != nil {
 		errMsg := "error while trying to create task: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
@@ -147,7 +147,7 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 	} else {
 		taskID = strArray[len(strArray)-1]
 	}
-	err = a.connector.External.UpdateTask(common.TaskData{
+	err = a.connector.External.UpdateTask(ctx, common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       taskURI,
 		TaskState:       common.Running,
@@ -199,7 +199,7 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 		l.LogWithFields(ctx).Warn(errMsg)
 		return resp, nil
 	}
-	taskURI, err := a.connector.External.CreateTask(sessionUserName)
+	taskURI, err := a.connector.External.CreateTask(ctx, sessionUserName)
 	if err != nil {
 		errMsg := "error while trying to create task: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
@@ -213,7 +213,7 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 	} else {
 		taskID = strArray[len(strArray)-1]
 	}
-	err = a.connector.External.UpdateTask(common.TaskData{
+	err = a.connector.External.UpdateTask(ctx, common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       taskURI,
 		TaskState:       common.Running,

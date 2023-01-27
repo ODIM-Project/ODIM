@@ -23,10 +23,11 @@ import (
 )
 
 func Test_auth(t *testing.T) {
+	ctx := mockContext()
 	authFunc := func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 		return response.RPC{}, nil
 	}
 	callback := func() response.RPC { return response.RPC{} }
-	resp := auth(authFunc, "", []string{}, callback)
+	resp := auth(ctx, authFunc, "", []string{}, callback)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "status should be StatusUnauthorized")
 }

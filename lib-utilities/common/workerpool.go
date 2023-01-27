@@ -35,7 +35,6 @@ func RunReadWorkers(ctx context.Context, jobChannel <-chan interface{}, jobProce
 			for j := range jobChannel {
 				transactionID := uuid.New()
 				ctx = context.WithValue(ctx, TransactionID, transactionID.String())
-				ctx = context.WithValue(ctx, ActionName, "PublishEventsToDestination")
 				jobProcess(ctx, j)
 			}
 		}()

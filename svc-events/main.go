@@ -14,6 +14,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -29,6 +30,13 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/rpc"
 	"github.com/sirupsen/logrus"
+)
+
+var (
+	EventConsumerActionID    = 218
+	EventConsumerActionName  = "EventConsumer"
+	ProcessControlActionId   = 219
+	ProcessControlActionName = "ProcessControl"
 )
 
 func main() {
@@ -75,6 +83,10 @@ func main() {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
 
+	ctx := context.TODO()
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = context.WithValue(ctx, common.ThreadName, common.EventService)
+	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
 	// Intializing the TopicsList
 	evcommon.EMBTopics.TopicsList = make(map[string]bool)
 	// Intializing plugin token
@@ -90,7 +102,9 @@ func main() {
 	consumer.In, consumer.Out = common.CreateJobQueue(jobQueueSize)
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as PublishEventsToDestination method after reading the data from the channel.
-	common.RunReadWorkers(consumer.Out, events.Connector.PublishEventsToDestination, 5)
+	ctx = context.WithValue(ctx, common.ActionName, EventConsumerActionName)
+	ctx = context.WithValue(ctx, common.ActionID, EventConsumerActionID)
+	common.RunReadWorkers(ctx, consumer.Out, events.Connector.PublishEventsToDestination, 5)
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
@@ -98,7 +112,10 @@ func main() {
 	consumer.CtrlMsgRecvQueue, consumer.CtrlMsgProcQueue = common.CreateJobQueue(ctrlMsgProcQueueSize)
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as ProcessCtrlMsg method after reading the data from the channel.
-	common.RunReadWorkers(consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 1)
+	ctx = context.WithValue(ctx, common.ActionName, ProcessControlActionName)
+	ctx = context.WithValue(ctx, common.ActionID, ProcessControlActionId)
+
+	common.RunReadWorkers(ctx, consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 1)
 
 	evcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
 	if evcommon.ConfigFilePath == "" {
@@ -106,7 +123,7 @@ func main() {
 	}
 
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go evcommon.TrackConfigFileChanges(errChan)
+	go evcommon.TrackConfigFileChanges(ctx, errChan)
 
 	// Subscribe to intercomm messagebus queue
 	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.OdimControlMessageQueue)
@@ -116,8 +133,8 @@ func main() {
 		DecryptPassword: common.DecryptWithPrivateKey,
 		EMBConsume:      consumer.Consume,
 	}
-	go startUPInterface.SubscribePluginEMB()
-	go ev.LoadSubscriptionData()
+	go startUPInterface.SubscribePluginEMB(ctx)
+	go ev.LoadSubscriptionData(ctx)
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())

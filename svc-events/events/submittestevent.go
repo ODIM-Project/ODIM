@@ -22,6 +22,7 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -44,7 +45,7 @@ var (
 )
 
 // SubmitTestEvent is a helper method to handle the submit test event request.
-func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) response.RPC {
+func (e *ExternalInterfaces) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubRequest) response.RPC {
 	var resp response.RPC
 	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
@@ -52,7 +53,7 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 		if err != nil {
 			errMsg = errMsg + ": " + err.Error()
 		}
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return authResp
 	}
 	// First get the UserName from SessionToken
@@ -60,13 +61,13 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 	if err != nil {
 		// handle the error case with appropriate response body
 		errMsg := "error while trying to authenticate session: " + err.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil)
 	}
 
 	testEvent, statusMessage, errMsg, msgArgs := validAndGenSubTestReq(req.PostBody)
 	if statusMessage != response.Success {
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, statusMessage, errMsg, msgArgs, nil)
 	}
 
@@ -75,7 +76,7 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 	err = JSONUnmarshal(req.PostBody, &eventObj)
 	if err != nil {
 		errMsg := "unable to parse the event request" + err.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
@@ -83,11 +84,11 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 	invalidProperties, err := RequestParamsCaseValidatorFunc(req.PostBody, eventObj)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
 	}
@@ -97,7 +98,7 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 	if err != nil {
 		// Internall error
 		errMsg := "error while trying to find the event destination"
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	// we need common.MessageData to find the correct destination to send test event
@@ -112,9 +113,9 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 				subscription := *sub.EventDestination
 				subscription.ID = sub.SubscriptionID
 
-				if filterEventsToBeForwarded(subscription, message.Events[0], []model.Link{{Oid: origin.Oid}}) {
-					l.Log.Info("Destination: " + sub.EventDestination.Destination)
-					go e.postEvent(sub.EventDestination.Destination, eventUniqueID, messageBytes)
+				if filterEventsToBeForwarded(ctx, subscription, message.Events[0], []model.Link{{Oid: origin.Oid}}) {
+					l.LogWithFields(ctx).Info("Destination: " + sub.EventDestination.Destination)
+					go e.postEvent(ctx, sub.EventDestination.Destination, eventUniqueID, messageBytes)
 				}
 			}
 		}

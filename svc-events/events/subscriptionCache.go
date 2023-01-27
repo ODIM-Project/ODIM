@@ -1,6 +1,7 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -33,17 +34,17 @@ var (
 // LoadSubscriptionData method calls whenever service is started
 // Here we load Subscription, DeviceSubscription, AggregateToHost
 // table data into cache memory
-func LoadSubscriptionData() {
-	l.Log.Debug("Event cache is initialized")
-	getAllSubscriptions()
-	getAllAggregates()
-	getAllDeviceSubscriptions()
-	go initializeDbObserver()
+func LoadSubscriptionData(ctx context.Context) {
+	l.LogWithFields(ctx).Debug("Event cache is initialized")
+	getAllSubscriptions(ctx)
+	getAllAggregates(ctx)
+	getAllDeviceSubscriptions(ctx)
+	go initializeDbObserver(ctx)
 }
 
 // getAllSubscriptions this method read data from Subscription table and
 // load in corresponding cache
-func getAllSubscriptions() {
+func getAllSubscriptions(ctx context.Context) {
 	subscribeCacheLock.Lock()
 	defer subscribeCacheLock.Unlock()
 	systemToSubscriptionsMap = make(map[string]map[string]bool)
@@ -52,7 +53,7 @@ func getAllSubscriptions() {
 	emptyOriginResourceToSubscriptionsMap = make(map[string]bool)
 	subscriptions, err := evmodel.GetAllEvtSubscriptions()
 	if err != nil {
-		l.Log.Error("Error while reading all subscription data ", err)
+		l.LogWithFields(ctx).Error("Error while reading all subscription data ", err)
 		return
 	}
 
@@ -75,12 +76,12 @@ func getAllSubscriptions() {
 }
 
 // getAllDeviceSubscriptions method fetch data from DeviceSubscription table
-func getAllDeviceSubscriptions() {
+func getAllDeviceSubscriptions(ctx context.Context) {
 	subscribeCacheLock.Lock()
 	defer subscribeCacheLock.Unlock()
 	deviceSubscriptionList, err := evmodel.GetAllDeviceSubscriptions()
 	if err != nil {
-		l.Log.Error("Error while reading all aggregate data ", err)
+		l.LogWithFields(ctx).Error("Error while reading all aggregate data ", err)
 		return
 	}
 	eventSourceToManagerIDMap = make(map[string]string, len(deviceSubscriptionList))
@@ -92,7 +93,7 @@ func getAllDeviceSubscriptions() {
 			updateCatchDeviceSubscriptionData(devSub[0], evmodel.GetSliceFromString(devSub[2]))
 		}
 	}
-	l.Log.Debug("DeviceSubscription cache updated ")
+	l.LogWithFields(ctx).Debug("DeviceSubscription cache updated ")
 }
 
 // updateCatchDeviceSubscriptionData update eventSourceToManagerMap for each key with their system IDs
@@ -129,14 +130,14 @@ func addSubscriptionCache(key string, subscriptionId string) {
 
 // getAllAggregates method will read all aggregate from db and
 // update systemIdToAggregateIdsMap to corresponding member in aggregate
-func getAllAggregates() {
+func getAllAggregates(ctx context.Context) {
 	subscribeCacheLock.Lock()
 	defer subscribeCacheLock.Unlock()
 
 	systemIdToAggregateIdsMap = make(map[string]map[string]bool)
 	aggregateUrls, err := evmodel.GetAllAggregates()
 	if err != nil {
-		l.Log.Debug("error occurred while getting aggregate list ", err)
+		l.LogWithFields(ctx).Debug("error occurred while getting aggregate list ", err)
 		return
 	}
 	for _, aggregateUrl := range aggregateUrls {
@@ -147,7 +148,7 @@ func getAllAggregates() {
 		aggregateId := aggregateUrl[strings.LastIndexByte(aggregateUrl, '/')+1:]
 		addSystemIdToAggregateCache(aggregateId, aggregate)
 	}
-	l.Log.Debug("AggregateToHost cache updated ")
+	l.LogWithFields(ctx).Debug("AggregateToHost cache updated ")
 }
 
 // addSystemIdToAggregateCache update cache for each aggregate member
@@ -278,15 +279,15 @@ func getCollectionKey(oid, host string) (key string) {
 }
 
 // initializeDbObserver function subscribe redis keyspace notifier
-func initializeDbObserver() {
-	l.Log.Debug("Initializing observer ")
+func initializeDbObserver(ctx context.Context) {
+	l.LogWithFields(ctx).Debug("Initializing observer ")
 START:
 	conn, _ := common.GetDBConnection(common.OnDisk)
 	writeConn := conn.WritePool.Get()
 	defer writeConn.Close()
 	_, err := writeConn.Do("CONFIG", "SET", evcommon.RedisNotifierType, evcommon.RedisNotifierFilterKey)
 	if err != nil {
-		l.Log.Error("error occurred configuring keyevent ", err)
+		l.LogWithFields(ctx).Error("error occurred configuring keyevent ", err)
 		time.Sleep(time.Second * 5)
 		goto START
 	}
@@ -299,14 +300,14 @@ START:
 		case redis.Message:
 			switch string(v.Pattern) {
 			case evcommon.DeviceSubscriptionChannelKey:
-				getAllDeviceSubscriptions()
+				getAllDeviceSubscriptions(ctx)
 			case evcommon.SubscriptionChannelKey:
-				getAllSubscriptions()
+				getAllSubscriptions(ctx)
 			case evcommon.AggregateToHostChannelKey:
-				getAllAggregates()
+				getAllAggregates(ctx)
 			}
 		case error:
-			l.Log.Error("Error occurred in redis keyspace notifier publisher ", v)
+			l.LogWithFields(ctx).Error("Error occurred in redis keyspace notifier publisher ", v)
 			goto START
 		}
 	}

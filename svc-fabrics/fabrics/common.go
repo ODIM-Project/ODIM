@@ -290,7 +290,7 @@ func (f *Fabrics) parseFabricsRequest(ctx context.Context, req *fabricsproto.Fab
 
 	// Validating Post/Patch request properties are in uppercamelcase or not
 	if strings.EqualFold(req.Method, "POST") || strings.EqualFold(req.Method, "PATCH") {
-		valResp, err := validateReqParamsCase(req)
+		valResp, err := validateReqParamsCase(ctx, req)
 		if err != nil {
 			return contactRequest, valResp, err
 		}

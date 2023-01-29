@@ -27,6 +27,7 @@
 package fabrics
 
 import (
+	"context"
 	"net/http"
 	"reflect"
 	"testing"
@@ -77,6 +78,7 @@ func TestFabrics_DeleteFabricResource(t *testing.T) {
 	}
 
 	type args struct {
+		ctx context.Context
 		req *fabricsproto.FabricRequest
 	}
 	tests := []struct {
@@ -92,6 +94,7 @@ func TestFabrics_DeleteFabricResource(t *testing.T) {
 				ContactClient: mockContactClient,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da",
@@ -111,6 +114,7 @@ func TestFabrics_DeleteFabricResource(t *testing.T) {
 				Auth: mockAuth,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "sometoken",
 					Method:       "DELETE",
@@ -128,6 +132,7 @@ func TestFabrics_DeleteFabricResource(t *testing.T) {
 				Auth: mockAuth,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "invalid",
 					Method:       "DELETE",
@@ -142,7 +147,7 @@ func TestFabrics_DeleteFabricResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.f.DeleteFabricResource(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.f.DeleteFabricResource(tt.args.ctx, tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Fabrics.DeleteFabricResource() = %v, want %v", got, tt.want)
 			}
 		})
@@ -169,6 +174,7 @@ func TestFabrics_DeleteFabricResourceWithNoValidSession(t *testing.T) {
 	}
 
 	type args struct {
+		ctx context.Context
 		req *fabricsproto.FabricRequest
 	}
 	tests := []struct {
@@ -184,6 +190,7 @@ func TestFabrics_DeleteFabricResourceWithNoValidSession(t *testing.T) {
 				ContactClient: mockContactClient,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da",
@@ -201,7 +208,7 @@ func TestFabrics_DeleteFabricResourceWithNoValidSession(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.f.DeleteFabricResource(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.f.DeleteFabricResource(tt.args.ctx, tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Fabrics.GetFabricResource() = %v, want %v", got, tt.want)
 			}
 		})

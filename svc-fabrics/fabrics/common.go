@@ -108,19 +108,19 @@ func (p *PluginToken) getToken(pluginID string) string {
 	return p.Tokens[pluginID]
 }
 
-func contactPlugin(req pluginContactRequest, errorMessage string) ([]byte, string, responseStatus, error) {
+func contactPlugin(ctx context.Context, req pluginContactRequest, errorMessage string) ([]byte, string, responseStatus, error) {
 	var resp responseStatus
 
 	pluginResponse, err := callPlugin(req)
 	if err != nil {
-		if getPluginStatus(req.Plugin) {
+		if getPluginStatus(ctx, req.Plugin) {
 			pluginResponse, err = callPlugin(req)
 		}
 		if err != nil {
 			errorMessage = errorMessage + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = response.InternalError
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
@@ -131,11 +131,11 @@ func contactPlugin(req pluginContactRequest, errorMessage string) ([]byte, strin
 			errorMessage := "error while trying to read response body: " + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = response.InternalError
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 		resp.StatusCode = int32(pluginResponse.StatusCode)
-		l.Log.Info("Read response successfully")
+		l.LogWithFields(ctx).Info("Read response successfully")
 		return body, "", resp, fmt.Errorf("Read response successfully")
 	}
 	body, err := ioutil.ReadAll(pluginResponse.Body)
@@ -159,7 +159,7 @@ func callPlugin(req pluginContactRequest) (*http.Response, error) {
 }
 
 // getPluginStatus checks the status of given plugin in configured interval
-func getPluginStatus(plugin fabmodel.Plugin) bool {
+func getPluginStatus(ctx context.Context, plugin fabmodel.Plugin) bool {
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{
@@ -174,23 +174,23 @@ func getPluginStatus(plugin fabmodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		l.Log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
+		l.LogWithFields(ctx).Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	l.Log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	l.LogWithFields(ctx).Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
 // getPluginToken will verify the if any token present to the plugin else it will create token for the new plugin
-func (f *Fabrics) getPluginToken(plugin fabmodel.Plugin) string {
+func (f *Fabrics) getPluginToken(ctx context.Context, plugin fabmodel.Plugin) string {
 	authToken := Token.getToken(plugin.ID)
 	if authToken == "" {
-		return f.createToken(plugin)
+		return f.createToken(ctx, plugin)
 	}
 	return authToken
 }
 
-func (f *Fabrics) createToken(plugin fabmodel.Plugin) string {
+func (f *Fabrics) createToken(ctx context.Context, plugin fabmodel.Plugin) string {
 	var contactRequest pluginContactRequest
 
 	contactRequest.ContactClient = f.ContactClient
@@ -201,9 +201,9 @@ func (f *Fabrics) createToken(plugin fabmodel.Plugin) string {
 		"Password": string(plugin.Password),
 	}
 	contactRequest.URL = "/ODIM/v1/Sessions"
-	_, token, _, err := contactPlugin(contactRequest, "error while logging in to plugin: ")
+	_, token, _, err := contactPlugin(ctx, contactRequest, "error while logging in to plugin: ")
 	if err != nil {
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctx).Error(err.Error())
 	}
 	if token != "" {
 		Token.storeToken(plugin.ID, token)
@@ -213,9 +213,9 @@ func (f *Fabrics) createToken(plugin fabmodel.Plugin) string {
 
 // retryFabricsOperation will be called whenever  the unauthorized status code during the plugin call
 // This function will create a new session token reexcutes the plugin call
-func (f *Fabrics) retryFabricsOperation(req pluginContactRequest, errorMessage string) ([]byte, string, responseStatus, error) {
+func (f *Fabrics) retryFabricsOperation(ctx context.Context, req pluginContactRequest, errorMessage string) ([]byte, string, responseStatus, error) {
 	var resp response.RPC
-	var token = f.createToken(req.Plugin)
+	var token = f.createToken(ctx, req.Plugin)
 	if token == "" {
 		resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error: Unable to create session with plugin "+req.Plugin.ID,
 			[]interface{}{}, nil)
@@ -225,11 +225,11 @@ func (f *Fabrics) retryFabricsOperation(req pluginContactRequest, errorMessage s
 		}, fmt.Errorf("error: Unable to create session with plugin")
 	}
 	req.Token = token
-	return contactPlugin(req, errorMessage)
+	return contactPlugin(ctx, req, errorMessage)
 
 }
 
-func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginContactRequest, response.RPC, error) {
+func (f *Fabrics) parseFabricsRequest(ctx context.Context, req *fabricsproto.FabricRequest) (pluginContactRequest, response.RPC, error) {
 	var contactRequest pluginContactRequest
 	var resp response.RPC
 	sessionToken := req.SessionToken
@@ -239,7 +239,7 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 		if err != nil {
 			errMsg = errMsg + ": " + err.Error()
 		}
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return contactRequest, authResp, fmt.Errorf(errMsg)
 	}
 
@@ -247,13 +247,13 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 		resp = getFabricCollection()
 		return contactRequest, resp, nil
 	}
-	l.Log.Info("Request url" + req.URL)
+	l.LogWithFields(ctx).Info("Request url" + req.URL)
 	fabID := getFabricID(req.URL)
-	l.Log.Info("Fabric UUID" + fabID)
+	l.LogWithFields(ctx).Info("Fabric UUID" + fabID)
 	fabric, err := fabmodel.GetManagingPluginIDForFabricID(fabID)
 	if err != nil {
 		errMsg := fmt.Sprintf("error while trying to get fabric Data: %v", err.Error())
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg,
 			[]interface{}{"Plugin", "Fabric"}, nil)
 		return contactRequest, resp, err
@@ -262,7 +262,7 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	plugin, errs := fabmodel.GetPluginData(fabric.PluginID)
 	if errs != nil {
 		errMsg := fmt.Sprintf("error while trying to get plugin Data: %v", errs.Error())
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg,
 			[]interface{}{"Plugin", "Fabric"}, nil)
 		return contactRequest, resp, errs
@@ -271,10 +271,10 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	contactRequest.ContactClient = f.ContactClient
 	contactRequest.Plugin = plugin
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
-		token := f.getPluginToken(plugin)
+		token := f.getPluginToken(ctx, plugin)
 		if token == "" {
 			var errorMessage = "error: Unable to create session with plugin " + plugin.ID
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage,
 				[]interface{}{}, nil)
 			return contactRequest, resp, fmt.Errorf(errorMessage)
@@ -309,7 +309,7 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	if !(req.Method == http.MethodGet || req.Method == http.MethodDelete) {
 		err := json.Unmarshal([]byte(reqData), &contactRequest.PostBody)
 		if err != nil {
-			l.Log.Error("error while trying to get JSON request body: " + err.Error())
+			l.LogWithFields(ctx).Error("error while trying to get JSON request body: " + err.Error())
 			resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON,
 				"error while trying to get JSON request body: "+err.Error(),
 				[]interface{}{}, nil)
@@ -319,14 +319,14 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	return contactRequest, resp, nil
 }
 
-func (f *Fabrics) parseFabricsResponse(pluginRequest pluginContactRequest, reqURI string) response.RPC {
+func (f *Fabrics) parseFabricsResponse(ctx context.Context, pluginRequest pluginContactRequest, reqURI string) response.RPC {
 	var resp response.RPC
 	var errorMessage = fmt.Sprintf("error while performing %s operation on %s: ", pluginRequest.HTTPMethodType, reqURI)
 	//contactPlugin
-	body, _, getResponse, err := contactPlugin(pluginRequest, errorMessage)
+	body, _, getResponse, err := contactPlugin(ctx, pluginRequest, errorMessage)
 	if err != nil {
 		if getResponse.StatusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
-			if body, _, getResponse, err = f.retryFabricsOperation(pluginRequest, errorMessage); err != nil {
+			if body, _, getResponse, err = f.retryFabricsOperation(ctx, pluginRequest, errorMessage); err != nil {
 				data := string(body)
 				//replacing the resposne with north bound translation URL
 				for key, value := range config.Data.URLTranslation.NorthBoundURL {
@@ -347,10 +347,10 @@ func (f *Fabrics) parseFabricsResponse(pluginRequest pluginContactRequest, reqUR
 			return resp
 		}
 	}
-	return fillResponse(body, getResponse.Location, pluginRequest.HTTPMethodType, getResponse.StatusCode)
+	return fillResponse(ctx, body, getResponse.Location, pluginRequest.HTTPMethodType, getResponse.StatusCode)
 }
 
-func fillResponse(body []byte, location string, method string, statusCode int32) response.RPC {
+func fillResponse(ctx context.Context, body []byte, location string, method string, statusCode int32) response.RPC {
 	var resp response.RPC
 	data := string(body)
 	//replacing the resposne with north bound translation URL
@@ -362,7 +362,7 @@ func fillResponse(body []byte, location string, method string, statusCode int32)
 		var respData map[string]interface{}
 		err := json.Unmarshal([]byte(data), &respData)
 		if err != nil {
-			l.Log.Printf(err.Error())
+			l.LogWithFields(ctx).Printf(err.Error())
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 				[]interface{}{}, nil)
 		}
@@ -419,7 +419,7 @@ func getFabricCollection() response.RPC {
 }
 
 // Validating if request properties are in uppercamelcase or not
-func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error) {
+func validateReqParamsCase(ctx context.Context, req *fabricsproto.FabricRequest) (response.RPC, error) {
 	var resp response.RPC
 	var fabricRequest interface{}
 	//Checking the request type, whether it is Zones,AddressPool or Endpoints request
@@ -435,7 +435,7 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	err := json.Unmarshal(req.RequestBody, &fabricRequest)
 	if err != nil {
 		errMsg := "unable to parse the fabrics request" + err.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	}
 
@@ -443,11 +443,11 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, fabricRequest)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response, fmt.Errorf(errorMessage)
 	}

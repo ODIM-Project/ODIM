@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package fabrics ...
+// Package fabrics ...
 package fabrics
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"reflect"
@@ -55,6 +56,7 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 		"@odata.id": "/redfish/v1/Fabrics",
 	})
 	type args struct {
+		ctx context.Context
 		req *fabricsproto.FabricRequest
 	}
 	errResp1 := response.Args{
@@ -92,6 +94,7 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 				ContactClient: mockContactClient,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da/Zones/Zone1",
@@ -116,6 +119,7 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 				Auth: mockAuth,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "sometoken",
 					Method:       "POST",
@@ -133,6 +137,7 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 				Auth: mockAuth,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "invalid",
 					Method:       "POST",
@@ -147,7 +152,7 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.f.UpdateFabricResource(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.f.UpdateFabricResource(tt.args.ctx, tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Fabrics.UpdateFabricResource() = %v, want %v", got, tt.want)
 			}
 		})
@@ -176,6 +181,7 @@ func TestFabrics_UpdateFabricResourceWithNoValidSession(t *testing.T) {
 		t.Fatalf("Error in creating mockFabricData :%v", err)
 	}
 	type args struct {
+		ctx context.Context
 		req *fabricsproto.FabricRequest
 	}
 	tests := []struct {
@@ -191,6 +197,7 @@ func TestFabrics_UpdateFabricResourceWithNoValidSession(t *testing.T) {
 				ContactClient: mockContactClient,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da/Zones/Zone1",
@@ -213,7 +220,7 @@ func TestFabrics_UpdateFabricResourceWithNoValidSession(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.f.UpdateFabricResource(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.f.UpdateFabricResource(tt.args.ctx, tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Fabrics.GetFabricResource() = %v, want %v", got, tt.want)
 			}
 		})

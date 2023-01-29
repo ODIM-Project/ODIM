@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License
 
-//Package fabrics ...
+// Package fabrics ...
 package fabrics
 
 import (
@@ -75,7 +75,8 @@ func TestFabrics_WithInvalidPluginData(t *testing.T) {
 		URL:          "/redfish/v1/Fabrics/fabid1/Zones/Zone1",
 		RequestBody:  postData,
 	}
-	resp := f.UpdateFabricResource(req)
+	ctx := mockContext()
+	resp := f.UpdateFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "should be same")
 
 	req = &fabricsproto.FabricRequest{
@@ -84,7 +85,7 @@ func TestFabrics_WithInvalidPluginData(t *testing.T) {
 		URL:          "/redfish/v1/Fabrics/fabid1/Zones/Zone1",
 	}
 
-	resp = f.DeleteFabricResource(req)
+	resp = f.DeleteFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "should be same")
 
 	req = &fabricsproto.FabricRequest{
@@ -92,7 +93,7 @@ func TestFabrics_WithInvalidPluginData(t *testing.T) {
 		SessionToken: "valid",
 		URL:          "/redfish/v1/Fabrics/fabid1/Zones/Zone1",
 	}
-	resp = f.GetFabricResource(req)
+	resp = f.GetFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "should be same")
 }
 
@@ -127,7 +128,8 @@ func TestFabrics_WithInvalidURI(t *testing.T) {
 		RequestBody:  postData,
 		Method:       http.MethodPost,
 	}
-	resp := f.UpdateFabricResource(req)
+	ctx := mockContext()
+	resp := f.UpdateFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "should be same")
 
 	req = &fabricsproto.FabricRequest{
@@ -136,7 +138,7 @@ func TestFabrics_WithInvalidURI(t *testing.T) {
 		Method:       http.MethodDelete,
 	}
 
-	resp = f.DeleteFabricResource(req)
+	resp = f.DeleteFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "should be same")
 
 	req = &fabricsproto.FabricRequest{
@@ -145,7 +147,7 @@ func TestFabrics_WithInvalidURI(t *testing.T) {
 		Method:       http.MethodGet,
 	}
 
-	resp = f.GetFabricResource(req)
+	resp = f.GetFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "should be same")
 }
 
@@ -180,7 +182,8 @@ func TestFabrics_WithInvaliPluginCredentials(t *testing.T) {
 		RequestBody:  postData,
 		Method:       http.MethodPost,
 	}
-	resp := f.UpdateFabricResource(req)
+	ctx := mockContext()
+	resp := f.UpdateFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "should be same")
 
 	req = &fabricsproto.FabricRequest{
@@ -189,7 +192,7 @@ func TestFabrics_WithInvaliPluginCredentials(t *testing.T) {
 		Method:       http.MethodDelete,
 	}
 
-	resp = f.DeleteFabricResource(req)
+	resp = f.DeleteFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "should be same")
 
 	req = &fabricsproto.FabricRequest{
@@ -198,7 +201,7 @@ func TestFabrics_WithInvaliPluginCredentials(t *testing.T) {
 		Method:       http.MethodGet,
 	}
 
-	resp = f.GetFabricResource(req)
+	resp = f.GetFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "should be same")
 }
 
@@ -231,8 +234,8 @@ func TestFabrics_WithBasicAuth(t *testing.T) {
 		URL:          "/redfish/v1/Fabrics/fabid2",
 		Method:       http.MethodGet,
 	}
-
-	resp := f.GetFabricResource(req)
+	ctx := mockContext()
+	resp := f.GetFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "should be same")
 }
 
@@ -269,8 +272,8 @@ func TestFabrics_WithInvalidData(t *testing.T) {
 		RequestBody:  postData,
 		Method:       "POST",
 	}
-
-	resp := f.UpdateFabricResource(req)
+	ctx := mockContext()
+	resp := f.UpdateFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "should be same")
 }
 
@@ -285,28 +288,29 @@ func TestGetFabricID(t *testing.T) {
 }
 
 func Test_validateReqParamsCase(t *testing.T) {
+	ctx := mockContext()
 	req := fabricsproto.FabricRequest{}
-	_, err := validateReqParamsCase(&req)
+	_, err := validateReqParamsCase(ctx, &req)
 	assert.NotNil(t, err, "There should be an error ")
 
 	req.URL = "/Zones"
-	_, err = validateReqParamsCase(&req)
+	_, err = validateReqParamsCase(ctx, &req)
 	assert.NotNil(t, err, "There should be an error ")
 	req.URL = "/AddressPools"
-	_, err = validateReqParamsCase(&req)
+	_, err = validateReqParamsCase(ctx, &req)
 
 	assert.NotNil(t, err, "There should be an error ")
 	req.URL = "/Endpoints"
-	_, err = validateReqParamsCase(&req)
+	_, err = validateReqParamsCase(ctx, &req)
 	assert.NotNil(t, err, "There should be an error ")
 
 	req.RequestBody = []byte(`{"UserName":"admin"}`)
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) { return "", fmt.Errorf("") }
-	_, err = validateReqParamsCase(&req)
+	_, err = validateReqParamsCase(ctx, &req)
 	assert.NotNil(t, err, "There should be an error ")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) { return "error", nil }
-	_, err = validateReqParamsCase(&req)
+	_, err = validateReqParamsCase(ctx, &req)
 	assert.NotNil(t, err, "There should be an error ")
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)

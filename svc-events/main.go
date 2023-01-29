@@ -114,14 +114,14 @@ func main() {
 	// which is passed to it as ProcessCtrlMsg method after reading the data from the channel.
 	ctx = context.WithValue(ctx, common.ActionName, ProcessControlActionName)
 	ctx = context.WithValue(ctx, common.ActionID, ProcessControlActionId)
-
 	common.RunReadWorkers(ctx, consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 1)
 
 	evcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
 	if evcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-
+	ctx = context.WithValue(ctx, common.ActionName, EventConsumerActionName)
+	ctx = context.WithValue(ctx, common.ActionID, EventConsumerActionID)
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go evcommon.TrackConfigFileChanges(ctx, errChan)
 

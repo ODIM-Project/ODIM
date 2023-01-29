@@ -14,6 +14,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"time"
@@ -67,7 +68,11 @@ func main() {
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as Publish method after reading the data from the channel.
-	go common.RunReadWorkers(lphandler.Out, lpmessagebus.Publish, 5)
+
+	// should be removed when context from svc-api is passed to this function
+	ctx := context.TODO()
+
+	go common.RunReadWorkers(ctx, lphandler.Out, lpmessagebus.Publish, 5)
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
 	if configFilePath == "" {

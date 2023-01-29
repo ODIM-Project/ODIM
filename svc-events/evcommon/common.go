@@ -151,7 +151,7 @@ func (st *StartUpInterface) GetAllPluginStatus(ctx context.Context) {
 			return
 		}
 		for i := 0; i < len(pluginList); i++ {
-			go st.getPluginStatus(context.TODO(), pluginList[i]) //TODO: Pass context
+			go st.getPluginStatus(ctx, pluginList[i])
 		}
 		var pollingTime int
 		config.TLSConfMutex.RLock()

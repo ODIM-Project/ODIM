@@ -54,12 +54,10 @@ func (e *ExternalInterfaces) GetEventSubscriptionsDetails(ctx context.Context, r
 
 	subscriptionDetails, err := e.GetEvtSubscriptions(req.EventSubscriptionID)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
-		l.LogWithFields(ctx).Info("error getting event subscription details : %v", err)
 		errorMessage := err.Error()
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
 	}
 	if len(subscriptionDetails) < 1 {
-		l.LogWithFields(ctx).Info("Subscription details not found for ID: %v", req.EventSubscriptionID)
 		errorMessage := fmt.Sprintf("Subscription details not found for ID: %v", req.EventSubscriptionID)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
 	}

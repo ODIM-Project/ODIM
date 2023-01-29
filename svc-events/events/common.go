@@ -181,10 +181,10 @@ func removeLinks(slice []model.Link, element string) []model.Link {
 // and validate the response and return
 func (e *ExternalInterfaces) PluginCall(ctx context.Context, req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
 	var resp errResponse.RPC
-	response, err := e.callPlugin(context.TODO(), req)
+	response, err := e.callPlugin(ctx, req)
 	if err != nil {
 		if evcommon.GetPluginStatus(ctx, req.Plugin) {
-			response, err = e.callPlugin(context.TODO(), req)
+			response, err = e.callPlugin(ctx, req)
 		}
 		if err != nil {
 			errorMessage := "Error : " + err.Error()
@@ -377,7 +377,7 @@ func (e *ExternalInterfaces) retryEventSubscriptionOperation(ctx context.Context
 	}
 	req.Token = token
 
-	response, err := e.callPlugin(context.TODO(), req) // TODO: Pass context
+	response, err := e.callPlugin(ctx, req)
 	if err != nil {
 		errorMessage := "error while unmarshaling the body : " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,

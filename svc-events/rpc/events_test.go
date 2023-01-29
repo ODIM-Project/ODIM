@@ -66,13 +66,12 @@ func getMockPluginContactInitializer() *Events {
 
 func TestGetEventService(t *testing.T) {
 	config.SetUpMockConfig(t)
-	var ctx context.Context
 	events := getMockPluginContactInitializer()
 	req := &eventsproto.EventSubRequest{
 		SessionToken: "validToken",
 	}
 
-	resp, err := events.GetEventService(ctx, req)
+	resp, err := events.GetEventService(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be no error")
 
 	var eventServiceResp evresponse.EventServiceResponse
@@ -89,13 +88,12 @@ func TestGetEventService(t *testing.T) {
 		SessionToken: "InValidToken",
 	}
 
-	esResp, _ := events.GetEventService(ctx, req)
+	esResp, _ := events.GetEventService(evcommon.MockContext(), req)
 	assert.Equal(t, int(esResp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
 }
 
 func TestCreateEventSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
-	var ctx context.Context
 	events := getMockPluginContactInitializer()
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
@@ -118,7 +116,7 @@ func TestCreateEventSubscription(t *testing.T) {
 		PostBody:     postBody,
 	}
 
-	resp, err := events.CreateEventSubscription(ctx, req)
+	resp, err := events.CreateEventSubscription(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be no error")
 
 	assert.Equal(t, int(resp.StatusCode), http.StatusAccepted, "Status code should be StatusAccepted.")
@@ -127,28 +125,27 @@ func TestCreateEventSubscription(t *testing.T) {
 		SessionToken: "InValidToken",
 	}
 
-	esResp, _ := events.CreateEventSubscription(ctx, req1)
+	esResp, _ := events.CreateEventSubscription(evcommon.MockContext(), req1)
 	assert.Equal(t, int(esResp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
 
 	req.SessionToken = "token1"
-	esRespTest, _ := events.CreateEventSubscription(ctx, req)
+	esRespTest, _ := events.CreateEventSubscription(evcommon.MockContext(), req)
 	assert.Equal(t, int(esRespTest.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
 
 	req.SessionToken = "token"
 
-	esRespTest2, _ := events.CreateEventSubscription(ctx, req)
+	esRespTest2, _ := events.CreateEventSubscription(evcommon.MockContext(), req)
 	assert.Equal(t, int(esRespTest2.StatusCode), http.StatusInternalServerError, "Status code should be StatusUnauthorized.")
 	events.Connector.GetSessionUserName = func(sessionToken string) (string, error) {
 		return "", fmt.Errorf("")
 	}
-	esRespTest3, _ := events.CreateEventSubscription(ctx, req)
+	esRespTest3, _ := events.CreateEventSubscription(evcommon.MockContext(), req)
 	assert.Equal(t, int(esRespTest3.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
 
 }
 
 func TestSubmitTestEvent(t *testing.T) {
 	config.SetUpMockConfig(t)
-	var ctx context.Context
 	events := getMockPluginContactInitializer()
 	event := map[string]interface{}{
 		"MemberID":          "1",
@@ -170,13 +167,13 @@ func TestSubmitTestEvent(t *testing.T) {
 		PostBody:     message,
 	}
 
-	resp, errTest := events.SubmitTestEvent(ctx, req)
+	resp, errTest := events.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Nil(t, errTest, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 	JSONMarshal = func(v interface{}) ([]byte, error) {
 		return nil, fmt.Errorf("")
 	}
-	_, errTest = events.SubmitTestEvent(ctx, req)
+	_, errTest = events.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.NotNil(t, errTest, "There should be an error")
 	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
 
@@ -184,14 +181,13 @@ func TestSubmitTestEvent(t *testing.T) {
 
 func TestGetEventSubscriptionsCollection(t *testing.T) {
 	config.SetUpMockConfig(t)
-	var ctx context.Context
 	events := getMockPluginContactInitializer()
 	// Positive test cases
 	req := &eventsproto.EventRequest{
 		SessionToken: "validToken",
 	}
 
-	resp, err := events.GetEventSubscriptionsCollection(ctx, req)
+	resp, err := events.GetEventSubscriptionsCollection(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
 
@@ -200,7 +196,7 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 	assert.Equal(t, 1, evResp.MembersCount, "MembersCount should be 1")
 
 	JSONMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
-	resp, err = events.GetEventSubscriptionsCollection(ctx, req)
+	resp, err = events.GetEventSubscriptionsCollection(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be an error")
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "Status code should be StatusInternalServerError.")
 	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
@@ -208,7 +204,6 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 
 func TestGetEventSubscriptions(t *testing.T) {
 	config.SetUpMockConfig(t)
-	var ctx context.Context
 	events := getMockPluginContactInitializer()
 	// Positive test cases
 	req := &eventsproto.EventRequest{
@@ -216,7 +211,7 @@ func TestGetEventSubscriptions(t *testing.T) {
 		EventSubscriptionID: "81de0110-c35a-4859-984c-072d6c5a32d7",
 	}
 
-	esResp, err := events.GetEventSubscription(ctx, req)
+	esResp, err := events.GetEventSubscription(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, int(esResp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
 
@@ -226,11 +221,11 @@ func TestGetEventSubscriptions(t *testing.T) {
 
 	req.EventSubscriptionID = "81de0110"
 	//resp := &eventsproto.EventSubResponse{}
-	resp, _ := events.GetEventSubscription(ctx, req)
+	resp, _ := events.GetEventSubscription(evcommon.MockContext(), req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "Status code should be StatusNotFound.")
 
 	JSONMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
-	resp, err = events.GetEventSubscription(ctx, req)
+	resp, err = events.GetEventSubscription(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be an error")
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "Status code should be StatusInternalServerError.")
 	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
@@ -238,7 +233,6 @@ func TestGetEventSubscriptions(t *testing.T) {
 
 func TestDeleteEventSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
-	var ctx context.Context
 	events := getMockPluginContactInitializer()
 	// Positive test cases
 	req := &eventsproto.EventRequest{
@@ -246,17 +240,17 @@ func TestDeleteEventSubscription(t *testing.T) {
 		EventSubscriptionID: "81de0110-c35a-4859-984c-072d6c5a32d7",
 	}
 
-	resp, err := events.DeleteEventSubscription(ctx, req)
+	resp, err := events.DeleteEventSubscription(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
 
 	req.EventSubscriptionID = "81de0110"
 
-	delResp, _ := events.DeleteEventSubscription(ctx, req)
+	delResp, _ := events.DeleteEventSubscription(evcommon.MockContext(), req)
 	assert.Equal(t, int(delResp.StatusCode), http.StatusNotFound, "Status code should be StatusNotFound.")
 
 	JSONMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
-	resp, err = events.DeleteEventSubscription(ctx, req)
+	resp, err = events.DeleteEventSubscription(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be an error")
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "Status code should be StatusInternalServerError.")
 	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
@@ -265,7 +259,6 @@ func TestDeleteEventSubscription(t *testing.T) {
 
 func TestDeleteEventSubscriptionwithUUID(t *testing.T) {
 	config.SetUpMockConfig(t)
-	var ctx context.Context
 	events := getMockPluginContactInitializer()
 	// Positive test cases
 	req := &eventsproto.EventRequest{
@@ -273,19 +266,18 @@ func TestDeleteEventSubscriptionwithUUID(t *testing.T) {
 		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	}
 
-	resp, err := events.DeleteEventSubscription(ctx, req)
+	resp, err := events.DeleteEventSubscription(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, int(resp.StatusCode), http.StatusNoContent, "Status code should be StatusNoContent.")
 
 	req.UUID = "81de0110"
 
-	delResp, _ := events.DeleteEventSubscription(ctx, req)
+	delResp, _ := events.DeleteEventSubscription(evcommon.MockContext(), req)
 	assert.Equal(t, int(delResp.StatusCode), http.StatusBadRequest, "Status code should be StatusBadRequest.")
 }
 
 func TestCreateDefaultSubscriptions(t *testing.T) {
 	config.SetUpMockConfig(t)
-	var ctx context.Context
 	events := getMockPluginContactInitializer()
 	// Positive test cases
 	req := &eventsproto.DefaultEventSubRequest{
@@ -296,13 +288,12 @@ func TestCreateDefaultSubscriptions(t *testing.T) {
 		Protocol:      "redfish",
 	}
 
-	_, err := events.CreateDefaultEventSubscription(ctx, req)
+	_, err := events.CreateDefaultEventSubscription(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be no error")
 
 }
 
 func TestSubscribeEMB(t *testing.T) {
-	var ctx context.Context
 	events := getMockPluginContactInitializer()
 	evcommon.EMBTopics.TopicsList = make(map[string]bool)
 	req := &eventsproto.SubscribeEMBRequest{
@@ -310,7 +301,7 @@ func TestSubscribeEMB(t *testing.T) {
 		EMBQueueName: []string{"topic"},
 	}
 
-	resp, err := events.SubsribeEMB(ctx, req)
+	resp, err := events.SubsribeEMB(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be no error")
 	assert.True(t, resp.Status, "status should be true")
 }

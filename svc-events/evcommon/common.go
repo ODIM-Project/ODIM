@@ -150,8 +150,11 @@ func (st *StartUpInterface) GetAllPluginStatus(ctx context.Context) {
 			l.LogWithFields(ctx).Error(err.Error())
 			return
 		}
+		var threadID int = 1
 		for i := 0; i < len(pluginList); i++ {
+			ctx = context.WithValue(ctx, common.ThreadID, strconv.Itoa(threadID))
 			go st.getPluginStatus(ctx, pluginList[i])
+			threadID++
 		}
 		var pollingTime int
 		config.TLSConfMutex.RLock()
@@ -545,8 +548,11 @@ func (st *StartUpInterface) SubscribePluginEMB(ctx context.Context) {
 		l.LogWithFields(ctx).Error(err.Error())
 		return
 	}
+	threadID := 1
 	for i := 0; i < len(pluginList); i++ {
+		ctx = context.WithValue(ctx, common.ThreadID, strconv.Itoa(threadID))
 		go st.getPluginEMB(ctx, pluginList[i])
+		threadID++
 	}
 }
 

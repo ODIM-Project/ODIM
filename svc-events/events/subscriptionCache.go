@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -39,6 +40,8 @@ func LoadSubscriptionData(ctx context.Context) {
 	getAllSubscriptions(ctx)
 	getAllAggregates(ctx)
 	getAllDeviceSubscriptions(ctx)
+	threadID := 1
+	ctx = context.WithValue(ctx, common.ThreadID, strconv.Itoa(threadID))
 	go initializeDbObserver(ctx)
 }
 
@@ -87,11 +90,7 @@ func getAllDeviceSubscriptions(ctx context.Context) {
 	eventSourceToManagerIDMap = make(map[string]string, len(deviceSubscriptionList))
 	for _, device := range deviceSubscriptionList {
 		devSub := strings.Split(device, "||")
-		if strings.Contains(devSub[0], "Collection") {
-			continue
-		} else {
-			updateCatchDeviceSubscriptionData(devSub[0], evmodel.GetSliceFromString(devSub[2]))
-		}
+		updateCatchDeviceSubscriptionData(devSub[0], evmodel.GetSliceFromString(devSub[2]))
 	}
 	l.LogWithFields(ctx).Debug("DeviceSubscription cache updated ")
 }

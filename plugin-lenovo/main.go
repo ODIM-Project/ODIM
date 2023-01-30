@@ -71,7 +71,7 @@ func main() {
 
 	// should be removed when context from svc-api is passed to this function
 	ctx := context.TODO()
-
+	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
 	go common.RunReadWorkers(ctx, lphandler.Out, lpmessagebus.Publish, 5)
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")

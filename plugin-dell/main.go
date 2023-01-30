@@ -69,9 +69,9 @@ func main() {
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as Publish method after reading the data from the channel.
 
-	//ToDo We set context
-
+	// should be removed when context from svc-api is passed to this function
 	ctx := context.TODO()
+	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
 	go common.RunReadWorkers(ctx, dphandler.Out, dpmessagebus.Publish, 5)
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")

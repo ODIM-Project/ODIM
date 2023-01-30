@@ -16,7 +16,9 @@
 package lpmessagebus
 
 import (
+	"context"
 	"encoding/json"
+
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -26,7 +28,7 @@ import (
 
 // Publish function will handle events request in two originofcondition format
 // originofcondition can be with or without @odata.id
-func Publish(data interface{}) bool {
+func Publish(ctx context.Context, data interface{}) bool {
 	if data == nil {
 		log.Error("Nil data passed to event publisher")
 		return false

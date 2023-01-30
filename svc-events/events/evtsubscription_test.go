@@ -33,6 +33,7 @@ import (
 
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/stretchr/testify/assert"
 )
@@ -64,7 +65,7 @@ func TestCreateEventSubscriptionForAgregate(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp := p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp := p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	SubscriptionReq = map[string]interface{}{
@@ -89,7 +90,7 @@ func TestCreateEventSubscriptionForAgregate(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	SubscriptionReq = map[string]interface{}{
@@ -114,7 +115,7 @@ func TestCreateEventSubscriptionForAgregate(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 }
@@ -146,7 +147,7 @@ func TestCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp := p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp := p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// try to subscrie with already subscribed destinations
@@ -158,7 +159,7 @@ func TestCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusConflict, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// test with different Destinations
@@ -170,7 +171,7 @@ func TestCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// test another subscription with other OriginResources
@@ -185,7 +186,7 @@ func TestCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// test case for collection
@@ -197,7 +198,7 @@ func TestCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 }
 
@@ -228,7 +229,7 @@ func TestCreateEventSubscriptionwithHostName(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp := p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp := p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 }
@@ -260,7 +261,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp := p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp := p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// invalid post body
@@ -268,7 +269,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     []byte(""),
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req1)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req1)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// if Destination is empty
@@ -279,7 +280,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req2)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req2)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// if Destination is invalid
@@ -290,7 +291,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req2)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req2)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 	SubscriptionReq["Destination"] = "https://odim.test24.com:8070/Destination1"
 
@@ -302,7 +303,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// if Protocol is invalid
@@ -313,7 +314,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 	SubscriptionReq["Protocol"] = "Redfish"
 
@@ -325,7 +326,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// if EventFormatType is invalid
@@ -336,7 +337,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 	SubscriptionReq["EventFormatType"] = "Event"
 
@@ -348,7 +349,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// if SubscriptionType is invalid
@@ -359,7 +360,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 	SubscriptionReq["SubscriptionType"] = "RedfishEvent"
 
@@ -371,7 +372,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 	SubscriptionReq["ResourceTypes"] = []string{}
 
@@ -381,7 +382,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 }
 
@@ -411,7 +412,7 @@ func TestCreateDefaultEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	p.CreateEventSubscription(taskID, sessionUserName, req)
+	p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 
 	systemURL := []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}
 	eventTypes := []string{"Alert"}
@@ -419,7 +420,7 @@ func TestCreateDefaultEventSubscription(t *testing.T) {
 	resourceTypes := []string{}
 	protocol := "redfish"
 
-	resp := p.CreateDefaultEventSubscription(systemURL, eventTypes, messageIDs, resourceTypes, protocol)
+	resp := p.CreateDefaultEventSubscription(evcommon.MockContext(), systemURL, eventTypes, messageIDs, resourceTypes, protocol)
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 }
@@ -453,7 +454,7 @@ func TestFabricEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp := p.CreateEventSubscription(taskID, sessionUserName, req)
+	resp := p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// Negative test cases
@@ -468,11 +469,11 @@ func TestFabricEventSubscription(t *testing.T) {
 		SessionToken: "token",
 		PostBody:     postBody,
 	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req1)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req1)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// Invalid Plugin ID
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req1)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req1)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// Unauthorized token
@@ -486,7 +487,7 @@ func TestFabricEventSubscription(t *testing.T) {
 		PostBody:     postBody,
 	}
 
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req2)
+	resp = p.CreateEventSubscription(evcommon.MockContext(), taskID, sessionUserName, req2)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusCreated")
 }
 
@@ -533,7 +534,7 @@ func TestCheckCollectionSubscription(t *testing.T) {
 	p := getMockMethods()
 	originResources := "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"
 	protocol := "Redfish"
-	p.checkCollectionSubscription(originResources, protocol)
+	p.checkCollectionSubscription(evcommon.MockContext(), originResources, protocol)
 	devSub, _ := p.GetDeviceSubscriptions("*" + originResources)
 	assert.Equal(t, "https://100.100.100.100/ODIM/v1/Subscriptions/1", devSub.Location, "Location should be https://100.100.100.100/ODIM/v1/Subscriptions/12")
 	assert.Equal(t, "100.100.100.100", devSub.EventHostIP, "EventHostIP should be 100.100.100.100")
@@ -542,14 +543,14 @@ func TestCheckCollectionSubscription(t *testing.T) {
 func TestExternalInterfaces_UpdateEventSubscriptions(t *testing.T) {
 	config.SetUpMockConfig(t)
 	pc := getMockMethods()
-	res := pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{}, false)
+	res := pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{}, false)
 	assert.Nil(t, res, "there shoud be an error ")
 	pc.External.Auth = func(s1 string, s2, s3 []string) (response.RPC, error) { return response.RPC{StatusCode: 200}, nil }
-	res = pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{SessionToken: "", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
 	assert.Nil(t, res, "there shoud be an error ")
 
 	pc.DB.GetAggregateList = func(hostIP string) ([]string, error) { return []string{}, errors.New("") }
-	res = pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{SessionToken: "", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
 	assert.Nil(t, res, "there shoud be an error ")
 
 	pc.DB.GetAggregateList = func(hostIP string) ([]string, error) { return []string{"6d4a0a66-7efa-578e-83cf-44dc68d2874e"}, nil }
@@ -575,18 +576,18 @@ func TestExternalInterfaces_UpdateEventSubscriptions(t *testing.T) {
 			},
 		}, nil
 	}
-	res = pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
 	assert.Nil(t, res, "there shoud be an error ")
 
 	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
 		return []evmodel.SubscriptionResource{}, errors.New("error")
 	}
-	res = pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
 	assert.True(t, true, "there shoud be an error ")
 
 	pc = getMockMethods()
 	GetIPFromHostNameFunc = func(fqdn string) (string, string) { return "", "not Found " }
-	res = pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
 	assert.Nil(t, res, "there shoud be an error ")
 
 }
@@ -608,11 +609,11 @@ func TestExternalInterfaces_createFabricSubscription(t *testing.T) {
 		},
 	}
 
-	_, resp := p.createFabricSubscription(postBody, "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "", false)
+	_, resp := p.createFabricSubscription(evcommon.MockContext(), postBody, "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "", false)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	GetIPFromHostNameFunc = func(fqdn string) (string, string) { return "", "Not found" }
-	_, resp = p.createFabricSubscription(postBody, "/redfish/v1/Fabrics/6d4a0a66-7efa-578e-83cf-44dc68d2874e", "", false)
+	_, resp = p.createFabricSubscription(evcommon.MockContext(), postBody, "/redfish/v1/Fabrics/6d4a0a66-7efa-578e-83cf-44dc68d2874e", "", false)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 }

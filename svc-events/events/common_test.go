@@ -94,7 +94,7 @@ func TestExternalInterfaces_PluginCall(t *testing.T) {
 	IOUtilReadAllFunc = func(r io.Reader) ([]byte, error) {
 		return nil, errors.New("")
 	}
-	e.PluginCall(evcommon.PluginContactRequest{Plugin: &common.Plugin{IP: "10.10.10"}, HTTPMethodType: http.MethodPost})
+	e.PluginCall(evcommon.MockContext(), evcommon.PluginContactRequest{Plugin: &common.Plugin{IP: "10.10.10"}, HTTPMethodType: http.MethodPost})
 	IOUtilReadAllFunc = func(r io.Reader) ([]byte, error) {
 		return ioutil.ReadAll(r)
 	}

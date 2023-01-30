@@ -143,9 +143,6 @@ func consumeCtrlMsg(event interface{}) {
 	}
 	msg := []interface{}{ctrlMessage}
 	go common.RunWriteWorkers(CtrlMsgRecvQueue, msg, 1, done)
-	// range on the channel done, on receiving data on this
-	// which indicates write was completed, break the loop
-	// and close the channel
 	for range done {
 		break
 	}

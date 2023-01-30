@@ -35,7 +35,7 @@ func Test_getAllSubscriptions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			getAllSubscriptions()
+			getAllSubscriptions(mockContext())
 		})
 	}
 }
@@ -51,7 +51,7 @@ func Test_getAllAggregates(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			getAllAggregates()
+			getAllAggregates(mockContext())
 		})
 	}
 }
@@ -68,7 +68,7 @@ func Test_getAllDeviceSubscriptions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			getAllDeviceSubscriptions()
+			getAllDeviceSubscriptions(mockContext())
 		})
 	}
 }
@@ -84,7 +84,7 @@ func TestLoadSubscriptionData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			LoadSubscriptionData()
+			LoadSubscriptionData(mockContext())
 		})
 	}
 }
@@ -198,7 +198,7 @@ func Test_getSubscriptions(t *testing.T) {
 	config.SetUpMockConfig(t)
 
 	mockData()
-	LoadSubscriptionData()
+	LoadSubscriptionData(mockContext())
 	type args struct {
 		originOfCondition string
 		systemId          string

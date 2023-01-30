@@ -288,7 +288,7 @@ func TestGetAllServers(t *testing.T) {
 		GetAllSystems:   MockGetAllSystems,
 		GetSingleSystem: MockGetSingleSystem,
 	}
-	servers, err := st.getAllServers("ILO")
+	servers, err := st.getAllServers(MockContext(), "ILO")
 	assert.Nil(t, err, "Error Should be nil")
 	assert.Equal(t, 2, len(servers), "there should be 2 server")
 
@@ -344,7 +344,7 @@ func TestGetPluginStatus(t *testing.T) {
 	ts.StartTLS()
 	defer ts.Close()
 	password, _ := GetEncryptedKey([]byte("Password"))
-	result := GetPluginStatus(&common.Plugin{
+	result := GetPluginStatus(MockContext(), &common.Plugin{
 		IP:                "localhost",
 		Port:              "1234",
 		Password:          password,
@@ -403,12 +403,12 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 func TestStartUpInteraface_SubscribePluginEMB(t *testing.T) {
 	pc := StartUpInterface{}
 	GetAllPluginsFunc = func() ([]common.Plugin, *errors.Error) { return nil, &errors.Error{} }
-	pc.SubscribePluginEMB()
+	pc.SubscribePluginEMB(MockContext())
 
 	GetAllPluginsFunc = func() ([]common.Plugin, *errors.Error) {
 		return []common.Plugin{{IP: ""}}, nil
 	}
-	pc.SubscribePluginEMB()
+	pc.SubscribePluginEMB(MockContext())
 	getTypes("[alert statuschange]")
 	getTypes("[]")
 
@@ -431,9 +431,9 @@ func TestStartUpInteraface_SubscribePluginEMB(t *testing.T) {
 		t.Errorf("Error while saving device suscription: %v\n", cerr.Error())
 	}
 
-	err := updateDeviceSubscriptionLocation(map[string]string{"10.10.0.1": "Test"})
+	err := updateDeviceSubscriptionLocation(MockContext(), map[string]string{"10.10.0.1": "Test"})
 	assert.Nil(t, err)
-	err = updateDeviceSubscriptionLocation(map[string]string{"location": "Test"})
+	err = updateDeviceSubscriptionLocation(MockContext(), map[string]string{"location": "Test"})
 	assert.Nil(t, err)
 
 }
@@ -469,7 +469,7 @@ func TestProcessCtrlMsg(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ProcessCtrlMsg(tt.args.data); got != tt.want {
+			if got := ProcessCtrlMsg(MockContext(), tt.args.data); got != tt.want {
 				t.Errorf("ProcessCtrlMsg() = %v, want %v", got, tt.want)
 			}
 		})

@@ -117,7 +117,7 @@ func UpdateTaskData(ctx context.Context, taskData common.TaskData) error {
 		if taskData.PercentComplete == 0 {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}
-		l.Log.Error("error: task update for " + taskData.TaskID + " failed with err: " + err.Error())
+		l.LogWithFields(ctx).Error("error: task update for " + taskData.TaskID + " failed with err: " + err.Error())
 		runtime.Goexit()
 	}
 	return nil
@@ -179,18 +179,18 @@ func removeLinks(slice []model.Link, element string) []model.Link {
 
 // PluginCall method is to call to given url and method
 // and validate the response and return
-func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
+func (e *ExternalInterfaces) PluginCall(ctx context.Context, req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
 	var resp errResponse.RPC
-	response, err := e.callPlugin(context.TODO(), req)
+	response, err := e.callPlugin(ctx, req)
 	if err != nil {
-		if evcommon.GetPluginStatus(req.Plugin) {
-			response, err = e.callPlugin(context.TODO(), req)
+		if evcommon.GetPluginStatus(ctx, req.Plugin) {
+			response, err = e.callPlugin(ctx, req)
 		}
 		if err != nil {
 			errorMessage := "Error : " + err.Error()
 			evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				[]interface{}{}, &resp)
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return resp, "", "", err
 		}
 	}
@@ -200,7 +200,7 @@ func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errR
 		errorMessage := "error while trying to read response body: " + err.Error()
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			[]interface{}{}, &resp)
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp, "", "", err
 	}
 	if !(response.StatusCode == http.StatusCreated || response.StatusCode == http.StatusOK) {
@@ -324,15 +324,15 @@ func createEventSubscriptionResponse() interface{} {
 }
 
 // getPluginToken will verify the if any token present to the plugin else it will create token for the new plugin
-func (e *ExternalInterfaces) getPluginToken(plugin *common.Plugin) string {
+func (e *ExternalInterfaces) getPluginToken(ctx context.Context, plugin *common.Plugin) string {
 	authToken := evcommon.Token.GetToken(plugin.ID)
 	if authToken == "" {
-		return e.createToken(plugin)
+		return e.createToken(ctx, plugin)
 	}
 	return authToken
 }
 
-func (e *ExternalInterfaces) createToken(plugin *common.Plugin) string {
+func (e *ExternalInterfaces) createToken(ctx context.Context, plugin *common.Plugin) string {
 	var contactRequest evcommon.PluginContactRequest
 
 	contactRequest.Plugin = plugin
@@ -342,9 +342,9 @@ func (e *ExternalInterfaces) createToken(plugin *common.Plugin) string {
 		"Password": string(plugin.Password),
 	}
 	contactRequest.URL = "/ODIM/v1/Sessions"
-	_, _, token, err := e.PluginCall(contactRequest)
+	_, _, token, err := e.PluginCall(ctx, contactRequest)
 	if err != nil {
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctx).Error(err.Error())
 	}
 	pluginToken := evcommon.PluginToken{
 		Tokens: make(map[string]string),
@@ -355,21 +355,21 @@ func (e *ExternalInterfaces) createToken(plugin *common.Plugin) string {
 	return token
 }
 
-func (e *ExternalInterfaces) retryEventOperation(req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
+func (e *ExternalInterfaces) retryEventOperation(ctx context.Context, req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
 	var resp errResponse.RPC
-	var token = e.createToken(req.Plugin)
+	var token = e.createToken(ctx, req.Plugin)
 	if token == "" {
 		evcommon.GenErrorResponse("error: Unable to create session with plugin "+req.Plugin.ID, errResponse.NoValidSession, http.StatusUnauthorized,
 			[]interface{}{}, &resp)
 		return resp, "", "", fmt.Errorf("error: Unable to create session with plugin")
 	}
 	req.Token = token
-	return e.PluginCall(req)
+	return e.PluginCall(ctx, req)
 }
 
-func (e *ExternalInterfaces) retryEventSubscriptionOperation(req evcommon.PluginContactRequest) (*http.Response, evresponse.EventResponse, error) {
+func (e *ExternalInterfaces) retryEventSubscriptionOperation(ctx context.Context, req evcommon.PluginContactRequest) (*http.Response, evresponse.EventResponse, error) {
 	var resp evresponse.EventResponse
-	var token = e.createToken(req.Plugin)
+	var token = e.createToken(ctx, req.Plugin)
 	if token == "" {
 		evcommon.GenEventErrorResponse("error: Unable to create session with plugin "+req.Plugin.ID, errResponse.NoValidSession, http.StatusUnauthorized,
 			&resp, []interface{}{})
@@ -377,12 +377,12 @@ func (e *ExternalInterfaces) retryEventSubscriptionOperation(req evcommon.Plugin
 	}
 	req.Token = token
 
-	response, err := e.callPlugin(context.TODO(), req) // TODO: Pass context
+	response, err := e.callPlugin(ctx, req)
 	if err != nil {
 		errorMessage := "error while unmarshaling the body : " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			&resp, []interface{}{})
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return nil, resp, err
 	}
 	return response, resp, err

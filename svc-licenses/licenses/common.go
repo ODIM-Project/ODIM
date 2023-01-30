@@ -40,10 +40,10 @@ type External struct {
 	Auth               func(string, []string, []string) (response.RPC, error)
 	DevicePassword     func([]byte) ([]byte, error)
 	GetPluginData      func(string) (*model.Plugin, *errors.Error)
-	ContactPlugin      func(model.PluginContactRequest, string) ([]byte, string, model.ResponseStatus, error)
+	ContactPlugin      func(context.Context, model.PluginContactRequest, string) ([]byte, string, model.ResponseStatus, error)
 	GetTarget          func(string) (*model.Target, *errors.Error)
 	GetSessionUserName func(string) (string, error)
-	GenericSave        func([]byte, string, string) error
+	GenericSave        func(context.Context, []byte, string, string) error
 }
 
 // DB struct holds the function pointers to database operations

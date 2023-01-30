@@ -39,11 +39,11 @@ type External struct {
 	Auth               func(string, []string, []string) (response.RPC, error)
 	DevicePassword     func([]byte) ([]byte, error)
 	GetPluginData      func(string) (tmodel.Plugin, *errors.Error)
-	ContactPlugin      func(tcommon.PluginContactRequest, string) ([]byte, string, tcommon.ResponseStatus, error)
+	ContactPlugin      func(context.Context, tcommon.PluginContactRequest, string) ([]byte, string, tcommon.ResponseStatus, error)
 	GetTarget          func(string) (*tmodel.Target, *errors.Error)
 	GetSessionUserName func(string) (string, error)
-	GenericSave        func([]byte, string, string) error
-	GetPluginStatus    func(tmodel.Plugin) bool
+	GenericSave        func(context.Context, []byte, string, string) error
+	GetPluginStatus    func(context.Context, tmodel.Plugin) bool
 }
 
 type responseStatus struct {

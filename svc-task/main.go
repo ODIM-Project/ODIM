@@ -30,7 +30,7 @@ import (
 	auth "github.com/ODIM-Project/ODIM/svc-task/tauth"
 	"github.com/ODIM-Project/ODIM/svc-task/tcommon"
 	"github.com/ODIM-Project/ODIM/svc-task/thandle"
-	"github.com/ODIM-Project/ODIM/svc-task/tmessagebus"
+	tmb "github.com/ODIM-Project/ODIM/svc-task/tmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 	"github.com/ODIM-Project/ODIM/svc-task/tqueue"
 )
@@ -99,12 +99,19 @@ func main() {
 	task.UpdateTaskQueue = tqueue.EnqueueTask
 	task.PersistTaskModel = tmodel.PersistTask
 	task.ValidateTaskUserNameModel = tmodel.ValidateTaskUserName
-	task.PublishToMessageBus = tmessagebus.Publish
+	task.PublishToMessageBus = tmb.Publish
 	thandle.TaskCollection = thandle.TaskCollectionData{
 		TaskCollection: make(map[string]int32),
 		Lock:           sync.Mutex{},
 	}
 	taskproto.RegisterGetTaskServiceServer(services.ODIMService.Server(), task)
+
+	// TODO: configure the job queue size
+	jobQueueSize := 10
+	tmb.TaskEventRecvQueue, tmb.TaskEventProcQueue = common.CreateJobQueue(jobQueueSize)
+	// worker count should be one to keep the temporal order of the task events
+	common.RunReadWorkers(tmb.TaskEventProcQueue, task.ProcessTaskEvents, 1)
+	go tmb.SubscribeTaskEventsQueue(common.TaskEventsTopic)
 
 	tick := &tmodel.Tick{
 		Ticker: time.NewTicker(time.Duration(config.Data.TaskQueueConf.DBCommitInterval) * time.Microsecond),

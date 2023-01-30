@@ -1146,3 +1146,25 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 	}
 	return err
 }
+
+func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
+	event := data.(common.TaskEvent)
+	pluginTask, err := tmodel.GetPluginTaskInfo(event.TaskID)
+	if err != nil {
+		l.Log.Error("error while processing task event", err.Error())
+		return false
+	}
+
+	l.Log.Debugf("Received task event from plugin %v for odim task %s",
+		event, pluginTask.OdimTaskID)
+
+	err = ts.updateTaskUtil(context.TODO(), pluginTask.OdimTaskID,
+		event.TaskState, event.TaskStatus, event.PercentComplete,
+		nil, event.EndTime)
+	if err != nil {
+		l.Log.Error("failed to update task: error while updating task: " +
+			err.Error())
+		return false
+	}
+	return true
+}

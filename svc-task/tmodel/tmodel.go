@@ -221,6 +221,27 @@ func GetAllTaskKeys(ctx context.Context) ([]string, error) {
 	return taskKeys, nil
 }
 
+func GetPluginTaskInfo(taskID string) (*common.PluginTask, error) {
+	errPrefix := "error while trying to get plugin task info"
+	pluginTask := new(common.PluginTask)
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return nil, fmt.Errorf(errPrefix+
+			": error while trying to get DB connection: %v", err.Error())
+	}
+
+	taskData, err := connPool.Read("PluginTask", taskID)
+	if err != nil {
+		return nil, fmt.Errorf(errPrefix+
+			": error while trying to read from DB: %v", err.Error())
+	}
+
+	if errs := json.Unmarshal([]byte(taskData), pluginTask); errs != nil {
+		return nil, fmt.Errorf(errPrefix+": %v", errs)
+	}
+	return pluginTask, nil
+}
+
 //Transaction - is for performing atomic oprations using optimitic locking
 func Transaction(ctx context.Context, key string, cb func(context.Context, string) error) error {
 	connPool, err := common.GetDBConnection(common.InMemory)

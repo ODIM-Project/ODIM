@@ -15,6 +15,8 @@
 // Package common ...
 package common
 
+import "time"
+
 // EventConst constant
 type EventConst int
 
@@ -591,6 +593,25 @@ type Events struct {
 	EventType string `json:"eventType"`
 }
 
+// TaskEvent contains the task progress data sent form plugin to PMB
+type TaskEvent struct {
+	TaskID          string    `json:"TaskID"`
+	TaskState       string    `json:"TaskState"`
+	TaskStatus      string    `json:"TaskStatus"`
+	PercentComplete int32     `json:"PercentComplete"`
+	EndTime         time.Time `json:"EndTime"`
+}
+
+// PluginTask contains the IP of the plugin instance that returns plugin taskmon,
+// task id created in odim, and taskmon url sent by plugin
+// it is used to map the odim task to plugin task and to know the IP
+// of plugin instance that handle the task
+type PluginTask struct {
+	IP               string `json:"IP"`
+	OdimTaskID       string `json:"OdimTaskID"`
+	PluginTaskMonURL string `json:"PluginTaskMonURL"`
+}
+
 // MessageData contains information of Events and message details including arguments
 // it will be used to pass to gob encoding/decoding which will register the type.
 // it will be send as byte stream on the wire to/from kafka
@@ -638,3 +659,6 @@ var URIWithNoAuth = []string{
 }
 
 var SessionURI = "/redfish/v1/SessionService/Sessions"
+
+// XForwardedFor holds the IP of plugin instance in response header
+var XForwardedFor = "Xforwarded-for"

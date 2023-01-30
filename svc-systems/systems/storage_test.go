@@ -380,7 +380,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return false
 	}
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, status scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, data2 string, status scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
@@ -395,7 +395,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	resp = storage.CreateVolume(ctx, &req)
 	assert.True(t, true, "Error: Plugin Contact")
 
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, status scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, data2 string, status scommon.ResponseStatus, err error) {
 		return scommon.ContactPlugin(ctx, req, errorMessage)
 	}
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {

@@ -370,7 +370,7 @@ func TestContactPlugin(t *testing.T) {
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
 	contactRequest.GetPluginStatus = mockPluginStatus
-	_, _, _, err = ContactPlugin(ctx, contactRequest, "")
+	_, _, _, _, err = ContactPlugin(ctx, contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }
 

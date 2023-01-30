@@ -74,7 +74,7 @@ func (p *PluginContact) SetDefaultBootOrder(ctx context.Context, systemID string
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating session with the plugin: ")
+		_, token, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -94,7 +94,7 @@ func (p *PluginContact) SetDefaultBootOrder(ctx context.Context, systemID string
 	contactRequest.OID = "/ODIM/v1/Systems/" + requestData[1] + "/Actions/ComputerSystem.SetDefaultBootOrder"
 	contactRequest.HTTPMethodType = http.MethodPost
 
-	body, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while setting the default bootorder of  the computer system: ")
+	body, _, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while setting the default bootorder of  the computer system: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
@@ -175,7 +175,7 @@ func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsprot
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating session with the plugin: ")
+		_, token, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -194,7 +194,7 @@ func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsprot
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s/Bios/Settings", requestData[1])
 
-	body, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while changing  bios settings: ")
+	body, _, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while changing  bios settings: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
@@ -289,7 +289,7 @@ func (p *PluginContact) ChangeBootOrderSettings(ctx context.Context, req *system
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating session with the plugin: ")
+		_, token, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -309,7 +309,7 @@ func (p *PluginContact) ChangeBootOrderSettings(ctx context.Context, req *system
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s", requestData[1])
 
-	body, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while changing boot order settings: ")
+	body, _, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while changing boot order settings: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)

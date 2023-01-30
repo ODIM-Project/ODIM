@@ -228,7 +228,7 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return true
 	}
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 string, data4 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
@@ -238,13 +238,13 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return false
 	}
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 string, data4 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
 	resp = pluginContact.SetDefaultBootOrder(ctx, "7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
 	assert.NotNil(t, resp, "Response should have error")
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 string, data4 scommon.ResponseStatus, err error) {
 		return scommon.ContactPlugin(ctx, req, errorMessage)
 	}
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
@@ -468,7 +468,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return true
 	}
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 string, data4 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
@@ -478,14 +478,14 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return false
 	}
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 string, data4 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
 	res = pluginContact.ChangeBiosSettings(ctx, &req)
 	assert.NotNil(t, res, "Response should have error")
 
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 string, data4 scommon.ResponseStatus, err error) {
 		return scommon.ContactPlugin(ctx, req, errorMessage)
 	}
 
@@ -735,7 +735,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return true
 	}
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 string, d3 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
@@ -744,14 +744,14 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return false
 	}
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 string, d3 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
 	resp = pluginContact.ChangeBootOrderSettings(ctx, &req)
 	assert.NotNil(t, resp, "Response should have error")
 
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 string, d3 scommon.ResponseStatus, err error) {
 		return scommon.ContactPlugin(ctx, req, errorMessage)
 	}
 

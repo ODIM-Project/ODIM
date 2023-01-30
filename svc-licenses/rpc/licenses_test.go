@@ -49,13 +49,13 @@ func mockGetExternalInterface() *licenseService.ExternalInterface {
 	}
 }
 
-func mockContactPlugin(req model.PluginContactRequest, errorMessage string) ([]byte, string, model.ResponseStatus, error) {
+func mockContactPlugin(ctx context.Context, req model.PluginContactRequest, errorMessage string) ([]byte, string, model.ResponseStatus, error) {
 	var responseStatus model.ResponseStatus
 
 	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, nil
 }
 
-func stubGenericSave(reqBody []byte, table string, uuid string) error {
+func stubGenericSave(ctx context.Context, reqBody []byte, table string, uuid string) error {
 	return nil
 }
 
@@ -146,6 +146,7 @@ func TestUpdate_GetLicenseService(t *testing.T) {
 			name: "positive GetLicenseService",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.GetLicenseServiceRequest{SessionToken: "validToken"},
 			},
 			wantErr: false,
@@ -154,6 +155,7 @@ func TestUpdate_GetLicenseService(t *testing.T) {
 			name: "auth fail",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.GetLicenseServiceRequest{SessionToken: "invalidToken"},
 			},
 			wantErr: false,
@@ -185,6 +187,7 @@ func TestUpdate_GetLicenseCollection(t *testing.T) {
 			name: "positive GetLicenseCollection",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.GetLicenseRequest{SessionToken: "validToken"},
 			},
 			wantErr: false,
@@ -193,6 +196,7 @@ func TestUpdate_GetLicenseCollection(t *testing.T) {
 			name: "auth fail",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.GetLicenseRequest{SessionToken: "invalidToken"},
 			},
 			wantErr: false,
@@ -224,6 +228,7 @@ func TestUpdate_GetLicenseResource(t *testing.T) {
 			name: "positive GetLicenseResource",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.GetLicenseResourceRequest{SessionToken: "validToken"},
 			},
 			wantErr: false,
@@ -232,6 +237,7 @@ func TestUpdate_GetLicenseResource(t *testing.T) {
 			name: "auth fail",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.GetLicenseResourceRequest{SessionToken: "invalidToken"},
 			},
 			wantErr: false,
@@ -263,6 +269,7 @@ func TestUpdate_InstallLicenseService(t *testing.T) {
 			name: "positive InstallLicenseService",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.InstallLicenseRequest{SessionToken: "validToken"},
 			},
 			wantErr: false,
@@ -271,6 +278,7 @@ func TestUpdate_InstallLicenseService(t *testing.T) {
 			name: "auth fail",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.InstallLicenseRequest{SessionToken: "invalidToken"},
 			},
 			wantErr: false,

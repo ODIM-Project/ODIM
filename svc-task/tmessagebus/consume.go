@@ -28,7 +28,7 @@ var (
 	TaskEventProcQueue <-chan interface{}
 )
 
-// SubscribeCtrlMsgQueue creates a consumer for the kafka topic
+// SubscribeTaskEventsQueue creates a consumer for the task event topic
 func SubscribeTaskEventsQueue(topicName string) {
 	config.TLSConfMutex.RLock()
 	MessageBusConfigFilePath := config.Data.MessageBusConf.MessageBusConfigFilePath
@@ -47,7 +47,7 @@ func SubscribeTaskEventsQueue(topicName string) {
 	}
 }
 
-// consumeCtrlMsg consume control messages
+// consumeTaskEvents consume task event messages
 func consumeTaskEvents(event interface{}) {
 	data, _ := json.Marshal(&event)
 	var eventData common.Events

@@ -59,6 +59,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context,
 		l.LogWithFields(ctx).Error(errMsg)
 		common.GeneralError(http.StatusInternalServerError,
 			response.InternalError, errMsg, nil, taskInfo)
+		return
 	}
 
 	// Validating the request JSON properties for case sensitive
@@ -69,12 +70,14 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context,
 		l.LogWithFields(ctx).Error(errMsg)
 		common.GeneralError(http.StatusInternalServerError,
 			response.InternalError, errMsg, nil, taskInfo)
+		return
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request" +
 			" body are not valid, ensure properties are listed in upper camel case "
 		l.LogWithFields(ctx).Error(errorMessage)
 		common.GeneralError(http.StatusBadRequest, response.PropertyUnknown,
 			errorMessage, []interface{}{invalidProperties}, taskInfo)
+		return
 	}
 
 	// spliting the uuid and system id
@@ -91,6 +94,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context,
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound,
 			gerr.Error(), []interface{}{"ComputerSystem", "/redfish/v1/Systems/" +
 				req.SystemID}, taskInfo)
+		return
 	}
 	decryptedPasswordByte, err := p.DevicePassword(target.Password)
 	if err != nil {
@@ -98,6 +102,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context,
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
 		common.GeneralError(http.StatusInternalServerError, response.InternalError,
 			errorMessage, nil, taskInfo)
+		return
 	}
 
 	target.Password = decryptedPasswordByte
@@ -106,6 +111,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context,
 		errorMessage := "error while trying to get plugin details"
 		common.GeneralError(http.StatusInternalServerError,
 			response.InternalError, errorMessage, nil, nil)
+		return
 	}
 
 	var contactRequest scommon.PluginContactRequest
@@ -126,6 +132,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context,
 		if err != nil {
 			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage,
 				err.Error(), nil, nil)
+			return
 		}
 		contactRequest.Token = token
 	} else {
@@ -158,6 +165,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context,
 			common.GeneralError(http.StatusInternalServerError, response.InternalError,
 				errMsg, nil, taskInfo)
 		}
+		return
 	}
 
 	if getResponse.StatusCode == http.StatusAccepted {
@@ -172,6 +180,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context,
 	if err != nil {
 		common.GeneralError(http.StatusInternalServerError,
 			response.InternalError, err.Error(), nil, taskInfo)
+		return
 	}
 	smodel.AddSystemResetInfo(ctx, "/redfish/v1/Systems/"+req.SystemID,
 		resetCompSys.ResetType)

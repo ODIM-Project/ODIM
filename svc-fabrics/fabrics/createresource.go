@@ -12,24 +12,26 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package fabrics ...
+// Package fabrics ...
 package fabrics
 
 import (
+	"context"
+
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
-//UpdateFabricResource holds the logic for creating/updating specfic fabric resource
+// UpdateFabricResource holds the logic for creating/updating specfic fabric resource
 // It accepts post body and contacts the configured CFM plugin
 // and creates the metioned fabric resoure such as Endpoints,Address Pools
-func (f *Fabrics) UpdateFabricResource(req *fabricsproto.FabricRequest) response.RPC {
+func (f *Fabrics) UpdateFabricResource(ctx context.Context, req *fabricsproto.FabricRequest) response.RPC {
 	var resp response.RPC
 	var contactRequest pluginContactRequest
 	var err error
-	contactRequest, resp, err = f.parseFabricsRequest(req)
+	contactRequest, resp, err = f.parseFabricsRequest(ctx, req)
 	if err != nil {
 		return resp
 	}
-	return f.parseFabricsResponse(contactRequest, req.URL)
+	return f.parseFabricsResponse(ctx, contactRequest, req.URL)
 }

@@ -17,21 +17,22 @@ package fabrics
 
 import (
 	"encoding/json"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"net/http"
 	"reflect"
 	"testing"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
-func mockAuth(sessionToken string, privileges []string, oemPrivileges []string) response.RPC {
+func mockAuth(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken == "valid" {
-		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 	} else if sessionToken == "invalid" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, "error while trying to authenticate session", nil, nil)
+	return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, "error while trying to authenticate session", nil, nil), nil
 }
 func TestFabrics_UpdateFabricResource(t *testing.T) {
 	Token.Tokens = make(map[string]string)

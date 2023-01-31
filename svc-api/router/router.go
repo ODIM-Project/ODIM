@@ -13,11 +13,12 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package router ...
+// Package router ...
 package router
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -41,7 +42,7 @@ import (
 var isCompositionEnabled bool
 var cs handle.CompositionServiceRPCs
 
-//Router method to register API handlers.
+// Router method to register API handlers.
 func Router() *iris.Application {
 	r := handle.RoleRPCs{
 		GetAllRolesRPC: rpc.GetAllRoles,
@@ -214,11 +215,13 @@ func Router() *iris.Application {
 	// Parses the URL and performs URL decoding for path
 	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		ctx := r.Context()
+		l.LogWithFields(ctx).Info("Inside router function")
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {
 			errMessage := "while trying to parse the URL: " + err.Error()
-			l.Log.Error(errMessage)
+			l.LogWithFields(ctx).Error(errMessage)
 			return
 		}
 		path := strings.Replace(rawURI, parsedURI.EscapedPath(), parsedURI.Path, -1)
@@ -240,11 +243,9 @@ func Router() *iris.Application {
 				authRequired = true
 			}
 			if authRequired {
-				logProperties := make(map[string]interface{})
-				logProperties["SessionToken"] = sessionToken
-				logProperties["Message"] = "X-Auth-Token is missing in the request header"
-				logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
-				customLogs.AuthLog(logProperties)
+				ctx = context.WithValue(ctx, common.SessionToken, sessionToken)
+				ctx = context.WithValue(ctx, common.StatusCode, int32(http.StatusUnauthorized))
+				customLogs.AuthLog(ctx).Info("X-Auth-Token is missing in the request header")
 			}
 		}
 
@@ -252,19 +253,19 @@ func Router() *iris.Application {
 		if r.Body != nil {
 			body, err := ioutil.ReadAll(r.Body)
 			if err != nil {
-				l.Log.Error("while reading request body ", err.Error())
+				l.LogWithFields(ctx).Error("while reading request body ", err.Error())
 			}
 			r.Body = ioutil.NopCloser(bytes.NewReader(body))
 
 			if len(body) > 0 {
 				err = json.Unmarshal(body, &reqBody)
 				if err != nil {
-					l.Log.Error("while unmarshalling request body", err.Error())
+					l.LogWithFields(ctx).Error("while unmarshalling request body", err.Error())
 				}
 			}
 		}
 		if config.Data.RequestLimitCountPerSession > 0 {
-			err = ratelimiter.RequestRateLimiter(sessionToken)
+			err = ratelimiter.RequestRateLimiter(ctx, sessionToken)
 			if err != nil {
 				common.SetCommonHeaders(w)
 				w.WriteHeader(http.StatusServiceUnavailable)
@@ -278,8 +279,11 @@ func Router() *iris.Application {
 	})
 	router.Done(func(ctx iris.Context) {
 		var reqBody map[string]interface{}
-		ctx.ReadJSON(&reqBody)
-		logService.AuditLog(ctx, reqBody)
+		ctxt := ctx.Request().Context()
+		if ctxt.Value(common.RequestBody) != nil {
+			reqBody = ctxt.Value(common.RequestBody).(map[string]interface{})
+		}
+		l.AuditLog(&logService, ctx, reqBody).Info()
 		// before returning response, decrement the session limit counter
 		sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 		if sessionToken != "" && config.Data.RequestLimitCountPerSession > 0 {

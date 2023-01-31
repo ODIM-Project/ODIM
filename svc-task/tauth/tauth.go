@@ -24,7 +24,7 @@ import (
 var log = logrus.New()
 
 // Authentication is used to authenticate using session token from svc-account-session
-func Authentication(sessionToken string, privileges []string) response.RPC {
+func Authentication(sessionToken string, privileges []string) (response.RPC, error) {
 	oemprivileges := []string{}
 	return srv.IsAuthorized(sessionToken, privileges, oemprivileges)
 }

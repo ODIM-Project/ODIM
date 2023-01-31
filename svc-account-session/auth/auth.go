@@ -16,9 +16,12 @@
 package auth
 
 import (
+	"context"
 	"net/http"
+	"strconv"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
@@ -26,33 +29,37 @@ import (
 )
 
 // Auth functionality will do the following
-// 1. It will check whether the session taken is valid
-// 2. fetch the privileges from DB against session token
-//    and check the service has the previlege
-func Auth(req *authproto.AuthRequest) (int32, string) {
-	go expiredSessionCleanUp()
+//  1. It will check whether the session taken is valid
+//  2. fetch the privileges from DB against session token
+//     and check the service has the previlege
+func Auth(ctx context.Context, req *authproto.AuthRequest) (int32, string) {
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.CheckAuth)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go expiredSessionCleanUp(ctxt)
+	threadID++
 	if req.SessionToken == "" {
-		CustomAuthLog("", "Invalid session token ", http.StatusUnauthorized)
+		CustomAuthLog(ctx, "", "Invalid session token ", http.StatusUnauthorized)
 		return http.StatusUnauthorized, response.NoValidSession
 	}
 	if len(req.Privileges) == 0 {
-		CustomAuthLog(req.SessionToken, "Received empty privileges, unable to proceed ", http.StatusForbidden)
+		CustomAuthLog(ctx, req.SessionToken, "Received empty privileges, unable to proceed ", http.StatusForbidden)
 		return http.StatusUnauthorized, response.NoValidSession
 	}
-	session, err := CheckSessionTimeOut(req.SessionToken)
+	session, err := CheckSessionTimeOut(ctx, req.SessionToken)
 	if err != nil {
 		status, message := err.GetAuthStatusCodeAndMessage()
 		if status == http.StatusUnauthorized {
-			CustomAuthLog("", "Received invalid session token "+req.SessionToken, http.StatusUnauthorized)
+			CustomAuthLog(ctx, "", "Received invalid session token "+req.SessionToken, http.StatusUnauthorized)
 		} else {
-			l.Log.Error("SessionToken validation failed, unable to proceed " + err.Error())
+			l.LogWithFields(ctx).Error("SessionToken validation failed, unable to proceed " + err.Error())
 		}
 		return status, message
 	}
 	session.LastUsedTime = time.Now()
 	// Update Session
 	if err = session.Update(); err != nil {
-		l.Log.Error("SessionToken update failed with error: " + err.Error())
+		l.LogWithFields(ctx).Error("SessionToken update failed with error: " + err.Error())
 		return err.GetAuthStatusCodeAndMessage()
 	}
 
@@ -60,35 +67,33 @@ func Auth(req *authproto.AuthRequest) (int32, string) {
 	// if any of the privilege isn't assigned to service then return failure
 	for _, privilege := range req.Privileges {
 		if !session.Privileges[privilege] {
-			CustomAuthLog(req.SessionToken, "User does not have sufficient privileges", http.StatusForbidden)
+			CustomAuthLog(ctx, req.SessionToken, "User does not have sufficient privileges", http.StatusForbidden)
 			return http.StatusForbidden, response.InsufficientPrivilege
 		}
 	}
 
 	// TODO: Need to check OEM Privileges
 
-	CustomAuthLog(req.SessionToken, "Authorization is successful", http.StatusOK)
+	CustomAuthLog(ctx, req.SessionToken, "Authorization is successful", http.StatusOK)
 	return http.StatusOK, response.Success
 }
 
 // CustomAuthLog function takes session token, message and response status code
 // Gets the user id and role id for the session token provided
 // logs the messages in custom log format
-func CustomAuthLog(sessionToken, msg string, respStatusCode int32) {
+func CustomAuthLog(ctx context.Context, sessionToken, msg string, respStatusCode int32) {
 	userID := ""
 	roleID := ""
 	if sessionToken != "" {
-		currentSession, err := CheckSessionTimeOut(sessionToken)
+		currentSession, err := CheckSessionTimeOut(ctx, sessionToken)
 		if err == nil {
 			userID = currentSession.UserName
 			roleID = currentSession.RoleID
 		}
 	}
-	logProperties := make(map[string]interface{})
-	logProperties["SessionToken"] = sessionToken
-	logProperties["SessionUserID"] = userID
-	logProperties["SessionRoleID"] = roleID
-	logProperties["Message"] = msg
-	logProperties["ResponseStatusCode"] = respStatusCode
-	customLogs.AuthLog(logProperties)
+	ctx = context.WithValue(ctx, common.SessionToken, sessionToken)
+	ctx = context.WithValue(ctx, common.SessionUserID, userID)
+	ctx = context.WithValue(ctx, common.SessionRoleID, roleID)
+	ctx = context.WithValue(ctx, common.StatusCode, respStatusCode)
+	customLogs.AuthLog(ctx).Info(msg)
 }

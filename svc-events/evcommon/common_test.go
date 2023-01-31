@@ -16,6 +16,7 @@
 package evcommon
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -300,7 +301,7 @@ func TestCallPluginStartUp(t *testing.T) {
 	ts.StartTLS()
 	defer ts.Close()
 	servers := []SavedSystems{
-		SavedSystems{
+		{
 			ManagerAddress: "100.100.100.100",
 			Password:       []byte("password"),
 			UserName:       "admin",
@@ -318,10 +319,10 @@ func TestCallPluginStartUp(t *testing.T) {
 		GetDeviceSubscriptions:           MockGetDeviceSubscriptions,
 		UpdateDeviceSubscriptionLocation: MockUpdateDeviceSubscriptionLocation,
 	}
-	err := st.callPluginStartUp(servers, "ILO")
+	err := st.callPluginStartUp(context.TODO(), servers, "ILO")
 	assert.Nil(t, err, "Error Should be nil")
 
-	err = st.callPluginStartUp(servers, "pluginBadData")
+	err = st.callPluginStartUp(context.TODO(), servers, "pluginBadData")
 	assert.NotNil(t, err, "error should not be nil")
 }
 
@@ -382,7 +383,7 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 		UpdateDeviceSubscriptionLocation: MockUpdateDeviceSubscriptionLocation,
 	}
 	password, _ := GetEncryptedKey([]byte("Password"))
-	st.getPluginStatus(evmodel.Plugin{
+	st.getPluginStatus(context.TODO(), evmodel.Plugin{
 		IP:                "localhost",
 		Port:              "1234",
 		Password:          password,
@@ -405,13 +406,13 @@ func TestStartUpInteraface_SubscribePluginEMB(t *testing.T) {
 	pc.SubscribePluginEMB()
 
 	GetAllPluginsFunc = func() ([]evmodel.Plugin, *errors.Error) {
-		return []evmodel.Plugin{evmodel.Plugin{IP: ""}}, &errors.Error{}
+		return []evmodel.Plugin{{IP: ""}}, nil
 	}
 	pc.SubscribePluginEMB()
 	getTypes("[alert statuschange]")
 	getTypes("[]")
 
-	callPlugin(PluginContactRequest{Plugin: &evmodel.Plugin{PreferredAuthType: "BasicAuth"}})
+	callPlugin(context.TODO(), PluginContactRequest{Plugin: &evmodel.Plugin{PreferredAuthType: "BasicAuth"}})
 
 	common.SetUpMockConfig()
 	defer func() {

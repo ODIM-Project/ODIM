@@ -16,9 +16,11 @@
 package common
 
 import (
+	"context"
 	"net/http"
 
 	iris "github.com/kataras/iris/v12"
+	"google.golang.org/grpc/metadata"
 )
 
 // commonHeaders holds the common response headers
@@ -45,4 +47,43 @@ func SetCommonHeaders(w http.ResponseWriter) {
 	for key, value := range commonHeaders {
 		w.Header().Set(key, value)
 	}
+}
+
+// GetContextData is used to fetch data from metadata and add it to context
+func GetContextData(ctx context.Context) context.Context {
+	md, _ := metadata.FromIncomingContext(ctx)
+	ctx = metadata.NewIncomingContext(ctx, md)
+	if len(md[TransactionID]) > 0 {
+		ctx = context.WithValue(ctx, ProcessName, md[ProcessName][0])
+		ctx = context.WithValue(ctx, TransactionID, md[TransactionID][0])
+		ctx = context.WithValue(ctx, ActionID, md[ActionID][0])
+		ctx = context.WithValue(ctx, ActionName, md[ActionName][0])
+		ctx = context.WithValue(ctx, ThreadID, md[ThreadID][0])
+		ctx = context.WithValue(ctx, ThreadName, md[ThreadName][0])
+	}
+
+	return ctx
+}
+
+// CreateMetadata is used to add metadata values in context to be used in grpc calls
+func CreateMetadata(ctx context.Context) context.Context {
+	if ctx.Value(TransactionID) != nil {
+		md := metadata.New(map[string]string{
+			ProcessName:   ctx.Value(ProcessName).(string),
+			TransactionID: ctx.Value(TransactionID).(string),
+			ActionName:    ctx.Value(ActionName).(string),
+			ActionID:      ctx.Value(ActionID).(string),
+			ThreadID:      ctx.Value(ThreadID).(string),
+			ThreadName:    ctx.Value(ThreadName).(string),
+		})
+		ctx = metadata.NewOutgoingContext(ctx, md)
+	}
+
+	return ctx
+}
+
+func ModifyContext(ctx context.Context, threadName, podName string) context.Context {
+	ctx = context.WithValue(ctx, ThreadName, threadName)
+	ctx = context.WithValue(ctx, ProcessName, podName)
+	return ctx
 }

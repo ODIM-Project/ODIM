@@ -19,6 +19,8 @@ package account
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
+	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -38,7 +40,7 @@ import (
 //
 // As return parameters RPC response, which contains status code, message, headers and data,
 // error will be passed back.
-func GetAllAccounts(session *asmodel.Session) response.RPC {
+func GetAllAccounts(ctx context.Context, session *asmodel.Session) response.RPC {
 	commonResponse := response.Response{
 		OdataType:    "#ManagerAccountCollection.ManagerAccountCollection",
 		OdataID:      "/redfish/v1/AccountService/Accounts",
@@ -48,8 +50,9 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 
 	var resp response.RPC
 
+	errLogPrefix := "failed to fetch accounts : "
 	if !session.Privileges[common.PrivilegeConfigureUsers] {
-		errorMessage := "User " + session.UserName + " does not have the privilege to view all users"
+		errorMessage := errLogPrefix + "User " + session.UserName + " does not have the privilege to view all users"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -64,15 +67,17 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
+		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
+
+	l.LogWithFields(ctx).Info("Retrieving all users from the database")
 	//Get all user keys
 	users, err := asmodel.GetAllUsers()
 	if err != nil {
-		errorMessage := "Unable to get users: " + err.Error()
+		errorMessage := errLogPrefix + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 	//Build response body and headers
@@ -114,7 +119,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 //
 // As return parameters RPC response, which contains status code, message, headers and data,
 // error will be passed back.
-func GetAccount(session *asmodel.Session, accountID string) response.RPC {
+func GetAccount(ctx context.Context, session *asmodel.Session, accountID string) response.RPC {
 	commonResponse := response.Response{
 		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + accountID,
@@ -124,10 +129,11 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 	}
 
 	var resp response.RPC
+	errLogPrefix := fmt.Sprintf("failed to fetch the account %s: ", accountID)
 
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
 		if accountID != session.UserName || !(session.Privileges[common.PrivilegeConfigureSelf]) {
-			errorMessage := session.UserName + " does not have the privilege to view other user's details"
+			errorMessage := errLogPrefix + session.UserName + " does not have the privilege to view other user's details"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
 			args := response.Args{
@@ -142,14 +148,15 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
+			auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}
 
+	l.LogWithFields(ctx).Info("Retrieving the user details from the database for the account", accountID)
 	user, err := asmodel.GetUserDetails(accountID)
 	if err != nil {
-		errorMessage := "Unable to get account: " + err.Error()
+		errorMessage := errLogPrefix + err.Error()
 		if errors.DBKeyNotFound == err.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
@@ -168,7 +175,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 
@@ -204,7 +211,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 //
 // As return parameters RPC response, which contains status code, message, headers and data,
 // error will be passed back.
-func GetAccountService() response.RPC {
+func GetAccountService(ctx context.Context) response.RPC {
 	commonResponse := response.Response{
 		OdataType:    common.AccountServiceType,
 		OdataID:      "/redfish/v1/AccountService",
@@ -216,7 +223,7 @@ func GetAccountService() response.RPC {
 
 	isServiceEnabled := false
 	serviceState := "Disabled"
-	//Checks if AccountService is enabled and sets the variable isServiceEnabled to true add servicState to enabled
+	//Checks if AccountService is enabled and sets the variable isServiceEnabled to true add serviceState to enabled
 	for _, service := range config.Data.EnabledServices {
 		if service == "AccountService" {
 			isServiceEnabled = true

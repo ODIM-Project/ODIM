@@ -1,16 +1,16 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-//(C) Copyright 2020 Intel Corporation
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright 2020 Intel Corporation
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package main
 
@@ -41,18 +41,20 @@ func main() {
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
-	log := logs.Log
 	logs.Adorn(logrus.Fields{
 		"host":   hostName,
 		"procid": podName + fmt.Sprintf("_%d", pid),
 	})
 
-	if err := config.SetConfiguration(); err != nil {
+	// log should be initialized after Adorn is invoked
+	// as Adorn will assign new pointer to Log variable in logs package.
+	log := logs.Log
+	configWarnings, err := config.SetConfiguration()
+	if err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
 		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
-
-	log.Logger.SetFormatter(&logs.SysLogFormatter{})
+	logs.SetFormatter(config.Data.LogFormat)
 	log.Logger.SetOutput(os.Stdout)
 	log.Logger.SetLevel(config.Data.LogLevel)
 
@@ -61,7 +63,10 @@ func main() {
 		log.Fatal("System Service should not be run as the root user")
 	}
 
-	config.CollectCLArgs()
+	config.CollectCLArgs(&configWarnings)
+	for _, warning := range configWarnings {
+		log.Warn(warning)
+	}
 
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
@@ -82,9 +87,11 @@ func main() {
 	if configFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	go scommon.TrackConfigFileChanges(configFilePath)
 
-	err = services.InitializeService(services.Systems)
+	errChan := make(chan error)
+	go scommon.TrackConfigFileChanges(configFilePath, errChan)
+
+	err = services.InitializeService(services.Systems, errChan)
 	if err != nil {
 		log.Fatal("Error while trying to initialize the service: " + err.Error())
 	}

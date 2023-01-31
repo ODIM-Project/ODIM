@@ -16,112 +16,130 @@
 package logs
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
+	"strings"
 
 	"github.com/kataras/iris/v12"
+	"github.com/sirupsen/logrus"
 )
 
 type Logging struct {
-	GetUserDetails func(string) (string, string)
-}
-
-// AuditLog is used for generating audit logs in syslog format for each request
-// this function logs an info for successful operation and error for failure operation
-// properties logged are prival, time, host, username, roleid, request method, resource, requestbody, responsecode and message
-
-func (l *Logging) AuditLog(ctx iris.Context, reqBody map[string]interface{}) {
-	logMsg := l.auditLogEntry(ctx, reqBody)
-	// Get response code
-	respStatusCode := int32(ctx.GetStatusCode())
-	operationStatus := getResponseStatus(respStatusCode)
-
-	// 110 is for audit log info
-	// 107 is for audit log error
-	if operationStatus {
-		successMsg := "<110> " + logMsg + " Operation successful"
-		fmt.Println(successMsg)
-	} else {
-		failedMsg := "<107> " + logMsg + " Operation failed"
-		fmt.Println(failedMsg)
-	}
+	GetUserDetails func(string) (string, string, error)
 }
 
 // AuthLog is used for generating security logs in syslog format for each request
 // this function logs an info for successful operation and warning for failure auth operation
 // properties logged are prival, time, username, roleid and message
-func AuthLog(logProperties map[string]interface{}) {
-	sessionToken := "null"
-	sessionUserName := "null"
-	sessionRoleID := "null"
-	msg := "null"
-	respStatusCode := int32(http.StatusUnauthorized)
-	tokenMsg := ""
+func AuthLog(ctx context.Context) *logrus.Entry {
+	fields := getProcessLogDetails(ctx)
+	if val, ok := ctx.Value("sessiontoken").(string); ok {
+		fields["sessiontoken"] = val
+	}
+	if val, ok := ctx.Value("sessionuserid").(string); ok {
+		fields["sessionuserid"] = val
+	}
+	if val, ok := ctx.Value("sessionroleid").(string); ok {
+		fields["sessionroleid"] = val
+	}
+	if val, ok := ctx.Value("statuscode").(int32); ok {
+		fields["statuscode"] = val
+	}
+	fields["auth"] = true
 
-	if logProperties["SessionToken"] != nil {
-		sessionToken = logProperties["SessionToken"].(string)
+	return Log.WithFields(fields)
+}
+
+// formatAuditStructFields is used to format audit log message with required values
+func formatAuditStructFields(entry *logrus.Entry, msg string, priorityNo int8) string {
+	var reqStr, logMsg, host, sessionUserName, sessionRoleID, method, rawURI string
+	var respStatusCode int32
+	if val, ok := entry.Data["reqstr"].(string); ok {
+		reqStr = val
 	}
-	if logProperties["SessionUserID"] != nil {
-		sessionUserName = logProperties["SessionUserID"].(string)
+	if val, ok := entry.Data["sessionusername"].(string); ok {
+		sessionUserName = val
 	}
-	if logProperties["SessionRoleID"] != nil {
-		sessionRoleID = logProperties["SessionRoleID"].(string)
+	if val, ok := entry.Data["sessionroleid"].(string); ok {
+		sessionRoleID = val
 	}
-	if logProperties["Message"] != nil {
-		msg = logProperties["Message"].(string)
+	if val, ok := entry.Data["rawuri"].(string); ok {
+		rawURI = val
 	}
-	if logProperties["ResponseStatusCode"] != nil {
-		respStatusCode = logProperties["ResponseStatusCode"].(int32)
+	if val, ok := entry.Data["host"].(string); ok {
+		host = val
+	}
+	if val, ok := entry.Data["method"].(string); ok {
+		method = val
+	}
+	if val, ok := entry.Data["statuscode"].(int32); ok {
+		respStatusCode = val
 	}
 
-	timeNow := time.Now().Format(time.RFC3339)
 	// formatting logs in syslog format
-	logMsg := fmt.Sprintf("%s [account@1 user=\"%s\" roleID=\"%s\"]", timeNow, sessionUserName, sessionRoleID)
-	// Get response code
-	operationStatus := getResponseStatus(respStatusCode)
-	if sessionToken != "null" {
-		tokenMsg = "for session token " + sessionToken
-	}
-	// 86 is for auth log info
-	// 84 is for auth log warning
-	if operationStatus {
-		successMsg := fmt.Sprintf("%s %s %s %s", "<86>", logMsg, "Authentication/Authorization successful", tokenMsg)
-		fmt.Println(successMsg)
+	if reqStr == "" {
+		logMsg = fmt.Sprintf("%s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\"][response@1 responseCode=%d]", host, sessionUserName, sessionRoleID, method, rawURI, respStatusCode)
 	} else {
-		errMsg := "Authentication/Authorization failed"
-		if respStatusCode == http.StatusForbidden {
-			errMsg = "Authorization failed"
-		} else if respStatusCode == http.StatusUnauthorized {
-			errMsg = "Authentication failed"
-		}
-		failedMsg := fmt.Sprintf("%s %s %s %s, %s", "<84>", logMsg, errMsg, tokenMsg, msg)
-		fmt.Println(failedMsg)
+		logMsg = fmt.Sprintf("%s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\" requestBody= %s][response@1 responseCode=%d]", host, sessionUserName, sessionRoleID, method, rawURI, reqStr, respStatusCode)
 	}
+
+	if priorityNo == 110 {
+		msg = fmt.Sprintf("%s %s %s", msg, logMsg, "Operation successful")
+		return msg
+	}
+	msg = fmt.Sprintf("%s %s %s", msg, logMsg, "Operation failed")
+	return msg
+}
+
+// AuditLog is used for generating audit logs in syslog format for each request
+// this function logs an info for successful operation and error for failure operation
+// properties logged are prival, time, host, username, roleid, request method, resource, requestbody, responsecode and message
+func AuditLog(l *Logging, ctx iris.Context, reqBody map[string]interface{}) *logrus.Entry {
+	ctxt := ctx.Request().Context()
+	fields := getProcessLogDetails(ctxt)
+	if val, ok := ctxt.Value("sessiontoken").(string); ok {
+		fields["sessiontoken"] = val
+	}
+	if val, ok := ctxt.Value("sessionuserid").(string); ok {
+		fields["sessionuserid"] = val
+	}
+	if val, ok := ctxt.Value("sessionroleid").(string); ok {
+		fields["sessionroleid"] = val
+	}
+	fields["statuscode"] = int32(ctx.GetStatusCode())
+	fields["audit"] = true
+	fields, err := l.auditLogEntry(ctx, reqBody, fields)
+	if err != nil {
+		Log.Error(err)
+	}
+
+	return Log.WithFields(fields)
 }
 
 // auditLogEntry extracts the required info from context like session token, username, request URI
 // and formats in syslog format for audit logs
-func (l *Logging) auditLogEntry(ctx iris.Context, reqBody map[string]interface{}) string {
-	var logMsg string
+func (l *Logging) auditLogEntry(ctx iris.Context, reqBody, fields map[string]interface{}) (logrus.Fields, error) {
 	// getting the request URI, host and method from context
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
-	sessionUserName, sessionRoleID := l.GetUserDetails(sessionToken)
-	rawURI := ctx.Request().RequestURI
-	host := ctx.Request().Host
-	method := ctx.Request().Method
-	respStatusCode := ctx.GetStatusCode()
-	timeNow := time.Now().Format(time.RFC3339)
-	reqStr := MaskRequestBody(reqBody)
+	sessionUserName, sessionRoleID, err := l.GetUserDetails(sessionToken)
+	// Replace is done to avoid the security vulnerabilty to avoid direct usage of the input parameters
+	sessionRoleID = strings.Replace(sessionRoleID, "\n", "", -1)
+	sessionToken = strings.Replace(sessionToken, "\n", "", -1)
+	sessionUserName = strings.Replace(sessionUserName, "\n", "", -1)
+	Host := strings.Replace(ctx.Request().Host, "\n", "", -1)
+	RequestURI := strings.Replace(ctx.Request().RequestURI, "\n", "", -1)
+	Method := strings.Replace(ctx.Request().Method, "\n", "", -1)
+	fields["sessiontoken"] = sessionToken
+	fields["sessionusername"] = sessionUserName
+	fields["sessionroleid"] = sessionRoleID
+	fields["rawuri"] = RequestURI
+	fields["host"] = Host
+	fields["method"] = Method
+	fields["reqstr"] = MaskRequestBody(reqBody)
 
-	// formatting logs in syslog format
-	if reqStr == "null" {
-		logMsg = fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\"][response@1 responseCode=%d]", timeNow, host, sessionUserName, sessionRoleID, method, rawURI, respStatusCode)
-	} else {
-		logMsg = fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\" requestBody=\"%s\"][response@1 responseCode=%d]", timeNow, host, sessionUserName, sessionRoleID, method, rawURI, reqStr, respStatusCode)
-	}
-	return logMsg
+	return fields, err
 }
 
 // MaskRequestBody function
@@ -130,17 +148,16 @@ func MaskRequestBody(reqBody map[string]interface{}) string {
 	var jsonStr []byte
 	var err error
 	if len(reqBody) > 0 {
-		reqBody["Password"] = "null"
+		if reqBody["Password"] != nil {
+			reqBody["Password"] = "null"
+		}
 		jsonStr, err = json.Marshal(reqBody)
 		if err != nil {
 			Log.Error("while marshalling request body", err.Error())
 		}
 	}
 	reqStr := string(jsonStr)
-	// adding null to requestbody property if no payload is sent
-	if reqStr == "" {
-		reqStr = "null"
-	}
+
 	return reqStr
 }
 

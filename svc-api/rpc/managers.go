@@ -12,13 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -27,15 +28,16 @@ var (
 	NewManagersClientFunc = managersproto.NewManagersClient
 )
 
-//GetManagersCollection will do the rpc call to collect Managers
-func GetManagersCollection(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+// GetManagersCollection will do the rpc call to collect Managers
+func GetManagersCollection(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Managers)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewManagersClientFunc(conn)
-	resp, err := asService.GetManagersCollection(context.TODO(), &req)
+	resp, err := asService.GetManagersCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -44,14 +46,15 @@ func GetManagersCollection(req managersproto.ManagerRequest) (*managersproto.Man
 }
 
 // GetManagers will do the rpc calls for the svc-managers
-func GetManagers(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+func GetManagers(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Managers)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewManagersClientFunc(conn)
-	resp, err := asService.GetManager(context.TODO(), &req)
+	resp, err := asService.GetManager(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -60,14 +63,15 @@ func GetManagers(req managersproto.ManagerRequest) (*managersproto.ManagerRespon
 }
 
 // GetManagersResource will do the rpc calls for the svc-managers
-func GetManagersResource(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+func GetManagersResource(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Managers)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewManagersClientFunc(conn)
-	resp, err := asService.GetManagersResource(context.TODO(), &req)
+	resp, err := asService.GetManagersResource(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -76,14 +80,15 @@ func GetManagersResource(req managersproto.ManagerRequest) (*managersproto.Manag
 }
 
 // VirtualMediaInsert will do the rpc calls for the svc-managers
-func VirtualMediaInsert(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+func VirtualMediaInsert(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Managers)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewManagersClientFunc(conn)
-	resp, err := asService.VirtualMediaInsert(context.TODO(), &req)
+	resp, err := asService.VirtualMediaInsert(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -92,14 +97,15 @@ func VirtualMediaInsert(req managersproto.ManagerRequest) (*managersproto.Manage
 }
 
 // VirtualMediaEject will do the rpc calls for the svc-managers
-func VirtualMediaEject(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+func VirtualMediaEject(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Managers)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewManagersClientFunc(conn)
-	resp, err := asService.VirtualMediaEject(context.TODO(), &req)
+	resp, err := asService.VirtualMediaEject(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -107,15 +113,16 @@ func VirtualMediaEject(req managersproto.ManagerRequest) (*managersproto.Manager
 	return resp, nil
 }
 
-//GetRemoteAccountService will do the rpc call to collect BMC accounts
-func GetRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+// GetRemoteAccountService will do the rpc call to collect BMC accounts
+func GetRemoteAccountService(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Managers)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	mService := NewManagersClientFunc(conn)
-	resp, err := mService.GetRemoteAccountService(context.TODO(), &req)
+	resp, err := mService.GetRemoteAccountService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -123,15 +130,16 @@ func GetRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.M
 	return resp, nil
 }
 
-//CreateRemoteAccountService will do the rpc call to create a new BMC account
-func CreateRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+// CreateRemoteAccountService will do the rpc call to create a new BMC account
+func CreateRemoteAccountService(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Managers)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	mService := NewManagersClientFunc(conn)
-	resp, err := mService.CreateRemoteAccountService(context.TODO(), &req)
+	resp, err := mService.CreateRemoteAccountService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -140,14 +148,15 @@ func CreateRemoteAccountService(req managersproto.ManagerRequest) (*managersprot
 }
 
 // UpdateRemoteAccountService will do rpc call to update BMC account
-func UpdateRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+func UpdateRemoteAccountService(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Managers)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	mService := NewManagersClientFunc(conn)
-	resp, err := mService.UpdateRemoteAccountService(context.TODO(), &req)
+	resp, err := mService.UpdateRemoteAccountService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
@@ -155,15 +164,16 @@ func UpdateRemoteAccountService(req managersproto.ManagerRequest) (*managersprot
 	return resp, nil
 }
 
-//DeleteRemoteAccountService will do the rpc call to delete an existing BMC account
-func DeleteRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+// DeleteRemoteAccountService will do the rpc call to delete an existing BMC account
+func DeleteRemoteAccountService(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Managers)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	mService := NewManagersClientFunc(conn)
-	resp, err := mService.DeleteRemoteAccountService(context.TODO(), &req)
+	resp, err := mService.DeleteRemoteAccountService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}

@@ -80,6 +80,7 @@ func TestGetAggregationSourceCollection(t *testing.T) {
 	p := &ExternalInterface{
 		GetAllKeysFromTable: mockGetAllKeysFromTable,
 	}
+	ctx := mockContext()
 	tests := []struct {
 		name string
 		p    *ExternalInterface
@@ -93,7 +94,7 @@ func TestGetAggregationSourceCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.GetAggregationSourceCollection(); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.p.GetAggregationSourceCollection(ctx); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAggregationSourceCollection() = %v, want %v", got, tt.want)
 			}
 		})
@@ -128,6 +129,7 @@ func TestGetAggregationSource(t *testing.T) {
 			},
 		},
 	}
+	ctx := mockContext()
 	errMsg := "error: while trying to fetch Aggregation Source data: no data with the with key /redfish/v1/AggregationService/AggregationSources/12355 found"
 	resp2 := common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"AggregationSource", "/redfish/v1/AggregationService/AggregationSources/12355"}, nil)
 
@@ -164,7 +166,7 @@ func TestGetAggregationSource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.GetAggregationSource(tt.args.reqURI); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.p.GetAggregationSource(ctx, tt.args.reqURI); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAggregationSource() = %v, want %v", got, tt.want)
 			}
 		})

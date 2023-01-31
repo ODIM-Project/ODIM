@@ -1,15 +1,15 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package role
 
@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -41,6 +42,7 @@ func createMockRole(roleID string, privileges []string, oemPrivileges []string, 
 }
 
 func TestGetRole(t *testing.T) {
+	config.SetUpMockConfig(t)
 	commonResponse := response.Response{
 		OdataType: common.RoleType,
 		OdataID:   "/redfish/v1/AccountService/Roles/" + common.RoleAdmin,
@@ -61,6 +63,7 @@ func TestGetRole(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock admin user %v", err)
 	}
+	ctx := mockContext()
 	type args struct {
 		req     *roleproto.GetRoleRequest
 		session *asmodel.Session
@@ -72,7 +75,7 @@ func TestGetRole(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User does not have the privilege to get the role",
+				ErrorMessage:  "failed to fetch the role Administrator: User does not have the privilege of viewing the role",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -83,7 +86,7 @@ func TestGetRole(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "Error while getting the role : error while trying to get role details: no data with the with key " + common.RoleClient + " found",
+				ErrorMessage:  "failed to fetch the role ReadOnly: Error while getting the role : error while trying to get role details: no data with the with key " + common.RoleClient + " found",
 				MessageArgs:   []interface{}{"Role", common.RoleClient},
 			},
 		},
@@ -152,7 +155,7 @@ func TestGetRole(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetRole(tt.args.req, tt.args.session)
+			got := GetRole(ctx, tt.args.req, tt.args.session)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetRole() = %v, want %v", got, tt.want)
 			}
@@ -172,7 +175,7 @@ func TestGetAllRoles(t *testing.T) {
 	commonResponse.MessageID = ""
 	commonResponse.Severity = ""
 	auth.Lock.Lock()
-	common.SetUpMockConfig()
+	config.SetUpMockConfig(t)
 	auth.Lock.Unlock()
 	defer truncateDB(t)
 	err := createMockRole(common.RoleAdmin, []string{common.PrivilegeConfigureUsers}, []string{}, false)
@@ -185,11 +188,12 @@ func TestGetAllRoles(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User does not have the privilege to get the roles",
+				ErrorMessage:  "failed to fetch all roles: User does not have the privilege of viewing the roles",
 				MessageArgs:   []interface{}{},
 			},
 		},
 	}
+	ctx := mockContext()
 	type args struct {
 		session *asmodel.Session
 	}
@@ -238,7 +242,7 @@ func TestGetAllRoles(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetAllRoles(tt.args.session)
+			got := GetAllRoles(ctx, tt.args.session)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAllRoles() = %v, want %v", got, tt.want)
 			}

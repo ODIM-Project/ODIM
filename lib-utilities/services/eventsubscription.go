@@ -19,15 +19,13 @@ import (
 	"fmt"
 
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
-	log "github.com/sirupsen/logrus"
 )
 
 // SubscribeToEMB method will subscribe to respective  event queue of the plugin
-func SubscribeToEMB(pluginID string, queueList []string) {
-	log.Info("subscribing to EMB for plugin " + pluginID)
+func SubscribeToEMB(pluginID string, queueList []string) error {
 	conn, errConn := ODIMService.Client(Events)
 	if errConn != nil {
-		log.Error("Failed to create client connection: " + errConn.Error())
+		return fmt.Errorf("Failed to create client connection: %s", errConn.Error())
 	}
 	defer conn.Close()
 	events := eventsproto.NewEventsClient(conn)
@@ -36,9 +34,9 @@ func SubscribeToEMB(pluginID string, queueList []string) {
 		EMBQueueName: queueList,
 	})
 	if err != nil {
-		log.Error("error subscribing to EMB  " + err.Error())
+		return fmt.Errorf("error subscribing to EMB  %s", err.Error())
 	}
-	return
+	return nil
 }
 
 // DeleteSubscription  calls the event service and delete all subscription realated to that server

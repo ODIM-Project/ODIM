@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package update
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -30,14 +31,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken != "validToken" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
@@ -86,7 +87,18 @@ func mockGetPluginDataError(id string) (umodel.Plugin, *errors.Error) {
 	return plugin, &errors.Error{}
 }
 
-func mockContactPlugin(req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, ucommon.ResponseStatus, error) {
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
+func mockContactPlugin(ctx context.Context, req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, ucommon.ResponseStatus, error) {
 	var responseStatus ucommon.ResponseStatus
 	if req.OID == "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate" {
 		encodedTaskData, _ := JSONMarshalFunc(common.TaskData{
@@ -114,7 +126,7 @@ func mockContactPlugin(req ucommon.PluginContactRequest, errorMessage string) ([
 	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, nil
 }
 
-func mockContactPluginError(req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, ucommon.ResponseStatus, error) {
+func mockContactPluginError(ctx context.Context, req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, ucommon.ResponseStatus, error) {
 	var responseStatus ucommon.ResponseStatus
 
 	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, &errors.Error{}
@@ -127,10 +139,10 @@ func stubDevicePasswordError(password []byte) ([]byte, error) {
 	return nil, &errors.Error{}
 }
 
-func stubGenericSave(reqBody []byte, table string, uuid string) error {
+func stubGenericSave(ctx context.Context, reqBody []byte, table string, uuid string) error {
 	return nil
 }
-func stubGenericSaveError(reqBody []byte, table string, uuid string) error {
+func stubGenericSaveError(ctx context.Context, reqBody []byte, table string, uuid string) error {
 	return &errors.Error{}
 }
 
@@ -155,6 +167,7 @@ func mockGetExternalInterface() *ExternalInterface {
 }
 
 func TestGetUpdateService(t *testing.T) {
+	ctx := mockContext()
 	successResponse := response.Response{
 		OdataType:    common.UpdateServiceType,
 		OdataID:      "/redfish/v1/UpdateService",
@@ -250,7 +263,7 @@ func TestGetUpdateService(t *testing.T) {
 	e := mockGetExternalInterface()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := e.GetUpdateService()
+			got := e.GetUpdateService(ctx)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetUpdateService() = %v, want %v", got, tt.want)
 			}
@@ -260,9 +273,10 @@ func TestGetUpdateService(t *testing.T) {
 }
 
 func TestFirmwareInventoryCollection(t *testing.T) {
+	ctx := mockContext()
 	req := &updateproto.UpdateRequest{}
 	e := mockGetExternalInterface()
-	response := e.GetAllFirmwareInventory(req)
+	response := e.GetAllFirmwareInventory(ctx, req)
 
 	update := response.Body.(uresponse.Collection)
 	assert.Equal(t, int(response.StatusCode), http.StatusOK, "Status code should be StatusOK.")
@@ -270,9 +284,10 @@ func TestFirmwareInventoryCollection(t *testing.T) {
 }
 
 func TestSoftwareInventoryCollection(t *testing.T) {
+	ctx := mockContext()
 	req := &updateproto.UpdateRequest{}
 	e := mockGetExternalInterface()
-	response := e.GetAllSoftwareInventory(req)
+	response := e.GetAllSoftwareInventory(ctx, req)
 
 	update := response.Body.(uresponse.Collection)
 	assert.Equal(t, int(response.StatusCode), http.StatusOK, "Status code should be StatusOK.")
@@ -280,54 +295,58 @@ func TestSoftwareInventoryCollection(t *testing.T) {
 }
 
 func TestFirmwareInventory(t *testing.T) {
+	ctx := mockContext()
 	config.SetUpMockConfig(t)
 	req := &updateproto.UpdateRequest{
 		ResourceID: "3bd1f589-117a-4cf9-89f2-da44ee8e012b.1",
 	}
 	e := mockGetExternalInterface()
-	response := e.GetFirmwareInventory(req)
+	response := e.GetFirmwareInventory(ctx, req)
 
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
 	req.URL = "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1"
-	response = e.GetFirmwareInventory(req)
+	response = e.GetFirmwareInventory(ctx, req)
 
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
 }
 
 func TestGetFirmwareInventoryInvalidID(t *testing.T) {
+	ctx := mockContext()
 	req := &updateproto.UpdateRequest{
 		ResourceID: "invalidID",
 	}
 	e := mockGetExternalInterface()
-	response := e.GetFirmwareInventory(req)
+	response := e.GetFirmwareInventory(ctx, req)
 
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound")
 }
 
 func TestSoftwareInventory(t *testing.T) {
+	ctx := mockContext()
 	config.SetUpMockConfig(t)
 	req := &updateproto.UpdateRequest{
 		ResourceID: "3bd1f589-117a-4cf9-89f2-da44ee8e012b.1",
 	}
 	e := mockGetExternalInterface()
-	response := e.GetSoftwareInventory(req)
+	response := e.GetSoftwareInventory(ctx, req)
 
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
 	req.URL = "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1"
-	response = e.GetSoftwareInventory(req)
+	response = e.GetSoftwareInventory(ctx, req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
 }
 
 func TestGetSoftwareInventoryInvalidID(t *testing.T) {
+	ctx := mockContext()
 	req := &updateproto.UpdateRequest{
 		ResourceID: "invalidID",
 	}
 	e := mockGetExternalInterface()
-	response := e.GetSoftwareInventory(req)
+	response := e.GetSoftwareInventory(ctx, req)
 
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound")
 }

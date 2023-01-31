@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package ucommon ...
+// Package ucommon ...
 package ucommon
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -31,31 +32,31 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 )
 
-//PluginContactRequest  hold the request of contact plugin
+// PluginContactRequest  hold the request of contact plugin
 type PluginContactRequest struct {
 	Token          string
 	OID            string
 	DeviceInfo     interface{}
 	BasicAuth      map[string]string
-	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient  func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	PostBody       interface{}
 	Plugin         umodel.Plugin
 	HTTPMethodType string
 }
 
-//ResponseStatus holds the response of Contact Plugin
+// ResponseStatus holds the response of Contact Plugin
 type ResponseStatus struct {
 	StatusCode    int32
 	StatusMessage string
 	MsgArgs       []interface{}
 }
 
-//ResourceInfoRequest  hold the request of getting  Resource
+// ResourceInfoRequest  hold the request of getting  Resource
 type ResourceInfoRequest struct {
 	URL            string
 	UUID           string
 	SystemID       string
-	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient  func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DevicePassword func([]byte) ([]byte, error)
 	ResourceName   string
 }
@@ -64,7 +65,7 @@ type ResourceInfoRequest struct {
 type CommonInterface struct {
 	GetTarget     func(string) (*umodel.Target, *errors.Error)
 	GetPluginData func(string) (umodel.Plugin, *errors.Error)
-	ContactPlugin func(PluginContactRequest, string) ([]byte, string, ResponseStatus, error)
+	ContactPlugin func(context.Context, PluginContactRequest, string) ([]byte, string, ResponseStatus, error)
 }
 
 var (
@@ -72,8 +73,8 @@ var (
 	ConfigFilePath string
 )
 
-//GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
-func (i *CommonInterface) GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
+// GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
+func (i *CommonInterface) GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) (string, error) {
 	target, gerr := i.GetTarget(req.UUID)
 	if gerr != nil {
 		return "", gerr
@@ -96,7 +97,7 @@ func (i *CommonInterface) GetResourceInfoFromDevice(req ResourceInfoRequest) (st
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, _, err := i.ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
+		_, token, _, err := i.ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
 		if err != nil {
 
 			return "", err
@@ -124,7 +125,7 @@ func (i *CommonInterface) GetResourceInfoFromDevice(req ResourceInfoRequest) (st
 	//replace the uuid:system id with the system to the @odata.id from request url
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+":"+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet
-	body, _, _, err := i.ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
+	body, _, _, err := i.ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
 	if err != nil {
 		return "", err
 	}
@@ -157,7 +158,7 @@ func (i *CommonInterface) GetResourceInfoFromDevice(req ResourceInfoRequest) (st
 			resourceName = getResourceName(contactRequest.OID, memberFlag)
 		}
 		// persist the response with table resourceName and key as system UUID + Oid Needs relook TODO
-		err = umodel.GenericSave([]byte(updatedData), resourceName, oidKey)
+		err = umodel.GenericSave(ctx, []byte(updatedData), resourceName, oidKey)
 		if err != nil {
 			return "", err
 		}
@@ -182,7 +183,7 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	return strings.Join(key, "/")
 }
 
-//getResourceName fetches the table name for storing the particualar resource
+// getResourceName fetches the table name for storing the particualar resource
 func getResourceName(oDataID string, memberFlag bool) string {
 	str := strings.Split(oDataID, "/")
 	if memberFlag {
@@ -202,13 +203,13 @@ var (
 )
 
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
-func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
+func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
 	var resp ResponseStatus
 	var err error
-	pluginResponse, err := CallPluginFunc(req)
+	pluginResponse, err := CallPluginFunc(ctx, req)
 	if err != nil {
-		if getPluginStatus(req.Plugin) {
-			pluginResponse, err = CallPluginFunc(req)
+		if getPluginStatus(ctx, req.Plugin) {
+			pluginResponse, err = CallPluginFunc(ctx, req)
 		}
 		if err != nil {
 			errorMessage = errorMessage + err.Error()
@@ -224,7 +225,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		l.Log.Warn(errorMessage)
+		l.LogWithFields(ctx).Warn(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -234,13 +235,13 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 			resp.StatusCode = int32(pluginResponse.StatusCode)
 			resp.StatusMessage = response.ResourceAtURIUnauthorized
 			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
-			l.Log.Warn(errorMessage)
+			l.LogWithFields(ctx).Warn(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 		errorMessage += string(body)
 		resp.StatusCode = int32(pluginResponse.StatusCode)
 		resp.StatusMessage = response.InternalError
-		l.Log.Warn(errorMessage)
+		l.LogWithFields(ctx).Warn(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -267,7 +268,7 @@ func checkRetrievalInfo(oid string) bool {
 }
 
 // getPluginStatus checks the status of given plugin in configured interval
-func getPluginStatus(plugin umodel.Plugin) bool {
+func getPluginStatus(ctx context.Context, plugin umodel.Plugin) bool {
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{
@@ -285,33 +286,43 @@ func getPluginStatus(plugin umodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		l.Log.Warn("Error While getting the status for plugin " + plugin.ID + " " + err.Error())
+		l.LogWithFields(ctx).Warn("Error While getting the status for plugin " + plugin.ID + " " + err.Error())
 		return status
 	}
-	l.Log.Info("Status of plugin " + plugin.ID + " " + strconv.FormatBool(status))
+	l.LogWithFields(ctx).Info("Status of plugin " + plugin.ID + " " + strconv.FormatBool(status))
 	return status
 }
 
-func callPlugin(req PluginContactRequest) (*http.Response, error) {
+func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, error) {
 	var oid string
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		oid = strings.Replace(req.OID, key, value, -1)
 	}
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + oid
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
+		return req.ContactClient(ctx, reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
-	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+	return req.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
-func TrackConfigFileChanges() {
+func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
-	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	format := config.Data.LogFormat
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, errChan)
 	for {
-		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
-		if l.Log.Level != config.Data.LogLevel {
-			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
-			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		select {
+		case info := <-eventChan:
+			l.Log.Info(info) // new data arrives through eventChan channel
+			if l.Log.Level != config.Data.LogLevel {
+				l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+				l.Log.Logger.SetLevel(config.Data.LogLevel)
+			}
+			if format != config.Data.LogFormat {
+				l.SetFormatter(config.Data.LogFormat)
+				format = config.Data.LogFormat
+				l.Log.Info("Log format is updated, new log format is ", config.Data.LogFormat)
+			}
+		case err := <-errChan:
+			l.Log.Error(err)
 		}
-
 	}
 }

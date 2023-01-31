@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc defines the handler for micro services
+// Package rpc defines the handler for micro services
 package rpc
 
 import (
@@ -79,9 +79,9 @@ func TestRole_CreateRole1(t *testing.T) {
 	tests := []struct {
 		name                    string
 		args                    args
-		CheckSessionTimeOutFunc func(sessionToken string) (*asmodel.Session, *errors.Error)
-		UpdateLastUsedTimeFunc  func(token string) error
-		CreateFunc              func(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC
+		CheckSessionTimeOutFunc func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error)
+		UpdateLastUsedTimeFunc  func(ctx context.Context, token string) error
+		CreateFunc              func(ctx context.Context, req *roleproto.RoleRequest, session *asmodel.Session) response.RPC
 		MarshalFunc             func(v any) ([]byte, error)
 		want                    *roleproto.RoleResponse
 		wantErr                 bool
@@ -89,61 +89,67 @@ func TestRole_CreateRole1(t *testing.T) {
 		{
 			name: "Session Timeout Error for 401(not valid session)",
 			args: args{context.TODO(), &roleproto.RoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, errors.PackError(errors.InvalidAuthToken, "error: invalid token ", sessionToken)
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			CreateFunc:             func(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
-			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
-			wantErr:                false,
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			CreateFunc: func(ctx context.Context, req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
+				return response.RPC{}
+			},
+			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
+			want:        &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			wantErr:     false,
 		},
 		{
 			name: "Session Timeout Error for 504(Service unavailable)",
 			args: args{context.TODO(), &roleproto.RoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, errors.PackError(5, "error: Service unavailable ", sessionToken)
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			CreateFunc:             func(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
-			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
-			wantErr:                false,
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			CreateFunc: func(ctx context.Context, req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
+				return response.RPC{}
+			},
+			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
+			want:        &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			wantErr:     false,
 		},
 		{
 			name: "UpdateLastUsedTime error",
 			args: args{context.TODO(), &roleproto.RoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
-			CreateFunc:             func(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
-			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
-			wantErr:                false,
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return e.New("fakeError") },
+			CreateFunc: func(ctx context.Context, req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
+				return response.RPC{}
+			},
+			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
+			want:        &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			wantErr:     false,
 		},
 		{
 			name: "Marshall error",
 			args: args{context.TODO(), &roleproto.RoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			CreateFunc: func(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			CreateFunc: func(ctx context.Context, req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying to marshal the response body of create role API: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
 			name: "Pass case",
 			args: args{context.TODO(), &roleproto.RoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			CreateFunc: func(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			CreateFunc: func(ctx context.Context, req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
@@ -179,9 +185,9 @@ func TestRole_GetRole(t *testing.T) {
 	tests := []struct {
 		name                    string
 		args                    args
-		CheckSessionTimeOutFunc func(sessionToken string) (*asmodel.Session, *errors.Error)
-		UpdateLastUsedTimeFunc  func(token string) error
-		GetRoleFunc             func(req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC
+		CheckSessionTimeOutFunc func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error)
+		UpdateLastUsedTimeFunc  func(ctx context.Context, token string) error
+		GetRoleFunc             func(ctx context.Context, req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC
 		MarshalFunc             func(v any) ([]byte, error)
 		want                    *roleproto.RoleResponse
 		wantErr                 bool
@@ -189,61 +195,67 @@ func TestRole_GetRole(t *testing.T) {
 		{
 			name: "Session Timeout Error for 401(not valid session)",
 			args: args{context.TODO(), &roleproto.GetRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, errors.PackError(errors.InvalidAuthToken, "error: invalid token ", sessionToken)
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			GetRoleFunc:            func(req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
-			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
-			wantErr:                false,
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			GetRoleFunc: func(ctx context.Context, req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC {
+				return response.RPC{}
+			},
+			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
+			want:        &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			wantErr:     false,
 		},
 		{
 			name: "Session Timeout Error for 504(Service unavailable)",
 			args: args{context.TODO(), &roleproto.GetRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, errors.PackError(5, "error: Service unavailable ", sessionToken)
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			GetRoleFunc:            func(req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
-			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
-			wantErr:                false,
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			GetRoleFunc: func(ctx context.Context, req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC {
+				return response.RPC{}
+			},
+			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
+			want:        &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			wantErr:     false,
 		},
 		{
 			name: "UpdateLastUsedTime error",
 			args: args{context.TODO(), &roleproto.GetRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
-			GetRoleFunc:            func(req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
-			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
-			wantErr:                false,
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return e.New("fakeError") },
+			GetRoleFunc: func(ctx context.Context, req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC {
+				return response.RPC{}
+			},
+			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
+			want:        &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			wantErr:     false,
 		},
 		{
 			name: "Marshall error",
 			args: args{context.TODO(), &roleproto.GetRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			GetRoleFunc: func(req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC {
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			GetRoleFunc: func(ctx context.Context, req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying to marshal the response body of get role API: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
 			name: "Pass case",
 			args: args{context.TODO(), &roleproto.GetRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			GetRoleFunc: func(req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC {
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			GetRoleFunc: func(ctx context.Context, req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
@@ -280,9 +292,9 @@ func TestRole_GetAllRoles(t *testing.T) {
 	tests := []struct {
 		name                    string
 		args                    args
-		CheckSessionTimeOutFunc func(sessionToken string) (*asmodel.Session, *errors.Error)
-		UpdateLastUsedTimeFunc  func(token string) error
-		GetAllRolesFunc         func(session *asmodel.Session) response.RPC
+		CheckSessionTimeOutFunc func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error)
+		UpdateLastUsedTimeFunc  func(ctx context.Context, token string) error
+		GetAllRolesFunc         func(ctx context.Context, session *asmodel.Session) response.RPC
 		MarshalFunc             func(v any) ([]byte, error)
 		want                    *roleproto.RoleResponse
 		wantErr                 bool
@@ -290,11 +302,11 @@ func TestRole_GetAllRoles(t *testing.T) {
 		{
 			name: "Session Timeout Error for 401(not valid session)",
 			args: args{context.TODO(), &roleproto.GetRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, errors.PackError(errors.InvalidAuthToken, "error: invalid token ", sessionToken)
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			GetAllRolesFunc:        func(session *asmodel.Session) response.RPC { return response.RPC{} },
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			GetAllRolesFunc:        func(ctx context.Context, session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
 			want:                   &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
 			wantErr:                false,
@@ -302,11 +314,11 @@ func TestRole_GetAllRoles(t *testing.T) {
 		{
 			name: "Session Timeout Error for 504(Service unavailable)",
 			args: args{context.TODO(), &roleproto.GetRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, errors.PackError(5, "error: Service unavailable ", sessionToken)
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			GetAllRolesFunc:        func(session *asmodel.Session) response.RPC { return response.RPC{} },
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			GetAllRolesFunc:        func(ctx context.Context, session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
 			want:                   &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
 			wantErr:                false,
@@ -314,11 +326,11 @@ func TestRole_GetAllRoles(t *testing.T) {
 		{
 			name: "UpdateLastUsedTime error",
 			args: args{context.TODO(), &roleproto.GetRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
-			GetAllRolesFunc:        func(session *asmodel.Session) response.RPC { return response.RPC{} },
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return e.New("fakeError") },
+			GetAllRolesFunc:        func(ctx context.Context, session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
 			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                false,
@@ -326,25 +338,25 @@ func TestRole_GetAllRoles(t *testing.T) {
 		{
 			name: "Marshall error",
 			args: args{context.TODO(), &roleproto.GetRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			GetAllRolesFunc: func(session *asmodel.Session) response.RPC {
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			GetAllRolesFunc: func(ctx context.Context, session *asmodel.Session) response.RPC {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying to marshal the response body of the get all roles API: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
 			name: "Pass case",
 			args: args{context.TODO(), &roleproto.GetRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			GetAllRolesFunc: func(session *asmodel.Session) response.RPC {
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			GetAllRolesFunc: func(ctx context.Context, session *asmodel.Session) response.RPC {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
@@ -380,9 +392,9 @@ func TestRole_UpdateRole(t *testing.T) {
 	tests := []struct {
 		name                    string
 		args                    args
-		CheckSessionTimeOutFunc func(sessionToken string) (*asmodel.Session, *errors.Error)
-		UpdateLastUsedTimeFunc  func(token string) error
-		UpdateFunc              func(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC
+		CheckSessionTimeOutFunc func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error)
+		UpdateLastUsedTimeFunc  func(ctx context.Context, token string) error
+		UpdateFunc              func(ctx context.Context, req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC
 		MarshalFunc             func(v any) ([]byte, error)
 		want                    *roleproto.RoleResponse
 		wantErr                 bool
@@ -390,61 +402,67 @@ func TestRole_UpdateRole(t *testing.T) {
 		{
 			name: "Session Timeout Error for 401(not valid session)",
 			args: args{context.TODO(), &roleproto.UpdateRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, errors.PackError(errors.InvalidAuthToken, "error: invalid token ", sessionToken)
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			UpdateFunc:             func(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
-			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
-			wantErr:                false,
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			UpdateFunc: func(ctx context.Context, req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC {
+				return response.RPC{}
+			},
+			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
+			want:        &roleproto.RoleResponse{StatusCode: 401, StatusMessage: "Base.1.13.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			wantErr:     false,
 		},
 		{
 			name: "Session Timeout Error for 504(Service unavailable)",
 			args: args{context.TODO(), &roleproto.UpdateRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, errors.PackError(5, "error: Service unavailable ", sessionToken)
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			UpdateFunc:             func(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
-			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
-			wantErr:                false,
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			UpdateFunc: func(ctx context.Context, req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC {
+				return response.RPC{}
+			},
+			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
+			want:        &roleproto.RoleResponse{StatusCode: 503, StatusMessage: "Base.1.13.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			wantErr:     false,
 		},
 		{
 			name: "UpdateLastUsedTime error",
 			args: args{context.TODO(), &roleproto.UpdateRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
-			UpdateFunc:             func(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC { return response.RPC{} },
-			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
-			wantErr:                false,
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return e.New("fakeError") },
+			UpdateFunc: func(ctx context.Context, req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC {
+				return response.RPC{}
+			},
+			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
+			want:        &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			wantErr:     false,
 		},
 		{
 			name: "Marshall error",
 			args: args{context.TODO(), &roleproto.UpdateRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			UpdateFunc: func(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC {
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			UpdateFunc: func(ctx context.Context, req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying to marshal the response body of the update role API: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
 			name: "Pass case",
 			args: args{context.TODO(), &roleproto.UpdateRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			UpdateFunc: func(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC {
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			UpdateFunc: func(ctx context.Context, req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC {
 				return response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
@@ -480,9 +498,9 @@ func TestRole_DeleteRole(t *testing.T) {
 	tests := []struct {
 		name                    string
 		args                    args
-		CheckSessionTimeOutFunc func(sessionToken string) (*asmodel.Session, *errors.Error)
-		UpdateLastUsedTimeFunc  func(token string) error
-		DeleteFunc              func(req *roleproto.DeleteRoleRequest) *response.RPC
+		CheckSessionTimeOutFunc func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error)
+		UpdateLastUsedTimeFunc  func(ctx context.Context, token string) error
+		DeleteFunc              func(ctx context.Context, req *roleproto.DeleteRoleRequest) *response.RPC
 		MarshalFunc             func(v any) ([]byte, error)
 		want                    *roleproto.RoleResponse
 		wantErr                 bool
@@ -490,25 +508,25 @@ func TestRole_DeleteRole(t *testing.T) {
 		{
 			name: "Marshall error",
 			args: args{context.TODO(), &roleproto.DeleteRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			DeleteFunc: func(req *roleproto.DeleteRoleRequest) *response.RPC {
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			DeleteFunc: func(ctx context.Context, req *roleproto.DeleteRoleRequest) *response.RPC {
 				return &response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, e.New("fakeError") },
-			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying marshal the response body for get role: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, Header: map[string]string{"fake": "fake"}, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while trying to marshal the response body of the delete role API: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
 			name: "Pass case",
 			args: args{context.TODO(), &roleproto.DeleteRoleRequest{}},
-			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+			CheckSessionTimeOutFunc: func(ctx context.Context, sessionToken string) (*asmodel.Session, *errors.Error) {
 				return nil, nil
 			},
-			UpdateLastUsedTimeFunc: func(token string) error { return nil },
-			DeleteFunc: func(req *roleproto.DeleteRoleRequest) *response.RPC {
+			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return nil },
+			DeleteFunc: func(ctx context.Context, req *roleproto.DeleteRoleRequest) *response.RPC {
 				return &response.RPC{StatusCode: 200, StatusMessage: "fakeMsg", Header: map[string]string{"fake": "fake"}}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },

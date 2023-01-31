@@ -16,6 +16,7 @@ package tcommon
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -28,11 +29,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 
 	if url == "https://localhost:9091/ODIM/v1/Sessions" {
 		body := `{"Token": "12345"}`
@@ -86,7 +98,7 @@ func getEncryptedKey(t *testing.T, key []byte) []byte {
 	return cryptedKey
 }
 
-func mockPluginStatus(plugin tmodel.Plugin) bool {
+func mockPluginStatus(ctx context.Context, plugin tmodel.Plugin) bool {
 	return true
 }
 
@@ -131,7 +143,7 @@ func mockGetResource(table, key string, dbType common.DbType) (string, *errors.E
 	return "body", nil
 }
 
-func mockGenericSave(body []byte, table string, key string) error {
+func mockGenericSave(ctx context.Context, body []byte, table string, key string) error {
 	return nil
 }
 
@@ -147,10 +159,11 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 		GetResource:         mockGetResource,
 		GenericSave:         mockGenericSave,
 	}
-	_, err := GetResourceInfoFromDevice(req)
+	ctx := mockContext()
+	_, err := GetResourceInfoFromDevice(ctx, req)
 	assert.Nil(t, err, "There should be no error getting data")
 	req.URL = "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1"
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(ctx, req)
 	assert.Nil(t, err, "There should be no error getting data")
 	req.GetPluginData = func(s string) (tmodel.Plugin, *errors.Error) {
 		var t *testing.T
@@ -166,7 +179,7 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 		}
 		return plugin, nil
 	}
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(ctx, req)
 	assert.Nil(t, err, "There should be no error getting data")
 }
 
@@ -178,19 +191,21 @@ func TestContactPlugin(t *testing.T) {
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
 	contactRequest.GetPluginStatus = mockPluginStatus
-	_, _, _, err := ContactPlugin(contactRequest, "")
+	ctx := mockContext()
+	_, _, _, err := ContactPlugin(ctx, contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 
 }
 
 func TestGetPluginStatus(t *testing.T) {
 	config.SetUpMockConfig(t)
-	res := GetPluginStatus(tmodel.Plugin{})
+	ctx := mockContext()
+	res := GetPluginStatus(ctx, tmodel.Plugin{})
 	assert.False(t, res)
 	var req ResourceInfoRequest
 	req.GenericSave = mockGenericSave
 	req.GetResource = mockGetResource
-	removeNonExistingID(req)
+	removeNonExistingID(ctx, req)
 }
 
 func Test_callPlugin(t *testing.T) {

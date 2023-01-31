@@ -39,9 +39,13 @@ import (
 // GetEventSubscriptionsDetails collects subscription data against given subscription id
 func (e *ExternalInterfaces) GetEventSubscriptionsDetails(req *eventsproto.EventRequest) response.RPC {
 	var resp response.RPC
-	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		l.Log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
+		l.Log.Error(errMsg)
 		return authResp
 	}
 	var subscriptions *evresponse.SubscriptionResponse
@@ -99,9 +103,13 @@ func (e *ExternalInterfaces) GetEventSubscriptionsDetails(req *eventsproto.Event
 // GetEventSubscriptionsCollection collects all subscription details
 func (e *ExternalInterfaces) GetEventSubscriptionsCollection(req *eventsproto.EventRequest) response.RPC {
 	var resp response.RPC
-	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		l.Log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
+		l.Log.Error(errMsg)
 		return authResp
 	}
 	listMembers := []evresponse.ListMember{}
@@ -143,9 +151,13 @@ func (e *ExternalInterfaces) GetEventSubscriptionsCollection(req *eventsproto.Ev
 
 // IsAggregateHaveSubscription collects all subscription details
 func (e *ExternalInterfaces) IsAggregateHaveSubscription(req *eventsproto.EventUpdateRequest) bool {
-	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		l.Log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
+		l.Log.Error(errMsg)
 		return false
 	}
 	searchKey := evcommon.GetSearchKey(req.AggregateId, evmodel.SubscriptionIndex)

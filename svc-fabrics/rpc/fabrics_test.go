@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
@@ -32,13 +32,13 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabrics"
 )
 
-func mockAuth(sessionToken string, privileges []string, oemPrivileges []string) response.RPC {
+func mockAuth(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken == "valid" {
-		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 	} else if sessionToken == "invalid" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, "error while trying to authenticate session", nil, nil)
+	return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, "error while trying to authenticate session", nil, nil), nil
 }
 
 func getEncryptedKey(t *testing.T, key []byte) []byte {
@@ -69,7 +69,7 @@ func mockPluginData(t *testing.T) error {
 	return nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Sessions" {
 		body := `{"Token": "12345"}`
 		return &http.Response{

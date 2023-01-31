@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package handle ...
+// Package handle ...
 package handle
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -28,31 +29,32 @@ import (
 
 // AggregatorRPCs defines all the RPC methods in aggregator service
 type AggregatorRPCs struct {
-	GetAggregationServiceRPC                func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	ResetRPC                                func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	SetDefaultBootOrderRPC                  func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	AddAggregationSourceRPC                 func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	GetAllAggregationSourceRPC              func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	GetAggregationSourceRPC                 func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	UpdateAggregationSourceRPC              func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	DeleteAggregationSourceRPC              func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	CreateAggregateRPC                      func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	GetAggregateCollectionRPC               func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	GetAggregateRPC                         func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	DeleteAggregateRPC                      func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	AddElementsToAggregateRPC               func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	RemoveElementsFromAggregateRPC          func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	ResetAggregateElementsRPC               func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	SetDefaultBootOrderAggregateElementsRPC func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	GetAllConnectionMethodsRPC              func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	GetConnectionMethodRPC                  func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	GetResetActionInfoServiceRPC            func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	GetSetDefaultBootOrderActionInfoRPC     func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAggregationServiceRPC                func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	ResetRPC                                func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	SetDefaultBootOrderRPC                  func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	AddAggregationSourceRPC                 func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAllAggregationSourceRPC              func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAggregationSourceRPC                 func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	UpdateAggregationSourceRPC              func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	DeleteAggregationSourceRPC              func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	CreateAggregateRPC                      func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAggregateCollectionRPC               func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAggregateRPC                         func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	DeleteAggregateRPC                      func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	AddElementsToAggregateRPC               func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	RemoveElementsFromAggregateRPC          func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	ResetAggregateElementsRPC               func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	SetDefaultBootOrderAggregateElementsRPC func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAllConnectionMethodsRPC              func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetConnectionMethodRPC                  func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetResetActionInfoServiceRPC            func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetSetDefaultBootOrderActionInfoRPC     func(context.Context, aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 }
 
 // GetAggregationService is the handler for getting AggregationService details
 func (a *AggregatorRPCs) GetAggregationService(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -64,10 +66,10 @@ func (a *AggregatorRPCs) GetAggregationService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetAggregationServiceRPC(req)
+	resp, err := a.GetAggregationServiceRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -87,11 +89,12 @@ func (a *AggregatorRPCs) GetAggregationService(ctx iris.Context) {
 // and do rpc call and send response back
 func (a *AggregatorRPCs) Reset(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the  request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -115,7 +118,7 @@ func (a *AggregatorRPCs) Reset(ctx iris.Context) {
 	request, err := json.Marshal(req)
 	if err != nil {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -127,10 +130,10 @@ func (a *AggregatorRPCs) Reset(ctx iris.Context) {
 		SessionToken: sessionToken,
 		RequestBody:  request,
 	}
-	resp, err := a.ResetRPC(resetRequest)
+	resp, err := a.ResetRPC(ctxt, resetRequest)
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -148,11 +151,12 @@ func (a *AggregatorRPCs) Reset(ctx iris.Context) {
 // and do rpc call and send response back
 func (a *AggregatorRPCs) SetDefaultBootOrder(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the  request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -176,7 +180,7 @@ func (a *AggregatorRPCs) SetDefaultBootOrder(ctx iris.Context) {
 	request, err := json.Marshal(req)
 	if err != nil {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -188,10 +192,10 @@ func (a *AggregatorRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		SessionToken: sessionToken,
 		RequestBody:  request,
 	}
-	resp, err := a.SetDefaultBootOrderRPC(resetRequest)
+	resp, err := a.SetDefaultBootOrderRPC(ctxt, resetRequest)
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -207,11 +211,12 @@ func (a *AggregatorRPCs) SetDefaultBootOrder(ctx iris.Context) {
 // AddAggregationSource is the handler for adding  AggregationSource details
 func (a *AggregatorRPCs) AddAggregationSource(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -238,10 +243,10 @@ func (a *AggregatorRPCs) AddAggregationSource(ctx iris.Context) {
 		SessionToken: sessionToken,
 		RequestBody:  request,
 	}
-	resp, err := a.AddAggregationSourceRPC(addRequest)
+	resp, err := a.AddAggregationSourceRPC(ctxt, addRequest)
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -257,6 +262,7 @@ func (a *AggregatorRPCs) AddAggregationSource(ctx iris.Context) {
 // GetAllAggregationSource is the handler for getting all  AggregationSource details
 func (a *AggregatorRPCs) GetAllAggregationSource(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -268,10 +274,10 @@ func (a *AggregatorRPCs) GetAllAggregationSource(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetAllAggregationSourceRPC(req)
+	resp, err := a.GetAllAggregationSourceRPC(ctxt, req)
 	if err != nil {
 		errorMessage := " RPC error:" + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -288,6 +294,7 @@ func (a *AggregatorRPCs) GetAllAggregationSource(ctx iris.Context) {
 // GetAggregationSource is the handler for getting  AggregationSource details
 func (a *AggregatorRPCs) GetAggregationSource(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -300,10 +307,10 @@ func (a *AggregatorRPCs) GetAggregationSource(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetAggregationSourceRPC(req)
+	resp, err := a.GetAggregationSourceRPC(ctxt, req)
 	if err != nil {
 		errorMessage := " RPC error:" + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -319,11 +326,12 @@ func (a *AggregatorRPCs) GetAggregationSource(ctx iris.Context) {
 // UpdateAggregationSource is the handler for updating  AggregationSource details
 func (a *AggregatorRPCs) UpdateAggregationSource(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -351,10 +359,10 @@ func (a *AggregatorRPCs) UpdateAggregationSource(ctx iris.Context) {
 		RequestBody:  request,
 		URL:          ctx.Request().RequestURI,
 	}
-	resp, err := a.UpdateAggregationSourceRPC(updateRequest)
+	resp, err := a.UpdateAggregationSourceRPC(ctxt, updateRequest)
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -371,6 +379,7 @@ func (a *AggregatorRPCs) UpdateAggregationSource(ctx iris.Context) {
 // DeleteAggregationSource is the handler for updating  AggregationSource details
 func (a *AggregatorRPCs) DeleteAggregationSource(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -383,10 +392,10 @@ func (a *AggregatorRPCs) DeleteAggregationSource(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.DeleteAggregationSourceRPC(req)
+	resp, err := a.DeleteAggregationSourceRPC(ctxt, req)
 	if err != nil {
 		errorMessage := " RPC error:" + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -402,11 +411,12 @@ func (a *AggregatorRPCs) DeleteAggregationSource(ctx iris.Context) {
 // CreateAggregate is the handler for creating an aggregate
 func (a *AggregatorRPCs) CreateAggregate(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -432,10 +442,10 @@ func (a *AggregatorRPCs) CreateAggregate(ctx iris.Context) {
 		SessionToken: sessionToken,
 		RequestBody:  request,
 	}
-	resp, err := a.CreateAggregateRPC(createRequest)
+	resp, err := a.CreateAggregateRPC(ctxt, createRequest)
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -451,6 +461,7 @@ func (a *AggregatorRPCs) CreateAggregate(ctx iris.Context) {
 // GetAggregateCollection is the handler for getting collection of aggregates
 func (a *AggregatorRPCs) GetAggregateCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -462,10 +473,10 @@ func (a *AggregatorRPCs) GetAggregateCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetAggregateCollectionRPC(req)
+	resp, err := a.GetAggregateCollectionRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -481,6 +492,7 @@ func (a *AggregatorRPCs) GetAggregateCollection(ctx iris.Context) {
 // GetAggregate is the handler for getting an aggregate
 func (a *AggregatorRPCs) GetAggregate(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -493,10 +505,10 @@ func (a *AggregatorRPCs) GetAggregate(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetAggregateRPC(req)
+	resp, err := a.GetAggregateRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -512,6 +524,7 @@ func (a *AggregatorRPCs) GetAggregate(ctx iris.Context) {
 // DeleteAggregate is the handler for deleting an aggregate
 func (a *AggregatorRPCs) DeleteAggregate(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -524,10 +537,10 @@ func (a *AggregatorRPCs) DeleteAggregate(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.DeleteAggregateRPC(req)
+	resp, err := a.DeleteAggregateRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -543,11 +556,12 @@ func (a *AggregatorRPCs) DeleteAggregate(ctx iris.Context) {
 // AddElementsToAggregate is the handler for adding elements to an aggregate
 func (a *AggregatorRPCs) AddElementsToAggregate(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -575,10 +589,10 @@ func (a *AggregatorRPCs) AddElementsToAggregate(ctx iris.Context) {
 		RequestBody:  request,
 	}
 
-	resp, err := a.AddElementsToAggregateRPC(addRequest)
+	resp, err := a.AddElementsToAggregateRPC(ctxt, addRequest)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -594,11 +608,12 @@ func (a *AggregatorRPCs) AddElementsToAggregate(ctx iris.Context) {
 // RemoveElementsFromAggregate is the handler for removing elements from an aggregate
 func (a *AggregatorRPCs) RemoveElementsFromAggregate(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -626,10 +641,10 @@ func (a *AggregatorRPCs) RemoveElementsFromAggregate(ctx iris.Context) {
 		RequestBody:  request,
 	}
 
-	resp, err := a.RemoveElementsFromAggregateRPC(removeRequest)
+	resp, err := a.RemoveElementsFromAggregateRPC(ctxt, removeRequest)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -645,11 +660,12 @@ func (a *AggregatorRPCs) RemoveElementsFromAggregate(ctx iris.Context) {
 // ResetAggregateElements is the handler for resetting elements of an aggregate
 func (a *AggregatorRPCs) ResetAggregateElements(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -677,10 +693,10 @@ func (a *AggregatorRPCs) ResetAggregateElements(ctx iris.Context) {
 		RequestBody:  request,
 	}
 
-	resp, err := a.ResetAggregateElementsRPC(resetRequest)
+	resp, err := a.ResetAggregateElementsRPC(ctxt, resetRequest)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -696,6 +712,7 @@ func (a *AggregatorRPCs) ResetAggregateElements(ctx iris.Context) {
 // SetDefaultBootOrderAggregateElements is the handler for SetDefaultBootOrder elements of an aggregate
 func (a *AggregatorRPCs) SetDefaultBootOrderAggregateElements(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
@@ -711,10 +728,10 @@ func (a *AggregatorRPCs) SetDefaultBootOrderAggregateElements(ctx iris.Context) 
 		URL:          ctx.Request().RequestURI,
 	}
 
-	resp, err := a.SetDefaultBootOrderAggregateElementsRPC(bootOrderRequest)
+	resp, err := a.SetDefaultBootOrderAggregateElementsRPC(ctxt, bootOrderRequest)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -730,6 +747,7 @@ func (a *AggregatorRPCs) SetDefaultBootOrderAggregateElements(ctx iris.Context) 
 // GetAllConnectionMethods is the handler for get all connection methods
 func (a *AggregatorRPCs) GetAllConnectionMethods(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -741,10 +759,10 @@ func (a *AggregatorRPCs) GetAllConnectionMethods(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetAllConnectionMethodsRPC(req)
+	resp, err := a.GetAllConnectionMethodsRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -761,6 +779,7 @@ func (a *AggregatorRPCs) GetAllConnectionMethods(ctx iris.Context) {
 // GetConnectionMethod is the handler for get connection method
 func (a *AggregatorRPCs) GetConnectionMethod(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -773,10 +792,10 @@ func (a *AggregatorRPCs) GetConnectionMethod(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetConnectionMethodRPC(req)
+	resp, err := a.GetConnectionMethodRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -793,6 +812,7 @@ func (a *AggregatorRPCs) GetConnectionMethod(ctx iris.Context) {
 // GetResetActionInfoService is the handler for getting GetResetActionInfoService details
 func (a *AggregatorRPCs) GetResetActionInfoService(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -804,10 +824,10 @@ func (a *AggregatorRPCs) GetResetActionInfoService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetResetActionInfoServiceRPC(req)
+	resp, err := a.GetResetActionInfoServiceRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "RPC call error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -825,6 +845,7 @@ func (a *AggregatorRPCs) GetResetActionInfoService(ctx iris.Context) {
 // GetSetDefaultBootOrderActionInfo is the handler for getting GetSetDefaultBootOrderActionInfo details
 func (a *AggregatorRPCs) GetSetDefaultBootOrderActionInfo(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -836,10 +857,10 @@ func (a *AggregatorRPCs) GetSetDefaultBootOrderActionInfo(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetSetDefaultBootOrderActionInfoRPC(req)
+	resp, err := a.GetSetDefaultBootOrderActionInfoRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "RPC call error: " + err.Error()
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

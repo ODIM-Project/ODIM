@@ -17,73 +17,75 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"time"
 
-	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
-
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/golang/protobuf/ptypes"
 )
 
 //CreateTask function is to contact the svc-task through the rpc call
-func CreateTask(sessionUserName string) (string, error) {
+func CreateTask(ctx context.Context, sessionUserName string) (string, error) {
 	conn, errConn := ODIMService.Client(Tasks)
 	if errConn != nil {
-		l.Log.Error("Failed to create client connection: " + errConn.Error())
+		return "", fmt.Errorf("Failed to create client connection: %s", errConn.Error())
 	}
 	defer conn.Close()
 	taskService := taskproto.NewGetTaskServiceClient(conn)
+	reqCtx := CreateNewRequestContext(ctx)
+	reqCtx = common.CreateMetadata(reqCtx)
 	response, err := taskService.CreateTask(
-		context.TODO(),
-		&taskproto.CreateTaskRequest{
+		reqCtx, &taskproto.CreateTaskRequest{
 			UserName: sessionUserName,
 		},
 	)
 	if err != nil && response == nil {
-		l.Log.Error("rpc error while creating the task: " + err.Error())
-		return "", err
+		return "", fmt.Errorf("rpc error while creating the task: %s", err.Error())
 	}
 	return response.TaskURI, err
 }
 
 // CreateChildTask function is to contact the svc-task through the rpc call
-func CreateChildTask(sessionUserName string, parentTaskID string) (string, error) {
+func CreateChildTask(ctx context.Context, sessionUserName string, parentTaskID string) (string, error) {
 	conn, errConn := ODIMService.Client(Tasks)
 	if errConn != nil {
-		l.Log.Error("Failed to create client connection: " + errConn.Error())
+		return "", fmt.Errorf("Failed to create client connection: %s", errConn.Error())
 	}
 	defer conn.Close()
 	taskService := taskproto.NewGetTaskServiceClient(conn)
+	reqCtx := CreateNewRequestContext(ctx)
+	reqCtx = common.CreateMetadata(reqCtx)
 	response, err := taskService.CreateChildTask(
-		context.TODO(),
-		&taskproto.CreateTaskRequest{
+		reqCtx, &taskproto.CreateTaskRequest{
 			UserName:     sessionUserName,
 			ParentTaskID: parentTaskID,
 		},
 	)
 	if err != nil && response == nil {
-		l.Log.Error("rpc error while creating the child task: " + err.Error())
-		return "", err
+		return "", fmt.Errorf("rpc error while creating the child task:  %s", err.Error())
 	}
 	return response.TaskURI, err
 }
 
 //UpdateTask function is to contact the svc-task through the rpc call
-func UpdateTask(taskID string, taskState string, taskStatus string, percentComplete int32, payLoad *taskproto.Payload, endTime time.Time) error {
+func UpdateTask(ctx context.Context, taskID string, taskState string, taskStatus string,
+	percentComplete int32, payLoad *taskproto.Payload, endTime time.Time) error {
+
 	tspb, err := ptypes.TimestampProto(endTime)
 	if err != nil {
-		l.Log.Error("Failed to convert the time to protobuff timestamp: " + err.Error())
-		return err
+		return fmt.Errorf("Failed to convert the time to protobuff timestamp: %s", err.Error())
 	}
 	conn, errConn := ODIMService.Client(Tasks)
 	if errConn != nil {
-		l.Log.Error("Failed to create client connection: " + errConn.Error())
+		return fmt.Errorf("Failed to create client connection: %s", errConn.Error())
 	}
 	defer conn.Close()
+	reqCtx := CreateNewRequestContext(ctx)
+	reqCtx = common.CreateMetadata(reqCtx)
 	taskService := taskproto.NewGetTaskServiceClient(conn)
 	_, err = taskService.UpdateTask(
-		context.TODO(),
-		&taskproto.UpdateTaskRequest{
+		reqCtx, &taskproto.UpdateTaskRequest{
 			TaskID:          taskID,
 			TaskState:       taskState,
 			TaskStatus:      taskStatus,
@@ -93,4 +95,21 @@ func UpdateTask(taskID string, taskState string, taskStatus string, percentCompl
 		},
 	)
 	return err
+}
+
+func CreateNewRequestContext(ctx context.Context) context.Context {
+	reqCtx := context.Background()
+	processName, _ := ctx.Value(common.ProcessName).(string)
+	transactionID, _ := ctx.Value(common.TransactionID).(string)
+	actionID, _ := ctx.Value(common.ActionID).(string)
+	actionName, _ := ctx.Value(common.ActionName).(string)
+	threadID, _ := ctx.Value(common.ThreadID).(string)
+	threadName, _ := ctx.Value(common.ThreadName).(string)
+	reqCtx = context.WithValue(reqCtx, common.ProcessName, processName)
+	reqCtx = context.WithValue(reqCtx, common.TransactionID, transactionID)
+	reqCtx = context.WithValue(reqCtx, common.ActionID, actionID)
+	reqCtx = context.WithValue(reqCtx, common.ActionName, actionName)
+	reqCtx = context.WithValue(reqCtx, common.ThreadID, threadID)
+	reqCtx = context.WithValue(reqCtx, common.ThreadName, threadName)
+	return reqCtx
 }

@@ -17,6 +17,7 @@
 package system
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -28,7 +29,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
-func mockPublishEventMB(systemID, eventType, collectionType string) {
+func mockPublishEventMB(ctx context.Context, systemID, eventType, collectionType string) {
 	return
 }
 
@@ -141,6 +142,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
+	ctx := mockContext()
 	device1 := agmodel.Target{
 		ManagerAddress: "100.0.0.1",
 		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
@@ -223,7 +225,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			},
 		},
 		{
-			name: "Positive case: All is well, Need redicovery of the resource",
+			name: "Positive case: All is well, Need rediscovery of the resource",
 			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "7a2c6100-67da-5fd6-ab82-6870d29c7279",
@@ -232,7 +234,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			},
 		},
 		{
-			name: "Positive case: All is well, Need redicovery of storage",
+			name: "Positive case: All is well, Need rediscovery of storage",
 			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "7a2c6100-67da-5fd6-ab82-6870d29c7279",
@@ -241,7 +243,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			},
 		},
 		{
-			name: "Positive case: All is well, dont need redicovery of the resource",
+			name: "Positive case: All is well, don't need rediscovery of the resource",
 			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "24b243cf-f1e3-5318-92d9-2d6737d6b0b9",
@@ -261,7 +263,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.e.RediscoverSystemInventory(tt.args.deviceUUID, tt.args.systemURL, tt.args.updateFlag)
+			tt.e.RediscoverSystemInventory(ctx, tt.args.deviceUUID, tt.args.systemURL, tt.args.updateFlag)
 		})
 	}
 }
@@ -277,7 +279,7 @@ func TestExternalInterface_isServerRediscoveryRequired(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-
+	ctx := mockContext()
 	device1 := agmodel.Target{
 		ManagerAddress: "100.0.0.1",
 		Password:       []byte("password"),
@@ -371,7 +373,7 @@ func TestExternalInterface_isServerRediscoveryRequired(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.isServerRediscoveryRequired(tt.args.deviceUUID, tt.args.systemKey); got != tt.want {
+			if got := tt.e.isServerRediscoveryRequired(ctx, tt.args.deviceUUID, tt.args.systemKey); got != tt.want {
 				t.Errorf("ExternalInterface.isServerRediscoveryRequired() = %v, want %v", got, tt.want)
 			}
 		})

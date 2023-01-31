@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
@@ -32,7 +32,8 @@ var (
 )
 
 // DeleteTaskRequest will do the rpc calls for the svc-task DeleteTask
-func DeleteTaskRequest(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+func DeleteTaskRequest(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, connErr := ClientFunc(services.Tasks)
 	if connErr != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
@@ -40,7 +41,7 @@ func DeleteTaskRequest(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, 
 
 	asService := NewGetTaskServiceClientFunc(conn)
 	// Call the DeleteTask
-	rsp, err := asService.DeleteTask(context.TODO(), req)
+	rsp, err := asService.DeleteTask(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)
@@ -56,7 +57,8 @@ func DeleteTaskRequest(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, 
 }
 
 // GetTaskRequest will do the rpc calls for the svc-task GetTaskStatus
-func GetTaskRequest(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+func GetTaskRequest(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, connErr := ClientFunc(services.Tasks)
 	if connErr != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
@@ -64,7 +66,7 @@ func GetTaskRequest(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, err
 
 	asService := NewGetTaskServiceClientFunc(conn)
 	// Call the GetTasks
-	rsp, err := asService.GetTasks(context.TODO(), req)
+	rsp, err := asService.GetTasks(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)
@@ -80,7 +82,8 @@ func GetTaskRequest(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, err
 }
 
 // GetSubTasks will do the rpc calls for the svc-task GetSubTasks
-func GetSubTasks(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+func GetSubTasks(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, connErr := ClientFunc(services.Tasks)
 	if connErr != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
@@ -88,7 +91,7 @@ func GetSubTasks(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
 
 	tService := NewGetTaskServiceClientFunc(conn)
 	// Call the GetSubTasks
-	rsp, err := tService.GetSubTasks(context.TODO(), req)
+	rsp, err := tService.GetSubTasks(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)
@@ -104,7 +107,8 @@ func GetSubTasks(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
 }
 
 // GetSubTask will do the rpc calls for the svc-task GetSubTask
-func GetSubTask(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+func GetSubTask(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, connErr := ClientFunc(services.Tasks)
 	if connErr != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
@@ -112,7 +116,7 @@ func GetSubTask(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) 
 
 	tService := NewGetTaskServiceClientFunc(conn)
 	// Call the GetSubTask
-	rsp, err := tService.GetSubTask(context.TODO(), req)
+	rsp, err := tService.GetSubTask(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)
@@ -128,7 +132,8 @@ func GetSubTask(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) 
 }
 
 // GetTaskMonitor will do the rpc calls for the svc-task GetTaskMonitor
-func GetTaskMonitor(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+func GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, connErr := ClientFunc(services.Tasks)
 	if connErr != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
@@ -136,7 +141,7 @@ func GetTaskMonitor(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, err
 
 	tService := NewGetTaskServiceClientFunc(conn)
 	// perform rpc call to svc-task to get TaskMonitor resource
-	rsp, err := tService.GetTaskMonitor(context.TODO(), req)
+	rsp, err := tService.GetTaskMonitor(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)
@@ -151,8 +156,9 @@ func GetTaskMonitor(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, err
 	return rsp, nil
 }
 
-//TaskCollection will perform the rpc call to svc-task TaskCollection
-func TaskCollection(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+// TaskCollection will perform the rpc call to svc-task TaskCollection
+func TaskCollection(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, connErr := ClientFunc(services.Tasks)
 	if connErr != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
@@ -160,7 +166,7 @@ func TaskCollection(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, err
 
 	tService := NewGetTaskServiceClientFunc(conn)
 	// perform rpc call to svc-task to get TaskCollection resource
-	rsp, err := tService.TaskCollection(context.TODO(), req)
+	rsp, err := tService.TaskCollection(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)
@@ -175,8 +181,9 @@ func TaskCollection(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, err
 	return rsp, nil
 }
 
-//GetTaskService will perform the rpc call to svc-task GetTaskService
-func GetTaskService(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+// GetTaskService will perform the rpc call to svc-task GetTaskService
+func GetTaskService(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, connErr := ClientFunc(services.Tasks)
 	if connErr != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
@@ -184,7 +191,7 @@ func GetTaskService(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, err
 
 	tService := NewGetTaskServiceClientFunc(conn)
 	// perform rpc call to svc-task to get TaskService resource
-	rsp, err := tService.GetTaskService(context.TODO(), req)
+	rsp, err := tService.GetTaskService(ctx, req)
 	if err != nil {
 		resp := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		body, _ := json.Marshal(resp.Body)

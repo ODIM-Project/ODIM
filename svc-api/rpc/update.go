@@ -12,13 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -29,8 +30,8 @@ var (
 
 // DoGetUpdateService defines the RPC call function for
 // the GetUpdateService from update micro service
-func DoGetUpdateService(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
-
+func DoGetUpdateService(ctx context.Context, req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Update)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -38,7 +39,7 @@ func DoGetUpdateService(req updateproto.UpdateRequest) (*updateproto.UpdateRespo
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.GetUpdateService(context.TODO(), &req)
+	resp, err := update.GetUpdateService(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -48,8 +49,8 @@ func DoGetUpdateService(req updateproto.UpdateRequest) (*updateproto.UpdateRespo
 
 // DoGetFirmwareInventory defines the RPC call function for
 // the GetFirmwareInventory from update micro service
-func DoGetFirmwareInventory(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
-
+func DoGetFirmwareInventory(ctx context.Context, req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Update)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -57,7 +58,7 @@ func DoGetFirmwareInventory(req updateproto.UpdateRequest) (*updateproto.UpdateR
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.GetFirmwareInventory(context.TODO(), &req)
+	resp, err := update.GetFirmwareInventory(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -67,8 +68,8 @@ func DoGetFirmwareInventory(req updateproto.UpdateRequest) (*updateproto.UpdateR
 
 // DoGetSoftwareInventory defines the RPC call function for
 // the GetSoftwareInventory from update micro service
-func DoGetSoftwareInventory(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
-
+func DoGetSoftwareInventory(ctx context.Context, req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Update)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -76,7 +77,7 @@ func DoGetSoftwareInventory(req updateproto.UpdateRequest) (*updateproto.UpdateR
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.GetSoftwareInventory(context.TODO(), &req)
+	resp, err := update.GetSoftwareInventory(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -86,8 +87,8 @@ func DoGetSoftwareInventory(req updateproto.UpdateRequest) (*updateproto.UpdateR
 
 // DoGetFirmwareInventoryCollection defines the RPC call function for
 // the GetFirmwareInventory from update micro service
-func DoGetFirmwareInventoryCollection(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
-
+func DoGetFirmwareInventoryCollection(ctx context.Context, req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Update)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -95,7 +96,7 @@ func DoGetFirmwareInventoryCollection(req updateproto.UpdateRequest) (*updatepro
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.GetFirmwareInventoryCollection(context.TODO(), &req)
+	resp, err := update.GetFirmwareInventoryCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -105,8 +106,8 @@ func DoGetFirmwareInventoryCollection(req updateproto.UpdateRequest) (*updatepro
 
 // DoGetSoftwareInventoryCollection defines the RPC call function for
 // the GetSoftwareInventory from update micro service
-func DoGetSoftwareInventoryCollection(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
-
+func DoGetSoftwareInventoryCollection(ctx context.Context, req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Update)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -114,7 +115,7 @@ func DoGetSoftwareInventoryCollection(req updateproto.UpdateRequest) (*updatepro
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.GetSoftwareInventoryCollection(context.TODO(), &req)
+	resp, err := update.GetSoftwareInventoryCollection(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -124,8 +125,8 @@ func DoGetSoftwareInventoryCollection(req updateproto.UpdateRequest) (*updatepro
 
 // DoSimpleUpdate defines the RPC call for
 // SimpleUpdate from update micro service
-func DoSimpleUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
-
+func DoSimpleUpdate(ctx context.Context, req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Update)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -133,7 +134,7 @@ func DoSimpleUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse,
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.SimepleUpdate(context.TODO(), &req)
+	resp, err := update.SimepleUpdate(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
@@ -143,8 +144,8 @@ func DoSimpleUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse,
 
 // DoStartUpdate defines the RPC call for
 // StartUpdate from update micro service
-func DoStartUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
-
+func DoStartUpdate(ctx context.Context, req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Update)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -152,7 +153,7 @@ func DoStartUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, 
 
 	update := NewUpdateClientFunc(conn)
 
-	resp, err := update.StartUpdate(context.TODO(), &req)
+	resp, err := update.StartUpdate(ctx, &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}

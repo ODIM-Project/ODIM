@@ -140,9 +140,14 @@ func TestSetConfiguration(t *testing.T) {
         },
        	"MessageBusConf": {
       			"MessageBusConfigFilePath": "/tmp/testFile.dat",
-	                "MessageBusType": "Kafka",
-      			"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
+	            "MessageBusType": "Kafka",
+				"OdimControlMessageQueue":"ODIM-CONTROL-MESSAGES"
 	      },
+		"TaskQueueConf" : {
+			"QueueSize": 20000,
+			"DBCommitInterval": 1000,
+			"RetryInterval": 5000
+		},
         "FirmwareVersion": "1.0",
         "SouthBoundRequestTimeoutInSecs": 10,
         "ServerRediscoveryBatchSize": 30,
@@ -265,7 +270,7 @@ func TestSetConfiguration(t *testing.T) {
 			os.Setenv("CONFIG_FILE_PATH", cfgFilePath)
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if err := SetConfiguration(); (err != nil) != tt.wantErr {
+			if _, err := SetConfiguration(); (err != nil) != tt.wantErr {
 				t.Errorf("SetConfiguration() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -348,7 +353,7 @@ func TestValidateConfigurationGroup1(t *testing.T) {
 			}
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {
+			if _, err := ValidateConfiguration(); (err != nil) != tt.wantErr {
 				t.Errorf("TestValidateConfigurationGroup1() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -449,10 +454,10 @@ func TestValidateConfigurationGroup2(t *testing.T) {
 		case 11:
 			Data.MessageBusConf.MessageBusType = "Kafka"
 		case 12:
-			Data.MessageBusConf.MessageBusQueue = []string{"REDFISH-EVENTS-TOPIC"}
+			Data.MessageBusConf.OdimControlMessageQueue = "ODIM-CONTROL-MESSAGES"
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {
+			if _, err := ValidateConfiguration(); (err != nil) != tt.wantErr {
 				t.Errorf("TestValidateConfigurationGroup2() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -521,6 +526,11 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 		},
 	}
 	for num, tt := range tests {
+		Data.TaskQueueConf = &TaskQueueConf{
+			QueueSize:        1000,
+			DBCommitInterval: 1000,
+			RetryInterval:    5000,
+		}
 		switch num {
 		case 0:
 			Data.AuthConf = &AuthConf{
@@ -569,7 +579,7 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			Data.AddComputeSkipResources.SkipResourceListUnderManager = []string{"Chassis", "Systems", "LogServices"}
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {
+			if _, err := ValidateConfiguration(); (err != nil) != tt.wantErr {
 				t.Errorf("TestValidateConfigurationGroup3() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -604,7 +614,7 @@ func TestValidateConfigurationForEventConf(t *testing.T) {
 			}
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {
+			if _, err := ValidateConfiguration(); (err != nil) != tt.wantErr {
 				t.Errorf("TestValidateConfigurationForEventConf()  = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

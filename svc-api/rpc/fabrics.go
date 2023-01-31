@@ -12,13 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -29,15 +30,15 @@ var (
 
 // GetFabricResource defines the RPC call function for
 // the GetFabricResource from fabrics micro service
-func GetFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
-
+func GetFabricResource(ctx context.Context, req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Fabrics)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	fab := NewFabricsClientFunc(conn)
-	resp, err := fab.GetFabricResource(context.TODO(), &req)
+	resp, err := fab.GetFabricResource(ctx, &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}
@@ -47,8 +48,8 @@ func GetFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricResp
 
 // UpdateFabricResource defines the RPC call function for creating/updating
 // the Fabric Resource such as Endpoints, Zones from fabrics micro service
-func UpdateFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
-
+func UpdateFabricResource(ctx context.Context, req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Fabrics)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -56,7 +57,7 @@ func UpdateFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricR
 
 	fab := NewFabricsClientFunc(conn)
 
-	resp, err := fab.UpdateFabricResource(context.TODO(), &req)
+	resp, err := fab.UpdateFabricResource(ctx, &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}
@@ -66,8 +67,8 @@ func UpdateFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricR
 
 // DeleteFabricResource defines the RPC call function for
 // the DeleteFabricResource from fabrics micro service
-func DeleteFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
-
+func DeleteFabricResource(ctx context.Context, req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
+	ctx = common.CreateMetadata(ctx)
 	conn, err := ClientFunc(services.Fabrics)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -75,7 +76,7 @@ func DeleteFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricR
 
 	fab := NewFabricsClientFunc(conn)
 
-	resp, err := fab.DeleteFabricResource(context.TODO(), &req)
+	resp, err := fab.DeleteFabricResource(ctx, &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
 	}

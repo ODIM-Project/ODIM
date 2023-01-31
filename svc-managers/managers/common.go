@@ -15,13 +15,15 @@
 package managers
 
 import (
+	"context"
+	"net/http"
+
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
-	"net/http"
 )
 
 // ExternalInterface holds all the external connections managers package functions uses
@@ -32,9 +34,9 @@ type ExternalInterface struct {
 
 // Device struct to inject the contact device function into the handlers
 type Device struct {
-	GetDeviceInfo         func(mgrcommon.ResourceInfoRequest) (string, error)
-	DeviceRequest         func(mgrcommon.ResourceInfoRequest) response.RPC
-	ContactClient         func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	GetDeviceInfo         func(context.Context, mgrcommon.ResourceInfoRequest) (string, error)
+	DeviceRequest         func(context.Context, mgrcommon.ResourceInfoRequest) response.RPC
+	ContactClient         func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DecryptDevicePassword func([]byte) ([]byte, error)
 }
 

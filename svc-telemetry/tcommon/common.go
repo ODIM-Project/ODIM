@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package tcommon ...
+// Package tcommon ...
 package tcommon
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -33,35 +34,35 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-telemetry/tmodel"
 )
 
-//PluginContactRequest  hold the request of contact plugin
+// PluginContactRequest  hold the request of contact plugin
 type PluginContactRequest struct {
 	Token           string
 	OID             string
 	DeviceInfo      interface{}
 	BasicAuth       map[string]string
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	GetPluginStatus func(tmodel.Plugin) bool
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	GetPluginStatus func(context.Context, tmodel.Plugin) bool
 	Plugin          tmodel.Plugin
 	HTTPMethodType  string
 }
 
-//ResponseStatus holds the response of Contact Plugin
+// ResponseStatus holds the response of Contact Plugin
 type ResponseStatus struct {
 	StatusCode    int32
 	StatusMessage string
 }
 
-//ResourceInfoRequest  hold the request of getting  Resource
+// ResourceInfoRequest  hold the request of getting  Resource
 type ResourceInfoRequest struct {
 	URL                 string
-	ContactClient       func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient       func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DevicePassword      func([]byte) ([]byte, error)
-	GetPluginStatus     func(tmodel.Plugin) bool
+	GetPluginStatus     func(context.Context, tmodel.Plugin) bool
 	ResourceName        string
 	GetAllKeysFromTable func(string, common.DbType) ([]string, error)
 	GetPluginData       func(string) (tmodel.Plugin, *errors.Error)
 	GetResource         func(string, string, common.DbType) (string, *errors.Error)
-	GenericSave         func([]byte, string, string) error
+	GenericSave         func(context.Context, []byte, string, string) error
 }
 
 var (
@@ -70,7 +71,7 @@ var (
 )
 
 // GetResourceInfoFromDevice will contact to the southbound client and gets the Particual resource info from device
-func GetResourceInfoFromDevice(req ResourceInfoRequest) ([]byte, error) {
+func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) ([]byte, error) {
 	var metricReportData dmtf.MetricReports
 	plugins, err := req.GetAllKeysFromTable("Plugin", common.OnDisk)
 	if err != nil {
@@ -78,13 +79,17 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) ([]byte, error) {
 	}
 	var wg sync.WaitGroup
 	var lock sync.Mutex
+	var threadID int = 1
 	for _, value := range plugins {
 		wg.Add(1)
-		go getResourceInfo(value, &metricReportData, req, &lock, &wg)
+		ctxt := context.WithValue(ctx, common.ThreadName, common.GetTelemetryResource)
+		ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+		go getResourceInfo(ctxt, value, &metricReportData, req, &lock, &wg)
+		threadID++
 	}
 	wg.Wait()
 	if reflect.DeepEqual(metricReportData, dmtf.MetricReports{}) {
-		removeNonExistingID(req)
+		removeNonExistingID(ctx, req)
 		return []byte{}, fmt.Errorf("Metric report not found")
 	}
 	data, err := json.Marshal(metricReportData)
@@ -94,7 +99,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) ([]byte, error) {
 	return data, nil
 }
 
-func getResourceInfo(pluginID string, metricReportData *dmtf.MetricReports, req ResourceInfoRequest, lock *sync.Mutex, wg *sync.WaitGroup) {
+func getResourceInfo(ctx context.Context, pluginID string, metricReportData *dmtf.MetricReports, req ResourceInfoRequest, lock *sync.Mutex, wg *sync.WaitGroup) {
 	defer wg.Done()
 	// Get the Plugin info
 	plugin, gerr := req.GetPluginData(pluginID)
@@ -114,7 +119,7 @@ func getResourceInfo(pluginID string, metricReportData *dmtf.MetricReports, req 
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, _, err := ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
+		_, token, _, err := ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
 		if err != nil {
 			return
 		}
@@ -127,7 +132,7 @@ func getResourceInfo(pluginID string, metricReportData *dmtf.MetricReports, req 
 	}
 	contactRequest.OID = req.URL
 	contactRequest.HTTPMethodType = http.MethodGet
-	body, _, _, err := ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
+	body, _, _, err := ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
 	if err != nil {
 		return
 	}
@@ -150,20 +155,20 @@ func getResourceInfo(pluginID string, metricReportData *dmtf.MetricReports, req 
 }
 
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
-func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
+func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
 	var resp ResponseStatus
 	var response *http.Response
 	var err error
 	response, err = callPlugin(req)
 	if err != nil {
-		if req.GetPluginStatus(req.Plugin) {
+		if req.GetPluginStatus(ctx, req.Plugin) {
 			response, err = callPlugin(req)
 		}
 		if err != nil {
 			errorMessage = errorMessage + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = errors.InternalError
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
@@ -173,13 +178,13 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
-	l.Log.Info("Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
+	l.LogWithFields(ctx).Info("Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
 		resp.StatusCode = int32(response.StatusCode)
-		l.Log.Println(errorMessage)
+		l.LogWithFields(ctx).Println(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -192,7 +197,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 }
 
 // GetPluginStatus checks the status of given plugin in configured interval
-func GetPluginStatus(plugin tmodel.Plugin) bool {
+func GetPluginStatus(ctx context.Context, plugin tmodel.Plugin) bool {
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{
@@ -210,10 +215,10 @@ func GetPluginStatus(plugin tmodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		l.Log.Error("Error While getting the status for plugin " + plugin.ID + ": " + err.Error())
+		l.LogWithFields(ctx).Error("Error While getting the status for plugin " + plugin.ID + ": " + err.Error())
 		return status
 	}
-	l.Log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	l.LogWithFields(ctx).Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -224,12 +229,12 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 	}
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + oid
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
+		return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
-	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+	return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
 
-func removeNonExistingID(req ResourceInfoRequest) {
+func removeNonExistingID(ctx context.Context, req ResourceInfoRequest) {
 	collectionURL := "/redfish/v1/TelemetryService/MetricReports"
 	data, err := req.GetResource("MetricReportsCollection", collectionURL, common.InMemory)
 	if err != nil {
@@ -255,18 +260,29 @@ func removeNonExistingID(req ResourceInfoRequest) {
 		if jerr != nil {
 			return
 		}
-		req.GenericSave(reportCollection, "MetricReportsCollection", collectionURL)
+		req.GenericSave(ctx, reportCollection, "MetricReportsCollection", collectionURL)
 	}
 }
 
-func TrackConfigFileChanges() {
+func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
-	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
+	format := config.Data.LogFormat
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, errChan)
 	for {
-		l.Log.Info(<-eventChan) // new data arrives through eventChan channel
-		if l.Log.Level != config.Data.LogLevel {
-			l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
-			l.Log.Logger.SetLevel(config.Data.LogLevel)
+		select {
+		case info := <-eventChan:
+			l.Log.Info(info) // new data arrives through eventChan channel
+			if l.Log.Level != config.Data.LogLevel {
+				l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+				l.Log.Logger.SetLevel(config.Data.LogLevel)
+			}
+			if format != config.Data.LogFormat {
+				l.SetFormatter(config.Data.LogFormat)
+				format = config.Data.LogFormat
+				l.Log.Info("Log format is updated, new log format is ", config.Data.LogFormat)
+			}
+		case err := <-errChan:
+			l.Log.Error(err)
 		}
 
 	}

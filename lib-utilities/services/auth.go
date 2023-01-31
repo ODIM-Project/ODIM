@@ -24,19 +24,17 @@ import (
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
-	log "github.com/sirupsen/logrus"
 )
 
 // IsAuthorized is used to authorize the services using svc-account-session.
 // As parameters session token, privileges and oem privileges are passed.
 // A RPC call is made with these parameters to the Account-Session service
 // to check whether the session is valid and have all the privileges which are passed to it.
-func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errResponse.RPC {
+func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) (errResponse.RPC, error) {
 	conn, err := ODIMService.Client(AccountSession)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to create client connection: %v", err)
-		log.Error(errMsg)
-		return GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil)
+		return GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil), fmt.Errorf(errMsg)
 	}
 	defer conn.Close()
 	asService := authproto.NewAuthorizationClient(conn)
@@ -50,14 +48,13 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errRe
 	)
 	if err != nil && response == nil {
 		errMsg := fmt.Sprintf("rpc call failed: %v", err)
-		log.Error(errMsg)
-		return GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil)
+		return GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil), fmt.Errorf(errMsg)
 	}
 	var msgArgs []interface{}
 	if response.StatusCode == http.StatusServiceUnavailable {
 		msgArgs = append(msgArgs, fmt.Sprintf("%v:%v", "", ""))
 	}
-	return GeneralError(response.StatusCode, response.StatusMessage, "while checking the authorization", msgArgs)
+	return GeneralError(response.StatusCode, response.StatusMessage, "while checking the authorization", msgArgs), nil
 }
 
 // GetSessionUserName will get user name from the session token by rpc call to account-session service
@@ -75,8 +72,7 @@ func GetSessionUserName(sessionToken string) (string, error) {
 		},
 	)
 	if err != nil && response == nil {
-		log.Error("something went wrong with rpc call: " + err.Error())
-		return "", err
+		return "", fmt.Errorf("something went wrong with rpc call: " + err.Error())
 	}
 	return response.UserName, err
 }
@@ -96,32 +92,9 @@ func GetSessionUserRoleID(sessionToken string) (string, error) {
 		},
 	)
 	if err != nil && response == nil {
-		log.Error("something went wrong with rpc call: " + err.Error())
-		return "", err
+		return "", fmt.Errorf("something went wrong with rpc call: " + err.Error())
 	}
 	return response.RoleID, err
-}
-
-// GetUserDetails function is used to get the session details
-func GetUserDetails(sessionToken string) (string, string) {
-	var err error
-	sessionUserName := "null"
-	sessionRoleID := "null"
-	if sessionToken != "" {
-		sessionUserName, err = GetSessionUserName(sessionToken)
-		if err != nil {
-			errMsg := "while trying to get session details: " + err.Error()
-			log.Error(errMsg)
-			return "null", "null"
-		}
-		sessionRoleID, err = GetSessionUserRoleID(sessionToken)
-		if err != nil {
-			errMsg := "while trying to get session details: " + err.Error()
-			log.Error(errMsg)
-			return sessionUserName, "null"
-		}
-	}
-	return sessionUserName, sessionRoleID
 }
 
 // GeneralError will create the error response

@@ -103,7 +103,11 @@ kubernetes_images:
    registry.k8s.io/kube-scheduler: registry.k8s.io_kube-scheduler
    registry.k8s.io/kube-proxy: registry.k8s.io_kube-proxy
    registry.k8s.io/kube-controller-manager: registry.k8s.io_kube-controller-manager
+   #below pause version is 3.7
    registry.k8s.io/pause: registry.k8s.io_pause
+   #below one is verson 3.6
+   registry.k8s.io/pause2: registry.k8s.io_pause2
+   docker.io/library/nginx: docker.io_library_nginx
    #quay.io/coreos/etcd: quay.io_coreos_etcd
    #lachlanevenson/k8s-helm: lachlanevenson_k8s-helm
 

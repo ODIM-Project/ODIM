@@ -578,9 +578,9 @@ jobs:
                         fi
                 done
         done
-        sudo cp /var/log/grfplugin_logs/grfplugin.log /artifacts/grfplugin.log
-        sudo cp /var/log/dellplugin_logs/dellplugin.log /artifacts/dellplugin.log
-        sudo cp /var/log/odimra/* /artifacts/
+        #sudo cp /var/log/grfplugin_logs/grfplugin.log /artifacts/grfplugin.log
+        #sudo cp /var/log/dellplugin_logs/dellplugin.log /artifacts/dellplugin.log
+        #sudo cp /var/log/odimra/* /artifacts/
         
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v2

@@ -44,11 +44,11 @@ func TestRemoveFabric(t *testing.T) {
 		OriginResource: "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da",
 		Address:        "10.10.10.10",
 	}
-
-	resp := RemoveFabric(req)
+	ctx := mockContext()
+	resp := RemoveFabric(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "should be same")
 
-	resp = RemoveFabric(req)
+	resp = RemoveFabric(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "should be same")
 
 }

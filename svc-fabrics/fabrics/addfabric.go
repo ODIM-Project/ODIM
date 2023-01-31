@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package fabrics ...
+// Package fabrics ...
 package fabrics
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -28,9 +29,9 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
 )
 
-//AddFabric holds the logic for Adding fabric
-//It accepts post body and store the fabric details in DB
-func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
+// AddFabric holds the logic for Adding fabric
+// It accepts post body and store the fabric details in DB
+func AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) response.RPC {
 	var resp response.RPC
 	origin := req.OriginResource
 	address := req.Address
@@ -38,7 +39,7 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 
 	pluginDetails, err := GetAllFabricPluginDetailsFunc()
 	if err != nil {
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctx).Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
 	}
@@ -47,7 +48,7 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 
 		plugin, errs := fabmodel.GetPluginData(pluginkey)
 		if errs != nil {
-			l.Log.Error(errs.Error())
+			l.LogWithFields(ctx).Error(errs.Error())
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errs.Error(),
 				[]interface{}{}, nil)
 		}
@@ -59,7 +60,7 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 			if err != nil {
 				errorMessage = "Can't lookup the ip from host name" + err.Error()
 			}
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errs.Error(),
 				[]interface{}{"IP Address", plugin.IP}, nil)
 		}
@@ -75,7 +76,7 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 		}
 	}
 	if pluginID == "" {
-		l.Log.Error("error: plugin ID is empty")
+		l.LogWithFields(ctx).Error("error: plugin ID is empty")
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error: no match found for plugin ID",
 			[]interface{}{"IP Address", address}, nil)
 	}
@@ -86,11 +87,11 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 
 	err = fab.AddFabricData(uuid)
 	if err != nil {
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctx).Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
 	}
-	l.Log.Info("Fabric Added")
+	l.LogWithFields(ctx).Info("Fabric Added")
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp

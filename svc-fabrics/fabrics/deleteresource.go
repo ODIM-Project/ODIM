@@ -12,27 +12,28 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package fabrics ...
+// Package fabrics ...
 package fabrics
 
 import (
+	"context"
 	"net/http"
 
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
-//DeleteFabricResource holds the logic for deleting specfic fabric resource
+// DeleteFabricResource holds the logic for deleting specfic fabric resource
 // It accepts url and contacts the configured CFM plugin
 // and deletes the metioned fabric resoure such as Endpoints,Ports
-func (f *Fabrics) DeleteFabricResource(req *fabricsproto.FabricRequest) response.RPC {
+func (f *Fabrics) DeleteFabricResource(ctx context.Context, req *fabricsproto.FabricRequest) response.RPC {
 	var resp response.RPC
 	var contactRequest pluginContactRequest
 	req.Method = http.MethodDelete
 	var err error
-	contactRequest, resp, err = f.parseFabricsRequest(req)
+	contactRequest, resp, err = f.parseFabricsRequest(ctx, req)
 	if err != nil {
 		return resp
 	}
-	return f.parseFabricsResponse(contactRequest, req.URL)
+	return f.parseFabricsResponse(ctx, contactRequest, req.URL)
 }

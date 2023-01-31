@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package fabrics ...
+// Package fabrics ...
 package fabrics
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
@@ -27,7 +28,7 @@ import (
 )
 
 // RemoveFabric holds the logic for deleting specfic fabric resource
-func RemoveFabric(req *fabricsproto.AddFabricRequest) response.RPC {
+func RemoveFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) response.RPC {
 	var resp response.RPC
 	origin := req.OriginResource
 	uuid := origin[strings.LastIndexByte(origin, '/')+1:]
@@ -37,11 +38,11 @@ func RemoveFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 	}
 	err = fab.RemoveFabricData(uuid)
 	if err != nil {
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctx).Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
 	}
-	l.Log.Info("Fabric Removed ", uuid)
+	l.LogWithFields(ctx).Info("Fabric Removed ", uuid)
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp

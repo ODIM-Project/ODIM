@@ -181,6 +181,7 @@ func TestFabrics_GetFabricResource(t *testing.T) {
 	}
 
 	type args struct {
+		ctx context.Context
 		req *fabricsproto.FabricRequest
 	}
 	tests := []struct {
@@ -196,6 +197,7 @@ func TestFabrics_GetFabricResource(t *testing.T) {
 				ContactClient: mockContactClient,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da",
@@ -218,6 +220,7 @@ func TestFabrics_GetFabricResource(t *testing.T) {
 				Auth: mockAuth,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "sometoken",
 					Method:       "GET",
@@ -235,6 +238,7 @@ func TestFabrics_GetFabricResource(t *testing.T) {
 				Auth: mockAuth,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "invalid",
 					Method:       "GET",
@@ -249,7 +253,7 @@ func TestFabrics_GetFabricResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.f.GetFabricResource(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.f.GetFabricResource(tt.args.ctx, tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Fabrics.GetFabricResource() = %v, want %v", got, tt.want)
 			}
 		})
@@ -275,6 +279,7 @@ func TestFabrics_GetFabricResourceWithNoValidSession(t *testing.T) {
 		t.Fatalf("Error in creating mockFabricData :%v", err)
 	}
 	type args struct {
+		ctx context.Context
 		req *fabricsproto.FabricRequest
 	}
 	tests := []struct {
@@ -290,6 +295,7 @@ func TestFabrics_GetFabricResourceWithNoValidSession(t *testing.T) {
 				ContactClient: mockContactClient,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da",
@@ -310,7 +316,7 @@ func TestFabrics_GetFabricResourceWithNoValidSession(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.f.GetFabricResource(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.f.GetFabricResource(tt.args.ctx, tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Fabrics.GetFabricResource() = %v, want %v", got, tt.want)
 			}
 		})
@@ -342,8 +348,8 @@ func TestFabricsCollection_WithInvalidPlugin(t *testing.T) {
 		URL:          "/redfish/v1/Fabrics",
 		Method:       http.MethodGet,
 	}
-
-	resp := f.GetFabricResource(req)
+	ctx := mockContext()
+	resp := f.GetFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "should be same")
 }
 
@@ -366,8 +372,8 @@ func TestFabricsCollection_emptyCollection(t *testing.T) {
 		URL:          "/redfish/v1/Fabrics",
 		Method:       http.MethodGet,
 	}
-
-	resp := f.GetFabricResource(req)
+	ctx := mockContext()
+	resp := f.GetFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "StatusCode should be statusok")
 	response := resp.Body.(fabresponse.FabricCollection)
 	assert.Equal(t, response.MembersCount, 0, "MembersCount should be 0")
@@ -397,8 +403,8 @@ func TestFabricsCollection_Collection(t *testing.T) {
 		URL:          "/redfish/v1/Fabrics",
 		Method:       http.MethodGet,
 	}
-
-	resp := f.GetFabricResource(req)
+	ctx := mockContext()
+	resp := f.GetFabricResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "StatusCode should be statusok")
 	response := resp.Body.(fabresponse.FabricCollection)
 	assert.Equal(t, response.MembersCount, 1, "MembersCount should be 0")

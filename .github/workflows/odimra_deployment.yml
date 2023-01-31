@@ -497,8 +497,9 @@ jobs:
         echo "Create Session using the URI /redfish/v1/Sessionservice/Sessions"
         
         sudo kubectl get pods -n odim
-        echo ls -l var/log/odimra/
-        ls -l var/log/odimra/
+        sudo kubectl describe pod `sudo kubectl get pods -n odim|grep account|awk '{print $1}'` -n odim
+        echo ls -l /var/log/odimra/
+        ls -l /var/log/odimra/
         echo account_session.log
         tail /var/log/odimra/account_session.log
         echo api log

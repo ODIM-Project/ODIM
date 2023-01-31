@@ -71,13 +71,19 @@ const (
 
 func getProcessLogDetails(ctx context.Context) logrus.Fields {
 	var fields = make(map[string]interface{})
-	fields["transactionid"] = ctx.Value("transactionid")
-	fields["processname"] = ctx.Value("processname")
-	fields["threadid"] = ctx.Value("threadid")
-	fields["actionname"] = ctx.Value("actionname")
-	fields["messageid"] = ctx.Value("actionname")
-	fields["threadname"] = ctx.Value("threadname")
-	fields["actionid"] = ctx.Value("actionid")
+	TransactionId := strings.Replace(fmt.Sprintf("%v", ctx.Value("transactionid")), "\n", "", -1)
+	ProcessName := strings.Replace(fmt.Sprintf("%v", ctx.Value("processname")), "\n", "", -1)
+	ThreadID := strings.Replace(fmt.Sprintf("%v", ctx.Value("threadid")), "\n", "", -1)
+	ActionName := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionname")), "\n", "", -1)
+	ThreadName := strings.Replace(fmt.Sprintf("%v", ctx.Value("threadname")), "\n", "", -1)
+	ActionID := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionid")), "\n", "", -1)
+	fields["transactionid"] = TransactionId
+	fields["processname"] = ProcessName
+	fields["threadid"] = ThreadID
+	fields["actionname"] = ActionName
+	fields["messageid"] = ActionName
+	fields["threadname"] = ThreadName
+	fields["actionid"] = ActionID
 
 	return fields
 }
@@ -247,7 +253,7 @@ func formatSyslog(logType string, logFields []string, entry *logrus.Entry) (stri
 func (format LogFormat) String() string {
 	if b, err := format.MarshalText(); err == nil {
 		return string(b)
-	} 
+	}
 	return "unknown_log_format"
 }
 

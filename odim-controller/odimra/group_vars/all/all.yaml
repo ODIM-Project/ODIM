@@ -90,7 +90,6 @@ odim_docker_images:
    #quay.io/coreos/etcd: quay.io_coreos_etcd
    #lachlanevenson/k8s-helm: lachlanevenson_k8s-helm
    #nginx: nginx
- 
 kubernetes_images:
    quay.io/calico/cni: quay.io_calico_cni
    quay.io/calico/kube-controllers: quay.io_calico_kube-controllers

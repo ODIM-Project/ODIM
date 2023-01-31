@@ -8419,7 +8419,7 @@ curl -i GET \
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate` |
 |<strong>Description</strong> |This operation creates an update request for updating a software or a firmware component or directly updates a software or a firmware component. The first example in "Sample request body" is used to create an update request and the second one is used to directly update a software or a firmware component of servers.<br>It is performed in the background as a Redfish task. |
-|<strong>Response code</strong> |On success, `200 Ok` |
+|<strong>Response code</strong> |On success, `202 Status Accepted` |
 |<strong>Authentication</strong> |Yes|
 
 **Usage information** 

@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/kataras/iris/v12"
 	"github.com/sirupsen/logrus"
@@ -123,12 +124,19 @@ func (l *Logging) auditLogEntry(ctx iris.Context, reqBody, fields map[string]int
 	// getting the request URI, host and method from context
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	sessionUserName, sessionRoleID, err := l.GetUserDetails(sessionToken)
+	// Replace is done to avoid the security vulnerabilty to avoid direct usage of the input parameters
+	sessionRoleID = strings.Replace(sessionRoleID, "\n", "", -1)
+	sessionToken = strings.Replace(sessionToken, "\n", "", -1)
+	sessionUserName = strings.Replace(sessionUserName, "\n", "", -1)
+	Host := strings.Replace(ctx.Request().Host, "\n", "", -1)
+	RequestURI := strings.Replace(ctx.Request().RequestURI, "\n", "", -1)
+	Method := strings.Replace(ctx.Request().Method, "\n", "", -1)
 	fields["sessiontoken"] = sessionToken
 	fields["sessionusername"] = sessionUserName
 	fields["sessionroleid"] = sessionRoleID
-	fields["rawuri"] = ctx.Request().RequestURI
-	fields["host"] = ctx.Request().Host
-	fields["method"] = ctx.Request().Method
+	fields["rawuri"] = RequestURI
+	fields["host"] = Host
+	fields["method"] = Method
 	fields["reqstr"] = MaskRequestBody(reqBody)
 
 	return fields, err

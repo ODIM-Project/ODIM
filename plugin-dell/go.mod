@@ -1,6 +1,6 @@
 module github.com/ODIM-Project/ODIM/plugin-dell
 
-go 1.17
+go 1.19
 
 require (
 	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-00010101000000-000000000000

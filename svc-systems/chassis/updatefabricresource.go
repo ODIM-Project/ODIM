@@ -15,8 +15,10 @@
 package chassis
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
@@ -35,18 +37,22 @@ var (
 
 // updateFabricChassisResource will collect the all available fabric plugins available
 // in the DB and communicates with each one of them concurrently to update the resource
-func (f *fabricFactory) updateFabricChassisResource(url string, body *json.RawMessage) response.RPC {
+func (f *fabricFactory) updateFabricChassisResource(ctx context.Context, url string, body *json.RawMessage) response.RPC {
+	l.LogWithFields(ctx).Debugf("Inside updateFabricChassisResource for URI: %s", url)
 	var resp response.RPC
 	ch := make(chan response.RPC)
 
-	managers, err := f.getFabricManagers()
+	managers, err := f.getFabricManagers(ctx)
 	if err != nil {
-		l.Log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
+		l.LogWithFields(ctx).Warn("while trying to collect fabric managers details from DB, got " + err.Error())
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", url}, nil)
 	}
-
+	var threadID int = 1
 	for _, manager := range managers {
-		go f.updateResource(manager, url, body, ch)
+		ctxt := context.WithValue(ctx, common.ThreadName, common.UpdateChassisResource)
+		ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+		go f.updateResource(ctxt, manager, url, body, ch)
+		threadID++
 	}
 
 	for i := 0; i < len(managers); i++ {
@@ -60,22 +66,24 @@ func (f *fabricFactory) updateFabricChassisResource(url string, body *json.RawMe
 
 // updateResource will validate the request body, creates the request model for communicating
 // with the plugin and returns the response
-func (f *fabricFactory) updateResource(plugin smodel.Plugin, url string, body *json.RawMessage, ch chan response.RPC) {
-	req, errResp, err := f.createChassisRequest(plugin, url, http.MethodPatch, body)
+func (f *fabricFactory) updateResource(ctx context.Context, plugin smodel.Plugin, url string, body *json.RawMessage, ch chan response.RPC) {
+	l.LogWithFields(ctx).Debugf("Inside updateResource for URI: %s", url)
+	req, errResp, err := f.createChassisRequest(ctx, plugin, url, http.MethodPatch, body)
 	if errResp != nil {
-		l.Log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
+		l.LogWithFields(ctx).Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		ch <- *errResp
 		return
 	}
-	ch <- patchResource(f, req)
+	ch <- patchResource(ctx, f, req)
 }
 
 // patchResource contacts the plugin with the details available in the
 // pluginContactRequest, and returns the RPC response
-func patchResource(f *fabricFactory, pluginRequest *pluginContactRequest) (r response.RPC) {
-	body, _, statusCode, statusMessage, err := contactPlugin(pluginRequest)
+func patchResource(ctx context.Context, f *fabricFactory, pluginRequest *pluginContactRequest) (r response.RPC) {
+	l.LogWithFields(ctx).Debugf("Inside patchResource")
+	body, _, statusCode, statusMessage, err := contactPlugin(ctx, pluginRequest)
 	if statusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
-		body, _, statusCode, statusMessage, err = retryFabricsOperation(f, pluginRequest)
+		body, _, statusCode, statusMessage, err = retryFabricsOperation(ctx, f, pluginRequest)
 	}
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
@@ -92,7 +100,7 @@ func patchResource(f *fabricFactory, pluginRequest *pluginContactRequest) (r res
 }
 
 // validating if request properties are in uppercamelcase or not
-func validateReqParamsCase(req *json.RawMessage) *response.RPC {
+func validateReqParamsCase(ctx context.Context, req *json.RawMessage) *response.RPC {
 	var errResp response.RPC
 	var chassisRequest dmtfmodel.Chassis
 

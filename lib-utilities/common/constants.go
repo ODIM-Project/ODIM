@@ -170,6 +170,9 @@ const (
 	UpdateService      = "svc-update"
 	TaskService        = "svc-task"
 	AggregationService = "svc-aggregation"
+	TelemetryService   = "svc-telemetry"
+	LicenseService     = "svc-licenses"
+	FabricService      = "svc-fabrics"
 	// DefaultThreadID to be used for apis
 	DefaultThreadID = "0"
 	// Invalid Action
@@ -196,11 +199,16 @@ const (
 	SetDefaultBootOrderElementsOfAggregate = "SetDefaultBootOrderElementsOfAggregate"
 	RediscoverSystemInventory              = "RediscoverSystemInventory"
 	CheckPluginStatus                      = "CheckPluginStatus"
+	GetTelemetryResource                   = "GetTelemetryResource"
 	// constants for log
-	SessionToken  = "sessiontoken"
-	SessionUserID = "sessionuserid"
-	SessionRoleID = "sessionroleid"
-	StatusCode    = "statuscode"
+	SessionToken            = "sessiontoken"
+	SessionUserID           = "sessionuserid"
+	SessionRoleID           = "sessionroleid"
+	StatusCode              = "statuscode"
+	ComputerSystemReset     = "ComputerSystemReset"
+	GetFabricManagerChassis = "GetFabricManagerChassis"
+	CollectChassisResource  = "CollectChassisResource"
+	UpdateChassisResource   = "UpdateChassisResource"
 )
 
 // ActionType defines type of action

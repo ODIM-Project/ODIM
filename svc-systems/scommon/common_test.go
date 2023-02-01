@@ -146,12 +146,24 @@ func mockPluginData(t *testing.T, pluginID, PreferredAuthType, port string) erro
 	return nil
 }
 
-func mockPluginStatus(plugin smodel.Plugin) bool {
+func mockPluginStatus(ctx context.Context, plugin smodel.Plugin) bool {
 	return true
+}
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
 }
 
 func TestGetResourceInfoFromDevice(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -182,16 +194,16 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
 	}
-	_, err = GetResourceInfoFromDevice(req, true)
+	_, err = GetResourceInfoFromDevice(ctx, req, true)
 	assert.Nil(t, err, "There should be no error getting data")
 	req.UUID = "uuid1"
 	req.URL = "/redfish/v1/Systems/uuid1.1/EthernetInterfaces"
-	_, err = GetResourceInfoFromDevice(req, true)
+	_, err = GetResourceInfoFromDevice(ctx, req, true)
 	assert.Nil(t, err, "There should be no error getting data")
 	IOReadAll = func(r io.Reader) ([]byte, error) {
 		return nil, fmt.Errorf("")
 	}
-	_, err = GetResourceInfoFromDevice(req, true)
+	_, err = GetResourceInfoFromDevice(ctx, req, true)
 	assert.NotNil(t, err, "There should be error")
 
 	IOReadAll = func(r io.Reader) ([]byte, error) {
@@ -200,12 +212,13 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return errors.New("")
 	}
-	_, err = GetResourceInfoFromDevice(req, true)
+	_, err = GetResourceInfoFromDevice(ctx, req, true)
 	assert.NotNil(t, err, "There should be error")
 }
 
 func TestGetResourceInfoFromDeviceWithInvalidPluginSession(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -232,16 +245,17 @@ func TestGetResourceInfoFromDeviceWithInvalidPluginSession(t *testing.T) {
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
 	}
-	_, err = GetResourceInfoFromDevice(req, true)
+	_, err = GetResourceInfoFromDevice(ctx, req, true)
 
 	assert.NotNil(t, err, "There should be an error")
 	//PluginContactRequest.Token = "23456"
-	_, err = GetResourceInfoFromDevice(req, true)
+	_, err = GetResourceInfoFromDevice(ctx, req, true)
 	assert.NotNil(t, err, "There should be an error")
 }
 
 func TestGetResourceInfoFromDeviceWithInvalidPluginData(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -268,12 +282,13 @@ func TestGetResourceInfoFromDeviceWithInvalidPluginData(t *testing.T) {
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
 	}
-	_, err = GetResourceInfoFromDevice(req, true)
+	_, err = GetResourceInfoFromDevice(ctx, req, true)
 	assert.NotNil(t, err, "There should be an error")
 }
 
 func TestGetResourceInfoFromDeviceWithNoTarget(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -295,12 +310,13 @@ func TestGetResourceInfoFromDeviceWithNoTarget(t *testing.T) {
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
 	}
-	_, err = GetResourceInfoFromDevice(req, true)
+	_, err = GetResourceInfoFromDevice(ctx, req, true)
 	assert.NotNil(t, err, "There should be an error")
 }
 
 func TestGetResourceInfoFromDeviceWithInvalidDevicePassword(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -327,12 +343,13 @@ func TestGetResourceInfoFromDeviceWithInvalidDevicePassword(t *testing.T) {
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDeviceInvalidPassword,
 	}
-	_, err = GetResourceInfoFromDevice(req, true)
+	_, err = GetResourceInfoFromDevice(ctx, req, true)
 	assert.NotNil(t, err, "There should be an error")
 }
 
 func TestContactPlugin(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -353,12 +370,13 @@ func TestContactPlugin(t *testing.T) {
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
 	contactRequest.GetPluginStatus = mockPluginStatus
-	_, _, _, err = ContactPlugin(contactRequest, "")
+	_, _, _, err = ContactPlugin(ctx, contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }
 
 func TestGetPluginStatus(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -379,7 +397,7 @@ func TestGetPluginStatus(t *testing.T) {
 		ID:                "ILO",
 		PreferredAuthType: "BasicAuth",
 	}
-	status := GetPluginStatus(plugin)
+	status := GetPluginStatus(ctx, plugin)
 	assert.True(t, true, "Retrive current status of plugin", status)
 }
 

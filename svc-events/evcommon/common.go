@@ -36,6 +36,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/consumer"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
+	"github.com/google/uuid"
 )
 
 var (
@@ -142,15 +143,18 @@ var EMBTopics EmbTopic
 var PluginStartUp = false
 
 // GetAllPluginStatus ...
-func (st *StartUpInterface) GetAllPluginStatus() {
+func (st *StartUpInterface) GetAllPluginStatus(ctx context.Context) {
 	for {
 		pluginList, err := evmodel.GetAllPlugins()
 		if err != nil {
-			l.Log.Error(err.Error())
+			l.LogWithFields(ctx).Error(err.Error())
 			return
 		}
+		var threadID int = 1
 		for i := 0; i < len(pluginList); i++ {
-			go st.getPluginStatus(context.TODO(), pluginList[i]) //TODO: Pass context
+			ctx = context.WithValue(ctx, common.ThreadID, strconv.Itoa(threadID))
+			go st.getPluginStatus(ctx, pluginList[i])
+			threadID++
 		}
 		var pollingTime int
 		config.TLSConfMutex.RLock()
@@ -184,24 +188,24 @@ func (st *StartUpInterface) getPluginStatus(ctx context.Context, plugin common.P
 	status, _, topicsList, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
 		PluginStartUp = false
-		l.Log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
+		l.LogWithFields(ctx).Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return
 	}
-	l.Log.Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
+	l.LogWithFields(ctx).Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
 	PluginsMap[plugin.ID] = status
 	var allServers []SavedSystems
 	for pluginID, status := range PluginsMap {
 		if status && !PluginStartUp {
-			allServers, err = st.getAllServers(pluginID)
+			allServers, err = st.getAllServers(ctx, pluginID)
 			if err != nil {
-				l.Log.Error("Error While getting the servers" + pluginID + err.Error())
+				l.LogWithFields(ctx).Error("Error While getting the servers" + pluginID + err.Error())
 				continue
 			}
 			for {
 				if len(allServers) < StartUpResourceBatchSize {
 					err = st.callPluginStartUp(ctx, allServers, pluginID)
 					if err != nil {
-						l.Log.Error("Error While trying call plugin startup" +
+						l.LogWithFields(ctx).Error("Error While trying call plugin startup" +
 							pluginID + err.Error())
 					}
 					break
@@ -209,7 +213,7 @@ func (st *StartUpInterface) getPluginStatus(ctx context.Context, plugin common.P
 				batchServers := allServers[:StartUpResourceBatchSize]
 				err = st.callPluginStartUp(ctx, batchServers, pluginID)
 				if err != nil {
-					l.Log.Error("Error While trying call plugin startup" + pluginID + err.Error())
+					l.LogWithFields(ctx).Error("Error While trying call plugin startup" + pluginID + err.Error())
 					continue
 				}
 				allServers = allServers[StartUpResourceBatchSize:]
@@ -227,7 +231,7 @@ func (st *StartUpInterface) getPluginStatus(ctx context.Context, plugin common.P
 	return
 }
 
-func (st *StartUpInterface) getAllServers(pluginID string) ([]SavedSystems, error) {
+func (st *StartUpInterface) getAllServers(ctx context.Context, pluginID string) ([]SavedSystems, error) {
 	var matchedServers []SavedSystems
 	allServers, err := st.GetAllSystems()
 	if err != nil {
@@ -246,7 +250,7 @@ func (st *StartUpInterface) getAllServers(pluginID string) ([]SavedSystems, erro
 			if err != nil {
 				// Frame the RPC response body and response Header below
 				errorMessage := "error while trying to decrypt device password for the host: " + s.ManagerAddress + ":" + err.Error()
-				l.Log.Error(errorMessage)
+				l.LogWithFields(ctx).Error(errorMessage)
 				continue
 			}
 			s.Password = decryptedPasswordByte
@@ -257,7 +261,7 @@ func (st *StartUpInterface) getAllServers(pluginID string) ([]SavedSystems, erro
 }
 
 // GetPluginStatus checks the status of given plugin in configured interval
-func GetPluginStatus(plugin *common.Plugin) bool {
+func GetPluginStatus(ctx context.Context, plugin *common.Plugin) bool {
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{
@@ -275,10 +279,10 @@ func GetPluginStatus(plugin *common.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		l.Log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
+		l.LogWithFields(ctx).Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	l.Log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	l.LogWithFields(ctx).Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -293,7 +297,7 @@ func (st *StartUpInterface) callPluginStartUp(ctx context.Context, servers []Sav
 		var err error
 		s.Location, s.EventTypes, err = st.getSubscribedEventsDetails(server.ManagerAddress)
 		if err != nil {
-			l.Log.Error("Error while retrieving the Subsction details from DB for device: " +
+			l.LogWithFields(ctx).Error("Error while retrieving the Subsction details from DB for device: " +
 				server.ManagerAddress + err.Error())
 			continue
 		}
@@ -334,12 +338,12 @@ func (st *StartUpInterface) callPluginStartUp(ctx context.Context, servers []Sav
 	//return updateDeviceSubscriptionLocation(startUpMap[0].Device.ManagerAddress, response.Header.Get("location"))
 	bodyBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctx).Error(err.Error())
 		return err
 	}
 	var r map[string]string
 	json.Unmarshal(bodyBytes, &r)
-	return updateDeviceSubscriptionLocation(r)
+	return updateDeviceSubscriptionLocation(ctx, r)
 }
 
 func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, error) {
@@ -416,7 +420,7 @@ func getTypes(subscription string) []string {
 	return strings.Split(events, " ")
 }
 
-func updateDeviceSubscriptionLocation(r map[string]string) error {
+func updateDeviceSubscriptionLocation(ctx context.Context, r map[string]string) error {
 	for serverAddress, location := range r {
 		if location != "" {
 			deviceIPAddress, errorMessage := GetIPFromHostName(serverAddress)
@@ -426,7 +430,7 @@ func updateDeviceSubscriptionLocation(r map[string]string) error {
 			searchKey := GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
 			deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
 			if err != nil {
-				l.Log.Error("Error getting the device event subscription from DB " +
+				l.LogWithFields(ctx).Error("Error getting the device event subscription from DB " +
 					" for server address : " + serverAddress + err.Error())
 				continue
 			}
@@ -437,7 +441,7 @@ func updateDeviceSubscriptionLocation(r map[string]string) error {
 			updatedDeviceSubscription.OriginResources = deviceSubscription.OriginResources
 			err = evmodel.UpdateDeviceSubscriptionLocation(updatedDeviceSubscription)
 			if err != nil {
-				l.Log.Error("Error updating the subscription location in to DB for " +
+				l.LogWithFields(ctx).Error("Error updating the subscription location in to DB for " +
 					"server address : " + serverAddress + err.Error())
 				continue
 			}
@@ -513,14 +517,14 @@ func GetSearchKey(key, index string) string {
 
 // ProcessCtrlMsg is for processing the ODIM control message
 // and to perform required action
-func ProcessCtrlMsg(data interface{}) bool {
+func ProcessCtrlMsg(ctx context.Context, data interface{}) bool {
 	if data == nil {
-		l.Log.Warn("received control message event with empty data")
+		l.LogWithFields(ctx).Warn("received control message event with empty data")
 		return false
 	}
 	event := data.(common.ControlMessageData)
 	msg, _ := json.Marshal(event.Data)
-	l.Log.Info("received control message event of type:", event.MessageType)
+	l.LogWithFields(ctx).Info("received control message event of type:", event.MessageType)
 	if event.MessageType == common.SubscribeEMB {
 		var message common.SubscribeEMBData
 		if err := json.Unmarshal([]byte(msg), &message); err != nil {
@@ -534,19 +538,25 @@ func ProcessCtrlMsg(data interface{}) bool {
 }
 
 // SubscribePluginEMB is for subscribing to plugin EMB
-func (st *StartUpInterface) SubscribePluginEMB() {
+func (st *StartUpInterface) SubscribePluginEMB(ctx context.Context) {
 	time.Sleep(time.Second * 2)
+	transactionID := uuid.New()
+	ctx = context.WithValue(ctx, common.TransactionID, transactionID.String())
+	ctx = context.WithValue(ctx, common.ActionName, "SubscribePluginEMB")
 	pluginList, err := GetAllPluginsFunc()
 	if err != nil {
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctx).Error(err.Error())
 		return
 	}
+	threadID := 1
 	for i := 0; i < len(pluginList); i++ {
-		go st.getPluginEMB(pluginList[i])
+		ctx = context.WithValue(ctx, common.ThreadID, strconv.Itoa(threadID))
+		go st.getPluginEMB(ctx, pluginList[i])
+		threadID++
 	}
 }
 
-func (st *StartUpInterface) getPluginEMB(plugin common.Plugin) {
+func (st *StartUpInterface) getPluginEMB(ctx context.Context, plugin common.Plugin) {
 	config.TLSConfMutex.RLock()
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
@@ -566,7 +576,7 @@ func (st *StartUpInterface) getPluginEMB(plugin common.Plugin) {
 	config.TLSConfMutex.RUnlock()
 	status, _, topicsList, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		l.Log.Error("status check of plugin " + plugin.ID + " failed: " + err.Error())
+		l.LogWithFields(ctx).Error("status check of plugin " + plugin.ID + " failed: " + err.Error())
 		return
 	}
 	EMBTopics.lock.Lock()
@@ -577,25 +587,28 @@ func (st *StartUpInterface) getPluginEMB(plugin common.Plugin) {
 	}
 }
 
-func TrackConfigFileChanges(errChan chan error) {
+func TrackConfigFileChanges(ctx context.Context, errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat
 	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, errChan)
 	for {
 		select {
 		case info := <-eventChan:
-			l.Log.Info(info) // new data arrives through eventChan channel
+			transactionID := uuid.New()
+			ctx = context.WithValue(ctx, common.TransactionID, transactionID.String())
+			ctx = context.WithValue(ctx, common.ActionName, "TrackConfigFileChanges")
+			l.LogWithFields(ctx).Info(info) // new data arrives through eventChan channel
 			if l.Log.Level != config.Data.LogLevel {
-				l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
-				l.Log.Logger.SetLevel(config.Data.LogLevel)
+				l.LogWithFields(ctx).Info("Log level is updated, new log level is ", config.Data.LogLevel)
+				l.LogWithFields(ctx).Logger.SetLevel(config.Data.LogLevel)
 			}
 			if format != config.Data.LogFormat {
 				l.SetFormatter(config.Data.LogFormat)
 				format = config.Data.LogFormat
-				l.Log.Info("Log format is updated, new log format is ", config.Data.LogFormat)
+				l.LogWithFields(ctx).Info("Log format is updated, new log format is ", config.Data.LogFormat)
 			}
 		case err := <-errChan:
-			l.Log.Error(err)
+			l.LogWithFields(ctx).Error(err)
 		}
 	}
 }

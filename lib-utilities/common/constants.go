@@ -170,6 +170,7 @@ const (
 	UpdateService      = "svc-update"
 	TaskService        = "svc-task"
 	AggregationService = "svc-aggregation"
+	EventService       = "svc-event"
 	TelemetryService   = "svc-telemetry"
 	LicenseService     = "svc-licenses"
 	// DefaultThreadID to be used for apis

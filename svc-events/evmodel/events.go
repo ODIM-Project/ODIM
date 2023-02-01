@@ -24,7 +24,6 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 const (
@@ -432,11 +431,9 @@ func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]strin
 func SaveUndeliveredEvents(key string, event []byte) error {
 	connPool, err := GetDbConnection(common.OnDisk)
 	if err != nil {
-		l.Log.Error("While trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 	if err = connPool.AddResourceData(UndeliveredEvents, key, string(event)); err != nil {
-		l.Log.Error(" while trying to add Undelivered Events to DB: " + err.Error())
 		return fmt.Errorf("error while trying to add Undelivered Events to DB: %v", err.Error())
 	}
 	return nil
@@ -481,7 +478,7 @@ func SetUndeliveredEventsFlag(destination string) error {
 	}
 	_, err = conn.Read(ReadInProgress, destination)
 	if err != nil {
-		l.Log.Error(err)
+		return err
 	}
 	return nil
 }

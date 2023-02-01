@@ -76,6 +76,7 @@ func getAllSubscriptions(ctx context.Context) {
 			loadSubscriptionCacheData(sub.SubscriptionID, sub.Hosts)
 		}
 	}
+	l.LogWithFields(ctx).Debug("Subscriptions cache updated ")
 }
 
 // getAllDeviceSubscriptions method fetch data from DeviceSubscription table

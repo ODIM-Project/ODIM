@@ -33,9 +33,9 @@ import (
 )
 
 var (
-	EventConsumerActionID    = 218
+	EventConsumerActionID    = "218"
 	EventConsumerActionName  = "EventConsumer"
-	ProcessControlActionId   = 219
+	ProcessControlActionId   = "219"
 	ProcessControlActionName = "ProcessControl"
 )
 
@@ -83,7 +83,7 @@ func main() {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	ctx = context.WithValue(ctx, common.ThreadName, common.EventService)
 	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)

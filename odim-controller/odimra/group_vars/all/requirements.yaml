@@ -18,7 +18,7 @@ keepalived_pkgs:
 nginx_pkgs:
 # - check for the latest version of nginx in cache using
 # `sudo apt-cache madison nginx`
-  - nginx=1.22.0-1~focal
+  - nginx=1.18.0-0ubuntu1.4
   
 
 # Below packages should not altered/updated by user
@@ -30,9 +30,10 @@ docker_dep_pkgs:
   - gnupg-agent
   - software-properties-common
 docker_pkgs:
-  - docker-ce=5:20.10.12~3-0~ubuntu-focal
-  - docker-ce-cli=5:20.10.12~3-0~ubuntu-focal
+        #  - docker-ce=5:20.10.12~3-0~ubuntu-focal
+        #  - docker-ce-cli=5:20.10.12~3-0~ubuntu-focal
   - containerd.io=1.4.12-1
+  - pigz
 docker_pkgs_wo_version:
   - docker-ce
   - docker-ce-cli

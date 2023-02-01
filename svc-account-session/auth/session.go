@@ -84,7 +84,6 @@ func CheckSessionTimeOut(ctx context.Context, sessionToken string) (*asmodel.Ses
 func expiredSessionCleanUp(ctx context.Context) {
 	Lock.Lock()
 	defer Lock.Unlock()
-	l.LogWithFields(ctx).Info("Inside expiredSessionCleanUp function")
 	// checking whether the db is cleaned up recently
 	if time.Since(lastExpiredSessionCleanUpTime).Minutes() > config.Data.AuthConf.ExpiredSessionCleanUpTimeInMins {
 		sessionTokens, err := asmodel.GetAllSessionKeys()

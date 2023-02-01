@@ -16,6 +16,7 @@ package agcommon
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -33,6 +34,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
 func TestAddConnectionMethods(t *testing.T) {
 	var e = DBInterface{
 		GetAllKeysFromTableInterface: stubGetAllkeys,
@@ -209,12 +220,13 @@ func TestGetStorageResources(t *testing.T) {
 	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
 		return "", errors.PackError(0, "error while trying to connecting to DB: ")
 	}
-	resp := GetStorageResources(storageURI)
+	ctx := mockContext()
+	resp := GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "There should be an error ")
 	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
 		return string([]byte(`{"user":"name"}`)), nil
 	}
-	resp = GetStorageResources(storageURI)
+	resp = GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "There should be no error ")
 }
 
@@ -224,7 +236,8 @@ func TestGetStorageResources_invalidJson(t *testing.T) {
 	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
 		return "", errors.PackError(0, "error while trying to connecting to DB: ")
 	}
-	resp := GetStorageResources(storageURI)
+	ctx := mockContext()
+	resp := GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "There should be an error ")
 	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
 		return string([]byte(`{"user":"name"}`)), nil
@@ -232,7 +245,7 @@ func TestGetStorageResources_invalidJson(t *testing.T) {
 	JSONUnMarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
-	resp = GetStorageResources(storageURI)
+	resp = GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "Invalid Json")
 }
 
@@ -277,10 +290,11 @@ func TestPluginHealthCheckInterface_GetPluginStatus(t *testing.T) {
 			want1: p,
 		},
 	}
+	ctx := mockContext()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := tt.phc.GetPluginStatus(tt.args.plugin)
+			got, _ := tt.phc.GetPluginStatus(ctx, tt.args.plugin)
 			if got != tt.want {
 				t.Errorf("PluginHealthCheckInterface.GetPluginStatus() got = %v, want %v", got, tt.want)
 			}
@@ -397,8 +411,9 @@ func TestLookupHost(t *testing.T) {
 }
 func TestLookupPlugin(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	var data = agmodel.Plugin{IP: "", Port: "", Username: "", Password: []uint8(nil), ID: "", PluginType: "", PreferredAuthType: "", ManagerUUID: ""}
-	res, _ := LookupPlugin("10.0.0.0")
+	res, _ := LookupPlugin(ctx, "10.0.0.0")
 	assert.Equal(t, res, data, "It should be same")
 
 }
@@ -465,9 +480,10 @@ func mockGetEventSubscriptionsFunc(key string) []string {
 
 func TestUpdateDeviceSubscriptionDetails(t *testing.T) {
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	var data = make(map[string]string)
 	data["100.100.100.100"] = "location"
-	UpdateDeviceSubscriptionDetails(data)
+	UpdateDeviceSubscriptionDetails(ctx, data)
 }
 
 func TestGetPluginStatusRecord(t *testing.T) {
@@ -500,8 +516,8 @@ func TestGetAllPlugins(t *testing.T) {
 		}
 	}()
 	mockPlugins(t)
-
-	plugins, err := GetAllPlugins()
+	ctx := mockContext()
+	plugins, err := GetAllPlugins(ctx)
 	assert.Nil(t, err, "Error Should be nil")
 	assert.Equal(t, 3, len(plugins), "should be only 3 plugins")
 }
@@ -560,6 +576,7 @@ func mockPlugins(t *testing.T) {
 }
 
 func TestContactPlugin(t *testing.T) {
+
 	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
@@ -580,7 +597,7 @@ func TestContactPlugin(t *testing.T) {
 
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
-	_, err = ContactPlugin(contactRequest, "")
+	_, err = ContactPlugin(context.TODO(), contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }
 
@@ -605,7 +622,7 @@ func TestContactPlugin_XAuth(t *testing.T) {
 
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
-	_, err = ContactPlugin(contactRequest, "")
+	_, err = ContactPlugin(context.TODO(), contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }
 
@@ -804,4 +821,14 @@ func MockGetAllSystems() ([]string, error) {
 
 func MockInvalidGetAllSystems() ([]string, error) {
 	return []string{}, &errors.Error{}
+}
+
+func TestCreateContext(t *testing.T) {
+	ctx := CreateContext("123", "001", "TestAction", "0", "Test-svc-aggregation", "TestCreateContext")
+	assert.Equal(t, ctx.Value("transactionid"), "123", "Context id  is not the same")
+	assert.Equal(t, ctx.Value("actionid"), "001", "Context  actionId is not the same")
+	assert.Equal(t, ctx.Value("actionname"), "TestAction", "Context actionName is not the same")
+	assert.Equal(t, ctx.Value("threadid"), "0", "Context threadId is not the same")
+	assert.Equal(t, ctx.Value("threadname"), "Test-svc-aggregation", "Context threadName is not the same")
+	assert.Equal(t, ctx.Value("processname"), "TestCreateContext", "Context processName is not the same")
 }

@@ -36,7 +36,7 @@ func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (
 	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
@@ -259,10 +259,10 @@ func mockGetSessionUserNamefunc(sessionToken string) (string, error) {
 	}
 	return sessionToken, nil
 }
-func mockUpdateTask(common.TaskData) error {
+func mockUpdateTask(context.Context, common.TaskData) error {
 	return &errors.Error{}
 }
-func mockCreateTaskfunc(sessionToken string) (string, error) {
+func mockCreateTaskfunc(ctx context.Context, sessionToken string) (string, error) {
 	if sessionToken == "invalidTask" {
 		return "", &errors.Error{}
 	}

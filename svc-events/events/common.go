@@ -8,6 +8,7 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -44,11 +45,11 @@ var (
 
 // External struct to inject the contact external function into the handlers
 type External struct {
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	Auth            func(string, []string, []string) (response.RPC, error)
-	CreateTask      func(string) (string, error)
-	UpdateTask      func(common.TaskData) error
-	CreateChildTask func(string, string) (string, error)
+	CreateTask      func(context.Context, string) (string, error)
+	UpdateTask      func(context.Context, common.TaskData) error
+	CreateChildTask func(context.Context, string, string) (string, error)
 }
 
 // DB struct to inject the contact DB function into the handlers
@@ -96,7 +97,7 @@ func fillTaskData(taskID, targetURI, request string, resp errResponse.RPC, taskS
 }
 
 // UpdateTaskData update the task with the given data
-func UpdateTaskData(taskData common.TaskData) error {
+func UpdateTaskData(ctx context.Context, taskData common.TaskData) error {
 	respBody, _ := json.Marshal(taskData.Response.Body)
 	payLoad := &taskproto.Payload{
 		HTTPHeaders:   taskData.Response.Header,
@@ -107,11 +108,11 @@ func UpdateTaskData(taskData common.TaskData) error {
 		ResponseBody:  respBody,
 	}
 
-	err := UpdateTaskService(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	err := UpdateTaskService(ctx, taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
-		UpdateTaskService(taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+		UpdateTaskService(ctx, taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 		if taskData.PercentComplete == 0 {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}
@@ -168,10 +169,10 @@ func removeElement(slice []string, element string) []string {
 // and validate the response and return
 func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
 	var resp errResponse.RPC
-	response, err := e.callPlugin(req)
+	response, err := e.callPlugin(context.TODO(), req)
 	if err != nil {
 		if evcommon.GetPluginStatus(req.Plugin) {
-			response, err = e.callPlugin(req)
+			response, err = e.callPlugin(context.TODO(), req)
 		}
 		if err != nil {
 			errorMessage := "Error : " + err.Error()
@@ -363,7 +364,7 @@ func (e *ExternalInterfaces) retryEventSubscriptionOperation(req evcommon.Plugin
 	}
 	req.Token = token
 
-	response, err := e.callPlugin(req)
+	response, err := e.callPlugin(context.TODO(), req) // TODO: Pass context
 	if err != nil {
 		errorMessage := "error while unmarshaling the body : " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
@@ -411,12 +412,12 @@ func getAggregateID(origin string) string {
 }
 
 // callPlugin check the given request url and PreferAuth type plugin
-func (e *ExternalInterfaces) callPlugin(req evcommon.PluginContactRequest) (*http.Response, error) {
+func (e *ExternalInterfaces) callPlugin(ctx context.Context, req evcommon.PluginContactRequest) (*http.Response, error) {
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.URL
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return e.ContactClient(reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
+		return e.ContactClient(ctx, reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
 	}
-	return e.ContactClient(reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
+	return e.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
 }
 
 // checkCollection verifies if the given origin is collection and extracts all the suboridinate resources

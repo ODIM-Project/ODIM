@@ -16,6 +16,7 @@
 package persistencemgr
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -29,8 +30,6 @@ import (
 	"sync/atomic"
 	"time"
 	"unsafe"
-
-	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -89,10 +88,10 @@ func init() {
 	redisExtCalls = redisExtCallsImp{}
 }
 
-func sentinelNewClient(dbConfig *Config) *redisSentinel.SentinelClient {
+func sentinelNewClient(dbConfig *Config) (*redisSentinel.SentinelClient, error) {
 	tlsConfig, err := getTLSConfig()
 	if err != nil {
-		l.Log.Error("error while trying to get tls configuration : ", err.Error())
+		return nil, fmt.Errorf("error while trying to get tls configuration : %s", err.Error())
 	}
 	rdb := redisExtCalls.newSentinelClient(&redisSentinel.Options{
 		Addr:      dbConfig.Host + ":" + dbConfig.SentinelPort,
@@ -100,12 +99,15 @@ func sentinelNewClient(dbConfig *Config) *redisSentinel.SentinelClient {
 		TLSConfig: tlsConfig,
 		Password:  dbConfig.Password,
 	})
-	return rdb
+	return rdb, nil
 }
 
 // GetCurrentMasterHostPort is to get the current Redis Master IP and Port from Sentinel.
-func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
-	sentinelClient := sentinelNewClient(dbConfig)
+func GetCurrentMasterHostPort(dbConfig *Config) (string, string, error) {
+	sentinelClient, err := sentinelNewClient(dbConfig)
+	if err != nil {
+		return "", "", err
+	}
 	stringSlice := redisExtCalls.getMasterAddrByName(dbConfig.MasterSet, sentinelClient)
 	var masterIP string
 	var masterPort string
@@ -113,43 +115,39 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 		masterIP = stringSlice[0]
 		masterPort = stringSlice[1]
 	}
-	l.Log.Info("GetCurrentMasterHostPort masterIP : "+masterIP, ", masterPort : "+masterPort)
-	return masterIP, masterPort
+
+	return masterIP, masterPort, nil
 }
 
 // resetDBWriteConection is used to reset the WriteConnection Pool (inmemory / OnDisk).
-func resetDBWriteConection(dbFlag DbType) {
+func resetDBWriteConection(dbFlag DbType) error {
 	switch dbFlag {
 	case InMemory:
 		config := getInMemoryDBConfig()
 		inMemDBConnPool.Mux.Lock()
 		defer inMemDBConnPool.Mux.Unlock()
 		if inMemDBConnPool.WritePool != nil {
-			return
+			return nil
 		}
 		err := inMemDBConnPool.setWritePool(config)
 		if err != nil {
-			l.Log.Error("Reset of inMemory write pool failed: " + err.Error())
-			return
+			return fmt.Errorf("reset of inMemory write pool failed: %s", err.Error())
 		}
-		l.Log.Info("New inMemory connection pool created")
-		return
+		return nil
 	case OnDisk:
 		config := getOnDiskDBConfig()
 		onDiskDBConnPool.Mux.Lock()
 		defer onDiskDBConnPool.Mux.Unlock()
 		if onDiskDBConnPool.WritePool != nil {
-			return
+			return nil
 		}
 		err := onDiskDBConnPool.setWritePool(config)
 		if err != nil {
-			l.Log.Error("Reset of onDisk write pool failed: " + err.Error())
-			return
+			return fmt.Errorf("reset of onDisk write pool failed: %s", err.Error())
 		}
-		l.Log.Info("New onDisk connection pool created")
-		return
+		return nil
 	default:
-		return
+		return nil
 	}
 }
 func (p *ConnPool) setWritePool(c *Config) error {
@@ -161,7 +159,7 @@ func (p *ConnPool) setWritePool(c *Config) error {
 	if currentMasterIP == "" {
 		return fmt.Errorf("unable to retrieve master ip from sentinel master election")
 	}
-	l.Log.Info("new write pool master IP found: " + currentMasterIP)
+
 	writePool, _ := getPool(currentMasterIP, currentMasterPort, c.Password)
 	if writePool == nil {
 		return fmt.Errorf("write pool creation failed")
@@ -175,7 +173,7 @@ func (p *ConnPool) setWritePool(c *Config) error {
 
 func retryForMasterIP(pool *ConnPool, config *Config) (currentMasterIP, currentMasterPort string) {
 	for i := 0; i < 120; i++ {
-		currentMasterIP, currentMasterPort = GetCurrentMasterHostPort(config)
+		currentMasterIP, currentMasterPort, _ = GetCurrentMasterHostPort(config)
 		if currentMasterIP != "" {
 			break
 		}
@@ -213,16 +211,14 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 	case InMemory:
 		// In this case this function return in-memory db connection pool
 		if inMemDBConnPool == nil || inMemDBConnPool.ReadPool == nil {
-			l.Log.Info("GetDBConnection : inMemDBConnPool OR inMemDBConnPool.ReadPool is nil")
 			config := getInMemoryDBConfig()
 			inMemDBConnPool, err = config.Connection()
 			if err != nil {
-				l.Log.Error("error while trying to get Inmemory Readpool connection : " + err.Error())
+				return nil, errors.PackError(err.ErrNo(), err.Error())
 			}
 			inMemDBConnPool.PoolUpdatedTime = time.Now()
 		}
 		if inMemDBConnPool.WritePool == nil {
-			l.Log.Info("GetDBConnection : inMemDBConnPool.WritePool is nil, invoking resetDBWriteConection ")
 			resetDBWriteConection(InMemory)
 		}
 
@@ -234,12 +230,11 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 			config := getOnDiskDBConfig()
 			onDiskDBConnPool, err = config.Connection()
 			if err != nil {
-				l.Log.Error("error while trying to get Ondisk Readpool connection : " + err.Error())
+				return nil, errors.PackError(err.ErrNo(), err.Error())
 			}
 			onDiskDBConnPool.PoolUpdatedTime = time.Now()
 		}
 		if onDiskDBConnPool.WritePool == nil {
-			l.Log.Info("GetDBConnection : onDiskDBConnPool.WritePool is nil, invoking resetDBWriteConection ")
 			resetDBWriteConection(OnDisk)
 		}
 		return onDiskDBConnPool, err
@@ -335,15 +330,16 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 	masterIP = c.Host
 	masterPort = c.Port
 	if config.Data.DBConf.RedisHAEnabled {
-		masterIP, masterPort = GetCurrentMasterHostPort(c)
+		masterIP, masterPort, err = GetCurrentMasterHostPort(c)
+		if err != nil {
+			return nil, errors.PackError(errors.UndefinedErrorType, err.Error())
+		}
 	}
-
 	connPools.ReadPool, err = getPool(c.Host, c.Port, c.Password)
 	//Check if any connection error occured
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
-			l.Log.Error("error while trying to get Readpool connection : " + errs.Error())
-			return nil, errs
+			return nil, errors.PackError(errors.DBKeyNotFound, errs.Error())
 		}
 		return nil, errors.PackError(errors.UndefinedErrorType, err)
 	}
@@ -351,8 +347,7 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 	//Check if any connection error occured
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
-			l.Log.Error("error while trying to get Writepool connection : " + errs.Error())
-			return nil, errs
+			return nil, errors.PackError(errors.DBKeyNotFound, errs.Error())
 		}
 		return nil, errors.PackError(errors.UndefinedErrorType, err)
 	}
@@ -370,7 +365,6 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 func (p *ConnPool) Create(table, key string, data interface{}) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		l.Log.Info("Create : WritePool nil")
 		return errors.PackError(errors.UndefinedErrorType, "Create : WritePool is nil ")
 	}
 	writeConn := writePool.Get()
@@ -414,13 +408,11 @@ func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.
 
 	jsondata, err := json.Marshal(data)
 	if err != nil {
-		l.Log.Error("Update : error in masrshalling json data", err.Error())
-		return "", errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
+		return "", errors.PackError(errors.UndefinedErrorType, err.Error())
 	}
 
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		l.Log.Info("Update : WritePool nil")
 		return "", errors.PackError(errors.UndefinedErrorType, "Update : Writepool is nil ")
 	}
 	writeConn := writePool.Get()
@@ -507,23 +499,20 @@ func (p *ConnPool) Delete(table, key string) *errors.Error {
 
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		l.Log.Info("Delete : WritePool nil")
 		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil ")
 	}
 	writeConn := writePool.Get()
 	defer writeConn.Close()
 	_, readErr := p.Read(table, key)
 	if readErr != nil {
-		l.Log.Error("Error while deleting data : " + readErr.Error())
-		return readErr
+		return errors.PackError(errors.DBKeyNotFound, readErr.Error())
 	}
 
 	_, doErr := writeConn.Do("DEL", table+":"+key)
 	if doErr != nil {
 		if errs, aye := isDbConnectError(doErr); aye {
-			l.Log.Error("Error while getting connection in Delete : " + errs.Error())
 			atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
-			return errs
+			return errors.PackError(errors.DBKeyNotFound, errs.Error())
 		}
 		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: ", doErr)
 	}
@@ -575,15 +564,12 @@ func (p *ConnPool) DeleteServer(key string) *errors.Error {
 	keys, err := readConn.Do("KEYS", key)
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
-			l.Log.Error("Error while getting connection in Delete Server : " + errs.Error())
-			return errs
+			return errors.PackError(errors.DBKeyNotFound, errs.Error())
 		}
 		return errors.PackError(errors.UndefinedErrorType, errorCollectingData, err)
 	}
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
-	l.Log.Info("Delete Server : WritePool value : ", writePool)
 	if writePool == nil {
-		l.Log.Info("Delete Server: WritePool nil")
 		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil ")
 	}
 	writeConn := writePool.Get()
@@ -593,9 +579,8 @@ func (p *ConnPool) DeleteServer(key string) *errors.Error {
 		_, err := writeConn.Do("DEL", delkey)
 		if err != nil {
 			if errs, aye := isDbConnectError(err); aye {
-				l.Log.Error("Error while Deleting Server : " + errs.Error())
 				atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
-				return errs
+				return errors.PackError(errors.DBKeyNotFound, errs.Error())
 			}
 			//          return errors.PackError(errors.UndefinedErrorType, errorCollectingData, err)
 		}
@@ -624,7 +609,7 @@ func (p *ConnPool) GetAllMatchingDetails(table, pattern string) ([]string, *erro
 }
 
 // Transaction is to do a atomic operation using optimistic lock
-func (p *ConnPool) Transaction(key string, cb func(string) error) *errors.Error {
+func (p *ConnPool) Transaction(ctx context.Context, key string, cb func(context.Context, string) error) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
 		return errors.PackError(errors.UndefinedErrorType, "error while trying to Write Transaction data: WritePool is nil")
@@ -639,7 +624,7 @@ func (p *ConnPool) Transaction(key string, cb func(string) error) *errors.Error 
 		return errors.PackError(errors.UndefinedErrorType, err)
 	}
 	writeConn.Send("MULTI")
-	if err := cb(key); err != nil {
+	if err := cb(ctx, key); err != nil {
 		return errors.PackError(errors.UndefinedErrorType, err)
 	}
 	_, err := writeConn.Do("EXEC")
@@ -735,7 +720,7 @@ func getSortedMapKeys(m interface{}) []string {
 			keys = append(keys, k)
 		}
 	default:
-		l.Log.Error("mapKeys(): Type of map is unexpected")
+		return nil
 	}
 	sort.Strings(keys)
 	return keys
@@ -754,8 +739,6 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 		jsondata, err := json.Marshal(data[key])
 		if err != nil {
 			delete(data, key)
-			l.Log.Error(errors.PackError(errors.JSONUnmarshalFailed,
-				fmt.Sprintf("update db: JSON Unmarshal failed: error : %s, key: %s, json: %v", err.Error(), key, data[key])))
 			continue
 		}
 		updateErr := c.WriteConn.Send("SET", key, jsondata)
@@ -793,18 +776,15 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 	return nil
 }
 
-// CreateIndexTransaction will create the indices using pipelined transaction
-/* CreateIndexTransaction takes the following keys as input:
-1. "key" is the key of the sorted set.
-2."scores" is of type map[string]int64 and is the user data sent to be updated in DB.
-key of map should be the member for which we create the index. the value is score of that member
-*/
-func (c *Conn) CreateIndexTransaction(key string, scores map[string]int64) *errors.Error {
+// SetExpiryTimeForKeys will create the expiry time using pipelined transaction
+/* SetExpiryTimeForKeys takes the taskID  as input:
+ */
+func (c *Conn) SetExpiryTimeForKeys(taskKeys map[string]int64) *errors.Error {
 	var partialFailure bool = false
-	members := getSortedMapKeys(scores)
 	c.WriteConn.Send("MULTI")
-	for _, member := range members {
-		createErr := c.WriteConn.Send("ZADD", key, scores[member], member)
+	members := getSortedMapKeys(taskKeys)
+	for _, taskkey := range members {
+		createErr := c.WriteConn.Send("EXPIRE", taskkey, 86400)
 		if createErr != nil {
 			c.WriteConn.Send("DISCARD")
 			if isTimeOutError(createErr) {
@@ -821,11 +801,10 @@ func (c *Conn) CreateIndexTransaction(key string, scores map[string]int64) *erro
 		}
 		return errors.PackError(errors.DBUpdateFailed, err.Error())
 	}
-
 	for i, member := range members {
 		res, ok := result[i].(int64)
 		if ok && res == 1 {
-			delete(scores, member)
+			delete(taskKeys, member)
 		} else {
 			partialFailure = true
 		}
@@ -884,8 +863,7 @@ func (p *ConnPool) GetResourceDetails(key string) (string, *errors.Error) {
 	keys, err := readConn.Do("KEYS", "*"+key)
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
-			l.Log.Error("Error while getting resource datails  : " + errs.Error())
-			return "", errs
+			return "", errors.PackError(errors.DBKeyNotFound, errs.Error())
 		}
 		return "", errors.PackError(errors.UndefinedErrorType, errorCollectingData, err)
 	}
@@ -939,17 +917,13 @@ func (p *ConnPool) Ping() error {
 		return fmt.Errorf("error while pinging DB with read connection")
 	}
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
-	l.Log.Info("Ping : WritePool value : ", writePool)
 	if writePool == nil {
-		l.Log.Info("Ping : WritePool nil")
 		return errors.PackError(errors.UndefinedErrorType, "error while pinging DB with read connection: WritePool is nil ")
 	}
 	writeConn := writePool.Get()
 	defer writeConn.Close()
 	if _, err := writeConn.Do("PING"); err != nil {
-		l.Log.Error("error while pinging DB with write connection : " + err.Error())
 		return errors.PackError(errors.UndefinedErrorType, "error while pinging DB with read connection: WritePool is nil "+err.Error())
-
 	}
 	return nil
 }
@@ -961,9 +935,7 @@ func (p *ConnPool) Ping() error {
 */
 func (p *ConnPool) CreateIndex(form map[string]interface{}, uuid string) error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
-	l.Log.Info("CreateIndex : WritePool value : ", writePool)
 	if writePool == nil {
-		l.Log.Info("CreateIndex : WritePool nil")
 		return errors.PackError(errors.UndefinedErrorType, "error while Creating index: WritePool is nil ")
 
 	}
@@ -1021,7 +993,6 @@ func (p *ConnPool) CreateTaskIndex(index string, value int64, key string) error 
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 
 	if writePool == nil {
-		l.Log.Info("CreateTaskIndex : WritePool nil")
 		return errors.PackError(errors.UndefinedErrorType, "error while creating task index: WritePool is nil ")
 	}
 	writeConn := writePool.Get()
@@ -1433,7 +1404,6 @@ func (p *ConnPool) GetDeviceSubscription(index string, match string) ([]string, 
 		if err != nil {
 			return []string{}, err
 		}
-		l.Log.Info("No of data records for get device subscription query : " + strconv.Itoa(len(data)))
 		if len(data) < 1 {
 			return []string{}, fmt.Errorf("No data found for the key: %v", match)
 		}
@@ -1515,7 +1485,6 @@ func (p *ConnPool) Incr(table, key string) (int, *errors.Error) {
 	var count int
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		l.Log.Info("Incr : WritePool nil")
 		return count, errors.PackError(errors.UndefinedErrorType, "Incr : WritePool is nil ")
 	}
 	writeConn := writePool.Get()
@@ -1552,7 +1521,6 @@ func (p *ConnPool) Decr(table, key string) (int, *errors.Error) {
 	var count int
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		l.Log.Info("Decr : WritePool nil")
 		return count, errors.PackError(errors.UndefinedErrorType, "Decr : WritePool is nil ")
 	}
 	writeConn := writePool.Get()
@@ -1593,7 +1561,6 @@ func (p *ConnPool) Decr(table, key string) (int, *errors.Error) {
 func (p *ConnPool) SetExpire(table, key string, data interface{}, expiretime int) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		l.Log.Info("SetExpire : WritePool nil")
 		return errors.PackError(errors.UndefinedErrorType, "SetExpire : WritePool is nil ")
 	}
 	writeConn := writePool.Get()
@@ -1691,7 +1658,6 @@ func (p *ConnPool) GetAggregateHosts(index string, match string) ([]string, erro
 			if err != nil {
 				return []string{}, err
 			}
-			l.Log.Info("No of data records for get device aggregate Host query : " + strconv.Itoa(len(data)))
 			if len(data) < 1 {
 				return []string{}, fmt.Errorf("no data found for the key: %v", match)
 			}

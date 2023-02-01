@@ -114,9 +114,10 @@ func TestGetConnectionCollection(t *testing.T) {
 			want: resp1,
 		},
 	}
+	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetAllConnectionMethods(tt.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.e.GetAllConnectionMethods(ctx, tt.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAllConnectionMethods() = %v, want %v", got, tt.want)
 			}
 		})
@@ -125,6 +126,7 @@ func TestGetConnectionCollection(t *testing.T) {
 
 func TestExternalInterface_GetConnectionMethod(t *testing.T) {
 	p := getMockExternalInterface()
+	ctx := mockContext()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}
@@ -163,7 +165,7 @@ func TestExternalInterface_GetConnectionMethod(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetConnectionMethodInfo(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.e.GetConnectionMethodInfo(ctx, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.GetConnectionMethodInfo() = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
 		})

@@ -14,10 +14,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -225,6 +227,7 @@ func invalidAuthResp(errMsg string, w http.ResponseWriter) {
 func createContext(r *http.Request, transactionID uuid.UUID, podName string) context.Context {
 	ctx := context.Background()
 	var serviceName string
+	var reqBody map[string]interface{}
 	val := strings.Split(r.URL.Path, "/")
 	if len(val) >= 4 && val[2] != "" {
 		serviceName = val[3]
@@ -247,6 +250,12 @@ func createContext(r *http.Request, transactionID uuid.UUID, podName string) con
 	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	ctx = context.WithValue(ctx, common.ThreadName, common.ApiService)
 	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
+	if r.Body != nil {
+		body, _ := ioutil.ReadAll(r.Body)
+		json.Unmarshal(body, &reqBody)
+		ctx = context.WithValue(ctx, common.RequestBody, reqBody)
+		r.Body = ioutil.NopCloser(bytes.NewReader(body))
+	}
 
 	return ctx
 }

@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package tmodel ....
+// Package tmodel ....
 package tmodel
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -24,7 +25,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
-//Target is for sending the requst to south bound/plugin
+// Target is for sending the requst to south bound/plugin
 type Target struct {
 	ManagerAddress string `json:"ManagerAddress"`
 	Password       []byte `json:"Password"`
@@ -50,7 +51,7 @@ var (
 	GetDBConnectionFunc = common.GetDBConnection
 )
 
-//GetResource fetches a resource from database using table and key
+// GetResource fetches a resource from database using table and key
 func GetResource(Table, key string, dbtype common.DbType) (string, *errors.Error) {
 	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
@@ -67,7 +68,7 @@ func GetResource(Table, key string, dbtype common.DbType) (string, *errors.Error
 	return resource, nil
 }
 
-//GetAllKeysFromTable fetches all keys in a given table
+// GetAllKeysFromTable fetches all keys in a given table
 func GetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
 	conn, err := GetDBConnectionFunc(dbtype)
 	if err != nil {
@@ -80,7 +81,7 @@ func GetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
 	return keysArray, nil
 }
 
-//GetPluginData will fetch plugin details
+// GetPluginData will fetch plugin details
 func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	var plugin Plugin
 
@@ -107,7 +108,7 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	return plugin, nil
 }
 
-//GetTarget fetches the System(Target Device Credentials) table details
+// GetTarget fetches the System(Target Device Credentials) table details
 func GetTarget(deviceUUID string) (*Target, *errors.Error) {
 	var target Target
 	conn, err := GetDBConnectionFunc(common.OnDisk)
@@ -124,8 +125,8 @@ func GetTarget(deviceUUID string) (*Target, *errors.Error) {
 	return &target, nil
 }
 
-//GenericSave will save any resource data into the database
-func GenericSave(body []byte, table string, key string) error {
+// GenericSave will save any resource data into the database
+func GenericSave(ctx context.Context, body []byte, table string, key string) error {
 	connPool, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
@@ -134,7 +135,7 @@ func GenericSave(body []byte, table string, key string) error {
 		if errors.DBKeyAlreadyExist == err.ErrNo() {
 			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 		}
-		l.Log.Warn("Skipped saving of duplicate data with key " + key)
+		l.LogWithFields(ctx).Warn("Skipped saving of duplicate data with key " + key)
 	}
 	return nil
 }

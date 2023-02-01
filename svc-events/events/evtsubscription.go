@@ -22,6 +22,7 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -53,6 +54,9 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 		targetURI             = "/redfish/v1/EventService/Subscriptions"
 	)
 
+	// should be removed when context from svc-api is passed to this function
+	ctx := context.TODO()
+
 	if err = json.Unmarshal(req.PostBody, &postRequest); err != nil {
 		// Update the task here with error response
 		errorMessage := "Error while Unmarshaling the Request: " + err.Error()
@@ -63,7 +67,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 
 		resp = common.GeneralError(http.StatusBadRequest, errResponse.MalformedJSON, errorMessage, []interface{}{}, nil)
 		// Fill task and update
-		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
 
@@ -77,7 +81,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 		l.Log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, errResponse.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
-		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
 
@@ -90,7 +94,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 
 		resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
 		// Fill task and update
-		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
 
@@ -101,7 +105,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 
 		resp = common.GeneralError(http.StatusBadRequest, errResponse.PropertyValueFormatError, errorMessage, []interface{}{postRequest.Destination, "Destination"}, nil)
 		// Fill task and update
-		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
 
@@ -113,7 +117,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			[]interface{}{}, &resp)
 		l.Log.Error(errorMessage)
-		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
 	for _, evtSubscription := range subscriptionDetails {
@@ -122,7 +126,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 			evcommon.GenErrorResponse(errorMessage, errResponse.ResourceInUse, http.StatusConflict,
 				[]interface{}{}, &resp)
 			l.Log.Error(errorMessage)
-			e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+			e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 			return resp
 		}
 	}
@@ -177,7 +181,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 				if resp.StatusCode == 0 {
 					resp.StatusCode = http.StatusAccepted
 				}
-				e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Running, common.OK, percentComplete, http.MethodPost))
+				e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Running, common.OK, percentComplete, http.MethodPost))
 			}
 		}
 	}()
@@ -287,7 +291,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 			resp = common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, []interface{}{}, nil)
 			// Fill task and update
 			percentComplete = 100
-			e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+			e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 			return resp
 		}
 		locationHeader = resp.Header["Location"]
@@ -296,7 +300,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 		" successOriginResourceCount " + strconv.Itoa(successOriginResourceCount))
 	percentComplete = 100
 	if originResourceProcessedCount == successOriginResourceCount {
-		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost))
+		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost))
 	} else {
 		args := errResponse.Args{
 			Code:    errResponse.GeneralError,
@@ -307,7 +311,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(taskID string, sessionUserN
 		if locationHeader != "" {
 			resp.Header["Location"] = locationHeader
 		}
-		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 	}
 	return resp
 }
@@ -413,10 +417,10 @@ func (e *ExternalInterfaces) eventSubscription(postRequest evmodel.RequestBody, 
 	contactRequest.PostBody = target
 
 	l.Log.Debug("Subscription Request: " + reqData)
-	response, err := e.callPlugin(contactRequest)
+	response, err := e.callPlugin(context.TODO(), contactRequest)
 	if err != nil {
 		if evcommon.GetPluginStatus(plugin) {
-			response, err = e.callPlugin(contactRequest)
+			response, err = e.callPlugin(context.TODO(), contactRequest)
 		}
 		if err != nil {
 			errorMessage := "error while unmarshal the body : " + err.Error()
@@ -835,20 +839,23 @@ func (e *ExternalInterfaces) createEventSubscription(taskID string, subTaskChan 
 	)
 	defer wg.Done()
 
+	// should be removed when context from svc-api is passed to this function
+	ctx := context.TODO()
+
 	reqBody, err = json.Marshal(request)
 	if err != nil {
 		l.Log.Error("error while trying to marshal create event request: " + err.Error())
 	}
 	reqJSON = string(reqBody)
 	if taskID != "" {
-		subTaskURI, err = e.CreateChildTask(reqSessionToken, taskID)
+		subTaskURI, err = e.CreateChildTask(ctx, reqSessionToken, taskID)
 		if err != nil {
 			l.Log.Error("Error while creating the SubTask")
 		}
 		trimmedURI := strings.TrimSuffix(subTaskURI, "/")
 		subTaskID = trimmedURI[strings.LastIndex(trimmedURI, "/")+1:]
 		resp.StatusCode = http.StatusAccepted
-		e.UpdateTask(fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Running, common.OK, percentComplete, http.MethodPost))
+		e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Running, common.OK, percentComplete, http.MethodPost))
 	}
 
 	host, response := e.eventSubscription(request, originResource, collectionName, collectionFlag)
@@ -865,9 +872,9 @@ func (e *ExternalInterfaces) createEventSubscription(taskID string, subTaskChan 
 	percentComplete = 100
 	if subTaskID != "" {
 		if response.StatusCode != http.StatusCreated {
-			e.UpdateTask(fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+			e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		} else {
-			e.UpdateTask(fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Completed, common.OK, percentComplete, http.MethodPost))
+			e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Completed, common.OK, percentComplete, http.MethodPost))
 		}
 		subTaskChan <- int32(response.StatusCode)
 	}
@@ -1089,10 +1096,10 @@ func (e *ExternalInterfaces) createFabricSubscription(postRequest evmodel.Reques
 	contactRequest.HTTPMethodType = http.MethodPost
 	err = json.Unmarshal([]byte(reqData), &contactRequest.PostBody)
 
-	response, err := e.callPlugin(contactRequest)
+	response, err := e.callPlugin(context.TODO(), contactRequest)
 	if err != nil {
 		if evcommon.GetPluginStatus(plugin) {
-			response, err = e.callPlugin(contactRequest)
+			response, err = e.callPlugin(context.TODO(), contactRequest)
 		}
 		if err != nil {
 			evcommon.GenEventErrorResponse(err.Error(), errResponse.InternalError, http.StatusInternalServerError,
@@ -1239,10 +1246,10 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(req *eventsproto.EventUpda
 	contactRequest.PostBody = target
 
 	l.Log.Debug("Subscription Request: " + reqData)
-	response, err := e.callPlugin(contactRequest)
+	response, err := e.callPlugin(context.TODO(), contactRequest)
 	if err != nil {
 		if evcommon.GetPluginStatus(plugin) {
-			response, err = e.callPlugin(contactRequest)
+			response, err = e.callPlugin(context.TODO(), contactRequest)
 		}
 		if err != nil {
 			errorMessage := "error while unmarshal the body : " + err.Error()

@@ -202,7 +202,7 @@
 - [License Service](#license-service)
   - [Viewing the LicenseService root](#viewing-the-licenseservice-root)
   - [Viewing the license collection](#viewing-the-license-collection)
-  - [Viewing single license](#viewing-single-license)
+  - [Viewing information about a license](#viewing-information-about-a-license)
   - [Installing a license](#installing-a-license)
 - [Audit logs](#audit-logs)
 - [Security logs](#security-logs)
@@ -5090,6 +5090,7 @@ curl -i -X POST \
       }
    ]
   },
+   "DisplayName":"<volume_name>"
    "@Redfish.OperationApplyTime":"OnReset"
 }
 ```
@@ -5102,6 +5103,7 @@ curl -i -X POST \
 |Links {|Object (required)|Links to individual drives.|
 |Drives[{|Array (required)<br> |An array of links to drive resources to contain the new volume.|
 |@odata.id }]}<br> |String|A link to a drive resource.|
+|DisplayName |String|Name of the volume (optional).|
 |@Redfish.OperationApplyTime|Redfish annotation (optional)<br> | It enables you to control when the operation is carried out.<br> Supported values: `OnReset` and `Immediate`.<br> `OnReset` indicates that the new volume is available only after you successfully reset the system. To know how to reset a system, see [Resetting a computer system](#resetting-a-computer-system).<br>`Immediate` indicates that the created volume is available in the system immediately after the operation is successfully complete. |
 
 >**Sample response body** 
@@ -12249,6 +12251,8 @@ curl -i GET \
    "Id":"8dd3fb4d-0429-4262-989f-906df092aefd.1.1",
    "Name":"iLO License",
    "Description":"iLO License View",
+   "ExpirationDate": "Activated until 14 Jan 2023",
+   "InstallDate": "16 May 2022",
    "LicenseType":"Perpetual",
    "SerialNumber":"CN704614C4",
 }

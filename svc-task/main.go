@@ -94,12 +94,8 @@ func main() {
 	task.GetTaskStatusModel = tmodel.GetTaskStatus
 	task.GetAllTaskKeysModel = tmodel.GetAllTaskKeys
 	task.TransactionModel = tmodel.Transaction
-	task.OverWriteCompletedTaskUtilHelper = task.OverWriteCompletedTaskUtil
 	task.CreateTaskUtilHelper = task.CreateTaskUtil
-	task.GetCompletedTasksIndexModel = tmodel.GetCompletedTasksIndex
-
 	task.DeleteTaskFromDBModel = tmodel.DeleteTaskFromDB
-	task.DeleteTaskIndex = tmodel.DeleteTaskIndex
 	task.UpdateTaskQueue = tqueue.EnqueueTask
 	task.PersistTaskModel = tmodel.PersistTask
 	task.ValidateTaskUserNameModel = tmodel.ValidateTaskUserName

@@ -208,7 +208,7 @@ func mockDeviceRequest(ctx context.Context, req mgrcommon.ResourceInfoRequest) r
 	return resp
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	baseURI := "/redfish/v1"
 	baseURI = mgrcommon.TranslateToSouthBoundURL(baseURI)
 

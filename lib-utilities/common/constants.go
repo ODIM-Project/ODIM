@@ -160,26 +160,55 @@ const (
 	ActionName    = "actionname"
 	ActionID      = "actionid"
 	ProcessName   = "processname"
+	RequestBody   = "requestbody"
 	// Below fields define Service Name
-	ManagerService = "svc-managers"
-	AccountService = "svc-account"
-	SystemService  = "svc-systems"
-	SessionService = "svc-account-session"
-	ApiService     = "svc-api"
-	UpdateService  = "svc-update"
+	ManagerService     = "svc-managers"
+	AccountService     = "svc-account"
+	SystemService      = "svc-systems"
+	SessionService     = "svc-account-session"
+	ApiService         = "svc-api"
+	UpdateService      = "svc-update"
+	TaskService        = "svc-task"
+	AggregationService = "svc-aggregation"
+	TelemetryService   = "svc-telemetry"
+	LicenseService     = "svc-licenses"
+	FabricService      = "svc-fabrics"
 	// DefaultThreadID to be used for apis
 	DefaultThreadID = "0"
 	// Invalid Action
 	InvalidActionID   = "000"
 	InvalidActionName = "MethodNotAllowed"
 	// ThreadName
-	CheckAuth            = "Check-Authentication"
-	CheckSessionCreation = "CheckSessionCreationCredentials"
-	CheckSessionTimeout  = "CheckSessionTimeOut"
-	SendRequest          = "SendRequest"
-	StartRequest         = "StartRequest"
-	SimpleUpdate         = "SimpleUpdate"
-	StartUpdate          = "StartUpdate"
+	CheckAuth                              = "Check-Authentication"
+	CheckSessionCreation                   = "CheckSessionCreationCredentials"
+	CheckSessionTimeout                    = "CheckSessionTimeOut"
+	SendRequest                            = "SendRequest"
+	StartRequest                           = "StartRequest"
+	SimpleUpdate                           = "SimpleUpdate"
+	StartUpdate                            = "StartUpdate"
+	OverWriteCompletedTaskUtil             = "OverWriteCompletedTaskUtil"
+	AsyncTaskDelete                        = "AsyncTaskDelete"
+	ResetAggregates                        = "Reset-Aggregates"
+	ResetAggregate                         = "Reset-Aggregate"
+	SetBootOrder                           = "SettingBootOrder"
+	CollectAndSetDefaultBootOrder          = "CollectAndSetDefaultBoorOrder"
+	AddAggregationSource                   = "AddingAggregationSource"
+	DeleteAggregationSource                = "DeleteAggregationSource"
+	SubTaskStatusUpdate                    = "SubTaskStatusUpdate"
+	ResetSystem                            = "ResetSystem"
+	SetDefaultBootOrderElementsOfAggregate = "SetDefaultBootOrderElementsOfAggregate"
+	RediscoverSystemInventory              = "RediscoverSystemInventory"
+	CheckPluginStatus                      = "CheckPluginStatus"
+	GetTelemetryResource                   = "GetTelemetryResource"
+	// constants for log
+	SessionToken            = "sessiontoken"
+	SessionUserID           = "sessionuserid"
+	SessionRoleID           = "sessionroleid"
+	StatusCode              = "statuscode"
+	ComputerSystemReset     = "ComputerSystemReset"
+	GetFabricManagerChassis = "GetFabricManagerChassis"
+	CollectChassisResource  = "CollectChassisResource"
+	UpdateChassisResource   = "UpdateChassisResource"
 )
 
 // ActionType defines type of action
@@ -425,6 +454,7 @@ var Actions = map[ActionKey]ActionType{
 	{"LicenseService", "Licenses", "GET"}:       {"213", "GetLicenseCollection"},
 	{"LicenseService", "Licenses/{id}", "GET"}:  {"214", "GetLicenseResource"},
 	{"LicenseService", "Licenses", "POST"}:      {"215", "InstallLicenseService"},
+	// 216 and 217 operations are svc-aggregation internal operations pluginhealthcheck and RediscoverSystem
 }
 
 var Types = map[string]string{

@@ -12,13 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package telemetry ...
+// Package telemetry ...
 package telemetry
 
 // ---------------------------------------------------------------------------------------
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -208,11 +209,11 @@ func (e *ExternalInterface) GetTriggerCollection(req *teleproto.TelemetryRequest
 }
 
 // GetMetricReportDefinition ...
-func (e *ExternalInterface) GetMetricReportDefinition(req *teleproto.TelemetryRequest) response.RPC {
+func (e *ExternalInterface) GetMetricReportDefinition(ctx context.Context, req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
 	data, gerr := e.DB.GetResource("MetricReportDefinitions", req.URL, common.InMemory)
 	if gerr != nil {
-		l.Log.Warn("Unable to get MetricReportDefinition details : " + gerr.Error())
+		l.LogWithFields(ctx).Warn("Unable to get MetricReportDefinition details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"MetricReportDefinition", req.URL}, nil)
@@ -230,7 +231,7 @@ func (e *ExternalInterface) GetMetricReportDefinition(req *teleproto.TelemetryRe
 }
 
 // GetMetricReport is for to get metric report from southbound resource
-func (e *ExternalInterface) GetMetricReport(req *teleproto.TelemetryRequest) response.RPC {
+func (e *ExternalInterface) GetMetricReport(ctx context.Context, req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
 	var getDeviceInfoRequest = tcommon.ResourceInfoRequest{
 		URL:                 req.URL,
@@ -242,9 +243,9 @@ func (e *ExternalInterface) GetMetricReport(req *teleproto.TelemetryRequest) res
 		GetResource:         e.DB.GetResource,
 		GenericSave:         e.External.GenericSave,
 	}
-	data, err := tcommon.GetResourceInfoFromDevice(getDeviceInfoRequest)
+	data, err := tcommon.GetResourceInfoFromDevice(ctx, getDeviceInfoRequest)
 	if err != nil {
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctx).Error(err.Error())
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"MetricReport", req.URL}, nil)
 	}
 	var resource map[string]interface{}
@@ -258,11 +259,11 @@ func (e *ExternalInterface) GetMetricReport(req *teleproto.TelemetryRequest) res
 }
 
 // GetMetricDefinition ...
-func (e *ExternalInterface) GetMetricDefinition(req *teleproto.TelemetryRequest) response.RPC {
+func (e *ExternalInterface) GetMetricDefinition(ctx context.Context, req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
 	data, gerr := e.DB.GetResource("MetricDefinitions", req.URL, common.InMemory)
 	if gerr != nil {
-		l.Log.Warn("Unable to get MetricDefinition details : " + gerr.Error())
+		l.LogWithFields(ctx).Warn("Unable to get MetricDefinition details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"MetricDefinition", req.URL}, nil)
@@ -280,11 +281,11 @@ func (e *ExternalInterface) GetMetricDefinition(req *teleproto.TelemetryRequest)
 }
 
 // GetTrigger ...
-func (e *ExternalInterface) GetTrigger(req *teleproto.TelemetryRequest) response.RPC {
+func (e *ExternalInterface) GetTrigger(ctx context.Context, req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
 	data, gerr := e.DB.GetResource("Triggers", req.URL, common.InMemory)
 	if gerr != nil {
-		l.Log.Warn("Unable to get Triggers details `: " + gerr.Error())
+		l.LogWithFields(ctx).Warn("Unable to get Triggers details `: " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Triggers", req.URL}, nil)

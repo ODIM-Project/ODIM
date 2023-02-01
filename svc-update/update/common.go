@@ -64,15 +64,15 @@ type Plugin struct {
 
 // External struct holds the function pointers all outboud services
 type External struct {
-	ContactClient      func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient      func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	Auth               func(string, []string, []string) (response.RPC, error)
 	DevicePassword     func([]byte) ([]byte, error)
 	GetPluginData      func(string) (umodel.Plugin, *errors.Error)
 	ContactPlugin      func(context.Context, ucommon.PluginContactRequest, string) ([]byte, string, ucommon.ResponseStatus, error)
 	GetTarget          func(string) (*umodel.Target, *errors.Error)
-	CreateChildTask    func(string, string) (string, error)
-	CreateTask         func(string) (string, error)
-	UpdateTask         func(common.TaskData) error
+	CreateChildTask    func(context.Context, string, string) (string, error)
+	CreateTask         func(context.Context, string) (string, error)
+	UpdateTask         func(context.Context, common.TaskData) error
 	GetSessionUserName func(string) (string, error)
 	GenericSave        func(context.Context, []byte, string, string) error
 }
@@ -136,7 +136,7 @@ func GetExternalInterface() *ExternalInterface {
 }
 
 // TaskData update the task with the given data
-func TaskData(taskData common.TaskData) error {
+func TaskData(ctx context.Context, taskData common.TaskData) error {
 	respBody, _ := json.Marshal(taskData.Response.Body)
 	payLoad := &taskproto.Payload{
 		HTTPHeaders:   taskData.Response.Header,
@@ -147,11 +147,11 @@ func TaskData(taskData common.TaskData) error {
 		ResponseBody:  respBody,
 	}
 
-	err := ServicesUpdateTaskFunc(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	err := ServicesUpdateTaskFunc(ctx, taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
-		ServicesUpdateTaskFunc(taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+		ServicesUpdateTaskFunc(ctx, taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 		if taskData.PercentComplete == 0 {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}
@@ -185,11 +185,11 @@ func (e *ExternalInterface) monitorPluginTask(ctx context.Context, subTaskChanne
 			return monitorTaskData.getResponse, err
 		}
 		var updatetask = fillTaskData(monitorTaskData.subTaskID, monitorTaskData.serverURI, monitorTaskData.updateRequestBody, monitorTaskData.resp, task.TaskState, task.TaskStatus, task.PercentComplete, http.MethodPost)
-		err := e.External.UpdateTask(updatetask)
+		err := e.External.UpdateTask(ctx, updatetask)
 		if err != nil && err.Error() == common.Cancelling {
 			var updatetask = fillTaskData(monitorTaskData.subTaskID, monitorTaskData.serverURI, monitorTaskData.updateRequestBody, monitorTaskData.resp, common.Cancelled, common.Critical, 100, http.MethodPost)
 			subTaskChannel <- http.StatusInternalServerError
-			e.External.UpdateTask(updatetask)
+			e.External.UpdateTask(ctx, updatetask)
 			return monitorTaskData.getResponse, err
 		}
 		time.Sleep(time.Second * 5)

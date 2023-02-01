@@ -98,7 +98,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}
-
+	ctx := mockContext()
 	// create plugin with bad password for decryption failure
 	pluginData := agmodel.Plugin{
 		Password: []byte("password"),
@@ -284,7 +284,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, _, _ := tt.p.addPluginData(tt.args.req, tt.args.taskID, targetURI, pluginContactRequest, queueList, tt.args.cmVariants); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got, _, _ := tt.p.addPluginData(ctx, tt.args.req, tt.args.taskID, targetURI, pluginContactRequest, queueList, tt.args.cmVariants); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.addPluginData = %v, want %v", got, tt.want)
 			}
 		})
@@ -300,7 +300,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}
-
+	ctx := mockContext()
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
@@ -424,7 +424,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, _, _ := tt.p.addPluginData(tt.args.req, tt.args.taskID, targetURI, pluginContactRequest, queueList, tt.args.cmVariants); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got, _, _ := tt.p.addPluginData(ctx, tt.args.req, tt.args.taskID, targetURI, pluginContactRequest, queueList, tt.args.cmVariants); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.addPluginData = %v, want %v", got, tt.want)
 			}
 		})

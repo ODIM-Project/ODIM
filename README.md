@@ -28,6 +28,7 @@
    - [Upgrading the Resource Aggregator for ODIM deployment](#upgrading-the-resource-aggregator-for-odim-deployment)
    - [Backup and restore of Kubernetes etcd](#Backup-and-restore-of-Kubernetes-etcd)
    - [Backup and restore of ODIM etcd](#Backup-and-restore-of-ODIM-etcd)
+   - [Backup and restore of Redis](#Backup-and-restore-of-Redis)
 6. [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
    - [Adding a server into the resource inventory](#adding-a-server-into-the-resource-inventory)
    - [Viewing the resource inventory](#viewing-the-resource-inventory)
@@ -261,7 +262,7 @@ The following table lists the software components and versions that are compatib
       ```
       
    3. ```
-      sudo apt-get install python3.8=3.8.10-0ubuntu1~20.04.5 -y
+      sudo apt-get install python3.8=3.8.10-0ubuntu1~20.04.6 -y
       ```
 
    4. ```
@@ -277,7 +278,7 @@ The following table lists the software components and versions that are compatib
       ```
 
    7. ```
-      sudo apt-get install openjdk-11-jre-headless=11.0.16+8-0ubuntu1~20.04 -y
+      sudo apt-get install openjdk-11-jre-headless=11.0.17+8-1ubuntu2~20.04 -y
       ```
 
    8. ```
@@ -414,7 +415,7 @@ The following table lists the software components and versions that are compatib
 
 4. Copy each saved tar archive to a directory called `kubernetes_images` on the deployment node. 
 
-   Example: `cp /home/bruce/*.tar /home/bruce/kubernetes_images`
+   Example: `cp /home/<user>/*.tar /home/<user>/kubernetes_images`
 
    > **IMPORTANT**: When deploying ODIMRA, update the `kubernetesImagePath` parameter in `kube_deploy_nodes.yaml` file with the path of the `kubernetes_images` directory you choose in this step. The images are automatically installed on all cluster nodes after deployment.
 
@@ -481,7 +482,6 @@ The following table lists the software components and versions that are compatib
     | fabrics               | 3.1         | fabrics.tar                  |
     | managers              | 4.0         | managers.tar                 |
     | systems               | 4.0         | systems.tar                  |
-    | composition-service   | 1.0         | composition-service.tar      |
     | licenses              | 1.0         | licenses.tar                 |
     | task                  | 3.1         | task.tar                     |
     | update                | 3.1         | update.tar                   |
@@ -496,9 +496,9 @@ The following table lists the software components and versions that are compatib
     | urplugin              | 3.1         | urplugin.tar                 |
     | grfplugin             | 3.1         | grfplugin.tar                |
     | telemetry             | 2.1         | telemetry.tar                |
-
+    
 3. To install the Docker images of all services on the cluster nodes, create a directory called `odimra_images` on the deployment node and copy each tar archive to this directory. 
-    For example: `cp /home/bruce/ODIM/*.tar /home/bruce/odimra_images`
+    For example: `cp /home/<user>/ODIM/*.tar /home/<user>/odimra_images`
 
     > **IMPORTANT**: While deploying ODIMRA, update the `odimraImagePath` parameter in `kube_deploy_nodes.yaml` file with the path of the `odimra_images` directory you choose in this step. The images are automatically installed on all cluster nodes after deployment.
 
@@ -1274,7 +1274,7 @@ Topics covered in this section include:
     **Example**:
     
     ```
-    odimPluginPath: /home/bruce/plugins
+    odimPluginPath: /home/<user>/plugins
     odimra:
       groupID: 2021
       userID: 2021
@@ -1435,7 +1435,7 @@ Topics covered in this section include:
     **Example**:
     
     ```
-    odimPluginPath: /home/bruce/plugins
+    odimPluginPath: /home/<user>/plugins
     odimra:
       groupID: 2021
       userID: 2021
@@ -1584,7 +1584,7 @@ Topics covered in this section include:
     Example:
 
     ```
-    odimPluginPath: /home/bruce/plugins
+    odimPluginPath: /home/<user>/plugins
     odimra:
       groupID: 2021
       userID: 2021
@@ -2146,11 +2146,11 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 9. Transfer the etcd snapshot of the etcd instance to the respective node:
 
    ```
-   sudo scp -r  etcd2.etcd/ bruce@10.117.2.102:/home/bruce
+   sudo scp -r etcd2.etcd/ <user>@10.117.2.102:/home/<user>
    ```
 
    ```
-   sudo scp -r  etcd3.etcd/ bruce@10.117.2.103:/home/bruce
+   sudo scp -r etcd3.etcd/ <user>@10.117.2.103:/home/<user>
    ```
 
    > Note: This step is not needed for one-node because the backup file will be in the same node.
@@ -2277,17 +2277,17 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 8. Exit from the pod. There is a new directory created `default.etcd`, move the directory content outside the pod to store it for further usage:
 
    ```
-   kubectl cp odim/etcd-0:/home/odimra/default.etcd/ /home/bruce/backup
+   kubectl cp odim/etcd-0:/home/odimra/default.etcd/ /[backup directory]/backup
    ```
 
 9. In case of three nodes, get all the .etcd files outside the pod and move to the different nodes:
 
    ```
-   sudo scp -r  etcd2.etcd/ bruce@10.117.2.102:/home/bruce
+   sudo scp -r  etcd2.etcd/ <user>@10.117.2.102:/home/<user>
    ```
 
    ```
-   sudo scp -r  etcd3.etcd/ bruce@10.117.2.103:/home/bruce
+   sudo scp -r  etcd3.etcd/ <user>@10.117.2.103:/home/<user>
    ```
 
 10. To restore, enter the etcd pod and mv the current data if available and make it backup:
@@ -2299,15 +2299,15 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 11. Get the backup directory back to the Kubernetes pod and store it in the data directory:
 
     ```
-    kubectl cp /home/bruce/backup/member odim/etcd-0:/opt/etcd/data/
+    kubectl cp /home/<user>/backup/member odim/etcd-0:/opt/etcd/data/
     ```
 
     ```
-    kubectl cp /home/bruce/backup/member odim/etcd-1:/opt/etcd/data/
+    kubectl cp /home/<user>/backup/member odim/etcd-1:/opt/etcd/data/
     ```
 
     ```
-    kubectl cp /home/bruce/backup/member odim/etcd-2:/opt/etcd/data/
+    kubectl cp /home/<user>/backup/member odim/etcd-2:/opt/etcd/data/
     ```
 
 12. Restart the etcd pod in ODIM namespace and check for the existence of old data:
@@ -2326,11 +2326,191 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 
     
 
+## Backup and restore of Redis
 
+1. Create a directory to store the backup rdb files and append-only files.
 
+   ```
+   mkdir <backup directory>/backup
+   ```
 
+2. Get the name of the master pod to collect the backup snapshot file and append-only file to restore them later (either ondisk or inmemory database).
 
+   ```
+   kubectl get pods -nodim | grep redis | grep primary
+   ```
+   
+   **Output**:
 
+   ```
+   redis-ha-inmemory-primary-0
+   ```
+   ```
+   redis-ha-ondisk-primary-0
+   ```
+
+3. Copy the rdb files and aof files from the master pod.
+
+   ```
+   kubectl cp odim/<pod-name>:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
+   ```
+
+   ```
+   kubectl cp odim/<pod-name>:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
+   ```
+
+   **For example (on-disk)**:
+   
+   ```
+   kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
+   ```
+
+   ```
+   kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
+   ```
+
+   **For example(in-memory)**:
+   
+   ```
+   kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
+   ```
+   
+   ```
+   kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
+   ```
+   
+   These are the backup files to be restored.
+
+4. Copy the above backup files to the pod to restore them.
+
+   ```
+   kubectl cp <Copied directory>/backup/dump.rdb odim/<pod-name>:/redis-data/dump.rdb-1
+   ```
+
+   ```
+   kubectl cp <Copied directory>/backup/appendonly.aof  odim/<pod-name>:/redis-data/appendonly.aof.old
+   ```
+
+   **For example**:
+
+   ```
+   kubectl cp <Copied directory>/backup/dump.rdb odim/redis-ha-ondisk-primary-0:/redis-data/dump.rdb-1
+   ```
+
+   ```
+   kubectl cp <Copied directory>/backup/appendonly.aof odim/redis-ha-ondisk-primary-0/redis-data/appendonly.aof.old
+   ```
+
+   ```
+   kubectl cp <Copied directory>/backup/dump.rdb odim/redis-ha-inmemory-primary-0:/redis-data/dump.rdb-1
+   ```
+
+   ```
+   kubectl cp <Copied directory>/backup/appendonly.aof  odim/redis-ha-inmemory-primary-0/redis-data/appendonly.aof.old
+   ```
+
+5. Log in to the pod. 
+
+   ```
+   kubectl exec -it <podname> -nodim bash
+   ```
+
+   **For example**:
+
+   ```
+   kubectl exec -it redis-ha-ondisk-primary-0 -nodim bash
+   ```
+
+   ```
+   kubectl exec -it redis-ha-inmemory-primary-0 -nodim bash
+   ```
+
+6. Log in to Redis CLI and disable append-only configuration to restore the data back.
+
+   ```
+   redis-cli --tls --cert /etc/odimra_certs/odimra_server.crt --key /etc/odimra_certs/odimra_server.key --cacert /etc/odimra_certs/rootCA.crt -a <password>
+   ```
+
+   ```
+   CONFIG SET "appendonly" no
+   ```
+
+7. Delete the data available to verify later, if the restore option works (optional).
+
+   ```
+   keys *
+   ```
+
+   ```
+   FLUSHALL
+   ```
+
+8. Exit from the Redis CLI and move to the `redis-data` directory.
+
+9. Remove the existing rdb and aof files and replace the backed up ones with the name.
+
+   ```
+   cd /redis-data
+   ```
+
+   ```
+   rm -rf dump.rdb appendonly.aof
+   ```
+
+   ```
+   mv dump.rdb-1 dumb.rdb
+   ```
+
+   ```
+   mv appendonly.aof.old appendonly.aof
+   ```
+
+10. Get the pods of the Redis (either in-memory or on-disk) and restart  them.
+
+    ```
+    kubectl get pods -nodim | grep redis | grep inmemory
+    ```
+
+    ```
+    kubectl get pods -nodim | grep redis | grep ondisk
+    ```
+
+    ```
+    kubectl delete pods <pod1> <pod2>..<pod3> -nodim
+    ```
+
+    **For example**:
+
+    ```
+    kubectl delete pods redis-ha-inmemory-primary-0 redis-ha-inmemory-secondary-0 redis-ha-inmemory-secondary-1 -nodim
+    ```
+
+11. Once all the pods have started and are in running state, log in to the pod.
+
+    ```
+    kubectl exec -it <podname> -nodim bash
+    ```
+
+    **For example**:
+
+    ```
+    kubectl exec -it redis-ha-ondisk-primary-0 -nodim bash
+    ```
+    ```
+    kubectl exec -it redis-ha-inmemory-primary-0 -nodim bash
+    ```
+
+12. Log in to Redis CLI and check for the old data.
+
+    ```
+    redis-cli --tls --cert /etc/odimra_certs/odimra_server.crt --key /etc/odimra_certs/odimra_server.key --cacert /etc/odimra_certs/rootCA.crt -a <password>
+    ```
+
+    ```
+    keys *
+    ```
+
+   
 
 # Use cases for Resource Aggregator for ODIM
 
@@ -2354,11 +2534,11 @@ Before adding a server, generate a certificate for it using the root CA certific
 > **NOTE**: To add a server using FQDN, add the server IP address and FQDN under the `etcHostsEntries` parameter in the `kube_deploy_nodes.yaml` file on the deployment node and run the following command:
 
 
-```
+   ```
 python3 odim-controller.py --config \
 /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
 --upgrade configure-hosts
-```
+   ```
 
 This action discovers information about a server and performs a detailed inventory of it. After successful completion, you will receive an aggregation source Id of the added BMC. Save it as it is required to identify it in the resource inventory later.
 
@@ -2562,13 +2742,14 @@ python3 odim-controller.py [option(s)] [argument(s)]
 1. ```
     python3 odim-controller.py --addnode kubernetes --config \
     ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml
-   ```
-   
+    ```
+```
+
 2. ```
      python3 odim-controller.py --config \
     ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
     --scale --svc aggregation --replicas 3
-   ```
+```
 For more examples, see *[Post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)*.
 
 # Contributing to the open source community
@@ -2851,7 +3032,7 @@ Run the following commands:
 1. Run the following commands:
    
    1. ```
-      sudo apt-get install -y apt-transport-https=2.0.9 ca-certificates=20211016~20.04.1 curl=7.68.0-1ubuntu2.12
+      sudo apt-get install -y apt-transport-https=2.0.9 ca-certificates=20211016ubuntu0.20.04.1 curl=7.68.0-1ubuntu2.15
       ```
 	  
    2. ```
@@ -2976,8 +3157,8 @@ Run the following commands:
    odimControllerSrcPath: /home/user/ODIM/odim-controller
    odimVaultKeyFilePath: /home/user/ODIM/odim-controller/scripts/odimVaultKeyFile
    odimCertsPath: ""
-   kubernetesImagePath: /home/bruce/kubernetes_images
-   odimraImagePath: /home/bruce/odimra_images
+   kubernetesImagePath: /home/user/kubernetes_images
+   odimraImagePath: /home/user/odimra_images
    odimPluginPath: ""
    odimra:
      groupID: 2021
@@ -3680,7 +3861,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     Example:
     
     ```
-    odimPluginPath: /home/bruce/plugins
+    odimPluginPath: /home/user/plugins
         odimra:
           groupID: 2021
           userID: 2021
@@ -4183,5 +4364,4 @@ These checks run in parallel and take a few minutes to complete.
 ![screenshot](docs/images/check_2.png)
 
 ![screenshot](docs/images/check_3.png)
-
 

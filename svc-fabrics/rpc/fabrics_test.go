@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
@@ -69,7 +69,7 @@ func mockPluginData(t *testing.T) error {
 	return nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Sessions" {
 		body := `{"Token": "12345"}`
 		return &http.Response{
@@ -166,6 +166,7 @@ func TestFabrics_GetFabricResource(t *testing.T) {
 			name: "Postive Test Case",
 			f:    fabricsData,
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/fabid1",
@@ -217,6 +218,7 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 			name: "Postive Test Case",
 			f:    fabricsData,
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/fabid1/Zones/Zone1",
@@ -266,6 +268,7 @@ func TestFabrics_DeleteFabricResource(t *testing.T) {
 			name: "Postive Test Case",
 			f:    fabricsData,
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/fabid1",
@@ -314,6 +317,7 @@ func TestFabrics_AddFabric(t *testing.T) {
 			name: "Postive Test Case",
 			f:    fabricsData,
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.AddFabricRequest{
 					OriginResource: "/redfish/v1/Fabrics/a926dec5-61eb-499b-988a-d45b45847466",
 					Address:        "localhost",
@@ -361,6 +365,7 @@ func TestFabrics_RemoveFabric(t *testing.T) {
 			name: "Postive Test Case",
 			f:    fabricsData,
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.AddFabricRequest{
 					OriginResource: "/redfish/v1/Fabrics/a926dec5-61eb-499b-988a-d45b45847466",
 					Address:        "localhost",

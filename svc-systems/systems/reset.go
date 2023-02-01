@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package systems ...
+// Package systems ...
 package systems
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -28,12 +29,12 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
 
-//PluginContact struct to inject the pmb client function into the handlers
+// PluginContact struct to inject the pmb client function into the handlers
 type PluginContact struct {
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DevicePassword  func([]byte) ([]byte, error)
-	GetPluginStatus func(smodel.Plugin) bool
-	UpdateTask      func(common.TaskData) error
+	GetPluginStatus func(context.Context, smodel.Plugin) bool
+	UpdateTask      func(context.Context, common.TaskData) error
 }
 
 var (
@@ -42,29 +43,29 @@ var (
 )
 
 // ComputerSystemReset performs a reset action on the requeseted computer system with the specified ResetType
-func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemResetRequest, taskID, sessionUserName string) response.RPC {
+func (p *PluginContact) ComputerSystemReset(ctx context.Context, req *systemsproto.ComputerSystemResetRequest, taskID, sessionUserName string) response.RPC {
 	var targetURI = "/redfish/v1/Systems/" + req.SystemID + "/Actions/ComputerSystem.Reset"
 	var resp response.RPC
 	resp.StatusCode = http.StatusAccepted
 	var percentComplete int32
 	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	err := p.UpdateTask(task)
+	err := p.UpdateTask(ctx, task)
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: p.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	if err != nil {
 		errMsg := "error while starting the task: " + err.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	percentComplete = 10
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	p.UpdateTask(task)
+	p.UpdateTask(ctx, task)
 	// parsing the ResetComputerSystem
 	var resetCompSys ResetComputerSystem
 	err = JSONUnMarshal(req.RequestBody, &resetCompSys)
 	if err != nil {
 		errMsg := "error: unable to parse the computer system reset request" + err.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 
@@ -72,11 +73,11 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, resetCompSys)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
 		return resp
 	}
@@ -103,7 +104,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	target.Password = decryptedPasswordByte
 	percentComplete = 30
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	p.UpdateTask(task)
+	p.UpdateTask(ctx, task)
 
 	// Get the Plugin info
 	plugin, gerr := smodel.GetPluginData(target.PluginID)
@@ -123,7 +124,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := ContactPluginFunc(contactRequest, "error while creating session with the plugin: ")
+		_, token, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -143,15 +144,15 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/Systems/" + requestData[1] + "/Actions/ComputerSystem.Reset"
-	body, location, getResponse, err := ContactPluginFunc(contactRequest, "error while reseting the computer system: ")
+	body, location, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while reseting the computer system: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
 		task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Exception, common.Critical, 100, http.MethodPost)
-		err = p.UpdateTask(task)
+		err = p.UpdateTask(ctx, task)
 		if err != nil {
 			errMsg := "error while starting the task: " + err.Error()
-			l.Log.Error(errMsg)
+			l.LogWithFields(ctx).Error(errMsg)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		}
 
@@ -159,7 +160,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
 
-		body, err = p.monitorPluginTask(&monitorTaskRequest{
+		body, err = p.monitorPluginTask(ctx, &monitorTaskRequest{
 			taskID:        taskID,
 			serverURI:     targetURI,
 			requestBody:   string(postBody),
@@ -183,9 +184,9 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
 	}
-	smodel.AddSystemResetInfo("/redfish/v1/Systems/"+req.SystemID, resetCompSys.ResetType)
+	smodel.AddSystemResetInfo(ctx, "/redfish/v1/Systems/"+req.SystemID, resetCompSys.ResetType)
 	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, common.OK, 100, http.MethodPost)
-	p.UpdateTask(task)
+	p.UpdateTask(ctx, task)
 
 	return resp
 }

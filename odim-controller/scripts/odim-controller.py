@@ -508,6 +508,8 @@ def scale_in_k8s():
 
 	if not DRY_RUN_SET:
 		load_password_from_vault(cur_dir)
+		logger.info("Removing the k8s images")
+		delete_k8_images(K8S_INVENTORY_FILE,nodes_list)
 		logger.info("Starting k8s cluster scale-in")
 		k8s_rm_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root --extra-vars "node={rm_node_list}" -e delete_nodes_confirmation=yes remove-node.yml'.format(host_conf_file=K8S_INVENTORY_FILE, rm_node_list=nodes_list)
 		ret = exec(k8s_rm_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
@@ -534,7 +536,7 @@ def scale_in_k8s():
 		else:
 			logger.info("Post-uninstall action was successful on nodes %s", nodes_list)
 
-		delete_k8_images(K8S_INVENTORY_FILE,nodes_list)
+		#delete_k8_images(K8S_INVENTORY_FILE,nodes_list)
 		# remove copy of controller config file created
 		os.remove(helm_config_file)
 		os.remove(odimra_config_file)
@@ -711,6 +713,7 @@ def remove_k8s():
 	if not DRY_RUN_SET:
 		load_password_from_vault(cur_dir)
 		logger.info("Starting k8s cluster reset")
+		delete_k8_images(host_file,nodes_list)
 		k8s_reset_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root -e reset_confirmation=yes reset.yml'.format(host_conf_file=host_file)
 		ret = exec(k8s_reset_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
 		if ret != 0:
@@ -718,7 +721,7 @@ def remove_k8s():
 			os.chdir(cur_dir)
 			exit(1)
 
-		delete_k8_images(host_file,nodes_list)
+		#delete_k8_images(host_file,nodes_list)
 		logger.debug("Clearing deployment specific data of %s cluster" %(DEPLOYMENT_ID))
 		shutil.rmtree(DEPLOYMENT_SRC_DIR)
 

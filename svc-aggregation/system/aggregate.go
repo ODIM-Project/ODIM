@@ -49,7 +49,7 @@ var (
 	DeleteAggregateSubscription = deleteAggregateSubscription
 )
 
-//ResetRequest is struct for reset of elements of an aggregate
+// ResetRequest is struct for reset of elements of an aggregate
 type ResetRequest struct {
 	BatchSize                    int    `json:"BatchSize"`
 	DelayBetweenBatchesInSeconds int    `json:"DelayBetweenBatchesInSeconds"`
@@ -131,7 +131,7 @@ func validateElements(elements []agmodel.OdataID) (int32, error) {
 	return http.StatusOK, nil
 }
 
-//check if the elements have duplicate element
+// check if the elements have duplicate element
 func checkDuplicateElements(elelments []agmodel.OdataID) bool {
 	duplicate := make(map[string]int)
 	for _, element := range elelments {
@@ -181,7 +181,7 @@ func (e *ExternalInterface) GetAllAggregates(ctx context.Context, req *aggregato
 }
 
 // GetAggregate is the handler for getting an aggregate
-//if the aggregate id is present then return aggregate details else return an error.
+// if the aggregate id is present then return aggregate details else return an error.
 func (e *ExternalInterface) GetAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {
 	aggregate, err := agmodel.GetAggregate(req.URL)
 	if err != nil {
@@ -458,7 +458,7 @@ func (e *ExternalInterface) ResetElementsOfAggregate(ctx context.Context, taskID
 	targetURI := req.URL
 	percentComplete = 0
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	var resetRequest ResetRequest
 	if err := json.Unmarshal(req.RequestBody, &resetRequest); err != nil {
@@ -616,7 +616,7 @@ func (e *ExternalInterface) resetSystem(ctx context.Context, taskID, reqBody str
 	}
 	systemID := element[strings.LastIndexAny(element, "/")+1:]
 	var targetURI = element
-	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: reqBody}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: subTaskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: reqBody}
 	data := strings.SplitN(systemID, ".", 2)
 	if len(data) <= 1 {
 		subTaskChan <- http.StatusNotFound
@@ -761,7 +761,7 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(ctx context.C
 	var percentComplete int32 = 100
 	targetURI := req.URL
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
 
 	reqBody, err := json.Marshal(req)
 	if err != nil {

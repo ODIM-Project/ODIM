@@ -50,6 +50,8 @@ func GetMockDBConfig() (*Config, *errors.Error) {
 		OnDiskHost:            "localhost",
 		InMemoryHost:          "localhost",
 		InMemoryPort:          "6379",
+		InMemorySentinelHost:  "localhost",
+		OnDiskSentinelHost:    "localhost",
 		RedisHAEnabled:        false,
 		InMemorySentinelPort:  "26379",
 		OnDiskSentinelPort:    "26379",

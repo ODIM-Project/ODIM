@@ -84,7 +84,9 @@ type DBConf struct {
 	MaxIdleConns                  int    `json:"MaxIdleConns"`
 	MaxActiveConns                int    `json:"MaxActiveConns"`
 	RedisHAEnabled                bool   `json:"RedisHAEnabled"`
+	InMemorySentinelHost          string `json:"InMemorySentinelHost"`
 	InMemorySentinelPort          string `json:"InMemorySentinelPort"`
+	OnDiskSentinelHost            string `json:"OnDiskSentinelHost"`
 	OnDiskSentinelPort            string `json:"OnDiskSentinelPort"`
 	InMemoryPrimarySet            string `json:"InMemoryPrimarySet"`
 	OnDiskPrimarySet              string `json:"OnDiskPrimarySet"`

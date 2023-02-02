@@ -80,7 +80,7 @@ function launchsentinel() {
 
   hostname=$(hostname -f)
 
-  echo "sentinel resolve-hostnames yes" > ${sentinel_conf}
+  echo "sentinel resolve-hostnames yes" >> ${sentinel_conf}
   echo "sentinel announce-hostnames yes" >> ${sentinel_conf}
   echo "sentinel announce-ip ${hostname}" >> ${sentinel_conf}
   echo "sentinel announce-port ${REDIS_HA_SENTINEL_SERVICE_PORT}" >> ${sentinel_conf}

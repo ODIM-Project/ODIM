@@ -1,23 +1,23 @@
 apiVersion: apps/v1 
 kind: StatefulSet
 metadata:
-  name: redis-ha-inmemory-secondary
+  name: redis-ha-inmemory-sentinel-primary
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: redis-ha-inmemory
+    app: redis-ha-inmemory-sentinel
   annotations:
     secret.reloader.stakater.com/reload: "odimra-secret"
 spec:
-  replicas: {{ .Values.odimra.redisSecondayReplicaCount }}
-  serviceName: redis-ha-inmemory-headless
+  replicas: 1
+  serviceName: redis-ha-inmemory-sentinel-headless
   selector:
     matchLabels:
-      app: redis-ha-inmemory
+      app: redis-ha-inmemory-sentinel
       role: node
   template:
     metadata:
       labels:
-        app: redis-ha-inmemory
+        app: redis-ha-inmemory-sentinel
         role: node
     spec:
       volumes:
@@ -66,7 +66,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "node-role.kubernetes.io/control-plane"
+              - key: "node-role.kubernetes.io/master"
                 operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -75,31 +75,26 @@ spec:
                 - key: "app"
                   operator: In
                   values:
-                  - redis-ha-inmemory
+                  - redis-ha-inmemory-sentinel
             topologyKey: "kubernetes.io/hostname"
 
-      containers:
-      - name: redis
+      containers: 
+      - name: sentinel
         image: {{ .Values.odimra.imageRegistryAddress| default  }}redis:{{ .Values.odimra.redisImageTag }}
         imagePullPolicy: IfNotPresent
 
         ports:
-        - containerPort: 6379
+        - containerPort: 26379
 
         volumeMounts:
-          - mountPath: "/redis-data"
-            name: redis-data
-            readOnly: false
           - name: odimra-secret
             mountPath: /etc/odimra_certs
 
         env:
-        - name: MASTER
-          value: "false"
+        - name: SENTINEL
+          value: "true"
         - name: MASTER_HOST_NAME
           value: "redis-ha-inmemory-primary-0.redis-ha-inmemory-headless.odim.svc.cluster.local"
-        - name: REDIS_ONDISK_DB 
-          value: "false"
         - name: TLS_CERT_FILE
           value: "/etc/odimra_certs/odimra_server.crt"
         - name: TLS_KEY_FILE
@@ -119,4 +114,12 @@ spec:
         - name: REDIS_HA_SENTINEL_SERVICE_HOST
           value: "redis-ha-inmemory-sentinel.{{ .Values.odimra.namespace }}.svc.cluster.local"
         - name: REDIS_MASTER_SET
-          value: {{ .Values.odimra.redisMasterSet | quote }}
+          value: {{ .Values.odimra.redisMasterSet | quote }} 
+        - name: DOWN_AFTER_MILLISECONDS
+          value: {{ .Values.odimra.redisDownAfterMilliseconds | quote }} 
+        - name: FAILOVER_TIMEOUT
+          value: {{ .Values.odimra.redisFailoverTimeout | quote }} 
+        - name: PARALLEL_SYNCS
+          value: {{ .Values.odimra.redisParallelSyncs | quote }}
+        - name: SENTINEL_QUORUM 
+          value: {{ .Values.odimra.redisQuorum | quote }}

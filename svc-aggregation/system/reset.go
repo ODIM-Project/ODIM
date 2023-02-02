@@ -71,7 +71,7 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 	targetURI := "/redfish/v1/AggregationService/Actions/AggregationService.Reset/" // this will removed later and passed as input param in req struct
 	percentComplete = 0
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	var resetRequest AggregationResetRequest
 	if err := json.Unmarshal(req.RequestBody, &resetRequest); err != nil {
@@ -210,7 +210,7 @@ func (e *ExternalInterface) aggregateSystems(ctx context.Context, requestType, u
 	} else {
 		subTaskID = strArray[len(strArray)-1]
 	}
-	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: url, UpdateTask: e.UpdateTask, TaskRequest: reqBody}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: subTaskID, TargetURI: url, UpdateTask: e.UpdateTask, TaskRequest: reqBody}
 	aggregate, err1 := agmodel.GetAggregate(url)
 	if err1 != nil {
 		percentComplete = 100

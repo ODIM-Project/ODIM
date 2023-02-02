@@ -285,7 +285,7 @@ The following table lists the software components and versions that are compatib
       ```
 
    9. ```
-      sudo -H pip3 install ansible==2.9.6 --proxy=${http_proxy}
+      sudo -H pip3 install ansible==5.7.1 --proxy=${http_proxy}
       ```
 
    10. ```
@@ -845,11 +845,13 @@ Topics covered in this section include:
         odimraServerKey:
         odimraRSAPublicKey:
         odimraRSAPrivateKey:
-     odimraKafkaClientCert:
+       odimraKafkaClientCert:
        odimraKafkaClientKey:
+      ```
    ```
    
    For information on each parameter in this configuration file, see *[Odim-controller configuration parameters](#odim-controller-configuration-parameters)*.
+   ```
    
 4. Update the following mandatory parameters in the `kube_deploy_nodes.yaml` file:
    
@@ -876,35 +878,35 @@ Topics covered in this section include:
         - IP addresses of node 1, node 2, and node 3
    
         - username of node 1, node 2, and node 3
-      
+     
         - Priority values of node 1, node 2, and node 3 (mandatory if `haDeploymentEnabled` is set to true)
-      
+     
       - `nwPreference` (default value is ipv4. If `dualStack` based deployment is selected, resource aggregator API service can be reached via both IPv4 and IPv6 addresses)
-      
+     
       - `odimControllerSrcPath`
-      
+     
       - `odimVaultKeyFilePath`
-      
+     
       - `odimraImagePath`
-      
+     
       - `odimPluginPath`
-      
+     
       - `fqdn`
-      
+     
       - `rootServiceUUID`
-      
+     
       - `connectionMethodConf`
-      
+     
       - `etcHostsEntries`
-      
+     
       - `apiProxyPort` (mandatory if `haDeploymentEnabled` is set to true)
-      
+     
       - `nginxLogPath` (mandatory if `haDeploymentEnabled` is set to true)
-      
+     
       - `virtualRouterID` (mandatory if `haDeploymentEnabled` is set to true)
-      
+     
       - `virtualIP` (mandatory if `haDeploymentEnabled` is set to true)
-      
+     
       - `virtualIPv6` (mandatory if `haDeploymentEnabled` is set to true and `nwPreference` is set to `dualStack`)
    
    Other parameters can either be empty or have default values. Optionally, you can update them with values based on your requirements. See a *[sample configuration file](#sample-configuration-file)* once the parameters are updated. It is recommended to have a regular backup of this file.

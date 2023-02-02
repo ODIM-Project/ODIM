@@ -1,6 +1,6 @@
 module github.com/ODIM-Project/ODIM/plugin-redfish
 
-go 1.17
+go 1.19
 
 require (
 	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20210201172557-4fa2adafe1e3

@@ -11,10 +11,16 @@
   set_fact:
     current_user: "{{ get_user.stdout }}"
 
+    #- name: Delete Kubernetes Images
+    #shell: "{{ docker_bin_path }} rmi $({{ docker_bin_path }} images '{{ item.key }}' -q | sort -u) -f"
+    #loop: "{{ kubernetes_images | dict2items }}"
+    # ignore_errors: "{{ ignore_err }}"
+
 - name: Delete Kubernetes Images
-  shell: "{{ docker_bin_path }} rmi $({{ docker_bin_path }} images '{{ item.key }}' -q | sort -u) -f"
+  shell: "{{ docker_bin_path }} -n=k8s.io  image remove $({{ docker_bin_path }} -n=k8s.io image ls  -q | grep -E {{ item.key }})"
   loop: "{{ kubernetes_images | dict2items }}"
   ignore_errors: "{{ ignore_err }}"
+
 
 - name: Delete Dangling Images
   shell: "{{ docker_bin_path }} rmi $({{ docker_bin_path }} images -f 'dangling=true' -q) || /bin/true"

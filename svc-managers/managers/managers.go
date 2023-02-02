@@ -57,7 +57,7 @@ func (e *ExternalInterface) GetManagersCollection(ctx context.Context, req *mana
 	// Add servers as manager in manager collection
 	managersCollectionKeysArray, err := e.DB.GetAllKeysFromTable("Managers")
 	if err != nil || len(managersCollectionKeysArray) == 0 {
-		l.LogWithFields(ctx).Error("odimra Doesnt have Servers")
+		l.LogWithFields(ctx).Error("No servers found in odimra")
 	}
 
 	for _, key := range managersCollectionKeysArray {
@@ -67,6 +67,7 @@ func (e *ExternalInterface) GetManagersCollection(ctx context.Context, req *mana
 	managers.MembersCount = len(members)
 	resp.Body = managers
 	resp.StatusCode = http.StatusOK
+	l.LogWithFields(ctx).Debugf("outgoing manager collection details response to northbound: %v", resp)
 	return resp, nil
 }
 
@@ -109,6 +110,7 @@ func (e *ExternalInterface) GetManagers(ctx context.Context, req *managersproto.
 			}
 			resp = common.GeneralError(int32(statusCode), StatusMessage, errorMessage,
 				errArgs, nil)
+			l.LogWithFields(ctx).Debugf("outgoing manager details response to northbound: %v", resp)
 			return resp
 		}
 		var managerData map[string]interface{}
@@ -181,6 +183,7 @@ func (e *ExternalInterface) GetManagers(ctx context.Context, req *managersproto.
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
+	l.LogWithFields(ctx).Debugf("outgoing manager details response to northbound: %v", resp)
 	return resp
 }
 
@@ -290,7 +293,7 @@ func (e *ExternalInterface) GetManagersResource(ctx context.Context, req *manage
 		resp.Body = resource
 		resp.StatusCode = http.StatusOK
 		resp.StatusMessage = response.Success
-
+		l.LogWithFields(ctx).Debugf("outgoing manager resource response to northbound: %v", resp)
 		return resp
 
 	}
@@ -328,7 +331,7 @@ func (e *ExternalInterface) GetManagersResource(ctx context.Context, req *manage
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-
+	l.LogWithFields(ctx).Debugf("outgoing manager resource response to northbound: %v", resp)
 	return resp
 }
 
@@ -403,6 +406,7 @@ func (e *ExternalInterface) VirtualMediaActions(ctx context.Context, req *manage
 			}
 		}
 	}
+	l.LogWithFields(ctx).Debugf("outgoing virtual media response to northbound: %v", resp)
 	return resp
 }
 
@@ -478,11 +482,13 @@ func (e *ExternalInterface) getPluginManagerResoure(ctx context.Context, manager
 			if body, _, getResponse, err = mgrcommon.RetryManagersOperation(ctx, req, errorMessage); err != nil {
 				resp.StatusCode = getResponse.StatusCode
 				json.Unmarshal(body, &resp.Body)
+				l.LogWithFields(ctx).Debugf("outgoing plugin manager resoure response to northbound: %v", resp)
 				return resp
 			}
 		} else {
 			resp.StatusCode = getResponse.StatusCode
 			json.Unmarshal(body, &resp.Body)
+			l.LogWithFields(ctx).Debugf("outgoing plugin manager resoure response to northbound: %v", resp)
 			return resp
 		}
 	}
@@ -501,7 +507,7 @@ func fillResponse(ctx context.Context, body []byte, managerData map[string]inter
 	var respData map[string]interface{}
 	err := json.Unmarshal([]byte(data), &respData)
 	if err != nil {
-		l.LogWithFields(ctx).Error(err.Error())
+		l.LogWithFields(ctx).Error("unable to unmarshal : " + err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
 	}
@@ -516,6 +522,7 @@ func fillResponse(ctx context.Context, body []byte, managerData map[string]inter
 	resp.Body = respData
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
+	l.LogWithFields(ctx).Debugf("outgoing plugin manager resoure response to northbound: %v", resp)
 	return resp
 
 }
@@ -566,11 +573,12 @@ func (e *ExternalInterface) GetRemoteAccountService(ctx context.Context, req *ma
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
+	l.LogWithFields(ctx).Debugf("outgoing remote account service response to northbound: %v", resp)
 	return resp
 }
 
 func handleRemoteAccountServiceError(ctx context.Context, uri, managerID string, err error) response.RPC {
-	errorMessage := "unable to get resource details from device: " + err.Error()
+	errorMessage := "error while trying to get resource details from device: " + err.Error()
 	l.LogWithFields(ctx).Error(errorMessage)
 	URIRegexAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Accounts\/[a-zA-Z0-9._-]+[\/]?$`)
 	URIRegexRoles := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Roles\/[a-zA-Z0-9._-]+[\/]?$`)
@@ -617,7 +625,7 @@ func (e *ExternalInterface) CreateRemoteAccountService(ctx context.Context, req 
 	// Updating the default values
 	err := json.Unmarshal(req.RequestBody, &bmcAccReq)
 	if err != nil {
-		errorMessage := "while unmarshaling the create remote account service request: " + err.Error()
+		errorMessage := "error while unmarshaling the create remote account service request: " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
 		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
 		return resp
@@ -626,11 +634,11 @@ func (e *ExternalInterface) CreateRemoteAccountService(ctx context.Context, req 
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, bmcAccReq)
 	if err != nil {
-		errMsg := "while validating request parameters for creating BMC account: " + err.Error()
+		errMsg := "error while validating request parameters for creating BMC account: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
-		errorMessage := "one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		errorMessage := "error in one or more properties given in the request body,they are not valid, ensure properties are listed in uppercamelcase "
 		l.LogWithFields(ctx).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response
@@ -639,14 +647,14 @@ func (e *ExternalInterface) CreateRemoteAccountService(ctx context.Context, req 
 	// Check mandatory fields
 	statuscode, statusMessage, messageArgs, err := validateCreateRemoteAccFields(ctx, &bmcAccReq)
 	if err != nil {
-		errorMessage := "request payload validation failed: " + err.Error()
+		errorMessage := "error in request payload validation : " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
 		resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
 		return resp
 	}
 	requestBody, err = json.Marshal(bmcAccReq)
 	if err != nil {
-		l.LogWithFields(ctx).Error("while marshalling the create BMC account request: " + err.Error())
+		l.LogWithFields(ctx).Error("error while marshalling the create BMC account request: " + err.Error())
 		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		return resp
 	}
@@ -665,6 +673,7 @@ func (e *ExternalInterface) CreateRemoteAccountService(ctx context.Context, req 
 		resp.Body = managerAcc
 		resp.StatusCode = http.StatusCreated
 	}
+	l.LogWithFields(ctx).Debugf("outgoing remote account service response to northbound: %v", resp)
 	return resp
 }
 
@@ -699,7 +708,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 	// Updating the default values
 	err := json.Unmarshal(req.RequestBody, &bmcAccReq)
 	if err != nil {
-		errorMessage := "while unmarshaling the update remote account service request: " + err.Error()
+		errorMessage := "error while unmarshaling the update remote account service request: " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
 		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
 		return resp
@@ -708,11 +717,11 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, bmcAccReq)
 	if err != nil {
-		errMsg := "while validating request parameters for updating BMC account: " + err.Error()
+		errMsg := "error while validating request parameters for updating BMC account: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
-		errorMessage := "one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		errorMessage := "error in one or more properties given in the request body,they are not valid, ensure properties are listed in uppercamelcase "
 		l.LogWithFields(ctx).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response
@@ -727,7 +736,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 	//do get call with
 	data, err := e.getResourceInfoFromDevice(ctx, uri, uuid, requestData[1], nil)
 	if err != nil {
-		errorMessage := "unable to get resource details from device: " + err.Error()
+		errorMessage := "error while trying to get resource details from device: " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
 		errArgs := []interface{}{"RemoteAccounts", requestData[1]}
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
@@ -745,7 +754,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 	bmcCreds := mgrcommon.BmcUpdatedCreds{UserName: username, UpdatedPassword: bmcAccReq.Password}
 	requestBody, err := json.Marshal(bmcAccReq)
 	if err != nil {
-		l.LogWithFields(ctx).Error("while marshalling the update BMC account request: " + err.Error())
+		l.LogWithFields(ctx).Error("error while marshalling the update BMC account request: " + err.Error())
 		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		return resp
 	}
@@ -754,7 +763,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 	if resp.StatusCode == http.StatusOK {
 		data, err := e.getResourceInfoFromDevice(ctx, uri, uuid, requestData[1], &bmcCreds)
 		if err != nil {
-			errorMessage := "unable to get resource details from device: " + err.Error()
+			errorMessage := "error while trying to get resource details from device: " + err.Error()
 			l.LogWithFields(ctx).Error(errorMessage)
 			errArgs := []interface{}{}
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
@@ -768,6 +777,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 		//return resp
 
 	}
+	l.LogWithFields(ctx).Debugf("outgoing update remote account service response to northbound: %v", resp)
 	return resp
 
 }
@@ -783,5 +793,6 @@ func (e *ExternalInterface) DeleteRemoteAccountService(ctx context.Context, req 
 	if resp.StatusCode == http.StatusOK {
 		resp.StatusCode = http.StatusNoContent
 	}
+	l.LogWithFields(ctx).Debugf("outgoing delete remote account service response to northbound: %v", resp)
 	return resp
 }

@@ -121,7 +121,7 @@ func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) response.
 	if StringEqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		token := GetPluginTokenFunc(ctx, contactRequest)
 		if token == "" {
-			var errorMessage = "error: Unable to create session with plugin " + plugin.ID
+			var errorMessage = "error while trying to create session with plugin " + plugin.ID
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
 		}
 		contactRequest.Token = token
@@ -159,6 +159,7 @@ func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) response.
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
+	l.LogWithFields(ctx).Debugf("outgoing device communication response to northbound: %v", resp)
 	return resp
 }
 
@@ -181,7 +182,7 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) (st
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		token := GetPluginToken(ctx, contactRequest)
 		if token == "" {
-			var errorMessage = "error: Unable to create session with plugin " + plugin.ID
+			var errorMessage = "error while trying to create session with plugin " + plugin.ID
 			return "", fmt.Errorf(errorMessage)
 		}
 
@@ -263,12 +264,14 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
 		l.LogWithFields(ctx).Error(errorMessage)
+		l.LogWithFields(ctx).Debugf("outgoing contact plugin response to northbound: %v", resp)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
 	if !(response.StatusCode == http.StatusOK || response.StatusCode == http.StatusCreated) {
 		resp.StatusCode = int32(response.StatusCode)
 		l.LogWithFields(ctx).Error(errorMessage)
+		l.LogWithFields(ctx).Debugf("outgoing contact plugin response to northbound: %v", resp)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 	data := string(body)

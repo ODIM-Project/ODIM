@@ -50,7 +50,7 @@ func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto
 	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
 		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
@@ -63,6 +63,7 @@ func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("outgoing manager collection response to northbound: %v", resp)
 	return &resp, nil
 }
 
@@ -127,6 +128,7 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("outgoing manager resource response to northbound: %v", resp)
 	return &resp, nil
 }
 
@@ -143,7 +145,7 @@ func (m *Managers) VirtualMediaInsert(ctx context.Context, req *managersproto.Ma
 	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
 		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
@@ -156,6 +158,7 @@ func (m *Managers) VirtualMediaInsert(ctx context.Context, req *managersproto.Ma
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("outgoing virtual media response to northbound: %v", resp)
 	return resp, nil
 }
 
@@ -172,7 +175,7 @@ func (m *Managers) VirtualMediaEject(ctx context.Context, req *managersproto.Man
 	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
 		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
@@ -185,6 +188,7 @@ func (m *Managers) VirtualMediaEject(ctx context.Context, req *managersproto.Man
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("outgoing virtual media eject response to northbound: %v", resp)
 	return resp, nil
 }
 
@@ -211,7 +215,7 @@ func (m *Managers) GetRemoteAccountService(ctx context.Context, req *managerspro
 	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
 		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
@@ -224,6 +228,7 @@ func (m *Managers) GetRemoteAccountService(ctx context.Context, req *managerspro
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("outgoing remote account service response to northbound: %v", resp)
 	return &resp, nil
 }
 
@@ -242,7 +247,7 @@ func (m *Managers) CreateRemoteAccountService(ctx context.Context, req *managers
 	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
 		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
@@ -255,6 +260,7 @@ func (m *Managers) CreateRemoteAccountService(ctx context.Context, req *managers
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("outgoing create remote account service response to northbound: %v", resp)
 	return &resp, nil
 }
 
@@ -273,7 +279,7 @@ func (m *Managers) UpdateRemoteAccountService(ctx context.Context, req *managers
 	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
 		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
@@ -286,6 +292,7 @@ func (m *Managers) UpdateRemoteAccountService(ctx context.Context, req *managers
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("outgoing update remote account service response to northbound: %v", resp)
 	return &resp, nil
 }
 
@@ -304,7 +311,7 @@ func (m *Managers) DeleteRemoteAccountService(ctx context.Context, req *managers
 	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
-			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
+			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
 		}
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
@@ -317,5 +324,6 @@ func (m *Managers) DeleteRemoteAccountService(ctx context.Context, req *managers
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("outgoing delete remote account service response to northbound: %v", resp)
 	return &resp, nil
 }

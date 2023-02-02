@@ -58,7 +58,6 @@
    - [Odim-controller configuration parameters](#odim-controller-configuration-parameters)
    - [Running curl commands on a different server](#Running-curl-commands-on-a-different-server)
    - [Plugin configuration parameters](#plugin-configuration-parameters)
-   - [Log levels](#log-levels)
    - [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names)
    - [Using protoc compiler](#using-protoc-compiler)
    - [Using your own CA certificates and keys](#using-your-own-ca-certificates-and-keys)
@@ -266,7 +265,7 @@ The following table lists the software components and versions that are compatib
       ```
 
    4. ```
-      sudo apt-get install python3-pip=20.0.2-5ubuntu1.6 -y
+      sudo apt-get install python3-pip=20.0.2-5ubuntu1.7 -y
       ```
 
    5. ```
@@ -286,7 +285,7 @@ The following table lists the software components and versions that are compatib
       ```
 
    9. ```
-      sudo -H pip3 install ansible==5.7.1 --proxy=${http_proxy}
+      sudo -H pip3 install ansible==2.9.6 --proxy=${http_proxy}
       ```
 
    10. ```
@@ -811,6 +810,9 @@ Topics covered in this section include:
         apiProxyPort: 45000
         apiNodePort: 30080
         kafkaNodePort: 30092
+       
+        logLevel: 
+        logFormat: 
         
         messageBusType: Kafka
         messageBusQueue: REDFISH-EVENTS-TOPIC
@@ -843,34 +845,34 @@ Topics covered in this section include:
         odimraServerKey:
         odimraRSAPublicKey:
         odimraRSAPrivateKey:
-        odimraKafkaClientCert:
+     odimraKafkaClientCert:
        odimraKafkaClientKey:
-      ```
-
-      For information on each parameter in this configuration file, see *[Odim-controller configuration parameters](#odim-controller-configuration-parameters)*.
-
-   4. Update the following mandatory parameters in the `kube_deploy_nodes.yaml` file:
-
-      - `httpProxy` (if your environment is behind a proxy)
-
-      - `httpsProxy` (if your environment is behind a proxy)
-
-      - `noProxy` (if your environment is behind a proxy)
-
-      - `deploymentID`
-
-      - `nodePasswordFilePath`
-
+   ```
+   
+   For information on each parameter in this configuration file, see *[Odim-controller configuration parameters](#odim-controller-configuration-parameters)*.
+   
+4. Update the following mandatory parameters in the `kube_deploy_nodes.yaml` file:
+   
+   - `httpProxy` (if your environment is behind a proxy)
+   
+   - `httpsProxy` (if your environment is behind a proxy)
+   
+   - `noProxy` (if your environment is behind a proxy)
+   
+   - `deploymentID`
+   
+   - `nodePasswordFilePath`
+   
       - `redisInMemoryPasswordFilePath`
-
+   
       - `redisOnDiskPasswordFilePath`
    
       - `nodes` (details of the single deployment node or the cluster nodes based on the type of your deployment)
    
-        For three node deployment:
+     For three node deployment:
    
         - hostnames of node 1, node 2, and node 3
-
+   
         - IP addresses of node 1, node 2, and node 3
    
         - username of node 1, node 2, and node 3
@@ -3184,6 +3186,9 @@ Run the following commands:
      apiNodePort: 30080
      kafkaNodePort: 30092
      
+     logLevel: warn
+     logFormat: syslog
+     
      messageBusType: Kafka
      messageBusQueue: REDFISH-EVENTS-TOPIC
      
@@ -3257,6 +3262,8 @@ The following table lists all the configuration parameters required by odim-cont
 |haDeploymentEnabled|Default value is `True`. It deploys third-party services as a three-instance cluster.<br />**NOTE**: For three-node cluster deployments, always set it to `True`.<br />|
 |connectionMethodConf|Parameters of type array required to configure the supported connection methods. <br>**NOTE**: To deploy a plugin after deploying the resource aggregator services, add its connection method information in the array and update the file using odim-controller `--upgrade` option.<br>|
 |kafkaNodePort|The port to be used for accessing the Kafka services from external services. Default port is 30092. You can optionally change it.<br>**NOTE**: Ensure that the port is in the range of 30000 to 32767.<br>|
+|logLevel|Every operation in Resource Aggregator for ODIM is logged in `var/log/odimra`. For more information, see *Log Levels* in *Resource Aggregator for ODIM API Reference and User Guide*.|
+|logFormat|Resource Aggregator for ODIM supports logs in syslog format. To change it to JSON format, update the value of this parameter in your `kube_deploy_nodes.yaml` configuration file to `JSON`.|
 |MessageBusType|Event message bus type. The value is either `Kafka` or `RedisStreams` and they are case-sensitive.<br />**NOTE**: Resource Aggregator for ODIM supports `RedisStreams`. URP, GRF, Lenovo, Dell and Cisco ACI plugins don't support `RedisStreams`.|
 |MessageBusQueue|Event message bus queue name. Allowed characters for the value are alphabets, numbers, period, underscore, and hyphen. <br />**NOTE**: Do not include blank spaces.|
 |etcHostsEntries|List of FQDNs of the external servers and plugins to be added to the `/etc/hosts` file in each of the service containers of Resource Aggregator for ODIM. The external servers are the servers that you want to add into the resource inventory.<br>**NOTE**: It must be in the YAML multiline format as shown in the "etcHostsEntries template".<br>|
@@ -3351,47 +3358,7 @@ The following table lists all the configuration parameters required to deploy a 
 | lbPort                                  | If it is a one-cluster configuration, the lbPort must be same as eventListenerNodePort. <br>If there is more than one cluster node (`haDeploymentEnabled` is true), lbport must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as nginx proxy port for the plugin. |
 | logPath                                 | The path where the plugin logs are stored. Default path is `/var/log/<plugin_name>_logs`<br>**Example**: `/var/log/grfplugin_logs` |
 
-## Log levels
 
-Every operation in Resource Aggregator for ODIM is logged in `var/log/odimra`. Resource Aggregator for ODIM supports logs in syslog format. These logs can be of different levels and are useful in diagnosing issues. 
-You can filter the log levels you want to view on your system by specifying the `logLevel` parameter in your `kube_deploy_nodes.yaml` configuration file. Supported values for the parameter are `panic`, `fatal`, `error`, `warn`, `info`, `debug`, `trace`.
-
-> **NOTE**: The default value for `logLevel` is `warn`.
-
-For a log level filter you specify, the relevant logs as well as the logs with its preceding priority values are displayed. For example, if you specify the `logLevel` parameter as `error`, all the `errors`, `fatals`, and `panics` are logged.
-
-| Log level | Priority value | Description                                                  |
-| --------- | -------------- | ------------------------------------------------------------ |
-| panic     | 8              | Highest level of severity.                                   |
-| fatal     | 9              | Exits even if the `logLevel` parameter is set to `panic`.    |
-| error     | 11             | Used for errors that should definitely be noted.             |
-| warn      | 12             | Non-critical entries.                                        |
-| info      | 14             | General operational entries about what's happening in the application. |
-| debug     | 15             | Usually only enabled when debugging. Verbose logging.        |
-| trace     | 15             | Designates finer-grained informational events than the debug logs. |
-
-> **Sample log**
-
-Each log consists of a priority value of the log level, date and time of the log, log level, user account details, and the log message.
-
-```
-<11> 2022-09-12T15:27:48Z error clustervm task-86c45f76df-2ht9j_8
-GetTaskStatus : Unable to read taskdata from DB: no data with the key found
-```
-
-#### Updating log levels
-
-To update an existing log level after Resource Aggregator for ODIM is installed, perform the following steps:
-
-1. Update the `logLevel` parameter in your `kube_deploy_nodes.yaml` configuration file.
-
-2. Run the following command to update log levels for all Resource Aggregator for ODIM services:
-
-   ```
-   python3 odim-controller.py --config /home/${USER}/R4H60-11016/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra
-   ```
-
-   
 
 
 ## Resource Aggregator for ODIM deployment names

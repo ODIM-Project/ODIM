@@ -599,6 +599,8 @@ type TaskEvent struct {
 	TaskState       string    `json:"TaskState"`
 	TaskStatus      string    `json:"TaskStatus"`
 	PercentComplete int32     `json:"PercentComplete"`
+	StatusCode      int32     `json:"StatusCode"`
+	ResponseBody    []byte    `json:"ResponseBody"`
 	EndTime         time.Time `json:"EndTime"`
 }
 

@@ -315,7 +315,15 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 
 		if task != nil {
 			saveID := Table + ":" + task.ID
-			tasks[saveID] = task
+			if data, ok := tasks[saveID]; ok {
+				t := data.(*Task)
+				if t.PercentComplete < task.PercentComplete {
+					tasks[saveID] = task
+				}
+			} else {
+				tasks[saveID] = task
+			}
+
 			if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
 				completedTasks[saveID] = 1
 			}

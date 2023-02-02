@@ -39,7 +39,7 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	l.LogWithFields(ctx).Info("started adding system with manager address " + addResourceRequest.ManagerAddress +
 		" using plugin id: " + pluginID)
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
 
 	var task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 

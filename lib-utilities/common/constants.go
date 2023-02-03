@@ -171,6 +171,8 @@ const (
 	TaskService        = "svc-task"
 	AggregationService = "svc-aggregation"
 	TelemetryService   = "svc-telemetry"
+	LicenseService     = "svc-licenses"
+	FabricService      = "svc-fabrics"
 	// DefaultThreadID to be used for apis
 	DefaultThreadID = "0"
 	// Invalid Action

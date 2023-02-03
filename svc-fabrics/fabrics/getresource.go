@@ -12,29 +12,31 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package fabrics ...
+// Package fabrics ...
 package fabrics
 
 import (
+	"context"
+	"net/http"
+
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"net/http"
 )
 
-//GetFabricResource holds the logic for getting  specfic fabric resource
-//It accepts url and contacts the configured CFM plugin
+// GetFabricResource holds the logic for getting  specfic fabric resource
+// It accepts url and contacts the configured CFM plugin
 // and gets the metioned fabric resoure such as Endpoints,Ports
-func (f *Fabrics) GetFabricResource(req *fabricsproto.FabricRequest) response.RPC {
+func (f *Fabrics) GetFabricResource(ctx context.Context, req *fabricsproto.FabricRequest) response.RPC {
 	var resp response.RPC
 	var contactRequest pluginContactRequest
 	var err error
 	req.Method = http.MethodGet
-	contactRequest, resp, err = f.parseFabricsRequest(req)
+	contactRequest, resp, err = f.parseFabricsRequest(ctx, req)
 	if err != nil {
 		return resp
 	}
 	if req.URL == "/redfish/v1/Fabrics" {
 		return resp
 	}
-	return f.parseFabricsResponse(contactRequest, req.URL)
+	return f.parseFabricsResponse(ctx, contactRequest, req.URL)
 }

@@ -15,6 +15,7 @@
 package licenses
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
@@ -54,8 +55,8 @@ func (e *ExternalInterface) GetLicenseService(req *licenseproto.GetLicenseServic
 	return resp
 }
 
-// GetLicenseCollection to get license collection details 
-func (e *ExternalInterface) GetLicenseCollection(req *licenseproto.GetLicenseRequest) response.RPC {
+// GetLicenseCollection to get license collection details
+func (e *ExternalInterface) GetLicenseCollection(ctx context.Context, req *licenseproto.GetLicenseRequest) response.RPC {
 	var resp response.RPC
 	licenseCollection := dmtf.LicenseCollection{
 		OdataContext: "/redfish/v1/$metadata#LicenseCollection.LicenseCollection",
@@ -68,11 +69,11 @@ func (e *ExternalInterface) GetLicenseCollection(req *licenseproto.GetLicenseReq
 
 	licenseCollectionKeysArray, err := e.DB.GetAllKeysFromTable("Licenses", persistencemgr.InMemory)
 	if err != nil {
-		l.Log.Error("error while getting license collection details from db")
+		l.LogWithFields(ctx).Error("error while getting license collection details from db")
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 	if len(licenseCollectionKeysArray) == 0 {
-		l.Log.Error("odimra doesnt have Licenses")
+		l.LogWithFields(ctx).Error("odimra doesnt have Licenses")
 	}
 
 	for _, key := range licenseCollectionKeysArray {
@@ -86,7 +87,7 @@ func (e *ExternalInterface) GetLicenseCollection(req *licenseproto.GetLicenseReq
 }
 
 // GetLicenseResource to get individual license resource
-func (e *ExternalInterface) GetLicenseResource(req *licenseproto.GetLicenseResourceRequest) response.RPC {
+func (e *ExternalInterface) GetLicenseResource(ctx context.Context, req *licenseproto.GetLicenseResourceRequest) response.RPC {
 	var resp response.RPC
 	licenseResp := dmtf.License{}
 	uri := req.URL
@@ -94,14 +95,14 @@ func (e *ExternalInterface) GetLicenseResource(req *licenseproto.GetLicenseResou
 
 	data, dbErr := e.DB.GetResource("Licenses", uri, persistencemgr.InMemory)
 	if dbErr != nil {
-		l.Log.Error("Unable to get license data : " + dbErr.Error())
+		l.LogWithFields(ctx).Error("Unable to get license data : " + dbErr.Error())
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, dbErr.Error(), nil, nil)
 	}
 
 	if data != "" {
 		err := json.Unmarshal([]byte(data.(string)), &licenseResp)
 		if err != nil {
-			l.Log.Error("Unable to unmarshall  the data: " + err.Error())
+			l.LogWithFields(ctx).Error("Unable to unmarshall  the data: " + err.Error())
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		}
 	}
@@ -116,7 +117,7 @@ func (e *ExternalInterface) GetLicenseResource(req *licenseproto.GetLicenseResou
 }
 
 // InstallLicenseService to install license
-func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicenseRequest) response.RPC {
+func (e *ExternalInterface) InstallLicenseService(ctx context.Context, req *licenseproto.InstallLicenseRequest) response.RPC {
 	var resp response.RPC
 	var contactRequest model.PluginContactRequest
 	var installreq dmtf.LicenseInstallRequest
@@ -124,22 +125,22 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 	genErr := JsonUnMarshalFunc(req.RequestBody, &installreq)
 	if genErr != nil {
 		errMsg := "Unable to unmarshal the install license request" + genErr.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, nil)
 	}
 
 	if installreq.Links == nil {
 		errMsg := "Invalid request,mandatory field Links missing"
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Links"}, nil)
 	} else if installreq.LicenseString == "" {
 		errMsg := "Invalid request, mandatory field LicenseString is missing"
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"LicenseString"}, nil)
 
 	} else if len(installreq.Links.Link) == 0 {
 		errMsg := "Invalid request, mandatory field AuthorizedDevices links is missing"
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"LicenseString"}, nil)
 
 	}
@@ -154,7 +155,7 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 			managerLink, err = e.getManagerURL(serverURI)
 			if err != nil {
 				errMsg := "Unable to get manager link"
-				l.Log.Error(errMsg)
+				l.LogWithFields(ctx).Error(errMsg)
 				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 			}
 			for _, link := range managerLink {
@@ -163,10 +164,10 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 		case strings.Contains(serverURI, "Managers"):
 			linksMap[serverURI] = true
 		case strings.Contains(serverURI, "Aggregates"):
-			managerLink, err = e.getDetailsFromAggregate(serverURI)
+			managerLink, err = e.getDetailsFromAggregate(ctx, serverURI)
 			if err != nil {
 				errMsg := "Unable to get manager link from aggregates"
-				l.Log.Error(errMsg)
+				l.LogWithFields(ctx).Error(errMsg)
 				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 			}
 			for _, link := range managerLink {
@@ -174,31 +175,31 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 			}
 		default:
 			errMsg := "Invalid AuthorizedDevices links"
-			l.Log.Error(errMsg)
+			l.LogWithFields(ctx).Error(errMsg)
 			return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, nil)
 		}
 	}
-	l.Log.Info("Map with manager Links: ", linksMap)
+	l.LogWithFields(ctx).Info("Map with manager Links: ", linksMap)
 
 	for serverURI := range linksMap {
 		uuid, managerID, err := lcommon.GetIDsFromURI(serverURI)
 		if err != nil {
 			errMsg := "error while trying to get system ID from " + serverURI + ": " + err.Error()
-			l.Log.Error(errMsg)
+			l.LogWithFields(ctx).Error(errMsg)
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"SystemID", serverURI}, nil)
 		}
 		// Get target device Credentials from using device UUID
 		target, targetErr := e.External.GetTarget(uuid)
 		if targetErr != nil {
 			errMsg := targetErr.Error()
-			l.Log.Error(errMsg)
+			l.LogWithFields(ctx).Error(errMsg)
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"target", uuid}, nil)
 		}
 
 		decryptedPasswordByte, err := e.External.DevicePassword(target.Password)
 		if err != nil {
 			errMsg := "error while trying to decrypt device password: " + err.Error()
-			l.Log.Error(errMsg)
+			l.LogWithFields(ctx).Error(errMsg)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 		}
 		target.Password = decryptedPasswordByte
@@ -207,10 +208,10 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 		plugin, errs := e.External.GetPluginData(target.PluginID)
 		if errs != nil {
 			errMsg := "error while getting plugin data: " + errs.Error()
-			l.Log.Error(errMsg)
+			l.LogWithFields(ctx).Error(errMsg)
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, nil)
 		}
-		l.Log.Info("Plugin info: ", plugin)
+		l.LogWithFields(ctx).Info("Plugin info: ", plugin)
 
 		encodedKey := base64.StdEncoding.EncodeToString([]byte(installreq.LicenseString))
 		managerURI := "/redfish/v1/Managers/" + managerID
@@ -228,10 +229,10 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 				"Password": string(plugin.Password),
 			}
 			contactRequest.OID = "/ODIM/v1/Sessions"
-			_, token, getResponse, err := lcommon.ContactPlugin(contactRequest, "error while logging in to plugin: ")
+			_, token, getResponse, err := lcommon.ContactPlugin(ctx, contactRequest, "error while logging in to plugin: ")
 			if err != nil {
 				errMsg := err.Error()
-				l.Log.Error(errMsg)
+				l.LogWithFields(ctx).Error(errMsg)
 				return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil)
 			}
 			contactRequest.Token = token
@@ -246,20 +247,20 @@ func (e *ExternalInterface) InstallLicenseService(req *licenseproto.InstallLicen
 		contactRequest.DeviceInfo = target
 		contactRequest.OID = "/ODIM/v1/LicenseService/Licenses"
 		contactRequest.PostBody = reqBody
-		_, _, getResponse, err := e.External.ContactPlugin(contactRequest, "error while installing license: ")
+		_, _, getResponse, err := e.External.ContactPlugin(ctx, contactRequest, "error while installing license: ")
 		if err != nil {
 			errMsg := err.Error()
-			l.Log.Error(errMsg)
+			l.LogWithFields(ctx).Error(errMsg)
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil)
 		}
-		l.Log.Info("Install license response: ", getResponse)
+		l.LogWithFields(ctx).Info("Install license response: ", getResponse)
 	}
 
 	resp.StatusCode = http.StatusNoContent
 	return resp
 }
 
-func (e *ExternalInterface) getDetailsFromAggregate(aggregateURI string) ([]string, error) {
+func (e *ExternalInterface) getDetailsFromAggregate(ctx context.Context, aggregateURI string) ([]string, error) {
 	var resource model.Elements
 	var links []string
 	respData, err := e.DB.GetResource("Aggregate", aggregateURI, persistencemgr.OnDisk)
@@ -274,18 +275,18 @@ func (e *ExternalInterface) getDetailsFromAggregate(aggregateURI string) ([]stri
 	if jerr != nil {
 		return nil, jerr
 	}
-	l.Log.Info("System URL's from agrregate: ", resource)
+	l.LogWithFields(ctx).Info("System URL's from agrregate: ", resource)
 
 	for _, key := range resource.Elements {
 		res, err := e.getManagerURL(key.OdataID)
 		if err != nil {
 			errMsg := "Unable to get manager link"
-			l.Log.Error(errMsg)
+			l.LogWithFields(ctx).Error(errMsg)
 			return nil, err
 		}
 		links = append(links, res...)
 	}
-	l.Log.Info("manager links: ", links)
+	l.LogWithFields(ctx).Info("manager links: ", links)
 	return links, nil
 }
 

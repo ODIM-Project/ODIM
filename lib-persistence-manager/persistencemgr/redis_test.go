@@ -14,6 +14,7 @@
 package persistencemgr
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -460,7 +461,7 @@ func TestTransaction(t *testing.T) {
 	}
 
 	updateTransaction := func(key string, state string) error {
-		testCallBack := func(key string) error {
+		testCallBack := func(ctx context.Context, key string) error {
 			got, err := c.Read("table", "key")
 			if err != nil {
 				t.Fatal("Error while reading data:", err)
@@ -479,7 +480,7 @@ func TestTransaction(t *testing.T) {
 			return nil
 		}
 		for retries := threadCount / 10; retries > 0; retries-- {
-			err := c.Transaction("key", testCallBack)
+			err := c.Transaction(context.TODO(), "key", testCallBack)
 			if err != nil {
 				t.Fatal("Error while making a transaction:", err)
 			} else {
@@ -1527,56 +1528,6 @@ func TestConn_UpdateTransaction(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.c.UpdateTransaction(tt.args.data); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateTransaction() = %v, want %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestConn_CreateIndexTransaction(t *testing.T) {
-	c, err := MockDBWriteConnection(t)
-	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
-	}
-	type args struct {
-		key  string
-		data map[string]int64
-	}
-	tests := []struct {
-		name    string
-		c       *Conn
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "create index operation using pipelined transaction",
-			c:    c,
-			args: args{
-				key: "key",
-				data: map[string]int64{
-					"TASK:2": 123,
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "failure while create index operation",
-			c: &Conn{
-				WriteConn: MockConn{
-					MockDo: func(s string, i ...interface{}) (interface{}, error) {
-						return nil, fmt.Errorf("DB ERROR")
-					},
-					MockSend: func(s string, i ...interface{}) error {
-						return nil
-					},
-				},
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.c.CreateIndexTransaction(tt.args.key, tt.args.data); (err != nil) != tt.wantErr {
-				t.Errorf("CreateIndexTransaction() = %v, want %v", err, tt.wantErr)
 			}
 		})
 	}

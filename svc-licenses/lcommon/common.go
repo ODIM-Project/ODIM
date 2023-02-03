@@ -112,13 +112,13 @@ func GetPluginData(pluginID string) (*model.Plugin, *errors.Error) {
 }
 
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
-func ContactPlugin(req model.PluginContactRequest, errorMessage string) ([]byte, string, model.ResponseStatus, error) {
+func ContactPlugin(ctx context.Context, req model.PluginContactRequest, errorMessage string) ([]byte, string, model.ResponseStatus, error) {
 	var resp model.ResponseStatus
 	var err error
-	pluginResponse, err := callPlugin(req)
+	pluginResponse, err := callPlugin(ctx, req)
 	if err != nil {
-		if getPluginStatus(req.Plugin) {
-			pluginResponse, err = callPlugin(req)
+		if getPluginStatus(ctx, req.Plugin) {
+			pluginResponse, err = callPlugin(ctx, req)
 		}
 		if err != nil {
 			errorMessage = errorMessage + err.Error()
@@ -134,7 +134,7 @@ func ContactPlugin(req model.PluginContactRequest, errorMessage string) ([]byte,
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		l.Log.Warn(errorMessage)
+		l.LogWithFields(ctx).Warn(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -144,13 +144,13 @@ func ContactPlugin(req model.PluginContactRequest, errorMessage string) ([]byte,
 			resp.StatusCode = int32(pluginResponse.StatusCode)
 			resp.StatusMessage = response.ResourceAtURIUnauthorized
 			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
-			l.Log.Warn(errorMessage)
+			l.LogWithFields(ctx).Warn(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 		errorMessage += string(body)
 		resp.StatusCode = int32(pluginResponse.StatusCode)
 		resp.StatusMessage = response.InternalError
-		l.Log.Warn(errorMessage)
+		l.LogWithFields(ctx).Warn(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -163,7 +163,7 @@ func ContactPlugin(req model.PluginContactRequest, errorMessage string) ([]byte,
 }
 
 // getPluginStatus checks the status of given plugin in configured interval
-func getPluginStatus(plugin model.Plugin) bool {
+func getPluginStatus(ctx context.Context, plugin model.Plugin) bool {
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{
@@ -181,27 +181,27 @@ func getPluginStatus(plugin model.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		l.Log.Warn("Error While getting the status for plugin " + plugin.ID + " " + err.Error())
+		l.LogWithFields(ctx).Warn("Error While getting the status for plugin " + plugin.ID + " " + err.Error())
 		return status
 	}
-	l.Log.Info("Status of plugin " + plugin.ID + " " + strconv.FormatBool(status))
+	l.LogWithFields(ctx).Info("Status of plugin " + plugin.ID + " " + strconv.FormatBool(status))
 	return status
 }
 
-func callPlugin(req model.PluginContactRequest) (*http.Response, error) {
+func callPlugin(ctx context.Context, req model.PluginContactRequest) (*http.Response, error) {
 	var oid string
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		oid = strings.Replace(req.OID, key, value, -1)
 	}
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + oid
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
+		return req.ContactClient(ctx, reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
-	return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+	return req.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
 
 // GenericSave will save any resource data into the database
-func GenericSave(body []byte, table string, key string) error {
+func GenericSave(ctx context.Context, body []byte, table string, key string) error {
 	connPool, err := persistencemgr.GetDBConnection(persistencemgr.OnDisk)
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
@@ -210,7 +210,7 @@ func GenericSave(body []byte, table string, key string) error {
 		if errors.DBKeyAlreadyExist == err.ErrNo() {
 			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 		}
-		l.Log.Warn("skipped saving of duplicate data with key " + key)
+		l.LogWithFields(ctx).Warn("skipped saving of duplicate data with key " + key)
 	}
 	return nil
 }

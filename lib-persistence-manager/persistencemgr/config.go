@@ -32,6 +32,7 @@ type Config struct {
 	Port         string
 	Protocol     string
 	Host         string
+	SentinelHost string
 	SentinelPort string
 	MasterSet    string
 	Password     string

@@ -208,6 +208,7 @@
   - [Audit logs](#audit-logs)
   - [Security logs](#security-logs)
   - [Application logs](#Application-logs)
+  - [Log details](#log-details)
 - [Appendix](#appendix)
   - [Log levels](#log-levels)
   - [Action IDs of application logs](#action-ids-of-application-logs)
@@ -12322,18 +12323,20 @@ curl -i -X POST \
 
 # Logging information
 
+Logs can be in syslog format or in JSON format. Set the `logFormat` parameter in your `kube_deploy_nodes.yaml` configuration file to `syslog` or `json` as required. Samples for both format are given in *Application logs* section.
+
 ## Audit logs
 
-Audit logs provide information on each API and are stored in the `api.log` file in `odimra` logs. Each log consists of a priority value, date and time of the log, hostname from which the APIs are sent, user account and role details, API request method and resource, response body, response code, and the message.
+Audit logs provide information on each API and are stored in the `api.log` file in `odimra` logs. 
 
 **Sample logs**
 
 ```
-<110> 2009-11-10T23:00:00Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
+<110>1 2023-02-03T06:32:57Z 10.207.115.16:30080  svc-api  api-6fb4468885-pj9qw_7  GetSystemsCollection [process@1 processName="api-6fb4468885-pj9qw" transactionID="9ce2dc8b-be4a-421c-aabe-68558fd01ebb" actionID="001" actionName="GetSystemsCollection" threadID="0" threadName="svc-api"] [request@1  method="GET"] 10.207.115.16:30080 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems"][response@1 responseCode=200] Operation successful
 ```
 
 ```
-<107> 2009-11-10T23:00:00Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
+<107>1 2023-02-03T06:34:54Z 10.207.115.16:30080  svc-api  api-6fb4468885-pj9qw_7  GetSystem [process@1 processName="api-6fb4468885-pj9qw" transactionID="236842a9-5a66-4b5d-b96d-62a851adee1c" actionID="002" actionName="GetSystem" threadID="0" threadName="svc-api"] [request@1  method="GET"] 10.207.115.16:30080 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems/1225"][response@1 responseCode=404] Operation failed
 ```
 
 > **Note**: <110> and <107> are priority values. <110> is the audit information log and <107> is the audit error log.
@@ -12342,16 +12345,16 @@ Audit logs provide information on each API and are stored in the `api.log` file 
 
 ## Security logs
 
-Security logs provide information on the successful and failed user authentication and authorization attempts. The logs are stored in `api.log` and `account_session.log` file in `odimra` logs. Each log consists of a priority value, date and time of the log, user account and role details, and the message.
+Security logs provide information on the successful and failed user authentication and authorization attempts. The logs are stored in `api.log` and `account_session.log` file in `odimra` logs. 
 
 **Sample logs**
 
 ```
-<86> 2022-01-28T04:44:09Z [account@1 user="admin" roleID="Administrator"] Authentication/Authorization successful for session token 388281e8-4a45-45e5-862b-6b1ccfd6e6a3
+<86>1 2023-02-03T06:34:54Z clustervm  svc-account-session  account-session-854df4867d-672tz_7  <nil> [account@1 user="admin" roleID="Administrator"] Authentication/Authorization successful for session token 63277770-75a3-4ae9-afc7-078676235531 Authorization is successful
 ```
 
 ```
-<84> 2022-01-28T04:43:39Z [account@1 user="admin1" roleID="null"] Authentication failed, Invalid username or password
+<84>1 2023-02-03T06:38:46Z clustervm  svc-account-session  account-session-854df4867d-672tz_7  GetSystemsCollection [process@1 processName="account-session-854df4867d-672tz" transactionID="9d017288-9ba9-4ed5-91a4-393ab0c3bba9" actionID="001" actionName="GetSystemsCollection" threadID="0" threadName="svc-account-session"] [account@1 user="admin1" roleID=""] Authentication failed for session token  Invalid username or password
 ```
 
 <blockquote> Note: <86> and <84> are priority values. <86> is security information log and <84> is the warning log.</blockquote>
@@ -12360,17 +12363,38 @@ Security logs provide information on the successful and failed user authenticati
 
 ## Application logs
 
-Application logs provide information on operations performed during specific times.
+Application logs provide information on operations performed during specific times. 
 
-**Sample log**
+**Sample log in JSON format**
+
+```
+{
+   "actionid":"169",
+   "actionname":"GetManager",
+   "host":"clustervm",
+   "level":"error",
+   "messageid":"GetManager",
+   "msg":"unable to get manager details : unable to get managers details: no data with the with key /redfish/v1/Managers/5c2eeb31-4008-444d-9d54-2593635a89 found",
+   "processname":"managers-74c4f5d8f8-9lpwb",
+   "procid":"managers-74c4f5d8f8-9lpwb_8",
+   "threadid":"0",
+   "threadname":"svc-managers",
+   "time":"2023-02-03T06:43:31Z",
+   "transactionid":"77cf1d03-603f-4431-ba8a-2745c90b7fe5"
+}
+```
+
+**Sample log in syslog format**
 
 ```
 <11>1 2022-12-21T07:39:49Z odim-host  svc-managers  managers-b5465c4df-fj4ss_9  GetManager [process@1 processName="managers-b5465c4df-fj4ss" transactionID="b3b66d09-f844-41bd-8b8d-957addf09b20" actionID="169" actionName="GetManager" threadID="0" threadName="svc-managers"] unable to get managers details: no data with the key /redfish/v1/Managers/386710f8-3a38-4938-a986-5f1048f487fdf found
 ```
 
-The following table lists the properties, values and description of the application logs:
+## Log details
 
-| Property      | Value (given in sample log)                                  | Description                                                  |
+The following table lists the properties, values and description of all logs in syslog format.
+
+| Property      | Value (as per the sample log in syslog format)               | Description                                                  |
 | ------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | priority      | <11>                                                         | Priority value. <br/>For the list of all priority values, see the *Log levels* section in *Appendix*. |
 | version       | 1                                                            | Version number of the syslog protocol specification.         |

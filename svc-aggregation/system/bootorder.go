@@ -43,7 +43,7 @@ type AggregationSetDefaultBootOrderRequest struct {
 	Systems []OdataID `json:"Systems"`
 }
 
-//OdataID struct definition for @odata.id
+// OdataID struct definition for @odata.id
 type OdataID struct {
 	OdataID string `json:"@odata.id"`
 }
@@ -54,7 +54,7 @@ func (e *ExternalInterface) SetDefaultBootOrder(ctx context.Context, taskID stri
 	var percentComplete int32
 	targetURI := "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder"
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	var setOrderReq AggregationSetDefaultBootOrderRequest
 	if err := json.Unmarshal(req.RequestBody, &setOrderReq); err != nil {
@@ -169,7 +169,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(ctx context.Context, taskI
 		subTaskID = strArray[len(strArray)-1]
 	}
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: serverURI, UpdateTask: e.UpdateTask, TaskRequest: reqJSON}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: subTaskID, TargetURI: serverURI, UpdateTask: e.UpdateTask, TaskRequest: reqJSON}
 
 	var percentComplete int32
 	uuid, systemID, err := getIDsFromURI(serverURI)

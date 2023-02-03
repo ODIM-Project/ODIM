@@ -34,7 +34,7 @@ import (
 
 func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRequest, taskID, targetURI string, pluginContactRequest getResourceRequest, queueList []string, cmVariants connectionMethodVariants) (response.RPC, string, []byte) {
 	var resp response.RPC
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
 
 	if !(cmVariants.PreferredAuthType == "BasicAuth" || cmVariants.PreferredAuthType == "XAuthToken") {
 		errMsg := "error: incorrect request property value for PreferredAuthType"

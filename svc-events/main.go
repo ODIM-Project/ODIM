@@ -18,8 +18,6 @@ import (
 	"fmt"
 	"os"
 
-	ev "github.com/ODIM-Project/ODIM/svc-events/events"
-
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -28,7 +26,9 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/consumer"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
+	ev "github.com/ODIM-Project/ODIM/svc-events/events"
 	"github.com/ODIM-Project/ODIM/svc-events/rpc"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -87,6 +87,7 @@ func main() {
 	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	ctx = context.WithValue(ctx, common.ThreadName, common.EventService)
 	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
+	ctx = context.WithValue(ctx, common.TransactionID, uuid.New())
 
 	// Intializing the TopicsList
 	evcommon.EMBTopics.TopicsList = make(map[string]bool)
@@ -135,6 +136,7 @@ func main() {
 		EMBConsume:      consumer.Consume,
 	}
 	go startUPInterface.SubscribePluginEMB(ctx)
+	ctx = context.WithValue(ctx, common.TransactionID, uuid.New())
 	go ev.LoadSubscriptionData(ctx)
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {

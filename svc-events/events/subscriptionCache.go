@@ -287,8 +287,8 @@ START:
 	defer writeConn.Close()
 	_, err := writeConn.Do("CONFIG", "SET", evcommon.RedisNotifierType, evcommon.RedisNotifierFilterKey)
 	if err != nil {
-		l.LogWithFields(ctx).Error("error occurred configuring keyevent ", err)
-		time.Sleep(time.Second * 5)
+		l.LogWithFields(ctx).Error("error occurred configuring key event ", err)
+		time.Sleep(time.Second * 1)
 		goto START
 	}
 	psc := redis.PubSubConn{Conn: writeConn}

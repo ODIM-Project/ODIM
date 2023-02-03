@@ -393,7 +393,7 @@ The following table lists the software components and versions that are compatib
    | registry.k8s.io/dns/k8s-dns-node-cache                    |1.21.1 | registry.k8s.io_dns_k8s-dns-node-cache.tar                   |
    | registry.k8s.io/pause                                     |3.6 | registry.k8s.io_pause2.tar                                   |
    | registry.k8s.io/pause |3.7 | registry.k8s.io_pause.tar |
-   |docker.io/library/nginx|1.23.0-alpine |nginx.tar |
+   |docker.io/library/nginx|1.23.0-alpine |docker.io_library_nginx.tar |
    | registry.k8s.io/coredns/coredns                           |v1.8.6 | registry.k8s.io_coredns_coredns.tar                          |
    | registry.k8s.io/cpa/cluster-proportional-autoscaler-amd64 |1.8.5 | registry.k8s.io_cpa_cluster-proportional-autoscaler-amd64.tar |
    

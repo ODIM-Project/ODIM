@@ -159,7 +159,8 @@ func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) response.
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
-	l.LogWithFields(ctx).Debugf("outgoing device communication response to northbound: %v", resp)
+	respBody := fmt.Sprintf("%v",resp.Body)
+	l.LogWithFields(ctx).Debugf("outgoing device communication response to northbound: %v", respBody)
 	return resp
 }
 
@@ -264,14 +265,12 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
 		l.LogWithFields(ctx).Error(errorMessage)
-		l.LogWithFields(ctx).Debugf("outgoing contact plugin response to northbound: %v", resp)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
 	if !(response.StatusCode == http.StatusOK || response.StatusCode == http.StatusCreated) {
 		resp.StatusCode = int32(response.StatusCode)
 		l.LogWithFields(ctx).Error(errorMessage)
-		l.LogWithFields(ctx).Debugf("outgoing contact plugin response to northbound: %v", resp)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 	data := string(body)

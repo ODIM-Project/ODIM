@@ -63,7 +63,7 @@ func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
-	l.LogWithFields(ctx).Debugf("outgoing manager collection response to northbound: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("Outgoing manager collection response to northbound: %s", string(resp.Body))
 	return &resp, nil
 }
 
@@ -77,7 +77,6 @@ func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerReq
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.ManagerService)
 	ctx = context.WithValue(ctx, common.ProcessName, podName)
-	l.LogWithFields(ctx).Info("Inside GetManager function (svc-managers)")
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
 	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -109,7 +108,6 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.ManagerService)
 	ctx = context.WithValue(ctx, common.ProcessName, podName)
-	l.LogWithFields(ctx).Info("Inside GetManagersResource function (svc-managers)")
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
 	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -128,7 +126,7 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
-	l.LogWithFields(ctx).Debugf("outgoing manager resource response to northbound: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("Outgoing manager resource response to northbound: %s", string(resp.Body))
 	return &resp, nil
 }
 
@@ -158,7 +156,7 @@ func (m *Managers) VirtualMediaInsert(ctx context.Context, req *managersproto.Ma
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
-	l.LogWithFields(ctx).Debugf("outgoing virtual media response to northbound: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("Outgoing virtual media response to northbound: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -188,7 +186,7 @@ func (m *Managers) VirtualMediaEject(ctx context.Context, req *managersproto.Man
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
-	l.LogWithFields(ctx).Debugf("outgoing virtual media eject response to northbound: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("Outgoing virtual media eject response to northbound: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -228,7 +226,7 @@ func (m *Managers) GetRemoteAccountService(ctx context.Context, req *managerspro
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
-	l.LogWithFields(ctx).Debugf("outgoing remote account service response to northbound: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("Outgoing remote account service response to northbound: %s", string(resp.Body))
 	return &resp, nil
 }
 
@@ -260,7 +258,7 @@ func (m *Managers) CreateRemoteAccountService(ctx context.Context, req *managers
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
-	l.LogWithFields(ctx).Debugf("outgoing create remote account service response to northbound: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("Outgoing create remote account service response to northbound: %s", string(resp.Body))
 	return &resp, nil
 }
 
@@ -292,7 +290,7 @@ func (m *Managers) UpdateRemoteAccountService(ctx context.Context, req *managers
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
-	l.LogWithFields(ctx).Debugf("outgoing update remote account service response to northbound: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("Outgoing update remote account service response to northbound: %s", string(resp.Body))
 	return &resp, nil
 }
 
@@ -324,6 +322,6 @@ func (m *Managers) DeleteRemoteAccountService(ctx context.Context, req *managers
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
-	l.LogWithFields(ctx).Debugf("outgoing delete remote account service response to northbound: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("Outgoing delete remote account service response to northbound: %s", string(resp.Body))
 	return &resp, nil
 }

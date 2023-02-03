@@ -159,8 +159,8 @@ func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) response.
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
-	respBody := fmt.Sprintf("%v",resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing device communication response to northbound: %s",string(respBody))
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("Outgoing device communication response to northbound: %s", string(respBody))
 	return resp
 }
 

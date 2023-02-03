@@ -67,8 +67,8 @@ func (e *ExternalInterface) GetManagersCollection(ctx context.Context, req *mana
 	managers.MembersCount = len(members)
 	resp.Body = managers
 	resp.StatusCode = http.StatusOK
-	respBody := fmt.Sprintf("%v",resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing manager collection details response to northbound: %s", string(respBody))
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("Outgoing manager collection details response to northbound: %s", string(respBody))
 	return resp, nil
 }
 
@@ -183,8 +183,8 @@ func (e *ExternalInterface) GetManagers(ctx context.Context, req *managersproto.
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	respBody := fmt.Sprintf("%v",resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing manager details response to northbound: %s", string(respBody))
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("Outgoing manager details response to northbound: %s", string(respBody))
 	return resp
 }
 
@@ -294,8 +294,8 @@ func (e *ExternalInterface) GetManagersResource(ctx context.Context, req *manage
 		resp.Body = resource
 		resp.StatusCode = http.StatusOK
 		resp.StatusMessage = response.Success
-		respBody := fmt.Sprintf("%v",resp.Body)
-		l.LogWithFields(ctx).Debugf("outgoing manager resource response to northbound: %s", string(respBody))
+		respBody := fmt.Sprintf("%v", resp.Body)
+		l.LogWithFields(ctx).Debugf("Outgoing manager resource response to northbound: %s", string(respBody))
 		return resp
 
 	}
@@ -333,8 +333,8 @@ func (e *ExternalInterface) GetManagersResource(ctx context.Context, req *manage
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	respBody := fmt.Sprintf("%v",resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing manager resource response to northbound: %s", string(respBody))
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("Outgoing manager resource response to northbound: %s", string(respBody))
 	return resp
 }
 
@@ -409,8 +409,8 @@ func (e *ExternalInterface) VirtualMediaActions(ctx context.Context, req *manage
 			}
 		}
 	}
-	respBody := fmt.Sprintf("%v",resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing virtual media response to northbound: %s", string(respBody))
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("Outgoing virtual media response to northbound: %s", string(respBody))
 	return resp
 }
 
@@ -486,15 +486,15 @@ func (e *ExternalInterface) getPluginManagerResoure(ctx context.Context, manager
 			if body, _, getResponse, err = mgrcommon.RetryManagersOperation(ctx, req, errorMessage); err != nil {
 				resp.StatusCode = getResponse.StatusCode
 				json.Unmarshal(body, &resp.Body)
-				respBody := fmt.Sprintf("%v",resp.Body)
-				l.LogWithFields(ctx).Debugf("outgoing plugin manager resoure response to northbound: %s", string(respBody))
+				respBody := fmt.Sprintf("%v", resp.Body)
+				l.LogWithFields(ctx).Debugf("Outgoing plugin manager resoure response to northbound: %s", string(respBody))
 				return resp
 			}
 		} else {
 			resp.StatusCode = getResponse.StatusCode
 			json.Unmarshal(body, &resp.Body)
-			respBody := fmt.Sprintf("%v",resp.Body)
-			l.LogWithFields(ctx).Debugf("outgoing plugin manager resoure response to northbound: %s", string(respBody))
+			respBody := fmt.Sprintf("%v", resp.Body)
+			l.LogWithFields(ctx).Debugf("Outgoing plugin manager resoure response to northbound: %s", string(respBody))
 			return resp
 		}
 	}
@@ -528,8 +528,8 @@ func fillResponse(ctx context.Context, body []byte, managerData map[string]inter
 	resp.Body = respData
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	respBody := fmt.Sprintf("%v",resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing plugin manager resoure response to northbound: %s", string(respBody))
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("Outgoing plugin manager resoure response to northbound: %s", string(respBody))
 	return resp
 
 }
@@ -580,8 +580,8 @@ func (e *ExternalInterface) GetRemoteAccountService(ctx context.Context, req *ma
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	respBody := fmt.Sprintf("%v",resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing remote account service response to northbound: %s", string(respBody))
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("Outgoing remote account service response to northbound: %s", string(respBody))
 	return resp
 }
 
@@ -681,8 +681,8 @@ func (e *ExternalInterface) CreateRemoteAccountService(ctx context.Context, req 
 		resp.Body = managerAcc
 		resp.StatusCode = http.StatusCreated
 	}
-	respBody := fmt.Sprintf("%v",resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing remote account service response to northbound: %s", string(respBody))
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("Outgoing remote account service response to northbound: %s", string(respBody))
 	return resp
 }
 
@@ -786,8 +786,8 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 		//return resp
 
 	}
-	respBody := fmt.Sprintf("%v",resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing update remote account service response to northbound: %s", string(respBody))
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("Outgoing update remote account service response to northbound: %s", string(respBody))
 	return resp
 
 }
@@ -803,7 +803,7 @@ func (e *ExternalInterface) DeleteRemoteAccountService(ctx context.Context, req 
 	if resp.StatusCode == http.StatusOK {
 		resp.StatusCode = http.StatusNoContent
 	}
-	respBody := fmt.Sprintf("%v",resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing delete remote account service response to northbound: %s", string(respBody))
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("Outgoing delete remote account service response to northbound: %s", string(respBody))
 	return resp
 }

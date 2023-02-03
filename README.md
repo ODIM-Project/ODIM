@@ -390,10 +390,10 @@ The following table lists the software components and versions that are compatib
    |quay.io/calico/cni| v3.23.3 |quay.io_calico_cni.tar |
    |quay.io/calico/kube-controllers| v3.23.3 |quay.io_calico_kube-controllers.tar |
    | registry.k8s.io/dns/k8s-dns-node-cache                    |1.21.1 | registry.k8s.io_dns_k8s-dns-node-cache.tar                   |
-   | registry.k8s.io/pause                                     |3.6 | registry.k8s.io_pause.tar                                    |
-   |docker.io/library/nginx|1.23.0 |nginx.tar |
+   | registry.k8s.io/pause                                     |3.6 | registry.k8s.io_pause2.tar                                   |
+   | registry.k8s.io/pause |3.7 | registry.k8s.io_pause.tar |
+   |docker.io/library/nginx|1.23.0-alpine |docker.io_library_nginx.tar |
    | registry.k8s.io/coredns/coredns                           |v1.8.6 | registry.k8s.io_coredns_coredns.tar                          |
-   |quay.io/coreos/etcd|v3.4.13 |quay.io_coreos_etcd.tar |
    | registry.k8s.io/cpa/cluster-proportional-autoscaler-amd64 |1.8.5 | registry.k8s.io_cpa_cluster-proportional-autoscaler-amd64.tar |
    
 2. Verify you have successfully pulled all the images.
@@ -3238,7 +3238,7 @@ The following table lists all the configuration parameters required by odim-cont
 |deploymentID|A unique identifier to identify the Kubernetes cluster. Example: "threenodecluster".<br>It is required for the following operations:<br>-   Adding a node.<br>-   Deleting a node.<br>-   Resetting the Kubernetes cluster.<br>-   Deploying and removing the services of Resource Aggregator for ODIM.<br>|
 |httpProxy|HTTP Proxy to be set in all the nodes for connecting to external network. If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
 |httpsProxy|HTTPS Proxy to be set in all the nodes for connecting to external network. If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
-|noProxy|List of IP addresses and FQDNs for which proxy must not be used. It must begin with `127.0.0.1,localhost,localhost.localdomain,10.96.0.0/12,` followed by the IP addresses of the cluster nodes.<br>If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
+|noProxy|List of IP addresses and FQDNs for which proxy must not be used. It must begin with `127.0.0.1,localhost,localhost.localdomain,10.96.0.0/12,10.233.0.0/18,10.233.64.0/18` followed by the IP addresses of the cluster nodes.<br>If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
 |nodePasswordFilePath|The absolute path of the file containing the encoded password of the nodes \(encoded using the odim-vault tool)<br />`/home/<username\>/ODIM/odim-controller/scripts/nodePasswordFile`<br>|
 |redisInMemoryPasswordFilePath|The absolute path of the file containing the encoded password of the Redis in-memory database (encoded using the odim-vault tool\)<br /> `/home/<username>/ODIM/odim-controller/scripts/redisInMemoryPasswordFile`<br/>|
 |redisOnDiskPasswordFilePath|The absolute path of the file containing the encoded password of the Redis on-disk database (encoded using the odim-vault tool\)<br /> `/home/<username>/ODIM/odim-controller/scripts/redisOnDiskPasswordFile`<br/>|

@@ -160,7 +160,7 @@ func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) response.
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 	respBody := fmt.Sprintf("%v",resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing device communication response to northbound: %v", respBody)
+	l.LogWithFields(ctx).Debugf("outgoing device communication response to northbound: %v",string(respBody))
 	return resp
 }
 

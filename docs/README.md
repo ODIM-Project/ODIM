@@ -12323,6 +12323,8 @@ curl -i -X POST \
 
 # Logging information
 
+Logs can be in syslog format or in JSON format. Set the `logFormat` parameter in your `kube_deploy_nodes.yaml` configuration file to `syslog` or `json` as required. Samples for both format are given in *Application logs* section.
+
 ## Audit logs
 
 Audit logs provide information on each API and are stored in the `api.log` file in `odimra` logs. 
@@ -12363,14 +12365,6 @@ Security logs provide information on the successful and failed user authenticati
 
 Application logs provide information on operations performed during specific times. 
 
-Logs can be in syslog format or in JSON format. Set the `logFormat` parameter in your `kube_deploy_nodes.yaml` configuration file to `syslog` or `json` as required.
-
-**Sample log in syslog format**
-
-```
-<11>1 2022-12-21T07:39:49Z odim-host  svc-managers  managers-b5465c4df-fj4ss_9  GetManager [process@1 processName="managers-b5465c4df-fj4ss" transactionID="b3b66d09-f844-41bd-8b8d-957addf09b20" actionID="169" actionName="GetManager" threadID="0" threadName="svc-managers"] unable to get managers details: no data with the key /redfish/v1/Managers/386710f8-3a38-4938-a986-5f1048f487fdf found
-```
-
 **Sample log in JSON format**
 
 ```
@@ -12390,13 +12384,17 @@ Logs can be in syslog format or in JSON format. Set the `logFormat` parameter in
 }
 ```
 
+**Sample log in syslog format**
 
+```
+<11>1 2022-12-21T07:39:49Z odim-host  svc-managers  managers-b5465c4df-fj4ss_9  GetManager [process@1 processName="managers-b5465c4df-fj4ss" transactionID="b3b66d09-f844-41bd-8b8d-957addf09b20" actionID="169" actionName="GetManager" threadID="0" threadName="svc-managers"] unable to get managers details: no data with the key /redfish/v1/Managers/386710f8-3a38-4938-a986-5f1048f487fdf found
+```
 
 ## Log details
 
-The following table lists the properties, values and description of all logs:
+The following table lists the properties, values and description of all logs in syslog format.
 
-| Property      | Value (given in sample log)                                  | Description                                                  |
+| Property      | Value (as per the sample log in syslog format)               | Description                                                  |
 | ------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | priority      | <11>                                                         | Priority value. <br/>For the list of all priority values, see the *Log levels* section in *Appendix*. |
 | version       | 1                                                            | Version number of the syslog protocol specification.         |

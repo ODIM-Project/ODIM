@@ -94,7 +94,7 @@ func sentinelNewClient(dbConfig *Config) (*redisSentinel.SentinelClient, error) 
 		return nil, fmt.Errorf("error while trying to get tls configuration : %s", err.Error())
 	}
 	rdb := redisExtCalls.newSentinelClient(&redisSentinel.Options{
-		Addr:      dbConfig.Host + ":" + dbConfig.SentinelPort,
+		Addr:      dbConfig.SentinelHost + ":" + dbConfig.SentinelPort,
 		DB:        0, // use default DB
 		TLSConfig: tlsConfig,
 		Password:  dbConfig.Password,
@@ -187,6 +187,7 @@ func getInMemoryDBConfig() *Config {
 		Port:         config.Data.DBConf.InMemoryPort,
 		Protocol:     config.Data.DBConf.Protocol,
 		Host:         config.Data.DBConf.InMemoryHost,
+		SentinelHost: config.Data.DBConf.InMemorySentinelHost,
 		SentinelPort: config.Data.DBConf.InMemorySentinelPort,
 		MasterSet:    config.Data.DBConf.InMemoryPrimarySet,
 		Password:     string(config.Data.DBConf.RedisInMemoryPassword),
@@ -198,6 +199,7 @@ func getOnDiskDBConfig() *Config {
 		Port:         config.Data.DBConf.OnDiskPort,
 		Protocol:     config.Data.DBConf.Protocol,
 		Host:         config.Data.DBConf.OnDiskHost,
+		SentinelHost: config.Data.DBConf.OnDiskSentinelHost,
 		SentinelPort: config.Data.DBConf.OnDiskSentinelPort,
 		MasterSet:    config.Data.DBConf.OnDiskPrimarySet,
 		Password:     string(config.Data.DBConf.RedisOnDiskPassword),

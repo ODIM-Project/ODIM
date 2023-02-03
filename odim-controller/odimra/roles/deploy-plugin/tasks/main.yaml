@@ -34,9 +34,15 @@
   delegate_to: "{{ item }}"
   loop:
     "{{ groups['kube_node'] }}"
-
+#Use below when container manager is docker
+    #- name: Load docker image of {{ release_name }}
+    #command: "{{ docker_bin_path }} load -i {{ helm_charts_path }}/{{ release_name }}/{{ release_name }}.tar"
+    #delegate_to: "{{ item }}"
+    #loop:
+    #"{{ groups['kube_node'] }}"
+#Use below when container manager is containerd
 - name: Load docker image of {{ release_name }}
-  command: "{{ docker_bin_path }} load -i {{ helm_charts_path }}/{{ release_name }}/{{ release_name }}.tar" 
+  command: "{{ docker_bin_path }}  -n=k8s.io image  import  {{ helm_charts_path }}/{{ release_name }}/{{ release_name }}.tar"
   delegate_to: "{{ item }}"
   loop:
     "{{ groups['kube_node'] }}"

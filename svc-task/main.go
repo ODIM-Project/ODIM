@@ -109,8 +109,7 @@ func main() {
 	// TODO: configure the job queue size
 	jobQueueSize := 10
 	tmb.TaskEventRecvQueue, tmb.TaskEventProcQueue = common.CreateJobQueue(jobQueueSize)
-	// worker count should be one to keep the temporal order of the task events
-	common.RunReadWorkers(tmb.TaskEventProcQueue, task.ProcessTaskEvents, 1)
+	common.RunReadWorkers(tmb.TaskEventProcQueue, task.ProcessTaskEvents, 5)
 	go tmb.SubscribeTaskEventsQueue(common.TaskEventsTopic)
 
 	tick := &tmodel.Tick{

@@ -17,12 +17,20 @@
   register: odimra_file_details
   delegate_to: localhost
   when: odimraImagePath is defined
+# Use when container manager is docker
+  #- name: Delete ODIMRA Images
+  #shell: "{{ docker_bin_path }} rmi $({{ docker_bin_path }} images {{ item.value }} -q | sort -u) -f"
+  #loop: "{{ odim_docker_images | dict2items }}"
+  #ignore_errors: "{{ ignore_err }}"
+  #when: odimraImagePath is defined and odimra_file_details.stat.exists and odimra_file_details.stat.isdir == true
 
+# Use when container manager is containerd
 - name: Delete ODIMRA Images
-  shell: "{{ docker_bin_path }} rmi $({{ docker_bin_path }} images {{ item.value }} -q | sort -u) -f"
+  shell: "{{ docker_bin_path }} -n=k8s.io  image remove $({{ docker_bin_path }} -n=k8s.io image ls  -q | grep -E {{ item.key }})"
   loop: "{{ odim_docker_images | dict2items }}"
   ignore_errors: "{{ ignore_err }}"
   when: odimraImagePath is defined and odimra_file_details.stat.exists and odimra_file_details.stat.isdir == true
+
 
 - name: Delete Dangling Images
   shell: "{{ docker_bin_path }} rmi $({{ docker_bin_path }} images -f 'dangling=true' -q) || /bin/true"

@@ -19,7 +19,13 @@
   register: plugin_packages
   delegate_to: localhost
 
+  #- name: Removing plugin docker image under the helm charts path
+  #shell: "{{ docker_bin_path }} rmi $({{ docker_bin_path }} images {{ item.path.split('/')[-1] }} -q | sort -u) -f"
+  #loop: "{{ plugin_packages.files }}"
+  #ignore_errors: "{{ ignore_err }}"
+
 - name: Removing plugin docker image under the helm charts path
-  shell: "{{ docker_bin_path }} rmi $({{ docker_bin_path }} images {{ item.path.split('/')[-1] }} -q | sort -u) -f"
+  shell:  "{{ docker_bin_path }} -n=k8s.io  image remove $({{ docker_bin_path }} -n=k8s.io image ls  -q | grep -E {{ item.path.split('/')[-1] }} )"
   loop: "{{ plugin_packages.files }}"
   ignore_errors: "{{ ignore_err }}"
+

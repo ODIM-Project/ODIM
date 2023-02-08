@@ -263,7 +263,7 @@ func TestExternalInterface_addcompute(t *testing.T) {
 		"UUID": "1234877451-1233",
 	})
 	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
-		"Name": "NoStatusPlugin_v1.0.0",
+		"Name": "NoStatusPlugin_v2.0.0",
 		"UUID": "1234877451-1235",
 	})
 	ctx := mockContext()

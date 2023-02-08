@@ -104,9 +104,9 @@ func TestExternalInterface_Plugin(t *testing.T) {
 		Password: []byte("password"),
 		ID:       "PluginWithBadPassword",
 	}
-	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword_v1.0.0", pluginData)
+	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword_v2.0.0", pluginData)
 	// create plugin with bad data
-	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData_v1.0.0", "PluginWithBadData")
+	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData_v2.0.0", "PluginWithBadData")
 
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -249,7 +249,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqExistingPluginBadPassword,
-				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:PluginWithBadPassword_v1.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:PluginWithBadPassword_v2.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
@@ -261,7 +261,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqExistingPluginBadData,
-				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:PluginWithBadData_v1.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:PluginWithBadData_v2.0.0"),
 			},
 
 			want: response.RPC{
@@ -296,7 +296,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
-	err := mockPluginData(t, "XAuthPlugin_v1.0.0")
+	err := mockPluginData(t, "XAuthPlugin_v2.0.0")
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}

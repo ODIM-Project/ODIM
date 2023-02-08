@@ -64,8 +64,8 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		}
 	}()
 	mockPluginData(t, "GRF_v2.0.0")
-	mockPluginData(t, "XAuthPlugin_v1.0.0")
-	mockPluginData(t, "XAuthPluginFail_v1.0.0")
+	mockPluginData(t, "XAuthPlugin_v2.0.0")
+	mockPluginData(t, "XAuthPluginFail_v2.0.0")
 	mockManagersData("/redfish/v1/Managers/1s7sda8asd-asdas8as0", map[string]interface{}{
 		"Name": "GRF_v2.0.0",
 		"UUID": "1s7sda8asd-asdas8as0",
@@ -79,7 +79,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		"UUID": "1234877451-1233",
 	})
 	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
-		"Name": "NoStatusPlugin_v1.0.0",
+		"Name": "NoStatusPlugin_v2.0.0",
 		"UUID": "1234877451-1235",
 	})
 
@@ -367,7 +367,7 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 		"UUID": "1234877451-1233",
 	})
 	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
-		"Name": "NoStatusPlugin_v1.0.0",
+		"Name": "NoStatusPlugin_v2.0.0",
 		"UUID": "1234877451-1235",
 	})
 	reqSuccess, _ := json.Marshal(AggregationSource{
@@ -436,9 +436,9 @@ func TestExternalInterface_Manager(t *testing.T) {
 		Password: []byte("password"),
 		ID:       "PluginWithBadPassword",
 	}
-	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword_v1.0.0", pluginData)
+	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword_v2.0.0", pluginData)
 	// create plugin with bad data
-	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData_v1.0.0", "PluginWithBadData")
+	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData_v2.0.0", "PluginWithBadData")
 
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -621,7 +621,7 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
-	err := mockPluginData(t, "XAuthPlugin_v1.0.0")
+	err := mockPluginData(t, "XAuthPlugin_v2.0.0")
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}

@@ -31,7 +31,7 @@ const (
 
 const (
 	// DefaultFirmwareVersion - default FirmwareVersion value
-	DefaultFirmwareVersion = "1.0"
+	DefaultFirmwareVersion = "2.0"
 	// DefaultSessionTimeOutInMins - default SessionTimeOutInMins value
 	DefaultSessionTimeOutInMins = 30
 	// DefaultExpiredSessionCleanUpTimeInMins - default ExpiredSessionCleanUpTimeInMins value

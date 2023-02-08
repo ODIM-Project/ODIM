@@ -18,7 +18,6 @@ package system
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -150,7 +149,6 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 		}
 	}
 	percentComplete = progress
-	fmt.Println("Task update ", 2)
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(ctx, task) //2 // can be removed
 	h.InventoryData = make(map[string]interface{})
@@ -165,7 +163,6 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	firmwareEstimatedWork := int32(5)
 	progress = h.getAllRootInfo(ctx, taskID, progress, firmwareEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderOthers)
 	percentComplete = progress
-	fmt.Println("Task update ", 3)
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(ctx, task)
 
@@ -179,13 +176,11 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	softwareEstimatedWork := int32(5)
 	progress = h.getAllRootInfo(ctx, taskID, progress, softwareEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderOthers)
 	percentComplete = progress
-	fmt.Println("Task update ", 4)
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(ctx, task)
 
 	// Discover telemetry service
 	percentComplete = e.getTelemetryService(ctx, taskID, targetURI, percentComplete, pluginContactRequest, resp, saveSystem)
-	fmt.Println("Task update ", 5)
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(ctx, task)
 	// Populate the data for license service
@@ -198,9 +193,8 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	licenseEstimatedWork := int32(5)
 	progress = h.getAllRootInfo(ctx, taskID, progress, licenseEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderOthers)
 	percentComplete = progress
-	fmt.Println("Task update ", 6)
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	e.UpdateTask(ctx, task) // 5
+	e.UpdateTask(ctx, task)
 
 	// Lets Discover/gather registry files of this server and store them in DB
 
@@ -213,9 +207,8 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	registriesEstimatedWork := int32(5)
 	progress = h.getAllRegistries(ctx, taskID, progress, registriesEstimatedWork, pluginContactRequest)
 	percentComplete = progress
-	fmt.Println("Task update ", 7)
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	err = e.UpdateTask(ctx, task) // 6
+	err = e.UpdateTask(ctx, task)
 	if err != nil && (err.Error() == common.Cancelling) {
 		go e.rollbackInMemory(resourceURI)
 		return resp, "", nil
@@ -240,9 +233,8 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	progress = h.getAllRootInfo(ctx, taskID, progress, chassisEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderChassis)
 
 	percentComplete = progress
-	fmt.Println("Task update ", 8)
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	err = e.UpdateTask(ctx, task) //7
+	err = e.UpdateTask(ctx, task)
 	if err != nil && (err.Error() == common.Cancelling) {
 		go e.rollbackInMemory(resourceURI)
 		return resp, "", nil
@@ -267,8 +259,7 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	fmt.Println("Task update ", 9)
-	err = e.UpdateTask(ctx, task) // 8
+	err = e.UpdateTask(ctx, task)
 	if err != nil && (err.Error() == common.Cancelling) {
 		go e.rollbackInMemory(resourceURI)
 		return resp, "", nil

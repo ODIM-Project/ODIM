@@ -38,7 +38,6 @@ func (e *ExternalInterface) AddAggregationSource(ctx context.Context, taskID str
 	var percentComplete int32
 	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	err := e.UpdateTask(ctx, task)
-	fmt.Println("Task update ", 1)
 	if err != nil {
 		errMsg := "error while starting the task: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
@@ -211,7 +210,6 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 	}
 	resp.StatusCode = http.StatusCreated
 	percentComplete = 100
-	fmt.Println("Task update ", 9)
 	task := fillTaskData(taskID, targetURI, reqBody, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(ctx, task)
 	return resp

@@ -662,9 +662,5 @@ var URIWithNoAuth = []string{
 
 var SessionURI = "/redfish/v1/SessionService/Sessions"
 
-// TaskEventsTopic: topic name for task events
-// TODO: make configurable
-var TaskEventsTopic = "TASK-EVENTS-TOPIC"
-
 // XForwardedFor holds the IP of plugin instance in response header
 var XForwardedFor = "X-Forwarded-For"

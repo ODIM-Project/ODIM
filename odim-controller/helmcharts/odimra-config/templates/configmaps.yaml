@@ -27,7 +27,8 @@ data:
        "MessageBusConf": {
          "MessageBusConfigFilePath": "/etc/odimra_config/platformconfig.toml",
          "MessageBusType": {{ .Values.odimra.messageBusType | quote }},
-         "OdimControlMessageQueue": "ODIM-CONTROL-MESSAGES"
+         "OdimControlMessageQueue": "ODIM-CONTROL-MESSAGES",
+         "OdimTaskEventsQueue": "TASK-EVENTS-TOPIC"
       },
     	"DBConf": {
                 "Protocol": "tcp",

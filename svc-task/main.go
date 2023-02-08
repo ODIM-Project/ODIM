@@ -110,7 +110,7 @@ func main() {
 	jobQueueSize := 10
 	tmb.TaskEventRecvQueue, tmb.TaskEventProcQueue = common.CreateJobQueue(jobQueueSize)
 	common.RunReadWorkers(tmb.TaskEventProcQueue, task.ProcessTaskEvents, 5)
-	go tmb.SubscribeTaskEventsQueue(common.TaskEventsTopic)
+	go tmb.SubscribeTaskEventsQueue(config.Data.MessageBusConf.OdimTaskEventsQueue)
 
 	tick := &tmodel.Tick{
 		Ticker: time.NewTicker(time.Duration(config.Data.TaskQueueConf.DBCommitInterval) * time.Microsecond),

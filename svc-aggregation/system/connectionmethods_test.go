@@ -43,16 +43,16 @@ func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMeth
 	connMethod.ConnectionMethodType = "Redfish"
 	switch ConnectionMethodURI {
 	case "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73":
-		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:GRF_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:GRF_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d39069":
-		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:ILO_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:ILO_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/6f29f281-f5e2-4873-97b7-376be668f4f4":
-		connMethod.ConnectionMethodVariant = "Compute:BasicAuthentication:ILO_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:BasicAuthentication:ILO_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/6456115a-e900-4c11-809f-0957031d2d56":
-		connMethod.ConnectionMethodVariant = "plugin:BasicAuth:ILO_v1.0.0"
+		connMethod.ConnectionMethodVariant = "plugin:BasicAuth:ILO_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/36474ba4-a201-46aa-badf-d8104da418e8":
 		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:PluginWithBadPassword_v1.0.0"
@@ -61,10 +61,10 @@ func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMeth
 		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:PluginWithBadData_v1.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/058c1876-6f24-439a-8968-2af26154081f":
-		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:GRF_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:GRF_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/3489af48-2e99-4d78-a250-b04641e9d98d":
-		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:ILO_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:ILO_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/2e99af48-2e99-4d78-a250-b04641e9b046":
 		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:IL_v1.0.0"

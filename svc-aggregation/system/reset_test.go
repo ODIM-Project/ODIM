@@ -85,9 +85,9 @@ func mockPluginData(t *testing.T, pluginID string) error {
 	case "NoStatusPlugin_v1.0.0":
 		plugin.Username = "noStatusUser"
 		plugin.ManagerUUID = "1234877451-1235"
-	case "GRF_v1.0.0":
+	case "GRF_v2.0.0":
 		plugin.ManagerUUID = "1234877451-1234"
-	case "ILO_v1.0.0":
+	case "ILO_v2.0.0":
 		plugin.ManagerUUID = "1234877451-1233"
 	}
 	connPool, err := common.GetDBConnection(common.OnDisk)

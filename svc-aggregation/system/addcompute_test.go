@@ -251,15 +251,15 @@ func TestExternalInterface_addcompute(t *testing.T) {
 	mockPluginData(t, "XAuthPlugin")
 	mockPluginData(t, "XAuthPluginFail")
 	mockManagersData("/redfish/v1/Managers/1s7sda8asd-asdas8as0", map[string]interface{}{
-		"Name": "GRF_v1.0.0",
+		"Name": "GRF_v2.0.0",
 		"UUID": "1s7sda8asd-asdas8as0",
 	})
 	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
-		"Name": "GRF_v1.0.0",
+		"Name": "GRF_v2.0.0",
 		"UUID": "1234877451-1234",
 	})
 	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
-		"Name": "ILO_v1.0.0",
+		"Name": "ILO_v2.0.0",
 		"UUID": "1234877451-1233",
 	})
 	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{

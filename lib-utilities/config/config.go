@@ -99,6 +99,7 @@ type MessageBusConf struct {
 	MessageBusConfigFilePath string `json:"MessageBusConfigFilePath"`
 	MessageBusType           string `json:"MessageBusType"`
 	OdimControlMessageQueue  string `json:"OdimControlMessageQueue"`
+	OdimTaskEventsQueue      string `json:"OdimTaskEventsQueue"`
 }
 
 // KeyCertConf is for holding all security oriented configuration
@@ -387,6 +388,10 @@ func checkMessageBusConf(wl *WarningList) error {
 		if len(Data.MessageBusConf.OdimControlMessageQueue) <= 0 {
 			wl.add("No value set for MessageBusQueue, setting default value")
 			Data.MessageBusConf.OdimControlMessageQueue = "ODIM-CONTROL-MESSAGES"
+		}
+		if Data.MessageBusConf.OdimTaskEventsQueue == "" {
+			wl.add("No value set for OdimTaskEventsQueue, setting default value")
+			Data.MessageBusConf.OdimTaskEventsQueue = "TASK-EVENTS-TOPIC"
 		}
 	}
 	if !AllowedMessageBusTypes[Data.MessageBusConf.MessageBusType] {

@@ -1012,14 +1012,6 @@ func (h *respHolder) getResourceDetails(ctx context.Context, taskID string, prog
 		}
 	}
 	progress = progress + alottedWork
-	//var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
-	//err = req.UpdateTask(ctx, task)
-
-	//if err != nil && (err.Error() == common.Cancelling) {
-	//var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Cancelled, common.OK, progress, http.MethodPost)
-	//req.UpdateTask(ctx, task)
-
-	//}
 	return progress
 }
 func getResourceName(oDataID string, memberFlag bool) string {

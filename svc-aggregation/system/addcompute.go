@@ -150,7 +150,7 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	}
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	e.UpdateTask(ctx, task) //2 // can be removed
+	e.UpdateTask(ctx, task)
 	h.InventoryData = make(map[string]interface{})
 
 	// Populate the resource Firmware inventory for update service

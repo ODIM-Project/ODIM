@@ -1167,8 +1167,10 @@ func CreateDefaultEventSubscription(ctx context.Context, systemID []string) {
 	}
 	defer conn.Close()
 	events := eventsproto.NewEventsClient(conn)
+	reqCtx := common.CreateNewRequestContext(ctx)
+	reqCtx = common.CreateMetadata(reqCtx)
 
-	_, err := events.CreateDefaultEventSubscription(ctx, &eventsproto.DefaultEventSubRequest{
+	_, err := events.CreateDefaultEventSubscription(reqCtx, &eventsproto.DefaultEventSubRequest{
 		SystemID:      systemID,
 		EventTypes:    []string{"Alert"},
 		MessageIDs:    []string{},

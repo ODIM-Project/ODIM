@@ -226,8 +226,8 @@ func testUpdateContactClient(ctx context.Context, url, method, token string, oda
 func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	config.SetUpMockConfig(t)
 	ctx := mockContext()
-	mockPluginData(t, "ILO_v1.0.0")
-	mockPluginData(t, "GRF_v1.0.0")
+	mockPluginData(t, "ILO_v2.0.0")
+	mockPluginData(t, "GRF_v2.0.0")
 
 	reqManagerGRF := agmodel.AggregationSource{
 		HostName: "100.0.0.1:50000",
@@ -263,7 +263,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		ManagerAddress: "100.0.1.1",
 		UserName:       "admin",
 		Password:       []byte("admin12345"),
-		PluginID:       "ILO_v1.0.0",
+		PluginID:       "ILO_v2.0.0",
 	})
 	err := agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSources/123455")
 	if err != nil {

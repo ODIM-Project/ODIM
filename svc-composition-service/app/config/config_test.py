@@ -125,7 +125,7 @@ class TestConfiguration(unittest.TestCase):
             "ConnectionMethodConf": [
                 {
                     "ConnectionMethodType": "Redfish",
-                    "ConnectionMethodVariant": "Compute:GRF_v1.0.0"
+                    "ConnectionMethodVariant": "Compute:GRF_v2.0.0"
                 },
                 {
                     "ConnectionMethodType": "Redfish",

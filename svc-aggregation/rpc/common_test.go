@@ -91,7 +91,7 @@ func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMeth
 	var connMethod agmodel.ConnectionMethod
 	if ConnectionMethodURI == "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73" {
 		connMethod.ConnectionMethodType = "Redfish"
-		connMethod.ConnectionMethodVariant = "iLO_v1.0.0"
+		connMethod.ConnectionMethodVariant = "ILO_v2.0.0"
 		return connMethod, nil
 	}
 	return connMethod, errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+ConnectionMethodURI+" found")

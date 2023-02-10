@@ -204,9 +204,14 @@
   - [Viewing the license collection](#viewing-the-license-collection)
   - [Viewing information about a license](#viewing-information-about-a-license)
   - [Installing a license](#installing-a-license)
-- [Audit logs](#audit-logs)
-- [Security logs](#security-logs)
-- [Application logs](#Application-logs)
+- [Logging information](#logging-information)
+  - [Audit logs](#audit-logs)
+  - [Security logs](#security-logs)
+  - [Application logs](#Application-logs)
+  - [Log details](#log-details)
+- [Appendix](#appendix)
+  - [Log levels](#log-levels)
+  - [Action IDs of application logs](#action-ids-of-application-logs)
 
 # Resource Aggregator for Open Distributed Infrastructure Management
 
@@ -8419,7 +8424,8 @@ curl -i GET \
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate` |
 |<strong>Description</strong> |This operation creates an update request for updating a software or a firmware component or directly updates a software or a firmware component. The first example in "Sample request body" is used to create an update request and the second one is used to directly update a software or a firmware component of servers.<br>It is performed in the background as a Redfish task. |
-|<strong>Response code</strong> |On success, `200 Ok` |
+|**Returns** |`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.<br/> Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*. |
+|<strong>Response code</strong> |On success, `202 Accepted`<br />On successful completion of the task, `200 OK` |
 |<strong>Authentication</strong> |Yes|
 
 **Usage information** 
@@ -12315,67 +12321,351 @@ curl -i -X POST \
 
 
 
-# Audit logs
+# Logging information
 
-Audit logs provide information on each API and are stored in the `api.log` file in `odimra` logs. Each log consists of a priority value, date and time of the log, hostname from which the APIs are sent, user account and role details, API request method and resource, response body, response code, and the message.
+Logs can be in syslog format or in JSON format. Set the `logFormat` parameter in your `kube_deploy_nodes.yaml` configuration file to `syslog` or `json` as required. Samples for both format are given in *Application logs* section.
+
+## Audit logs
+
+Audit logs provide information on each API and are stored in the `api.log` file in `odimra` logs. 
 
 **Sample logs**
 
 ```
-<110> 2009-11-10T23:00:00Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
+<110>1 2023-02-03T06:32:57Z 10.207.115.16:30080  svc-api  api-6fb4468885-pj9qw_7  GetSystemsCollection [process@1 processName="api-6fb4468885-pj9qw" transactionID="9ce2dc8b-be4a-421c-aabe-68558fd01ebb" actionID="001" actionName="GetSystemsCollection" threadID="0" threadName="svc-api"] [request@1  method="GET"] 10.207.115.16:30080 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems"][response@1 responseCode=200] Operation successful
 ```
 
 ```
-<107> 2009-11-10T23:00:00Z xxx.xxx.xxx.xxx [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
+<107>1 2023-02-03T06:34:54Z 10.207.115.16:30080  svc-api  api-6fb4468885-pj9qw_7  GetSystem [process@1 processName="api-6fb4468885-pj9qw" transactionID="236842a9-5a66-4b5d-b96d-62a851adee1c" actionID="002" actionName="GetSystem" threadID="0" threadName="svc-api"] [request@1  method="GET"] 10.207.115.16:30080 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems/1225"][response@1 responseCode=404] Operation failed
 ```
 
 > **Note**: <110> and <107> are priority values. <110> is the audit information log and <107> is the audit error log.
 
 
 
-# Security logs
+## Security logs
 
-Security logs provide information on the successful and failed user authentication and authorization attempts. The logs are stored in `api.log` and `account_session.log` file in `odimra` logs. Each log consists of a priority value, date and time of the log, user account and role details, and the message.
+Security logs provide information on the successful and failed user authentication and authorization attempts. The logs are stored in `api.log` and `account_session.log` file in `odimra` logs. 
 
 **Sample logs**
 
 ```
-<86> 2022-01-28T04:44:09Z [account@1 user="admin" roleID="Administrator"] Authentication/Authorization successful for session token 388281e8-4a45-45e5-862b-6b1ccfd6e6a3
+<86>1 2023-02-03T06:34:54Z clustervm  svc-account-session  account-session-854df4867d-672tz_7  <nil> [account@1 user="admin" roleID="Administrator"] Authentication/Authorization successful for session token 63277770-75a3-4ae9-afc7-078676235531 Authorization is successful
 ```
 
 ```
-<84> 2022-01-28T04:43:39Z [account@1 user="admin1" roleID="null"] Authentication failed, Invalid username or password
+<84>1 2023-02-03T06:38:46Z clustervm  svc-account-session  account-session-854df4867d-672tz_7  GetSystemsCollection [process@1 processName="account-session-854df4867d-672tz" transactionID="9d017288-9ba9-4ed5-91a4-393ab0c3bba9" actionID="001" actionName="GetSystemsCollection" threadID="0" threadName="svc-account-session"] [account@1 user="admin1" roleID=""] Authentication failed for session token  Invalid username or password
 ```
 
 <blockquote> Note: <86> and <84> are priority values. <86> is security information log and <84> is the warning log.</blockquote>
 
 
 
-# Application logs
+## Application logs
 
-Application logs provide information on all operations performed during specific times.
+Application logs provide information on operations performed during specific times. 
 
-**Sample log**
+**Sample log in JSON format**
+
+```
+{
+   "actionid":"169",
+   "actionname":"GetManager",
+   "host":"clustervm",
+   "level":"error",
+   "messageid":"GetManager",
+   "msg":"unable to get manager details : unable to get managers details: no data with the with key /redfish/v1/Managers/5c2eeb31-4008-444d-9d54-2593635a89 found",
+   "processname":"managers-74c4f5d8f8-9lpwb",
+   "procid":"managers-74c4f5d8f8-9lpwb_8",
+   "threadid":"0",
+   "threadname":"svc-managers",
+   "time":"2023-02-03T06:43:31Z",
+   "transactionid":"77cf1d03-603f-4431-ba8a-2745c90b7fe5"
+}
+```
+
+**Sample log in syslog format**
 
 ```
 <11>1 2022-12-21T07:39:49Z odim-host  svc-managers  managers-b5465c4df-fj4ss_9  GetManager [process@1 processName="managers-b5465c4df-fj4ss" transactionID="b3b66d09-f844-41bd-8b8d-957addf09b20" actionID="169" actionName="GetManager" threadID="0" threadName="svc-managers"] unable to get managers details: no data with the key /redfish/v1/Managers/386710f8-3a38-4938-a986-5f1048f487fdf found
 ```
 
-The following table lists the properties, values and description of the application logs:
+## Log details
 
-| Property      | Value (given in sample log)                                  | Description                                                  |
+The following table lists the properties, values and description of all logs in syslog format.
+
+| Property      | Value (as per the sample log in syslog format)               | Description                                                  |
 | ------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| pri           | <11>                                                         | Priority value. <br/>For the list of all priority values, see *Log levels* section in the *Resource Aggregator for ODIM Getting Started Readme*. |
+| priority      | <11>                                                         | Priority value. <br/>For the list of all priority values, see the *Log levels* section in *Appendix*. |
 | version       | 1                                                            | Version number of the syslog protocol specification.         |
 | timestamp     | 2022-12-21T07:39:49Z                                         | Date and time of the log.                                    |
 | hostName      | odim-host                                                    | Name of the host from which the syslog messages are sent.    |
 | appName       | svc-managers                                                 | Application that originated the message.                     |
-| procID        | managers                                                     | Process name or process ID associated with the syslog system. |
+| procID        | managers-b5465c4df-fj4ss_9                                   | Process name or process ID associated with the syslog system. |
 | msgID         | GetManager                                                   | Identifies the type of message.                              |
 | processName   | managers-b5465c4df-fj4ss                                     | System that originally sent the message.                     |
-| transactionID | b3b66d09-f844-41bd-8b8d-957addf09b20                         | Unique UUID for each API request.                            |
-| actionID      | 169                                                          | Unique ID for each actionName.                               |
+| transactionID | b3b66d09-f844-41bd-8b8d-957addf09b20                         | Unique ID for each API request.                              |
+| actionID      | 169                                                          | Unique ID for each actionName. <br />For the list of all actionIDs, see the *Action IDs* section in *Appendix*. |
 | actionName    | GetManager                                                   | HTTP operation performed.                                    |
 | threadID      | 0                                                            | Unique ID of the current running thread.                     |
 | threadName    | svc-managers                                                 | Name of the current running thread.                          |
 | message       | no data with the key /redfish/v1/Managers/386710f8-3a38-4938-a986-5f1048f487fdf found | Logged result message.                                       |
+
+
+
+# Appendix
+
+## Log levels
+
+Every operation in Resource Aggregator for ODIM is logged in `var/log/odimra`. Resource Aggregator for ODIM supports logs in syslog format. These logs can be of different levels and are useful in diagnosing issues. You can filter the log levels you want to view on your system by specifying the `logLevel` parameter in your `kube_deploy_nodes.yaml` configuration file. Supported values for the parameter are `panic`, `fatal`, `error`, `warn`, `info`, `debug`, `trace`.
+
+> **NOTE**: The default value for `logLevel` is `warn`.
+
+For a log level filter you specify, the relevant logs as well as the logs with its preceding priority values are displayed. For example, if you specify the `logLevel` parameter as `error`, all the `errors`, `fatals`, and `panics` are logged.
+
+| Log level | Priority value | Description                                                  |
+| --------- | -------------- | ------------------------------------------------------------ |
+| panic     | 8              | Highest level of severity.                                   |
+| fatal     | 9              | Exits even if the `logLevel` parameter is set to `panic`.    |
+| error     | 11             | Used for errors that should definitely be noted.             |
+| warn      | 12             | Non-critical entries.                                        |
+| info      | 14             | General operational entries about what's happening in the application. |
+| debug     | 15             | Usually only enabled when debugging. Verbose logging.        |
+| trace     | 15             | Designates finer-grained informational events than the debug logs. |
+
+> **Sample log**
+
+Each log consists of a priority value of the log level, date and time of the log, log level, user account details, and the log message.
+
+```
+<11> 2022-09-12T15:27:48Z error clustervm task-86c45f76df-2ht9j_8
+GetTaskStatus : Unable to read taskdata from DB: no data with the key found
+```
+
+#### Updating log levels
+
+To update an existing log level after Resource Aggregator for ODIM is installed, perform the following steps:
+
+1. Update the `logLevel` parameter in your `kube_deploy_nodes.yaml` configuration file.
+
+2. Run the following command to update log levels for all Resource Aggregator for ODIM services:
+
+   ```
+   python3 odim-controller.py --config /home/${USER}/R4H60-11016/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra
+   ```
+
+
+
+## Action IDs of application logs
+
+| Action IDs | Description                                    |
+| ---------- | ---------------------------------------------- |
+| 001        | View collection of systems                     |
+| 002        | View information of a system                   |
+| 003        | View collection of processors                  |
+| 004        | View information of a processor                |
+| 005        | View collection of memory                      |
+| 006        | View information of a memory                   |
+| 007        | View collection of network interfaces          |
+| 008        | View information of a network interface        |
+| 009        | View collection of memory domains              |
+| 010        | View collection of ethernet interfaces         |
+| 011        | View information of an ethernet interface      |
+| 012        | View collection of VLANS                       |
+| 013        | View information of a VLAN                     |
+| 014        | View information about a secure boot           |
+| 015        | View collection of boot options                |
+| 016        | View information of a boot option              |
+| 017        | View collection of log services                |
+| 018        | View information of a log service              |
+| 019        | View collection of entries                     |
+| 020        | View information of an entry                   |
+| 021        | Clear the log                                  |
+| 022        | Change boot order settings                     |
+| 023        | View information of a PCIe device              |
+| 024        | View information of task service               |
+| 025        | View collection of tasks                       |
+| 026        | View status of a task                          |
+| 027        | View collection of subtasks                    |
+| 028        | View information of  a subtask                 |
+| 029        | Delete an existing task                        |
+| 030        | View all user roles                            |
+| 031        | View information of a user role                |
+| 032        | Update information for an existing user role   |
+| 032        | Delete a user role                             |
+| 034        | View account service                           |
+| 035        | View all user accounts                         |
+| 036        | View information of a user account             |
+| 037        | Create a user account                          |
+| 038        | Update a user account                          |
+| 039        | Delete a user account                          |
+| 040        | View session service                           |
+| 041        | View all active sessions                       |
+| 042        | View information of a session                  |
+| 043        | Create a session                               |
+| 044        | Delete a session                               |
+| 045        | View collection of registry files              |
+| 046        | View message registry file ID                  |
+| 047        | View Redfish version                           |
+| 048        | View service root                              |
+| 049        | View odata                                     |
+| 050        | View metadata                                  |
+| 051        | View task monitor                              |
+| 052        | View BIOS details                              |
+| 053        | View BIOS settings                             |
+| 054        | Change BIOS settings                           |
+| 055        | View collection of storages                    |
+| 056        | View information of a storage                  |
+| 057        | View information of a drive                    |
+| 058        | View collection of controllers                 |
+| 059        | View information of a system controller        |
+| 060        | View collection of ports                       |
+| 061        | View information of a system port              |
+| 062        | View collection of volumes                     |
+| 063        | Create a volume                                |
+| 064        | View volume capabilities                       |
+| 065        | Delete a volume                                |
+| 066        | View information of a volume                   |
+| 067        | View collection of storage pools               |
+| 068        | View information of a storage pool             |
+| 069        | View collection of allocated volumes           |
+| 070        | View information of an allocated volume        |
+| 071        | View collection of providing volumes           |
+| 072        | View information of a providing volume         |
+| 073        | View collection of providing drives            |
+| 074        | View information of a providing drive          |
+| 075        | Reset computer system                          |
+| 076        | Set default boot order                         |
+| 077        | View aggregation service                       |
+| 078        | View reset action information service          |
+| 079        | View set default boot order action information |
+| 080        | Create aggregation service reset               |
+| 081        | Create default boot order                      |
+| 082        | Add an aggregation source                      |
+| 083        | View all aggregation sources                   |
+| 084        | View information of an aggregation source      |
+| 085        | Update an aggregation source                   |
+| 086        | Delete an aggregation source                   |
+| 087        | View all connection methods                    |
+| 088        | View information of a connection method        |
+| 089        | View collection of aggregates                  |
+| 090        | Create an aggregate                            |
+| 100        | View information of an aggregate               |
+| 101        | Delete an aggregate                            |
+| 102        | Add elements to an aggregate                   |
+| 103        | Remove elements from an aggregate              |
+| 104        | Reset aggregate elements                       |
+| 105        | Set default boot order for aggregate elements  |
+| 106        | View collection of chassis                     |
+| 107        | Create a chassis                               |
+| 108        | View information of a chassis                  |
+| 109        | Update a chassis                               |
+| 110        | Delete a chassis                               |
+| 111        | View all network adapters                      |
+| 112        | View information of a network adapter          |
+| 113        | View all network device functions              |
+| 114        | View functions of a network device             |
+| 115        | View all network ports                         |
+| 116        | View information of a network port             |
+| 117        | View chassis assembly                          |
+| 118        | View all PCIe slots                            |
+| 119        | View information of a PCIe slot                |
+| 120        | View all PCIe devices                          |
+| 121        | View information of a PCIe device              |
+| 122        | View all PCIe functions                        |
+| 123        | View information of a PCIe functions           |
+| 124        | View all sensors                               |
+| 125        | View information of a sensor                   |
+| 126        | View all log services                          |
+| 127        | View information of a log service              |
+| 128        | View all entries                               |
+| 129        | View information of an entry                   |
+| 130        | View chassis power                             |
+| 131        | View power control                             |
+| 132        | View power supplies                            |
+| 133        | View redundancy                                |
+| 134        | View chassis thermal                           |
+| 135        | View a chassis fan                             |
+| 136        | View a chassis temperature                     |
+| 137        | View event service                             |
+| 138        | View collection of event subscriptions         |
+| 139        | View information of a event subscription       |
+| 140        | Create an event subscription                   |
+| 141        | Submit test event                              |
+| 142        | Delete an event subscription                   |
+| 143        | View collection of fabrics                     |
+| 144        | View information of a fabric                   |
+| 145        | View collection of fabric switches             |
+| 146        | View information of a fabric switch            |
+| 147        | View collection of switch ports                |
+| 148        | View information of a switch port              |
+| 149        | View collection of fabric zones                |
+| 150        | View collection of fabric endpoints            |
+| 151        | View collection of fabric address pools        |
+| 152        | View information of a fabric address pool      |
+| 153        | Verify and update a fabric address pool        |
+| 154        | Create a fabric address pool                   |
+| 155        | Update a fabric address pool                   |
+| 156        | Delete a fabric address pool                   |
+| 157        | View a fabric zone                             |
+| 158        | Verify an update a fabric zone                 |
+| 159        | Create a fabric zone                           |
+| 160        | Update a fabric zone                           |
+| 161        | Delete a fabric zone                           |
+| 162        | View a fabric endpoint                         |
+| 163        | Verify and update a fabric endpoint            |
+| 164        | Create a fabric endpoint                       |
+| 165        | Update a fabric endpoint                       |
+| 166        | Delete a fabric endpoint                       |
+| 167        | Update a fabric port                           |
+| 168        | View collection of managers                    |
+| 169        | View information of a manager                  |
+| 170        | View all ethernet interfaces                   |
+| 171        | View information of an ethernet interface      |
+| 172        | View all network protocols                     |
+| 173        | View information of a network protocol         |
+| 174        | View all host interfaces                       |
+| 175        | View information of a host interface           |
+| 176        | View all serial interfaces                     |
+| 177        | View information of a serial interface         |
+| 178        | View all virtual media                         |
+| 179        | View information of a virtual media            |
+| 180        | Insert a virtual media                         |
+| 181        | Eject a virtual media                          |
+| 182        | View all log services                          |
+| 183        | View information of a log service              |
+| 184        | View all log service entries                   |
+| 185        | View information of a log service entry        |
+| 186        | Clear log of a log service                     |
+| 187        | View remote account service                    |
+| 188        | View all manager accounts                      |
+| 189        | View information of a manager account          |
+| 190        | Create a manager account                       |
+| 191        | Update a manager account                       |
+| 192        | Delete a manager account                       |
+| 193        | View all manager roles                         |
+| 194        | View information of a manager role             |
+| 195        | View update service                            |
+| 196        | Create a simple update                         |
+| 197        | Start an update                                |
+| 198        | View firmware inventory collection             |
+| 199        | View information of a firmware inventory       |
+| 200        | View software inventory collection             |
+| 201        | View information of a software inventory       |
+| 202        | View telemetry service                         |
+| 203        | View collection of metric definitions          |
+| 204        | View collection of metric report definitions   |
+| 205        | View collection of metric reports              |
+| 206        | View collection of triggers                    |
+| 207        | View information of a metric definition        |
+| 208        | View information of a metric report definition |
+| 209        | View information of a metric report            |
+| 210        | View a trigger                                 |
+| 211        | Update a trigger                               |
+| 212        | View license service                           |
+| 213        | View collection of licenses                    |
+| 214        | View information of a license resource         |
+| 215        | Install a license service                      |
+
+
+

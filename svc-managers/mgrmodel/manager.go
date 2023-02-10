@@ -185,7 +185,7 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 	}
 	keysArray, err := conn.GetAllDetails(table)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get all keys from table - %v: %v", table, err.Error())
+		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
 	}
 	return keysArray, nil
 }
@@ -200,7 +200,7 @@ func GetManagerByURL(url string) (string, *errors.Error) {
 	}
 	managerData, err := conn.Read("Managers", url)
 	if err != nil {
-		return "", errors.PackError(err.ErrNo(), "unable to get managers details: ", err.Error())
+		return "", errors.PackError(err.ErrNo(), "error while trying to get managers details: ", err.Error())
 	}
 	if errs := json.Unmarshal([]byte(managerData), &manager); errs != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
@@ -212,14 +212,14 @@ func GetManagerByURL(url string) (string, *errors.Error) {
 func UpdateData(key string, updateData map[string]interface{}, table string) error {
 	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
-		return fmt.Errorf("unable to connect DB: %v", err)
+		return fmt.Errorf("error trying to connect DB: %v", err)
 	}
 	data, jerr := MarshalFunc(updateData)
 	if jerr != nil {
-		return fmt.Errorf("unable to marshal data for updating: %v", jerr)
+		return fmt.Errorf("error trying to marshal data for updating: %v", jerr)
 	}
 	if _, err = conn.Update(table, key, string(data)); err != nil {
-		return fmt.Errorf("unable to update details in DB: %v", err)
+		return fmt.Errorf("error trying to update details in DB: %v", err)
 	}
 	return nil
 }
@@ -229,7 +229,7 @@ func GenericSave(body []byte, table string, key string) error {
 
 	connPool, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
-		return fmt.Errorf("unable to connect DB: %v", err.Error())
+		return fmt.Errorf("error trying to connect DB: %v", err.Error())
 	}
 	if err := connPool.Create(table, key, string(body)); err != nil {
 		return fmt.Errorf("%v", err)
@@ -242,11 +242,11 @@ func AddManagertoDB(mgr RAManager) error {
 	key := "/redfish/v1/Managers/" + mgr.UUID
 	data, err := MarshalFunc(mgr)
 	if err != nil {
-		return fmt.Errorf("unable to marshal manager data: %v", err)
+		return fmt.Errorf("error trying to marshal manager data: %v", err)
 	}
 	connPool, connErr := GetDBConnectionFunc(common.InMemory)
 	if connErr != nil {
-		return fmt.Errorf("unable to connect DB: %v", connErr.Error())
+		return fmt.Errorf("error trying to connect DB: %v", connErr.Error())
 	}
 	if err := connPool.AddResourceData("Managers", key, string(data)); err != nil {
 		return fmt.Errorf("%v", err.Error())

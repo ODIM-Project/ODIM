@@ -271,7 +271,7 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	}
 	err = agmodel.SaveBMCInventory(h.InventoryData)
 	if err != nil {
-		errorMessage := "GenericSave : error while trying to add resource date to DB: " + err.Error()
+		errorMessage := "GenericSave : error while trying to add resource data to DB: " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil), "", nil

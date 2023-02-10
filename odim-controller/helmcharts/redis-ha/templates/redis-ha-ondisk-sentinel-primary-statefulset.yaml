@@ -1,0 +1,128 @@
+apiVersion: apps/v1 
+kind: StatefulSet
+metadata:
+  name: redis-ha-ondisk-sentinel-primary
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: redis-ha-ondisk-sentinel
+  annotations:
+    secret.reloader.stakater.com/reload: "odimra-secret"
+spec:
+  replicas: 1
+  serviceName: redis-ha-ondisk-sentinel-headless
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: OrderedReady
+  selector:
+    matchLabels:
+      app: redis-ha-ondisk-sentinel
+      role: node
+  template:
+    metadata:
+      labels:
+        app: redis-ha-ondisk-sentinel
+        role: node
+    spec:
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-ha-ondisk-data-claim
+        - name: odimra-secret
+          secret:
+            secretName: odimra-secret
+            items:
+            - key: rootCAcrt
+              path: rootCA.crt
+              mode: 0444
+            - key: odimra_servercrt
+              path: odimra_server.crt
+              mode: 0444
+            - key: odimra_serverkey
+              path: odimra_server.key
+              mode: 0444
+            - key: odimra_rsapublic
+              path: odimra_rsa.public
+              mode: 0444
+            - key: odimra_rsaprivate
+              path: odimra_rsa.private
+              mode: 0444
+            - key: redis_inmemory_password
+              path: redis_inmemory_password
+              mode: 0444
+            - key: redis_ondisk_password
+              path: redis_ondisk_password
+              mode: 0444
+            {{- if eq .Values.odimra.messageBusType "Kafka" }}
+            - key: odimra_kafka_clientcrt
+              path: odimra_kafka_client.crt
+              mode: 0444
+            - key: odimra_kafka_clientkey
+              path: odimra_kafka_client.key
+              mode: 0444
+            {{- end }}
+
+      restartPolicy: Always
+      securityContext:
+        fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/control-plane"
+                operator: Exists
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: "app"
+                  operator: In
+                  values:
+                  - redis-ha-ondisk-sentinel
+            topologyKey: "kubernetes.io/hostname"
+
+      containers: 
+      - name: sentinel
+        image: {{ .Values.odimra.imageRegistryAddress| default  }}redis:{{ .Values.odimra.redisImageTag }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 26379
+
+        volumeMounts:
+          - name: odimra-secret
+            mountPath: /etc/odimra_certs
+
+        env:
+        - name: SENTINEL
+          value: "true"
+        - name: MASTER_HOST_NAME
+          value: "redis-ha-ondisk-primary-0.redis-ha-ondisk-headless.odim.svc.cluster.local"
+        - name: TLS_CERT_FILE
+          value: "/etc/odimra_certs/odimra_server.crt"
+        - name: TLS_KEY_FILE
+          value: "/etc/odimra_certs/odimra_server.key"
+        - name: TLS_CA_CERT_FILE
+          value: "/etc/odimra_certs/rootCA.crt"
+        - name: REDIS_HA_REDIS_SERVICE_HOST 
+          value: "redis-ha-ondisk.{{ .Values.odimra.namespace }}.svc.cluster.local"
+        - name: REDIS_HA_REDIS_SERVICE_PORT
+          value: "6379"
+        - name: REDIS_DEFAULT_PASSWORD 
+          value: {{ .Values.odimra.redisOnDiskPassword }}
+        - name: ODIMRA_RSA_PRIVATE_FILE
+          value: "/etc/odimra_certs/odimra_rsa.private"
+        - name: REDIS_HA_SENTINEL_SERVICE_PORT
+          value: "26379"
+        - name: REDIS_HA_SENTINEL_SERVICE_HOST
+          value: "redis-ha-ondisk-sentinel.{{ .Values.odimra.namespace }}.svc.cluster.local"
+        - name: REDIS_MASTER_SET
+          value: {{ .Values.odimra.redisMasterSet | quote }} 
+        - name: DOWN_AFTER_MILLISECONDS
+          value: {{ .Values.odimra.redisDownAfterMilliseconds | quote }} 
+        - name: FAILOVER_TIMEOUT
+          value: {{ .Values.odimra.redisFailoverTimeout | quote }} 
+        - name: PARALLEL_SYNCS
+          value: {{ .Values.odimra.redisParallelSyncs | quote }}
+        - name: SENTINEL_QUORUM 
+          value: {{ .Values.odimra.redisQuorum | quote }}

@@ -1310,7 +1310,7 @@ func TestConnectionMethod(t *testing.T) {
 	connectionMethodURI := "/redfish/v1/AggregationService/ConnectionMethods/a418caec-8791-45ac-8c67-38d8de751cec"
 	req := ConnectionMethod{
 		ConnectionMethodType:    "Redfish",
-		ConnectionMethodVariant: "Compute:BasicAuth:DELL_v1.0.0",
+		ConnectionMethodVariant: "Compute:BasicAuth:DELL_v2.0.0",
 		Links: Links{
 			[]OdataID{
 				{"/redfish/v1/AggregationService/AggregationSources/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},

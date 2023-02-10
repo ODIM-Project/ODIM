@@ -121,7 +121,7 @@ func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) response.
 	if StringEqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		token := GetPluginTokenFunc(ctx, contactRequest)
 		if token == "" {
-			var errorMessage = "error: Unable to create session with plugin " + plugin.ID
+			var errorMessage = "error while trying to create session with plugin " + plugin.ID
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
 		}
 		contactRequest.Token = token
@@ -159,6 +159,8 @@ func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) response.
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("Outgoing device communication response to northbound: %s", string(respBody))
 	return resp
 }
 
@@ -181,7 +183,7 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) (st
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		token := GetPluginToken(ctx, contactRequest)
 		if token == "" {
-			var errorMessage = "error: Unable to create session with plugin " + plugin.ID
+			var errorMessage = "error while trying to create session with plugin " + plugin.ID
 			return "", fmt.Errorf(errorMessage)
 		}
 

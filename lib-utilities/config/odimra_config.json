@@ -30,6 +30,8 @@
 	   "MaxIdleConns": 10,
 	   "MaxActiveConns": 120,
 	   "RedisHAEnabled": false,
+	   "InMemorySentinelHost":"localhost",
+	   "OnDiskSentinelHost":"localhost",
 	   "InMemorySentinelPort": "26379",
 	   "OnDiskSentinelPort": "26379",
 	   "InMemoryPrimarySet": "redisSentinel",
@@ -133,11 +135,11 @@
 	"ConnectionMethodConf": [
 	   {
 		  "ConnectionMethodType": "Redfish",
-		  "ConnectionMethodVariant": "Compute:BasicAuth:GRF_v1.0.0"
+		  "ConnectionMethodVariant": "Compute:BasicAuth:GRF_v2.0.0"
 	   },
 	   {
 		  "ConnectionMethodType": "Redfish",
-		  "ConnectionMethodVariant":"Compute:BasicAuth:URP_v1.0.0"
+		  "ConnectionMethodVariant":"Compute:BasicAuth:URP_v2.0.0"
 	  }
   ],
   "EventConf": {

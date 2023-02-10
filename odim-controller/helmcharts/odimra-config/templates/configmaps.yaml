@@ -42,6 +42,8 @@ data:
                 {{ else }}
                 "InMemoryHost": "redis-ha-inmemory",
                 "OnDiskHost": "redis-ha-ondisk",
+                "InMemorySentinelHost": "redis-ha-inmemory-sentinel",
+                "OnDiskSentinelHost": "redis-ha-ondisk-sentinel",
                 "InMemoryPrimarySet": "primaryset",
                 "OnDiskPrimarySet": "primaryset",
                 {{ end }}

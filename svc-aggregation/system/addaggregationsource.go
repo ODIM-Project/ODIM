@@ -43,7 +43,7 @@ func (e *ExternalInterface) AddAggregationSource(ctx context.Context, taskID str
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 	// parsing the request
 	var aggregationSourceRequest AggregationSource
 	err = json.Unmarshal(req.RequestBody, &aggregationSourceRequest)

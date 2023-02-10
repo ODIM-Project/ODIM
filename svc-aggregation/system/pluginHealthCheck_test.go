@@ -141,9 +141,9 @@ func Test_sendPluginStartupRequest(t *testing.T) {
 	var startUpData1 interface{}
 	_, err := sendPluginStartupRequest(ctx, agmodel.Plugin{}, startUpData1, "")
 	assert.NotNil(t, err, "There should be error")
-	_, err = sendPluginStartupRequest(ctx, agmodel.Plugin{}, startUpData1, "ILO_v1.0.0")
+	_, err = sendPluginStartupRequest(ctx, agmodel.Plugin{}, startUpData1, "ILO_v2.0.0")
 	assert.NotNil(t, err, "There should be error")
-	_, err = sendPluginStartupRequest(ctx, agmodel.Plugin{}, startUpData, "ILO_v1.0.0")
+	_, err = sendPluginStartupRequest(ctx, agmodel.Plugin{}, startUpData, "ILO_v2.0.0")
 	assert.NotNil(t, err, "There should be error")
 
 }
@@ -190,8 +190,8 @@ func Test_sharePluginInventory(t *testing.T) {
 	ctx := mockContext()
 	sharePluginInventory(ctx, agmodel.Plugin{}, false, "")
 
-	sharePluginInventory(ctx, agmodel.Plugin{}, false, "ILO_v1.0.0")
-	sharePluginInventory(ctx, agmodel.Plugin{}, true, "ILO_v1.0.0")
+	sharePluginInventory(ctx, agmodel.Plugin{}, false, "ILO_v2.0.0")
+	sharePluginInventory(ctx, agmodel.Plugin{}, true, "ILO_v2.0.0")
 }
 
 func TestSendPluginStartUpData(t *testing.T) {

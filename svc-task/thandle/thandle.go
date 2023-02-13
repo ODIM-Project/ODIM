@@ -26,6 +26,7 @@ import (
 	"sync"
 	"time"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
@@ -1155,32 +1156,75 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 }
 
 func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
-	event := data.(common.TaskEvent)
-	pluginTask, err := tmodel.GetPluginTaskInfo(event.TaskID)
+	event := data.(dmtf.EventRecord)
+	taskID := event.OriginOfCondition.Oid
+
+	pluginTask, err := tmodel.GetPluginTaskInfo(taskID)
 	if err != nil {
 		l.Log.Error("error while processing task event", err.Error())
 		return false
 	}
 
-	l.Log.Debugf("Received task event from plugin for odim task %s, "+
-		"plugin taskID: %s, taskState: %s, taskStatus: %s, percentComplete: %d"+
-		"status code: %d: response body: %s, end time: %v",
-		pluginTask.OdimTaskID, event.TaskID, event.TaskState, event.TaskStatus,
-		event.PercentComplete, event.StatusCode, string(event.ResponseBody),
-		event.EndTime)
-
-	payLoad := &taskproto.Payload{
-		StatusCode:   event.StatusCode,
-		ResponseBody: event.ResponseBody,
+	messageID := event.MessageID
+	var message string
+	if strings.HasPrefix(messageID, common.TaskEventType) {
+		res := strings.Split(messageID, common.TaskEventType+".")
+		message = res[1]
 	}
 
+	if message == "" {
+		l.Log.Errorf("Got invalid messageID for task event with task ID %s",
+			taskID)
+		return false
+	}
+
+	taskState := tcommon.TaskStatusMap[message]
+	taskStatus := event.Severity
+
+	var percentComplete int32
+	switch taskState {
+	case dmtf.TaskStateStarting:
+		percentComplete = 0
+	case dmtf.TaskStateRunning:
+		pc, err := strconv.ParseInt(event.MessageArgs[1], 10, 64)
+		if err != nil {
+			return false
+		}
+		percentComplete = int32(pc)
+	case dmtf.TaskStateCompleted, dmtf.TaskStateCancelled,
+		dmtf.TaskStateSuspended, dmtf.TaskStateInterrupted,
+		dmtf.TaskStateKilled, dmtf.TaskStateException:
+		percentComplete = 100
+	}
+
+	statusCode := tcommon.GetStatusCode(taskState, taskStatus)
+	timestamp, err := time.Parse(time.RFC3339, event.EventTimestamp)
+	if err != nil {
+		timestamp = time.Now()
+	}
+
+	resp := tcommon.GetTaskResponse(statusCode, message)
+	body, _ := json.Marshal(resp.Body)
+
+	payLoad := &taskproto.Payload{
+		StatusCode:   int32(statusCode),
+		ResponseBody: body,
+	}
+
+	l.Log.Debugf("Received task event from plugin for odim task %s, "+
+		"plugin taskID: %s, taskState: %s, taskStatus: %s, percentComplete: %d, "+
+		"status code: %d: response body: %s, end time: %v",
+		pluginTask.OdimTaskID, taskID, taskState, taskStatus,
+		percentComplete, statusCode, string(body), timestamp)
+
 	err = ts.updateTaskUtil(context.TODO(), pluginTask.OdimTaskID,
-		event.TaskState, event.TaskStatus, event.PercentComplete,
-		payLoad, event.EndTime)
+		string(taskState), taskStatus, percentComplete,
+		payLoad, timestamp)
 	if err != nil {
 		l.Log.Error("failed to update task: error while updating task: " +
 			err.Error())
 		return false
 	}
-	return true
+
+	return false
 }

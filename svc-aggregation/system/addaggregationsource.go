@@ -210,7 +210,6 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 	}
 	resp.StatusCode = http.StatusCreated
 	percentComplete = 100
-
 	task := fillTaskData(taskID, targetURI, reqBody, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(ctx, task)
 	return resp

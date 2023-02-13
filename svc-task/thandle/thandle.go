@@ -941,6 +941,13 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 	if err != nil {
 		return fmt.Errorf("error while retrieving the task details from db: " + err.Error())
 	}
+
+	if task.PercentComplete > percentComplete {
+		return fmt.Errorf("The task with id %s is already updated with %d percent complete."+
+			"skipping the update request with the percent complete %d", taskID,
+			task.PercentComplete, percentComplete)
+	}
+
 	//If the task is already in cancelled state, then updates are not allowed to it.
 	if task.TaskState == common.Cancelled {
 		return fmt.Errorf(common.Cancelled)
@@ -1145,4 +1152,35 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 		ts.PublishToMessageBus(ctx, task.URI, taskEvenMessageID, eventType, taskMessage)
 	}
 	return err
+}
+
+func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
+	event := data.(common.TaskEvent)
+	pluginTask, err := tmodel.GetPluginTaskInfo(event.TaskID)
+	if err != nil {
+		l.Log.Error("error while processing task event", err.Error())
+		return false
+	}
+
+	l.Log.Debugf("Received task event from plugin for odim task %s, "+
+		"plugin taskID: %s, taskState: %s, taskStatus: %s, percentComplete: %d"+
+		"status code: %d: response body: %s, end time: %v",
+		pluginTask.OdimTaskID, event.TaskID, event.TaskState, event.TaskStatus,
+		event.PercentComplete, event.StatusCode, string(event.ResponseBody),
+		event.EndTime)
+
+	payLoad := &taskproto.Payload{
+		StatusCode:   event.StatusCode,
+		ResponseBody: event.ResponseBody,
+	}
+
+	err = ts.updateTaskUtil(context.TODO(), pluginTask.OdimTaskID,
+		event.TaskState, event.TaskStatus, event.PercentComplete,
+		payLoad, event.EndTime)
+	if err != nil {
+		l.Log.Error("failed to update task: error while updating task: " +
+			err.Error())
+		return false
+	}
+	return true
 }

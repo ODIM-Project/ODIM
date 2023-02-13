@@ -160,7 +160,7 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
+		_, token, _, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -179,7 +179,7 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s/Storage/%s/Volumes", requestData[1], req.StorageInstance)
 
-	body, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating a volume: ")
+	body, _, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating a volume: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
@@ -443,7 +443,7 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
+		_, token, _, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -467,7 +467,7 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s/Storage/%s/Volumes/%s", requestData[1], req.StorageInstance, req.VolumeID)
 
-	body, _, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while deleting a volume: ")
+	body, _, _, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while deleting a volume: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)

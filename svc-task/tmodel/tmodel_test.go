@@ -24,6 +24,7 @@ import (
 	db "github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/satori/uuid"
 	"golang.org/x/crypto/sha3"
 )
@@ -488,4 +489,76 @@ func mockContext() context.Context {
 	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
 	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	return ctx
+}
+
+func mockPluginTaskInDB(odimTaskID string, pluginTaskMon string) error {
+	table := "PluginTask"
+	taskData := &common.PluginTask{
+		IP:               "127.0.0.1",
+		OdimTaskID:       odimTaskID,
+		PluginTaskMonURL: pluginTaskMon,
+	}
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to connecting"+
+			" to DB: ", err.Error())
+	}
+
+	if err = connPool.Create(table, pluginTaskMon, taskData); err != nil {
+		return errors.PackError(err.ErrNo(), "error wlhile trying to insert"+
+			" plugin task: ", err.Error())
+	}
+	return nil
+}
+
+func TestGetPluginTaskInfo(t *testing.T) {
+	defer flushDB(t)
+	err := config.SetUpMockConfig(t)
+	if err != nil {
+		t.Fatalf("fatal: error while trying to collect mock db config: %v", err)
+		return
+	}
+
+	odimTaskID := "task" + uuid.NewV4().String()
+	pluginTaskID := "task" + uuid.NewV4().String()
+	err = mockPluginTaskInDB(odimTaskID, pluginTaskID)
+	if err != nil {
+		t.Fatalf("fatal: error while trying to insert plugin task data in DB: %v", err)
+		return
+	}
+
+	type args struct {
+		taskID string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    common.PluginTask
+		wantErr bool
+	}{
+		{
+
+			name: "get plugin task info from db",
+			args: args{
+				taskID: pluginTaskID,
+			},
+			want: common.PluginTask{
+				IP:               "127.0.0.1",
+				OdimTaskID:       odimTaskID,
+				PluginTaskMonURL: pluginTaskID,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetPluginTaskInfo(tt.args.taskID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetPluginTaskInfo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(*got, tt.want) {
+				t.Errorf("GetPluginTaskInfo() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

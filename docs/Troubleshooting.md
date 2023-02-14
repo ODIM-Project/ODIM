@@ -197,7 +197,7 @@ ansible_find_payload.zip/ansible/modules/files/find.py\", line 409, in main
 
 The error is displayed if the `odimPluginPath` parameter has invalid or null value. Perform the following steps:
 
-1. Navigate to the kube_deploy_nodes.yaml file.
+1. Navigate to the `kube_deploy_nodes.yaml` file.
 2. Specify a valid value for `odimPluginPath`, else specify its value as "" (empty double quotation marks).
 
 ------
@@ -209,7 +209,7 @@ The error is displayed if the `odimPluginPath` parameter has invalid or null val
 
 The error is displayed if the `httpProxy`, `httpsProxy` and `noProxy` parameters have invalid or null values. Perform the following steps:
 
-1. Navigate to the kube_deploy_nodes.yaml file.
+1. Navigate to the `kube_deploy_nodes.yaml` file.
 2. Specify valid values for `httpProxy`, `httpsProxy` and `noProxy`, else specify their respective values as `""` (empty double quotation marks).
 
 ------
@@ -249,7 +249,7 @@ generation failed`**
 
 The error is displayed if the `odimraServerCertIPSan` and `odimraKafkaClientCertIPSan` parameters have invalid or null values. Perform the following steps:
 
-1. Navigate to the kube_deploy_nodes.yaml file.
+1. Navigate to the `kube_deploy_nodes.yaml` file.
 2. Specify valid values for `odimraServerCertIPSan` and `odimraKafkaClientCertIPSan`, else specify
    both their values as `""` (empty double quotation marks).
 
@@ -433,5 +433,5 @@ Navigate to the default log path `/var/log/<plugin>` or to the path specified in
 
    `python3 odim-controller.py --deploy \<br/> odimra --config /home/${USER}/ODIM/odim-controller/\<br/>scripts/kube_deploy_nodes.yaml`
 
-<blockquote>NOTE: Verify the content and the formatting of the content in the `kube_deploy_nodes.yaml` configuration file. Formatting in the `kube_deploy_nodes.yaml.tmpl` file provided must be copied and retained.</blockquote>
+>NOTE: Verify the content and the formatting of the content in the `kube_deploy_nodes.yaml` configuration file. Formatting in the `kube_deploy_nodes.yaml.tmpl` file provided must be copied and retained.
 

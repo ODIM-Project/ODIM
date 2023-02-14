@@ -33,7 +33,7 @@ The troubleshooting information is listed in the form of Questions and Answers. 
 
 
 
-# Troubleshooting Information
+# Troubleshooting information
 
 This section covers issues you might experience while deploying or using Resource Aggregator for ODIM, and provides solutions or workarounds to resolve the issues. 
 
@@ -303,7 +303,7 @@ The error is displayed if the `odimraServerCertIPSan` and `odimraKafkaClientCert
 
 
 
-## Frequently Asked Questions
+## Frequently asked questions
 
 **1. How do I know if the User ID in the configuration file already exists?**
 

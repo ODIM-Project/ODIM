@@ -1,3 +1,19 @@
+[![build_deploy_test Actions Status](https://github.com/ODIM-Project/ODIM/workflows/build_deploy_test/badge.svg)
+![build_unittest Actions Status](https://github.com/ODIM-Project/ODIM/workflows/build_unittest/badge.svg)](https://github.com/ODIM-Project/ODIM/actions)
+
+# Table of contents
+
+[Introduction](#introduction)
+
+- [About the document](#About-the-document)
+- [Conventions used in the document](#Conventions-used-in-the-document)
+
+[Troubleshooting information](#Troubleshooting-information)
+
+[Frequently Asked Questions](#Frequently-Asked-Questions)
+
+
+
 # Introduction
 
 Organizations today are highly dependent on the manageability of their converged infrastructure, especially as they move towards increasingly complex environments that include multiple remote servers, data storage devices, networking equipment, third-party applications and so on. 
@@ -11,9 +27,11 @@ This document helps you troubleshoot any common issues you might experience whil
 - *[Resource Aggregator for ODIM Getting Started Readme](https://github.com/ODIM-Project/ODIM/blob/development/README.md)* — This document mainly provides instructions for deploying Resource Aggregator for ODIM and the supported plugins, and covers few typical product use cases.
 - *[Resource Aggregator for ODIM API Readme](https://github.com/ODIM-Project/ODIM/blob/development/docs/README.md)* — This document provides detailed information on all the supported APIs of Resource Aggregator for ODIM.
 
-## Conventions
+## Conventions used in the document
 
 The troubleshooting information is listed in the form of Questions and Answers. Questions and the associated error messages are in **bold** font. Solutions and workarounds are in the regular font.
+
+
 
 # Troubleshooting Information
 

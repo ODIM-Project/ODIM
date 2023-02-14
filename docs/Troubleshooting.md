@@ -8,18 +8,18 @@ Resource Aggregator for Open Distributed Infrastructure Management \(ODIM™\) i
 
 This document helps you troubleshoot any common issues you might experience while deploying or using Resource Aggregator for ODIM. Along with this document, Resource Aggregator for ODIM is shipped with the following comprehensive set of electronic documentation:
 
-- **Resource Aggregator for ODIM Getting Started Readme** — This document mainly provides instructions for deploying Resource Aggregator for ODIM and the supported plugins, and covers few typical product use cases.
-- **Resource Aggregator for ODIM API Readme** — This document provides detailed information on all the supported APIs of Resource Aggregator for ODIM.
+- *[Resource Aggregator for ODIM Getting Started Readme](https://github.com/ODIM-Project/ODIM/blob/development/README.md)* — This document mainly provides instructions for deploying Resource Aggregator for ODIM and the supported plugins, and covers few typical product use cases.
+- *[Resource Aggregator for ODIM API Readme](https://github.com/ODIM-Project/ODIM/blob/development/docs/README.md)* — This document provides detailed information on all the supported APIs of Resource Aggregator for ODIM.
 
 ## Conventions
 
-The troubleshooting information is listed in the form of Questions and Answers. You can also find some of the Frequently Asked Questions in this document.
-
-Questions and the associated error messages are in **bold** font. Solutions are in the regular font.
+The troubleshooting information is listed in the form of Questions and Answers. Questions and the associated error messages are in **bold** font. Solutions and workarounds are in the regular font.
 
 # Troubleshooting Information
 
-This section covers issues you might experience while deploying or using Resource Aggregator for ODIM, and provides suggestions for resolving these issues. You will also find answers to some of the Frequently Asked Questions.
+This section covers issues you might experience while deploying or using Resource Aggregator for ODIM, and provides solutions or workarounds to resolve the issues. 
+
+You can also find answers to some of the Frequently Asked Questions related to Resource Aggregator for ODIM.
 
 
 ------
@@ -46,7 +46,7 @@ This section covers issues you might experience while deploying or using Resourc
 
 Your server encounters unexpected conditions that can prevent it from fulfilling requests due to temporary overloading, session timeout, or any unforeseen reasons.
 
-   1. Run the following command on the master node to verify all deployed services are running successfully:
+   1. Run the following command on the primary node to verify all deployed services are running successfully:
       `kubectl get pods -n odim -o wide`
       
    2. Navigate to the configured ODIMRA log path and the plugin log path for each server and check the latest logs for any errors.
@@ -285,7 +285,7 @@ The error is displayed if the `odimraServerCertIPSan` and `odimraKafkaClientCert
 
 
 
-## Other Frequently Asked Questions
+## Frequently Asked Questions
 
 **1. How do I know if the User ID in the configuration file already exists?**
 
@@ -405,7 +405,7 @@ Navigate to the default log path `/var/log/<plugin>` or to the path specified in
 
 **9. How do I check the logs of third party services (Kafka, Zookeeper, Redis, etcd)?**
 
-1. On the master node, run the following command to get the name of the pod:
+1. On the primary node, run the following command to get the name of the pod:
 
    ```
    kubectl get pods -n odim -o wide

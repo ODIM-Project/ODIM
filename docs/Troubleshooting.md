@@ -1,3 +1,19 @@
+[![build_deploy_test Actions Status](https://github.com/ODIM-Project/ODIM/workflows/build_deploy_test/badge.svg)
+![build_unittest Actions Status](https://github.com/ODIM-Project/ODIM/workflows/build_unittest/badge.svg)](https://github.com/ODIM-Project/ODIM/actions)
+
+# Table of contents
+
+[Introduction](#introduction)
+
+- [About the document](#About-the-document)
+- [Conventions used in the document](#Conventions-used-in-the-document)
+
+[Troubleshooting information](#Troubleshooting-information)
+
+[Frequently Asked Questions](#Frequently-Asked-Questions)
+
+
+
 # Introduction
 
 Organizations today are highly dependent on the manageability of their converged infrastructure, especially as they move towards increasingly complex environments that include multiple remote servers, data storage devices, networking equipment, third-party applications and so on. 
@@ -8,18 +24,20 @@ Resource Aggregator for Open Distributed Infrastructure Management \(ODIM™\) i
 
 This document helps you troubleshoot any common issues you might experience while deploying or using Resource Aggregator for ODIM. Along with this document, Resource Aggregator for ODIM is shipped with the following comprehensive set of electronic documentation:
 
-- **Resource Aggregator for ODIM Getting Started Readme** — This document mainly provides instructions for deploying Resource Aggregator for ODIM and the supported plugins, and covers few typical product use cases.
-- **Resource Aggregator for ODIM API Readme** — This document provides detailed information on all the supported APIs of Resource Aggregator for ODIM.
+- *[Resource Aggregator for ODIM Getting Started Readme](https://github.com/ODIM-Project/ODIM/blob/development/README.md)* — This document mainly provides instructions for deploying Resource Aggregator for ODIM and the supported plugins, and covers few typical product use cases.
+- *[Resource Aggregator for ODIM API Readme](https://github.com/ODIM-Project/ODIM/blob/development/docs/README.md)* — This document provides detailed information on all the supported APIs of Resource Aggregator for ODIM.
 
-## Conventions
+## Conventions used in the document
 
-The troubleshooting information is listed in the form of Questions and Answers. You can also find some of the Frequently Asked Questions in this document.
+The troubleshooting information is listed in the form of Questions and Answers. Questions and the associated error messages are in **bold** font. Solutions and workarounds are in the regular font.
 
-Questions and the associated error messages are in **bold** font. Solutions are in the regular font.
 
-# Troubleshooting Information
 
-This section covers issues you might experience while deploying or using Resource Aggregator for ODIM, and provides suggestions for resolving these issues. You will also find answers to some of the Frequently Asked Questions.
+# Troubleshooting information
+
+This section covers issues you might experience while deploying or using Resource Aggregator for ODIM, and provides solutions or workarounds to resolve the issues. 
+
+You can also find answers to some of the Frequently Asked Questions related to Resource Aggregator for ODIM.
 
 
 ------
@@ -46,7 +64,7 @@ This section covers issues you might experience while deploying or using Resourc
 
 Your server encounters unexpected conditions that can prevent it from fulfilling requests due to temporary overloading, session timeout, or any unforeseen reasons.
 
-   1. Run the following command on the master node to verify all deployed services are running successfully:
+   1. Run the following command on the primary node to verify all deployed services are running successfully:
       `kubectl get pods -n odim -o wide`
       
    2. Navigate to the configured ODIMRA log path and the plugin log path for each server and check the latest logs for any errors.
@@ -197,7 +215,7 @@ ansible_find_payload.zip/ansible/modules/files/find.py\", line 409, in main
 
 The error is displayed if the `odimPluginPath` parameter has invalid or null value. Perform the following steps:
 
-1. Navigate to the kube_deploy_nodes.yaml file.
+1. Navigate to the `kube_deploy_nodes.yaml` file.
 2. Specify a valid value for `odimPluginPath`, else specify its value as "" (empty double quotation marks).
 
 ------
@@ -209,7 +227,7 @@ The error is displayed if the `odimPluginPath` parameter has invalid or null val
 
 The error is displayed if the `httpProxy`, `httpsProxy` and `noProxy` parameters have invalid or null values. Perform the following steps:
 
-1. Navigate to the kube_deploy_nodes.yaml file.
+1. Navigate to the `kube_deploy_nodes.yaml` file.
 2. Specify valid values for `httpProxy`, `httpsProxy` and `noProxy`, else specify their respective values as `""` (empty double quotation marks).
 
 ------
@@ -249,7 +267,7 @@ generation failed`**
 
 The error is displayed if the `odimraServerCertIPSan` and `odimraKafkaClientCertIPSan` parameters have invalid or null values. Perform the following steps:
 
-1. Navigate to the kube_deploy_nodes.yaml file.
+1. Navigate to the `kube_deploy_nodes.yaml` file.
 2. Specify valid values for `odimraServerCertIPSan` and `odimraKafkaClientCertIPSan`, else specify
    both their values as `""` (empty double quotation marks).
 
@@ -285,7 +303,7 @@ The error is displayed if the `odimraServerCertIPSan` and `odimraKafkaClientCert
 
 
 
-## Other Frequently Asked Questions
+## Frequently asked questions
 
 **1. How do I know if the User ID in the configuration file already exists?**
 
@@ -405,7 +423,7 @@ Navigate to the default log path `/var/log/<plugin>` or to the path specified in
 
 **9. How do I check the logs of third party services (Kafka, Zookeeper, Redis, etcd)?**
 
-1. On the master node, run the following command to get the name of the pod:
+1. On the primary node, run the following command to get the name of the pod:
 
    ```
    kubectl get pods -n odim -o wide
@@ -433,5 +451,5 @@ Navigate to the default log path `/var/log/<plugin>` or to the path specified in
 
    `python3 odim-controller.py --deploy \<br/> odimra --config /home/${USER}/ODIM/odim-controller/\<br/>scripts/kube_deploy_nodes.yaml`
 
-<blockquote>NOTE: Verify the content and the formatting of the content in the `kube_deploy_nodes.yaml` configuration file. Formatting in the `kube_deploy_nodes.yaml.tmpl` file provided must be copied and retained.</blockquote>
+>NOTE: Verify the content and the formatting of the content in the `kube_deploy_nodes.yaml` configuration file. Formatting in the `kube_deploy_nodes.yaml.tmpl` file provided must be copied and retained.
 

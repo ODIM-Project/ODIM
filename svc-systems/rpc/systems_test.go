@@ -628,6 +628,9 @@ func TestSystems_CreateVolume(t *testing.T) {
 	common.SetUpMockConfig()
 	sys := new(Systems)
 	sys.IsAuthorizedRPC = mockIsAuthorized
+	sys.GetSessionUserName = getSessionUserNameForTesting
+	sys.CreateTask = createTaskForTesting
+	sys.UpdateTask = mockUpdateTask
 	sys.EI = mockGetExternalInterface()
 
 	type args struct {

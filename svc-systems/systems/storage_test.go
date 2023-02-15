@@ -334,7 +334,6 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 		RequestBody:     []byte(`invalidJson`),
 	}
 	storage.CreateVolume(ctx, &req, &pluginContact, "task12345")
-	//assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Error: @odata.id key(s) is missing in Drives list")
 
 	// Validate the request JSON properties for case sensitive
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
@@ -349,7 +348,6 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	}
 
 	storage.CreateVolume(ctx, &req, &pluginContact, "task12345")
-	//assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase ")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
@@ -362,7 +360,6 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 								"Links":{"drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 	}
 	storage.CreateVolume(ctx, &req, &pluginContact, "task12345")
-	//assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase ")
 
 	StringsEqualFold = func(s, t string) bool {
 		return true
@@ -377,7 +374,6 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	}
 
 	storage.CreateVolume(ctx, &req, &pluginContact, "task12345")
-	//assert.True(t, true, "Auth type XAuthToken")
 
 	StringsEqualFold = func(s, t string) bool {
 		return false
@@ -395,7 +391,6 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 								"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 	}
 	storage.CreateVolume(ctx, &req, &pluginContact, "task12345")
-	//assert.True(t, true, "Error: Plugin Contact")
 
 	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, data2 string, status scommon.ResponseStatus, err error) {
 		return scommon.ContactPlugin(ctx, req, errorMessage)
@@ -412,7 +407,6 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 								"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 	}
 	storage.CreateVolume(ctx, &req, &pluginContact, "task12345")
-	//assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Auth type XAuthToken")
 
 }
 

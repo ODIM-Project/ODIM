@@ -686,7 +686,7 @@ func Test_validateUpdateLastUsedTimeError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotErrorMessage, gotStatusCode, gotStatusMessage := validateUpdateLastUsedTimeError(ctx, tt.args.err, tt.args.sessionToken)
+			gotErrorMessage, gotStatusCode, gotStatusMessage := validateUpdateLastUsedTimeError(ctx, tt.args.err)
 			if gotErrorMessage != tt.wantErrorMessage {
 				t.Errorf("validateUpdateLastUsedTimeError() gotErrorMessage = %v, want %v", gotErrorMessage, tt.wantErrorMessage)
 			}

@@ -148,7 +148,7 @@ func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sess
 		runtime.Goexit()
 	}
 	respBody := fmt.Sprintf("%v", resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing response from start update request: %s", string(respBody))
+	l.LogWithFields(ctx).Debugf("final response for start update request: %s", string(respBody))
 	return resp
 }
 

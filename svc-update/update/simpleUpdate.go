@@ -169,7 +169,7 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 		runtime.Goexit()
 	}
 	respBody := fmt.Sprintf("%v", resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing response from simple update request: %s", string(respBody))
+	l.LogWithFields(ctx).Debugf("final response for simple update request: %s", string(respBody))
 	return resp
 }
 

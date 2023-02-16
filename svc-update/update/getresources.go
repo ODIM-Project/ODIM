@@ -101,7 +101,7 @@ func (e *ExternalInterface) GetUpdateService(ctx context.Context) response.RPC {
 		},
 	}
 	respBody := fmt.Sprintf("%v", resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing response from start update request: %s", string(respBody))
+	l.LogWithFields(ctx).Debugf("final response for start update request: %s", string(respBody))
 	return resp
 
 }
@@ -132,7 +132,7 @@ func (e *ExternalInterface) GetAllFirmwareInventory(ctx context.Context, req *up
 	resp.Body = firmwareCollection
 	resp.StatusCode = http.StatusOK
 	respBody := fmt.Sprintf("%v", resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing response from get all firmware inventory request: %s", string(respBody))
+	l.LogWithFields(ctx).Debugf("final response for get all firmware inventory request: %s", string(respBody))
 	return resp
 }
 
@@ -181,7 +181,7 @@ func (e *ExternalInterface) GetFirmwareInventory(ctx context.Context, req *updat
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	respBody := fmt.Sprintf("%v", resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing response from get firmware inventory request: %s", string(respBody))
+	l.LogWithFields(ctx).Debugf("final response for get firmware inventory request: %s", string(respBody))
 	return resp
 
 }
@@ -212,7 +212,7 @@ func (e *ExternalInterface) GetAllSoftwareInventory(ctx context.Context, req *up
 	resp.Body = softwareCollection
 	resp.StatusCode = http.StatusOK
 	respBody := fmt.Sprintf("%v", resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing response from get all software inventory request: %s", string(respBody))
+	l.LogWithFields(ctx).Debugf("final response for get all software inventory request: %s", string(respBody))
 	return resp
 }
 
@@ -261,7 +261,7 @@ func (e *ExternalInterface) GetSoftwareInventory(ctx context.Context, req *updat
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	respBody := fmt.Sprintf("%v", resp.Body)
-	l.LogWithFields(ctx).Debugf("outgoing response from get software inventory request: %s", string(respBody))
+	l.LogWithFields(ctx).Debugf("final response for get software inventory request: %s", string(respBody))
 	return resp
 
 }

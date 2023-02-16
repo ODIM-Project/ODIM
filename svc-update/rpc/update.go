@@ -36,7 +36,7 @@ func (a *Updater) GetUpdateService(ctx context.Context, req *updateproto.UpdateR
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
 	resp := &updateproto.UpdateResponse{}
 	fillProtoResponse(ctx, resp, a.connector.GetUpdateService(ctx))
-	l.LogWithFields(ctx).Debugf("outgoing response from get update service request: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("final response for get update service request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -54,7 +54,7 @@ func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updat
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, a.connector.GetAllFirmwareInventory(ctx, req))
-	l.LogWithFields(ctx).Debugf("outgoing response from get firmware inventory collection request: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("final response for get firmware inventory collection request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -72,7 +72,7 @@ func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.Upd
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, a.connector.GetFirmwareInventory(ctx, req))
-	l.LogWithFields(ctx).Debugf("outgoing response from get firmware inventory request: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("final response for get firmware inventory request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -90,7 +90,7 @@ func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updat
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, a.connector.GetAllSoftwareInventory(ctx, req))
-	l.LogWithFields(ctx).Debugf("outgoing response from get software inventory collection request: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("final response for get software inventory collection request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -108,7 +108,7 @@ func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.Upd
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, a.connector.GetSoftwareInventory(ctx, req))
-	l.LogWithFields(ctx).Debugf("outgoing response from get software inventory request: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("final response for get software inventory request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -173,7 +173,7 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateRPCResponse(rpcResp, resp)
 	//fillProtoResponse(ctx, resp, a.connector.SimpleUpdate(req))
-	l.LogWithFields(ctx).Debugf("outgoing response from simple update request: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("final response for simple update request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -240,6 +240,6 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateRPCResponse(rpcResp, resp)
 	//fillProtoResponse(ctx, resp, a.connector.StartUpdate(req))
-	l.LogWithFields(ctx).Debugf("outgoing response from start update request: %s", string(resp.Body))
+	l.LogWithFields(ctx).Debugf("final response for start update request: %s", string(resp.Body))
 	return resp, nil
 }

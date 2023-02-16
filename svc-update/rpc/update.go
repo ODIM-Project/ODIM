@@ -34,9 +34,9 @@ var podName = os.Getenv("POD_NAME")
 func (a *Updater) GetUpdateService(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
-	l.LogWithFields(ctx).Info("Inside GetUpdateService function (svc-update)")
 	resp := &updateproto.UpdateResponse{}
 	fillProtoResponse(ctx, resp, a.connector.GetUpdateService(ctx))
+	l.LogWithFields(ctx).Debugf("outgoing response from get update service request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -44,7 +44,6 @@ func (a *Updater) GetUpdateService(ctx context.Context, req *updateproto.UpdateR
 func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
-	l.LogWithFields(ctx).Info("Inside GetFirmwareInventoryCollection function (svc-update)")
 	resp := &updateproto.UpdateResponse{}
 	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
@@ -55,6 +54,7 @@ func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updat
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, a.connector.GetAllFirmwareInventory(ctx, req))
+	l.LogWithFields(ctx).Debugf("outgoing response from get firmware inventory collection request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -62,7 +62,6 @@ func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updat
 func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
-	l.LogWithFields(ctx).Info("Inside GetFirmwareInventory function (svc-update)")
 	resp := &updateproto.UpdateResponse{}
 	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
@@ -73,6 +72,7 @@ func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.Upd
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, a.connector.GetFirmwareInventory(ctx, req))
+	l.LogWithFields(ctx).Debugf("outgoing response from get firmware inventory request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -80,7 +80,6 @@ func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.Upd
 func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
-	l.LogWithFields(ctx).Info("Inside GetSoftwareInventoryCollection function (svc-update)")
 	resp := &updateproto.UpdateResponse{}
 	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
@@ -91,6 +90,7 @@ func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updat
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, a.connector.GetAllSoftwareInventory(ctx, req))
+	l.LogWithFields(ctx).Debugf("outgoing response from get software inventory collection request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -98,7 +98,6 @@ func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updat
 func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
-	l.LogWithFields(ctx).Info("Inside GetSoftwareInventory function (svc-update)")
 	resp := &updateproto.UpdateResponse{}
 	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
@@ -109,6 +108,7 @@ func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.Upd
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, a.connector.GetSoftwareInventory(ctx, req))
+	l.LogWithFields(ctx).Debugf("outgoing response from get software inventory request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -116,7 +116,6 @@ func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.Upd
 func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
-	l.LogWithFields(ctx).Info("Inside SimepleUpdate function (svc-update)")
 	resp := &updateproto.UpdateResponse{}
 	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
@@ -174,6 +173,7 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateRPCResponse(rpcResp, resp)
 	//fillProtoResponse(ctx, resp, a.connector.SimpleUpdate(req))
+	l.LogWithFields(ctx).Debugf("outgoing response from simple update request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -181,7 +181,6 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
-	l.LogWithFields(ctx).Info("Inside StartUpdate function (svc-update)")
 	resp := &updateproto.UpdateResponse{}
 	sessionToken := req.SessionToken
 	authResp, err := a.connector.External.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
@@ -241,5 +240,6 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateRPCResponse(rpcResp, resp)
 	//fillProtoResponse(ctx, resp, a.connector.StartUpdate(req))
+	l.LogWithFields(ctx).Debugf("outgoing response from start update request: %s", string(resp.Body))
 	return resp, nil
 }

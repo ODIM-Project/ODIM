@@ -163,6 +163,7 @@ func (i *CommonInterface) GetResourceInfoFromDevice(ctx context.Context, req Res
 			return "", err
 		}
 	}
+	l.LogWithFields(ctx).Debugf("outgoing response from get resource info request: %s", updatedData)
 	return updatedData, nil
 }
 
@@ -254,6 +255,7 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 	if pluginResponse.StatusCode == http.StatusAccepted {
 		return []byte(data), pluginResponse.Header.Get("Location"), resp, nil
 	}
+	l.LogWithFields(ctx).Debugf("outgoing response from contact plugin request: %s", data)
 	return []byte(data), pluginResponse.Header.Get("X-Auth-Token"), resp, nil
 }
 

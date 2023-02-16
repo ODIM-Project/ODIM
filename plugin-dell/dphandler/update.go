@@ -57,7 +57,9 @@ func SimpleUpdate(ctx iris.Context) {
 		uri = strings.Replace(uri, key, value, -1)
 		reqData = strings.Replace(string(deviceDetails.PostBody), key, value, -1)
 	}
-
+	//removing targets from req payload
+	reqArr := strings.Split(reqData, ",")
+	reqData = reqArr[0] + "}"
 	device := &dputilities.RedfishDevice{
 		Host:     deviceDetails.Host,
 		Username: deviceDetails.Username,

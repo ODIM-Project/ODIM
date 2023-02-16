@@ -16,15 +16,27 @@
 package dphandler
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strings"
+
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
+
+// SimpleUpdatePostBody struct defines the received request body for update action
+type SimpleUpdatePostBody struct {
+	ImageURI                  string   `json:"ImageURI"`
+	Password                  string   `json:"Password,omitempty"`
+	Targets                   []string `json:"Targets,omitempty"`
+	TransferProtocol          string   `json:"TransferProtocol,omitempty"`
+	Username                  string   `json:"Username,omitempty"`
+	RedfishOperationApplyTime string   `json:"@Redfish.OperationApplyTime,omitempty"`
+}
 
 // SimpleUpdate updates the BMC resources
 func SimpleUpdate(ctx iris.Context) {
@@ -41,6 +53,7 @@ func SimpleUpdate(ctx iris.Context) {
 		}
 	}
 	var deviceDetails dpmodel.Device
+	reqPostBody := &SimpleUpdatePostBody{}
 	uri := ctx.Request().RequestURI
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
@@ -50,16 +63,26 @@ func SimpleUpdate(ctx iris.Context) {
 		ctx.WriteString("Error: bad request.")
 		return
 	}
-
+	err = json.Unmarshal(deviceDetails.PostBody,reqPostBody)
+	if err!= nil{
+		errMsg := "While trying to unmarshal request body, got:" + err.Error()
+		log.Error(errMsg)
+		return
+	}
+	reqPostBody.Targets = nil
+	deviceDetails.PostBody,err = json.Marshal(reqPostBody)
+	if err!= nil{
+		errMsg := "While trying to marshal request body, got:" + err.Error()
+		log.Error(errMsg)
+		return
+	}
 	var reqData string
 	//replacing the request url with south bound translation URL
 	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
 		uri = strings.Replace(uri, key, value, -1)
 		reqData = strings.Replace(string(deviceDetails.PostBody), key, value, -1)
 	}
-	//removing targets from req payload
-	reqArr := strings.Split(reqData, ",")
-	reqData = reqArr[0] + "}"
+
 	device := &dputilities.RedfishDevice{
 		Host:     deviceDetails.Host,
 		Username: deviceDetails.Username,

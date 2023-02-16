@@ -30,7 +30,8 @@
    - [Backup and restore of Kubernetes etcd](#Backup-and-restore-of-Kubernetes-etcd)
    - [Backup and restore of ODIM etcd](#Backup-and-restore-of-ODIM-etcd)
    - [Backup and restore of Redis](#Backup-and-restore-of-Redis)
-7. [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
+   - [Backup and restore of Resource Aggregator for ODIM and plugin configurations](#Backup-and-restore-of-Resource-Aggregator-for-ODIM-and-plugin-configurations)
+6. [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
    - [Adding a server into the resource inventory](#adding-a-server-into-the-resource-inventory)
    - [Viewing the resource inventory](#viewing-the-resource-inventory)
    - [Configuring BIOS settings for a server](#configuring-bios-settings-for-a-server)
@@ -42,14 +43,14 @@
    - [Viewing network fabrics](#viewing-network-fabrics)
    - [Creating and deleting volumes](#creating-and-deleting-volumes)
    - [Removing a server from the resource inventory](#removing-a-server-from-the-resource-inventory)
-8. [Using odim-controller command-line interface](#using-odim-controller-command-line-interface)
-9. [Contributing to the open source community](#contributing-to-the-open-source-community)
+7. [Using odim-controller command-line interface](#using-odim-controller-command-line-interface)
+8. [Contributing to the open source community](#contributing-to-the-open-source-community)
    - [Creating a PR](#creating-a-pr)
    - [Filing Resource Aggregator for ODIM defects](#filing-resource-aggregator-for-odim-defects)
    - [Adding new plugins and services](#adding-new-plugins-and-services)
    - [Licensing](#licensing)
    - [Reference links](#reference-links)
-10. [Appendix](#appendix)
+9. [Appendix](#appendix)
    - [Setting proxy configuration](#setting-proxy-configuration)
    - [Setting up time sync across nodes](#setting-up-time-sync-across-nodes)
    - [Downloading and installing Go language](#downloading-and-installing-go-language)
@@ -2521,6 +2522,71 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
     ```
     keys *
     ```
+
+   
+
+## Backup and restore of Resource Aggregator for ODIM and plugin configurations
+
+You can take a backup of all Resource Aggregator for ODIM and plugin configurations in a single file or in different files. The following procedure has instructions to take a backup of Resource Aggregator for ODIM and plugin configurations in a single file.
+
+1. List down all the configmaps present in the odim namespace:
+
+   ```
+   kubectl get cm -n <odim_namespace>
+   ```
+
+   For example:
+
+   ```
+   kubectl get cm -nodim
+   ```
+
+   The following sample output appears:
+
+   ```
+   NAME                    DATA   AGE
+   configure-hosts         1      10d
+   iloplugin-config        1      3d23h
+   kube-root-ca.crt        1      11d
+   odimra-config           1      10d
+   odimra-platformconfig   1      10da
+   ```
+
+2. Copy all config maps to a file:
+
+   ```
+   kubectl get cm -nodim -o yaml > odim_configs.yaml
+   ```
+
+3. Remove the fields such as `resourceVersion`, `uid`, and `creationtimestamp` from the yaml file. 
+   The backup file of all configurations is ready.
+
+4. To restore the configurations, apply the configuration backup using the `kubectl apply` command:
+
+   ```
+   kubectl apply -f <file-name>
+   ```
+
+   For example: 
+
+   ```
+   kubectl apply -f odim_configs.yaml
+   ```
+
+   The following sample output appears:
+
+   ```
+   configmap/configure-hosts configured
+   configmap/iloplugin-config configured
+   configmap/kube-root-ca.crt configured
+   configmap/odimra-config configured
+   configmap/odimra-platformconfig configured
+   ```
+
+   ### Testing the backup and restore operation
+
+   1. After taking a backup of the configuration files, re-install Resource Aggregator for ODIM with different configurations. 
+   2. Restore the old backup configurations and verify that the parameters would be updated as present in the backup file.
 
    
 

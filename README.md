@@ -3023,7 +3023,7 @@ Run the following commands:
     wget https://dl.google.com/go/go1.19.5.linux-amd64.tar.gz -P /var/tmp
    ```
 1. ```
-    sudo tar -C /usr/local -xzf /var/tmp/go1.17.2.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf /var/tmp/go1.19.5.linux-amd64.tar.gz
    ```
 1. ```
     export PATH=$PATH:/usr/local/go/bin

@@ -71,10 +71,10 @@ func CheckSessionTimeOut(ctx context.Context, sessionToken string) (*asmodel.Ses
 	}
 	session, err := asmodel.GetSession(sessionToken)
 	if err != nil {
-		return nil, errors.PackError(err.ErrNo(), "error while trying to get session details with the token ", sessionToken, ": ", err.Error())
+		return nil, errors.PackError(err.ErrNo(), "error while trying to get session details", ": ", err.Error())
 	}
 	if time.Since(session.LastUsedTime).Minutes() > config.Data.AuthConf.SessionTimeOutInMins {
-		return nil, errors.PackError(errors.InvalidAuthToken, "error: session is timed out", sessionToken)
+		return nil, errors.PackError(errors.InvalidAuthToken, "error: session is timed out")
 	}
 
 	return &session, nil

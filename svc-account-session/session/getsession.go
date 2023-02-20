@@ -41,7 +41,7 @@ func GetSessionUserName(ctx context.Context, req *sessionproto.SessionRequest) (
 	}
 
 	if errs := UpdateLastUsedTime(ctx, req.SessionToken); errs != nil {
-		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
+		errorMessage := "Unable to update last used time of session" + ": " + errs.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
 		return &resp, errs
 	}
@@ -61,7 +61,7 @@ func GetSessionUserRoleID(ctx context.Context, req *sessionproto.SessionRequest)
 	}
 
 	if errs := UpdateLastUsedTime(ctx, req.SessionToken); errs != nil {
-		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
+		errorMessage := "Unable to update last used time of session" + ": " + errs.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
 		return &resp, errs
 	}
@@ -114,7 +114,7 @@ func GetSession(ctx context.Context, req *sessionproto.SessionRequest) response.
 	}
 
 	if errs := UpdateLastUsedTime(ctx, req.SessionToken); errs != nil {
-		errorMessage := errLogPrefix + "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
+		errorMessage := errLogPrefix + "Unable to update last used time of session" + ": " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
@@ -220,7 +220,7 @@ func GetAllActiveSessions(ctx context.Context, req *sessionproto.SessionRequest)
 
 	err := UpdateLastUsedTime(ctx, req.SessionToken)
 	if err != nil {
-		errorMessage := errorLogPrefix + "Unable to update last used time of session with token " + req.SessionToken + ": " + err.Error()
+		errorMessage := errorLogPrefix + "Unable to update last used time of session" + ": " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.LogWithFields(ctx).Error(errorMessage)
 		return resp

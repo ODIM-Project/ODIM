@@ -35,9 +35,6 @@ type Logging struct {
 // properties logged are prival, time, username, roleid and message
 func AuthLog(ctx context.Context) *logrus.Entry {
 	fields := getProcessLogDetails(ctx)
-	if val, ok := ctx.Value("sessiontoken").(string); ok {
-		fields["sessiontoken"] = val
-	}
 	if val, ok := ctx.Value("sessionuserid").(string); ok {
 		fields["sessionuserid"] = val
 	}
@@ -99,9 +96,6 @@ func formatAuditStructFields(entry *logrus.Entry, msg string, priorityNo int8) s
 func AuditLog(l *Logging, ctx iris.Context, reqBody map[string]interface{}) *logrus.Entry {
 	ctxt := ctx.Request().Context()
 	fields := getProcessLogDetails(ctxt)
-	if val, ok := ctxt.Value("sessiontoken").(string); ok {
-		fields["sessiontoken"] = val
-	}
 	if val, ok := ctxt.Value("sessionuserid").(string); ok {
 		fields["sessionuserid"] = val
 	}
@@ -126,12 +120,10 @@ func (l *Logging) auditLogEntry(ctx iris.Context, reqBody, fields map[string]int
 	sessionUserName, sessionRoleID, err := l.GetUserDetails(sessionToken)
 	// Replace is done to avoid the security vulnerabilty to avoid direct usage of the input parameters
 	sessionRoleID = strings.Replace(sessionRoleID, "\n", "", -1)
-	sessionToken = strings.Replace(sessionToken, "\n", "", -1)
 	sessionUserName = strings.Replace(sessionUserName, "\n", "", -1)
 	Host := strings.Replace(ctx.Request().Host, "\n", "", -1)
 	RequestURI := strings.Replace(ctx.Request().RequestURI, "\n", "", -1)
 	Method := strings.Replace(ctx.Request().Method, "\n", "", -1)
-	fields["sessiontoken"] = sessionToken
 	fields["sessionusername"] = sessionUserName
 	fields["sessionroleid"] = sessionRoleID
 	fields["rawuri"] = RequestURI

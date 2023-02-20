@@ -1031,13 +1031,13 @@ Topics covered in this section include:
    'https://{odim_host}:{port}/redfish/v1' -k
    ```
    
-   Replace `{path_of_rootCA.crt}` with the path specified for the odimCertsPath parameter in the kube\_deploy\_nodes.yaml file - `<odimcertsPath>/rootCA.crt`. The `rootCA.crt` file is required for secure SSL communication.
+   Replace `{path_of_rootCA.crt}` with the path specified for the odimCertsPath parameter in the `kube_deploy_nodes.yaml` file with `<odimcertsPath>/rootCA.crt`. The `rootCA.crt` file is required for secure SSL communication.
    
    {odim_host} is the virtual IP address of the Kubernetes cluster.
    
    > **NOTE**: For a single node cluster configuration, {odim_host} is the ip address of primary node. For a three node cluster configuration, to use FQDN as `{odim_host}`, ensure that FQDN is configured to the virtual IP address in the `/etc/hosts` file or in the DNS server.
    
-   {port} is the API server port configured in Nginx. Default port is `30080`. If you have changed the default port, use that as the port.
+   {port} is the API server port configured in Nginx. Default port is `45000`. If you have changed the default port in the `kube_deploy_nodes.yaml` file, use that as the port.
    
    The following JSON response is returned:
    
@@ -1206,14 +1206,14 @@ Topics covered in this section include:
     
     In this command, replace:
 
-    -  {ODIMRA password} with the password of Resource Aggregator for ODIM (default administrator account password).
-    -  {odimCertsPath} with the path you specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
+    -  `{ODIMRA password}` with the password of Resource Aggregator for ODIM (default administrator account password).
+    -  `{odimCertsPath}` with the path you specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
     
     Example output:
     
-```
-     ip/jrKjQdzKIU1JvT4ZQ6gbCe2XJtCKPRgqOQv6g3aIAYtG+hpVgel3k67TB723h9dN2cABWZgE+b9CAxbIXj3qZZFWrUMMuPkT4fwtW8fTlhdR+phmOvnnSw5bvUrXyl5Se1IczwtMXfhqk7U8eqpJnZ6xWNR8Q1K7baDv1QvZwej/v3bqHRTC93pDL+3SvE8VCyrIgbMVdfvv3+mJKvs2F7hXoTJiwjRfKGyzdP0yRIHAFOB3m/xnv6ZIRm8Ak6+sx18NRq8RH20bktzhZ45fT+iX4twMJG1lI0KRJ3j/PL+IqY4MmYzv/72fQhMznL39Rjr9LR6mB/JGI0ww0sMUCFr6obzQfQWv1so+Ck694fNJMQPXQS64VcqVDuISXSd4cqkdMx9zBmfDbgzMQQVwgjDgt4nC1w8/wGSfMtkms8rSJrBa18hKCWi+jfhASbNM84udKc0kQsQJlsnjcdsL84zrE8iUqqXC/fK2cQbNL31H5C+qEfJqdNTauQSskkK3cpNWh1FVw736WBYYJSja59q5QwMniXldwcvRglEIELsjKgjbuOnQoIZaVTcbheaa2b1XAiRKTKuPmweysyV3fbuR0jgSJTmdTehrtYG9omjUbg/L7WFjC43JWq8suWi5uch+jHtGG5mZJFFdkE37pQd3wzHBSa+/9Yq9/ZSY=
-```
+    ```
+    ip/jrKjQdzKIU1JvT4ZQ6gbCe2XJtCKPRgqOQv6g3aIAYtG+hpVgel3k67TB723h9dN2cABWZgE+b9CAxbIXj3qZZFWrUMMuPkT4fwtW8fTlhdR+phmOvnnSw5bvUrXyl5Se1IczwtMXfhqk7U8eqpJnZ6xWNR8Q1K7baDv1QvZwej/v3bqHRTC93pDL+3SvE8VCyrIgbMVdfvv3+mJKvs2F7hXoTJiwjRfKGyzdP0yRIHAFOB3m/xnv6ZIRm8Ak6+sx18NRq8RH20bktzhZ45fT+iX4twMJG1lI0KRJ3j/PL+IqY4MmYzv/72fQhMznL39Rjr9LR6mB/JGI0ww0sMUCFr6obzQfQWv1so+Ck694fNJMQPXQS64VcqVDuISXSd4cqkdMx9zBmfDbgzMQQVwgjDgt4nC1w8/wGSfMtkms8rSJrBa18hKCWi+jfhASbNM84udKc0kQsQJlsnjcdsL84zrE8iUqqXC/fK2cQbNL31H5C+qEfJqdNTauQSskkK3cpNWh1FVw736WBYYJSja59q5QwMniXldwcvRglEIELsjKgjbuOnQoIZaVTcbheaa2b1XAiRKTKuPmweysyV3fbuR0jgSJTmdTehrtYG9omjUbg/L7WFjC43JWq8suWi5uch+jHtGG5mZJFFdkE37pQd3wzHBSa+/9Yq9/ZSY=
+    ```
 
 4. On the deployment node, copy the UR plugin configuration file and the hook script to `~/plugins/urplugin`.
    ```
@@ -1670,14 +1670,14 @@ The plugin you want to add is successfully deployed.
 
     -   `{odim_host}` is the virtual IP address of the Kubernetes cluster. 
     For one-node odim deployment, `odim_host` is the IP address of the cluster node.
-    -   `{port}` is the API server port configured in Nginx. Default port is `30080`. If you have changed the default port, use that as the port.
+    -   `{port}` is the API server port configured in Nginx. Default port is `45000`. If you have changed the default port in `kube_deploy_nodes.yaml` file, use that as the port.
 
     The following ports (except container ports) must be free:
     
     | Port name                                                    | Ports                                                        |
     | ------------------------------------------------------------ | ------------------------------------------------------------ |
     | Container ports (access restricted only to the Kubernetes cluster network) | 45000 — API service port<br />45101- 45201 — Resource Aggregator for ODIM service ports<br />9082, 9092 — Kafka ports<br />6379 — Redis port<br />26379 — Redis Sentinel port<br />2181 — Zookeeper port<br>2379, 2380 — etcd ports |
-    | API node port (for external access)                          | 30080                                                        |
+    | API node port (for external access)                          | 45000                                                        |
     | Kafka node port (for external access)                        | 30092 for a one-node cluster configuration. 30092, 30093, and 30094 for a three-node cluster configuration |
     | GRF plugin port<br />EventListenerNodePort<br />lbport       | 45001 — Port to be used while adding GRF plugin<br />30081 — Port used for event subscriptions in one-node cluster configuration <br />lbport — For three-node cluster configuration, specify lbport as per your requirement. This port must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as Nginx proxy port for the plugin<br />For one-node cluster configuration, it is the same as EventListenerNodePort |
     | UR plugin port                                               | 45007 — Port to be used while adding UR plugin               |
@@ -2014,7 +2014,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    --upgrade plugin --plugin <plugin_name>
    ```
 
-   Replace <plugin\_name\> with the name of the plugin whose service you want to upgrade.
+   Replace `<plugin_name>` with the name of the plugin whose service you want to upgrade.
 
 3. To update the odim-controller configuration parameters, do the following: 
 
@@ -2828,13 +2828,12 @@ python3 odim-controller.py [option(s)] [argument(s)]
     python3 odim-controller.py --addnode kubernetes --config \
     ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml
     ```
-```
 
-2. ```
-     python3 odim-controller.py --config \
+2.  ```
+    python3 odim-controller.py --config \
     ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
     --scale --svc aggregation --replicas 3
-```
+    ```
 For more examples, see *[Post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)*.
 
 # Contributing to the open source community
@@ -3016,9 +3015,9 @@ This procedure shows how to set up time synchronization across all the nodes (de
    sudo systemctl restart chrony
    ```
    
-```
+   ```
    sudo systemctl enable chrony
-```
+   ```
 
    
 

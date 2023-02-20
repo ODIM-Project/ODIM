@@ -91,7 +91,6 @@ func CustomAuthLog(ctx context.Context, sessionToken, msg string, respStatusCode
 			roleID = currentSession.RoleID
 		}
 	}
-	ctx = context.WithValue(ctx, common.SessionToken, sessionToken)
 	ctx = context.WithValue(ctx, common.SessionUserID, userID)
 	ctx = context.WithValue(ctx, common.SessionRoleID, roleID)
 	ctx = context.WithValue(ctx, common.StatusCode, respStatusCode)

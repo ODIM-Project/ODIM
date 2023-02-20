@@ -162,13 +162,10 @@ func formatPriorityFields(entry *logrus.Entry, msg string) string {
 
 // formatAuthStructFields used to format the syslog message
 func formatAuthStructFields(entry *logrus.Entry, msg string, priorityNo int8) string {
-	var sessionToken, sessionUserName, sessionRoleID string
+	var sessionUserName, sessionRoleID string
 	respStatusCode := int32(http.StatusUnauthorized)
 	tokenMsg := ""
 
-	if entry.Data["sessiontoken"] != nil {
-		sessionToken = entry.Data["sessiontoken"].(string)
-	}
 	if entry.Data["sessionuserid"] != nil {
 		sessionUserName = entry.Data["sessionuserid"].(string)
 	}
@@ -179,11 +176,8 @@ func formatAuthStructFields(entry *logrus.Entry, msg string, priorityNo int8) st
 		respStatusCode = entry.Data["statuscode"].(int32)
 	}
 	msg = fmt.Sprintf("%s [account@1 user=\"%s\" roleID=\"%s\"]", msg, sessionUserName, sessionRoleID)
-	if sessionToken != "null" {
-		tokenMsg = "for session token " + sessionToken
-	}
 	if priorityNo == 86 {
-		msg = fmt.Sprintf("%s %s %s", msg, "Authentication/Authorization successful", tokenMsg)
+		msg = fmt.Sprintf("%s %s", msg, "Authentication/Authorization successful")
 	} else {
 		errMsg := "Authentication/Authorization failed"
 		if respStatusCode == http.StatusForbidden {

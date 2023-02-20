@@ -3,26 +3,26 @@
 
 # Table of contents
 
-1. [Resource Aggregator for ODIM](#resource-aggregator-for-odim)
+- [Resource Aggregator for ODIM](#resource-aggregator-for-odim)
    - [Resource Aggregator for ODIM deployment requirements](#resource-aggregator-for-odim-deployment-requirements)
    - [Deployment guidelines](#deployment-guidelines)
-2. [Resource Aggregator for ODIM compatibility matrix](#resource-aggregator-for-odim-compatibility-matrix)
-3. [Troubleshooting information](#Troubleshooting-information)
-4. [Resource Aggregator for ODIM pre-deployment operations](#Resource-Aggregator-for-ODIM-pre-deployment-operations)
+- [Resource Aggregator for ODIM compatibility matrix](#resource-aggregator-for-odim-compatibility-matrix)
+- [Troubleshooting information](#Troubleshooting-information)
+- [Resource Aggregator for ODIM pre-deployment operations](#Resource-Aggregator-for-ODIM-pre-deployment-operations)
    - [Setting up the environment](#setting-up-the-environment)
    - [Pulling Docker images of all Kubernetes microservices](#pulling-docker-images-of-all-kubernetes-microservices)
    - [Building Docker images of all services](#building-docker-images-of-all-services)
    - [Updating additional package versions](#updating-additional-package-versions)
    - [Generating encrypted passwords for nodes and Redis](#generating-encrypted-passwords-for-nodes-and-Redis)
    - [Configuring log path for odim-controller](#configuring-log-path-for-odim-controller)
-5. [Deploying Resource Aggregator for ODIM and the plugins](#deploying-resource-aggregator-for-odim-and-the-plugins)
+- [Deploying Resource Aggregator for ODIM and the plugins](#deploying-resource-aggregator-for-odim-and-the-plugins)
    - [Deploying the resource aggregator services](#deploying-the-resource-aggregator-services)
    - [Deploying the Unmanaged Rack Plugin](#deploying-the-unmanaged-rack-plugin)
    - [Deploying the Dell plugin](#deploying-the-dell-plugin)
    - [Deploying the Lenovo plugin](#deploying-the-lenovo-plugin)
    - [Deploying the Cisco ACI plugin](#deploying-the-cisco-aci-plugin)
    - [Adding a plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework)
-6. [Resource Aggregator for ODIM post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)
+- [Resource Aggregator for ODIM post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)
    - [Scaling up the resources and services of Resource Aggregator for ODIM](#scaling-up-the-resources-and-services-of-resource-aggregator-for-odim)
    - [Scaling down the resources and services of Resource Aggregator for ODIM](#scaling-down-the-resources-and-services-of-resource-aggregator-for-odim)
    - [Rolling back to an earlier deployment revision](#rolling-back-to-an-earlier-deployment-revision)
@@ -31,7 +31,7 @@
    - [Backup and restore of ODIM etcd](#Backup-and-restore-of-ODIM-etcd)
    - [Backup and restore of Redis](#Backup-and-restore-of-Redis)
    - [Backup and restore of Resource Aggregator for ODIM and plugin configurations](#Backup-and-restore-of-Resource-Aggregator-for-ODIM-and-plugin-configurations)
-6. [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
+- [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
    - [Adding a server into the resource inventory](#adding-a-server-into-the-resource-inventory)
    - [Viewing the resource inventory](#viewing-the-resource-inventory)
    - [Configuring BIOS settings for a server](#configuring-bios-settings-for-a-server)
@@ -43,14 +43,14 @@
    - [Viewing network fabrics](#viewing-network-fabrics)
    - [Creating and deleting volumes](#creating-and-deleting-volumes)
    - [Removing a server from the resource inventory](#removing-a-server-from-the-resource-inventory)
-7. [Using odim-controller command-line interface](#using-odim-controller-command-line-interface)
-8. [Contributing to the open source community](#contributing-to-the-open-source-community)
+- [Using odim-controller command-line interface](#using-odim-controller-command-line-interface)
+- [Contributing to the open source community](#contributing-to-the-open-source-community)
    - [Creating a PR](#creating-a-pr)
    - [Filing Resource Aggregator for ODIM defects](#filing-resource-aggregator-for-odim-defects)
    - [Adding new plugins and services](#adding-new-plugins-and-services)
    - [Licensing](#licensing)
    - [Reference links](#reference-links)
-9. [Appendix](#appendix)
+- [Appendix](#appendix)
    - [Setting proxy configuration](#setting-proxy-configuration)
    - [Setting up time sync across nodes](#setting-up-time-sync-across-nodes)
    - [Downloading and installing Go language](#downloading-and-installing-go-language)
@@ -377,6 +377,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
         ```
 
 
+
 ## Pulling Docker images of all Kubernetes microservices
 
 1. On the deployment node, pull the Docker images of all the Kubernetes microservices:
@@ -437,40 +438,46 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
 
 1. Run the following commands on the deployment node:
    1. ```
+      cd /home/${USER}
+      ```
+   
+   2. ```
       git clone https://github.com/ODIM-Project/ODIM.git
       ```
-      
-   2. ```
+   
+   3. ```
       cd ODIM
       ```
-      
-   3. ```
-      export ODIMRA_USER_ID=2021
-      ```
-	   
    4. ```
-      export ODIMRA_GROUP_ID=2021
+       export ODIMRA_USER_ID=2021
       ```
-      
+   
    5. ```
-      ./build_images.sh
-	   ```
-	   
-	6. ```
-	   sudo docker images
-	   ```
-	   If the images are built successfully, you get an output similar to the following sample:
-	   
-	   <img src="docs/images/odimra_images.png" style="zoom:55%;"   >
-	   
-	7. Pull the reloader and busybox images:
-	   
-	   ```
-	   docker pull stakater/reloader:v0.0.76
+	   export ODIMRA_GROUP_ID=2021
+      ```
+     
+   6. ```
+	   ./build_images.sh
 	   ```
 
+   
+   7. ```
+	    sudo docker images
+	    ```
+	    
+       
+          If the images are built successfully, you get an output similar to the following sample:
+   
+   <img src="docs/images/odimra_images.png" style="zoom:55%;"   >
+   
+9. Pull the reloader and busybox images:
+	
 	   ```
-	   docker pull busybox:1.33
+	docker pull stakater/reloader:v0.0.76
+	```
+	
+	   ```
+	docker pull busybox:1.33
 	   ```
 	
 2. Save the Docker images of all Resource Aggregator for ODIM services to a tar archive.
@@ -478,7 +485,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
     ```
     docker save -o <image_name.tar> <image_name>:<version>
     ```
-    Example: `docker save -o api.tar api:4.0`
+    Example: `docker save -o api.tar api:5.0`
 
     The following table lists the Docker images of all Resource Aggregator for ODIM services:
 

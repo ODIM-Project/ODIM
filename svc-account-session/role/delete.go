@@ -47,7 +47,7 @@ func doSessionAuthAndUpdate(ctx context.Context, resp *response.RPC, sessionToke
 		return nil, err
 	}
 	if errs := session.UpdateLastUsedTime(ctx, sessionToken); errs != nil {
-		errorMessage := "Unable to update last used time of session with token " + sessionToken + ": " + errs.Error()
+		errorMessage := "Unable to update last used time of session" + ": " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		l.LogWithFields(ctx).Error(errorMessage)
 		return nil, errs

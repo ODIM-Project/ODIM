@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package tmodel ...
+// Package tmodel ...
 package tmodel
 
 import (
@@ -24,8 +24,6 @@ import (
 
 	db "github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
@@ -37,7 +35,7 @@ const (
 	CompletedTaskTable = "CompletedTask"
 )
 
-//CompletedTask is used to build index for redis
+// CompletedTask is used to build index for redis
 type CompletedTask struct {
 	UserName string
 	ID       string
@@ -91,8 +89,8 @@ type Tick struct {
 }
 
 // Payload contain information detailing the HTTP and JSON payload
-//information for executing the task.
-//This object shall not be included in the response if the HidePayload property
+// information for executing the task.
+// This object shall not be included in the response if the HidePayload property
 // is set to True.
 type Payload struct {
 	HTTPHeaders   map[string]string `json:"HttpHeaders"`
@@ -142,6 +140,7 @@ type Oem struct {
 
 // PersistTask is to store the task data in db
 // Takes:
+//
 //	t pointer to Task to be stored.
 //	db of type common.DbType(int32)
 func PersistTask(ctx context.Context, t *Task, db common.DbType) error {
@@ -157,11 +156,14 @@ func PersistTask(ctx context.Context, t *Task, db common.DbType) error {
 
 // DeleteTaskFromDB is to delete the task from db
 // Takes:
-// 	t of type pointer to Task object
+//
+//	t of type pointer to Task object
+//
 // Returns:
-//      err of type error
-//      On Success - return nil value
-//      On Failure - return non nill value
+//
+//	err of type error
+//	On Success - return nil value
+//	On Failure - return non nill value
 func DeleteTaskFromDB(ctx context.Context, t *Task) error {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -175,9 +177,12 @@ func DeleteTaskFromDB(ctx context.Context, t *Task) error {
 
 // GetTaskStatus is to retrieve the task data already present in db
 // Takes:
+//
 //	taskID of type string contains the task ID of the task to be retrieved from the db
 //	db of type common.DbType(int32)
+//
 // Returns:
+//
 //	err of type error
 //		On Success - return nil value
 //		On Failure - return non nill value
@@ -202,9 +207,12 @@ func GetTaskStatus(ctx context.Context, taskID string, db common.DbType) (*Task,
 }
 
 // GetAllTaskKeys will collect all task keys available in the DB
-//Takes:
+// Takes:
+//
 //	None
-//Returns:
+//
+// Returns:
+//
 //	Slice of type strings and error
 //	On Success - error is set to nil and returns slice of tasks
 //	On Failure - error is set to appropriate reason why it got failed
@@ -221,7 +229,7 @@ func GetAllTaskKeys(ctx context.Context) ([]string, error) {
 	return taskKeys, nil
 }
 
-//Transaction - is for performing atomic oprations using optimitic locking
+// Transaction - is for performing atomic oprations using optimitic locking
 func Transaction(ctx context.Context, key string, cb func(context.Context, string) error) error {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -269,15 +277,15 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 		Table    string = "task"
 	)
 
-	var (
-		i             int           = 0
-		updatedTasks  bool          = false
-		maxSize       int           = config.Data.TaskQueueConf.QueueSize
-		retryInterval time.Duration = time.Duration(config.Data.TaskQueueConf.RetryInterval) * time.Millisecond
-	)
+	// var (
+	// 	i             int           = 0
+	// 	updatedTasks  bool          = false
+	// 	maxSize       int           = config.Data.TaskQueueConf.QueueSize
+	// 	retryInterval time.Duration = time.Duration(config.Data.TaskQueueConf.RetryInterval) * time.Millisecond
+	// )
 
-	tasks := make(map[string]interface{}, maxSize)
-	completedTasks := make(map[string]int64, maxSize)
+	// tasks := make(map[string]interface{}, maxSize)
+	// completedTasks := make(map[string]int64, maxSize)
 
 	if len(*queue) <= 0 {
 		return
@@ -287,68 +295,68 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	tick.Executing = true
 	tick.M.Unlock()
 
-	conn = validateDBConnection(conn)
+	// conn = validateDBConnection(conn)
 
-	for {
-		task := dequeueTask(queue)
+	// for {
+	// 	task := dequeueTask(queue)
 
-		if task != nil {
-			saveID := Table + ":" + task.ID
-			tasks[saveID] = task
-			if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
-				completedTasks[saveID] = 1
-			}
-		}
+	// 	if task != nil {
+	// 		saveID := Table + ":" + task.ID
+	// 		tasks[saveID] = task
+	// 		if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
+	// 			completedTasks[saveID] = 1
+	// 		}
+	// 	}
 
-		if tick.Commit {
-			break
-		}
-	}
+	// 	if tick.Commit {
+	// 		break
+	// 	}
+	// }
 
-	if len(tasks) > 0 {
-		for i < MaxRetry {
-			if err := conn.UpdateTransaction(tasks); err != nil {
-				if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
-					time.Sleep(retryInterval)
-					conn = validateDBConnection(conn)
-				} else {
-					l.Log.Error("ProcessTaskQueue() : task update transaction failed : " + err.Error())
-					break
-				}
-				i++
-			} else {
-				updatedTasks = true
-				break
-			}
-		}
+	// if len(tasks) > 0 {
+	// 	for i < MaxRetry {
+	// 		if err := conn.UpdateTransaction(tasks); err != nil {
+	// 			if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
+	// 				time.Sleep(retryInterval)
+	// 				conn = validateDBConnection(conn)
+	// 			} else {
+	// 				l.Log.Error("ProcessTaskQueue() : task update transaction failed : " + err.Error())
+	// 				break
+	// 			}
+	// 			i++
+	// 		} else {
+	// 			updatedTasks = true
+	// 			break
+	// 		}
+	// 	}
 
-		if !updatedTasks {
-			for task := range tasks {
-				l.Log.Errorf("Failed to update the task : %s", task)
-			}
-		}
-	}
+	// 	if !updatedTasks {
+	// 		for task := range tasks {
+	// 			l.Log.Errorf("Failed to update the task : %s", task)
+	// 		}
+	// 	}
+	// }
 
-	if len(completedTasks) > 0 {
-		i = 0
-		for i < MaxRetry {
-			if err := conn.SetExpiryTimeForKeys(completedTasks); err != nil {
-				if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
-					time.Sleep(retryInterval)
-					conn = validateDBConnection(conn)
-				} else {
-					l.Log.Error("ProcessTaskQueue() : create expiry for completed tasks failed : " + err.Error())
-					break
-				}
-				i++
-			} else {
-				break
-			}
-		}
-	}
+	// if len(completedTasks) > 0 {
+	// 	i = 0
+	// 	for i < MaxRetry {
+	// 		if err := conn.SetExpiryTimeForKeys(completedTasks); err != nil {
+	// 			if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
+	// 				time.Sleep(retryInterval)
+	// 				conn = validateDBConnection(conn)
+	// 			} else {
+	// 				l.Log.Error("ProcessTaskQueue() : create expiry for completed tasks failed : " + err.Error())
+	// 				break
+	// 			}
+	// 			i++
+	// 		} else {
+	// 			break
+	// 		}
+	// 	}
+	// }
 
-	tasks = nil
-	completedTasks = nil
+	// tasks = nil
+	// completedTasks = nil
 
 }
 

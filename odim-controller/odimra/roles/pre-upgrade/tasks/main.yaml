@@ -28,5 +28,6 @@
   when: odimraImagePath is defined and odimra_file_details.stat.exists and odimra_file_details.stat.isreg == true
 
 - name: Load {{ docker_image_name }} image
-  command: "{{ docker_bin_path }} load -i {{ docker_images_path }}/{{ docker_image_name }}.tar"
+  #command: "{{ docker_bin_path }} load -i {{ docker_images_path }}/{{ docker_image_name }}.tar"
+  command: "{{ docker_bin_path }} -n=k8s.io image  import {{ docker_images_path }}/{{ docker_image_name }}.tar"
   when: odimraImagePath is defined and odimra_file_details.stat.exists and odimra_file_details.stat.isreg == true

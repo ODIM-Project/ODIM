@@ -196,7 +196,9 @@ def perform_checks(skip_opt_param_check=False):
 			logger.critical("Log format value is invalid, allowed values are 'syslog', 'json'")
 			exit(1)
 		logger.info("Log format is %s ",CONTROLLER_CONF_DATA['odimra']['logFormat'])
-		
+	if 'expiryTimeForKey' not in CONTROLLER_CONF_DATA['odimra'] or CONTROLLER_CONF_DATA['odimra']['expiryTimeForKey'] == None or CONTROLLER_CONF_DATA['odimra']['expiryTimeForKey'] == 0: 
+		logger.info("Key expiry is not set, Setting default value 86400")
+		CONTROLLER_CONF_DATA['odimra']['expiryTimeForKey']=86400
 	if not skip_opt_param_check:
 		logger.debug("Checking if the local user matches with the configured nodes user")
 		cur_user = os.getenv('USER')

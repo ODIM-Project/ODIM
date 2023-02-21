@@ -332,7 +332,7 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	if len(completedTasks) > 0 {
 		i = 0
 		for i < MaxRetry {
-			if err := conn.SetExpiryTimeForKeys(completedTasks); err != nil {
+			if err := conn.SetExpiryTimeForKeys(completedTasks, config.Data.ExpiryTimeForKey); err != nil {
 				if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
 					time.Sleep(retryInterval)
 					conn = validateDBConnection(conn)

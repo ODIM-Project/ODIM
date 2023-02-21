@@ -65,6 +65,7 @@ func main() {
 		log.Fatal("Task Service should not be run as the root user")
 	}
 	go func() {
+		log.Print("Lisening at locahost:6000")
 		log.Println(http.ListenAndServe("localhost:6000", nil))
 	}()
 	config.CollectCLArgs(&configWarnings)

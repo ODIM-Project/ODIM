@@ -93,7 +93,7 @@ func (ts *TasksRPC) PollPlugin(ctx context.Context) {
 				common.Critical, 100, payLoad, time.Now())
 		}
 	}
-	l.LogWithFields(ctx).Info("Completed polling plugin to monitor the plugin tasks. Monitored %d plugin tasks",
+	l.LogWithFields(ctx).Infof("Completed polling plugin to monitor the plugin tasks. Monitored %d plugin tasks",
 		len(pluginTaskIDs))
 }
 

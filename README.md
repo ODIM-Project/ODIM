@@ -7,21 +7,22 @@
    - [Resource Aggregator for ODIM deployment requirements](#resource-aggregator-for-odim-deployment-requirements)
    - [Deployment guidelines](#deployment-guidelines)
 2. [Resource Aggregator for ODIM compatibility matrix](#resource-aggregator-for-odim-compatibility-matrix)
-3. [Resource Aggregator for ODIM pre-deployment operations](#Resource-Aggregator-for-ODIM-pre-deployment-operations)
+3. [Troubleshooting information](#Troubleshooting-information)
+4. [Resource Aggregator for ODIM pre-deployment operations](#Resource-Aggregator-for-ODIM-pre-deployment-operations)
    - [Setting up the environment](#setting-up-the-environment)
    - [Pulling Docker images of all Kubernetes microservices](#pulling-docker-images-of-all-kubernetes-microservices)
    - [Building Docker images of all services](#building-docker-images-of-all-services)
    - [Updating additional package versions](#updating-additional-package-versions)
    - [Generating encrypted passwords for nodes and Redis](#generating-encrypted-passwords-for-nodes-and-Redis)
    - [Configuring log path for odim-controller](#configuring-log-path-for-odim-controller)
-4. [Deploying Resource Aggregator for ODIM and the plugins](#deploying-resource-aggregator-for-odim-and-the-plugins)
+5. [Deploying Resource Aggregator for ODIM and the plugins](#deploying-resource-aggregator-for-odim-and-the-plugins)
    - [Deploying the resource aggregator services](#deploying-the-resource-aggregator-services)
    - [Deploying the Unmanaged Rack Plugin](#deploying-the-unmanaged-rack-plugin)
    - [Deploying the Dell plugin](#deploying-the-dell-plugin)
    - [Deploying the Lenovo plugin](#deploying-the-lenovo-plugin)
    - [Deploying the Cisco ACI plugin](#deploying-the-cisco-aci-plugin)
    - [Adding a plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework)
-5. [Resource Aggregator for ODIM post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)
+6. [Resource Aggregator for ODIM post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)
    - [Scaling up the resources and services of Resource Aggregator for ODIM](#scaling-up-the-resources-and-services-of-resource-aggregator-for-odim)
    - [Scaling down the resources and services of Resource Aggregator for ODIM](#scaling-down-the-resources-and-services-of-resource-aggregator-for-odim)
    - [Rolling back to an earlier deployment revision](#rolling-back-to-an-earlier-deployment-revision)
@@ -29,6 +30,7 @@
    - [Backup and restore of Kubernetes etcd](#Backup-and-restore-of-Kubernetes-etcd)
    - [Backup and restore of ODIM etcd](#Backup-and-restore-of-ODIM-etcd)
    - [Backup and restore of Redis](#Backup-and-restore-of-Redis)
+   - [Backup and restore of Resource Aggregator for ODIM and plugin configurations](#Backup-and-restore-of-Resource-Aggregator-for-ODIM-and-plugin-configurations)
 6. [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
    - [Adding a server into the resource inventory](#adding-a-server-into-the-resource-inventory)
    - [Viewing the resource inventory](#viewing-the-resource-inventory)
@@ -41,7 +43,7 @@
    - [Viewing network fabrics](#viewing-network-fabrics)
    - [Creating and deleting volumes](#creating-and-deleting-volumes)
    - [Removing a server from the resource inventory](#removing-a-server-from-the-resource-inventory)
-7.  [Using odim-controller command-line interface](#using-odim-controller-command-line-interface)
+7. [Using odim-controller command-line interface](#using-odim-controller-command-line-interface)
 8. [Contributing to the open source community](#contributing-to-the-open-source-community)
    - [Creating a PR](#creating-a-pr)
    - [Filing Resource Aggregator for ODIM defects](#filing-resource-aggregator-for-odim-defects)
@@ -199,7 +201,7 @@ The following table lists the software components and versions that are compatib
 |etcd| 3.4.15            |
 |Java JRE|11|
 |Kafka|3.1.0|
-|Redis|6.2.6|
+|Redis|7.0.8|
 |Ubuntu LTS|20.04.4|
 |ZooKeeper|3.7.0|
 |Docker|20.10.12|
@@ -207,12 +209,18 @@ The following table lists the software components and versions that are compatib
 |Kubernetes|1.24.6|
 |Kubespray|2.20.0|
 |containerd|1.6.8|
-|Helm charts|3.9.2|
+|Helm charts|3.10.3|
 |Nginx|1.18.0-0ubuntu1.3|
 |Keepalived|1:2.0.19.2|
 |Stakater/Reloader|v0.0.76|
 |Redfish Schema|2022.1|
 |Redfish Specification|1.15.1|
+
+
+
+# Troubleshooting information
+
+If you experience any issues while deploying Resource Aggregator for ODIM, please see the *Troubleshooting Readme* for solutions, workarounds. and FAQs at *https://github.com/ODIM-Project/ODIM/blob/development/docs/Troubleshooting.md*.
 
 
 
@@ -224,6 +232,8 @@ The following table lists the software components and versions that are compatib
 4. [Updating additional package versions](#updating-additional-package-versions)
 5. [Generating encrypted passwords for nodes and Redis](#generating-encrypted-passwords-for-nodes-and-Redis)
 6. [Configuring log path for odim-controller](#configuring-log-path-for-odim-controller)
+
+
 
 ## Setting up the environment
 
@@ -390,10 +400,10 @@ The following table lists the software components and versions that are compatib
    |quay.io/calico/cni| v3.23.3 |quay.io_calico_cni.tar |
    |quay.io/calico/kube-controllers| v3.23.3 |quay.io_calico_kube-controllers.tar |
    | registry.k8s.io/dns/k8s-dns-node-cache                    |1.21.1 | registry.k8s.io_dns_k8s-dns-node-cache.tar                   |
-   | registry.k8s.io/pause                                     |3.6 | registry.k8s.io_pause.tar                                    |
-   |docker.io/library/nginx|1.23.0 |nginx.tar |
+   | registry.k8s.io/pause                                     |3.6 | registry.k8s.io_pause2.tar                                   |
+   | registry.k8s.io/pause |3.7 | registry.k8s.io_pause.tar |
+   |docker.io/library/nginx|1.23.0-alpine |docker.io_library_nginx.tar |
    | registry.k8s.io/coredns/coredns                           |v1.8.6 | registry.k8s.io_coredns_coredns.tar                          |
-   |quay.io/coreos/etcd|v3.4.13 |quay.io_coreos_etcd.tar |
    | registry.k8s.io/cpa/cluster-proportional-autoscaler-amd64 |1.8.5 | registry.k8s.io_cpa_cluster-proportional-autoscaler-amd64.tar |
    
 2. Verify you have successfully pulled all the images.
@@ -474,27 +484,28 @@ The following table lists the software components and versions that are compatib
 
     | **Docker image name** | **Version** | **Docker image bundle name** |
     | :-------------------- | ----------- | ---------------------------- |
-    | account-session       | 3.1         | account-session.tar          |
-    | aggregation           | 4.0         | aggregation.tar              |
-    | api                   | 4.0         | api.tar                      |
-    | events                | 4.0         | events.tar                   |
-    | fabrics               | 3.1         | fabrics.tar                  |
-    | managers              | 4.0         | managers.tar                 |
-    | systems               | 4.0         | systems.tar                  |
-    | licenses              | 1.0         | licenses.tar                 |
-    | task                  | 3.1         | task.tar                     |
-    | update                | 3.1         | update.tar                   |
+    | account-session       | 4.0         | account-session.tar          |
+    | aggregation           | 5.0         | aggregation.tar              |
+    | api                   | 5.0         | api.tar                      |
+    | events                | 5.0         | events.tar                   |
+    | fabrics               | 4.0         | fabrics.tar                  |
+    | managers              | 5.0         | managers.tar                 |
+    | systems               | 5.0         | systems.tar                  |
+    | licenses              | 2.0         | licenses.tar                 |
+    | task                  | 4.0         | task.tar                     |
+    | update                | 4.0         | update.tar                   |
     | kafka                 | 2.0         | kafka.tar                    |
     | zookeeper             | 2.0         | zookeeper.tar                |
     | etcd                  | 1.16        | etcd.tar                     |
-    | redis                 | 3.0         | redis.tar                    |
+    | redis                 | 4.0         | redis.tar                    |
     | stakater/reloader     | v0.0.76     | stakater_reloader.tar        |
     | busybox               | 1.33        | busybox.tar                  |
-    | dellplugin            | 2.1         | dellplugin.tar               |
-    | lenovoplugin          | 1.1         | lenovoplugin.tar             |
-    | urplugin              | 3.1         | urplugin.tar                 |
-    | grfplugin             | 3.1         | grfplugin.tar                |
-    | telemetry             | 2.1         | telemetry.tar                |
+    | dellplugin            | 2.2         | dellplugin.tar               |
+    | lenovoplugin          | 1.2         | lenovoplugin.tar             |
+    | urplugin              | 3.2         | urplugin.tar                 |
+    | grfplugin             | 3.2         | grfplugin.tar                |
+    | aciplugin             | 3.2         | aciplugin.tar                |
+    | telemetry             | 3.0         | telemetry.tar                |
     
 3. To install the Docker images of all services on the cluster nodes, create a directory called `odimra_images` on the deployment node and copy each tar archive to this directory. 
     For example: `cp /home/<user>/ODIM/*.tar /home/<user>/odimra_images`
@@ -565,7 +576,7 @@ While deploying Resource Aggregator for ODIM, verify the versions of the followi
    sudo apt-cache madison nginx
    ```
 
-2. Verify if the latest version is `nginx=1.18.0-0ubuntu1.2`.
+2. Verify if the latest version is `nginx=1.18.0-0ubuntu1.4`.
 
 3. In case of a version mismatch, update the latest version of the `Nginx` package in:
    
@@ -606,7 +617,7 @@ Resource Aggregator for ODIM uses the odim-vault tool to encrypt and decrypt pas
     scripts/odimVaultKeyFile
     ```
 
-    **Result**: odimVaultKeyFile contains the encoded odim-vault master key.
+    **Result**: odimVaultKeyFile contains the encoded odim-vault primary key.
 
 4. Change the file permissions of odimVaultKeyFile.
 
@@ -798,7 +809,7 @@ Topics covered in this section include:
         haDeploymentEnabled: True
         connectionMethodConf:
         - ConnectionMethodType: Redfish
-          ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+          ConnectionMethodVariant: Compute:BasicAuth:GRF_v2.0.0
         etcHostsEntries:
       
         appsLogPath: /var/log/odimra
@@ -848,10 +859,8 @@ Topics covered in this section include:
        odimraKafkaClientCert:
        odimraKafkaClientKey:
       ```
-   ```
    
    For information on each parameter in this configuration file, see *[Odim-controller configuration parameters](#odim-controller-configuration-parameters)*.
-   ```
    
 4. Update the following mandatory parameters in the `kube_deploy_nodes.yaml` file:
    
@@ -1019,7 +1028,7 @@ Topics covered in this section include:
    
    {odim_host} is the virtual IP address of the Kubernetes cluster.
    
-   > **NOTE**: For a single node cluster configuration, {odim_host} is the ip address of master node. For a three node cluster configuration, to use FQDN as `{odim_host}`, ensure that FQDN is configured to the virtual IP address in the `/etc/hosts` file or in the DNS server.
+   > **NOTE**: For a single node cluster configuration, {odim_host} is the ip address of primary node. For a three node cluster configuration, to use FQDN as `{odim_host}`, ensure that FQDN is configured to the virtual IP address in the `/etc/hosts` file or in the DNS server.
    
    {port} is the API server port configured in Nginx. Default port is `30080`. If you have changed the default port, use that as the port.
    
@@ -1270,7 +1279,7 @@ Topics covered in this section include:
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with URP: ConnectionMethodVariant: `Compute:BasicAuth:URP_v1.0.0`<br> |
+    | connectionMethodConf         | The connection method associated with URP: ConnectionMethodVariant: `Compute:BasicAuth:URP_v2.0.0`<br> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`.<br>Add these values to the existing comma-separated list.<br> |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`, `redis-ha-ondisk.odim.svc.cluster.local`.<br>Add these values to the existing comma-separated list.<br><br />**NOTE**: `redis-ha-ondisk.odim.svc.cluster.local` is applicable to three-node deployment only. |
     | odimPluginPath               | The path of the directory where the URP Helm package, the `urplugin` image, and the modified `urplugin-config.yaml` are copied. |
@@ -1288,9 +1297,9 @@ Topics covered in this section include:
       haDeploymentEnabled: True
       connectionMethodConf:
       - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+        ConnectionMethodVariant: Compute:BasicAuth:GRF_v2.0.0
       - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth:URP_v1.0.0
+       ConnectionMethodVariant: Compute:BasicAuth:URP_v2.0.0
       odimraKafkaClientCertFQDNSan: urplugin,api
       odimraServerCertFQDNSan: urplugin,api
     ```
@@ -1449,7 +1458,7 @@ Topics covered in this section include:
       haDeploymentEnabled: True
       connectionMethodConf:
       - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth:DELL_v1.0.0
+        ConnectionMethodVariant: Compute:BasicAuth:DELL_v2.0.0
       odimraKafkaClientCertFQDNSan: dellplugin,dellplugin-events
       odimraServerCertFQDNSan: dellplugin,dellplugin-events    
     ```
@@ -1653,7 +1662,7 @@ The plugin you want to add is successfully deployed.
     `https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources` 
 
     -   `{odim_host}` is the virtual IP address of the Kubernetes cluster. 
-    For one-node odim deployment, `odim_host` is the IP address of the master node.
+    For one-node odim deployment, `odim_host` is the IP address of the cluster node.
     -   `{port}` is the API server port configured in Nginx. Default port is `30080`. If you have changed the default port, use that as the port.
 
     The following ports (except container ports) must be free:
@@ -2338,7 +2347,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    mkdir <backup directory>/backup
    ```
 
-2. Get the name of the master pod to collect the backup snapshot file and append-only file to restore them later (either ondisk or inmemory database).
+2. Get the name of the primary pod to collect the backup snapshot file and append-only file to restore them later (either ondisk or inmemory database).
 
    ```
    kubectl get pods -nodim | grep redis | grep primary
@@ -2353,7 +2362,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    redis-ha-ondisk-primary-0
    ```
 
-3. Copy the rdb files and aof files from the master pod.
+3. Copy the rdb files and aof files from the primary pod.
 
    ```
    kubectl cp odim/<pod-name>:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
@@ -2513,6 +2522,71 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
     ```
     keys *
     ```
+
+   
+
+## Backup and restore of Resource Aggregator for ODIM and plugin configurations
+
+You can take a backup of all Resource Aggregator for ODIM and plugin configurations in a single file or in different files. The following procedure has instructions to take a backup of Resource Aggregator for ODIM and plugin configurations in a single file.
+
+1. List down all the configmaps present in the odim namespace:
+
+   ```
+   kubectl get cm -n <odim_namespace>
+   ```
+
+   For example:
+
+   ```
+   kubectl get cm -nodim
+   ```
+
+   The following sample output appears:
+
+   ```
+   NAME                    DATA   AGE
+   configure-hosts         1      10d
+   iloplugin-config        1      3d23h
+   kube-root-ca.crt        1      11d
+   odimra-config           1      10d
+   odimra-platformconfig   1      10da
+   ```
+
+2. Copy all config maps to a file:
+
+   ```
+   kubectl get cm -nodim -o yaml > odim_configs.yaml
+   ```
+
+3. Remove the fields such as `resourceVersion`, `uid`, and `creationtimestamp` from the yaml file. 
+   The backup file of all configurations is ready.
+
+4. To restore the configurations, apply the configuration backup using the `kubectl apply` command:
+
+   ```
+   kubectl apply -f <file-name>
+   ```
+
+   For example: 
+
+   ```
+   kubectl apply -f odim_configs.yaml
+   ```
+
+   The following sample output appears:
+
+   ```
+   configmap/configure-hosts configured
+   configmap/iloplugin-config configured
+   configmap/kube-root-ca.crt configured
+   configmap/odimra-config configured
+   configmap/odimra-platformconfig configured
+   ```
+
+   ### Testing the backup and restore operation
+
+   1. After taking a backup of the configuration files, re-install Resource Aggregator for ODIM with different configurations. 
+   2. Restore the old backup configurations and verify that the parameters would be updated as present in the backup file.
 
    
 
@@ -2821,7 +2895,7 @@ The specification and code is licensed under the Apache 2.0 license, and is foun
 
 If you want to make your first contribution on GitHub, refer one of the following procedures:
 
-- *https://github.com/firstcontributions/first-contributions/blob/master/README.md*
+- *https://github.com/firstcontributions/first-contributions/blob/main/README.md*
 
 - *https://www.dataschool.io/how-to-contribute-on-github/*
 
@@ -2946,10 +3020,10 @@ This procedure shows how to set up time synchronization across all the nodes (de
 Run the following commands:
 
 1. ```
-    wget https://dl.google.com/go/go1.17.2.linux-amd64.tar.gz -P /var/tmp
+    wget https://dl.google.com/go/go1.19.5.linux-amd64.tar.gz -P /var/tmp
    ```
 1. ```
-    sudo tar -C /usr/local -xzf /var/tmp/go1.17.2.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf /var/tmp/go1.19.5.linux-amd64.tar.gz
    ```
 1. ```
     export PATH=$PATH:/usr/local/go/bin
@@ -3173,7 +3247,7 @@ Run the following commands:
      haDeploymentEnabled: True
      connectionMethodConf:
      - ConnectionMethodType: Redfish
-       ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+       ConnectionMethodVariant: Compute:BasicAuth:GRF_v2.0.0
      - ConnectionMethodType: Redfish
        ConnectionMethodVariant: Storage:BasicAuth:STG_v1.0.0
      etcHostsEntries: ""
@@ -3238,7 +3312,7 @@ The following table lists all the configuration parameters required by odim-cont
 |deploymentID|A unique identifier to identify the Kubernetes cluster. Example: "threenodecluster".<br>It is required for the following operations:<br>-   Adding a node.<br>-   Deleting a node.<br>-   Resetting the Kubernetes cluster.<br>-   Deploying and removing the services of Resource Aggregator for ODIM.<br>|
 |httpProxy|HTTP Proxy to be set in all the nodes for connecting to external network. If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
 |httpsProxy|HTTPS Proxy to be set in all the nodes for connecting to external network. If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
-|noProxy|List of IP addresses and FQDNs for which proxy must not be used. It must begin with `127.0.0.1,localhost,localhost.localdomain,10.96.0.0/12,` followed by the IP addresses of the cluster nodes.<br>If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
+|noProxy|List of IP addresses and FQDNs for which proxy must not be used. It must begin with `127.0.0.1,localhost,localhost.localdomain,10.96.0.0/12,10.233.0.0/18,10.233.64.0/18` followed by the IP addresses of the cluster nodes.<br>If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
 |nodePasswordFilePath|The absolute path of the file containing the encoded password of the nodes \(encoded using the odim-vault tool)<br />`/home/<username\>/ODIM/odim-controller/scripts/nodePasswordFile`<br>|
 |redisInMemoryPasswordFilePath|The absolute path of the file containing the encoded password of the Redis in-memory database (encoded using the odim-vault tool\)<br /> `/home/<username>/ODIM/odim-controller/scripts/redisInMemoryPasswordFile`<br/>|
 |redisOnDiskPasswordFilePath|The absolute path of the file containing the encoded password of the Redis on-disk database (encoded using the odim-vault tool\)<br /> `/home/<username>/ODIM/odim-controller/scripts/redisOnDiskPasswordFile`<br/>|
@@ -3270,7 +3344,7 @@ The following table lists all the configuration parameters required by odim-cont
 |MessageBusQueue|Event message bus queue name. Allowed characters for the value are alphabets, numbers, period, underscore, and hyphen. <br />**NOTE**: Do not include blank spaces.|
 |etcHostsEntries|List of FQDNs of the external servers and plugins to be added to the `/etc/hosts` file in each of the service containers of Resource Aggregator for ODIM. The external servers are the servers that you want to add into the resource inventory.<br>**NOTE**: It must be in the YAML multiline format as shown in the "etcHostsEntries template".<br>|
 |appsLogPath|The path where the logs of the Resource Aggregator for ODIM services must be stored. Default path is `/var/log/odimra`.<br>|
-|odimraServerCertFQDNSan|List of FQDNs to be included in the server certificate of Resource Aggregator for ODIM. It is required for deploying plugins.<br><br />The default value for one-node deployment is`redis-inmemory`,`redis-ondisk`.  <br />The default value for three-node deployment is `redis-ha-inmemory,redis-ha-ondisk,redis-ha-inmemory-primary-0.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-inmemory-secondary-0.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-inmemory-secondary-1.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-ondisk-primary-0.redis-ha-ondisk-headless.odim.svc.cluster.local,redis-ha-ondisk-secondary-0.redis-ha-ondisk-headless.odim.svc.cluster.local,redis-ha-ondisk-secondary-1.redis-ha-ondisk-headless.odim.svc.cluster.local` <br />**NOTE**: When you add a plugin, add the FQDN of the new plugin to the existing comma-separated list of FQDNs.|
+|odimraServerCertFQDNSan|List of FQDNs to be included in the server certificate of Resource Aggregator for ODIM. It is required for deploying plugins.<br><br />The default value for one-node deployment is`redis-inmemory`,`redis-ondisk`.  <br />The default value for three-node deployment is `redis-ha-inmemory,redis-ha-inmemory-sentinel,redis-ha-ondisk,redis-ha-ondisk-sentinel,redis-ha-inmemory-primary-0.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-inmemory-sentinel-primary-0.redis-ha-inmemory-sentinel-headless.odim.svc.cluster.local,redis-ha-inmemory-secondary-0.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-inmemory-sentinel-secondary-0.redis-ha-inmemory-sentinel-headless.odim.svc.cluster.local,redis-ha-inmemory-secondary-1.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-inmemory-sentinel-secondary-1.redis-ha-inmemory-sentinel-headless.odim.svc.cluster.local,redis-ha-ondisk-primary-0.redis-ha-ondisk-headless.odim.svc.cluster.local,redis-ha-ondisk-sentinel-primary-0.redis-ha-ondisk-sentinel-headless.odim.svc.cluster.local,redis-ha-ondisk-secondary-0.redis-ha-ondisk-headless.odim.svc.cluster.local,redis-ha-ondisk-sentinel-secondary-0.redis-ha-ondisk-sentinel-headless.odim.svc.cluster.local,redis-ha-ondisk-secondary-1.redis-ha-ondisk-headless.odim.svc.cluster.local,redis-ha-ondisk-sentinel-secondary-1.redis-ha-ondisk-sentinel-headless.odim.svc.cluster.local` <br />**NOTE**: When you add a plugin, add the FQDN of the new plugin to the existing comma-separated list of FQDNs.|
 |odimraServerCertIPSan|List of IP addresses to be included in the server certificate of Resource Aggregator for ODIM. It is required for deploying plugins.<br> **NOTE**: It must be comma-separated values of type String.<br>|
 |odimraKafkaClientCertFQDNSan|List of FQDNs to be included in the Kafka client certificate of Resource Aggregator for ODIM. It is required for deploying plugins.<br> **NOTE**: When you add a plugin, add the FQDN of the new plugin to the existing comma-separated list of FQDNs.<br>|
 |odimraKafkaClientCertIPSan|List of IP addresses to be included in the Kafka client certificate of Resource Aggregator for ODIM. It is required for deploying plugins.|
@@ -3376,7 +3450,6 @@ The following table lists all the configuration parameters required to deploy a 
 | account-session          | Name of the account-sessions service                         |
 | aggregation              | Name of the aggregation service                              |
 | api                      | Name of the api service                                      |
-| composition-service      | Name of the composition-service                              |
 | events                   | Name of the events service                                   |
 | fabrics                  | Name of the fabrics service                                  |
 | managers                 | Name of the managers service                                 |
@@ -3465,7 +3538,7 @@ The protoc compiler provides a language-neutral, platform-neutral, extensible me
       #!/bin/bash -x
       ## Generting protoc
       
-      protos=("account" "aggregator" "auth" "chassis" "events" "fabrics" "managers" "role" "session" "systems" "task" "telemetry" "update" "compositionservice" "licenses")
+      protos=("account" "aggregator" "auth" "chassis" "events" "fabrics" "managers" "role" "session" "systems" "task" "telemetry" "update" "licenses")
       for str in ${protos[@]}; do
       proto_path="$<your_odim_directory>/lib-utilities/proto/$str"
       proto_file_name="$str.proto"
@@ -3822,7 +3895,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with the GRF plugin:<br/> ConnectionMethodVariant: `Compute:BasicAuth:GRF_v1.0.0`<br/>Check if it is there already before updating. If yes, do not add it again.<br/> |
+    | connectionMethodConf         | The connection method associated with the GRF plugin:<br/> ConnectionMethodVariant: `Compute:BasicAuth:GRF_v2.0.0`<br/>Check if it is there already before updating. If yes, do not add it again.<br/> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the GRF plugin:grfplugin, grfplugin-events<br/>Add these values to the existing comma-separated list.<br/> |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the GRF plugin: grfplugin, grfplugin-events. <br />Add these values to the existing comma-separated list.<br> |
     | odimPluginPath               | The path of the directory where the GRF Helm package, the `grfplugin` image, and the modified `grfplugin-config.yaml` are copied. |
@@ -3840,7 +3913,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
           haDeploymentEnabled: True
           connectionMethodConf:
           - ConnectionMethodType: Redfish
-            ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+            ConnectionMethodVariant: Compute:BasicAuth:GRF_v2.0.0
           odimraKafkaClientCertFQDNSan: grfplugin,grfplugin-events
           odimraServerCertFQDNSan: grfplugin,grfplugin-events
     ```
@@ -4286,7 +4359,7 @@ python3 odim-controller.py --config \
 
 ## CI process
 
-GitHub action workflows, also known as checks, are added to the ODIM repository. They are triggered whenever a Pull Request (PR) is raised against the master (development) branch. The result from the workflow execution is then updated to the PR.
+GitHub action workflows, also known as checks, are added to the ODIM repository. They are triggered whenever a Pull Request (PR) is raised against the development branch. The result from the workflow execution is then updated to the PR.
 
 > **NOTE**: You can review and merge PRs only if the checks are passed.
 
@@ -4304,14 +4377,14 @@ These checks run in parallel and take a few minutes to complete.
 
 1. build_unittest.yml
    - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md*.
-   - Installs Go 1.17.2 package
-   - Installs and configures Redis 6.2.6 with two instances running on ports 6379 and 6380
-   - Checks out the PR code into the Go module directory
-   - Builds/compiles the code
-   - Runs the unit tests
+   - Installs Go 1.19.5 package.
+   - Installs and configures Redis 7.0.8 with two instances running on ports 6379 and 6380.
+   - Checks out the PR code into the Go module directory.
+   - Builds/compiles the code.
+   - Runs the unit tests.
 2. build_deploy_test.yml
    - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md*.
-   - Checks out the PR code
+   - Checks out the PR code.
    - Builds and deploys the following docker containers:
      - ODIMRA 
      - Generic Redfish plugin 
@@ -4320,9 +4393,9 @@ These checks run in parallel and take a few minutes to complete.
      - Zookeeper 
      - etcd
      - Redis
-   - Runs the sanity tests
-   - Prepares build artifacts
-   - Uploads the build artifacts
+   - Runs the sanity tests.
+   - Prepares build artifacts.
+   - Uploads the build artifacts.
 
 > **NOTE:** Build status notifications having a link to the GitHub Actions build job page will be sent to the developer’s email address.
 

@@ -351,7 +351,7 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
-	mockPluginData(t, "ILO_v1.0.0")
+	mockPluginData(t, "ILO_v2.0.0")
 
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -588,7 +588,7 @@ func TestAggregator_GetAggregationSource(t *testing.T) {
 func TestAggregator_UpdateAggreagationSource(t *testing.T) {
 	config.SetUpMockConfig(t)
 
-	mockPluginData(t, "ILO_v1.0.0")
+	mockPluginData(t, "ILO_v2.0.0")
 	req := agmodel.AggregationSource{
 		HostName: "100.0.0.1:50000",
 		UserName: "admin",
@@ -684,7 +684,7 @@ func TestAggregator_UpdateAggreagationSource(t *testing.T) {
 }
 
 func TestAggregator_DeleteAggregationSource(t *testing.T) {
-	mockPluginData(t, "ILO_v1.0.0")
+	mockPluginData(t, "ILO_v2.0.0")
 	req := agmodel.AggregationSource{
 		HostName: "100.0.0.1:50000",
 		UserName: "admin",

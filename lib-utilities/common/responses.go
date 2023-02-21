@@ -87,3 +87,19 @@ func ModifyContext(ctx context.Context, threadName, podName string) context.Cont
 	ctx = context.WithValue(ctx, ProcessName, podName)
 	return ctx
 }
+func CreateNewRequestContext(ctx context.Context) context.Context {
+	reqCtx := context.Background()
+	processName, _ := ctx.Value(ProcessName).(string)
+	transactionID, _ := ctx.Value(TransactionID).(string)
+	actionID, _ := ctx.Value(ActionID).(string)
+	actionName, _ := ctx.Value(ActionName).(string)
+	threadID, _ := ctx.Value(ThreadID).(string)
+	threadName, _ := ctx.Value(ThreadName).(string)
+	reqCtx = context.WithValue(reqCtx, ProcessName, processName)
+	reqCtx = context.WithValue(reqCtx, TransactionID, transactionID)
+	reqCtx = context.WithValue(reqCtx, ActionID, actionID)
+	reqCtx = context.WithValue(reqCtx, ActionName, actionName)
+	reqCtx = context.WithValue(reqCtx, ThreadID, threadID)
+	reqCtx = context.WithValue(reqCtx, ThreadName, threadName)
+	return reqCtx
+}

@@ -181,7 +181,8 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 
 	// Discover telemetry service
 	percentComplete = e.getTelemetryService(ctx, taskID, targetURI, percentComplete, pluginContactRequest, resp, saveSystem)
-
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(ctx, task)
 	// Populate the data for license service
 	pluginContactRequest.DeviceInfo = getSystemBody
 	pluginContactRequest.OID = "/redfish/v1/LicenseService/Licenses/"
@@ -257,14 +258,6 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	progress = h.getAllRootInfo(ctx, taskID, progress, managerEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
 
 	percentComplete = progress
-
-	err = agmodel.SaveBMCInventory(h.InventoryData)
-	if err != nil {
-		errorMessage := "GenericSave : error while trying to add resource date to DB: " + err.Error()
-		l.LogWithFields(ctx).Error(errorMessage)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
-			nil, nil), "", nil
-	}
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(ctx, task)
 	if err != nil && (err.Error() == common.Cancelling) {
@@ -276,7 +269,13 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 		l.LogWithFields(ctx).Error(h.ErrorMessage)
 		return common.GeneralError(h.StatusCode, h.StatusMessage, h.ErrorMessage, h.MsgArgs, taskInfo), "", nil
 	}
-
+	err = agmodel.SaveBMCInventory(h.InventoryData)
+	if err != nil {
+		errorMessage := "GenericSave : error while trying to add resource data to DB: " + err.Error()
+		l.LogWithFields(ctx).Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil), "", nil
+	}
 	ciphertext, err := e.EncryptPassword([]byte(addResourceRequest.Password))
 	if err != nil {
 		go e.rollbackInMemory(resourceURI)

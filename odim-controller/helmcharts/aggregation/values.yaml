@@ -2,4 +2,4 @@ odimra:
   namespace:
   groupID:
   haDeploymentEnabled:
-  aggregationImageTag: "4.0"
+  aggregationImageTag: "5.0"

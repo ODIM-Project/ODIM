@@ -115,6 +115,7 @@ func main() {
 	tick := &tmodel.Tick{
 		Ticker: time.NewTicker(time.Duration(config.Data.TaskQueueConf.DBCommitInterval) * time.Microsecond),
 	}
+
 	go tqueue.UpdateTasksWorker(tick)
 
 	// Run server

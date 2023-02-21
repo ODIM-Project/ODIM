@@ -35,12 +35,14 @@ func EnqueueTask(task *tmodel.Task) {
 1."tick" is of type Tick struct in tmodel package
 */
 func UpdateTasksWorker(tick *tmodel.Tick) {
-	go Ticker(tick)
+	if len(TaskQueue.queue) != 0 {
+		go Ticker(tick)
 
-	conn := tmodel.GetWriteConnection()
-	for {
-		if !tick.Executing {
-			tick.ProcessTaskQueue(&TaskQueue.queue, conn)
+		conn := tmodel.GetWriteConnection()
+		for {
+			if !tick.Executing && len(TaskQueue.queue) == 0 {
+				tick.ProcessTaskQueue(&TaskQueue.queue, conn)
+			}
 		}
 	}
 }

@@ -1,6 +1,8 @@
 package tqueue
 
 import (
+	"fmt"
+
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 )
 
@@ -35,14 +37,13 @@ func EnqueueTask(task *tmodel.Task) {
 1."tick" is of type Tick struct in tmodel package
 */
 func UpdateTasksWorker(tick *tmodel.Tick) {
-	if len(TaskQueue.queue) >= 0 {
-		go Ticker(tick)
+	go Ticker(tick)
 
-		conn := tmodel.GetWriteConnection()
-		for {
-			if !tick.Executing {
-				tick.ProcessTaskQueue(&TaskQueue.queue, conn)
-			}
+	conn := tmodel.GetWriteConnection()
+	for {
+		fmt.Println(len(TaskQueue.queue))
+		if !tick.Executing && len(TaskQueue.queue) != 0 {
+			tick.ProcessTaskQueue(&TaskQueue.queue, conn)
 		}
 	}
 }

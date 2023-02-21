@@ -3,6 +3,7 @@ module github.com/ODIM-Project/ODIM/svc-task
 go 1.19
 
 require (
+	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20230206103745-d4f48a4d7634
 	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20201201072448-9772421f1b55
 	github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201201072448-9772421f1b55
 	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20220426104855-9b203a83173f

@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package thandle ...
+// Package thandle ...
 package thandle
 
 import (
@@ -26,6 +26,7 @@ import (
 	"sync"
 	"time"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
@@ -62,7 +63,7 @@ type TasksRPC struct {
 	PublishToMessageBus              func(ctx context.Context, taskURI string, taskEvenMessageID string, eventType string, taskMessage string)
 }
 
-//TaskCollectionData ....
+// TaskCollectionData ....
 type TaskCollectionData struct {
 	TaskCollection map[string]int32
 	Lock           sync.Mutex
@@ -89,7 +90,7 @@ var (
 	TaskCollection TaskCollectionData
 )
 
-//CreateTask is a rpc handler which intern call actual CreatTask to create new task
+// CreateTask is a rpc handler which intern call actual CreatTask to create new task
 func (ts *TasksRPC) CreateTask(ctx context.Context, req *taskproto.CreateTaskRequest) (*taskproto.CreateTaskResponse, error) {
 	var rsp taskproto.CreateTaskResponse
 	// Check for completed task if there are any, get the oldest Completed
@@ -131,7 +132,7 @@ func (ts *TasksRPC) deleteCompletedTask(ctx context.Context, taskID string) erro
 	return nil
 }
 
-//CreateChildTask is a rpc handler which intern call actual CreateChildTask to create sub task under parent task.
+// CreateChildTask is a rpc handler which intern call actual CreateChildTask to create sub task under parent task.
 func (ts *TasksRPC) CreateChildTask(ctx context.Context, req *taskproto.CreateTaskRequest) (*taskproto.CreateTaskResponse, error) {
 	var rsp taskproto.CreateTaskResponse
 	ctx = common.GetContextData(ctx)
@@ -146,7 +147,7 @@ func (ts *TasksRPC) CreateChildTask(ctx context.Context, req *taskproto.CreateTa
 	return &rsp, err
 }
 
-//UpdateTask is a rpc handler which interr call actual CreatTask to create new task
+// UpdateTask is a rpc handler which interr call actual CreatTask to create new task
 func (ts *TasksRPC) UpdateTask(ctx context.Context, req *taskproto.UpdateTaskRequest) (*taskproto.UpdateTaskResponse, error) {
 	var rsp taskproto.UpdateTaskResponse
 	ctx = common.GetContextData(ctx)
@@ -164,7 +165,7 @@ func (ts *TasksRPC) UpdateTask(ctx context.Context, req *taskproto.UpdateTaskReq
 	return &rsp, err
 }
 
-//DeleteTask is an API end point to delete the given task.
+// DeleteTask is an API end point to delete the given task.
 func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
 	ctx = common.GetContextData(ctx)
@@ -406,7 +407,7 @@ func (ts *TasksRPC) asyncTaskDelete(ctx context.Context, taskID string) {
 	return
 }
 
-//GetSubTasks is an API end point to get all available tasks
+// GetSubTasks is an API end point to get all available tasks
 func (ts *TasksRPC) GetSubTasks(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
 	ctx = common.GetContextData(ctx)
@@ -451,7 +452,7 @@ func (ts *TasksRPC) GetSubTasks(ctx context.Context, req *taskproto.GetTaskReque
 	return &rsp, nil
 }
 
-//GetSubTask is an API end point to get the subtask details
+// GetSubTask is an API end point to get the subtask details
 func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
 	ctx = common.GetContextData(ctx)
@@ -567,7 +568,7 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 	return &rsp, nil
 }
 
-//TaskCollection is an API end point to get all available tasks
+// TaskCollection is an API end point to get all available tasks
 func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
 	ctx = common.GetContextData(ctx)
@@ -650,14 +651,14 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 	return &rsp, nil
 }
 
-//GetTasks is an API end point to get the task status and response body.
+// GetTasks is an API end point to get the task status and response body.
 // Takes X-Auth-Token and authorize the request.
-//If X-Auth-Token is empty or invalid then it returns "StatusUnauthorized".
+// If X-Auth-Token is empty or invalid then it returns "StatusUnauthorized".
 // If the TaskID is not found then it return "StatusNotFound".
 // If the task is still not completed or cancelled or killed then it return with 202
 // with empty response body, else it return with "200 OK" with full task info in the
 // response body.
-//If the Username doesnot match with the task username then it returns with
+// If the Username doesnot match with the task username then it returns with
 // StatusForbidden.
 func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
@@ -745,9 +746,12 @@ func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest)
 }
 
 // GetTaskService is an API handler to get Task service details
-//Takes:
+// Takes:
+//
 //	taskproto.GetTaskRequest(exctracts SessionToken from it)
-//Returns:
+//
+// Returns:
+//
 //	401 Unauthorized or 200 OK with respective response body and response header.
 func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
@@ -833,8 +837,11 @@ func fillProtoResponse(ctx context.Context, resp *taskproto.TaskResponse, data r
 
 // CreateTaskUtil Create the New Task and persist in in-memory DB and return task ID and error
 // Takes :
+//
 //	username : Is a Username of type string
-//Returns:
+//
+// Returns:
+//
 //	New Task URI of Type string
 //	err of type error
 func (ts *TasksRPC) CreateTaskUtil(ctx context.Context, userName string) (string, error) {
@@ -872,10 +879,13 @@ func (ts *TasksRPC) CreateTaskUtil(ctx context.Context, userName string) (string
 	return "/redfish/v1/TaskService/Tasks/" + task.ID, err
 }
 
-//CreateChildTaskUtil Creates the child task and attaches to the parent task provided.
+// CreateChildTaskUtil Creates the child task and attaches to the parent task provided.
 // Taskes:
+//
 //	parentTaskID of type string - Contains Parent task ID for Child task yet to be created
+//
 // Returns:
+//
 //	err of type error
 //	nil - On Success
 //	Non nil - On Failure
@@ -923,11 +933,14 @@ func (ts *TasksRPC) CreateChildTaskUtil(ctx context.Context, userName string, pa
 // updateTaskUtil is a function to update the existing task and/or to create sub-task under a parent task.
 // This function is to set task status, task end time along with task state based on the task state.
 // Takes:
+//
 //	taskID - Is of type string, containes task ID of the task to updated
 //	taskState - Is of type string, containes new sate of the task
 //	taskStatus - Is of type string, containes new status of the task
 //	endTime    - Is of type time.Time, containses the endtime of the task
+//
 // Retruns:
+//
 //	err of type error
 //	nil - On Success
 //	Non nil - On Failure
@@ -1155,32 +1168,82 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 }
 
 func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
-	event := data.(common.TaskEvent)
-	pluginTask, err := tmodel.GetPluginTaskInfo(event.TaskID)
+	event := data.(dmtf.EventRecord)
+	var taskID string
+
+	if len(event.MessageArgs) == 0 {
+		l.Log.Error("task id is not present in the task event." +
+			"skipping the task update")
+		return false
+	}
+
+	taskID = event.MessageArgs[0]
+	pluginTask, err := tmodel.GetPluginTaskInfo(taskID)
 	if err != nil {
 		l.Log.Error("error while processing task event", err.Error())
 		return false
 	}
 
-	l.Log.Debugf("Received task event from plugin for odim task %s, "+
-		"plugin taskID: %s, taskState: %s, taskStatus: %s, percentComplete: %d"+
-		"status code: %d: response body: %s, end time: %v",
-		pluginTask.OdimTaskID, event.TaskID, event.TaskState, event.TaskStatus,
-		event.PercentComplete, event.StatusCode, string(event.ResponseBody),
-		event.EndTime)
-
-	payLoad := &taskproto.Payload{
-		StatusCode:   event.StatusCode,
-		ResponseBody: event.ResponseBody,
+	messageID := event.MessageID
+	var message string
+	if strings.HasPrefix(messageID, common.TaskEventType) {
+		res := strings.Split(messageID, common.TaskEventType+".")
+		message = res[1]
 	}
 
+	if message == "" {
+		l.Log.Errorf("Got invalid messageID for task event with task ID %s",
+			taskID)
+		return false
+	}
+
+	taskState := tcommon.TaskStatusMap[message]
+	taskStatus := event.Severity
+
+	var percentComplete int32
+	switch taskState {
+	case dmtf.TaskStateStarting:
+		percentComplete = 0
+	case dmtf.TaskStateRunning:
+		pc, err := strconv.ParseInt(event.MessageArgs[1], 10, 64)
+		if err != nil {
+			return false
+		}
+		percentComplete = int32(pc)
+	case dmtf.TaskStateCompleted, dmtf.TaskStateCancelled,
+		dmtf.TaskStateSuspended, dmtf.TaskStateInterrupted,
+		dmtf.TaskStateKilled, dmtf.TaskStateException:
+		percentComplete = 100
+	}
+
+	statusCode := tcommon.GetStatusCode(taskState, taskStatus)
+	timestamp, err := time.Parse(time.RFC3339, event.EventTimestamp)
+	if err != nil {
+		timestamp = time.Now()
+	}
+
+	resp := tcommon.GetTaskResponse(statusCode, message)
+	body, _ := json.Marshal(resp.Body)
+
+	payLoad := &taskproto.Payload{
+		StatusCode:   int32(statusCode),
+		ResponseBody: body,
+	}
+
+	l.Log.Debugf("Received task event from plugin for odim task %s, "+
+		"plugin taskID: %s, taskState: %s, taskStatus: %s, percentComplete: %d, "+
+		"status code: %d: response body: %s, end time: %v",
+		pluginTask.OdimTaskID, taskID, taskState, taskStatus,
+		percentComplete, statusCode, string(body), timestamp)
+
 	err = ts.updateTaskUtil(context.TODO(), pluginTask.OdimTaskID,
-		event.TaskState, event.TaskStatus, event.PercentComplete,
-		payLoad, event.EndTime)
+		string(taskState), taskStatus, percentComplete,
+		payLoad, timestamp)
 	if err != nil {
 		l.Log.Error("failed to update task: error while updating task: " +
 			err.Error())
 		return false
 	}
-	return true
+
+	return false
 }

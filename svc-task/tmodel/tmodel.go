@@ -291,10 +291,6 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	tasks := make(map[string]interface{}, maxSize)
 	completedTasks := make(map[string]int64, maxSize)
 
-	if len(*queue) <= 0 {
-		return
-	}
-
 	tick.M.Lock()
 	tick.Executing = true
 	tick.M.Unlock()

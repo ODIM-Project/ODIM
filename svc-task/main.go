@@ -21,9 +21,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"net/http"
-	_ "net/http/pprof"
-
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -64,10 +61,6 @@ func main() {
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Task Service should not be run as the root user")
 	}
-	go func() {
-		log.Print("Lisening at locahost:6000")
-		log.Println(http.ListenAndServe("localhost:6000", nil))
-	}()
 	config.CollectCLArgs(&configWarnings)
 	for _, warning := range configWarnings {
 		log.Warn(warning)

@@ -62,7 +62,7 @@ func TestGetSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "failed to fetch the session : Unable to authorize session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
+				ErrorMessage:  "failed to fetch the session : Unable to authorize session token: error while trying to get session details: error while trying to get the session from DB: no data with the with key invalid-token found",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -185,7 +185,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "failed to fetch all active sessions : Unable to authorize session token: error while trying to get session details with the token invalidToken: error while trying to get the session from DB: no data with the with key invalidToken found",
+				ErrorMessage:  "failed to fetch all active sessions : Unable to authorize session token: error while trying to get session details: error while trying to get the session from DB: no data with the with key invalidToken found",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -360,7 +360,7 @@ func TestGetSessionUserName(t *testing.T) {
 				resp: &sessionproto.SessionUserName{},
 			},
 			wantErr: true,
-			want:    fmt.Errorf("error while trying to get session details with the token sessionToken: error while trying to get the session from DB: no data with the with key sessionToken found"),
+			want:    fmt.Errorf("error while trying to get session details: error while trying to get the session from DB: no data with the with key sessionToken found"),
 		},
 	}
 	for _, tt := range tests {
@@ -422,7 +422,7 @@ func TestGetSessionUserRoleID(t *testing.T) {
 				resp: &sessionproto.SessionUsersRoleID{},
 			},
 			wantErr: true,
-			want:    fmt.Errorf("error while trying to get session details with the token sessionToken: error while trying to get the session from DB: no data with the with key sessionToken found"),
+			want:    fmt.Errorf("error while trying to get session details: error while trying to get the session from DB: no data with the with key sessionToken found"),
 		},
 	}
 	for _, tt := range tests {

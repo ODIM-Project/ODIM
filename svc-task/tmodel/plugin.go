@@ -43,13 +43,13 @@ type Plugin struct {
 
 // PluginContactRequest holds the details required to contact the plugin
 type PluginContactRequest struct {
-	URL             string
-	HTTPMethodType  string
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	PostBody        interface{}
-	LoginCredential map[string]string
-	Token           string
-	Plugin          Plugin
+	URL            string
+	HTTPMethodType string
+	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	PostBody       interface{}
+	BasicAuth      map[string]string
+	Token          string
+	Plugin         Plugin
 }
 
 // GetAllPlugins is for fetching all the plugins added andn stored in db.
@@ -115,9 +115,8 @@ func GetTaskMonResponse(ctx context.Context, plugin Plugin, task *common.PluginT
 
 // ContactPlugin is for sending requests to a plugin.
 func ContactPlugin(ctx context.Context, req PluginContactRequest, serverName string) (*http.Response, error) {
-	req.LoginCredential = map[string]string{}
-	//ToDo: Variable "LoginCredentials" to be changed
-	req.LoginCredential["ServerName"] = serverName
+	req.BasicAuth = map[string]string{}
+	req.BasicAuth["ServerName"] = serverName
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "XAuthToken") {
 		payload := map[string]interface{}{
 			"Username": req.Plugin.Username,
@@ -131,10 +130,9 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, serverName str
 		}
 		req.Token = response.Header.Get("X-Auth-Token")
 	} else {
-		req.LoginCredential["UserName"] = req.Plugin.Username
-		req.LoginCredential["Password"] = string(req.Plugin.Password)
+		req.BasicAuth["UserName"] = req.Plugin.Username
+		req.BasicAuth["Password"] = string(req.Plugin.Password)
 	}
 	reqURL := fmt.Sprintf("https://%s%s", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port), req.URL)
-	fmt.Println(reqURL, req.HTTPMethodType, req.Token, req.PostBody, req.LoginCredential)
-	return pmbhandle.ContactPlugin(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, req.LoginCredential)
+	return pmbhandle.ContactPlugin(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, req.BasicAuth)
 }

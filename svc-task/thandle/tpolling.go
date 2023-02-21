@@ -62,11 +62,7 @@ func (ts *TasksRPC) PollPlugin(ctx context.Context) {
 		}
 
 		if _, ok := unAvailableInstances[task.IP]; ok {
-			l.LogWithFields(ctx).Infof("Updating task %s with task state %s as plugin which handles that task is not accessible ",
-				task.OdimTaskID, common.Cancelled)
-			payLoad := getPayloadForInternalError()
-			ts.updateTaskUtil(ctx, task.OdimTaskID, common.Cancelled,
-				common.Critical, 100, payLoad, time.Now())
+			updateFailedPluginTasks(ctx, ts, taskID, task)
 		}
 
 		plugin := pluginsMap[task.PluginServerName]
@@ -86,18 +82,14 @@ func (ts *TasksRPC) PollPlugin(ctx context.Context) {
 		if isIPUnavailable {
 			l.LogWithFields(ctx).Debugf("Plugin instance with ip %s is marked as unavailable.", task.IP)
 			unAvailableInstances[task.IP] = struct{}{}
-			payLoad := getPayloadForInternalError()
-			l.LogWithFields(ctx).Infof("Updating task %s with task state %s as plugin which handles that task is not accessible ",
-				task.OdimTaskID, common.Cancelled)
-			ts.updateTaskUtil(ctx, task.OdimTaskID, common.Cancelled,
-				common.Critical, 100, payLoad, time.Now())
+			updateFailedPluginTasks(ctx, ts, taskID, task)
 		}
 	}
 	l.LogWithFields(ctx).Infof("Completed polling plugin to monitor the plugin tasks. Monitored %d plugin tasks",
 		len(pluginTaskIDs))
 }
 
-func getPayloadForInternalError() *taskproto.Payload {
+func updateFailedPluginTasks(ctx context.Context, ts *TasksRPC, pluginTaskID string, task *common.PluginTask) {
 	statusCode := http.StatusInternalServerError
 	message := errors.InternalError
 	resp := tcommon.GetTaskResponse(statusCode, message)
@@ -107,7 +99,12 @@ func getPayloadForInternalError() *taskproto.Payload {
 		StatusCode:   int32(statusCode),
 		ResponseBody: body,
 	}
-	return payLoad
+
+	l.LogWithFields(ctx).Infof("Updating task %s with task state %s as plugin which handles that task is not accessible ",
+		task.OdimTaskID, common.Cancelled)
+	ts.updateTaskUtil(ctx, task.OdimTaskID, common.Cancelled,
+		common.Critical, 100, payLoad, time.Now())
+	tmodel.RemovePluginTaskID(ctx, pluginTaskID)
 }
 
 func isPluginConnectionError(err error) bool {

@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package tmodel ...
+// Package tmodel ...
 package tmodel
 
 import (
@@ -37,7 +37,7 @@ const (
 	CompletedTaskTable = "CompletedTask"
 )
 
-//CompletedTask is used to build index for redis
+// CompletedTask is used to build index for redis
 type CompletedTask struct {
 	UserName string
 	ID       string
@@ -91,8 +91,8 @@ type Tick struct {
 }
 
 // Payload contain information detailing the HTTP and JSON payload
-//information for executing the task.
-//This object shall not be included in the response if the HidePayload property
+// information for executing the task.
+// This object shall not be included in the response if the HidePayload property
 // is set to True.
 type Payload struct {
 	HTTPHeaders   map[string]string `json:"HttpHeaders"`
@@ -142,6 +142,7 @@ type Oem struct {
 
 // PersistTask is to store the task data in db
 // Takes:
+//
 //	t pointer to Task to be stored.
 //	db of type common.DbType(int32)
 func PersistTask(ctx context.Context, t *Task, db common.DbType) error {
@@ -157,11 +158,14 @@ func PersistTask(ctx context.Context, t *Task, db common.DbType) error {
 
 // DeleteTaskFromDB is to delete the task from db
 // Takes:
-// 	t of type pointer to Task object
+//
+//	t of type pointer to Task object
+//
 // Returns:
-//      err of type error
-//      On Success - return nil value
-//      On Failure - return non nill value
+//
+//	err of type error
+//	On Success - return nil value
+//	On Failure - return non nill value
 func DeleteTaskFromDB(ctx context.Context, t *Task) error {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -175,9 +179,12 @@ func DeleteTaskFromDB(ctx context.Context, t *Task) error {
 
 // GetTaskStatus is to retrieve the task data already present in db
 // Takes:
+//
 //	taskID of type string contains the task ID of the task to be retrieved from the db
 //	db of type common.DbType(int32)
+//
 // Returns:
+//
 //	err of type error
 //		On Success - return nil value
 //		On Failure - return non nill value
@@ -202,9 +209,12 @@ func GetTaskStatus(ctx context.Context, taskID string, db common.DbType) (*Task,
 }
 
 // GetAllTaskKeys will collect all task keys available in the DB
-//Takes:
+// Takes:
+//
 //	None
-//Returns:
+//
+// Returns:
+//
 //	Slice of type strings and error
 //	On Success - error is set to nil and returns slice of tasks
 //	On Failure - error is set to appropriate reason why it got failed
@@ -242,7 +252,7 @@ func GetPluginTaskInfo(taskID string) (*common.PluginTask, error) {
 	return pluginTask, nil
 }
 
-//Transaction - is for performing atomic oprations using optimitic locking
+// Transaction - is for performing atomic oprations using optimitic locking
 func Transaction(ctx context.Context, key string, cb func(context.Context, string) error) error {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -250,6 +260,46 @@ func Transaction(ctx context.Context, key string, cb func(context.Context, strin
 	}
 	if err = connPool.Transaction(ctx, key, cb); err != nil {
 		return fmt.Errorf("error while performing transaction: %v", err.Error())
+	}
+	return nil
+}
+
+// GetAllActivePluginTaskIDs get all plugin task IDs from DB those are not completed
+func GetAllActivePluginTaskIDs(ctx context.Context) ([]string, error) {
+	var pluginTaskIDs []string
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return pluginTaskIDs, fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	pluginTaskIDs, err = connPool.GetAllMembersInSet(common.PluginTaskIndex)
+	if err != nil {
+		return pluginTaskIDs, fmt.Errorf("error while getting plugin tasks from DB: %v", err.Error())
+	}
+	return pluginTaskIDs, nil
+}
+
+// GetAllKeysFromTable return all data from table
+func GetAllKeysFromTable(table string) ([]string, error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	keysArray, err := conn.GetAllDetails(table)
+	if err != nil {
+		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
+	}
+	return keysArray, nil
+}
+
+// RemovePluginTaskID will remove the plugin task from set
+func RemovePluginTaskID(ctx context.Context, pluginTaskID string) error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	err = connPool.RemoveMemberFromSet(common.PluginTaskIndex, pluginTaskID)
+	if err != nil {
+		return fmt.Errorf("error while trying to remove the plugin task from set - %v", err.Error())
 	}
 	return nil
 }

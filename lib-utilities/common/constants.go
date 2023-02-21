@@ -611,6 +611,7 @@ type TaskEvent struct {
 // of plugin instance that handle the task
 type PluginTask struct {
 	IP               string `json:"IP"`
+	PluginServerName string `json:"PluginServerName"`
 	OdimTaskID       string `json:"OdimTaskID"`
 	PluginTaskMonURL string `json:"PluginTaskMonURL"`
 }
@@ -665,3 +666,5 @@ var SessionURI = "/redfish/v1/SessionService/Sessions"
 
 // XForwardedFor holds the IP of plugin instance in response header
 var XForwardedFor = "X-Forwarded-For"
+
+var PluginTaskIndex = "PluginTaskIndex"

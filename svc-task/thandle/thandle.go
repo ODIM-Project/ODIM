@@ -1037,6 +1037,7 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 		task.PercentComplete = percentComplete
 		if payLoad != nil {
 			task.StatusCode = payLoad.StatusCode
+			task.TaskResponse = payLoad.ResponseBody
 		}
 		task.EndTime = endTime
 		// Constuct the appropriate messageID for task status change nitification
@@ -1243,6 +1244,10 @@ func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
 		l.Log.Error("failed to update task: error while updating task: " +
 			err.Error())
 		return false
+	}
+
+	if percentComplete == 100 {
+		tmodel.RemovePluginTaskID(context.TODO(), taskID)
 	}
 
 	return false

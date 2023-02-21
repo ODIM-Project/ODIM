@@ -63,6 +63,7 @@ type configModel struct {
 	ExecPriorityDelayConf          *ExecPriorityDelayConf   `json:"ExecPriorityDelayConf"`
 	TLSConf                        *TLSConf                 `json:"TLSConf"`
 	TaskQueueConf                  *TaskQueueConf           `json:"TaskQueueConf"`
+	PluginTasksConf                *PluginTasksConf         `json:"PluginTasksConf"`
 	SupportedPluginTypes           []string                 `json:"SupportedPluginTypes"`
 	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
 	EventConf                      *EventConf               `json:"EventConf"`
@@ -199,6 +200,13 @@ type EventConf struct {
 	DeliveryRetryIntervalSeconds int `json:"DeliveryRetryIntervalSeconds"` // holds value of retrying events posting in interval
 }
 
+// PluginTasksConf stores the information related to plugin tasks
+// and queueing and prioritization of requests to plugin
+type PluginTasksConf struct {
+	// holds value of duration in which polling to be initiated for monitoring plugin tasks, value will be in minutes
+	MonitorPluginTasksFrequencyInMins int `json:"MonitorPluginTasksFrequencyInMins"`
+}
+
 // SetConfiguration will extract the config data from file
 func SetConfiguration() (WarningList, error) {
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
@@ -251,6 +259,9 @@ func ValidateConfiguration() (WarningList, error) {
 		return *warningList, err
 	}
 	if err = checkTaskQueueConfiguration(); err != nil {
+		return *warningList, err
+	}
+	if err = checkPluginTaskConfiguration(); err != nil {
 		return *warningList, err
 	}
 	checkAuthConf(warningList)
@@ -647,7 +658,7 @@ func checkTLSConf(wl *WarningList) error {
 	return nil
 }
 
-//CheckRootServiceuuid function is used to validate format of Root Service UUID. The same function is used in plugin-redfish config.go
+// CheckRootServiceuuid function is used to validate format of Root Service UUID. The same function is used in plugin-redfish config.go
 func CheckRootServiceuuid(uid string) error {
 	_, err := uuid.Parse(uid)
 	return err
@@ -703,6 +714,13 @@ func checkTaskQueueConfiguration() error {
 	}
 	if Data.TaskQueueConf.RetryInterval <= 0 {
 		return fmt.Errorf("retry interval should be greater than 0")
+	}
+	return nil
+}
+
+func checkPluginTaskConfiguration() error {
+	if Data.PluginTasksConf.MonitorPluginTasksFrequencyInMins <= 0 {
+		return fmt.Errorf("MonitorPluginTasksFrequencyInMins should be greater than 0")
 	}
 	return nil
 }

@@ -113,7 +113,7 @@ func main() {
 	taskproto.RegisterGetTaskServiceServer(services.ODIMService.Server(), task)
 
 	tick := &tmodel.Tick{
-		Ticker: time.NewTicker(time.Duration(config.Data.TaskQueueConf.DBCommitInterval) * time.Microsecond),
+		Ticker: time.NewTicker(time.Duration(config.Data.TaskQueueConf.DBCommitInterval) * time.Second),
 	}
 	go tqueue.UpdateTasksWorker(tick)
 

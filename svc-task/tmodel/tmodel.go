@@ -24,6 +24,8 @@ import (
 
 	db "github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
@@ -264,7 +266,9 @@ func ValidateTaskUserName(ctx context.Context, userName string) error {
 2."conn" is an instance of Conn struct in persistence manager library
 */
 func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
-
+	if len(*queue) == 0 {
+		return
+	}
 	defer func() {
 		tick.M.Lock()
 		tick.Commit = false
@@ -277,15 +281,15 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 		Table    string = "task"
 	)
 
-	// var (
-	// 	i             int           = 0
-	// 	updatedTasks  bool          = false
-	// 	maxSize       int           = config.Data.TaskQueueConf.QueueSize
-	// 	retryInterval time.Duration = time.Duration(config.Data.TaskQueueConf.RetryInterval) * time.Millisecond
-	// )
+	var (
+		i             int           = 0
+		updatedTasks  bool          = false
+		maxSize       int           = config.Data.TaskQueueConf.QueueSize
+		retryInterval time.Duration = time.Duration(config.Data.TaskQueueConf.RetryInterval) * time.Millisecond
+	)
 
-	// tasks := make(map[string]interface{}, maxSize)
-	// completedTasks := make(map[string]int64, maxSize)
+	tasks := make(map[string]interface{}, maxSize)
+	completedTasks := make(map[string]int64, maxSize)
 
 	if len(*queue) <= 0 {
 		return
@@ -295,68 +299,68 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	tick.Executing = true
 	tick.M.Unlock()
 
-	// conn = validateDBConnection(conn)
+	conn = validateDBConnection(conn)
 
-	// for {
-	// 	task := dequeueTask(queue)
+	for {
+		task := dequeueTask(queue)
 
-	// 	if task != nil {
-	// 		saveID := Table + ":" + task.ID
-	// 		tasks[saveID] = task
-	// 		if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
-	// 			completedTasks[saveID] = 1
-	// 		}
-	// 	}
+		if task != nil {
+			saveID := Table + ":" + task.ID
+			tasks[saveID] = task
+			if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
+				completedTasks[saveID] = 1
+			}
+		}
 
-	// 	if tick.Commit {
-	// 		break
-	// 	}
-	// }
+		if tick.Commit {
+			break
+		}
+	}
 
-	// if len(tasks) > 0 {
-	// 	for i < MaxRetry {
-	// 		if err := conn.UpdateTransaction(tasks); err != nil {
-	// 			if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
-	// 				time.Sleep(retryInterval)
-	// 				conn = validateDBConnection(conn)
-	// 			} else {
-	// 				l.Log.Error("ProcessTaskQueue() : task update transaction failed : " + err.Error())
-	// 				break
-	// 			}
-	// 			i++
-	// 		} else {
-	// 			updatedTasks = true
-	// 			break
-	// 		}
-	// 	}
+	if len(tasks) > 0 {
+		for i < MaxRetry {
+			if err := conn.UpdateTransaction(tasks); err != nil {
+				if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
+					time.Sleep(retryInterval)
+					conn = validateDBConnection(conn)
+				} else {
+					l.Log.Error("ProcessTaskQueue() : task update transaction failed : " + err.Error())
+					break
+				}
+				i++
+			} else {
+				updatedTasks = true
+				break
+			}
+		}
 
-	// 	if !updatedTasks {
-	// 		for task := range tasks {
-	// 			l.Log.Errorf("Failed to update the task : %s", task)
-	// 		}
-	// 	}
-	// }
+		if !updatedTasks {
+			for task := range tasks {
+				l.Log.Errorf("Failed to update the task : %s", task)
+			}
+		}
+	}
 
-	// if len(completedTasks) > 0 {
-	// 	i = 0
-	// 	for i < MaxRetry {
-	// 		if err := conn.SetExpiryTimeForKeys(completedTasks); err != nil {
-	// 			if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
-	// 				time.Sleep(retryInterval)
-	// 				conn = validateDBConnection(conn)
-	// 			} else {
-	// 				l.Log.Error("ProcessTaskQueue() : create expiry for completed tasks failed : " + err.Error())
-	// 				break
-	// 			}
-	// 			i++
-	// 		} else {
-	// 			break
-	// 		}
-	// 	}
-	// }
+	if len(completedTasks) > 0 {
+		i = 0
+		for i < MaxRetry {
+			if err := conn.SetExpiryTimeForKeys(completedTasks); err != nil {
+				if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
+					time.Sleep(retryInterval)
+					conn = validateDBConnection(conn)
+				} else {
+					l.Log.Error("ProcessTaskQueue() : create expiry for completed tasks failed : " + err.Error())
+					break
+				}
+				i++
+			} else {
+				break
+			}
+		}
+	}
 
-	// tasks = nil
-	// completedTasks = nil
+	tasks = nil
+	completedTasks = nil
 
 }
 

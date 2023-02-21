@@ -17,6 +17,7 @@ package tmessagebus
 import (
 	"encoding/json"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -57,11 +58,14 @@ func consumeTaskEvents(event interface{}) {
 		return
 	}
 
-	var taskEvent common.TaskEvent
+	var taskEvent dmtf.Event
 	err = json.Unmarshal(eventData.Request, &taskEvent)
 	if err != nil {
 		l.Log.Error("Error while consuming task events", err)
 		return
 	}
-	TaskEventRecvQueue <- taskEvent
+
+	for _, eventRecord := range taskEvent.Events {
+		TaskEventRecvQueue <- eventRecord
+	}
 }

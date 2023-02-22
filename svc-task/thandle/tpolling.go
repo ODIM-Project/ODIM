@@ -30,15 +30,26 @@ import (
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/svc-task/tcommon"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
+	"github.com/google/uuid"
 )
 
+/*
+MonitorPluginTasks will trigger the polling plugin in a configured interval
+*/
 func (ts *TasksRPC) MonitorPluginTasks() {
 	duration := time.Duration(config.Data.PluginTasksConf.MonitorPluginTasksFrequencyInMins)
 	ticker := time.NewTicker(duration * time.Minute)
 	for range ticker.C {
-		ts.PollPlugin(context.TODO())
+		ts.PollPlugin(GetContextForPolling())
 	}
 }
+
+/*
+PollPlugin will get the active plugin tasks from DB.
+For each plugin tasks, it will poll the plugin instance with IP.
+If IP is not not accessible for multiple retry, that instance will be marked
+as unavailable and will fail the tasks those has been handled by the plugin
+*/
 
 func (ts *TasksRPC) PollPlugin(ctx context.Context) {
 	l.LogWithFields(ctx).Info("Started polling plugin to monitor the plugin tasks")
@@ -89,6 +100,11 @@ func (ts *TasksRPC) PollPlugin(ctx context.Context) {
 		len(pluginTaskIDs))
 }
 
+/*
+updateFailedPluginTasks will update the odim task corresponding to the plugin task as failed
+and it will remove the plugin task from the active plugin tasks set in DB
+*/
+
 func updateFailedPluginTasks(ctx context.Context, ts *TasksRPC, pluginTaskID string, task *common.PluginTask) {
 	statusCode := http.StatusInternalServerError
 	message := errors.InternalError
@@ -107,6 +123,10 @@ func updateFailedPluginTasks(ctx context.Context, ts *TasksRPC, pluginTaskID str
 	tmodel.RemovePluginTaskID(ctx, pluginTaskID)
 }
 
+/*
+isPluginConnectionError check the error returned by the plugin is a connection error or not
+*/
+
 func isPluginConnectionError(err error) bool {
 	if netError, ok := err.(net.Error); ok && netError.Timeout() {
 		return true
@@ -123,4 +143,16 @@ func isPluginConnectionError(err error) bool {
 		}
 	}
 	return false
+}
+
+/*
+GetContextForPolling create and returns a new context for polling the plugin
+*/
+
+func GetContextForPolling() context.Context {
+	transactionID := uuid.New().String()
+	actionID := "218"
+	ctx := common.CreateContext(transactionID, actionID, common.PollPlugin, "0",
+		common.PollPlugin, podName)
+	return ctx
 }

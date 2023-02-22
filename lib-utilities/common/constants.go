@@ -202,6 +202,7 @@ const (
 	RediscoverSystemInventory              = "RediscoverSystemInventory"
 	CheckPluginStatus                      = "CheckPluginStatus"
 	GetTelemetryResource                   = "GetTelemetryResource"
+	PollPlugin                             = "PollPlugin"
 	// constants for log
 	SessionToken            = "sessiontoken"
 	SessionUserID           = "sessionuserid"
@@ -457,6 +458,7 @@ var Actions = map[ActionKey]ActionType{
 	{"LicenseService", "Licenses/{id}", "GET"}:  {"214", "GetLicenseResource"},
 	{"LicenseService", "Licenses", "POST"}:      {"215", "InstallLicenseService"},
 	// 216 and 217 operations are svc-aggregation internal operations pluginhealthcheck and RediscoverSystem
+	// 218 is an internal operation in svc-task
 }
 
 var Types = map[string]string{

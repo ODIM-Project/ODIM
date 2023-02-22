@@ -47,6 +47,7 @@ func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sess
 	targetURI := "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate"
 
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
+	l.LogWithFields(ctx).Debug("task info payload: ", taskInfo)
 	// Read all the requests from database
 	targetList, err := GetAllKeysFromTableFunc("SimpleUpdate", common.OnDisk)
 	if err != nil {
@@ -176,6 +177,7 @@ func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
 	}
+	l.Log.Debugf("south bound uri: %s", updateRequestBody)
 	target, gerr := e.External.GetTarget(uuid)
 	if gerr != nil {
 		subTaskChannel <- http.StatusBadRequest
@@ -184,7 +186,7 @@ func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data
 		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, taskInfo)
 		return
 	}
-
+	l.Log.Debug("target details: ", target)
 	decryptedPasswordByte, passwdErr := e.External.DevicePassword(target.Password)
 	if passwdErr != nil {
 		subTaskChannel <- http.StatusInternalServerError
@@ -204,6 +206,7 @@ func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, taskInfo)
 		return
 	}
+	l.Log.Debug("plugin details:", plugin)
 	var contactRequest ucommon.PluginContactRequest
 	contactRequest.ContactClient = e.External.ContactClient
 	contactRequest.Plugin = plugin
@@ -238,6 +241,7 @@ func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.StartUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost
+	l.Log.Debug("payload going to plugin:", contactRequest)
 	respBody, location, getResponse, contactErr := e.External.ContactPlugin(ctx, contactRequest, "error while performing simple update action: ")
 	if contactErr != nil {
 		subTaskChannel <- getResponse.StatusCode

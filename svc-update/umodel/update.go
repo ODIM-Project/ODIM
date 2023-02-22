@@ -56,6 +56,7 @@ func GetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
 	}
+	l.Log.Debug("all keys from database:", keysArray)
 	return keysArray, nil
 }
 
@@ -73,6 +74,7 @@ func GetResource(Table, key string, dbtype common.DbType) (string, *errors.Error
 	if errs := json.Unmarshal([]byte(resourceData), &resource); errs != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
 	}
+	l.Log.Debugf("resource from database: %s", resource)
 	return resource, nil
 }
 

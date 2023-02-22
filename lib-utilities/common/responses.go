@@ -105,13 +105,13 @@ func CreateNewRequestContext(ctx context.Context) context.Context {
 }
 
 // CreateContext will create and returns a new context with the values passed
-func CreateContext(transactionId, actionId, actionName, threadId, threadName, ProcessName string) context.Context {
+func CreateContext(transactionId, actionId, actionName, threadId, threadName, processName string) context.Context {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, TransactionID, transactionId)
 	ctx = context.WithValue(ctx, ActionID, actionId)
 	ctx = context.WithValue(ctx, ActionName, actionName)
 	ctx = context.WithValue(ctx, ThreadID, threadId)
 	ctx = context.WithValue(ctx, ThreadName, threadName)
-	ctx = context.WithValue(ctx, ProcessName, ProcessName)
+	ctx = context.WithValue(ctx, ProcessName, processName)
 	return ctx
 }

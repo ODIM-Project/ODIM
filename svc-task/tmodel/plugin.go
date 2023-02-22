@@ -18,47 +18,21 @@ package tmodel
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"net"
 	"net/http"
-	"strings"
 
-	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
+	restClient "github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
-// Plugin is the model for plugin information
-type Plugin struct {
-	IP                string
-	Port              string
-	Username          string
-	Password          []byte
-	ID                string
-	PluginType        string
-	PreferredAuthType string
-	ManagerUUID       string
-}
-
-// PluginContactRequest holds the details required to contact the plugin
-type PluginContactRequest struct {
-	URL            string
-	HTTPMethodType string
-	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	PostBody       interface{}
-	BasicAuth      map[string]string
-	Token          string
-	Plugin         Plugin
-}
-
 // GetAllPlugins is for fetching all the plugins added andn stored in db.
-func GetAllPlugins(ctx context.Context) ([]Plugin, error) {
+func GetAllPlugins(ctx context.Context) ([]restClient.Plugin, error) {
 	keys, err := GetAllKeysFromTable("Plugin")
 	if err != nil {
 		return nil, err
 	}
-	var plugins []Plugin
+	var plugins []restClient.Plugin
 	for _, key := range keys {
 		plugin, err := GetPluginData(key)
 		if err != nil {
@@ -71,8 +45,8 @@ func GetAllPlugins(ctx context.Context) ([]Plugin, error) {
 }
 
 // GetPluginData will fetch plugin details
-func GetPluginData(pluginID string) (Plugin, *errors.Error) {
-	var plugin Plugin
+func GetPluginData(pluginID string) (restClient.Plugin, *errors.Error) {
+	var plugin restClient.Plugin
 
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -90,7 +64,7 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 
 	bytepw, errs := common.DecryptWithPrivateKey([]byte(plugin.Password))
 	if errs != nil {
-		return Plugin{}, errors.PackError(errors.DecryptionFailed, "error: "+pluginID+" plugin password decryption failed: "+errs.Error())
+		return restClient.Plugin{}, errors.PackError(errors.DecryptionFailed, "error: "+pluginID+" plugin password decryption failed: "+errs.Error())
 	}
 	plugin.Password = bytepw
 
@@ -98,13 +72,13 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 }
 
 // GetTaskMonResponse will request plugin to get plugin task status
-func GetTaskMonResponse(ctx context.Context, plugin Plugin, task *common.PluginTask) (*http.Response, error) {
-	contactRequest := PluginContactRequest{}
+func GetTaskMonResponse(ctx context.Context, plugin restClient.Plugin, task *common.PluginTask) (*http.Response, error) {
+	contactRequest := restClient.PluginContactRequest{}
 	plugin.IP = task.IP
 	contactRequest.Plugin = plugin
 	contactRequest.URL = task.PluginTaskMonURL
 	contactRequest.HTTPMethodType = http.MethodGet
-	response, err := ContactPlugin(ctx, contactRequest, task.PluginServerName)
+	response, err := restClient.ContactPluginWithAuth(ctx, contactRequest, task.PluginServerName)
 	if err != nil {
 		l.LogWithFields(ctx).Errorf("failed to get taskmon response from %s(%s): %s: %+v",
 			plugin.ID, plugin.IP, err.Error(), response)
@@ -112,28 +86,4 @@ func GetTaskMonResponse(ctx context.Context, plugin Plugin, task *common.PluginT
 	}
 	l.LogWithFields(ctx).Infof("Successfully got task response from %s(%s)", plugin.ID, plugin.IP)
 	return response, nil
-}
-
-// ContactPlugin is for sending requests to a plugin.
-func ContactPlugin(ctx context.Context, req PluginContactRequest, serverName string) (*http.Response, error) {
-	req.BasicAuth = map[string]string{}
-	req.BasicAuth["ServerName"] = serverName
-	if strings.EqualFold(req.Plugin.PreferredAuthType, "XAuthToken") {
-		payload := map[string]interface{}{
-			"Username": req.Plugin.Username,
-			"Password": string(req.Plugin.Password),
-		}
-		reqURL := fmt.Sprintf("https://%s/ODIM/v1/Sessions", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port))
-		response, err := pmbhandle.ContactPlugin(ctx, reqURL, http.MethodPost, "", "", payload, nil)
-		if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
-			return nil,
-				fmt.Errorf("failed to get session token from %s: %s: %+v", req.Plugin.ID, err.Error(), response)
-		}
-		req.Token = response.Header.Get("X-Auth-Token")
-	} else {
-		req.BasicAuth["UserName"] = req.Plugin.Username
-		req.BasicAuth["Password"] = string(req.Plugin.Password)
-	}
-	reqURL := fmt.Sprintf("https://%s%s", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port), req.URL)
-	return pmbhandle.ContactPlugin(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, req.BasicAuth)
 }

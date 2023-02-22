@@ -19,13 +19,39 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
+	"net"
 	"net/http"
+	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
+
+// Plugin is the model for plugin information
+type Plugin struct {
+	IP                string
+	Port              string
+	Username          string
+	Password          []byte
+	ID                string
+	PluginType        string
+	PreferredAuthType string
+	ManagerUUID       string
+}
+
+// PluginContactRequest holds the details required to contact the plugin
+type PluginContactRequest struct {
+	URL            string
+	HTTPMethodType string
+	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	PostBody       interface{}
+	BasicAuth      map[string]string
+	Token          string
+	Plugin         Plugin
+}
 
 // ContactPlugin is used to send a request to plugin to add a resource
 func ContactPlugin(ctx context.Context, url, method, token string, odataID string, body interface{}, collaboratedInfo map[string]string) (*http.Response, error) {
@@ -73,6 +99,30 @@ func ContactPlugin(ctx context.Context, url, method, token string, odataID strin
 	}
 
 	return resp, nil
+}
+
+// ContactPluginWithAuth will check the preferred auth for the plugin and send the request with the preferred auth.
+func ContactPluginWithAuth(ctx context.Context, req PluginContactRequest, serverName string) (*http.Response, error) {
+	req.BasicAuth = map[string]string{}
+	req.BasicAuth["ServerName"] = serverName
+	if strings.EqualFold(req.Plugin.PreferredAuthType, "XAuthToken") {
+		payload := map[string]interface{}{
+			"Username": req.Plugin.Username,
+			"Password": string(req.Plugin.Password),
+		}
+		reqURL := fmt.Sprintf("https://%s/ODIM/v1/Sessions", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port))
+		response, err := ContactPlugin(ctx, reqURL, http.MethodPost, "", "", payload, nil)
+		if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
+			return nil,
+				fmt.Errorf("failed to get session token from %s: %s: %+v", req.Plugin.ID, err.Error(), response)
+		}
+		req.Token = response.Header.Get("X-Auth-Token")
+	} else {
+		req.BasicAuth["UserName"] = req.Plugin.Username
+		req.BasicAuth["Password"] = string(req.Plugin.Password)
+	}
+	reqURL := fmt.Sprintf("https://%s%s", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port), req.URL)
+	return ContactPlugin(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, req.BasicAuth)
 }
 
 // CreateHeader is used to get data from context and set it to header for http request call

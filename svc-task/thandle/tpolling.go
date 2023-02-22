@@ -86,13 +86,14 @@ func (ts *TasksRPC) PollPlugin(ctx context.Context) {
 				isIPUnavailable = false
 				break
 			} else if isPluginConnectionError(err) {
-				l.LogWithFields(ctx).Debugf("Plugin instance with ip %s is not accessible. retrying...", task.IP)
+				l.LogWithFields(ctx).Errorf("Plugin instance with ip %s is not accessible : error : %s. retrying...",
+					task.IP, err.Error())
 				retry++
 			}
 		}
 
 		if isIPUnavailable {
-			l.LogWithFields(ctx).Debugf("Plugin instance with ip %s is marked as unavailable.", task.IP)
+			l.LogWithFields(ctx).Warnf("Plugin instance with ip %s is marked as unavailable.", task.IP)
 			unAvailableInstances[task.IP] = struct{}{}
 			updateFailedPluginTasks(ctx, ts, taskID, task)
 		}
@@ -107,7 +108,7 @@ and it will remove the plugin task from the active plugin tasks set in DB
 */
 
 func updateFailedPluginTasks(ctx context.Context, ts *TasksRPC, pluginTaskID string, task *common.PluginTask) {
-	statusCode := http.StatusInternalServerError
+	statusCode := http.StatusServiceUnavailable
 	message := errors.InternalError
 	resp := tcommon.GetTaskResponse(statusCode, message)
 	body, _ := json.Marshal(resp.Body)
@@ -117,7 +118,7 @@ func updateFailedPluginTasks(ctx context.Context, ts *TasksRPC, pluginTaskID str
 		ResponseBody: body,
 	}
 
-	l.LogWithFields(ctx).Infof("Updating task %s with task state %s as plugin which handles that task is not accessible ",
+	l.LogWithFields(ctx).Warnf("Updating task %s with task state %s as plugin which handles that task is not accessible ",
 		task.OdimTaskID, common.Cancelled)
 	ts.updateTaskUtil(ctx, task.OdimTaskID, common.Cancelled,
 		common.Critical, 100, payLoad, time.Now())

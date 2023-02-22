@@ -105,8 +105,9 @@ func GetTaskMonResponse(ctx context.Context, plugin Plugin, task *common.PluginT
 	contactRequest.URL = task.PluginTaskMonURL
 	contactRequest.HTTPMethodType = http.MethodGet
 	response, err := ContactPlugin(ctx, contactRequest, task.PluginServerName)
-	if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
-		l.LogWithFields(ctx).Errorf("failed to get taskmon response from %s(%s): %s: %+v", plugin.ID, plugin.IP, err, response)
+	if err != nil {
+		l.LogWithFields(ctx).Errorf("failed to get taskmon response from %s(%s): %s: %+v",
+			plugin.ID, plugin.IP, err.Error(), response)
 		return nil, err
 	}
 	l.LogWithFields(ctx).Infof("Successfully got task response from %s(%s)", plugin.ID, plugin.IP)

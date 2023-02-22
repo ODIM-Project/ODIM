@@ -346,6 +346,9 @@ func SetUpMockConfig(t *testing.T) error {
 		DBCommitInterval: 1000,
 		RetryInterval:    1000,
 	}
+	Data.PluginTasksConf = &PluginTasksConf{
+		MonitorPluginTasksFrequencyInMins: 1440,
+	}
 	SetVerifyPeer(Data.TLSConf.VerifyPeer)
 	SetTLSMinVersion(Data.TLSConf.MinVersion, &WarningList{})
 	SetTLSMaxVersion(Data.TLSConf.MaxVersion, &WarningList{})

@@ -190,7 +190,6 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 	}
 
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: subTaskID, TargetURI: serverURI, UpdateTask: e.External.UpdateTask, TaskRequest: updateRequestBody}
-	l.Log.Debug()
 	var percentComplete int32
 	target, gerr := e.External.GetTarget(uuid)
 	if gerr != nil {
@@ -200,7 +199,6 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 		return
 	}
-	l.LogWithFields(ctx).Debug("target details:", target)
 	if applyTime == "OnStartUpdateRequest" {
 		err := e.External.GenericSave(ctx, []byte(updateRequestBody), "SimpleUpdate", uuid)
 		if err != nil {
@@ -211,12 +209,12 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 			return
 		}
 	}
+	l.Log.Debugf("payload to plugin : %s", updateRequestBody)
 	updateRequestBody = strings.Replace(string(updateRequestBody), uuid+".", "", -1)
 	//replacing the reruest url with south bound translation URL
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
 	}
-	l.Log.Debugf("sound bound url: %s", updateRequestBody)
 	decryptedPasswordByte, err := e.External.DevicePassword(target.Password)
 	if err != nil {
 		subTaskChannel <- http.StatusInternalServerError
@@ -236,7 +234,6 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, taskInfo)
 		return
 	}
-	l.Log.Debug("plugin details:", plugin)
 	var contactRequest ucommon.PluginContactRequest
 	contactRequest.ContactClient = e.External.ContactClient
 	contactRequest.Plugin = plugin
@@ -268,10 +265,10 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 	}
 
 	target.PostBody = []byte(updateRequestBody)
+	l.Log.Debugf("updated payload to plugin : %s", updateRequestBody)
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost
-	l.Log.Debug("payload going to plugin: ", contactRequest)
 	respBody, location, getResponse, err := e.External.ContactPlugin(ctx, contactRequest, "error while performing simple update action: ")
 	if err != nil {
 		subTaskChannel <- getResponse.StatusCode

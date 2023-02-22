@@ -74,10 +74,13 @@ func (e *ExternalInterfaces) addFabric(ctx context.Context, message common.Messa
 // 	data of type interface{}
 //Returns:
 //	bool: return false if any error occurred during execution, else returns true
+func timeTake(t time.Time) {
+	fmt.Println("Time Taken to Process ", time.Since(t))
+}
 func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, data interface{}) bool {
-	subscribeCacheLock.Lock()
-	defer subscribeCacheLock.Unlock()
 
+	t := time.Now()
+	defer timeTake(t)
 	if data == nil {
 		l.LogWithFields(ctx).Info("invalid input params")
 		return false
@@ -94,7 +97,6 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 	if err != nil {
 		host = event.IP
 	}
-	host = strings.ToLower(host)
 	l.LogWithFields(ctx).Info("After splitting host address, IP is: ", host)
 
 	var requestData = string(event.Request)
@@ -127,28 +129,6 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 	eventMap := make(map[string][]common.Event)
 
 	for index, inEvent := range message.Events {
-		if inEvent.OriginOfCondition == nil || len(inEvent.OriginOfCondition.Oid) < 1 {
-			l.LogWithFields(ctx).Info("event not forwarded as Originofcondition is empty in incoming event: ", requestData)
-			continue
-		}
-		var resTypePresent bool
-		originofCond := strings.Split(strings.TrimSuffix(inEvent.OriginOfCondition.Oid, "/"), "/")
-		if len(originofCond) > 2 {
-			resType := originofCond[len(originofCond)-2]
-			for _, value := range common.ResourceTypes {
-				if strings.Contains(resType, value) {
-					resTypePresent = true
-				}
-			}
-		} else {
-			l.LogWithFields(ctx).Info("event not forwarded as originofcondition is empty incoming event: ", requestData)
-			continue
-		}
-
-		if !resTypePresent {
-			l.LogWithFields(ctx).Info("event not forwarded as resource type of originofcondition not supported in incoming event: ", requestData)
-			continue
-		}
 		subscriptions := getSubscriptions(inEvent.OriginOfCondition.Oid, systemId, host)
 		for _, sub := range subscriptions {
 			if filterEventsToBeForwarded(ctx, sub, inEvent, sub.OriginResources) {

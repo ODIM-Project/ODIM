@@ -23,6 +23,7 @@ import (
 	"syscall"
 	"time"
 
+	restClient "github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -60,7 +61,7 @@ func (ts *TasksRPC) PollPlugin(ctx context.Context) {
 	}
 
 	plugins, err := tmodel.GetAllPlugins(ctx)
-	pluginsMap := make(map[string]tmodel.Plugin, len(plugins))
+	pluginsMap := make(map[string]restClient.Plugin, len(plugins))
 
 	for _, plugin := range plugins {
 		pluginsMap[plugin.IP] = plugin

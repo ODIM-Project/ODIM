@@ -199,7 +199,7 @@ func TestSetConfiguration(t *testing.T) {
                 "StartUpResouceBatchSize": 10
         },
 		"PluginTasksConf" : {
-			"MonitorPluginTasksFrequencyInMins": 1440
+			"MonitorPluginTasksFrequencyInMins": 60
 		},
         "ExecPriorityDelayConf": {
                 "MinResetPriority": 1,
@@ -535,7 +535,7 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			RetryInterval:    5000,
 		}
 		Data.PluginTasksConf = &PluginTasksConf{
-			MonitorPluginTasksFrequencyInMins: 1440,
+			MonitorPluginTasksFrequencyInMins: 60,
 		}
 		switch num {
 		case 0:

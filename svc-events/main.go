@@ -16,6 +16,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
@@ -138,8 +140,19 @@ func main() {
 	go startUPInterface.SubscribePluginEMB(ctx)
 	ctx = context.WithValue(ctx, common.TransactionID, uuid.New())
 	go ev.LoadSubscriptionData(ctx)
+
+	//Remove after test
+	addProfiler()
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())
 	}
+}
+
+// Added for debug, should not merged in development
+func addProfiler() {
+	fmt.Println("Profiler listener ************* ")
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 }

@@ -15,8 +15,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"net/http/pprof"
 	"os"
 	"sync"
 	"time"
@@ -78,12 +76,6 @@ func main() {
 	if tcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	mux := http.NewServeMux()
-	mux.HandleFunc("/debug/profile", pprof.Profile)
-	go func() {
-		log.Fatal(http.ListenAndServe(":7777", mux))
-	}()
-
 	errChan := make(chan error)
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go tcommon.TrackConfigFileChanges(errChan)

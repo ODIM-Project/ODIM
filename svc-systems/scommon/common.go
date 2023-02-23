@@ -308,12 +308,13 @@ func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, 
 // SavePluginTaskInfo saves the ip of plugin instance that handle the task,
 // task id of task which created in odim, and the taskmon URL returned
 // from plugin in DB
-func SavePluginTaskInfo(ctx context.Context, pluginIP, odimTaskID,
-	pluginTaskMonURL string) {
+func SavePluginTaskInfo(ctx context.Context, pluginIP, pluginServerName,
+	odimTaskID, pluginTaskMonURL string) {
 
 	pluginTaskID := strings.TrimPrefix(pluginTaskMonURL, "/taskmon/")
 	pluginTaskInfo := common.PluginTask{
 		IP:               pluginIP,
+		PluginServerName: pluginServerName,
 		OdimTaskID:       odimTaskID,
 		PluginTaskMonURL: pluginTaskMonURL,
 	}

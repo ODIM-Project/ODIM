@@ -202,6 +202,7 @@ const (
 	RediscoverSystemInventory              = "RediscoverSystemInventory"
 	CheckPluginStatus                      = "CheckPluginStatus"
 	GetTelemetryResource                   = "GetTelemetryResource"
+	PollPlugin                             = "PollPlugin"
 	// constants for log
 	SessionToken            = "sessiontoken"
 	SessionUserID           = "sessionuserid"
@@ -457,6 +458,7 @@ var Actions = map[ActionKey]ActionType{
 	{"LicenseService", "Licenses/{id}", "GET"}:  {"214", "GetLicenseResource"},
 	{"LicenseService", "Licenses", "POST"}:      {"215", "InstallLicenseService"},
 	// 216 and 217 operations are svc-aggregation internal operations pluginhealthcheck and RediscoverSystem
+	// 218 is an internal operation in svc-task
 }
 
 var Types = map[string]string{
@@ -611,6 +613,7 @@ type TaskEvent struct {
 // of plugin instance that handle the task
 type PluginTask struct {
 	IP               string `json:"IP"`
+	PluginServerName string `json:"PluginServerName"`
 	OdimTaskID       string `json:"OdimTaskID"`
 	PluginTaskMonURL string `json:"PluginTaskMonURL"`
 }
@@ -665,3 +668,5 @@ var SessionURI = "/redfish/v1/SessionService/Sessions"
 
 // XForwardedFor holds the IP of plugin instance in response header
 var XForwardedFor = "X-Forwarded-For"
+
+var PluginTaskIndex = "PluginTaskIndex"

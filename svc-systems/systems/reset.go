@@ -48,7 +48,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context,
 	var targetURI = "/redfish/v1/Systems/" + req.SystemID + "/Actions/ComputerSystem.Reset"
 	var resp response.RPC
 	resp.StatusCode = http.StatusAccepted
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI,
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI,
 		UpdateTask: p.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	// parsing the ResetComputerSystem
@@ -169,7 +169,7 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context,
 	}
 
 	if getResponse.StatusCode == http.StatusAccepted {
-		scommon.SavePluginTaskInfo(ctx, pluginIP, taskID, location)
+		scommon.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
 		return
 	}
 

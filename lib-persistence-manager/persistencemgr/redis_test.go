@@ -1683,3 +1683,146 @@ func Test_isTimeOutError(t *testing.T) {
 		})
 	}
 }
+
+func TestConnPool_AddMemberToSet(t *testing.T) {
+	c, err := MockDBConnection(t)
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+
+	defer func() {
+		if derr := c.CleanUpDB(); derr != nil {
+			t.Errorf("Error while cleaning up data in DB: %v\n", derr.Error())
+		}
+	}()
+
+	type args struct {
+		key    string
+		member string
+	}
+	tests := []struct {
+		name    string
+		p       *ConnPool
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "add members to a set",
+			p:    c,
+			args: args{
+				key:    "PluginTaskIndex",
+				member: "PluginTask:task1",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.p.AddMemberToSet(tt.args.key, tt.args.member); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateTransaction() = %v, want %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestConnPool_GetAllMembersInSet(t *testing.T) {
+	c, err := MockDBConnection(t)
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+
+	err = c.AddMemberToSet("PluginTaskIndex", "PluginTask:task1")
+	if err != nil {
+		t.Fatal("Error while adding plugin task to set", err)
+	}
+
+	defer func() {
+		if derr := c.CleanUpDB(); derr != nil {
+			t.Errorf("Error while cleaning up data in DB: %v\n", derr.Error())
+		}
+	}()
+
+	type args struct {
+		key string
+	}
+	tests := []struct {
+		name    string
+		p       *ConnPool
+		args    args
+		want    []string
+		wantErr bool
+	}{
+		{
+			name: "get all members from plugin task",
+			p:    c,
+			args: args{
+				key: "PluginTaskIndex",
+			},
+			want:    []string{"PluginTask:task1"},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.p.GetAllMembersInSet(tt.args.key)
+			fmt.Println("got", got)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ConnPool.GetAllMembersInSet() got = %v, want %v", got, tt.want)
+			}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ConnPool.GetAllMembersInSet() = %v, want %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestConnPool_RemoveMemberFromSet(t *testing.T) {
+	c, err := MockDBConnection(t)
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+
+	err = c.AddMemberToSet("PluginTaskIndex", "PluginTask:task1")
+	if err != nil {
+		t.Fatal("Error while adding plugin task to set", err)
+	}
+
+	err = c.AddMemberToSet("PluginTaskIndex", "PluginTask:task2")
+	if err != nil {
+		t.Fatal("Error while adding plugin task to set", err)
+	}
+
+	defer func() {
+		if derr := c.CleanUpDB(); derr != nil {
+			t.Errorf("Error while cleaning up data in DB: %v\n", derr.Error())
+		}
+	}()
+
+	type args struct {
+		key    string
+		member string
+	}
+	tests := []struct {
+		name    string
+		p       *ConnPool
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "remove member from set",
+			p:    c,
+			args: args{
+				key:    "PluginTaskIndex",
+				member: "PluginTask:task1",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.p.RemoveMemberFromSet(tt.args.key, tt.args.member); (err != nil) != tt.wantErr {
+				t.Errorf("ConnPool.RemoveMemberFromSet() = %v, want %v", err, tt.wantErr)
+			}
+		})
+	}
+}

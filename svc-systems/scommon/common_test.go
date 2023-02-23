@@ -511,6 +511,7 @@ func TestSavePluginTaskInfo(t *testing.T) {
 	type args struct {
 		ctx              context.Context
 		pluginIP         string
+		pluginServerName string
 		odimTaskID       string
 		pluginTaskMonURL string
 	}
@@ -523,6 +524,7 @@ func TestSavePluginTaskInfo(t *testing.T) {
 			args: args{
 				ctx:              context.TODO(),
 				pluginIP:         "127.0.0.1",
+				pluginServerName: "iloplugin",
 				odimTaskID:       odimTaskID,
 				pluginTaskMonURL: "/taskmon/" + pluginTaskID,
 			},
@@ -530,7 +532,7 @@ func TestSavePluginTaskInfo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			SavePluginTaskInfo(tt.args.ctx, tt.args.pluginIP, tt.args.odimTaskID, tt.args.pluginTaskMonURL)
+			SavePluginTaskInfo(tt.args.ctx, tt.args.pluginIP, tt.args.odimTaskID, tt.args.pluginServerName, tt.args.pluginTaskMonURL)
 		})
 	}
 }

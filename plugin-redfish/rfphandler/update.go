@@ -17,6 +17,7 @@ package rfphandler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -40,6 +41,7 @@ type SimpleUpdatePostBody struct {
 
 // SimpleUpdate updates the BMC resources
 func SimpleUpdate(ctx iris.Context) {
+	fmt.Println("SimpleUpdate requested to redfish plugin")
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
 	//Validating the token
@@ -90,7 +92,7 @@ func SimpleUpdate(ctx iris.Context) {
 		Password: string(deviceDetails.Password),
 		PostBody: []byte(reqData),
 	}
-	log.Info("request sent to device is ", reqData)
+	fmt.Println("request sent to device is ", reqData)
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
 		errMsg := "While trying to create the redfish client, got:" + err.Error()
@@ -116,7 +118,7 @@ func SimpleUpdate(ctx iris.Context) {
 		body = []byte("While trying to read the response body, got: " + err.Error())
 		log.Error(string(body))
 	}
-	log.Info("Recived response from device", string(body))
+	fmt.Println("Recived response from device", string(body))
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write(body)
 }

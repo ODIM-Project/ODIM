@@ -151,5 +151,5 @@
   "SessionLimitPerUser":0,
   "LogLevel":"warn",
   "ImageRegistryAddress":"",
-  "ExpiryTimeForKey":86400
+  "KeyExpiryInterval":86400
 }

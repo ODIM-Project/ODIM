@@ -7,4 +7,4 @@ odimra:
   haDeploymentEnabled:
   logLevel:
   logFormat:
-  expiryTimeForKey:
+  keyExpiryInterval:

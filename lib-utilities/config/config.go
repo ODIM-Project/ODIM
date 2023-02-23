@@ -72,7 +72,7 @@ type configModel struct {
 	LogLevel                       log.Level                `json:"LogLevel"`
 	LogFormat                      lgr.LogFormat            `json:"LogFormat"`
 	ImageRegistryAddress           string                   `json:"ImageRegistryAddress,omitempty"`
-	ExpiryTimeForKey               int                      `json:"ExpiryTimeForKey"`
+	KeyExpiryInterval              int                      `json:"KeyExpiryInterval"`
 }
 
 // DBConf holds all DB related configurations

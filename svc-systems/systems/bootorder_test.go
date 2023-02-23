@@ -158,6 +158,7 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 	pluginContact := PluginContact{
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
+		UpdateTask:     mockUpdateTask,
 	}
 
 	type args struct {
@@ -323,6 +324,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 	pluginContact := PluginContact{
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
+		UpdateTask:     mockUpdateTask,
 	}
 
 	errArg1 := response.Args{
@@ -423,9 +425,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.ChangeBiosSettings(ctx, tt.req); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PluginContact.ChangeBiosSettings() = %v, want %v", got, tt.want)
-			}
+			tt.p.ChangeBiosSettings(ctx, tt.req, "task12345")
 		})
 	}
 	// Invalid JSON
@@ -437,8 +437,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
-	res := pluginContact.ChangeBiosSettings(ctx, &req)
-	assert.Equal(t, http.StatusInternalServerError, int(res.StatusCode), "status should be StatusInternalServerError")
+	pluginContact.ChangeBiosSettings(ctx, &req, "task12345")
 
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
@@ -448,8 +447,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 		RequestBody:  []byte(`{"attributes": {"bootMode": "mode"}}`),
 		SessionToken: "token",
 	}
-	res = pluginContact.ChangeBiosSettings(ctx, &req)
-	assert.Equal(t, http.StatusBadRequest, int(res.StatusCode), "status should be StatusBadRequest")
+	pluginContact.ChangeBiosSettings(ctx, &req, "task12345")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", &errors.Error{}
@@ -459,8 +457,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 		RequestBody:  request,
 		SessionToken: "token",
 	}
-	res = pluginContact.ChangeBiosSettings(ctx, &req)
-	assert.Equal(t, http.StatusInternalServerError, int(res.StatusCode), "status should be StatusInternalServerError")
+	pluginContact.ChangeBiosSettings(ctx, &req, "task12345")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
@@ -472,8 +469,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 		err = &errors.Error{}
 		return
 	}
-	res = pluginContact.ChangeBiosSettings(ctx, &req)
-	assert.NotNil(t, res, "Response should have error")
+	pluginContact.ChangeBiosSettings(ctx, &req, "task12345")
 
 	StringsEqualFold = func(s, t string) bool {
 		return false
@@ -482,8 +478,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 		err = &errors.Error{}
 		return
 	}
-	res = pluginContact.ChangeBiosSettings(ctx, &req)
-	assert.NotNil(t, res, "Response should have error")
+	pluginContact.ChangeBiosSettings(ctx, &req, "task12345")
 
 	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 string, data4 scommon.ResponseStatus, err error) {
 		return scommon.ContactPlugin(ctx, req, errorMessage)

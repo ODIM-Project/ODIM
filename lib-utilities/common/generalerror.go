@@ -62,6 +62,19 @@ func GeneralError(statusCode int32, statusMsg, errMsg string, msgArgs []interfac
 			},
 		},
 	}
+	if statusCode < 300 {
+		args = response.Args{
+			Code:    response.ExtendedInfo,
+			Message: "See @Message.ExtendedInfo for more information.",
+			ErrorArgs: []response.ErrArgs{
+				response.ErrArgs{
+					StatusMessage: resp.StatusMessage,
+					ErrorMessage:  errMsg,
+					MessageArgs:   msgArgs,
+				},
+			},
+		}
+	}
 	resp.Body = args.CreateGenericErrorResponse()
 	if t != nil && t.TaskID != "" && t.TargetURI != "" && t.UpdateTask != nil {
 		task := TaskData{

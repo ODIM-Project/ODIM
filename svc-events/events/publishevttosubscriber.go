@@ -125,7 +125,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 		return false
 	}
 	message, deviceUUID = formatEvent(rawMessage, systemId, host)
-	// eventUniqueID := uuid.NewV4().String()
+	eventUniqueID := uuid.NewV4().String()
 	eventMap := make(map[string][]common.Event)
 
 	for index, inEvent := range message.Events {
@@ -155,15 +155,15 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 		}
 	}
 
-	for _, value := range eventMap {
+	for key, value := range eventMap {
 		message.Events = value
-		_, err := json.Marshal(message)
+		data, err := json.Marshal(message)
 		if err != nil {
 			l.LogWithFields(ctx).Error("unable to converts event into bytes: ", err.Error())
 			continue
 		}
 
-		// go e.postEvent(ctx, key, eventUniqueID, data)
+		go e.postEvent(ctx, key, eventUniqueID, data)
 	}
 	return flag
 }

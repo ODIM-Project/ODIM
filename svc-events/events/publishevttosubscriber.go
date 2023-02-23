@@ -91,7 +91,6 @@ func (e *ExternalInterfaces) PublishEventsToDestination(data interface{}) bool {
 	if err != nil {
 		host = event.IP
 	}
-	host = strings.ToLower(host)
 	l.Log.Info("After splitting host address, IP is: ", host)
 
 	var requestData = string(event.Request)

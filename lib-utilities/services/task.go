@@ -33,7 +33,7 @@ func CreateTask(ctx context.Context, sessionUserName string) (string, error) {
 	}
 	defer conn.Close()
 	taskService := taskproto.NewGetTaskServiceClient(conn)
-	reqCtx := CreateNewRequestContext(ctx)
+	reqCtx := common.CreateNewRequestContext(ctx)
 	reqCtx = common.CreateMetadata(reqCtx)
 	response, err := taskService.CreateTask(
 		reqCtx, &taskproto.CreateTaskRequest{
@@ -54,7 +54,7 @@ func CreateChildTask(ctx context.Context, sessionUserName string, parentTaskID s
 	}
 	defer conn.Close()
 	taskService := taskproto.NewGetTaskServiceClient(conn)
-	reqCtx := CreateNewRequestContext(ctx)
+	reqCtx := common.CreateNewRequestContext(ctx)
 	reqCtx = common.CreateMetadata(reqCtx)
 	response, err := taskService.CreateChildTask(
 		reqCtx, &taskproto.CreateTaskRequest{
@@ -81,7 +81,7 @@ func UpdateTask(ctx context.Context, taskID string, taskState string, taskStatus
 		return fmt.Errorf("Failed to create client connection: %s", errConn.Error())
 	}
 	defer conn.Close()
-	reqCtx := CreateNewRequestContext(ctx)
+	reqCtx := common.CreateNewRequestContext(ctx)
 	reqCtx = common.CreateMetadata(reqCtx)
 	taskService := taskproto.NewGetTaskServiceClient(conn)
 	_, err = taskService.UpdateTask(
@@ -95,21 +95,4 @@ func UpdateTask(ctx context.Context, taskID string, taskState string, taskStatus
 		},
 	)
 	return err
-}
-
-func CreateNewRequestContext(ctx context.Context) context.Context {
-	reqCtx := context.Background()
-	processName, _ := ctx.Value(common.ProcessName).(string)
-	transactionID, _ := ctx.Value(common.TransactionID).(string)
-	actionID, _ := ctx.Value(common.ActionID).(string)
-	actionName, _ := ctx.Value(common.ActionName).(string)
-	threadID, _ := ctx.Value(common.ThreadID).(string)
-	threadName, _ := ctx.Value(common.ThreadName).(string)
-	reqCtx = context.WithValue(reqCtx, common.ProcessName, processName)
-	reqCtx = context.WithValue(reqCtx, common.TransactionID, transactionID)
-	reqCtx = context.WithValue(reqCtx, common.ActionID, actionID)
-	reqCtx = context.WithValue(reqCtx, common.ActionName, actionName)
-	reqCtx = context.WithValue(reqCtx, common.ThreadID, threadID)
-	reqCtx = context.WithValue(reqCtx, common.ThreadName, threadName)
-	return reqCtx
 }

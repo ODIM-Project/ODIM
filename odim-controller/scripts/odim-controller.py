@@ -1277,7 +1277,7 @@ def check_extract_kubespray_src():
 			data_loaded = yaml.safe_load(defaultMain)
 			if (data_loaded['enable_dual_stack_networks'] == False) and (nwPreference != 'ipv4'):
 				data_loaded['enable_dual_stack_networks'] = True
-				with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml", w) as defaultMainWrite:
+				with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml", "w") as defaultMainWrite:
 					yaml.dump(data_loaded, defaultMainWrite)
 			elif (data_loaded['enable_dual_stack_networks'] == True) and (nwPreference != 'dualStack'):
 				data_loaded['enable_dual_stack_networks'] = False
@@ -1287,7 +1287,7 @@ def check_extract_kubespray_src():
 			data_loaded = yaml.safe_load(defaultMain)
 			if (data_loaded['enable_dual_stack_networks'] == False) and (nwPreference != 'ipv4'):
 				data_loaded['enable_dual_stack_networks'] = True
-				with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml", w) as defaultMainWrite:
+				with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml", "w") as defaultMainWrite:
 					yaml.dump(data_loaded, defaultMainWrite)
 			elif (data_loaded['enable_dual_stack_networks'] == True) and (nwPreference != 'dualStack'):
 				data_loaded['enable_dual_stack_networks'] = False

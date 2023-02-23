@@ -970,7 +970,7 @@ func (h *respHolder) getResourceDetails(ctx context.Context, taskID string, prog
 		memberFlag = true
 	}
 	resourceName := getResourceName(req.OID, memberFlag)
-	if memberFlag == true && strings.Contains(resourceName, "VolumesCollection") {
+	if memberFlag && strings.Contains(resourceName, "VolumesCollection") {
 		CollectionCapabilities := dmtf.CollectionCapabilities{
 			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
 			Capabilities: []*dmtf.Capabilities{
@@ -1012,14 +1012,6 @@ func (h *respHolder) getResourceDetails(ctx context.Context, taskID string, prog
 		}
 	}
 	progress = progress + alottedWork
-	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
-	err = req.UpdateTask(ctx, task)
-
-	if err != nil && (err.Error() == common.Cancelling) {
-		var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Cancelled, common.OK, progress, http.MethodPost)
-		req.UpdateTask(ctx, task)
-
-	}
 	return progress
 }
 func getResourceName(oDataID string, memberFlag bool) string {
@@ -1167,8 +1159,10 @@ func CreateDefaultEventSubscription(ctx context.Context, systemID []string) {
 	}
 	defer conn.Close()
 	events := eventsproto.NewEventsClient(conn)
+	reqCtx := common.CreateNewRequestContext(ctx)
+	reqCtx = common.CreateMetadata(reqCtx)
 
-	_, err := events.CreateDefaultEventSubscription(ctx, &eventsproto.DefaultEventSubRequest{
+	_, err := events.CreateDefaultEventSubscription(reqCtx, &eventsproto.DefaultEventSubRequest{
 		SystemID:      systemID,
 		EventTypes:    []string{"Alert"},
 		MessageIDs:    []string{},
@@ -1378,44 +1372,30 @@ func (e *ExternalInterface) getTelemetryService(ctx context.Context, taskID, tar
 	if err != nil {
 		l.LogWithFields(ctx).Error(err)
 	}
-	percentComplete = progress
-	task := fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	e.UpdateTask(ctx, task)
 
 	// Populate the MetricReportDefinitions for telemetry service
-	progress = percentComplete
 	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReportDefinitions"
 	progress, err = e.storeTelemetryCollectionInfo(ctx, "MetricReportDefinitionsCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err)
 	}
-	percentComplete = progress
-	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	e.UpdateTask(ctx, task)
 
 	// Populate the MetricReports for telemetry service
 	var metricReportEstimatedWork int32
 	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReports"
-	progress = percentComplete
 	progress, err = e.storeTelemetryCollectionInfo(ctx, "MetricReportsCollection", taskID, progress, metricReportEstimatedWork, pluginContactRequest)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err)
 	}
-	percentComplete = progress + metricReportEstimatedWork
-	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	e.UpdateTask(ctx, task)
 
 	// Populate the Triggers for telemetry service
 	pluginContactRequest.OID = "/redfish/v1/TelemetryService/Triggers"
-	progress = percentComplete
 	progress, err = e.storeTelemetryCollectionInfo(ctx, "TriggersCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err)
 	}
-	percentComplete = progress
-	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	e.UpdateTask(ctx, task)
-	return percentComplete
+
+	return progress
 }
 
 func (e *ExternalInterface) storeTelemetryCollectionInfo(ctx context.Context, resourceName, taskID string, progress, alottedWork int32, req getResourceRequest) (int32, error) {
@@ -1536,8 +1516,6 @@ func (e *ExternalInterface) getTeleInfo(ctx context.Context, taskID string, prog
 		return progress
 	}
 	progress = progress + alottedWork
-	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
-	req.UpdateTask(ctx, task)
 	return progress
 }
 

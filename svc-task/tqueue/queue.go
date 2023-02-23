@@ -48,11 +48,8 @@ func UpdateTasksWorker(tick *tmodel.Tick) {
 // Ticker is executed as a goroutine. It makes the Commit flag true when the ticker ticks.
 func Ticker(tick *tmodel.Tick) {
 	for range tick.Ticker.C {
-		if !tick.Commit {
-			tick.M.Lock()
-			tick.Commit = true
-			tick.M.Unlock()
-		}
-
+		tick.M.Lock()
+		tick.Commit = true
+		tick.M.Unlock()
 	}
 }

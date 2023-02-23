@@ -7,7 +7,7 @@
 - [API usage and access guidelines](#api-usage-and-access-guidelines)
   - [HTTP headers](#http-headers)
   - [Base URL](#base-url)
-  - [Curl command](#curl-command)
+  - [Curl](#curl)
   - [Curl command options (flags)](#curl-command-options)
   - [Including HTTP certificate](#including-http-certificate)
   - [HTTP request methods](#http-request-methods)

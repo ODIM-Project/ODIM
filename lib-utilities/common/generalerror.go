@@ -66,13 +66,6 @@ func GeneralError(statusCode int32, statusMsg, errMsg string, msgArgs []interfac
 		args = response.Args{
 			Code:    response.ExtendedInfo,
 			Message: "See @Message.ExtendedInfo for more information.",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: resp.StatusMessage,
-					ErrorMessage:  errMsg,
-					MessageArgs:   msgArgs,
-				},
-			},
 		}
 	}
 	resp.Body = args.CreateGenericErrorResponse()

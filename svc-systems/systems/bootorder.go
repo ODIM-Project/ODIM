@@ -111,20 +111,24 @@ func (p *PluginContact) SetDefaultBootOrder(ctx context.Context, systemID string
 }
 
 // ChangeBiosSettings defines the logic for change bios settings
-func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsproto.BiosSettingsRequest) response.RPC {
+func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsproto.BiosSettingsRequest, taskID string) {
 	var resp response.RPC
 	l.LogWithFields(ctx).Debugf("incoming ChangeBiosSettings request for SystemID: %s", req.SystemID)
-
+	var targetURI = "/redfish/v1/Systems/" + req.SystemID + "/Bios/Settings"
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI,
+		UpdateTask: p.UpdateTask, TaskRequest: string(req.RequestBody)}
 	// spliting the uuid and system id
 	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
+		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, taskInfo)
+		return
 	}
 	uuid := requestData[0]
 	target, gerr := smodel.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, taskInfo)
+		return
 	}
 
 	var biosSetting BiosSetting
@@ -134,7 +138,8 @@ func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsprot
 	if err != nil {
 		errMsg := "unable to parse the BiosSetting request" + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return
 	}
 
 	// Validating the request JSON properties for case sensitive
@@ -142,26 +147,29 @@ func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsprot
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 		l.LogWithFields(ctx).Error(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
-		return response
+		common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
+		return
 	}
 
 	decryptedPasswordByte, err := p.DevicePassword(target.Password)
 	if err != nil {
 		// Frame the RPC response body and response Header below
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
+		return
 	}
 	target.Password = decryptedPasswordByte
 	// Get the Plugin info
 	plugin, gerr := smodel.GetPluginData(target.PluginID)
 	if gerr != nil {
 		errorMessage := "error while trying to get plugin details"
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
+		return
 	}
 	var contactRequest scommon.PluginContactRequest
 	contactRequest.ContactClient = p.ContactClient
@@ -178,7 +186,8 @@ func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsprot
 		_, token, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
-			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
+			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, taskInfo)
+			return
 		}
 		contactRequest.Token = token
 	} else {
@@ -194,25 +203,33 @@ func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsprot
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s/Bios/Settings", requestData[1])
 
-	body, _, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while changing  bios settings: ")
+	body, location, pluginIP, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while changing  bios settings: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		return resp
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
+		return
+	}
+	if getResponse.StatusCode == http.StatusAccepted {
+		scommon.SavePluginTaskInfo(ctx, pluginIP, taskID, location)
+		return
 	}
 
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	err = JSONUnmarshalFunc(body, &resp.Body)
 	if err != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
+		return
 	}
 
 	// Adding Settings URL to the DB to fetch data from device
 	URL := fmt.Sprintf("/redfish/v1/Systems/%s/Bios/Settings", req.SystemID)
 	smodel.AddSystemResetInfo(ctx, URL, "None")
 	l.LogWithFields(ctx).Debugf("outgoing response for ChangeBiosSettings statuscode: %d", resp.StatusCode)
-	return resp
+	task := fillTaskData(taskID, targetURI, string(req.RequestBody), resp,
+		common.Completed, common.OK, 100, http.MethodPatch)
+	p.UpdateTask(ctx, task)
 }
 
 // ChangeBootOrderSettings defines the logic for change boot order settings

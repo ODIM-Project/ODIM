@@ -211,7 +211,7 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 		return
 	}
 	task := fillTaskData(taskID, targetURI, string(req.RequestBody), resp,
-		common.Exception, common.Critical, 100, http.MethodPost)
+		common.Completed, common.OK, 100, http.MethodPost)
 	pc.UpdateTask(ctx, task)
 }
 

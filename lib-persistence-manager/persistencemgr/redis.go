@@ -1007,6 +1007,73 @@ func (p *ConnPool) CreateTaskIndex(index string, value int64, key string) error 
 	return nil
 }
 
+/*
+ AddMemberToSet add a member to the redis set
+ /*Following are the input parameters for adding member to redis set:
+1. key - redis set name
+2. member - member id that to be added to the redis set
+*/
+
+func (p *ConnPool) AddMemberToSet(key string, member string) *errors.Error {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	errPrefix := fmt.Sprintf("error while adding member %s to the set %s: ", member, key)
+	if writePool == nil {
+		return errors.PackError(errors.DBConnFailed, errPrefix+"WritePool is nil")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+	createErr := writeConn.Send("SADD", key, member)
+	if createErr != nil {
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+		return errors.PackError(errors.DBUpdateFailed, errPrefix+createErr.Error())
+	}
+	return nil
+}
+
+/*
+ GetAllMembersInSet get all members in a redis set
+ /*Following are the input parameters to get embers from redis set:
+1. key - redis set name
+*/
+
+func (p *ConnPool) GetAllMembersInSet(key string) ([]string, *errors.Error) {
+	readConn := p.ReadPool.Get()
+	defer readConn.Close()
+
+	members, err := redis.Strings(readConn.Do("SMEMBERS", key))
+	if err != nil {
+		if errs, aye := isDbConnectError(err); aye {
+			return members, errs
+		}
+		return members, errors.PackError(errors.DBKeyFetchFailed, errorCollectingData, err)
+	}
+	return members, nil
+}
+
+/*
+ RemoveMemberFromSet removes a member from the redis set
+ /*Following are the input parameters for removing member from redis set:
+1. key - redis set name
+2. member - member id that to be added to the redis set
+*/
+
+func (p *ConnPool) RemoveMemberFromSet(key string, member string) *errors.Error {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	errPrefix := fmt.Sprintf("error while removing member %s to the set %s: ", member, key)
+
+	if writePool == nil {
+		return errors.PackError(errors.DBConnFailed, errPrefix+"WritePool is nil ")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+	deleteErr := writeConn.Send("SREM", key, member)
+	if deleteErr != nil {
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+		return errors.PackError(errors.DBUpdateFailed, errPrefix+deleteErr.Error())
+	}
+	return nil
+}
+
 // GetString is used to retrive index values of type string
 /* Inputs:
 1. index is the index name to search with

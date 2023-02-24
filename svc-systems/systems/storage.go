@@ -200,7 +200,7 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
-		scommon.SavePluginTaskInfo(ctx, pluginIP, taskID, location)
+		scommon.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
 		return
 	}
 	resp.StatusCode = http.StatusOK

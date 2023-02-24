@@ -405,5 +405,11 @@ func CreatePluginTask(ctx context.Context, key string,
 		return errors.PackError(err.ErrNo(), "error while trying to insert"+
 			" plugin task: ", err.Error())
 	}
+
+	if err = connPool.AddMemberToSet(common.PluginTaskIndex, key); err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to add "+
+			" plugin task to set: ", err.Error())
+	}
+
 	return nil
 }

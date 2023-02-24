@@ -74,13 +74,7 @@ func (e *ExternalInterfaces) addFabric(ctx context.Context, message common.Messa
 // 	data of type interface{}
 //Returns:
 //	bool: return false if any error occurred during execution, else returns true
-func timeTake(t time.Time) {
-	fmt.Println("Time Taken to Process ", time.Since(t))
-}
 func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, data interface{}) bool {
-
-	t := time.Now()
-	defer timeTake(t)
 	if data == nil {
 		l.LogWithFields(ctx).Info("invalid input params")
 		return false
@@ -97,7 +91,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 	if err != nil {
 		host = event.IP
 	}
-	// l.Log.Info("After splitting host address, IP is: ", host)
+	l.LogWithFields(ctx).Info("After splitting host address, IP is: ", host)
 
 	var requestData = string(event.Request)
 	//replacing the response with north bound translation URL

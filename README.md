@@ -3,26 +3,26 @@
 
 # Table of contents
 
-1. [Resource Aggregator for ODIM](#resource-aggregator-for-odim)
+- [Resource Aggregator for ODIM](#resource-aggregator-for-odim)
    - [Resource Aggregator for ODIM deployment requirements](#resource-aggregator-for-odim-deployment-requirements)
    - [Deployment guidelines](#deployment-guidelines)
-2. [Resource Aggregator for ODIM compatibility matrix](#resource-aggregator-for-odim-compatibility-matrix)
-3. [Troubleshooting information](#Troubleshooting-information)
-4. [Resource Aggregator for ODIM pre-deployment operations](#Resource-Aggregator-for-ODIM-pre-deployment-operations)
+- [Resource Aggregator for ODIM compatibility matrix](#resource-aggregator-for-odim-compatibility-matrix)
+- [Troubleshooting information](#Troubleshooting-information)
+- [Resource Aggregator for ODIM pre-deployment operations](#Resource-Aggregator-for-ODIM-pre-deployment-operations)
    - [Setting up the environment](#setting-up-the-environment)
    - [Pulling Docker images of all Kubernetes microservices](#pulling-docker-images-of-all-kubernetes-microservices)
    - [Building Docker images of all services](#building-docker-images-of-all-services)
    - [Updating additional package versions](#updating-additional-package-versions)
    - [Generating encrypted passwords for nodes and Redis](#generating-encrypted-passwords-for-nodes-and-Redis)
    - [Configuring log path for odim-controller](#configuring-log-path-for-odim-controller)
-5. [Deploying Resource Aggregator for ODIM and the plugins](#deploying-resource-aggregator-for-odim-and-the-plugins)
+- [Deploying Resource Aggregator for ODIM and the plugins](#deploying-resource-aggregator-for-odim-and-the-plugins)
    - [Deploying the resource aggregator services](#deploying-the-resource-aggregator-services)
    - [Deploying the Unmanaged Rack Plugin](#deploying-the-unmanaged-rack-plugin)
    - [Deploying the Dell plugin](#deploying-the-dell-plugin)
    - [Deploying the Lenovo plugin](#deploying-the-lenovo-plugin)
    - [Deploying the Cisco ACI plugin](#deploying-the-cisco-aci-plugin)
    - [Adding a plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework)
-6. [Resource Aggregator for ODIM post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)
+- [Resource Aggregator for ODIM post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)
    - [Scaling up the resources and services of Resource Aggregator for ODIM](#scaling-up-the-resources-and-services-of-resource-aggregator-for-odim)
    - [Scaling down the resources and services of Resource Aggregator for ODIM](#scaling-down-the-resources-and-services-of-resource-aggregator-for-odim)
    - [Rolling back to an earlier deployment revision](#rolling-back-to-an-earlier-deployment-revision)
@@ -35,7 +35,7 @@
      - [Restoring ODIM etcd](#Restoring-ODIM-etcd)
    - [Backup and restore of Redis](#Backup-and-restore-of-Redis)
    - [Backup and restore of Resource Aggregator for ODIM and plugin configurations](#Backup-and-restore-of-Resource-Aggregator-for-ODIM-and-plugin-configurations)
-6. [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
+- [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
    - [Adding a server into the resource inventory](#adding-a-server-into-the-resource-inventory)
    - [Viewing the resource inventory](#viewing-the-resource-inventory)
    - [Configuring BIOS settings for a server](#configuring-bios-settings-for-a-server)
@@ -47,14 +47,14 @@
    - [Viewing network fabrics](#viewing-network-fabrics)
    - [Creating and deleting volumes](#creating-and-deleting-volumes)
    - [Removing a server from the resource inventory](#removing-a-server-from-the-resource-inventory)
-7. [Using odim-controller command-line interface](#using-odim-controller-command-line-interface)
-8. [Contributing to the open source community](#contributing-to-the-open-source-community)
+- [Using odim-controller command-line interface](#using-odim-controller-command-line-interface)
+- [Contributing to the open source community](#contributing-to-the-open-source-community)
    - [Creating a PR](#creating-a-pr)
    - [Filing Resource Aggregator for ODIM defects](#filing-resource-aggregator-for-odim-defects)
    - [Adding new plugins and services](#adding-new-plugins-and-services)
    - [Licensing](#licensing)
    - [Reference links](#reference-links)
-9. [Appendix](#appendix)
+- [Appendix](#appendix)
    - [Setting proxy configuration](#setting-proxy-configuration)
    - [Setting up time sync across nodes](#setting-up-time-sync-across-nodes)
    - [Downloading and installing Go language](#downloading-and-installing-go-language)
@@ -178,10 +178,10 @@ Consider the following guidelines while deploying Resource Aggregator for ODIM:
 
 -   The following two deployment configurations are supported:
 
-    -  **One-node cluster configuration**:
+    -  **One-node cluster configuration**
 	   This configuration has only one cluster node that also functions as a worker node. It does not support scaling of the Resource Aggregator for ODIM resources and services. This implies you cannot add worker nodes in a one-node cluster.
 
-    -  **Three-node cluster configuration**:
+    -  **Three-node cluster configuration**
 	   This configuration has three cluster nodes that also function as worker nodes for sharing the extra load. It provides high availability environment by allowing the scaling of the Resource Aggregator for ODIM resources and services. This implies you can add worker nodes and increase the number of service instances running in a three-node cluster.
     
     To convert an existing one-node cluster into a three-node cluster, you must reset the one-node deployment first, and then modify the required parameters in the odim-controller configuration file.
@@ -224,7 +224,7 @@ The following table lists the software components and versions that are compatib
 
 # Troubleshooting information
 
-If you experience any issues while deploying Resource Aggregator for ODIM, please see the *Troubleshooting Readme* for solutions, workarounds. and FAQs at *https://github.com/ODIM-Project/ODIM/blob/development/docs/Troubleshooting.md*.
+If you experience any issues while deploying Resource Aggregator for ODIM, please see the *Troubleshooting Readme* for solutions, workarounds, and FAQs at *https://github.com/ODIM-Project/ODIM/blob/development/docs/Troubleshooting.md*.
 
 
 
@@ -381,6 +381,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
         ```
 
 
+
 ## Pulling Docker images of all Kubernetes microservices
 
 1. On the deployment node, pull the Docker images of all the Kubernetes microservices:
@@ -430,7 +431,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
 
    Example: `cp /home/<user>/*.tar /home/<user>/kubernetes_images`
 
-   > **IMPORTANT**: When deploying ODIMRA, update the `kubernetesImagePath` parameter in `kube_deploy_nodes.yaml` file with the path of the `kubernetes_images` directory you choose in this step. The images are automatically installed on all cluster nodes after deployment.
+   > **IMPORTANT**: When deploying Resource Aggregator for ODIM, update the `kubernetesImagePath` parameter in `kube_deploy_nodes.yaml` file with the path of the `kubernetes_images` directory you choose in this step. The images are automatically installed on all cluster nodes after deployment.
 
    The `kube_deploy_nodes.yaml` file is the configuration file used by odim-controller to set up a Kubernetes cluster and to deploy the Resource Aggregator for ODIM services.
    
@@ -441,48 +442,54 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
 
 1. Run the following commands on the deployment node:
    1. ```
+      cd /home/${USER}
+      ```
+   
+   2. ```
       git clone https://github.com/ODIM-Project/ODIM.git
       ```
-      
-   2. ```
+   
+   3. ```
       cd ODIM
       ```
-      
-   3. ```
-      export ODIMRA_USER_ID=2021
-      ```
-	   
    4. ```
-      export ODIMRA_GROUP_ID=2021
+       export ODIMRA_USER_ID=2021
       ```
-      
+   
    5. ```
-      ./build_images.sh
-	   ```
-	   
-	6. ```
-	   sudo docker images
-	   ```
-	   If the images are built successfully, you get an output similar to the following sample:
-	   
-	   <img src="docs/images/odimra_images.png" style="zoom:55%;"   >
-	   
-	7. Pull the reloader and busybox images:
-	   
-	   ```
-	   docker pull stakater/reloader:v0.0.76
+	   export ODIMRA_GROUP_ID=2021
+      ```
+     
+   6. ```
+	   ./build_images.sh
 	   ```
 
-	   ```
-	   docker pull busybox:1.33
-	   ```
+   
+   7. ```
+	    sudo docker images
+	    ```
+	    
+       
+          If the images are built successfully, you get an output similar to the following sample:
+   
+   <img src="docs/images/odimra_images.png" style="zoom:55%;"   >
+   
+9. Pull the reloader and busybox images:
+	
+	```
+	docker pull stakater/reloader:v0.0.76
+	```
+	
+	```
+	docker pull busybox:1.33
+	```
 	
 2. Save the Docker images of all Resource Aggregator for ODIM services to a tar archive.
 
     ```
     docker save -o <image_name.tar> <image_name>:<version>
     ```
-    Example: `docker save -o api.tar api:4.0`
+    Example: `docker save -o api.tar api:5.0`
 
     The following table lists the Docker images of all Resource Aggregator for ODIM services:
 
@@ -1028,13 +1035,13 @@ Topics covered in this section include:
    'https://{odim_host}:{port}/redfish/v1' -k
    ```
    
-   Replace `{path_of_rootCA.crt}` with the path specified for the odimCertsPath parameter in the kube\_deploy\_nodes.yaml file - `<odimcertsPath>/rootCA.crt`. The `rootCA.crt` file is required for secure SSL communication.
+   Replace `{path_of_rootCA.crt}` with the path specified for the odimCertsPath parameter in the `kube_deploy_nodes.yaml` file with `<odimcertsPath>/rootCA.crt`. The `rootCA.crt` file is required for secure SSL communication.
    
    {odim_host} is the virtual IP address of the Kubernetes cluster.
    
    > **NOTE**: For a single node cluster configuration, {odim_host} is the ip address of primary node. For a three node cluster configuration, to use FQDN as `{odim_host}`, ensure that FQDN is configured to the virtual IP address in the `/etc/hosts` file or in the DNS server.
    
-   {port} is the API server port configured in Nginx. Default port is `30080`. If you have changed the default port, use that as the port.
+   {port} is the API service port configured in Nginx. Default port is `30080`. If you have changed the default port in the `kube_deploy_nodes.yaml` file, use that as the port.
    
    The following JSON response is returned:
    
@@ -1203,14 +1210,14 @@ Topics covered in this section include:
     
     In this command, replace:
 
-    -  {ODIMRA password} with the password of Resource Aggregator for ODIM (default administrator account password).
-    -  {odimCertsPath} with the path you specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
+    -  `{ODIMRA password}` with the password of Resource Aggregator for ODIM (default administrator account password).
+    -  `{odimCertsPath}` with the path you specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
     
     Example output:
     
-```
-     ip/jrKjQdzKIU1JvT4ZQ6gbCe2XJtCKPRgqOQv6g3aIAYtG+hpVgel3k67TB723h9dN2cABWZgE+b9CAxbIXj3qZZFWrUMMuPkT4fwtW8fTlhdR+phmOvnnSw5bvUrXyl5Se1IczwtMXfhqk7U8eqpJnZ6xWNR8Q1K7baDv1QvZwej/v3bqHRTC93pDL+3SvE8VCyrIgbMVdfvv3+mJKvs2F7hXoTJiwjRfKGyzdP0yRIHAFOB3m/xnv6ZIRm8Ak6+sx18NRq8RH20bktzhZ45fT+iX4twMJG1lI0KRJ3j/PL+IqY4MmYzv/72fQhMznL39Rjr9LR6mB/JGI0ww0sMUCFr6obzQfQWv1so+Ck694fNJMQPXQS64VcqVDuISXSd4cqkdMx9zBmfDbgzMQQVwgjDgt4nC1w8/wGSfMtkms8rSJrBa18hKCWi+jfhASbNM84udKc0kQsQJlsnjcdsL84zrE8iUqqXC/fK2cQbNL31H5C+qEfJqdNTauQSskkK3cpNWh1FVw736WBYYJSja59q5QwMniXldwcvRglEIELsjKgjbuOnQoIZaVTcbheaa2b1XAiRKTKuPmweysyV3fbuR0jgSJTmdTehrtYG9omjUbg/L7WFjC43JWq8suWi5uch+jHtGG5mZJFFdkE37pQd3wzHBSa+/9Yq9/ZSY=
-```
+    ```
+    ip/jrKjQdzKIU1JvT4ZQ6gbCe2XJtCKPRgqOQv6g3aIAYtG+hpVgel3k67TB723h9dN2cABWZgE+b9CAxbIXj3qZZFWrUMMuPkT4fwtW8fTlhdR+phmOvnnSw5bvUrXyl5Se1IczwtMXfhqk7U8eqpJnZ6xWNR8Q1K7baDv1QvZwej/v3bqHRTC93pDL+3SvE8VCyrIgbMVdfvv3+mJKvs2F7hXoTJiwjRfKGyzdP0yRIHAFOB3m/xnv6ZIRm8Ak6+sx18NRq8RH20bktzhZ45fT+iX4twMJG1lI0KRJ3j/PL+IqY4MmYzv/72fQhMznL39Rjr9LR6mB/JGI0ww0sMUCFr6obzQfQWv1so+Ck694fNJMQPXQS64VcqVDuISXSd4cqkdMx9zBmfDbgzMQQVwgjDgt4nC1w8/wGSfMtkms8rSJrBa18hKCWi+jfhASbNM84udKc0kQsQJlsnjcdsL84zrE8iUqqXC/fK2cQbNL31H5C+qEfJqdNTauQSskkK3cpNWh1FVw736WBYYJSja59q5QwMniXldwcvRglEIELsjKgjbuOnQoIZaVTcbheaa2b1XAiRKTKuPmweysyV3fbuR0jgSJTmdTehrtYG9omjUbg/L7WFjC43JWq8suWi5uch+jHtGG5mZJFFdkE37pQd3wzHBSa+/9Yq9/ZSY=
+    ```
 
 4. On the deployment node, copy the UR plugin configuration file and the hook script to `~/plugins/urplugin`.
    ```
@@ -1266,7 +1273,7 @@ Topics covered in this section include:
 8. Save the URP Docker image on the deployment node at `~/plugins/urplugin`.
 
      ```
-     docker save urplugin:3.1 -o ~/plugins/urplugin/urplugin.tar
+     docker save urplugin:3.2 -o ~/plugins/urplugin/urplugin.tar
      ```
 
 9. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
@@ -1414,7 +1421,7 @@ Topics covered in this section include:
 7. Save the Dell plugin Docker image on the deployment node at `~/plugins/dellplugin`.
 
     ```
-    docker save dellplugin:2.1 -o ~/plugins/dellplugin/dellplugin.tar
+    docker save dellplugin:2.2 -o ~/plugins/dellplugin/dellplugin.tar
     ```
 
 8. Navigate to the `ODIM` directory.
@@ -1564,7 +1571,7 @@ Topics covered in this section include:
 
 7. Save the Lenovo plugin Docker image on the deployment node at `~/plugins/lenovoplugin`.
 
-       docker save lenovoplugin:1.1 -o ~/plugins/lenovoplugin/lenovoplugin.tar
+       docker save lenovoplugin:1.2 -o ~/plugins/lenovoplugin/lenovoplugin.tar
 
 8. Navigate to the` ODIM` directory.
 
@@ -1611,7 +1618,7 @@ Topics covered in this section include:
       haDeploymentEnabled: True
       connectionMethodConf:
       - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth:LENOVO_v1.0.0
+        ConnectionMethodVariant: Compute:BasicAuth:LENOVO_v2.0.0
       odimraKafkaClientCertFQDNSan: lenovoplugin, lenovoplugin-events
       odimraServerCertFQDNSan: lenovoplugin, lenovoplugin-events  
     ```
@@ -1667,13 +1674,13 @@ The plugin you want to add is successfully deployed.
 
     -   `{odim_host}` is the virtual IP address of the Kubernetes cluster. 
     For one-node odim deployment, `odim_host` is the IP address of the cluster node.
-    -   `{port}` is the API server port configured in Nginx. Default port is `30080`. If you have changed the default port, use that as the port.
+    -   `{port}` is the API service port configured in Nginx. Default port is `30080`. If you have changed the default port in `kube_deploy_nodes.yaml` file, use that as the port.
 
     The following ports (except container ports) must be free:
     
     | Port name                                                    | Ports                                                        |
     | ------------------------------------------------------------ | ------------------------------------------------------------ |
-    | Container ports (access restricted only to the Kubernetes cluster network) | 45000 — API service port<br />45101- 45201 — Resource Aggregator for ODIM service ports<br />9082, 9092 — Kafka ports<br />6379 — Redis port<br />26379 — Redis Sentinel port<br />2181 — Zookeeper port<br>2379, 2380 — etcd ports |
+    | Container ports (access restricted only to the Kubernetes cluster network) | 30080 — API service port<br />45101- 45201 — Resource Aggregator for ODIM service ports<br />9082, 9092 — Kafka ports<br />6379 — Redis port<br />26379 — Redis Sentinel port<br />2181 — Zookeeper port<br>2379, 2380 — etcd ports |
     | API node port (for external access)                          | 30080                                                        |
     | Kafka node port (for external access)                        | 30092 for a one-node cluster configuration. 30092, 30093, and 30094 for a three-node cluster configuration |
     | GRF plugin port<br />EventListenerNodePort<br />lbport       | 45001 — Port to be used while adding GRF plugin<br />30081 — Port used for event subscriptions in one-node cluster configuration <br />lbport — For three-node cluster configuration, specify lbport as per your requirement. This port must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as Nginx proxy port for the plugin<br />For one-node cluster configuration, it is the same as EventListenerNodePort |
@@ -2011,7 +2018,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    --upgrade plugin --plugin <plugin_name>
    ```
 
-   Replace <plugin\_name\> with the name of the plugin whose service you want to upgrade.
+   Replace `<plugin_name>` with the name of the plugin whose service you want to upgrade.
 
 3. To update the odim-controller configuration parameters, do the following: 
 
@@ -2825,14 +2832,15 @@ python3 odim-controller.py [option(s)] [argument(s)]
     python3 odim-controller.py --addnode kubernetes --config \
     ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml
     ```
-```
 
-2. ```
-     python3 odim-controller.py --config \
+2.  ```
+    python3 odim-controller.py --config \
     ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
     --scale --svc aggregation --replicas 3
-```
+    ```
 For more examples, see *[Post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)*.
+
+
 
 # Contributing to the open source community
 
@@ -2938,9 +2946,9 @@ You can also refer the following links for exploring Wiki page and slack channel
    
    ```
    export http_proxy=<your_HTTP_proxy_address>
-      export https_proxy=<your_HTTP_proxy_address>
-      no_proxy="127.0.0.1,localhost,localhost.localdomain,xxx.xxx.xxx.10/12,   <Deployment_Node_IP_address>,<Cluster_Node1_IP>,\
-      <Cluster_Node1_IP>,<Cluster_Node2_IP>,<Cluster_Node3_IP>"
+   export https_proxy=<your_HTTP_proxy_address>
+   no_proxy="127.0.0.1,localhost,localhost.localdomain,xxx.xxx.xxx.10/12,   <Deployment_Node_IP_address>,<Cluster_Node1_IP>,\
+   <Cluster_Node1_IP>,<Cluster_Node2_IP>,<Cluster_Node3_IP>"
    ```
 3. Run the following command: 
 
@@ -3013,9 +3021,9 @@ This procedure shows how to set up time synchronization across all the nodes (de
    sudo systemctl restart chrony
    ```
    
-```
+   ```
    sudo systemctl enable chrony
-```
+   ```
 
    
 
@@ -3307,6 +3315,8 @@ Run the following commands:
      odimraKafkaClientKey:
 ```
 
+
+
 ## Odim-controller configuration parameters
 
 The following table lists all the configuration parameters required by odim-controller to deploy the services of Resource Aggregator for ODIM.
@@ -3384,7 +3394,7 @@ The following table lists all the configuration parameters required by odim-cont
 
 ```
 etcHostsEntries: |
- <IP_address_of_external_server_or_plugin> <FQDN_of_external_server>
+<IP_address_of_external_server_or_plugin> <FQDN_of_external_server>
 ```
 Example:
 
@@ -3866,7 +3876,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 7. Save the GRF plugin Docker image on the deployment node at `~/plugins/grfplugin`.
 
     ```
-    docker save grfplugin:3.0 -o ~/plugins/grfplugin/grfplugin.tar
+    docker save grfplugin:3.2 -o ~/plugins/grfplugin/grfplugin.tar
     ```
 
 8. Navigate to the `ODIM` directory.
@@ -4088,7 +4098,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
         kubectl get nodes -o wide
         ```
     
-        If any of the nodes are listed as "Ready,Unschedulable", run the following commands on any of the existing controller nodes:
+        If any of the nodes are listed as `"Ready,Unschedulable"`, run the following commands on any of the existing controller nodes:
     
         ```
         kubectl uncordon <unschedulable_controller_node_name>
@@ -4217,7 +4227,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
 3. Perform the following steps on the deployment node: 
     1. Remove the existing worker node. To know how to remove a node, see step 1 in *[Scaling down the resources and services of Resource Aggregator for ODIM](#Scaling-down-the-resources-and-services-of-Resource-Aggregator-for-ODIM)*. 
-    2. Edit `$\{K8S\_INVENTORY\_FILE\}` to add the removed worker node as a new controller node with required details under the following sections. 
+    2. Edit `${K8S_INVENTORY_FILE}` to add the removed worker node as a new controller node with required details under the following sections. 
 
         - etcd
         - kube_control_plane
@@ -4228,7 +4238,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
         vi ${K8S_INVENTORY_FILE}
         ```
 
-    3. Edit `\{ODIM\_CONTROLLER\_SRC\_PATH\}/kubespray/inventory/k8s-cluster-$\{DEPLOYMENT\_ID\}/group\_vars/all/all.yml` to: 
+    3. Edit `{ODIM_CONTROLLER_SRC_PATH}/kubespray/inventory/k8s-cluster-$\{DEPLOYMENT_ID}/group_vars/all/all.yml` to: 
 
         -   Update the no_proxy parameter with the removed worker node IP.
 

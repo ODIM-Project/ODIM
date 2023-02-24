@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package tmodel ...
+// Package tmodel ...
 package tmodel
 
 import (
@@ -37,7 +37,7 @@ const (
 	CompletedTaskTable = "CompletedTask"
 )
 
-//CompletedTask is used to build index for redis
+// CompletedTask is used to build index for redis
 type CompletedTask struct {
 	UserName string
 	ID       string
@@ -91,8 +91,8 @@ type Tick struct {
 }
 
 // Payload contain information detailing the HTTP and JSON payload
-//information for executing the task.
-//This object shall not be included in the response if the HidePayload property
+// information for executing the task.
+// This object shall not be included in the response if the HidePayload property
 // is set to True.
 type Payload struct {
 	HTTPHeaders   map[string]string `json:"HttpHeaders"`
@@ -142,6 +142,7 @@ type Oem struct {
 
 // PersistTask is to store the task data in db
 // Takes:
+//
 //	t pointer to Task to be stored.
 //	db of type common.DbType(int32)
 func PersistTask(ctx context.Context, t *Task, db common.DbType) error {
@@ -157,11 +158,14 @@ func PersistTask(ctx context.Context, t *Task, db common.DbType) error {
 
 // DeleteTaskFromDB is to delete the task from db
 // Takes:
-// 	t of type pointer to Task object
+//
+//	t of type pointer to Task object
+//
 // Returns:
-//      err of type error
-//      On Success - return nil value
-//      On Failure - return non nill value
+//
+//	err of type error
+//	On Success - return nil value
+//	On Failure - return non nill value
 func DeleteTaskFromDB(ctx context.Context, t *Task) error {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -175,9 +179,12 @@ func DeleteTaskFromDB(ctx context.Context, t *Task) error {
 
 // GetTaskStatus is to retrieve the task data already present in db
 // Takes:
+//
 //	taskID of type string contains the task ID of the task to be retrieved from the db
 //	db of type common.DbType(int32)
+//
 // Returns:
+//
 //	err of type error
 //		On Success - return nil value
 //		On Failure - return non nill value
@@ -202,9 +209,12 @@ func GetTaskStatus(ctx context.Context, taskID string, db common.DbType) (*Task,
 }
 
 // GetAllTaskKeys will collect all task keys available in the DB
-//Takes:
+// Takes:
+//
 //	None
-//Returns:
+//
+// Returns:
+//
 //	Slice of type strings and error
 //	On Success - error is set to nil and returns slice of tasks
 //	On Failure - error is set to appropriate reason why it got failed
@@ -221,7 +231,7 @@ func GetAllTaskKeys(ctx context.Context) ([]string, error) {
 	return taskKeys, nil
 }
 
-//Transaction - is for performing atomic oprations using optimitic locking
+// Transaction - is for performing atomic oprations using optimitic locking
 func Transaction(ctx context.Context, key string, cb func(context.Context, string) error) error {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -256,7 +266,6 @@ func ValidateTaskUserName(ctx context.Context, userName string) error {
 2."conn" is an instance of Conn struct in persistence manager library
 */
 func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
-
 	defer func() {
 		tick.M.Lock()
 		tick.Commit = false
@@ -278,10 +287,6 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 
 	tasks := make(map[string]interface{}, maxSize)
 	completedTasks := make(map[string]int64, maxSize)
-
-	if len(*queue) <= 0 {
-		return
-	}
 
 	tick.M.Lock()
 	tick.Executing = true

@@ -64,7 +64,7 @@ func DeleteSession(ctx context.Context, req *sessionproto.SessionRequest) respon
 	for _, token := range sessionTokens {
 		session, err := auth.CheckSessionTimeOut(ctx, token)
 		if err != nil {
-			l.LogWithFields(ctx).Error(errorLogPrefix + "Unable to get session details with the token " + token + ": " + err.Error())
+			l.LogWithFields(ctx).Error(errorLogPrefix + "Unable to get session details: " + err.Error())
 			continue
 		}
 		if session.ID == req.SessionId {

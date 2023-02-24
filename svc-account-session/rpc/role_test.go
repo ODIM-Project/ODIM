@@ -125,7 +125,7 @@ func TestRole_CreateRole1(t *testing.T) {
 				return response.RPC{}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
-			want:        &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
@@ -231,7 +231,7 @@ func TestRole_GetRole(t *testing.T) {
 				return response.RPC{}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
-			want:        &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{
@@ -332,7 +332,7 @@ func TestRole_GetAllRoles(t *testing.T) {
 			UpdateLastUsedTimeFunc: func(ctx context.Context, token string) error { return e.New("fakeError") },
 			GetAllRolesFunc:        func(ctx context.Context, session *asmodel.Session) response.RPC { return response.RPC{} },
 			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
-			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:                   &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:                false,
 		},
 		{
@@ -438,7 +438,7 @@ func TestRole_UpdateRole(t *testing.T) {
 				return response.RPC{}
 			},
 			MarshalFunc: func(v any) ([]byte, error) { return nil, nil },
-			want:        &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			want:        &roleproto.RoleResponse{StatusCode: 500, StatusMessage: "Base.1.13.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.13.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.13.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session: fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
 			wantErr:     false,
 		},
 		{

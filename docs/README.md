@@ -7,7 +7,7 @@
 - [API usage and access guidelines](#api-usage-and-access-guidelines)
   - [HTTP headers](#http-headers)
   - [Base URL](#base-url)
-  - [Curl command](#curl-command)
+  - [Curl](#curl)
   - [Curl command options (flags)](#curl-command-options)
   - [Including HTTP certificate](#including-http-certificate)
   - [HTTP request methods](#http-request-methods)
@@ -287,7 +287,13 @@ To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS
 HTTP headers include the following:
 
 - `"Content-type":"application/json; charset=utf-8"` for all RESTful API operations that include a request body in JSON format.
-- Authentication header (`BasicAuth` or `XAuthToken`) for all RESTful API operations except the HTTP `GET` operation on the Redfish service root and the HTTP `POST` operation on sessions.
+- Authentication header (`BasicAuth` or `XAuthToken`) for all RESTful API operations except the following operations:
+  - HTTP `GET` operation on the Redfish service root
+  - HTTP `GET` operation on `/redfish/v1/$metadata`
+  - HTTP `GET` operation on `/redfish`
+  - HTTP `GET` operation on `/redfish/v1`
+  - HTTP `GET` operation on `/redfish/v1/odata`
+  - HTTP `POST` operation on sessions
 
 ## **Base URL**
 
@@ -300,7 +306,7 @@ Use the following base URL in all your HTTP requests:
 	>**NOTE:** Ensure that FQDN is provided in the `/etc/hosts` file or in the DNS server.
 
 
-- {port} is the port where the services of the resource aggregator are running. The default port is 45000. If you have changed the default port in the `/etc/odimra_config/odimra_config.json` file, use that as the port in the base URL.
+- {port} is the port where the services of the resource aggregator are running. The default port is 30080. If you have changed the default port in the `kube_deploy_nodes.yaml` file, use that as the port in the base URL.
 >**NOTE**: To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where the resource aggregator is installed. To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
 
 ## curl
@@ -636,7 +642,7 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |-------|--------------------|
 |/redfish/v1/Registries|`GET`|
 |/redfish/v1/Registries/{registryId}|`GET`|
-|/redfish/v1/registries/{registryFileId}|`GET`|
+|/redfish/v1/Registries/{registryFileId}|`GET`|
 
 
 ## Viewing the list of supported Redfish services
@@ -1766,7 +1772,7 @@ curl -i GET \
       "Id":"c27575d2-052d-4ce9-8be1-978cab002a0f",
       "Name":"Connection Method",
       "ConnectionMethodType":"Redfish",
-      "ConnectionMethodVariant":"Compute:BasicAuth:GRF_v1.0.0",
+      "ConnectionMethodVariant":"Compute:BasicAuth:GRF_v2.0.0",
       "Links":{
             "AggregationSources":[
          {
@@ -1812,16 +1818,16 @@ It consists of the following parameters:
 
 - **PluginType**
    The string that represents the type of the plugin.<br>Possible values: Compute, Storage, and Fabric. 
-- **PreferredAuthType:**   
-   Preferred authentication method to connect to the plugin - BasicAuth or XAuthToken.  
-- **PluginID_Firmwareversion:**
+- **PreferredAuthType**  
+   Preferred authentication method to connect to the plugin - `BasicAuth` or `XAuthToken`.  
+- **PluginID_Firmwareversion**
    The id of the plugin along with the version of the firmware. To know the plugin ids for the supported plugins, see *Mapping of plugins and plugin Ids* table.<br>
-   Supported values: `GRF_v1.0.0` and `URP_v1.0.0`<br>
+   Supported values: `GRF_v2.0.0` and `URP_v2.0.0`<br>
 
 **Examples**:
 
-1. `Compute:BasicAuth:GRF_v1.0.0`
-2. `Compute:BasicAuth:URP_v1.0.0`
+1. `Compute:BasicAuth:GRF_v2.0.0`
+2. `Compute:BasicAuth:URP_v2.0.0`
 
 
 >**Mapping of plugins and plugin Ids**
@@ -1909,7 +1915,7 @@ curl -i POST \
 |UserName|String (required)<br> |The plugin username.|
 |Password|String (required)<br> |The plugin password.|
 |Links{|Object (required)<br> |Links to other resources that are related to this resource.|
-|ConnectionMethod|Array (required)|Links to the connection method that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response. Choose a connection method having the details of the plugin of your choice.<br>For example, the `ConnectionMethodVariant` property for the GRF plugin displays the following value:<br>`Compute:BasicAuth:GRF_v1.0.0` <br>For more information, see the "connection method properties" table in *[Viewing a connection method](#viewing-a-connection-method)*</li></ul>|
+|ConnectionMethod|Array (required)|Links to the connection method that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response. Choose a connection method having the details of the plugin of your choice.<br>For example, the `ConnectionMethodVariant` property for the GRF plugin displays the following value:<br>`Compute:BasicAuth:GRF_v2.0.0` <br>For more information, see the "connection method properties" table in *[Viewing a connection method](#viewing-a-connection-method)*</li></ul>|
 
 >**Sample response header (HTTP 202 status)**
 
@@ -1984,7 +1990,7 @@ location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-af
 
    ```
    [req]
-   default_bits = <Key Length 3072>
+   default_bits = <Key Length 4096>
    encrypt_key = no
    default_md = <Digest Algorithm sha256/sha512>
    prompt = no
@@ -5009,7 +5015,7 @@ curl -i -X GET \
 ```
 curl -i GET \
              -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/{volumeId}'
+              'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}'
 ```
 
 >**Sample response body** 
@@ -5095,7 +5101,7 @@ curl -i -X POST \
       }
    ]
   },
-   "DisplayName":"<volume_name>"
+   "DisplayName":"<volume_name>",
    "@Redfish.OperationApplyTime":"OnReset"
 }
 ```
@@ -5114,16 +5120,16 @@ curl -i -X POST \
 >**Sample response body** 
 
 ```
- {
-      "error":{
-            "@Message.ExtendedInfo":[
-                  {
-                        "MessageId": "Base.1.13.Success"            
-         }         
+{
+   "error":{
+      "@Message.ExtendedInfo":[
+         {
+            "MessageId":"iLO.2.14.SystemResetRequired"
+         }
       ],
-            "code":"iLO.0.10.ExtendedInfo",
-            "message":"See @Message.ExtendedInfo for more information."      
-   }   
+      "code":"iLO.0.10.ExtendedInfo",
+      "message":"See @Message.ExtendedInfo for more information."
+   }
 }
 ```
 
@@ -11372,7 +11378,7 @@ The arguments are the substitution variables for the message. The `MessageId` is
 |-------|--------------------|-------------------|
 |/redfish/v1/Registries|`GET`|`Login` |
 |/redfish/v1/Registries/{registryId}|`GET`|`Login` |
-|/redfish/v1/registries/{registryFileId}|`GET`|`Login` |
+|/redfish/v1/Registries/{registryFileId}|`GET`|`Login` |
 
 
 ##  Viewing a collection of registries
@@ -11499,7 +11505,7 @@ curl -i GET \
 |||
 |------|--------|
 |**Method** |`GET` |
-|**URI** |``/redfish/v1/registries/{registryFileId}`` |
+|**URI** |`/redfish/v1/Registries/{registryFileId}` |
 |**Description** |This endpoint fetches information about a file in a registry.|
 |**Returns** |Content of this file.|
 |**Response code** | `200 OK` |

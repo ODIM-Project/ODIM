@@ -94,8 +94,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 	if err != nil {
 		host = event.IP
 	}
-	host = strings.ToLower(host)
-	l.LogWithFields(ctx).Info("After splitting host address, IP is: ", host)
+	l.Log.Info("After splitting host address, IP is: ", host)
 
 	var requestData = string(event.Request)
 	//replacing the response with north bound translation URL

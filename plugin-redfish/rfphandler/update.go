@@ -21,22 +21,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
 )
-
-// SimpleUpdatePostBody struct defines the received request body for update action
-type SimpleUpdatePostBody struct {
-	ImageURI                  string   `json:"ImageURI"`
-	Password                  string   `json:"Password,omitempty"`
-	Targets                   []string `json:"Targets,omitempty"`
-	TransferProtocol          string   `json:"TransferProtocol,omitempty"`
-	Username                  string   `json:"Username,omitempty"`
-	RedfishOperationApplyTime string   `json:"@Redfish.OperationApplyTime,omitempty"`
-}
 
 // SimpleUpdate updates the BMC resources
 func SimpleUpdate(ctx iris.Context) {
@@ -55,7 +46,7 @@ func SimpleUpdate(ctx iris.Context) {
 	var deviceDetails rfpmodel.Device
 	uri := ctx.Request().RequestURI
 	//Get device details from request
-	reqPostBody := &SimpleUpdatePostBody{}
+	reqPostBody := &model.SimpleUpdate{}
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
 		errMsg := "Unable to collect data from request: " + err.Error()
@@ -70,7 +61,6 @@ func SimpleUpdate(ctx iris.Context) {
 		log.Error(errMsg)
 		return
 	}
-	reqPostBody.Targets = nil
 	deviceDetails.PostBody, err = json.Marshal(reqPostBody)
 	if err != nil {
 		errMsg := "While trying to marshal request body, got:" + err.Error()

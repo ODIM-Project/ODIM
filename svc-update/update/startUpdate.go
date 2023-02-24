@@ -49,7 +49,7 @@ func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sess
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
 	l.LogWithFields(ctx).Debug("task info payload: ", taskInfo)
 	// Read all the requests from database
-	targetList, err := GetAllKeysFromTableFunc("SimpleUpdate", common.OnDisk)
+	targetList, err := GetAllKeysFromTableFunc(ctx,"SimpleUpdate", common.OnDisk)
 	if err != nil {
 		errMsg := "Unable to read SimpleUpdate requests from database: " + err.Error()
 		l.LogWithFields(ctx).Warn(errMsg)
@@ -77,7 +77,7 @@ func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sess
 		return resp
 	}
 	for _, target := range targetList {
-		data, gerr := e.DB.GetResource("SimpleUpdate", target, common.OnDisk)
+		data, gerr := e.DB.GetResource(ctx,"SimpleUpdate", target, common.OnDisk)
 		if gerr != nil {
 			errMsg := "Unable to retrive the start update request" + gerr.Error()
 			l.LogWithFields(ctx).Warn(errMsg)

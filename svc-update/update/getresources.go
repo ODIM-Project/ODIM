@@ -119,7 +119,7 @@ func (e *ExternalInterface) GetAllFirmwareInventory(ctx context.Context, req *up
 	}
 
 	members := []dmtf.Link{}
-	firmwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("FirmwareInventory", common.InMemory)
+	firmwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable(ctx,"FirmwareInventory", common.InMemory)
 	if err != nil || len(firmwareCollectionKeysArray) == 0 {
 		l.LogWithFields(ctx).Warn("odimra doesnt have servers")
 	}
@@ -150,7 +150,7 @@ func (e *ExternalInterface) GetFirmwareInventory(ctx context.Context, req *updat
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"FirmwareInventory", req.ResourceID}, nil)
 	}
-	data, gerr := e.DB.GetResource("FirmwareInventory", req.URL, common.InMemory)
+	data, gerr := e.DB.GetResource(ctx,"FirmwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
 		l.LogWithFields(ctx).Warn("Unable to get firmware inventory details : " + gerr.Error())
 		errorMessage := gerr.Error()
@@ -199,7 +199,7 @@ func (e *ExternalInterface) GetAllSoftwareInventory(ctx context.Context, req *up
 	}
 
 	members := []dmtf.Link{}
-	softwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("SoftwareInventory", common.InMemory)
+	softwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable(ctx,"SoftwareInventory", common.InMemory)
 	if err != nil || len(softwareCollectionKeysArray) == 0 {
 		l.LogWithFields(ctx).Warn("odimra doesnt have servers")
 	}
@@ -230,7 +230,7 @@ func (e *ExternalInterface) GetSoftwareInventory(ctx context.Context, req *updat
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"SoftwareInventory", req.ResourceID}, nil)
 	}
-	data, gerr := e.DB.GetResource("SoftwareInventory", req.URL, common.InMemory)
+	data, gerr := e.DB.GetResource(ctx,"SoftwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
 		l.LogWithFields(ctx).Warn("Unable to get software inventory details : " + gerr.Error())
 		errorMessage := gerr.Error()

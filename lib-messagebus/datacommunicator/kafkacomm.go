@@ -251,7 +251,6 @@ func (kp *KafkaPacket) Accept(fn MsgProcess) error {
 // Read would access the KAFKA messages in a infinite loop. Callback method
 // access is existing only in "goka" library.  Not available in "kafka-go".
 func (kp *KafkaPacket) Read(fn MsgProcess) error {
-
 	// This interface should be defined outside the inner level to make sure
 	// we are making the ToData API to work. Otherwise we would get exception
 	// of having local scope interface pointer into passing to remote one
@@ -268,12 +267,13 @@ func (kp *KafkaPacket) Read(fn MsgProcess) error {
 		// explicitly committing the messages
 		m, e := reader.ReadMessage(c)
 		if e != nil {
-			return fmt.Errorf("error: read message failed: %s", e.Error())
+			time.Sleep(10 * time.Second)
+			continue
 		}
 
 		// Decode the message before passing it to Callback
 		if e = Decode(m.Value, &d); e != nil {
-			return fmt.Errorf("error: decode message failed: %s", e.Error())
+			continue
 		}
 		// Callback Function call.
 		fn(d)

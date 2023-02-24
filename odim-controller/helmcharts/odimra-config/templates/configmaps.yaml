@@ -153,5 +153,6 @@ data:
       "LogFormat": {{ .Values.odimra.logFormat | quote }},
       "ImageRegistryAddress": {{ .Values.odimra.imageRegistryAddress | quote }},
       "RequestLimitCountPerSession": {{ .Values.odimra.requestLimitPerSession | default 0 }},
-      "SessionLimitCountPerUser": {{ .Values.odimra.sessionLimitPerUser | default 0 }}
+      "SessionLimitCountPerUser": {{ .Values.odimra.sessionLimitPerUser | default 0 }},
+      "KeyExpiryInterval": {{ .Values.odimra.keyExpiryInterval | default 86400 }}
     }

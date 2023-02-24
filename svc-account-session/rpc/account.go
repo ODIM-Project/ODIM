@@ -79,7 +79,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 
 	err := UpdateLastUsedTimeFunc(ctx, req.SessionToken)
 	if err != nil {
-		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err, req.SessionToken)
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
@@ -138,7 +138,7 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 
 	err := UpdateLastUsedTimeFunc(ctx, req.SessionToken)
 	if err != nil {
-		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err, req.SessionToken)
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
@@ -195,7 +195,7 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 
 	err := UpdateLastUsedTimeFunc(ctx, req.SessionToken)
 	if err != nil {
-		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err, req.SessionToken)
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
@@ -251,7 +251,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 
 	err := UpdateLastUsedTimeFunc(ctx, req.SessionToken)
 	if err != nil {
-		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err, req.SessionToken)
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
@@ -307,7 +307,7 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 
 	err := UpdateLastUsedTimeFunc(ctx, req.SessionToken)
 	if err != nil {
-		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err, req.SessionToken)
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
@@ -365,7 +365,7 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 
 	err := UpdateLastUsedTimeFunc(ctx, req.SessionToken)
 	if err != nil {
-		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err, req.SessionToken)
+		errorArgs[0].ErrorMessage, resp.StatusCode, resp.StatusMessage = validateUpdateLastUsedTimeError(ctx, err)
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		return &resp, nil
@@ -402,8 +402,8 @@ func validateSessionTimeoutError(ctx context.Context, sessionToken string, errs 
 	return
 }
 
-func validateUpdateLastUsedTimeError(ctx context.Context, err error, sessionToken string) (errorMessage string, statusCode int32, statusMessage string) {
-	errorMessage = "error while updating last used time of session with token " + sessionToken + ": " + err.Error()
+func validateUpdateLastUsedTimeError(ctx context.Context, err error) (errorMessage string, statusCode int32, statusMessage string) {
+	errorMessage = "error while updating last used time of session" + ": " + err.Error()
 	statusCode = http.StatusInternalServerError
 	statusMessage = response.InternalError
 	l.LogWithFields(ctx).Error(errorMessage)

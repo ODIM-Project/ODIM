@@ -994,6 +994,7 @@ Topics covered in this section include:
         Example output:
 
         <img src="docs/images/all_services_verification.png" alt="screenshot" style="zoom:55%;" />
+        
         If the services are not successfully deployed, reset the deployment and try deploying again:
         
         ```

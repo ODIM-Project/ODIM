@@ -781,12 +781,13 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 // SetExpiryTimeForKeys will create the expiry time using pipelined transaction
 /* SetExpiryTimeForKeys takes the taskID  as input:
  */
-func (c *Conn) SetExpiryTimeForKeys(taskKeys map[string]int64) *errors.Error {
+func (c *Conn) SetExpiryTimeForKeys(taskKeys map[string]int64, keyExpiryInterval int) *errors.Error {
 	var partialFailure bool = false
 	c.WriteConn.Send("MULTI")
 	members := getSortedMapKeys(taskKeys)
 	for _, taskkey := range members {
-		createErr := c.WriteConn.Send("EXPIRE", taskkey, 86400)
+
+		createErr := c.WriteConn.Send("EXPIRE", taskkey, keyExpiryInterval)
 		if createErr != nil {
 			c.WriteConn.Send("DISCARD")
 			if isTimeOutError(createErr) {

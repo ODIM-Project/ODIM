@@ -2123,7 +2123,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
     --key=~/etcd_backup/ admin-{leader etcd nodename}-keya.pem
    ```
 
-   Replace `{leader etcd nodename}` appropriately.
+   >  **NOTE**: Replace `{leader etcd nodename}` appropriately.
 
 7. Check the status of the snapshot file `/etcd_backup/etcd_backup.db` that was created:
 
@@ -2245,13 +2245,13 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    kubectl exec -it {etcd pod name} bash -nodim
    ```
    
-   Replace `{etcd pod name}` appropriately.
+   >  **NOTE**: Replace `{etcd pod name}` appropriately.
    
    ```
    /opt/etcd/bin/etcdctl endpoint status --write-out=table --endpoints=https://etcd1:2379 --cacert=/opt/etcd/conf/rootCA.crt --cert=/opt/etcd/conf/odimra_etcd_server.crt --key=/opt/etcd/conf/odimra_etcd_server.key
    ```
    
-   Replace `etcd1` with `etcd2` and `etcd3` on second and third cluster nodes respectively.
+   >  **NOTE**: Replace `etcd1` with `etcd2` and `etcd3` on second and third cluster nodes respectively.
 
 2. Verify the output on each node. The node with `IS LEADER` value as `true` is the leader node.
 
@@ -2294,7 +2294,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    sudo kubectl cp odim/{leader etcd pod name}:/home/odimra/etcd_backup.db ~/etcd_odim_backup/etcd_backup.db
    ```
    
-   Replace `{leader etcd pod name}` appropriately.
+   >  **NOTE**: Replace `{leader etcd pod name}` appropriately.
 
 > **NOTE**: For a one node setup, execute the above commands on the single node.
 

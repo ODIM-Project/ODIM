@@ -209,7 +209,7 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 			return
 		}
 	}
-	l.Log.Debugf("payload to plugin : %s", updateRequestBody)
+	l.LogWithFields(ctx).Debugf("payload to plugin : %s", updateRequestBody)
 	updateRequestBody = strings.Replace(string(updateRequestBody), uuid+".", "", -1)
 	//replacing the reruest url with south bound translation URL
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
@@ -265,7 +265,7 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 	}
 
 	target.PostBody = []byte(updateRequestBody)
-	l.Log.Debugf("updated payload to plugin : %s", updateRequestBody)
+	l.LogWithFields(ctx).Debugf("updated payload to plugin : %s", updateRequestBody)
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost

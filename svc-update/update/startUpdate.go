@@ -235,7 +235,7 @@ func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data
 	}
 
 	target.PostBody = []byte(updateRequestBody)
-	l.Log.Debugf("updated payload to plugin : %s", updateRequestBody)
+	l.LogWithFields(ctx).Debugf("updated payload to plugin : %s", updateRequestBody)
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.StartUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost

@@ -74,7 +74,6 @@ func GetResource(Table, key string, dbtype common.DbType) (string, *errors.Error
 	if errs := json.Unmarshal([]byte(resourceData), &resource); errs != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
 	}
-	l.Log.Debugf("resource from database: %s", resource)
 	return resource, nil
 }
 

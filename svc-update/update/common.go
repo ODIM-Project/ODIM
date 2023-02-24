@@ -194,7 +194,7 @@ func (e *ExternalInterface) monitorPluginTask(ctx context.Context, subTaskChanne
 		time.Sleep(time.Second * 5)
 		monitorTaskData.pluginRequest.OID = monitorTaskData.location
 		monitorTaskData.pluginRequest.HTTPMethodType = http.MethodGet
-		l.Log.Debugf("monitor task data payload: %s", string(monitorTaskData.respBody))
+		l.LogWithFields(ctx).Debugf("monitor task data payload: %s", string(monitorTaskData.respBody))
 		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = e.External.ContactPlugin(ctx, monitorTaskData.pluginRequest, "error while performing simple update action: ")
 		if err != nil {
 			subTaskChannel <- monitorTaskData.getResponse.StatusCode

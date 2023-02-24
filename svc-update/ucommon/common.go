@@ -304,7 +304,7 @@ func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, 
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
 		return req.ContactClient(ctx, reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
-	l.Log.Debugf("plugin request URL: %s", reqURL)
+	l.LogWithFields(ctx).Debugf("plugin request URL: %s", reqURL)
 	return req.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
 func TrackConfigFileChanges(errChan chan error) {

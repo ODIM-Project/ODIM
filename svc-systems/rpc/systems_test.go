@@ -580,6 +580,9 @@ func TestSystems_ChangeBootOrderSettings(t *testing.T) {
 	}()
 	sys := new(Systems)
 	sys.IsAuthorizedRPC = mockIsAuthorized
+	sys.GetSessionUserName = getSessionUserNameForTesting
+	sys.CreateTask = createTaskForTesting
+	sys.UpdateTask = mockUpdateTask
 
 	type args struct {
 		ctx  context.Context

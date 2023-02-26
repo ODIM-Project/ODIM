@@ -96,7 +96,7 @@ func Test_fillProtoResponse(t *testing.T) {
 			args: &args{
 				ctx:  context.Background(),
 				resp: &teleproto.TelemetryResponse{},
-				data: telemetry.connector.GetTelemetryService(),
+				data: telemetry.connector.GetTelemetryService(context.TODO()),
 			},
 		},
 	}
@@ -121,7 +121,7 @@ func Test_generateRPCResponse(t *testing.T) {
 		{
 			desc: "generate rpc response",
 			args: &args{
-				rpcResp:  telemetry.connector.GetTelemetryService(),
+				rpcResp:  telemetry.connector.GetTelemetryService(context.TODO()),
 				teleResp: &teleproto.TelemetryResponse{},
 			},
 		},
@@ -148,7 +148,7 @@ func Test_generateTaskRespone(t *testing.T) {
 		{
 			desc: "generate rpc response",
 			args: &args{
-				rpcResp: telemetry.connector.GetTelemetryService(),
+				rpcResp: telemetry.connector.GetTelemetryService(context.TODO()),
 				taskID:  "taskID",
 				taskURI: "/task/uri",
 			},

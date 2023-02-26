@@ -48,14 +48,14 @@ func MockContactClient(ctx context.Context, url, method, token string, odataID s
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
-func MockGetResource(table, key string, dbType common.DbType) (string, *errors.Error) {
+func MockGetResource(ctx context.Context,table, key string, dbType common.DbType) (string, *errors.Error) {
 	if key == "error" {
 		return "", &errors.Error{}
 	}
 	return "body", nil
 }
 
-func MockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
+func MockGetAllKeysFromTable(ctx context.Context,table string, dbType common.DbType) ([]string, error) {
 	if table == "Plugin" {
 		return []string{"ILO", "GRF"}, nil
 	}

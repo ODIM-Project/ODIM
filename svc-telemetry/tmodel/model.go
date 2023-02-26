@@ -52,7 +52,7 @@ var (
 )
 
 // GetResource fetches a resource from database using table and key
-func GetResource(Table, key string, dbtype common.DbType) (string, *errors.Error) {
+func GetResource(ctx context.Context, Table, key string, dbtype common.DbType) (string, *errors.Error) {
 	conn, err := GetDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return "", err
@@ -65,11 +65,12 @@ func GetResource(Table, key string, dbtype common.DbType) (string, *errors.Error
 	if errs := json.Unmarshal([]byte(resourceData), &resource); errs != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
 	}
+	l.LogWithFields(ctx).Debugf("resource details : %s", resource)
 	return resource, nil
 }
 
 // GetAllKeysFromTable fetches all keys in a given table
-func GetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
+func GetAllKeysFromTable(ctx context.Context, table string, dbtype common.DbType) ([]string, error) {
 	conn, err := GetDBConnectionFunc(dbtype)
 	if err != nil {
 		return nil, err
@@ -78,6 +79,7 @@ func GetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
 	}
+	l.LogWithFields(ctx).Debugf("all keys from table: ", keysArray)
 	return keysArray, nil
 }
 
@@ -109,7 +111,7 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 }
 
 // GetTarget fetches the System(Target Device Credentials) table details
-func GetTarget(deviceUUID string) (*Target, *errors.Error) {
+func GetTarget(ctx context.Context, deviceUUID string) (*Target, *errors.Error) {
 	var target Target
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
@@ -122,6 +124,7 @@ func GetTarget(deviceUUID string) (*Target, *errors.Error) {
 	if errs := json.Unmarshal([]byte(data), &target); errs != nil {
 		return nil, errors.PackError(errors.UndefinedErrorType, errs)
 	}
+	l.LogWithFields(ctx).Debugf("target post body : %s", string(target.PostBody))
 	return &target, nil
 }
 

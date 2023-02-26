@@ -102,7 +102,7 @@ func mockPluginStatus(ctx context.Context, plugin tmodel.Plugin) bool {
 	return true
 }
 
-func mockGetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
+func mockGetAllKeysFromTable(ctx context.Context,table string, dbtype common.DbType) ([]string, error) {
 	return []string{"ILO", "GRF"}, nil
 }
 
@@ -121,7 +121,7 @@ func mockGetPluginData(pluginID string) (tmodel.Plugin, *errors.Error) {
 	return plugin, nil
 }
 
-func mockGetResource(table, key string, dbType common.DbType) (string, *errors.Error) {
+func mockGetResource(ctx context.Context,table, key string, dbType common.DbType) (string, *errors.Error) {
 	if key == "/redfish/v1/TelemetryService/MetricReports" {
 		return `{
 			"@odata.context": "/redfish/v1/$metadata#MetricReportCollection.MetricReportCollection",

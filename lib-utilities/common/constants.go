@@ -209,6 +209,7 @@ const (
 	SessionRoleID           = "sessionroleid"
 	StatusCode              = "statuscode"
 	ComputerSystemReset     = "ComputerSystemReset"
+	ChangeBootOrderSettings = "ChangeBootOrderSettings"
 	GetFabricManagerChassis = "GetFabricManagerChassis"
 	CollectChassisResource  = "CollectChassisResource"
 	UpdateChassisResource   = "UpdateChassisResource"

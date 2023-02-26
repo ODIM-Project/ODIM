@@ -1223,7 +1223,8 @@ func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
 		timestamp = time.Now()
 	}
 
-	resp := tcommon.GetTaskResponse(statusCode, message)
+	responseMessage := event.MessageArgs[len(event.MessageArgs)-1]
+	resp := tcommon.GetTaskResponse(statusCode, responseMessage)
 	body, _ := json.Marshal(resp.Body)
 
 	payLoad := &taskproto.Payload{

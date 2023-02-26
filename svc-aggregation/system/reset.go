@@ -98,6 +98,7 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
 		return resp
 	}
+	l.LogWithFields(ctx).Debug("reset request data: ", resetRequest)
 	// subTaskChan is a buffered channel with buffer size equal to total number of resources.
 	// this also helps while cancelling the task. even if the reader is not available for reading
 	// the channel buffer will collect them and allows gracefull exit for already spanned goroutines.

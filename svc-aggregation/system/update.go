@@ -35,7 +35,7 @@ import (
 func (e *ExternalInterface) UpdateAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {
 	// validate the aggregation source if it's  present in odim
 	var resp response.RPC
-	aggregationSource, dbErr := agmodel.GetAggregationSourceInfo(req.URL)
+	aggregationSource, dbErr := agmodel.GetAggregationSourceInfo(ctx, req.URL)
 	if dbErr != nil {
 		l.LogWithFields(ctx).Error("Unable to get AggregationSource : " + dbErr.Error())
 		errorMessage := dbErr.Error()
@@ -115,6 +115,7 @@ func (e *ExternalInterface) UpdateAggregationSource(ctx context.Context, req *ag
 	}
 	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/AggregationSources/")
 	links := aggregationSource.Links.(map[string]interface{})
+	l.LogWithFields(ctx).Debug("update request for update aggregation sources with connection methods: ", updateRequest)
 	resp = e.updateAggregationSourceWithConnectionMethod(ctx, req.URL, links["ConnectionMethod"].(map[string]interface{}), updateRequest, hostNameUpdated)
 	if resp.StatusMessage != "" {
 		return resp
@@ -151,12 +152,14 @@ func (e *ExternalInterface) UpdateAggregationSource(ctx context.Context, req *ag
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("final response for get update service request: %s", string(respBody))
 	return resp
 }
 
 func (e *ExternalInterface) updateAggregationSourceWithConnectionMethod(ctx context.Context, url string, connectionMethodLink, updateRequest map[string]interface{}, hostNameUpdated bool) response.RPC {
 	connectionMethodOdataID := connectionMethodLink["@odata.id"].(string)
-	connectionMethod, err := e.GetConnectionMethod(connectionMethodOdataID)
+	connectionMethod, err := e.GetConnectionMethod(ctx, connectionMethodOdataID)
 	if err != nil {
 		l.LogWithFields(ctx).Error("Unable to get connectionmethod : " + err.Error())
 		errorMessage := err.Error()
@@ -165,11 +168,12 @@ func (e *ExternalInterface) updateAggregationSourceWithConnectionMethod(ctx cont
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
-	cmVariants := getConnectionMethodVariants(connectionMethod.ConnectionMethodVariant)
+	cmVariants := getConnectionMethodVariants(ctx, connectionMethod.ConnectionMethodVariant)
 	var data = strings.Split(url, "/redfish/v1/AggregationService/AggregationSources/")
 	uuid := url[strings.LastIndexByte(url, '/')+1:]
 	uuidData := strings.SplitN(uuid, ".", 2)
 	target, terr := agmodel.GetTarget(uuidData[0])
+	l.LogWithFields(ctx).Debug("update request for update manager aggregation source: ",updateRequest)
 	if terr != nil || target == nil {
 		return e.updateManagerAggregationSource(ctx, data[1], cmVariants.PluginID, updateRequest, hostNameUpdated)
 	}
@@ -201,6 +205,7 @@ func (e *ExternalInterface) updateManagerAggregationSource(ctx context.Context, 
 			"Password": string(plugin.Password),
 		}
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
 		_, token, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while creating the session: ")
 		if err != nil {
 			errMsg := err.Error()
@@ -218,6 +223,7 @@ func (e *ExternalInterface) updateManagerAggregationSource(ctx context.Context, 
 	// Verfiying the plugin Status
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 	pluginContactRequest.OID = "/ODIM/v1/Status"
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
 	body, _, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err != nil {
 		errMsg := err.Error()
@@ -228,6 +234,7 @@ func (e *ExternalInterface) updateManagerAggregationSource(ctx context.Context, 
 	var managersMap map[string]interface{}
 	// Getting all managers info from plugin
 	pluginContactRequest.OID = "/ODIM/v1/Managers"
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
 	body, _, getResponse, err = contactPlugin(ctx, pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err != nil {
 		errMsg := err.Error()
@@ -317,6 +324,7 @@ func (e *ExternalInterface) updateBMCAggregationSource(ctx context.Context, aggr
 			"Password": string(plugin.Password),
 		}
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
 		_, token, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while logging in to plugin: ")
 		if err != nil {
 			errMsg := err.Error()
@@ -340,7 +348,7 @@ func (e *ExternalInterface) updateBMCAggregationSource(ctx context.Context, aggr
 	pluginContactRequest.DeviceInfo = saveSystem
 	pluginContactRequest.OID = "/ODIM/v1/validate"
 	pluginContactRequest.HTTPMethodType = http.MethodPost
-
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
 	body, _, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while trying to authenticate the compute server: ")
 	if err != nil {
 		errMsg := err.Error()
@@ -359,6 +367,7 @@ func (e *ExternalInterface) updateBMCAggregationSource(ctx context.Context, aggr
 		// Get All systems
 		pluginContactRequest.OID = "/redfish/v1/Systems"
 		pluginContactRequest.HTTPMethodType = http.MethodGet
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
 		body, _, getResponse, err = contactPlugin(ctx, pluginContactRequest, "error while trying to get system collection details: ")
 		if err != nil {
 			errMsg := err.Error()

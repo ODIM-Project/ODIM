@@ -115,7 +115,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 	if strings.Contains(systemURL, "/Storage") {
 		systemURL = strings.Replace(systemURL, "/Storage", "", -1)
 	}
-	systemOperation, dbErr := agmodel.GetSystemOperationInfo(systemURL)
+	systemOperation, dbErr := agmodel.GetSystemOperationInfo(ctx,systemURL)
 	if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
 		l.LogWithFields(ctx).Error("Rediscovery for system: " + systemURL + " can't be processed " + dbErr.Error())
 		return
@@ -301,7 +301,7 @@ func (e *ExternalInterface) getTargetSystemCollection(ctx context.Context, targe
 func (e *ExternalInterface) isServerRediscoveryRequired(ctx context.Context, deviceUUID string, systemKey string) bool {
 	systemKey = strings.TrimSuffix(systemKey, "/")
 	key := strings.Replace(systemKey, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+deviceUUID+".", -1)
-	_, err := agmodel.GetResource("ComputerSystem", key)
+	_, err := agmodel.GetResource(ctx,"ComputerSystem", key)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err.Error())
 		l.LogWithFields(ctx).Info("Rediscovery required for the server with UUID: " + deviceUUID)
@@ -316,7 +316,7 @@ func (e *ExternalInterface) isServerRediscoveryRequired(ctx context.Context, dev
 		return true
 	}
 	for _, chassiskey := range keys {
-		if _, err = agmodel.GetResource("Chassis", chassiskey); err != nil {
+		if _, err = agmodel.GetResource(ctx,"Chassis", chassiskey); err != nil {
 			l.LogWithFields(ctx).Error(err.Error())
 			l.LogWithFields(ctx).Info("Rediscovery required for the server with UUID: " + deviceUUID)
 			return true
@@ -330,7 +330,7 @@ func (e *ExternalInterface) isServerRediscoveryRequired(ctx context.Context, dev
 		return true
 	}
 	for _, managerKey := range keys {
-		if _, err = agmodel.GetResource("Managers", managerKey); err != nil {
+		if _, err = agmodel.GetResource(ctx,"Managers", managerKey); err != nil {
 			l.LogWithFields(ctx).Error(err.Error())
 			l.LogWithFields(ctx).Info("Rediscovery required for the server with UUID: " + deviceUUID)
 			return true

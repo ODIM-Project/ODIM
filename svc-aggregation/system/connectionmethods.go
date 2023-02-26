@@ -31,7 +31,7 @@ import (
 
 // GetAllConnectionMethods is the handler for getting the connection methods collection
 func (e *ExternalInterface) GetAllConnectionMethods(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {
-	connectionMethods, err := e.GetAllKeysFromTable("ConnectionMethod")
+	connectionMethods, err := e.GetAllKeysFromTable(ctx,"ConnectionMethod")
 	if err != nil {
 		l.LogWithFields(ctx).Error("error getting connection methods : " + err.Error())
 		errorMessage := err.Error()
@@ -64,7 +64,7 @@ func (e *ExternalInterface) GetAllConnectionMethods(ctx context.Context, req *ag
 
 // GetConnectionMethodInfo is the handler for getting the connection method
 func (e *ExternalInterface) GetConnectionMethodInfo(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {
-	connectionmethod, err := e.GetConnectionMethod(req.URL)
+	connectionmethod, err := e.GetConnectionMethod(ctx,req.URL)
 	if err != nil {
 		l.LogWithFields(ctx).Error("error getting  connectionmethod : " + err.Error())
 		errorMessage := err.Error()

@@ -179,7 +179,7 @@ func sharePluginInventory(ctx context.Context, plugin agmodel.Plugin, resyncSubs
 		pluginStartUpData.Devices = make(map[string]agmodel.DeviceData, phc.PluginConfig.StartUpResouceBatchSize)
 		for _, server := range batchedServersData {
 			evtSubsInfo := &agmodel.EventSubscriptionInfo{}
-			subsID, evtTypes, err := agcommon.GetDeviceSubscriptionDetails(server.ManagerAddress)
+			subsID, evtTypes, err := agcommon.GetDeviceSubscriptionDetails(ctx,server.ManagerAddress)
 			if err != nil {
 				l.LogWithFields(ctx).Error("failed to get event subscription details for " + server.ManagerAddress + ": " + err.Error())
 			} else {

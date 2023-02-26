@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
@@ -39,6 +40,13 @@ type Schema struct {
 	ConditionKeys []string `json:"conditionKeys"`
 	QueryKeys     []string `json:"queryKeys"`
 }
+
+const (
+	aggActionID = "210"
+	aggActionName = "ConnectionMethods"
+	trackActionID = "211"
+	trackActionName = "TrackConfigFile"
+)
 
 func main() {
 	// setting up the logging framework
@@ -84,7 +92,9 @@ func main() {
 		AddConnectionMethodInterface: agmodel.AddConnectionMethod,
 		DeleteInterface:              agmodel.Delete,
 	}
-	if err := connectionMethodInterface.AddConnectionMethods(config.Data.ConnectionMethodConf); err != nil {
+	aggTransactionID := uuid.New()
+	aggCtx := agcommon.CreateContext(aggTransactionID.String(), aggActionID, aggActionName, "1", common.AggregationService, podName)
+	if err := connectionMethodInterface.AddConnectionMethods(aggCtx, config.Data.ConnectionMethodConf); err != nil {
 		log.Fatal("error while trying add connection method: " + err.Error())
 	}
 
@@ -114,7 +124,9 @@ func main() {
 	if agcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	go agcommon.TrackConfigFileChanges(connectionMethodInterface, errChan)
+	trackTransactionID := uuid.New()
+	trackCtx := agcommon.CreateContext(trackTransactionID.String(), trackActionID, trackActionName, "1", common.AggregationService, podName)
+	go agcommon.TrackConfigFileChanges(trackCtx, connectionMethodInterface, errChan)
 
 	go system.PerformPluginHealthCheck()
 

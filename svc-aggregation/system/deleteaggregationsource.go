@@ -84,7 +84,7 @@ func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID
 func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {
 	var resp response.RPC
 
-	aggregationSource, dbErr := agmodel.GetAggregationSourceInfo(req.URL)
+	aggregationSource, dbErr := agmodel.GetAggregationSourceInfo(ctx,req.URL)
 	if dbErr != nil {
 		errorMessage := dbErr.Error()
 		l.LogWithFields(ctx).Error("Unable to get AggregationSource : " + errorMessage)
@@ -97,7 +97,7 @@ func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *ag
 	links := aggregationSource.Links.(map[string]interface{})
 	connectionMethodLink := links["ConnectionMethod"].(map[string]interface{})
 	connectionMethodOdataID := connectionMethodLink["@odata.id"].(string)
-	connectionMethod, err := e.GetConnectionMethod(connectionMethodOdataID)
+	connectionMethod, err := e.GetConnectionMethod(ctx,connectionMethodOdataID)
 	if err != nil {
 		errorMessage := err.Error()
 		l.LogWithFields(ctx).Error("Unable to get connectionmethod : " + errorMessage)
@@ -112,7 +112,7 @@ func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *ag
 	uuid := resource[strings.LastIndexByte(resource, '/')+1:]
 	target, terr := agmodel.GetTarget(uuid)
 	if terr != nil || target == nil {
-		cmVariants := getConnectionMethodVariants(connectionMethod.ConnectionMethodVariant)
+		cmVariants := getConnectionMethodVariants(ctx,connectionMethod.ConnectionMethodVariant)
 		if len(connectionMethod.Links.AggregationSources) > 1 {
 			errMsg := fmt.Sprintf("Plugin " + cmVariants.PluginID + " can't be removed since it managing devices")
 			l.LogWithFields(ctx).Info(errMsg)
@@ -193,7 +193,7 @@ func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *ag
 // removeAggregationSourceFromAggregates will remove the element from the aggregate
 // if the system is deleted from ODIM
 func removeAggregationSourceFromAggregates(ctx context.Context, systemList []string) {
-	aggregateKeys, err := agmodel.GetAllKeysFromTable("Aggregate")
+	aggregateKeys, err := agmodel.GetAllKeysFromTable(ctx,"Aggregate")
 	if err != nil {
 		l.LogWithFields(ctx).Error("error getting aggregate : " + err.Error())
 	}
@@ -232,7 +232,7 @@ func removeAggregationSource(slice []agmodel.OdataID, element agmodel.OdataID) [
 func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) response.RPC {
 	var resp response.RPC
 	// Get Manager Info
-	data, derr := agmodel.GetResource("Managers", oid)
+	data, derr := agmodel.GetResource(ctx,"Managers", oid)
 	if derr != nil {
 		errMsg := "error while getting Managers data: " + derr.Error()
 		l.LogWithFields(ctx).Error(errMsg)
@@ -361,7 +361,7 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index int, pluginID string) response.RPC {
 	var resp response.RPC
 	// check whether the any system operation is under progress
-	systemOperation, dbErr := agmodel.GetSystemOperationInfo(strings.TrimSuffix(key, "/"))
+	systemOperation, dbErr := agmodel.GetSystemOperationInfo(ctx,strings.TrimSuffix(key, "/"))
 	if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
 		l.LogWithFields(ctx).Error(" Delete operation for system  " + key + " can't be processed " + dbErr.Error())
 		errMsg := "error while trying to delete compute system: " + dbErr.Error()
@@ -383,7 +383,7 @@ func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index
 	}
 
 	managerURI := "/redfish/v1/Managers/" + plugin.ManagerUUID
-	mgrData, jerr := agmodel.GetResource("Managers", managerURI)
+	mgrData, jerr := agmodel.GetResource(ctx,"Managers", managerURI)
 	if jerr != nil {
 		errorMessage := "error while getting manager details: " + jerr.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
@@ -540,7 +540,7 @@ func (e *ExternalInterface) deleteWildCardValues(ctx context.Context, systemID s
 		if !strings.Contains(oid, "MetricReports") && !strings.Contains(oid, "Collection") {
 			odataID := oID[1]
 			resourceData := make(map[string]interface{})
-			data, dbErr := agmodel.GetResourceDetails(odataID)
+			data, dbErr := agmodel.GetResourceDetails(ctx,odataID)
 			if dbErr != nil {
 				l.LogWithFields(ctx).Error("Unable to get system data : " + dbErr.Error())
 				continue
@@ -579,7 +579,7 @@ func (e *ExternalInterface) deleteWildCardValues(ctx context.Context, systemID s
 					l.LogWithFields(ctx).Error("error while trying to delete data: " + derr.Error())
 					continue
 				}
-				e.updateMemberCollection(oID[0], odataID)
+				e.updateMemberCollection(ctx,oID[0], odataID)
 			}
 		}
 	}
@@ -600,10 +600,10 @@ func checkAndRemoveWildCardValue(val string, values []string) []string {
 }
 
 // updateMemberCollection will remove the member from the collection and update into DB
-func (e *ExternalInterface) updateMemberCollection(resName, odataID string) {
+func (e *ExternalInterface) updateMemberCollection(ctx context.Context,resName, odataID string) {
 	resourceName := resName + "Collection"
 	collectionOdataID := odataID[:strings.LastIndexByte(odataID, '/')]
-	data, dbErr := e.GetResource(resourceName, collectionOdataID)
+	data, dbErr := e.GetResource(ctx,resourceName, collectionOdataID)
 	if dbErr != nil {
 		return
 	}

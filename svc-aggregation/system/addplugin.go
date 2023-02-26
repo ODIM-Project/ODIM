@@ -75,7 +75,7 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, []interface{}{}, taskInfo), "", nil
 	}
 
-	pluginNameArray, err := agmodel.GetAllKeysFromTable("Plugin")
+	pluginNameArray, err := agmodel.GetAllKeysFromTable(ctx,"Plugin")
 	if err == nil {
 		for _, ID := range pluginNameArray {
 

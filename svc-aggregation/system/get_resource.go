@@ -27,7 +27,7 @@ import (
 // GetAggregationSourceCollection is to fetch all the AggregationSourceURI uri's and returns with created collection
 // of AggregationSource data from odim
 func (e *ExternalInterface) GetAggregationSourceCollection(ctx context.Context) response.RPC {
-	aggregationSourceKeys, err := e.GetAllKeysFromTable("AggregationSource")
+	aggregationSourceKeys, err := e.GetAllKeysFromTable(ctx,"AggregationSource")
 	if err != nil {
 		errorMessage := err.Error()
 		l.LogWithFields(ctx).Error("Unable to get aggregation source : " + errorMessage)
@@ -66,7 +66,7 @@ func (e *ExternalInterface) GetAggregationSourceCollection(ctx context.Context) 
 // GetAggregationSource is used  to fetch the AggregationSource with given aggregation source uri
 //and returns AggregationSource
 func (e *ExternalInterface) GetAggregationSource(ctx context.Context, reqURI string) response.RPC {
-	aggregationSource, err := e.GetAggregationSourceInfo(reqURI)
+	aggregationSource, err := e.GetAggregationSourceInfo(ctx,reqURI)
 	if err != nil {
 		errorMessage := err.Error()
 		l.LogWithFields(ctx).Error("Unable to get aggregation source : " + errorMessage)
@@ -79,7 +79,7 @@ func (e *ExternalInterface) GetAggregationSource(ctx context.Context, reqURI str
 	connectionMethodLink := links["ConnectionMethod"].(map[string]interface{})
 
 	connectionMethodOdataID := connectionMethodLink["@odata.id"].(string)
-	connectionMethod, err := e.GetConnectionMethod(connectionMethodOdataID)
+	connectionMethod, err := e.GetConnectionMethod(ctx,connectionMethodOdataID)
 	if err != nil {
 		errorMessage := err.Error()
 		l.LogWithFields(ctx).Error("Unable to get connectionmethod : " + errorMessage)

@@ -337,7 +337,7 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	managerLinks := make(map[string]interface{})
 	var chassisLink, serverLink, listOfChassis, listOfServer []interface{}
 
-	data, jerr := agmodel.GetResource("Managers", managerURI)
+	data, jerr := agmodel.GetResource(ctx,"Managers", managerURI)
 	if jerr != nil {
 		errorMessage := "error getting manager details: " + jerr.Error()
 		l.LogWithFields(ctx).Error(errorMessage)

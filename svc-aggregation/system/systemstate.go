@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"strings"
 
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
@@ -62,6 +63,7 @@ func (e *ExternalInterface) UpdateSystemState(ctx context.Context, updateReq *ag
 			"Password": string(plugin.Password),
 		}
 		req.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("resource request data for %s: %s", req.OID, string(req.Data))
 		_, token, _, err := contactPlugin(ctx, req, "error while getting the details "+req.OID+": ")
 		if err != nil {
 			return err
@@ -78,7 +80,7 @@ func (e *ExternalInterface) UpdateSystemState(ctx context.Context, updateReq *ag
 	req.DeviceUUID = updateReq.SystemUUID
 	req.DeviceInfo = target
 	req.OID = fmt.Sprintf("%s/%s", strings.TrimSuffix(updateReq.SystemURI, "/"), updateReq.SystemID)
-
+	l.LogWithFields(ctx).Debugf("resource request data for %s: %s", req.OID, string(req.Data))
 	rawData, _, getResponse, err := contactPlugin(ctx, req, "error while trying to get system details ")
 	if err != nil || getResponse.StatusCode != http.StatusOK {
 		return fmt.Errorf("error: while trying to get system details ")

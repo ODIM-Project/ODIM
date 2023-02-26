@@ -148,7 +148,7 @@ func checkDuplicateElements(elelments []agmodel.OdataID) bool {
 
 // GetAllAggregates is the handler for getting collection of aggregates
 func (e *ExternalInterface) GetAllAggregates(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {
-	aggregateKeys, err := agmodel.GetAllKeysFromTable("Aggregate")
+	aggregateKeys, err := agmodel.GetAllKeysFromTable(ctx,"Aggregate")
 	if err != nil {
 		l.LogWithFields(ctx).Error("error getting aggregate : " + err.Error())
 		errorMessage := err.Error()

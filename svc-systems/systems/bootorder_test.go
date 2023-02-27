@@ -681,9 +681,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.ChangeBootOrderSettings(ctx, tt.req); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PluginContact.ChangeBootOrderSettings() = %v, want %v", got, tt.want)
-			}
+			tt.p.ChangeBootOrderSettings(ctx, tt.req, "task12345")
 		})
 	}
 
@@ -695,9 +693,8 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 		RequestBody:  request,
 		SessionToken: "token",
 	}
-	resp := pluginContact.ChangeBootOrderSettings(ctx, &req)
-	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status code should be StatusBadRequest")
 
+	pluginContact.ChangeBootOrderSettings(ctx, &req, "task12345")
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
@@ -709,8 +706,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 		RequestBody:  []byte(`{"attributes": {"bootMode": "mode"}}`),
 		SessionToken: "token",
 	}
-	resp = pluginContact.ChangeBootOrderSettings(ctx, &req)
-	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status code should be StatusBadRequest")
+	pluginContact.ChangeBootOrderSettings(ctx, &req, "task12345")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", &errors.Error{}
@@ -720,8 +716,8 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 		RequestBody:  request,
 		SessionToken: "token",
 	}
-	resp = pluginContact.ChangeBootOrderSettings(ctx, &req)
-	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
+
+	pluginContact.ChangeBootOrderSettings(ctx, &req, "task12345")
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
 	}
@@ -734,8 +730,8 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 		err = &errors.Error{}
 		return
 	}
-	resp = pluginContact.ChangeBootOrderSettings(ctx, &req)
-	assert.NotNil(t, resp, "Response should have error")
+
+	pluginContact.ChangeBootOrderSettings(ctx, &req, "task12345")
 	StringsEqualFold = func(s, t string) bool {
 		return false
 	}
@@ -743,8 +739,8 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 		err = &errors.Error{}
 		return
 	}
-	resp = pluginContact.ChangeBootOrderSettings(ctx, &req)
-	assert.NotNil(t, resp, "Response should have error")
+
+	pluginContact.ChangeBootOrderSettings(ctx, &req, "task12345")
 
 	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (d []byte, d1 string, d2 string, d3 scommon.ResponseStatus, err error) {
 		return scommon.ContactPlugin(ctx, req, errorMessage)

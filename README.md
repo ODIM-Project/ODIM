@@ -1453,7 +1453,7 @@ Topics covered in this section include:
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with Dell plugin: ConnectionMethodVariant: <br />`Compute:BasicAuth:DELL_v1.0.0`<br> |
+    | connectionMethodConf         | The connection method associated with Dell plugin: ConnectionMethodVariant: <br />`Compute:BasicAuth:DELL_v2.0.0`<br> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the Dell plugin:<br />`dellplugin`, `dellplugin-events`<br>Add these values to the existing comma-separated list.<br> |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the Dell plugin:<br /> `dellplugin`, `dellplugin-events`<br> Add these values to the existing comma-separated list.<br> |
     
@@ -1602,7 +1602,7 @@ Topics covered in this section include:
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with Lenovo: ConnectionMethodVariant: `Compute:BasicAuth:LENOVO_v1.0.0`<br> |
+    | connectionMethodConf         | The connection method associated with Lenovo: ConnectionMethodVariant: `Compute:BasicAuth:LENOVO_v2.0.0`<br> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying Lenovo plugins: `lenovoplugin`, `lenovoplugin-events`<br />Add these values to the existing comma-separated list. |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying Lenovo: `lenovoplugin` `lenovoplugin-events`<br />Add these values to the existing comma-separated list. |
 

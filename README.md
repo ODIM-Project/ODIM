@@ -1452,7 +1452,7 @@ Topics covered in this section include:
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with Dell plugin: ConnectionMethodVariant: <br />`Compute:BasicAuth:DELL_v1.0.0`<br> |
+    | connectionMethodConf         | The connection method associated with Dell plugin: ConnectionMethodVariant: <br />`Compute:BasicAuth:DELL_v2.0.0`<br> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the Dell plugin:<br />`dellplugin`, `dellplugin-events`<br>Add these values to the existing comma-separated list.<br> |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the Dell plugin:<br /> `dellplugin`, `dellplugin-events`<br> Add these values to the existing comma-separated list.<br> |
     
@@ -1601,7 +1601,7 @@ Topics covered in this section include:
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with Lenovo: ConnectionMethodVariant: `Compute:BasicAuth:LENOVO_v1.0.0`<br> |
+    | connectionMethodConf         | The connection method associated with Lenovo: ConnectionMethodVariant: `Compute:BasicAuth:LENOVO_v2.0.0`<br> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying Lenovo plugins: `lenovoplugin`, `lenovoplugin-events`<br />Add these values to the existing comma-separated list. |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying Lenovo: `lenovoplugin` `lenovoplugin-events`<br />Add these values to the existing comma-separated list. |
 
@@ -2371,51 +2371,54 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    mkdir <backup directory>/backup
    ```
 
-2. Get the name of the primary pod to collect the backup snapshot file and append-only file to restore them later (either ondisk or inmemory database).
+2. For three-node deployment, get the name of the primary pod to collect the backup snapshot file and append-only directory to restore them later (either ondisk or inmemory database).
 
    ```
    kubectl get pods -nodim | grep redis | grep primary
    ```
-   
+
    **Output**:
 
    ```
    redis-ha-inmemory-primary-0
    ```
+
    ```
    redis-ha-ondisk-primary-0
    ```
 
-3. Copy the rdb files and aof files from the primary pod.
+   > **NOTE**: For one-node deployment, enter `kubectl get pods -nodim | grep redis` to get the name of the pod to collect the backup snapshot file and append-only directory to restore them later (either ondisk or inmemory database).
+
+3. Copy the rdb file and aof directory from the primary pod.
 
    ```
    kubectl cp odim/<pod-name>:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
    ```
 
    ```
-   kubectl cp odim/<pod-name>:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
+   kubectl cp odim/<pod-name>:/redis-data/appendonlydir <backup directory>/backup/appendonlydir
    ```
 
    **For example (on-disk)**:
-   
+
    ```
    kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
    ```
 
    ```
-   kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
+   kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/appendonlydir <backup directory>/backup/appendonlydir
    ```
 
    **For example(in-memory)**:
-   
+
    ```
    kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
    ```
-   
+
    ```
-   kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
+   kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonlydir <backup directory>/backup/appendonlydir
    ```
-   
+
    These are the backup files to be restored.
 
 4. Copy the above backup files to the pod to restore them.
@@ -2425,7 +2428,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    ```
 
    ```
-   kubectl cp <Copied directory>/backup/appendonly.aof  odim/<pod-name>:/redis-data/appendonly.aof.old
+   kubectl cp <Copied directory>/backup/appendonlydir  odim/<pod-name>:/redis-data/appendonlydir.old
    ```
 
    **For example**:
@@ -2435,7 +2438,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    ```
 
    ```
-   kubectl cp <Copied directory>/backup/appendonly.aof odim/redis-ha-ondisk-primary-0/redis-data/appendonly.aof.old
+   kubectl cp <Copied directory>/backup/appendonlydir odim/redis-ha-ondisk-primary-0/redis-data/appendonlydir.old
    ```
 
    ```
@@ -2443,7 +2446,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    ```
 
    ```
-   kubectl cp <Copied directory>/backup/appendonly.aof  odim/redis-ha-inmemory-primary-0/redis-data/appendonly.aof.old
+   kubectl cp <Copied directory>/backup/appendonlydir  odim/redis-ha-inmemory-primary-0/redis-data/appendonlydir.old
    ```
 
 5. Log in to the pod. 
@@ -2484,14 +2487,14 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 
 8. Exit from the Redis CLI and move to the `redis-data` directory.
 
-9. Remove the existing rdb and aof files and replace the backed up ones with the name.
+9. Remove the existing rdb file and aof directory and replace the backed up ones with the name.
 
    ```
    cd /redis-data
    ```
 
    ```
-   rm -rf dump.rdb appendonly.aof
+   rm -rf dump.rdb appendonlydir
    ```
 
    ```
@@ -2499,7 +2502,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    ```
 
    ```
-   mv appendonly.aof.old appendonly.aof
+   mv appendonlydir.old appendonlydir
    ```
 
 10. Get the pods of the Redis (either in-memory or on-disk) and restart  them.
@@ -2533,6 +2536,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
     ```
     kubectl exec -it redis-ha-ondisk-primary-0 -nodim bash
     ```
+
     ```
     kubectl exec -it redis-ha-inmemory-primary-0 -nodim bash
     ```
@@ -2705,7 +2709,7 @@ To search servers in the inventory based on specific criteria, perform HTTP `GET
 `/redfish/v1/Systems?$filter={searchKeys}%20{conditionKeys}%20{value/regular_expression}%20{logicalOperand}%20{searchKeys}%20{conditionKeys}%20{value}`
 
 
-Example: `redfish/v1/Systems?filter=MemorySummary/TotalSystemMemoryGiB%20eq%20384`
+Example: `redfish/v1/Systems?$filter=MemorySummary/TotalSystemMemoryGiB%20eq%20384`
 
 
 This URI searches the inventory for servers having total physical memory of 384 GB. On successful completion, it provides links to the filtered servers.

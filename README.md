@@ -2696,7 +2696,7 @@ To search servers in the inventory based on specific criteria, perform HTTP `GET
 `/redfish/v1/Systems?$filter={searchKeys}%20{conditionKeys}%20{value/regular_expression}%20{logicalOperand}%20{searchKeys}%20{conditionKeys}%20{value}`
 
 
-Example: `redfish/v1/Systems?filter=MemorySummary/TotalSystemMemoryGiB%20eq%20384`
+Example: `redfish/v1/Systems?$filter=MemorySummary/TotalSystemMemoryGiB%20eq%20384`
 
 
 This URI searches the inventory for servers having total physical memory of 384 GB. On successful completion, it provides links to the filtered servers.

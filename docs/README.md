@@ -12451,7 +12451,7 @@ To update an existing log level after Resource Aggregator for ODIM is installed,
 2. Run the following command to update log levels for all Resource Aggregator for ODIM services:
 
    ```
-   python3 odim-controller.py --config /home/${USER}/R4H60-11016/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra
+   python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-config
    ```
 
 

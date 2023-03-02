@@ -12,26 +12,28 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package fabrics ...
+// Package fabrics ...
 package fabrics
 
 import (
+	"context"
 	"encoding/json"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"net/http"
 	"reflect"
 	"testing"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
-func mockAuth(sessionToken string, privileges []string, oemPrivileges []string) response.RPC {
+func mockAuth(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken == "valid" {
-		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 	} else if sessionToken == "invalid" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, "error while trying to authenticate session", nil, nil)
+	return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, "error while trying to authenticate session", nil, nil), nil
 }
 func TestFabrics_UpdateFabricResource(t *testing.T) {
 	Token.Tokens = make(map[string]string)
@@ -54,6 +56,7 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 		"@odata.id": "/redfish/v1/Fabrics",
 	})
 	type args struct {
+		ctx context.Context
 		req *fabricsproto.FabricRequest
 	}
 	errResp1 := response.Args{
@@ -91,6 +94,7 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 				ContactClient: mockContactClient,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da/Zones/Zone1",
@@ -115,6 +119,7 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 				Auth: mockAuth,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "sometoken",
 					Method:       "POST",
@@ -132,6 +137,7 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 				Auth: mockAuth,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "invalid",
 					Method:       "POST",
@@ -146,7 +152,7 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.f.UpdateFabricResource(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.f.UpdateFabricResource(tt.args.ctx, tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Fabrics.UpdateFabricResource() = %v, want %v", got, tt.want)
 			}
 		})
@@ -175,6 +181,7 @@ func TestFabrics_UpdateFabricResourceWithNoValidSession(t *testing.T) {
 		t.Fatalf("Error in creating mockFabricData :%v", err)
 	}
 	type args struct {
+		ctx context.Context
 		req *fabricsproto.FabricRequest
 	}
 	tests := []struct {
@@ -190,6 +197,7 @@ func TestFabrics_UpdateFabricResourceWithNoValidSession(t *testing.T) {
 				ContactClient: mockContactClient,
 			},
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da/Zones/Zone1",
@@ -212,7 +220,7 @@ func TestFabrics_UpdateFabricResourceWithNoValidSession(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.f.UpdateFabricResource(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.f.UpdateFabricResource(tt.args.ctx, tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Fabrics.GetFabricResource() = %v, want %v", got, tt.want)
 			}
 		})

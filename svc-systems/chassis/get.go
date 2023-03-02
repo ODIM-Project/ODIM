@@ -17,15 +17,27 @@
 package chassis
 
 import (
+	"context"
+	"encoding/json"
 	"net/http"
+	"strings"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
+	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
+	"github.com/ODIM-Project/ODIM/svc-systems/systems"
+)
+
+var (
+	// GetResourceInfoFromDeviceFunc function pointer for the scommon.GetResourceInfoFromDevice
+	GetResourceInfoFromDeviceFunc = scommon.GetResourceInfoFromDevice
 )
 
 // Handle is used to fetch resource data. The function is supposed to be used as part of RPC
@@ -34,23 +46,52 @@ import (
 // Url will be parsed from that search key will created
 // There will be two return values for the function. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
-func (h *Get) Handle(req *chassisproto.GetChassisRequest) response.RPC {
+func (h *Get) Handle(ctx context.Context, req *chassisproto.GetChassisRequest) response.RPC {
 	//managed chassis lookup
+	l.LogWithFields(ctx).Debugln("Inside GetChassisRequest Handle")
 	managedChassis := new(dmtf.Chassis)
 	e := h.findInMemoryDB("Chassis", req.URL, managedChassis)
 	managedChassis.ID = req.RequestParam
 	if e == nil {
+		requestData := strings.SplitN(req.RequestParam, ".", 2)
+		if len(requestData) <= 1 {
+			errorMessage := "error: SystemUUID not found"
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
+		}
+		uuid := requestData[0]
+
+		var pc = systems.PluginContact{
+			ContactClient:   pmbhandle.ContactPlugin,
+			DevicePassword:  common.DecryptWithPrivateKey,
+			GetPluginStatus: scommon.GetPluginStatus,
+		}
+		var getDeviceInfoRequest = scommon.ResourceInfoRequest{
+			URL:             req.URL,
+			UUID:            uuid,
+			SystemID:        requestData[1],
+			ContactClient:   pc.ContactClient,
+			DevicePassword:  pc.DevicePassword,
+			GetPluginStatus: pc.GetPluginStatus,
+			ResourceName:    "Chassis",
+		}
+		data, err := GetResourceInfoFromDeviceFunc(ctx, getDeviceInfoRequest, true)
+		if err != nil {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
+		}
+		data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`.`, -1)
+		var resource dmtf.Chassis
+		json.Unmarshal([]byte(data), &resource)
 		return response.RPC{
 			StatusMessage: response.Success,
 			StatusCode:    http.StatusOK,
-			Body:          *managedChassis,
+			Body:          resource,
 		}
 	}
 
 	if e.ErrNo() != errors.DBKeyNotFound {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
-
+	l.LogWithFields(ctx).Debugln("Built 'Chassis' table information from lib-dmtf chassis model")
 	pluginClient, e := h.createPluginClient("URP*")
 	if e != nil && e.ErrNo() == errors.DBKeyNotFound {
 		//urp plugin is not registered, requested chassis unknown -> status not found
@@ -61,10 +102,10 @@ func (h *Get) Handle(req *chassisproto.GetChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
-	resp := pluginClient.Get("/ODIM/v1/Chassis/" + req.RequestParam)
+	resp := pluginClient.Get(ctx, "/ODIM/v1/Chassis/"+req.RequestParam)
 	if !is2xx(int(resp.StatusCode)) {
 		f := h.getFabricFactory(nil)
-		r := f.getFabricChassisResource(req.RequestParam)
+		r := f.getFabricChassisResource(ctx, req.RequestParam)
 		if is2xx(int(r.StatusCode)) {
 			return r
 		}

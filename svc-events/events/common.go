@@ -8,17 +8,18 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"reflect"
 	"runtime"
 	"strings"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -26,7 +27,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
-	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
 )
 
@@ -36,13 +36,20 @@ type ExternalInterfaces struct {
 	DB
 }
 
+var (
+	// UpdateTaskService function  pointer for calling the files
+	UpdateTaskService = services.UpdateTask
+	// IOUtilReadAllFunc function  pointer for calling the files
+	IOUtilReadAllFunc = ioutil.ReadAll
+)
+
 // External struct to inject the contact external function into the handlers
 type External struct {
-	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth            func(string, []string, []string) response.RPC
-	CreateTask      func(string) (string, error)
-	UpdateTask      func(common.TaskData) error
-	CreateChildTask func(string, string) (string, error)
+	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	Auth            func(string, []string, []string) (response.RPC, error)
+	CreateTask      func(context.Context, string) (string, error)
+	UpdateTask      func(context.Context, common.TaskData) error
+	CreateChildTask func(context.Context, string, string) (string, error)
 }
 
 // DB struct to inject the contact DB function into the handlers
@@ -90,7 +97,7 @@ func fillTaskData(taskID, targetURI, request string, resp errResponse.RPC, taskS
 }
 
 // UpdateTaskData update the task with the given data
-func UpdateTaskData(taskData common.TaskData) error {
+func UpdateTaskData(ctx context.Context, taskData common.TaskData) error {
 	respBody, _ := json.Marshal(taskData.Response.Body)
 	payLoad := &taskproto.Payload{
 		HTTPHeaders:   taskData.Response.Header,
@@ -101,15 +108,15 @@ func UpdateTaskData(taskData common.TaskData) error {
 		ResponseBody:  respBody,
 	}
 
-	err := services.UpdateTask(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	err := UpdateTaskService(ctx, taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
-		services.UpdateTask(taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+		UpdateTaskService(ctx, taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
 		if taskData.PercentComplete == 0 {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}
-		log.Error("error: task update for " + taskData.TaskID + " failed with err: " + err.Error())
+		l.Log.Error("error: task update for " + taskData.TaskID + " failed with err: " + err.Error())
 		runtime.Goexit()
 	}
 	return nil
@@ -129,17 +136,17 @@ func removeOdataIDfromOriginResources(originResources []evmodel.OdataIDLink) []s
 func removeDuplicatesFromSlice(slc *[]string, slcLen *int) {
 	if *slcLen > 1 {
 		uniqueElementsDs := make(map[string]bool)
-		var uniqueElemenstsList []string
+		var uniqueElementsList []string
 		for _, element := range *slc {
 			if exist := uniqueElementsDs[element]; !exist {
-				uniqueElemenstsList = append(uniqueElemenstsList, element)
+				uniqueElementsList = append(uniqueElementsList, element)
 				uniqueElementsDs[element] = true
 			}
 		}
-		// length of uniqueElemenstsList will be less than passed string slice,
+		// length of uniqueElementsList will be less than passed string slice,
 		// only if duplicates existed, so will assign slc with modified list and update length
-		if len(uniqueElemenstsList) < *slcLen {
-			*slc = uniqueElemenstsList
+		if len(uniqueElementsList) < *slcLen {
+			*slc = uniqueElementsList
 			*slcLen = len(*slc)
 		}
 	}
@@ -158,55 +165,30 @@ func removeElement(slice []string, element string) []string {
 	return elements
 }
 
-// getTypes is to split the string to array
-func getTypes(subscription string) []string {
-	// array stored in db in string("[alert statuschange]")
-	// to convert into an array removing "[" ,"]" and splitting
-	events := strings.Replace(subscription, "[", "", -1)
-	events = strings.Replace(events, "]", "", -1)
-	if len(events) < 1 {
-		return []string{}
-	}
-	return strings.Split(events, " ")
-}
-
-//checkequal is to check the previous and new event types are equal
-func checkEqual(newEventTypes, prevEventTypes []string) (errResponse.RPC, error) {
-	var resp errResponse.RPC
-	// if the subscribed events are same as wants to subscribe then return as resource in use
-	if reflect.DeepEqual(newEventTypes, prevEventTypes) {
-		errorMessage := "Resource already in use"
-		evcommon.GenErrorResponse(errorMessage, errResponse.ResourceInUse, http.StatusConflict,
-			[]interface{}{}, &resp)
-		return resp, fmt.Errorf(errorMessage)
-	}
-	return resp, nil
-}
-
 // PluginCall method is to call to given url and method
 // and validate the response and return
 func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
 	var resp errResponse.RPC
-	response, err := e.callPlugin(req)
+	response, err := e.callPlugin(context.TODO(), req)
 	if err != nil {
 		if evcommon.GetPluginStatus(req.Plugin) {
-			response, err = e.callPlugin(req)
+			response, err = e.callPlugin(context.TODO(), req)
 		}
 		if err != nil {
 			errorMessage := "Error : " + err.Error()
 			evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				[]interface{}{}, &resp)
-			log.Error(errorMessage)
+			l.Log.Error(errorMessage)
 			return resp, "", "", err
 		}
 	}
 	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := IOUtilReadAllFunc(response.Body)
 	if err != nil {
 		errorMessage := "error while trying to read response body: " + err.Error()
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			[]interface{}{}, &resp)
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return resp, "", "", err
 	}
 	if !(response.StatusCode == http.StatusCreated || response.StatusCode == http.StatusOK) {
@@ -349,7 +331,7 @@ func (e *ExternalInterfaces) createToken(plugin *evmodel.Plugin) string {
 	contactRequest.URL = "/ODIM/v1/Sessions"
 	_, _, token, err := e.PluginCall(contactRequest)
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 	}
 	pluginToken := evcommon.PluginToken{
 		Tokens: make(map[string]string),
@@ -382,12 +364,12 @@ func (e *ExternalInterfaces) retryEventSubscriptionOperation(req evcommon.Plugin
 	}
 	req.Token = token
 
-	response, err := e.callPlugin(req)
+	response, err := e.callPlugin(context.TODO(), req) // TODO: Pass context
 	if err != nil {
 		errorMessage := "error while unmarshaling the body : " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			&resp, []interface{}{})
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		return nil, resp, err
 	}
 	return response, resp, err
@@ -429,13 +411,13 @@ func getAggregateID(origin string) string {
 	return ""
 }
 
-// callPlugin check the given request url and PrefereAuth type plugin
-func (e *ExternalInterfaces) callPlugin(req evcommon.PluginContactRequest) (*http.Response, error) {
+// callPlugin check the given request url and PreferAuth type plugin
+func (e *ExternalInterfaces) callPlugin(ctx context.Context, req evcommon.PluginContactRequest) (*http.Response, error) {
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.URL
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		return e.ContactClient(reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
+		return e.ContactClient(ctx, reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
 	}
-	return e.ContactClient(reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
+	return e.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
 }
 
 // checkCollection verifies if the given origin is collection and extracts all the suboridinate resources
@@ -474,8 +456,8 @@ func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, b
 // isHostPresentInEventForward will check if hostip present in the hosts slice
 func isHostPresentInEventForward(hosts []string, hostip string) bool {
 
-	if len(hosts) < 1 {
-		return false
+	if len(hosts) == 0 {
+		return true
 	}
 
 	front := 0

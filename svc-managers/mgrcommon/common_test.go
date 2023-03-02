@@ -16,6 +16,7 @@ package mgrcommon
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -34,6 +35,17 @@ func getEncryptedKey(t *testing.T, key []byte) []byte {
 		t.Fatalf("error: failed to encrypt data: %v", err)
 	}
 	return cryptedKey
+}
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
 }
 
 func mockTarget() error {
@@ -79,7 +91,7 @@ func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	baseURI := "/redfish/v1"
 	baseURI = TranslateToSouthBoundURL(baseURI)
 
@@ -161,7 +173,7 @@ func mockPluginData(t *testing.T, pluginID, PreferredAuthType, port string) erro
 
 func TestGetResourceInfoFromDevice(t *testing.T) {
 	Token.Tokens = make(map[string]string)
-
+	ctx := mockContext()
 	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
@@ -193,7 +205,7 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 		ContactClient:         mockContactClient,
 		DecryptDevicePassword: stubDevicePassword,
 	}
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(ctx, req)
 	assert.Nil(t, err, "There should be no error getting data")
 
 	var req1 = ResourceInfoRequest{
@@ -203,24 +215,24 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 		ContactClient:         mockContactClient,
 		DecryptDevicePassword: stubDevicePassword,
 	}
-	_, err = GetResourceInfoFromDevice(req1)
+	_, err = GetResourceInfoFromDevice(ctx, req1)
 	assert.Equal(t, err.Error(), "error while trying to get compute details: no data with the with key  found", "No data with the with empty key")
 
 	req.UUID = "uuid1"
 	req.URL = "/redfish/v1/Managers/uuid1.1/EthernetInterfaces"
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(ctx, req)
 	assert.Nil(t, err, "There should be no error getting data")
 
 	req.UUID = "uuid"
 	req.URL = "/redfish/v1/Managers/uuid.1/VirtualMedia/1"
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(ctx, req)
 	assert.Nil(t, err, "There should be no error getting data")
 
 	GetPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
 		err = &errors.Error{}
 		return
 	}
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(ctx, req)
 	assert.NotNil(t, err, "There should be no error getting data")
 	GetPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
 		return mgrmodel.GetPluginData(pluginID)
@@ -229,7 +241,7 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 
 func TestGetResourceInfoFromDeviceInvalidPlugin(t *testing.T) {
 	Token.Tokens = make(map[string]string)
-
+	ctx := mockContext()
 	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
@@ -265,13 +277,13 @@ func TestGetResourceInfoFromDeviceInvalidPlugin(t *testing.T) {
 		ContactClient:         mockContactClient,
 		DecryptDevicePassword: stubDevicePassword,
 	}
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(ctx, req)
 	assert.NotNil(t, err, "There should be an error")
 }
 
 func TestGetResourceInfoFromDeviceWithInvalidPluginSession(t *testing.T) {
 	Token.Tokens = make(map[string]string)
-
+	ctx := mockContext()
 	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
@@ -299,19 +311,19 @@ func TestGetResourceInfoFromDeviceWithInvalidPluginSession(t *testing.T) {
 		ContactClient:         mockContactClient,
 		DecryptDevicePassword: stubDevicePassword,
 	}
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(ctx, req)
 
 	assert.NotNil(t, err, "There should be an error")
 	Token.Tokens = map[string]string{
 		"GRF": "23456",
 	}
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(ctx, req)
 	assert.NotNil(t, err, "There should be an error")
 }
 
 func TestDeviceCommunication(t *testing.T) {
 	Token.Tokens = make(map[string]string)
-
+	ctx := mockContext()
 	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
@@ -345,7 +357,7 @@ func TestDeviceCommunication(t *testing.T) {
 		HTTPMethod:            http.MethodPost,
 		RequestBody:           []byte(`{"Image":"http://10.1.1.1/ISO"}`),
 	}
-	response := DeviceCommunication(req)
+	response := DeviceCommunication(ctx, req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
 	req = ResourceInfoRequest{
@@ -357,14 +369,14 @@ func TestDeviceCommunication(t *testing.T) {
 		HTTPMethod:            http.MethodPost,
 		RequestBody:           []byte(`{"Image":"http://10.1.1.1/ISO"}`),
 	}
-	response = DeviceCommunication(req)
+	response = DeviceCommunication(ctx, req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
 	GetPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
 		err = &errors.Error{}
 		return data, &errors.Error{}
 	}
-	response = DeviceCommunication(req)
+	response = DeviceCommunication(ctx, req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
 
 	GetPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
@@ -372,33 +384,33 @@ func TestDeviceCommunication(t *testing.T) {
 		return mgrmodel.GetPluginData(pluginID)
 	}
 
-	GetPluginTokenFunc = func(req PluginContactRequest) string {
+	GetPluginTokenFunc = func(ctx context.Context, req PluginContactRequest) string {
 		return ""
 	}
-	response = DeviceCommunication(req)
+	response = DeviceCommunication(ctx, req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
 
 	StringEqualFold = func(s, t string) bool {
 		return false
 	}
-	response = DeviceCommunication(req)
+	response = DeviceCommunication(ctx, req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
-	ContactPluginFunc = func(req PluginContactRequest, errorMessage string) (data []byte, data1 string, data2 ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req PluginContactRequest, errorMessage string) (data []byte, data1 string, data2 ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
-	response = DeviceCommunication(req)
+	response = DeviceCommunication(ctx, req)
 	assert.NotNil(t, "There should get  error")
 
 	JSON_UnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
-	response = DeviceCommunication(req)
+	response = DeviceCommunication(ctx, req)
 	assert.NotNil(t, "There should get error")
 
-	GetPluginTokenFunc = func(req PluginContactRequest) string {
-		return GetPluginToken(req)
+	GetPluginTokenFunc = func(ctx context.Context, req PluginContactRequest) string {
+		return GetPluginToken(ctx, req)
 	}
 	req = ResourceInfoRequest{
 		URL:                   "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia",
@@ -409,6 +421,6 @@ func TestDeviceCommunication(t *testing.T) {
 		HTTPMethod:            http.MethodPost,
 		RequestBody:           []byte(`{"Image":"http://10.1.1.1/ISO"}`),
 	}
-	response = DeviceCommunication(req)
+	response = DeviceCommunication(ctx, req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
 }

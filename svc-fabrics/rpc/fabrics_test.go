@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
+// Package rpc ...
 package rpc
 
 import (
@@ -26,20 +26,19 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
-	"github.com/ODIM-Project/ODIM/svc-fabrics/fabrics"
-
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
+	"github.com/ODIM-Project/ODIM/svc-fabrics/fabrics"
 )
 
-func mockAuth(sessionToken string, privileges []string, oemPrivileges []string) response.RPC {
+func mockAuth(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken == "valid" {
-		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 	} else if sessionToken == "invalid" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, "error while trying to authenticate session", nil, nil)
+	return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, "error while trying to authenticate session", nil, nil), nil
 }
 
 func getEncryptedKey(t *testing.T, key []byte) []byte {
@@ -70,7 +69,7 @@ func mockPluginData(t *testing.T) error {
 	return nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Sessions" {
 		body := `{"Token": "12345"}`
 		return &http.Response{
@@ -167,6 +166,7 @@ func TestFabrics_GetFabricResource(t *testing.T) {
 			name: "Postive Test Case",
 			f:    fabricsData,
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/fabid1",
@@ -218,6 +218,7 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 			name: "Postive Test Case",
 			f:    fabricsData,
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/fabid1/Zones/Zone1",
@@ -267,6 +268,7 @@ func TestFabrics_DeleteFabricResource(t *testing.T) {
 			name: "Postive Test Case",
 			f:    fabricsData,
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.FabricRequest{
 					SessionToken: "valid",
 					URL:          "/redfish/v1/Fabrics/fabid1",
@@ -315,6 +317,7 @@ func TestFabrics_AddFabric(t *testing.T) {
 			name: "Postive Test Case",
 			f:    fabricsData,
 			args: args{
+				ctx: context.Background(),
 				req: &fabricsproto.AddFabricRequest{
 					OriginResource: "/redfish/v1/Fabrics/a926dec5-61eb-499b-988a-d45b45847466",
 					Address:        "localhost",
@@ -326,6 +329,54 @@ func TestFabrics_AddFabric(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if _, err := tt.f.AddFabric(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Fabrics.AddFabric() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestFabrics_RemoveFabric(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	err := mockPluginData(t)
+	if err != nil {
+		t.Fatalf("Error in creating mock DeviceData :%v", err)
+	}
+	var fabricsData = &Fabrics{
+		IsAuthorizedRPC:  mockAuth,
+		ContactClientRPC: mockContactClient,
+	}
+
+	type args struct {
+		ctx context.Context
+		req *fabricsproto.AddFabricRequest
+	}
+	tests := []struct {
+		name    string
+		f       *Fabrics
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Postive Test Case",
+			f:    fabricsData,
+			args: args{
+				ctx: context.Background(),
+				req: &fabricsproto.AddFabricRequest{
+					OriginResource: "/redfish/v1/Fabrics/a926dec5-61eb-499b-988a-d45b45847466",
+					Address:        "localhost",
+				},
+			}, wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := tt.f.RemoveFabric(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
+				t.Errorf("Fabrics.RemoveFabric() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package persistencemgr
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -29,6 +30,39 @@ import (
 	redisSentinel "github.com/go-redis/redis"
 	"github.com/gomodule/redigo/redis"
 )
+
+type MockConn struct {
+	MockClose   func() error
+	MockErr     func() error
+	MockDo      func(string, ...interface{}) (interface{}, error)
+	MockSend    func(string, ...interface{}) error
+	MockFlush   func() error
+	MockReceive func() (interface{}, error)
+}
+
+func (mc MockConn) Close() error {
+	return mc.MockClose()
+}
+
+func (mc MockConn) Err() error {
+	return mc.MockErr()
+}
+
+func (mc MockConn) Do(commandName string, args ...interface{}) (interface{}, error) {
+	return mc.MockDo(commandName, args...)
+}
+
+func (mc MockConn) Send(commandName string, args ...interface{}) error {
+	return mc.MockSend(commandName, args...)
+}
+
+func (mc MockConn) Flush() error {
+	return mc.MockFlush()
+}
+
+func (mc MockConn) Receive() (interface{}, error) {
+	return mc.MockReceive()
+}
 
 type sample struct {
 	Data1 string
@@ -218,22 +252,6 @@ func TestUpdate_invalidData(t *testing.T) {
 	}()
 }
 
-func TestUpdate_nonExistingData(t *testing.T) {
-
-	c, err := MockDBConnection(t)
-	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
-	}
-
-	data := sample{Data1: "Value5", Data2: "Value6", Data3: "Value4"}
-
-	_, uerr := c.Update("table", "nonExistingKey", data)
-
-	if uerr.ErrNo() != errors.DBKeyNotFound {
-		t.Errorf("Error while updating data: %v\n", uerr.Error())
-	}
-}
-
 func TestGetall(t *testing.T) {
 
 	c, err := MockDBConnection(t)
@@ -318,10 +336,10 @@ func TestDelete_nonExistingKey(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
-
+	want := errors.PackError(errors.DBKeyNotFound, "no data with the with key key found")
 	derr := c.Delete("table", "key")
-	if derr.ErrNo() != errors.DBKeyNotFound {
-		t.Errorf("table should not exist: %v\n", derr.Error())
+	if !reflect.DeepEqual(derr, want) {
+		t.Errorf("table should not exist: %v, want: %v\n", derr.Error(), want)
 	}
 }
 
@@ -443,7 +461,7 @@ func TestTransaction(t *testing.T) {
 	}
 
 	updateTransaction := func(key string, state string) error {
-		testCallBack := func(key string) error {
+		testCallBack := func(ctx context.Context, key string) error {
 			got, err := c.Read("table", "key")
 			if err != nil {
 				t.Fatal("Error while reading data:", err)
@@ -462,7 +480,7 @@ func TestTransaction(t *testing.T) {
 			return nil
 		}
 		for retries := threadCount / 10; retries > 0; retries-- {
-			err := c.Transaction("key", testCallBack)
+			err := c.Transaction(context.TODO(), "key", testCallBack)
 			if err != nil {
 				t.Fatal("Error while making a transaction:", err)
 			} else {
@@ -1148,7 +1166,7 @@ func TestGetCurrentMasterHostPort(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := GetCurrentMasterHostPort(tt.args.dbConfig)
+			got, got1, _ := GetCurrentMasterHostPort(tt.args.dbConfig)
 			if got != tt.want {
 				t.Errorf("GetCurrentMasterHostPort() got = %v, want %v", got, tt.want)
 			}
@@ -1207,6 +1225,7 @@ func TestGetDBConnection(t *testing.T) {
 		})
 	}
 }
+
 func TestGetDBConnection_HAEnabled(t *testing.T) {
 	GetMockDBConfig()
 	// Enableing HA
@@ -1430,4 +1449,237 @@ func TestTTL(t *testing.T) {
 		}
 	}()
 
+}
+
+func TestConnPool_GetWriteConnection(t *testing.T) {
+	c, err := MockDBConnection(t)
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+	tests := []struct {
+		name    string
+		p       *ConnPool
+		wantErr bool
+	}{
+		{
+			name:    "get write connection to db",
+			p:       c,
+			wantErr: false,
+		},
+		{
+			name: "fail while getting write connection to DB if write pool is nil",
+			p: &ConnPool{
+				WritePool: nil,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.p.GetWriteConnection()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetWriteConnection() : error = %v, wantErr = %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestConn_UpdateTransaction(t *testing.T) {
+	c, err := MockDBWriteConnection(t)
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+	type args struct {
+		data map[string]interface{}
+	}
+	tests := []struct {
+		name    string
+		c       *Conn
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "db update operation using pipelined transaction",
+			c:    c,
+			args: args{
+				data: map[string]interface{}{
+					"TASK:1": "progress",
+					"TASK:2": "completed",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "failure while db update operation",
+			c: &Conn{
+				WriteConn: MockConn{
+					MockDo: func(s string, i ...interface{}) (interface{}, error) {
+						return nil, fmt.Errorf("DB ERROR")
+					},
+					MockSend: func(s string, i ...interface{}) error {
+						return nil
+					},
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.c.UpdateTransaction(tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateTransaction() = %v, want %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_getSortedMapKeys(t *testing.T) {
+	type args struct {
+		m interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "success case 1",
+			args: args{
+				m: map[string]interface{}{
+					"TASK:1": "task1",
+					"TASK:2": "task1",
+					"TASK:3": "task1",
+				},
+			},
+			want: []string{"TASK:1", "TASK:2", "TASK:3"},
+		},
+		{
+			name: "success case 2",
+			args: args{
+				m: map[string]int64{
+					"TASK:1": 1,
+					"TASK:2": 2,
+					"TASK:3": 3,
+				},
+			},
+			want: []string{"TASK:1", "TASK:2", "TASK:3"},
+		},
+		{
+			name: "invalid case",
+			args: args{
+				m: map[string]string{
+					"TASK:1": "task1",
+					"TASK:2": "task1",
+					"TASK:3": "task1",
+				},
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getSortedMapKeys(tt.args.m); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getSortedMapKeys() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsRetriable(t *testing.T) {
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "success case 1",
+			args: args{
+				err: fmt.Errorf("EOF"),
+			},
+			want: true,
+		},
+		{
+			name: "success case 2",
+			args: args{
+				err: fmt.Errorf("error LOADING redis"),
+			},
+			want: true,
+		},
+		{
+			name: "success case 3",
+			args: args{
+				err: fmt.Errorf("ERR max number of clients reached"),
+			},
+			want: true,
+		},
+		{
+			name: "failure case",
+			args: args{
+				err: fmt.Errorf("unexpected error"),
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsRetriable(tt.args.err); got != tt.want {
+				t.Errorf("IsRetriable() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+type timeOutError struct {
+	error
+}
+
+func (e timeOutError) Timeout() bool {
+	return true
+}
+
+func (e timeOutError) Temporary() bool {
+	return true
+}
+
+func (e timeOutError) Error() string {
+	return ""
+}
+
+func Test_isTimeOutError(t *testing.T) {
+
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "success case",
+			args: args{
+				err: &timeOutError{
+					error: fmt.Errorf("timeout error"),
+				},
+			},
+			want: true,
+		},
+		{
+			name: "failure case",
+			args: args{
+				err: fmt.Errorf("db error"),
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isTimeOutError(tt.args.err); got != tt.want {
+				t.Errorf("isTimeOutError() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

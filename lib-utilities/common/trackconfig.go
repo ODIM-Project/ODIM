@@ -16,22 +16,24 @@
 package common
 
 import (
+	"fmt"
+
 	"github.com/fsnotify/fsnotify"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
 // TrackConfigFileChanges monitors the config changes using fsnotfiy
-func TrackConfigFileChanges(configFilePath string, eventChan chan<- interface{}) {
+func TrackConfigFileChanges(configFilePath string, eventChan chan<- interface{}, errChan chan<- error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Error(err.Error())
+		errChan <- err
 	}
 	err = watcher.Add(configFilePath)
 	if err != nil {
-		log.Error(err.Error())
+		errChan <- err
 	}
+
 	go func() {
 		for {
 			select {
@@ -40,20 +42,19 @@ func TrackConfigFileChanges(configFilePath string, eventChan chan<- interface{})
 					continue
 				}
 				if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
-					log.Info("modified file:" + fileEvent.Name)
 					// update the odim config
 					config.TLSConfMutex.Lock()
-					if err := config.SetConfiguration(); err != nil {
-						log.Error("error while trying to set configuration: " + err.Error())
+					if _, err := config.SetConfiguration(); err != nil {
+						errChan <- fmt.Errorf("error while trying to set configuration: %s", err.Error())
 					}
 					config.TLSConfMutex.Unlock()
-					eventChan <- "config file modified"
+					eventChan <- "config file modified" + fileEvent.Name
 				}
 				//Reading file to continue the watch
 				watcher.Add(configFilePath)
 			case err, _ := <-watcher.Errors:
 				if err != nil {
-					log.Error(err.Error())
+					errChan <- err
 					defer watcher.Close()
 				}
 			}

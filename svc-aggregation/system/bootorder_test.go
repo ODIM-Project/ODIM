@@ -14,6 +14,7 @@
 package system
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -36,7 +37,7 @@ var pluginContact = ExternalInterface{
 	GetPluginStatus: GetPluginStatusForTesting,
 }
 
-func mockCreateChildTask(sessionID, taskID string) (string, error) {
+func mockCreateChildTask(ctx context.Context, sessionID, taskID string) (string, error) {
 	switch taskID {
 	case "taskWithoutChild":
 		return "", fmt.Errorf("subtask cannot created")
@@ -62,7 +63,7 @@ func mockSystemData(systemID string) error {
 	return nil
 }
 
-func mockUpdateTask(task common.TaskData) error {
+func mockUpdateTask(ctx context.Context, task common.TaskData) error {
 	if task.TaskID == "invalid" {
 		return fmt.Errorf("task with this ID not found")
 	}
@@ -144,7 +145,7 @@ func TestPluginContact_SetDefaultBootOrderSystems(t *testing.T) {
 	mockSystemData("/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1.1")
 	mockSystemData("/redfish/v1/Systems/2aca8daa-9c20-4a5b-9203-469a24f452c8.1")
 	mockSystemData("/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd.1")
-
+	ctx := mockContext()
 	type args struct {
 		taskID, sessionUserName string
 		req                     *aggregatorproto.AggregatorRequest
@@ -383,7 +384,7 @@ func TestPluginContact_SetDefaultBootOrderSystems(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.SetDefaultBootOrder(tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.p.SetDefaultBootOrder(ctx, tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.SetDefaultBootOrder() = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
 		})

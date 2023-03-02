@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package common ...
+// Package common ...
 package common
 
 import (
@@ -21,7 +21,7 @@ import (
 	"os"
 	"sync"
 
-	log "github.com/sirupsen/logrus"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8s "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -42,13 +42,13 @@ func updateConfig() {
 	var exists bool
 	K8sODIMNamespace, exists = os.LookupEnv("ODIM_NAMESPACE")
 	if !exists {
-		log.Info("ODIM_NAMESPACE environment variable not found, not a kubernetes deployment")
+		l.Log.Info("ODIM_NAMESPACE environment variable not found, not a kubernetes deployment")
 		return
 	}
 	if K8sODIMNamespace != "" {
 		isK8sDeployment = true
 	} else {
-		log.Fatalf("value not set for ODIM_NAMESPACE environment variable")
+		l.Log.Fatalf("value not set for ODIM_NAMESPACE environment variable")
 	}
 	return
 }

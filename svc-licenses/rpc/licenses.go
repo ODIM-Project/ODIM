@@ -17,55 +17,79 @@ package rpc
 import (
 	"context"
 	"net/http"
+	"os"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	lgr "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	licenseproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/licenses"
 )
 
+var podName = os.Getenv("POD_NAME")
+
 // GetLicenseService to get license service details
 func (l *Licenses) GetLicenseService(ctx context.Context, req *licenseproto.GetLicenseServiceRequest) (*licenseproto.GetLicenseResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.LicenseService, podName)
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		fillProtoResponse(resp, authResp)
+		if err != nil {
+			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillProtoResponse(ctx, resp, authResp)
 		return resp, nil
 	}
-	fillProtoResponse(resp, l.connector.GetLicenseService(req))
+	fillProtoResponse(ctx, resp, l.connector.GetLicenseService(req))
 	return resp, nil
 }
 
 // GetLicenseCollection to get license collection
 func (l *Licenses) GetLicenseCollection(ctx context.Context, req *licenseproto.GetLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.LicenseService, podName)
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		fillProtoResponse(resp, authResp)
+		if err != nil {
+			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillProtoResponse(ctx, resp, authResp)
 		return resp, nil
 	}
-	fillProtoResponse(resp, l.connector.GetLicenseCollection(req))
+	fillProtoResponse(ctx, resp, l.connector.GetLicenseCollection(ctx, req))
 	return resp, nil
 }
 
 // GetLicenseResource to get license resource
 func (l *Licenses) GetLicenseResource(ctx context.Context, req *licenseproto.GetLicenseResourceRequest) (*licenseproto.GetLicenseResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.LicenseService, podName)
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		fillProtoResponse(resp, authResp)
+		if err != nil {
+			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillProtoResponse(ctx, resp, authResp)
 		return resp, nil
 	}
-	fillProtoResponse(resp, l.connector.GetLicenseResource(req))
+	fillProtoResponse(ctx, resp, l.connector.GetLicenseResource(ctx, req))
 	return resp, nil
 }
 
 // InstallLicenseService to install license
 func (l *Licenses) InstallLicenseService(ctx context.Context, req *licenseproto.InstallLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.LicenseService, podName)
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		fillProtoResponse(resp, authResp)
+		if err != nil {
+			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillProtoResponse(ctx, resp, authResp)
 		return resp, nil
 	}
-	fillProtoResponse(resp, l.connector.InstallLicenseService(req))
+	fillProtoResponse(ctx, resp, l.connector.InstallLicenseService(ctx, req))
 	return resp, nil
 }

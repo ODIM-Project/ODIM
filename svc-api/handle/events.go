@@ -12,16 +12,16 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package handle ...
+// Package handle ...
 package handle
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
@@ -29,17 +29,18 @@ import (
 
 // EventsRPCs defines all the RPC methods in Events service
 type EventsRPCs struct {
-	GetEventServiceRPC                 func(eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error)
-	CreateEventSubscriptionRPC         func(eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error)
-	SubmitTestEventRPC                 func(eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error)
-	GetEventSubscriptionRPC            func(eventsproto.EventRequest) (*eventsproto.EventSubResponse, error)
-	DeleteEventSubscriptionRPC         func(eventsproto.EventRequest) (*eventsproto.EventSubResponse, error)
-	GetEventSubscriptionsCollectionRPC func(eventsproto.EventRequest) (*eventsproto.EventSubResponse, error)
+	GetEventServiceRPC                 func(context.Context, eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error)
+	CreateEventSubscriptionRPC         func(context.Context, eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error)
+	SubmitTestEventRPC                 func(context.Context, eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error)
+	GetEventSubscriptionRPC            func(context.Context, eventsproto.EventRequest) (*eventsproto.EventSubResponse, error)
+	DeleteEventSubscriptionRPC         func(context.Context, eventsproto.EventRequest) (*eventsproto.EventSubResponse, error)
+	GetEventSubscriptionsCollectionRPC func(context.Context, eventsproto.EventRequest) (*eventsproto.EventSubResponse, error)
 }
 
 // GetEventService is the handler to get the Event Service details.
 func (e *EventsRPCs) GetEventService(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := eventsproto.EventSubRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -51,9 +52,9 @@ func (e *EventsRPCs) GetEventService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := e.GetEventServiceRPC(req)
+	resp, err := e.GetEventServiceRPC(ctxt, req)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -70,13 +71,14 @@ func (e *EventsRPCs) GetEventService(ctx iris.Context) {
 // CreateEventSubscription is the handler for creating event subscription
 func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req eventsproto.EventSubRequest
 	// Read Post Body from Request
 	var SubscriptionReq interface{}
 	err := ctx.ReadJSON(&SubscriptionReq)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the event subscription request body: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -96,9 +98,9 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 	}
 	req.PostBody, _ = json.Marshal(&SubscriptionReq)
 
-	resp, err := e.CreateEventSubscriptionRPC(req)
+	resp, err := e.CreateEventSubscriptionRPC(ctxt, req)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -114,13 +116,14 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 // SubmitTestEvent is the handler to submit test event
 func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req eventsproto.EventSubRequest
 	// Read Post Body from Request
 	var SubmitTestEventReq interface{}
 	err := ctx.ReadJSON(&SubmitTestEventReq)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the SubmitTestEvent request body: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
@@ -140,9 +143,9 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 	}
 	req.PostBody, _ = json.Marshal(&SubmitTestEventReq)
 
-	resp, err := e.SubmitTestEventRPC(req)
+	resp, err := e.SubmitTestEventRPC(ctxt, req)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -158,6 +161,7 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 // GetEventSubscription is the handler for getting event subscription
 func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req eventsproto.EventRequest
 	req.EventSubscriptionID = ctx.Params().Get("id")
 	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
@@ -171,9 +175,9 @@ func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
 		return
 	}
 
-	resp, err := e.GetEventSubscriptionRPC(req)
+	resp, err := e.GetEventSubscriptionRPC(ctxt, req)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -189,6 +193,7 @@ func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
 // DeleteEventSubscription is the handler for getting event subscription
 func (e *EventsRPCs) DeleteEventSubscription(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req eventsproto.EventRequest
 	req.EventSubscriptionID = ctx.Params().Get("id")
 	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
@@ -202,9 +207,9 @@ func (e *EventsRPCs) DeleteEventSubscription(ctx iris.Context) {
 		return
 	}
 
-	resp, err := e.DeleteEventSubscriptionRPC(req)
+	resp, err := e.DeleteEventSubscriptionRPC(ctxt, req)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -220,6 +225,7 @@ func (e *EventsRPCs) DeleteEventSubscription(ctx iris.Context) {
 // GetEventSubscriptionsCollection is the handler for getting event subscriptions collection
 func (e *EventsRPCs) GetEventSubscriptionsCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	var req eventsproto.EventRequest
 	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
 
@@ -232,9 +238,9 @@ func (e *EventsRPCs) GetEventSubscriptionsCollection(ctx iris.Context) {
 		return
 	}
 
-	resp, err := e.GetEventSubscriptionsCollectionRPC(req)
+	resp, err := e.GetEventSubscriptionsCollectionRPC(ctxt, req)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

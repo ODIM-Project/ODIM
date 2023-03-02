@@ -19,18 +19,21 @@ package account
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"net/http"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
-	"net/http"
 )
 
 // Update defines the updation of the account details. Every account details can be
@@ -41,7 +44,7 @@ import (
 // and Session parameter will have all session related data, espically the privileges.
 //
 // Output is the RPC response, which contains the status code, status message, headers and body.
-func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) response.RPC {
+func (e *ExternalInterface) Update(ctx context.Context, req *accountproto.UpdateAccountRequest, session *asmodel.Session) response.RPC {
 	commonResponse := response.Response{
 		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + req.AccountID,
@@ -55,12 +58,13 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		err  error
 	)
 
+	errorLogPrefix := fmt.Sprintf("failed to update the account %s: ", req.AccountID)
 	// parsing the Account
 	var updateAccount asmodel.Account
 	err = json.Unmarshal(req.RequestBody, &updateAccount)
 	if err != nil {
-		errMsg := "unable to parse the update account request" + err.Error()
-		log.Error(errMsg)
+		errMsg := errorLogPrefix + "unable to parse the update account request" + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
@@ -73,14 +77,14 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 
 	//empty request check
 	if isEmptyRequest(req.RequestBody) {
-		errMsg := "empty request can not be processed"
-		log.Error(errMsg)
+		errMsg := errorLogPrefix + "empty request can not be processed"
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"request body"}, nil)
 	}
 
 	id := req.AccountID
 	if requestUser.UserName != "" {
-		errorMessage := "Username cannot be modified"
+		errorMessage := errorLogPrefix + "Username cannot be modified"
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.GeneralError
 		args := response.Args{
@@ -88,19 +92,19 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 			Message: errorMessage,
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, updateAccount)
 	if err != nil {
-		errMsg := "Request parameters validaton failed: " + err.Error()
-		log.Error(errMsg)
+		errMsg := errorLogPrefix + "Request parameters validation failed: " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
 	}
@@ -111,7 +115,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 				if requestUser.RoleID != common.RoleClient {
 					_, err := e.GetRoleDetailsByID(requestUser.RoleID)
 					if err != nil {
-						errorMessage := "Invalid RoleID " + requestUser.RoleID + " present"
+						errorMessage := errorLogPrefix + "Invalid RoleID " + requestUser.RoleID + " present"
 						resp.StatusCode = http.StatusBadRequest
 						resp.StatusMessage = response.PropertyValueNotInList
 						args := response.Args{
@@ -126,7 +130,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 							},
 						}
 						resp.Body = args.CreateGenericErrorResponse()
-						log.Error(errorMessage)
+						l.LogWithFields(ctx).Error(errorMessage)
 						return resp
 					}
 				}
@@ -135,9 +139,10 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 
 	}
 
+	l.LogWithFields(ctx).Infof("Fetching details of user %s from the database", id)
 	user, gerr := e.GetUserDetails(id)
 	if gerr != nil {
-		errorMessage := "Unable to get account: " + gerr.Error()
+		errorMessage := errorLogPrefix + "Unable to get account: " + gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
@@ -156,12 +161,13 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 
+	l.LogWithFields(ctx).Infof("Validating the request to update the account %s", id)
 	if user.UserName != session.UserName && !session.Privileges[common.PrivilegeConfigureUsers] {
-		errorMessage := "User does not have the privilege to update other accounts"
+		errorMessage := errorLogPrefix + "User does not have the privilege of updating other accounts"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -176,7 +182,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
+		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 
@@ -186,7 +192,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	// Without PrivilegeConfigureUsers user is not allowed to update any user account roleID, including his own account roleID
 	if requestUser.RoleID != "" {
 		if !session.Privileges[common.PrivilegeConfigureUsers] {
-			errorMessage := "User does not have the privilege to update any account role, including his own account"
+			errorMessage := errorLogPrefix + "User does not have the privilege of updating any account role, including his own account"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
 			args := response.Args{
@@ -201,7 +207,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
+			auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}
@@ -209,7 +215,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	if requestUser.Password != "" {
 		// Password modification not allowed, if user doesn't have ConfigureSelf or ConfigureUsers privilege
 		if !session.Privileges[common.PrivilegeConfigureSelf] && !session.Privileges[common.PrivilegeConfigureUsers] {
-			errorMessage := "Roles, user is associated with, doesn't allow changing own or other users password"
+			errorMessage := errorLogPrefix + "Roles, user is associated with, doesn't allow changing own or other users password"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
 			args := response.Args{
@@ -224,7 +230,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
+			auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 			return resp
 		}
 
@@ -245,7 +251,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return resp
 		}
 		hash := sha3.New512()
@@ -255,10 +261,11 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		requestUser.Password = hashedPassword
 	}
 
+	l.LogWithFields(ctx).Infof("Updating the account %s", id)
 	if uerr := e.UpdateUserDetails(user, requestUser); uerr != nil {
-		errorMessage := "Unable to update user: " + uerr.Error()
+		errorMessage := errorLogPrefix + "Unable to update user: " + uerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp
 	}
 

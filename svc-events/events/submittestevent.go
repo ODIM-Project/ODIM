@@ -28,20 +28,30 @@ import (
 	"time"
 
 	uuid "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+)
+
+var (
+	//JSONUnmarshal function  pointer for calling the files
+	JSONUnmarshal = json.Unmarshal
+	//RequestParamsCaseValidatorFunc function  pointer for calling the files
+	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
 )
 
 // SubmitTestEvent is a helper method to handle the submit test event request.
 func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) response.RPC {
 	var resp response.RPC
-	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session: status code: " +
-			string(authResp.StatusCode) + ", status message: " + authResp.StatusMessage)
+		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
+		l.Log.Error(errMsg)
 		return authResp
 	}
 	// First get the UserName from SessionToken
@@ -49,34 +59,34 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 	if err != nil {
 		// handle the error case with appropriate response body
 		errMsg := "error while trying to authenticate session: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil)
 	}
 
 	testEvent, statusMessage, errMsg, msgArgs := validAndGenSubTestReq(req.PostBody)
 	if statusMessage != response.Success {
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, statusMessage, errMsg, msgArgs, nil)
 	}
 
 	// parsing the event
 	var eventObj interface{}
-	err = json.Unmarshal(req.PostBody, &eventObj)
+	err = JSONUnmarshal(req.PostBody, &eventObj)
 	if err != nil {
 		errMsg := "unable to parse the event request" + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.PostBody, eventObj)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(req.PostBody, eventObj)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Error(errorMessage)
+		l.Log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
 	}
@@ -86,7 +96,7 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 	if err != nil {
 		// Internall error
 		errMsg := "error while trying to find the event destination"
-		log.Error(errMsg)
+		l.Log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	// we need common.MessageData to find the correct destination to send test event
@@ -99,7 +109,7 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 		for _, origin := range sub.OriginResources {
 			if sub.Destination != "" {
 				if filterEventsToBeForwarded(sub, message.Events[0], []string{origin}) {
-					log.Info("Destination: " + sub.Destination)
+					l.Log.Info("Destination: " + sub.Destination)
 					go e.postEvent(sub.Destination, eventUniqueID, messageBytes)
 				}
 			}

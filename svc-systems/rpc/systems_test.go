@@ -1,15 +1,15 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package rpc
 
@@ -79,15 +79,15 @@ func getEncryptKey(key []byte) ([]byte, error) {
 	return cryptedKey, nil
 }
 
-func mockAddSystemResetInfo(systemID, resetType string) *errors.Error {
+func mockAddSystemResetInfo(ctx context.Context, systemID, resetType string) *errors.Error {
 	return nil
 }
 
-func mockDeleteVolume(key string) *errors.Error {
+func mockDeleteVolume(ctx context.Context, key string) *errors.Error {
 	return nil
 }
 
-func mockGetResource(table, key string) (string, *errors.Error) {
+func mockGetResource(ctx context.Context, table, key string) (string, *errors.Error) {
 	var reqData = `{"@odata.id":"/redfish/v1/Systems/1/Storage/1/Volumes/1"}`
 	switch key {
 	case "/redfish/v1/Systems/6d5a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage/1/Volumes/1":
@@ -127,11 +127,11 @@ func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
 }
 
-func mockPluginStatus(plugin smodel.Plugin) bool {
+func mockPluginStatus(ctx context.Context, plugin smodel.Plugin) bool {
 	return true
 }
 
-func contactPluginClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
+func contactPluginClient(ctx context.Context, url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/1/Volumes/1" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
@@ -204,6 +204,7 @@ func TestSystems_GetSystemResource(t *testing.T) {
 			name: "Request with valid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.GetSystemsRequest{
 					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot",
@@ -216,6 +217,7 @@ func TestSystems_GetSystemResource(t *testing.T) {
 			name: "Request with invalid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.GetSystemsRequest{
 					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot",
@@ -228,6 +230,7 @@ func TestSystems_GetSystemResource(t *testing.T) {
 			name: "Request with invalid url",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.GetSystemsRequest{
 					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot1",
@@ -265,7 +268,14 @@ func TestSystems_GetAllSystems(t *testing.T) {
 	}
 	sys := new(Systems)
 	sys.IsAuthorizedRPC = mockIsAuthorized
-
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx = common.CreateMetadata(ctx)
 	type args struct {
 		ctx  context.Context
 		req  *systemsproto.GetSystemsRequest
@@ -302,7 +312,7 @@ func TestSystems_GetAllSystems(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.s.GetSystemsCollection(tt.args.ctx, tt.args.req)
+			_, err := tt.s.GetSystemsCollection(ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Systems.GetSystemsCollection() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -345,6 +355,7 @@ func TestSystems_GetSystems(t *testing.T) {
 			name: "Request with valid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.GetSystemsRequest{
 					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "validToken",
@@ -356,6 +367,7 @@ func TestSystems_GetSystems(t *testing.T) {
 			name: "Request with invalid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.GetSystemsRequest{
 					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "invalidToken",
@@ -396,6 +408,7 @@ func TestSystems_ComputerSystemReset(t *testing.T) {
 			name: "Request with valid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.ComputerSystemResetRequest{
 					RequestBody:  []byte(`{"ResetType": "ForceRestart"}`),
 					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
@@ -408,6 +421,7 @@ func TestSystems_ComputerSystemReset(t *testing.T) {
 			name: "Request with invalid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.ComputerSystemResetRequest{
 					RequestBody:  []byte(`{"ResetType": "ForceRestart"}`),
 					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
@@ -457,6 +471,7 @@ func TestSystems_SetDefaultBootOrder(t *testing.T) {
 			name: "Request with valid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.DefaultBootOrderRequest{
 					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "validToken",
@@ -468,6 +483,7 @@ func TestSystems_SetDefaultBootOrder(t *testing.T) {
 			name: "Request with invalid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.DefaultBootOrderRequest{
 					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "invalidToken",
@@ -516,6 +532,7 @@ func TestSystems_ChangeBiosSettings(t *testing.T) {
 			name: "Request with valid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.BiosSettingsRequest{
 					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "validToken",
@@ -527,6 +544,7 @@ func TestSystems_ChangeBiosSettings(t *testing.T) {
 			name: "Request with invalid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.BiosSettingsRequest{
 					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "invalidToken",
@@ -575,6 +593,7 @@ func TestSystems_ChangeBootOrderSettings(t *testing.T) {
 			name: "Request with valid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.BootOrderSettingsRequest{
 					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "validToken",
@@ -586,6 +605,7 @@ func TestSystems_ChangeBootOrderSettings(t *testing.T) {
 			name: "Request with invalid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.BootOrderSettingsRequest{
 					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "invalidToken",
@@ -625,6 +645,7 @@ func TestSystems_CreateVolume(t *testing.T) {
 			name: "Request with valid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.VolumeRequest{
 					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "validToken",
@@ -636,6 +657,7 @@ func TestSystems_CreateVolume(t *testing.T) {
 			name: "Request with invalid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.VolumeRequest{
 					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "invalidToken",
@@ -675,6 +697,7 @@ func TestSystems_DeleteVolume(t *testing.T) {
 			name: "Request with valid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.VolumeRequest{
 					SystemID:        "6d5a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken:    "validToken",
@@ -690,6 +713,7 @@ func TestSystems_DeleteVolume(t *testing.T) {
 			name: "Request with invalid token",
 			s:    sys,
 			args: args{
+				ctx: context.Background(),
 				req: &systemsproto.VolumeRequest{
 					SystemID:        "6d5a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken:    "invalidToken",
@@ -722,7 +746,7 @@ func getSessionUserNameForTesting(sessionToken string) (string, error) {
 	return "someUserName", nil
 }
 
-func createTaskForTesting(sessionUserName string) (string, error) {
+func createTaskForTesting(ctx context.Context, sessionUserName string) (string, error) {
 	if sessionUserName == "noTaskUser" {
 		return "", fmt.Errorf("no details")
 	} else if sessionUserName == "taskWithSlashUser" {
@@ -731,7 +755,7 @@ func createTaskForTesting(sessionUserName string) (string, error) {
 	return "some/Task", nil
 }
 
-func mockUpdateTask(task common.TaskData) error {
+func mockUpdateTask(ctx context.Context, task common.TaskData) error {
 	if task.TaskID == "invalid" {
 		return fmt.Errorf(common.Cancelling)
 	}

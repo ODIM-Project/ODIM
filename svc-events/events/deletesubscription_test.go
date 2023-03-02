@@ -24,7 +24,9 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
@@ -51,6 +53,15 @@ func TestDeleteEventSubscription(t *testing.T) {
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status Code should be StatusOK")
 	assert.Equal(t, "81de0110-c35a-4859-984c-072d6c5a32d7", data.ID, "ID should be 81de0110-c35a-4859-984c-072d6c5a32d7")
 
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) { return nil, &errors.Error{} }
+	resp = pc.DeleteEventSubscriptionsDetails(req)
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusOK")
+	pc = getMockMethods()
+
+	pc.DB.DeleteEvtSubscription = func(s string) error { return &errors.Error{} }
+	resp = pc.DeleteEventSubscriptionsDetails(req)
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusOK")
+	pc = getMockMethods()
 	// positive test case with basic auth type
 	req = &eventsproto.EventRequest{
 		SessionToken:        "validToken",
@@ -84,9 +95,9 @@ func TestDeleteEventSubscription(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusUnauthorized")
 }
 
-func TestDeleteEventSubscriptionOnDeletServer(t *testing.T) {
+func TestDeleteEventSubscriptionOnDeletedServer(t *testing.T) {
 	config.SetUpMockConfig(t)
-	// Intializing plugin token
+	// Initializing plugin token
 	evcommon.Token.Tokens = map[string]string{
 		"ILO": "token",
 	}
@@ -123,12 +134,65 @@ func TestDeleteEventSubscriptionOnDeletServer(t *testing.T) {
 		UUID:         "/redfish/v1/Systems/abab09db-e7a9-4352-8df0-5e41315a2a4c.1",
 	}
 	resp = pc.DeleteEventSubscriptions(req)
-	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusNotFound")
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusNotFound")
+
+	GetIPFromHostNameFunc = func(fqdn string) (string, string) {
+		return "", "Not Found"
+	}
+	resp = pc.DeleteEventSubscriptions(req)
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be ResourceNotFound")
+
+	GetIPFromHostNameFunc = func(fqdn string) (string, string) {
+		return evcommon.GetIPFromHostName(fqdn)
+	}
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+		return nil, &errors.Error{}
+	}
+	resp = pc.DeleteEventSubscriptions(req)
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be ResourceNotFound")
+
+	pc = getMockMethods()
+
+	DecryptWithPrivateKeyFunc = func(ciphertext []byte) ([]byte, error) {
+		return nil, &errors.Error{}
+	}
+
+	req = &eventsproto.EventRequest{
+		SessionToken: "validToken",
+		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+	}
+	resp = pc.DeleteEventSubscriptions(req)
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status Code should be StatusNoContent")
+
+	DecryptWithPrivateKeyFunc = func(ciphertext []byte) ([]byte, error) {
+		return common.DecryptWithPrivateKey(ciphertext)
+	}
+	pc.DB.GetDeviceSubscriptions = func(s string) (*evmodel.DeviceSubscription, error) {
+		return nil, &errors.Error{}
+	}
+	resp = pc.DeleteEventSubscriptions(req)
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusNotFound")
+
+	pc = getMockMethods()
+	pc.DB.DeleteEvtSubscription = func(s string) error {
+		return &errors.Error{}
+	}
+	resp = pc.DeleteEventSubscriptions(req)
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusNoContent")
+
+	pc = getMockMethods()
+	pc.DB.UpdateEventSubscription = func(s evmodel.Subscription) error {
+		return &errors.Error{}
+	}
+
+	req.UUID = "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874d.1"
+	resp = pc.DeleteEventSubscriptions(req)
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusNoContent")
 
 }
 
 func TestDeleteEventSubscriptionOnFabrics(t *testing.T) {
-	// Intializing plugin token
+	// Initializing plugin token
 	evcommon.Token.Tokens = map[string]string{
 		"CFM": "token",
 	}
@@ -192,7 +256,7 @@ func TestIsCollectionOriginResourceURI(t *testing.T) {
 }
 
 func TestDeleteFabricsSubscription(t *testing.T) {
-	// Intializing plugin token
+	// Initializing plugin token
 	evcommon.Token.Tokens = map[string]string{
 		"ILO": "token",
 	}
@@ -216,7 +280,12 @@ func TestDeleteFabricsSubscription(t *testing.T) {
 	resp, err := pc.DeleteFabricsSubscription("", plugin)
 	assert.Nil(t, err, "error should be nil")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status Code should be StatusOK")
+	// Negative
+	GetIPFromHostNameFunc = func(fqdn string) (string, string) { return "", "Not found" }
+	resp, _ = pc.DeleteFabricsSubscription("", plugin)
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusOK")
 
+	GetIPFromHostNameFunc = func(fqdn string) (string, string) { return evcommon.GetIPFromHostName(fqdn) }
 	// Negative test cases
 	// if subscription id is not present
 	plugin.IP = "10.10.10.10"
@@ -247,4 +316,72 @@ func TestDeleteSubscription(t *testing.T) {
 	target.PluginID = "non-existent"
 	err = pc.deleteSubscription(&target, "/redfish/v1/Systems")
 	assert.NotNil(t, err, "error should not be nil")
+}
+
+func TestExternalInterfaces_DeleteAggregateSubscriptions(t *testing.T) {
+	config.SetUpMockConfig(t)
+	pc := getMockMethods()
+	req := eventsproto.EventUpdateRequest{
+		AggregateId: "71de0110-c35a-4859-984c-072d6c5a32d9",
+	}
+	pc.DeleteAggregateSubscriptions(&req, true)
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+
+		return []evmodel.Subscription{
+			{
+				SubscriptionID:       "71de0110-c35a-4859-984c-072d6c5a32d9",
+				Destination:          "https://localhost:9090/events",
+				Name:                 "Subscription",
+				Location:             "/ODIM/v1/Subscriptions/12345",
+				Context:              "context",
+				EventTypes:           []string{"Alert"},
+				MessageIds:           []string{},
+				ResourceTypes:        []string{},
+				OriginResources:      []string{"/redfish/v1/Fabrics/123456"},
+				Hosts:                []string{"localhost"},
+				SubordinateResources: true,
+			},
+		}, nil
+	}
+	pc.DeleteAggregateSubscriptions(&req, true)
+
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+
+		return []evmodel.Subscription{
+			{
+				SubscriptionID:       "71de0110-c35a-4859-984c-072d6c5a32d9",
+				Destination:          "https://localhost:9090/events",
+				Name:                 "Subscription",
+				Location:             "/ODIM/v1/Subscriptions/12345",
+				Context:              "context",
+				EventTypes:           []string{"Alert"},
+				MessageIds:           []string{},
+				ResourceTypes:        []string{},
+				OriginResources:      []string{""},
+				Hosts:                []string{"localhost"},
+				SubordinateResources: true,
+			},
+		}, nil
+	}
+	pc.DeleteAggregateSubscriptions(&req, true)
+}
+
+func TestExternalInterfaces_resubscribeFabricsSubscription(t *testing.T) {
+	config.SetUpMockConfig(t)
+	pc := getMockMethods()
+	event := evmodel.EvtSubPost{}
+	err := pc.resubscribeFabricsSubscription(event, "/fabric/scascascsaa", false)
+	assert.Nil(t, err)
+	err = pc.resubscribeFabricsSubscription(event, "/redfish/v1/Fabrics/6d4a0a66-7efa-578e-83cf-44dc68d2874e", false)
+	assert.Nil(t, err)
+}
+
+func TestExternalInterfaces_subscribe(t *testing.T) {
+	config.SetUpMockConfig(t)
+	pc := getMockMethods()
+	event := evmodel.EvtSubPost{}
+
+	err := pc.subscribe(event, "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", false, "valid")
+	assert.Nil(t, err)
+
 }

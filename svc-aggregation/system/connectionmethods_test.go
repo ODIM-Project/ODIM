@@ -43,40 +43,40 @@ func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMeth
 	connMethod.ConnectionMethodType = "Redfish"
 	switch ConnectionMethodURI {
 	case "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73":
-		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:GRF_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:GRF_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d39069":
-		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:ILO_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:ILO_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/6f29f281-f5e2-4873-97b7-376be668f4f4":
-		connMethod.ConnectionMethodVariant = "Compute:BasicAuthentication:ILO_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:BasicAuthentication:ILO_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/6456115a-e900-4c11-809f-0957031d2d56":
-		connMethod.ConnectionMethodVariant = "plugin:BasicAuth:ILO_v1.0.0"
+		connMethod.ConnectionMethodVariant = "plugin:BasicAuth:ILO_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/36474ba4-a201-46aa-badf-d8104da418e8":
-		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:PluginWithBadPassword_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:PluginWithBadPassword_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/4298f256-c279-44e2-94f2-3987bb7d8f53":
-		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:PluginWithBadData_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:PluginWithBadData_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/058c1876-6f24-439a-8968-2af26154081f":
-		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:GRF_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:GRF_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/3489af48-2e99-4d78-a250-b04641e9d98d":
-		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:ILO_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:ILO_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/2e99af48-2e99-4d78-a250-b04641e9b046":
-		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:IL_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:IL_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/0a8992dc-8b47-4fe3-b26c-4c34048cf0d2":
-		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:XAuthPlugin_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:XAuthPlugin_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/7551386e-b9d7-4233-a963-3841adc69e17":
-		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:XAuthPluginFail_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:XAuthToken:XAuthPluginFail_v2.0.0"
 		return connMethod, nil
 	case "/redfish/v1/AggregationService/ConnectionMethods/e85bd91f-b257-4db8-b049-171099f3beec":
-		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:NoStatusPlugin_v1.0.0"
+		connMethod.ConnectionMethodVariant = "Compute:BasicAuth:NoStatusPlugin_v2.0.0"
 		return connMethod, nil
 	}
 	return connMethod, errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+ConnectionMethodURI+" found")
@@ -114,9 +114,10 @@ func TestGetConnectionCollection(t *testing.T) {
 			want: resp1,
 		},
 	}
+	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetAllConnectionMethods(tt.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.e.GetAllConnectionMethods(ctx, tt.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAllConnectionMethods() = %v, want %v", got, tt.want)
 			}
 		})
@@ -125,6 +126,7 @@ func TestGetConnectionCollection(t *testing.T) {
 
 func TestExternalInterface_GetConnectionMethod(t *testing.T) {
 	p := getMockExternalInterface()
+	ctx := mockContext()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}
@@ -163,7 +165,7 @@ func TestExternalInterface_GetConnectionMethod(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetConnectionMethodInfo(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.e.GetConnectionMethodInfo(ctx, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.GetConnectionMethodInfo() = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
 		})

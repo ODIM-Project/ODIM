@@ -15,234 +15,287 @@
 package logs
 
 import (
+	"context"
+	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/sirupsen/logrus"
 )
 
-// Logger is used when you import the log package in your service
-// and logging using the package level methods.
-// This can be customized using the functions InitSysLogger or InitJSONLogger
-var Logger *logrus.Entry
+var priorityLogFields = []string{
+	"host",
+	"threadname",
+	"procid",
+	"messageid",
+}
 
-// LogFormat type
+var syslogPriorityNumerics = map[string]int8{
+	"panic":   8,
+	"fatal":   9,
+	"error":   11,
+	"warn":    12,
+	"warning": 12,
+	"info":    14,
+	"debug":   15,
+	"trace":   15,
+}
+
+var logFields = map[string][]string{
+	"account": {
+		"user",
+		"roleID",
+	},
+	"request": {
+		"method",
+		"resource",
+		"requestBody",
+	},
+	"response": {
+		"responseCode",
+	},
+}
+
+// SysLogFormatter implements logrus Format interface. It provides a formatter for odim in syslog format
+type SysLogFormatter struct{}
+
+var Log *logrus.Entry
+
 type LogFormat uint32
 
 const (
-	// SysLogFormat will choose constomized ODIMSysLogFormatter for logging
-	SysLogFormat LogFormat = iota
-	// JSONFormat will choose built in JSON format for logging
-	JSONFormat
+	SyslogFormat LogFormat = iota
+	JsonFormat
 )
 
-// Config is used for user configuration
-type Config struct {
-	LogFormat LogFormat
+func getProcessLogDetails(ctx context.Context) logrus.Fields {
+	var fields = make(map[string]interface{})
+	TransactionId := strings.Replace(fmt.Sprintf("%v", ctx.Value("transactionid")), "\n", "", -1)
+	ProcessName := strings.Replace(fmt.Sprintf("%v", ctx.Value("processname")), "\n", "", -1)
+	ThreadID := strings.Replace(fmt.Sprintf("%v", ctx.Value("threadid")), "\n", "", -1)
+	ActionName := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionname")), "\n", "", -1)
+	ThreadName := strings.Replace(fmt.Sprintf("%v", ctx.Value("threadname")), "\n", "", -1)
+	ActionID := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionid")), "\n", "", -1)
+	fields["transactionid"] = TransactionId
+	fields["processname"] = ProcessName
+	fields["threadid"] = ThreadID
+	fields["actionname"] = ActionName
+	fields["messageid"] = ActionName
+	fields["threadname"] = ThreadName
+	fields["actionid"] = ActionID
+
+	return fields
 }
 
-// InitLogger sets up the Logger and sets up the format and level
-func InitLogger(c *Config) {
-	Logger = logrus.NewEntry(logrus.New())
-
-	// setting logger format
-	switch c.LogFormat {
-	case SysLogFormat:
-		Logger.Logger.SetFormatter(&ODIMSysLogFormatter{})
-	case JSONFormat:
-		Logger.Logger.SetFormatter(&logrus.JSONFormatter{})
-	default:
-		Logger.Logger.SetFormatter(&ODIMSysLogFormatter{})
-	}
-
-	// set the minimum level for logging
-	Logger.Logger.SetLevel(logrus.DebugLevel)
+func init() {
+	Log = logrus.NewEntry(logrus.New())
 }
 
-// Trace calls Trace method on the package level
-func Trace(args ...interface{}) {
-	Logger.Trace(args...)
+// Adorn adds the fields to Log variable
+func Adorn(m logrus.Fields) {
+	Log = Log.WithFields(m)
 }
 
-// Debug calls Debug method on the package level
-func Debug(args ...interface{}) {
-	Logger.Debug(args...)
+// LogWithFields add fields to log
+func LogWithFields(ctx context.Context) *logrus.Entry {
+	fields := getProcessLogDetails(ctx)
+	return Log.WithFields(fields)
 }
 
-// Print calls Print method on the package level
-func Print(args ...interface{}) {
-	Logger.Print(args...)
-}
-
-// Info calls Info method on the package level
-func Info(args ...interface{}) {
-	Logger.Info(args...)
-}
-
-// Warn calls Warn method on the package level
-func Warn(args ...interface{}) {
-	Logger.Warn(args...)
-}
-
-// Warning calls Warning method on the package level
-func Warning(args ...interface{}) {
-	Logger.Warning(args...)
-}
-
-// Error calls Error method on the package level
-func Error(args ...interface{}) {
-	Logger.Error(args...)
-}
-
-// Fatal calls Fatal method on the package level
-func Fatal(args ...interface{}) {
-	Logger.Fatal(args...)
-}
-
-// Panic calls Panic method on the package level
-func Panic(args ...interface{}) {
-	Logger.Panic(args...)
-}
-
-// Tracef calls Tracef method on the package level
-func Tracef(format string, args ...interface{}) {
-	Logger.Tracef(format, args...)
-}
-
-// Debugf calls Debugf method on the package level
-func Debugf(format string, args ...interface{}) {
-	Logger.Debugf(format, args...)
-}
-
-// Infof calls Infof method on the package level
-func Infof(format string, args ...interface{}) {
-	Logger.Infof(format, args...)
-}
-
-// Printf calls Printf method on the package level
-func Printf(format string, args ...interface{}) {
-	Logger.Printf(format, args...)
-}
-
-// Warnf calls Warnf method on the package level
-func Warnf(format string, args ...interface{}) {
-	Logger.Warnf(format, args...)
-}
-
-// Warningf calls Warningf method on the package level
-func Warningf(format string, args ...interface{}) {
-	Logger.Warningf(format, args...)
-}
-
-// Errorf calls Errorf method on the package level
-func Errorf(format string, args ...interface{}) {
-	Logger.Errorf(format, args...)
-}
-
-// Fatalf calls Fatalf method on the package level
-func Fatalf(format string, args ...interface{}) {
-	Logger.Fatalf(format, args...)
-}
-
-// Panicf calls Panicf method on the package level
-func Panicf(format string, args ...interface{}) {
-	Logger.Panicf(format, args...)
-}
-
-// Traceln calls Traceln method on the package level
-func Traceln(args ...interface{}) {
-	Logger.Traceln(args...)
-}
-
-// Debugln calls Debugln method on the package level
-func Debugln(args ...interface{}) {
-	Logger.Debugln(args...)
-}
-
-// Infoln calls Infoln method on the package level
-func Infoln(args ...interface{}) {
-	Logger.Infoln(args...)
-}
-
-// Println calls Println method on the package level
-func Println(args ...interface{}) {
-	Logger.Println(args...)
-}
-
-// Warnln calls Warnln method on the package level
-func Warnln(args ...interface{}) {
-	Logger.Warnln(args...)
-}
-
-// Warningln calls Warningln method on the package level
-func Warningln(args ...interface{}) {
-	Logger.Warningln(args...)
-}
-
-// Errorln calls Errorln method on the package level
-func Errorln(args ...interface{}) {
-	Logger.Errorln(args...)
-}
-
-// Fatalln calls Fatalln method on the package level
-func Fatalln(args ...interface{}) {
-	Logger.Fatalln(args...)
-}
-
-// Panicln calls Panicln method on the package level
-func Panicln(args ...interface{}) {
-	Logger.Panicln(args...)
-}
-
-// TraceWithFileds calls Trace method on package level after appending the fields passed
-func TraceWithFileds(fields map[string]interface{}, args ...interface{}) {
-	data := getFields(fields)
-	Logger.WithFields(data).Trace(args...)
-}
-
-// DebugWithFileds calls Debug method on package level after appending the fields passed
-func DebugWithFileds(fields map[string]interface{}, args ...interface{}) {
-	data := getFields(fields)
-	Logger.WithFields(data).Debug(args...)
-}
-
-// InfoWithFileds calls Info method on package level after appending the fields passed
-func InfoWithFileds(fields map[string]interface{}, args ...interface{}) {
-	data := getFields(fields)
-	Logger.WithFields(data).Info(args...)
-}
-
-// PrintWithFileds calls Info method on package level after appending the fields passed
-func PrintWithFileds(fields map[string]interface{}, args ...interface{}) {
-	data := getFields(fields)
-	Logger.WithFields(data).Info(args...)
-}
-
-// WarnWithFileds calls Warn method on package level after appending the fields passed
-func WarnWithFileds(fields map[string]interface{}, args ...interface{}) {
-	data := getFields(fields)
-	Logger.WithFields(data).Warn(args...)
-}
-
-// ErrorWithFileds calls Error method on package level after appending the fields passed
-func ErrorWithFileds(fields map[string]interface{}, args ...interface{}) {
-	data := getFields(fields)
-	Logger.WithFields(data).Error(args...)
-}
-
-// PanicWithFileds calls Panic method on package level after appending the fields passed
-func PanicWithFileds(fields map[string]interface{}, args ...interface{}) {
-	data := getFields(fields)
-	Logger.WithFields(data).Panic(args...)
-}
-
-// getFields converts map[string]interface{} to logrus.Fields
-func getFields(fields map[string]interface{}) logrus.Fields {
-	data := make(logrus.Fields)
-	for k, v := range fields {
-		switch v := v.(type) {
-		case error:
-			data[k] = v.Error()
-		default:
-			data[k] = v
+// Format renders a log in syslog format
+func (f *SysLogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	level := entry.Level.String()
+	priorityNumber := findSysLogPriorityNumeric(entry, level)
+	sysLogMsg := fmt.Sprintf("<%d>%s %s", priorityNumber, "1", entry.Time.UTC().Format(time.RFC3339))
+	sysLogMsg = formatPriorityFields(entry, sysLogMsg)
+	sysLogMsg = formatStructuredFields(entry, sysLogMsg)
+	for k, v := range logFields {
+		if accountLog, present := formatSyslog(k, v, entry); present {
+			sysLogMsg = fmt.Sprintf("%s %s", sysLogMsg, accountLog)
 		}
 	}
-	return data
+	if _, ok := entry.Data["auth"]; ok {
+		sysLogMsg = formatAuthStructFields(entry, sysLogMsg, priorityNumber)
+	}
+	if _, ok := entry.Data["audit"]; ok {
+		sysLogMsg = formatAuditStructFields(entry, sysLogMsg, priorityNumber)
+		return append([]byte(sysLogMsg), '\n'), nil
+	}
+
+	sysLogMsg = fmt.Sprintf("%s %s", sysLogMsg, entry.Message)
+	return append([]byte(sysLogMsg), '\n'), nil
+}
+
+// findSysLogPriorityNumeric is used to find the log priority number
+func findSysLogPriorityNumeric(entry *logrus.Entry, level string) int8 {
+	if _, ok := entry.Data["auth"].(bool); ok {
+		sCode := entry.Data["statuscode"].(int32)
+		if getResponseStatus(sCode) {
+			return 86
+		}
+		return 84
+	}
+	if _, ok := entry.Data["audit"].(bool); ok {
+		sCode := entry.Data["statuscode"].(int32)
+		if getResponseStatus(sCode) {
+			return 110
+		}
+		return 107
+	}
+	return syslogPriorityNumerics[level]
+}
+
+func formatPriorityFields(entry *logrus.Entry, msg string) string {
+	present := true
+	for _, v := range priorityLogFields {
+		if val, ok := entry.Data[v]; ok {
+			present = false
+			msg = fmt.Sprintf("%s %v ", msg, val)
+		}
+	}
+	if !present {
+		msg = msg[:len(msg)-1]
+	}
+	return msg
+}
+
+// formatAuthStructFields used to format the syslog message
+func formatAuthStructFields(entry *logrus.Entry, msg string, priorityNo int8) string {
+	var sessionUserName, sessionRoleID string
+	respStatusCode := int32(http.StatusUnauthorized)
+	tokenMsg := ""
+
+	if entry.Data["sessionuserid"] != nil {
+		sessionUserName = entry.Data["sessionuserid"].(string)
+	}
+	if entry.Data["sessionroleid"] != nil {
+		sessionRoleID = entry.Data["sessionroleid"].(string)
+	}
+	if entry.Data["statuscode"] != nil {
+		respStatusCode = entry.Data["statuscode"].(int32)
+	}
+	msg = fmt.Sprintf("%s [account@1 user=\"%s\" roleID=\"%s\"]", msg, sessionUserName, sessionRoleID)
+	if priorityNo == 86 {
+		msg = fmt.Sprintf("%s %s", msg, "Authentication/Authorization successful")
+	} else {
+		errMsg := "Authentication/Authorization failed"
+		if respStatusCode == http.StatusForbidden {
+			errMsg = "Authorization failed"
+		} else if respStatusCode == http.StatusUnauthorized {
+			errMsg = "Authentication failed"
+		}
+		msg = fmt.Sprintf("%s %s %s", msg, errMsg, tokenMsg)
+	}
+
+	return msg
+}
+
+// formatStructuredFields is used to create structured fields for log
+func formatStructuredFields(entry *logrus.Entry, msg string) string {
+	var transID, processName, actionID, actionName, threadID, threadName string
+	if val, ok := entry.Data["processname"]; ok {
+		if val != nil {
+			processName = val.(string)
+		}
+	}
+	if val, ok := entry.Data["transactionid"]; ok {
+		if val != nil {
+			transID = val.(string)
+		}
+	}
+	if val, ok := entry.Data["actionid"]; ok {
+		if val != nil {
+			actionID = val.(string)
+		}
+	}
+	if val, ok := entry.Data["actionname"]; ok {
+		if val != nil {
+			actionName = val.(string)
+		}
+	}
+	if val, ok := entry.Data["threadid"]; ok {
+		if val != nil {
+			threadID = val.(string)
+		}
+	}
+	if val, ok := entry.Data["threadname"]; ok {
+		if val != nil {
+			threadName = val.(string)
+		}
+	}
+	if transID != "" {
+		msg = fmt.Sprintf("%s [process@1 processName=\"%s\" transactionID=\"%s\" actionID=\"%s\" actionName=\"%s\" threadID=\"%s\" threadName=\"%s\"]", msg, processName, transID, actionID, actionName, threadID, threadName)
+	}
+	return msg
+}
+
+func formatSyslog(logType string, logFields []string, entry *logrus.Entry) (string, bool) {
+	isPresent := false
+	msg := fmt.Sprintf("[%s@1 ", logType)
+	for _, v := range logFields {
+		if val, ok := entry.Data[v]; ok {
+			isPresent = true
+			msg = fmt.Sprintf("%s %s=\"%v\" ", msg, v, val)
+		}
+	}
+	msg = msg[:len(msg)-1]
+	return fmt.Sprintf("%s]", msg), isPresent
+}
+
+// Convert the log format to a string.
+func (format LogFormat) String() string {
+	if b, err := format.MarshalText(); err == nil {
+		return string(b)
+	}
+	return "unknown_log_format"
+}
+
+// ParseLogFormat takes a string level and returns the log format.
+func ParseLogFormat(format string) (LogFormat, error) {
+	switch strings.ToLower(format) {
+	case "syslog":
+		return SyslogFormat, nil
+	case "json":
+		return JsonFormat, nil
+	}
+
+	var lf LogFormat
+	return lf, fmt.Errorf("invalid log format : %s", format)
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (format *LogFormat) UnmarshalText(text []byte) error {
+	l, err := ParseLogFormat(string(text))
+	if err != nil {
+		return err
+	}
+
+	*format = l
+	return nil
+}
+
+// MarshalText will validate the log format and return the corresponding string
+func (format LogFormat) MarshalText() ([]byte, error) {
+	switch format {
+	case SyslogFormat:
+		return []byte("syslog"), nil
+	case JsonFormat:
+		return []byte("json"), nil
+	}
+
+	return nil, fmt.Errorf("invalid log format %d", format)
+}
+
+// SetFormatter set the format for logging
+func SetFormatter(format LogFormat) {
+	switch format {
+	case SyslogFormat:
+		Log.Logger.SetFormatter(&SysLogFormatter{})
+	case JsonFormat:
+		Log.Logger.SetFormatter(&logrus.JSONFormatter{})
+	default:
+		Log.Logger.SetFormatter(&SysLogFormatter{})
+		Log.Info("Something went wrong! Setting the default format Syslog for logging")
+	}
 }

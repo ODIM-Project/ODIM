@@ -5,3 +5,5 @@ odimra:
   apiGatewayHost: 
   connectionMethodConf:
   haDeploymentEnabled:
+  logLevel:
+  logFormat:

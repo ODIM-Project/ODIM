@@ -12,15 +12,15 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package handle ...
+// Package handle ...
 package handle
 
 import (
+	"context"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	telemetryproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
@@ -28,21 +28,22 @@ import (
 
 // TelemetryRPCs used to define the service RPC function
 type TelemetryRPCs struct {
-	GetTelemetryServiceRPC                 func(telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
-	GetMetricDefinitionCollectionRPC       func(telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
-	GetMetricReportDefinitionCollectionRPC func(telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
-	GetMetricReportCollectionRPC           func(telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
-	GetTriggerCollectionRPC                func(telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
-	GetMetricDefinitionRPC                 func(telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
-	GetMetricReportDefinitionRPC           func(telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
-	GetMetricReportRPC                     func(telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
-	GetTriggerRPC                          func(telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
-	UpdateTriggerRPC                       func(telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
+	GetTelemetryServiceRPC                 func(context.Context, telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
+	GetMetricDefinitionCollectionRPC       func(context.Context, telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
+	GetMetricReportDefinitionCollectionRPC func(context.Context, telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
+	GetMetricReportCollectionRPC           func(context.Context, telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
+	GetTriggerCollectionRPC                func(context.Context, telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
+	GetMetricDefinitionRPC                 func(context.Context, telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
+	GetMetricReportDefinitionRPC           func(context.Context, telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
+	GetMetricReportRPC                     func(context.Context, telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
+	GetTriggerRPC                          func(context.Context, telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
+	UpdateTriggerRPC                       func(context.Context, telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
 }
 
 // GetTelemetryService is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetTelemetryService(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -54,10 +55,10 @@ func (a *TelemetryRPCs) GetTelemetryService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetTelemetryServiceRPC(req)
+	resp, err := a.GetTelemetryServiceRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -75,6 +76,7 @@ func (a *TelemetryRPCs) GetTelemetryService(ctx iris.Context) {
 // GetMetricDefinitionCollection is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -87,10 +89,10 @@ func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetMetricDefinitionCollectionRPC(req)
+	resp, err := a.GetMetricDefinitionCollectionRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -108,6 +110,7 @@ func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
 // GetMetricReportDefinitionCollection is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -120,10 +123,10 @@ func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetMetricReportDefinitionCollectionRPC(req)
+	resp, err := a.GetMetricReportDefinitionCollectionRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -141,6 +144,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
 // GetMetricReportCollection is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -153,10 +157,10 @@ func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetMetricReportCollectionRPC(req)
+	resp, err := a.GetMetricReportCollectionRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -174,6 +178,7 @@ func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
 // GetTriggerCollection is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetTriggerCollection(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -186,10 +191,10 @@ func (a *TelemetryRPCs) GetTriggerCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetTriggerCollectionRPC(req)
+	resp, err := a.GetTriggerCollectionRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -207,6 +212,7 @@ func (a *TelemetryRPCs) GetTriggerCollection(ctx iris.Context) {
 // GetMetricDefinition is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetMetricDefinition(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -219,10 +225,10 @@ func (a *TelemetryRPCs) GetMetricDefinition(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetMetricDefinitionRPC(req)
+	resp, err := a.GetMetricDefinitionRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -239,6 +245,7 @@ func (a *TelemetryRPCs) GetMetricDefinition(ctx iris.Context) {
 // GetMetricReportDefinition is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetMetricReportDefinition(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -251,10 +258,10 @@ func (a *TelemetryRPCs) GetMetricReportDefinition(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetMetricReportDefinitionRPC(req)
+	resp, err := a.GetMetricReportDefinitionRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -271,6 +278,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinition(ctx iris.Context) {
 // GetMetricReport is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetMetricReport(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -283,10 +291,10 @@ func (a *TelemetryRPCs) GetMetricReport(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetMetricReportRPC(req)
+	resp, err := a.GetMetricReportRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -303,6 +311,7 @@ func (a *TelemetryRPCs) GetMetricReport(ctx iris.Context) {
 // GetTrigger is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetTrigger(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -315,10 +324,10 @@ func (a *TelemetryRPCs) GetTrigger(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.GetTriggerRPC(req)
+	resp, err := a.GetTriggerRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -335,6 +344,7 @@ func (a *TelemetryRPCs) GetTrigger(ctx iris.Context) {
 // UpdateTrigger is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) UpdateTrigger(ctx iris.Context) {
 	defer ctx.Next()
+	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -346,10 +356,10 @@ func (a *TelemetryRPCs) UpdateTrigger(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := a.UpdateTriggerRPC(req)
+	resp, err := a.UpdateTriggerRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)

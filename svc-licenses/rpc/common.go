@@ -15,13 +15,13 @@
 package rpc
 
 import (
+	"context"
 	"encoding/json"
 
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	licenseproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/licenses"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-licenses/licenses"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // Licenses struct helps to register service
@@ -36,18 +36,18 @@ func GetLicense() *Licenses {
 	}
 }
 
-func generateResponse(input interface{}) []byte {
+func generateResponse(ctx context.Context, input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Warn("Unable to unmarshall response object from util-libs " + err.Error())
+		l.LogWithFields(ctx).Warn("Unable to unmarshall response object from util-libs " + err.Error())
 	}
 	return bytes
 }
 
-func fillProtoResponse(resp *licenseproto.GetLicenseResponse, data response.RPC) {
+func fillProtoResponse(ctx context.Context, resp *licenseproto.GetLicenseResponse, data response.RPC) {
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(data.Body)
+	resp.Body = generateResponse(ctx, data.Body)
 	resp.Header = data.Header
 
 }

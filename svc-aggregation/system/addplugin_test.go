@@ -94,19 +94,19 @@ func TestExternalInterface_Plugin(t *testing.T) {
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
-	err := mockPluginData(t, "ILO_v1.0.0")
+	err := mockPluginData(t, "ILO_v2.0.0")
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}
-
+	ctx := mockContext()
 	// create plugin with bad password for decryption failure
 	pluginData := agmodel.Plugin{
 		Password: []byte("password"),
 		ID:       "PluginWithBadPassword",
 	}
-	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword_v1.0.0", pluginData)
+	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword_v2.0.0", pluginData)
 	// create plugin with bad data
-	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData_v1.0.0", "PluginWithBadData")
+	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData_v2.0.0", "PluginWithBadData")
 
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -201,7 +201,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqSuccess,
-				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:GRF_v1.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:GRF_v2.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusCreated,
@@ -213,7 +213,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqExistingPlugin,
-				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:ILO_v1.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:ILO_v2.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
@@ -225,7 +225,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqInvalidAuthType,
-				cmVariants: getConnectionMethodVariants("Compute:BasicAuthentication:ILO_v1.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuthentication:ILO_v2.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusBadRequest,
@@ -237,7 +237,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqInvalidPluginType,
-				cmVariants: getConnectionMethodVariants("plugin:BasicAuth:ILO_v1.0.0"),
+				cmVariants: getConnectionMethodVariants("plugin:BasicAuth:ILO_v2.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusBadRequest,
@@ -249,7 +249,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqExistingPluginBadPassword,
-				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:PluginWithBadPassword_v1.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:PluginWithBadPassword_v2.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
@@ -261,7 +261,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqExistingPluginBadData,
-				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:PluginWithBadData_v1.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:PluginWithBadData_v2.0.0"),
 			},
 
 			want: response.RPC{
@@ -284,7 +284,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, _, _ := tt.p.addPluginData(tt.args.req, tt.args.taskID, targetURI, pluginContactRequest, queueList, tt.args.cmVariants); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got, _, _ := tt.p.addPluginData(ctx, tt.args.req, tt.args.taskID, targetURI, pluginContactRequest, queueList, tt.args.cmVariants); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.addPluginData = %v, want %v", got, tt.want)
 			}
 		})
@@ -296,11 +296,11 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
-	err := mockPluginData(t, "XAuthPlugin_v1.0.0")
+	err := mockPluginData(t, "XAuthPlugin_v2.0.0")
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}
-
+	ctx := mockContext()
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
@@ -376,7 +376,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqXAuthSuccess,
-				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:GRF_v1.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:GRF_v2.0.0"),
 			},
 
 			want: response.RPC{
@@ -389,7 +389,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqXAuthFail,
-				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:ILO_v1.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:ILO_v2.0.0"),
 			},
 
 			want: response.RPC{
@@ -402,7 +402,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqManagerGetFail,
-				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:ILO_v1.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:ILO_v2.0.0"),
 			},
 
 			want: response.RPC{
@@ -415,7 +415,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqInvalidManagerBody,
-				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:ILO_v1.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:ILO_v2.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusInternalServerError,
@@ -424,7 +424,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, _, _ := tt.p.addPluginData(tt.args.req, tt.args.taskID, targetURI, pluginContactRequest, queueList, tt.args.cmVariants); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got, _, _ := tt.p.addPluginData(ctx, tt.args.req, tt.args.taskID, targetURI, pluginContactRequest, queueList, tt.args.cmVariants); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.addPluginData = %v, want %v", got, tt.want)
 			}
 		})

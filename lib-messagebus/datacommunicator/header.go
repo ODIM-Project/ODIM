@@ -21,8 +21,6 @@ package datacommunicator
 import (
 	"encoding/json"
 	"fmt"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // BrokerType defines the underline MQ platform to be selected for the
@@ -97,19 +95,17 @@ func Encode(d interface{}) ([]byte, error) {
 
 	data, err := json.Marshal(d)
 	if err != nil {
-		log.Error("Failed to encode the given event data: " + err.Error())
-		return nil, err
+		return nil, fmt.Errorf("failed to encode the given event data: %s", err.Error())
 	}
 	return data, nil
 }
 
 // Decode converts the byte stream into Data (DECODE).
-///data will  be masked as Interface before sent to Consumer or Requester.
+// /data will  be masked as Interface before sent to Consumer or Requester.
 func Decode(d []byte, a interface{}) error {
 	err := json.Unmarshal(d, &a)
 	if err != nil {
-		log.Error("error: Failed to decode the event data: " + err.Error())
-		return err
+		return fmt.Errorf("error: Failed to decode the event data: %s", err.Error())
 	}
 	return nil
 }

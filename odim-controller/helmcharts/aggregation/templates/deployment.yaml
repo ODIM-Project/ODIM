@@ -14,6 +14,7 @@ spec:
     metadata:
       labels:
         app: aggregation
+      name: dapi-envars-fieldref
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
@@ -78,11 +79,10 @@ spec:
             claimName: odimra-log-claim
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       serviceAccountName: odimra
       containers:
         - name: aggregation
-          securityContext:
-            privileged: true
           env:
             - name: GET_HOSTS_FROM
               value: dns
@@ -90,7 +90,15 @@ spec:
               value: {{ .Values.odimra.haDeploymentEnabled | quote }}
             - name: ODIM_NAMESPACE
               value: {{ .Values.odimra.namespace | quote }}
-          image: aggregation:{{ .Values.odimra.aggregationImageTag }}
+            - name: HOST_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}aggregation:{{ .Values.odimra.aggregationImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45102

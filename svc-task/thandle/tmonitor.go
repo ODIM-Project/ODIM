@@ -18,11 +18,11 @@ package thandle
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-task/tresponse"
@@ -37,27 +37,33 @@ import (
 // response body.
 func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.TaskService, podName)
+
+	l.LogWithFields(ctx).Debugf("Incoming request to get the task details and response body for the task %v", req.TaskID)
 	rsp.Header = map[string]string{
 		"Date": time.Now().Format(http.TimeFormat),
 	}
 	privileges := []string{common.PrivilegeLogin}
-	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf(authErrorMessage)
-		fillProtoResponse(&rsp, authResp)
+		if err != nil {
+			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillProtoResponse(ctx, &rsp, authResp)
 		return &rsp, nil
 	}
-	_, err := ts.GetSessionUserNameRPC(req.SessionToken)
+	_, err = ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
-		log.Printf(authErrorMessage)
-		fillProtoResponse(&rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
+		l.LogWithFields(ctx).Printf(authErrorMessage)
+		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		return &rsp, nil
 	}
 	// get task status from database using task id
-	task, err := ts.GetTaskStatusModel(req.TaskID, common.InMemory)
+	task, err := ts.GetTaskStatusModel(ctx, req.TaskID, common.InMemory)
 	if err != nil {
-		log.Printf("error getting task status : %v", err)
-		fillProtoResponse(&rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.TaskID}, nil))
+		l.LogWithFields(ctx).Printf("error getting task status : %v", err)
+		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.TaskID}, nil))
 		return &rsp, nil
 	}
 
@@ -74,7 +80,7 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		/*
 			err := task.Delete()
 			if err != nil {
-				log.Printf("error while deleting the task from db: %v", err)
+				l.Log.Printf("error while deleting the task from db: %v", err)
 			}
 		*/
 		return &rsp, nil
@@ -132,7 +138,9 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		}
 		taskResponse.SubTasks = &subTask
 	}
-	rsp.Body = generateResponse(taskResponse)
+	respBody := generateResponse(ctx, taskResponse)
+	rsp.Body = respBody
+	l.LogWithFields(ctx).Debugf("Outgoing response for getting subtasks: %v", string(respBody))
 
 	rsp.Header["location"] = task.TaskMonitor
 	return &rsp, nil

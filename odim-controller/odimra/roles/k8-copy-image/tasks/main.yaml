@@ -50,18 +50,18 @@
     repo: deb https://download.docker.com/linux/ubuntu "{{ codeName }}" stable
     state: present
   environment: "{{ proxy_env }}"
-
+#When container manager is docker
 - name: Install docker packages
   apt:
     pkg: "{{ docker_pkgs }}"
     force_apt_get: yes
   environment: "{{ proxy_env }}"
 
-- name: Enable docker service
-  service:
-    name: docker
-    state: started
-    enabled: yes
+  #- name: Enable docker service
+  #service:
+  #name: docker
+  #  state: started
+  #  enabled: yes
 
 - name: Check if K8 image path exists
   stat:
@@ -83,7 +83,15 @@
       - "{{ kubernetesImagePath }}/"
   when: kubernetesImagePath is defined and k8_file_details.stat.exists and k8_file_details.stat.isdir == true
  
+  #- name: Load Kubernetes Images
+  #command: "{{ docker_bin_path }} load -i {{ docker_images_path }}/{{ item.value }}.tar"
+  #loop: "{{ kubernetes_images | dict2items }}"
+  #when: kubernetesImagePath is defined and k8_file_details.stat.exists and k8_file_details.stat.isdir == true
+
+
+  #When container manager is containerd
 - name: Load Kubernetes Images
-  command: "{{ docker_bin_path }} load -i {{ docker_images_path }}/{{ item.value }}.tar"
+  command: "{{ docker_bin_path }} -n=k8s.io image  import {{ docker_images_path }}/{{ item.value }}.tar"
   loop: "{{ kubernetes_images | dict2items }}"
   when: kubernetesImagePath is defined and k8_file_details.stat.exists and k8_file_details.stat.isdir == true
+

@@ -16,6 +16,7 @@
 package evcommon
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -25,10 +26,10 @@ import (
 	"reflect"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	lg "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
@@ -167,7 +168,7 @@ func startTestServer() *httptest.Server {
 	// create a listener with the desired port.
 	l, err := net.Listen("tcp", "localhost:1234")
 	if err != nil {
-		log.Fatal(err.Error())
+		lg.Log.Fatal(err.Error())
 	}
 
 	respBody := make(map[string]string)
@@ -211,14 +212,14 @@ func startTestServer() *httptest.Server {
 
 	cert, err := tls.X509KeyPair(hostCert, hostPrivKey)
 	if err != nil {
-		log.Fatal("error: failed to load key pair: " + err.Error())
+		lg.Log.Fatal("error: failed to load key pair: " + err.Error())
 	}
 	tlsConfig.Certificates = []tls.Certificate{cert}
 	tlsConfig.BuildNameToCertificate()
 
 	capool := x509.NewCertPool()
 	if !capool.AppendCertsFromPEM(hostCA) {
-		log.Fatal("error: failed to load CA certificate")
+		lg.Log.Fatal("error: failed to load CA certificate")
 	}
 	tlsConfig.RootCAs = capool
 	tlsConfig.ClientCAs = capool
@@ -300,7 +301,7 @@ func TestCallPluginStartUp(t *testing.T) {
 	ts.StartTLS()
 	defer ts.Close()
 	servers := []SavedSystems{
-		SavedSystems{
+		{
 			ManagerAddress: "100.100.100.100",
 			Password:       []byte("password"),
 			UserName:       "admin",
@@ -318,10 +319,10 @@ func TestCallPluginStartUp(t *testing.T) {
 		GetDeviceSubscriptions:           MockGetDeviceSubscriptions,
 		UpdateDeviceSubscriptionLocation: MockUpdateDeviceSubscriptionLocation,
 	}
-	err := st.callPluginStartUp(servers, "ILO")
+	err := st.callPluginStartUp(context.TODO(), servers, "ILO")
 	assert.Nil(t, err, "Error Should be nil")
 
-	err = st.callPluginStartUp(servers, "pluginBadData")
+	err = st.callPluginStartUp(context.TODO(), servers, "pluginBadData")
 	assert.NotNil(t, err, "error should not be nil")
 }
 
@@ -382,7 +383,7 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 		UpdateDeviceSubscriptionLocation: MockUpdateDeviceSubscriptionLocation,
 	}
 	password, _ := GetEncryptedKey([]byte("Password"))
-	st.getPluginStatus(evmodel.Plugin{
+	st.getPluginStatus(context.TODO(), evmodel.Plugin{
 		IP:                "localhost",
 		Port:              "1234",
 		Password:          password,
@@ -397,4 +398,80 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 	assert.Equal(t, "https://odim.2.com/EventService/Subscriptions/1", deviceSubscription.Location, "should be same")
+}
+
+func TestStartUpInteraface_SubscribePluginEMB(t *testing.T) {
+	pc := StartUpInteraface{}
+	GetAllPluginsFunc = func() ([]evmodel.Plugin, *errors.Error) { return nil, &errors.Error{} }
+	pc.SubscribePluginEMB()
+
+	GetAllPluginsFunc = func() ([]evmodel.Plugin, *errors.Error) {
+		return []evmodel.Plugin{{IP: ""}}, nil
+	}
+	pc.SubscribePluginEMB()
+	getTypes("[alert statuschange]")
+	getTypes("[]")
+
+	callPlugin(context.TODO(), PluginContactRequest{Plugin: &evmodel.Plugin{PreferredAuthType: "BasicAuth"}})
+
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	var devSubscription = evmodel.DeviceSubscription{
+		EventHostIP:     "10.10.0.1",
+		Location:        "https://10.10.10.23/redfish/v1/EventService/Subscriptions/123",
+		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
+	}
+	if cerr := evmodel.SaveDeviceSubscription(devSubscription); cerr != nil {
+		t.Errorf("Error while saving device suscription: %v\n", cerr.Error())
+	}
+
+	err := updateDeviceSubscriptionLocation(map[string]string{"10.10.0.1": "Test"})
+	assert.Nil(t, err)
+	err = updateDeviceSubscriptionLocation(map[string]string{"location": "Test"})
+	assert.Nil(t, err)
+
+}
+
+func TestProcessCtrlMsg(t *testing.T) {
+	type args struct {
+		data interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test case for Nil value",
+			args: args{
+				data: nil,
+			},
+			want: false,
+		},
+		{
+			name: "Test case for Nil",
+			args: args{
+				data: common.ControlMessageData{
+					MessageType: common.SubscribeEMB,
+					Data: common.SubscribeEMBData{
+						EMBQueues: []string{},
+					},
+				},
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ProcessCtrlMsg(tt.args.data); got != tt.want {
+				t.Errorf("ProcessCtrlMsg() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

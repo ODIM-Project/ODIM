@@ -14,6 +14,7 @@ spec:
     metadata:
       labels:
         app: api
+      name: dapi-envars-fieldref
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
@@ -78,6 +79,7 @@ spec:
             claimName: odimra-log-claim
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
+        runAsUser: {{ .Values.odimra.userID }}
       containers:
         - name: api
           env:
@@ -87,7 +89,15 @@ spec:
               value: {{ .Values.odimra.haDeploymentEnabled | quote }}
             - name: ODIM_NAMESPACE
               value: {{ .Values.odimra.namespace | quote }}
-          image: api:{{ .Values.odimra.apiImageTag }}
+            - name: HOST_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          image: {{ .Values.odimra.imageRegistryAddress| default  }}api:{{ .Values.odimra.apiImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45000

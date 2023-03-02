@@ -12,18 +12,18 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package systems ...
+// Package systems ...
 package systems
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
@@ -31,8 +31,9 @@ import (
 )
 
 // SetDefaultBootOrder defines the logic for setting the boot order to the default
-func (p *PluginContact) SetDefaultBootOrder(systemID string) response.RPC {
+func (p *PluginContact) SetDefaultBootOrder(ctx context.Context, systemID string) response.RPC {
 	var resp response.RPC
+	l.LogWithFields(ctx).Debugf("incoming SetDefaultBootOrder request for SystemID: %s", systemID)
 
 	// spliting the uuid and system id
 	requestData := strings.SplitN(systemID, ".", 2)
@@ -73,7 +74,7 @@ func (p *PluginContact) SetDefaultBootOrder(systemID string) response.RPC {
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := ContactPluginFunc(contactRequest, "error while creating session with the plugin: ")
+		_, token, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -93,7 +94,7 @@ func (p *PluginContact) SetDefaultBootOrder(systemID string) response.RPC {
 	contactRequest.OID = "/ODIM/v1/Systems/" + requestData[1] + "/Actions/ComputerSystem.SetDefaultBootOrder"
 	contactRequest.HTTPMethodType = http.MethodPost
 
-	body, _, getResponse, err := ContactPluginFunc(contactRequest, "error while setting the default bootorder of  the computer system: ")
+	body, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while setting the default bootorder of  the computer system: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
@@ -105,12 +106,14 @@ func (p *PluginContact) SetDefaultBootOrder(systemID string) response.RPC {
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
+	l.LogWithFields(ctx).Debugf("outgoing response for SetDefaultBootOrder statuscode: %d", resp.StatusCode)
 	return resp
 }
 
 // ChangeBiosSettings defines the logic for change bios settings
-func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest) response.RPC {
+func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsproto.BiosSettingsRequest) response.RPC {
 	var resp response.RPC
+	l.LogWithFields(ctx).Debugf("incoming ChangeBiosSettings request for SystemID: %s", req.SystemID)
 
 	// spliting the uuid and system id
 	requestData := strings.SplitN(req.SystemID, ".", 2)
@@ -130,7 +133,7 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	err := JSONUnmarshalFunc(req.RequestBody, &biosSetting)
 	if err != nil {
 		errMsg := "unable to parse the BiosSetting request" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
@@ -138,11 +141,11 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, biosSetting)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response
 	}
@@ -172,7 +175,7 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := ContactPluginFunc(contactRequest, "error while creating session with the plugin: ")
+		_, token, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -191,7 +194,7 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s/Bios/Settings", requestData[1])
 
-	body, _, getResponse, err := ContactPluginFunc(contactRequest, "error while changing  bios settings: ")
+	body, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while changing  bios settings: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
@@ -207,13 +210,15 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 
 	// Adding Settings URL to the DB to fetch data from device
 	URL := fmt.Sprintf("/redfish/v1/Systems/%s/Bios/Settings", req.SystemID)
-	smodel.AddSystemResetInfo(URL, "None")
+	smodel.AddSystemResetInfo(ctx, URL, "None")
+	l.LogWithFields(ctx).Debugf("outgoing response for ChangeBiosSettings statuscode: %d", resp.StatusCode)
 	return resp
 }
 
 // ChangeBootOrderSettings defines the logic for change boot order settings
-func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSettingsRequest) response.RPC {
+func (p *PluginContact) ChangeBootOrderSettings(ctx context.Context, req *systemsproto.BootOrderSettingsRequest) response.RPC {
 	var resp response.RPC
+	l.LogWithFields(ctx).Debugf("incoming ChangeBiosSettings request for SystemID: %s", req.SystemID)
 
 	// spliting the uuid and system id
 	requestData := strings.SplitN(req.SystemID, ".", 2)
@@ -229,7 +234,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	if err != nil {
 		if ute, ok := err.(*json.UnmarshalTypeError); ok {
 			errMsg := fmt.Sprintf("UnmarshalTypeError: Expected field type %v but got %v \n", ute.Type, ute.Value)
-			log.Error(errMsg)
+			l.LogWithFields(ctx).Error(errMsg)
 			index := strings.LastIndex(string(req.RequestBody[:ute.Offset]), ".")
 			if index < 0 {
 				index = 0
@@ -237,7 +242,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 			return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{string(req.RequestBody[index+1 : ute.Offset]), ute.Field}, nil)
 		}
 		errMsg := "unable to parse the BootOrderSettings request" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, []interface{}{}, nil)
 	}
 
@@ -245,11 +250,11 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, bootOrderSettings)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response
 	}
@@ -284,7 +289,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := ContactPluginFunc(contactRequest, "error while creating session with the plugin: ")
+		_, token, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -304,7 +309,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s", requestData[1])
 
-	body, _, getResponse, err := ContactPluginFunc(contactRequest, "error while changing boot order settings: ")
+	body, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while changing boot order settings: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
@@ -316,6 +321,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
-	smodel.AddSystemResetInfo("/redfish/v1/Systems/"+req.SystemID, "On")
+	smodel.AddSystemResetInfo(ctx, "/redfish/v1/Systems/"+req.SystemID, "On")
+	l.LogWithFields(ctx).Debugf("outgoing response for ChangeBootOrderSettings statuscode: %d", resp.StatusCode)
 	return resp
 }

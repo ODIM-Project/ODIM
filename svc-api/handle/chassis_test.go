@@ -1,37 +1,39 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-//(C) Copyright 2020 Intel Corporation
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright 2020 Intel Corporation
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package handle
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"testing"
+
 	errorResponse "github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
-	"net/http"
-	"testing"
 )
 
-func mockGetChassisResource(chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+func mockGetChassisResource(context.Context, chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	return &chassisproto.GetChassisResponse{
 		StatusCode: http.StatusOK,
 	}, nil
 }
-func mockGetChassisResourceWithRPCError(chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+func mockGetChassisResourceWithRPCError(context.Context, chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	return &chassisproto.GetChassisResponse{}, errors.New("Unable to RPC Call")
 }
 
@@ -153,7 +155,7 @@ func TestChassisRPCs_CreateChassisWithNoInputBody(t *testing.T) {
 
 func TestChassisRPCs_CreateChassisWithRPCError(t *testing.T) {
 	sut := ChassisRPCs{
-		CreateChassisRPC: func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+		CreateChassisRPC: func(ctx context.Context, req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 			return nil, fmt.Errorf("RPC ERROR")
 		},
 	}
@@ -188,7 +190,7 @@ func TestChassisRPCs_CreateChassis(t *testing.T) {
 	}
 
 	sut := ChassisRPCs{
-		CreateChassisRPC: func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+		CreateChassisRPC: func(ctx context.Context, req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 			return &expectedRPCResponse, nil
 		},
 	}
@@ -235,7 +237,7 @@ func TestChassisRPCs_CreateChassisWithMalformedBody(t *testing.T) {
 	}
 
 	sut := ChassisRPCs{
-		CreateChassisRPC: func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+		CreateChassisRPC: func(ctx context.Context, req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 			return &expectedRPCResponse, nil
 		},
 	}

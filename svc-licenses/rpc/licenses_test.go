@@ -49,13 +49,13 @@ func mockGetExternalInterface() *licenseService.ExternalInterface {
 	}
 }
 
-func mockContactPlugin(req model.PluginContactRequest, errorMessage string) ([]byte, string, model.ResponseStatus, error) {
+func mockContactPlugin(ctx context.Context, req model.PluginContactRequest, errorMessage string) ([]byte, string, model.ResponseStatus, error) {
 	var responseStatus model.ResponseStatus
 
 	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, nil
 }
 
-func stubGenericSave(reqBody []byte, table string, uuid string) error {
+func stubGenericSave(ctx context.Context, reqBody []byte, table string, uuid string) error {
 	return nil
 }
 
@@ -84,11 +84,11 @@ func mockGetPluginData(id string) (*model.Plugin, *errors.Error) {
 	return &plugin, nil
 }
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken != "validToken" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
 func mockGetAllKeysFromTable(table string, dbtype persistencemgr.DbType) ([]string, error) {
@@ -104,7 +104,7 @@ func mockGetResource(table, key string, dbtype persistencemgr.DbType) (interface
 	return "body", nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	baseURI := "/redfish/v1"
 
 	if url == "https://localhost:9091"+baseURI+"/LicenseService" {
@@ -146,6 +146,7 @@ func TestUpdate_GetLicenseService(t *testing.T) {
 			name: "positive GetLicenseService",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.GetLicenseServiceRequest{SessionToken: "validToken"},
 			},
 			wantErr: false,
@@ -154,6 +155,7 @@ func TestUpdate_GetLicenseService(t *testing.T) {
 			name: "auth fail",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.GetLicenseServiceRequest{SessionToken: "invalidToken"},
 			},
 			wantErr: false,
@@ -185,6 +187,7 @@ func TestUpdate_GetLicenseCollection(t *testing.T) {
 			name: "positive GetLicenseCollection",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.GetLicenseRequest{SessionToken: "validToken"},
 			},
 			wantErr: false,
@@ -193,6 +196,7 @@ func TestUpdate_GetLicenseCollection(t *testing.T) {
 			name: "auth fail",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.GetLicenseRequest{SessionToken: "invalidToken"},
 			},
 			wantErr: false,
@@ -224,6 +228,7 @@ func TestUpdate_GetLicenseResource(t *testing.T) {
 			name: "positive GetLicenseResource",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.GetLicenseResourceRequest{SessionToken: "validToken"},
 			},
 			wantErr: false,
@@ -232,6 +237,7 @@ func TestUpdate_GetLicenseResource(t *testing.T) {
 			name: "auth fail",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.GetLicenseResourceRequest{SessionToken: "invalidToken"},
 			},
 			wantErr: false,
@@ -263,6 +269,7 @@ func TestUpdate_InstallLicenseService(t *testing.T) {
 			name: "positive InstallLicenseService",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.InstallLicenseRequest{SessionToken: "validToken"},
 			},
 			wantErr: false,
@@ -271,6 +278,7 @@ func TestUpdate_InstallLicenseService(t *testing.T) {
 			name: "auth fail",
 			a:    license,
 			args: args{
+				ctx: context.Background(),
 				req: &licenseproto.InstallLicenseRequest{SessionToken: "invalidToken"},
 			},
 			wantErr: false,

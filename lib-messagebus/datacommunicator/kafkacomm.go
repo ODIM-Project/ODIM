@@ -28,7 +28,6 @@ import (
 	"time"
 
 	"github.com/segmentio/kafka-go"
-	log "github.com/sirupsen/logrus"
 )
 
 // KafkaPacket defines the KAFKA Message Object. This one conains all the required
@@ -139,8 +138,7 @@ func kafkaConnect(kp *KafkaPacket) error {
 	// Creation of TLS Config and Dialer
 	tls, e := TLS(MQ.KafkaF.KAFKACertFile, MQ.KafkaF.KAFKAKeyFile, MQ.KafkaF.KAFKACAFile)
 	if e != nil {
-		log.Error(e.Error())
-		return e
+		return fmt.Errorf("error: creation of tls config failed: %s", e.Error())
 	}
 	kp.DialerConn = &kafka.Dialer{
 		Timeout:   10 * time.Second,
@@ -193,8 +191,7 @@ func (kp *KafkaPacket) Distribute(d interface{}) error {
 	// Encode the message before appending into KAFKA Message struct
 	b, e := Encode(d)
 	if e != nil {
-		log.Error(e.Error())
-		return e
+		return fmt.Errorf("error: message encoding failed: %s", e.Error())
 	}
 
 	// Place the byte stream into Kafka.Message
@@ -205,8 +202,7 @@ func (kp *KafkaPacket) Distribute(d interface{}) error {
 
 	// Write the messgae in the specified Pipe.
 	if e = writer.WriteMessages(context.Background(), km); e != nil {
-		log.Error(e.Error())
-		return e
+		return fmt.Errorf("error: write message failed: %s", e.Error())
 	}
 
 	return nil
@@ -255,7 +251,6 @@ func (kp *KafkaPacket) Accept(fn MsgProcess) error {
 // Read would access the KAFKA messages in a infinite loop. Callback method
 // access is existing only in "goka" library.  Not available in "kafka-go".
 func (kp *KafkaPacket) Read(fn MsgProcess) error {
-
 	// This interface should be defined outside the inner level to make sure
 	// we are making the ToData API to work. Otherwise we would get exception
 	// of having local scope interface pointer into passing to remote one
@@ -272,14 +267,13 @@ func (kp *KafkaPacket) Read(fn MsgProcess) error {
 		// explicitly committing the messages
 		m, e := reader.ReadMessage(c)
 		if e != nil {
-			log.Error(e.Error())
-			return e
+			time.Sleep(10 * time.Second)
+			continue
 		}
 
 		// Decode the message before passing it to Callback
 		if e = Decode(m.Value, &d); e != nil {
-			log.Error(e.Error())
-			return e
+			continue
 		}
 		// Callback Function call.
 		fn(d)

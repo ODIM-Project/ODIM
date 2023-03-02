@@ -281,7 +281,7 @@ func TestSetTLSMinVersion(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := SetTLSMinVersion(tt.arg)
+			err := SetTLSMinVersion(tt.arg, &WarningList{})
 			if (err != nil) != tt.wanterr {
 				t.Errorf("SetTLSMinVersion() err = %v tt.wanterr = %v", err, tt.wanterr)
 			}
@@ -320,7 +320,7 @@ func TestSetTLSMaxVersion(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := SetTLSMaxVersion(tt.arg)
+			err := SetTLSMaxVersion(tt.arg, &WarningList{})
 			if (err != nil) != tt.wanterr {
 				t.Errorf("SetTLSMaxVersion() err = %v tt.wanterr = %v", err, tt.wanterr)
 			}
@@ -393,7 +393,7 @@ func TestValidateConfiguredTLSVersions(t *testing.T) {
 			tt.exec()
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateConfiguredTLSVersions()
+			err := ValidateConfiguredTLSVersions(&WarningList{})
 			if (err != nil) != tt.wanterr {
 				t.Errorf("ValidateConfiguredTLSVersions() goterr = %v, wanterr = %v", err, tt.wanterr)
 			}

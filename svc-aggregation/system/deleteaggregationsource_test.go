@@ -24,6 +24,7 @@ package system
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -77,7 +78,7 @@ func mockDeleteSubscription(uuid string) (*eventsproto.EventSubResponse, error) 
 	}, nil
 }
 
-func mockEventNotification(systemID, eventType, collectionType string) {
+func mockEventNotification(ctx context.Context, systemID, eventType, collectionType string) {
 	return
 }
 func mockManagersData(id string, data map[string]interface{}) error {
@@ -117,7 +118,7 @@ func getDataFromDB(table, key string, db common.DbType) (string, error) {
 	return data, nil
 }
 
-func mockContactClientForDelete(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
+func mockContactClientForDelete(ctx context.Context, url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9092/ODIM/v1/Status" || (strings.Contains(url, "/ODIM/v1/Status") && credentials["UserName"] == "noStatusUser") {
 		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
@@ -165,9 +166,9 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 		}
 	}()
 
-	mockPluginData(t, "GRF_v1.0.0")
+	mockPluginData(t, "GRF_v2.0.0")
 	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
-		"Name": "GRF_v1.0.0",
+		"Name": "GRF_v2.0.0",
 		"UUID": "1234877451-1234",
 	})
 	reqManagerGRF := agmodel.AggregationSource{
@@ -195,11 +196,11 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
 		UserName:       "admin",
 		DeviceUUID:     "ef83e569-7336-492a-aaee-31c02d9db831",
-		PluginID:       "GRF_v1.0.0",
+		PluginID:       "GRF_v2.0.0",
 	}
 	mockDeviceData("ef83e569-7336-492a-aaee-31c02d9db831", device)
 	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1")
-
+	ctx := mockContext()
 	err := agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSources/123456")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -231,7 +232,7 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := d.DeleteAggregationSource(tt.args.req)
+			got := d.DeleteAggregationSource(ctx, tt.args.req)
 			if got.StatusCode != tt.want {
 				t.Errorf("DeleteAggregationSource() = %v, want %v", got, tt.want)
 			}
@@ -241,6 +242,7 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 
 func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 	d := getMockExternalInterface()
+	ctx := mockContext()
 	d.ContactClient = mockContactClientForDelete
 	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
@@ -260,19 +262,19 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
 		UserName:       "admin",
 		DeviceUUID:     "24b243cf-f1e3-5318-92d9-2d6737d6b0b9",
-		PluginID:       "ILO_v1.0.0",
+		PluginID:       "ILO_v2.0.0",
 	}
 
-	mockPluginData(t, "GRF_v1.0.0")
-	mockPluginData(t, "ILO_v1.0.0")
-	mockPluginData(t, "NoStatusPlugin_v1.0.0")
+	mockPluginData(t, "GRF_v2.0.0")
+	mockPluginData(t, "ILO_v2.0.0")
+	mockPluginData(t, "NoStatusPlugin_v2.0.0")
 	mockDeviceData("24b243cf-f1e3-5318-92d9-2d6737d6b0b9", device1)
 	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
-		"Name": "GRF_v1.0.0",
+		"Name": "GRF_v2.0.0",
 		"UUID": "1234877451-1234",
 	})
 	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
-		"Name": "ILO_v1.0.0",
+		"Name": "ILO_v2.0.0",
 		"UUID": "1234877451-1233",
 		"LogService": map[string]interface{}{
 			"@odata.id": "/redfish/v1/Managers/1234877451-1233/LogServices",
@@ -289,7 +291,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 	})
 
 	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
-		"Name": "NoStatusPlugin_v1.0.0",
+		"Name": "NoStatusPlugin_v2.0.0",
 		"UUID": "1234877451-1235",
 	})
 	reqManagerGRF := agmodel.AggregationSource{
@@ -385,7 +387,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := d.DeleteAggregationSource(tt.args.req)
+			got := d.DeleteAggregationSource(ctx, tt.args.req)
 			if got.StatusCode != tt.want {
 				t.Errorf("DeleteAggregationSource() = %v, want %v", got, tt.want)
 			}
@@ -406,9 +408,10 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	mockPluginData(t, "GRF_v1.0.0")
+	ctx := mockContext()
+	mockPluginData(t, "GRF_v2.0.0")
 	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
-		"Name": "GRF_v1.0.0",
+		"Name": "GRF_v2.0.0",
 		"UUID": "1234877451-1234",
 	})
 	reqManagerGRF := agmodel.AggregationSource{
@@ -446,14 +449,14 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
 		UserName:       "admin",
 		DeviceUUID:     "ef83e569-7336-492a-aaee-31c02d9db831",
-		PluginID:       "GRF_v1.0.0",
+		PluginID:       "GRF_v2.0.0",
 	}
 	device2 := agmodel.Target{
 		ManagerAddress: "100.0.0.1",
 		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
 		UserName:       "admin",
 		DeviceUUID:     "ef83e569-7336-492a-aaee-31c02d9db832",
-		PluginID:       "GRF_v1.0.0",
+		PluginID:       "GRF_v2.0.0",
 	}
 
 	mockDeviceData("ef83e569-7336-492a-aaee-31c02d9db831", device1)
@@ -504,7 +507,7 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := d.DeleteAggregationSource(tt.args.req)
+			got := d.DeleteAggregationSource(ctx, tt.args.req)
 			if got.StatusCode != tt.want {
 				t.Errorf("DeleteAggregationSource() = %v, want %v", got, tt.want)
 			}
@@ -571,6 +574,7 @@ func Test_checkAndRemoveWildCardValueG(t *testing.T) {
 func TestExternalInterface_deleteWildCardValues(t *testing.T) {
 	p := getMockExternalInterface()
 	config.SetUpMockConfig(t)
+	ctx := mockContext()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -599,7 +603,7 @@ func TestExternalInterface_deleteWildCardValues(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.p.deleteWildCardValues(tt.args.systemID)
+			tt.p.deleteWildCardValues(ctx, tt.args.systemID)
 		})
 	}
 }
@@ -766,9 +770,10 @@ func Test_removeAggregationSourceFromAggregates(t *testing.T) {
 			}),
 		},
 	}
+	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			removeAggregationSourceFromAggregates(tt.args.systemURIs)
+			removeAggregationSourceFromAggregates(ctx, tt.args.systemURIs)
 			elements, _ := getDataFromDB("Aggregate", "/redfish/v1/AggregationService/Aggregates/1234877451-1234", common.OnDisk)
 			if tt.want != elements {
 				t.Errorf("removeAggregationSourceFromAggregates() = %v, want %v", elements, tt.want)

@@ -14,6 +14,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -22,6 +23,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
@@ -38,26 +40,44 @@ type Schema struct {
 	QueryKeys     []string `json:"queryKeys"`
 }
 
-var log = logrus.New()
-
 func main() {
+	// setting up the logging framework
+	hostName := os.Getenv("HOST_NAME")
+	podName := os.Getenv("POD_NAME")
+	pid := os.Getpid()
+	logs.Adorn(logrus.Fields{
+		"host":   hostName,
+		"procid": podName + fmt.Sprintf("_%d", pid),
+	})
+
+	// log should be initialized after Adorn is invoked
+	// as Adorn will assign new pointer to Log variable in logs package.
+	log := logs.Log
+	configWarnings, err := config.SetConfiguration()
+	if err != nil {
+		log.Logger.SetFormatter(&logs.SysLogFormatter{})
+		log.Fatal("Error while trying set up configuration: " + err.Error())
+	}
+	logs.SetFormatter(config.Data.LogFormat)
+	log.Logger.SetOutput(os.Stdout)
+	log.Logger.SetLevel(config.Data.LogLevel)
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Aggregation Service should not be run as the root user")
 	}
-	if err := config.SetConfiguration(); err != nil {
-		log.Fatal("error while trying to set configuration: " + err.Error())
+
+	config.CollectCLArgs(&configWarnings)
+	for _, warning := range configWarnings {
+		log.Warn(warning)
 	}
 
-	config.CollectCLArgs()
-
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
-		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
+		log.Fatal("error while trying to set message bus configuration: " + err.Error())
 	}
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
-
 	var connectionMethodInterface = agcommon.DBInterface{
 		GetAllKeysFromTableInterface: agmodel.GetAllKeysFromTable,
 		GetConnectionMethodInterface: agmodel.GetConnectionMethod,
@@ -68,7 +88,8 @@ func main() {
 		log.Fatal("error while trying add connection method: " + err.Error())
 	}
 
-	if err := services.InitializeService(services.Aggregator); err != nil {
+	errChan := make(chan error)
+	if err := services.InitializeService(services.Aggregator, errChan); err != nil {
 		log.Fatal("fatal: error while trying to initialize service: " + err.Error())
 	}
 
@@ -86,13 +107,14 @@ func main() {
 		DecryptPassword: common.DecryptWithPrivateKey,
 		UpdateTask:      system.UpdateTaskData,
 	}
+
 	go p.RediscoverResources()
 
 	agcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
 	if agcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	go agcommon.TrackConfigFileChanges(connectionMethodInterface)
+	go agcommon.TrackConfigFileChanges(connectionMethodInterface, errChan)
 
 	go system.PerformPluginHealthCheck()
 

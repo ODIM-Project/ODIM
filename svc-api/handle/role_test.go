@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package handle
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -23,45 +24,45 @@ import (
 	"github.com/kataras/iris/v12/httptest"
 )
 
-func mockGetAllRolesRPC(roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
+func mockGetAllRolesRPC(context.Context, roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
 	return &roleproto.RoleResponse{
 		StatusCode: http.StatusOK,
 	}, nil
 }
-func mockGetAllRolesRPCWithRPCError(roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
+func mockGetAllRolesRPCWithRPCError(context.Context, roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
 	return &roleproto.RoleResponse{}, errors.New("Unable to RPC Call")
 }
 
-func mockCreateRoleRPC(roleproto.RoleRequest) (*roleproto.RoleResponse, error) {
+func mockCreateRoleRPC(context.Context, roleproto.RoleRequest) (*roleproto.RoleResponse, error) {
 	return &roleproto.RoleResponse{
 		StatusCode: http.StatusCreated,
 	}, nil
 }
 
-func mockCreateRoleRPCWithRPCError(roleproto.RoleRequest) (*roleproto.RoleResponse, error) {
+func mockCreateRoleRPCWithRPCError(context.Context, roleproto.RoleRequest) (*roleproto.RoleResponse, error) {
 	return &roleproto.RoleResponse{}, errors.New("Unable to RPC Call")
 }
 
-func mockGetRoleRPC(roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
+func mockGetRoleRPC(context.Context, roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
 	return &roleproto.RoleResponse{
 		StatusCode: http.StatusOK,
 	}, nil
 }
 
-func mockGetRoleRPCWithRPCError(roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
+func mockGetRoleRPCWithRPCError(context.Context, roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
 	return &roleproto.RoleResponse{}, errors.New("Unable to RPC Call")
 }
 
-func mockUpdateRoleRPC(roleproto.UpdateRoleRequest) (*roleproto.RoleResponse, error) {
+func mockUpdateRoleRPC(context.Context, roleproto.UpdateRoleRequest) (*roleproto.RoleResponse, error) {
 	return &roleproto.RoleResponse{
 		StatusCode: http.StatusOK,
 	}, nil
 }
 
-func mockUpdateRoleRPCWithRPCError(roleproto.UpdateRoleRequest) (*roleproto.RoleResponse, error) {
+func mockUpdateRoleRPCWithRPCError(context.Context, roleproto.UpdateRoleRequest) (*roleproto.RoleResponse, error) {
 	return &roleproto.RoleResponse{}, errors.New("Unable to RPC Call")
 }
-func mockDeleteRoleRPC(roleproto.DeleteRoleRequest) (*roleproto.RoleResponse, error) {
+func mockDeleteRoleRPC(context.Context, roleproto.DeleteRoleRequest) (*roleproto.RoleResponse, error) {
 	return &roleproto.RoleResponse{
 		StatusCode: http.StatusOK,
 	}, nil

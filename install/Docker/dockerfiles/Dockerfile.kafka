@@ -44,7 +44,7 @@ RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(da
         && chown -R odimra:odimra /opt/kafka
 
 COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/start_kafka.sh /opt/kafka/scripts/
-RUN chmod 0700 /opt/kafka/scripts/*
+RUN chmod 0777 /opt/kafka/scripts/*
 
 USER odimra:odimra
 STOPSIGNAL SIGTERM

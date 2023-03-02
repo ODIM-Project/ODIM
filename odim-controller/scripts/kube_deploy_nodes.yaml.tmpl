@@ -51,7 +51,7 @@ odimra:
   haDeploymentEnabled: True
   connectionMethodConf:
   - ConnectionMethodType: Redfish
-    ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+    ConnectionMethodVariant: Compute:BasicAuth:GRF_v2.0.0
   etcHostsEntries:
 
   appsLogPath: /var/log/odimra
@@ -99,3 +99,6 @@ odimra:
   odimraKafkaClientKey:
   odimraEtcdServerCert:
   odimraEtcdServerKey:
+  logLevel: warn
+  logFormat: syslog
+  imageRegistryAddress: ""

@@ -15,23 +15,23 @@
 package tmessagebus
 
 import (
+	"context"
 	"encoding/json"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	uuid "github.com/satori/go.uuid"
 )
 
 //Publish will takes the taskURI, messageID, Event type and publishes the data to message bus
-func Publish(taskURI, messageID, eventType, taskMessage string) {
-	topicName := config.Data.MessageBusConf.MessageBusQueue[0]
+func Publish(ctx context.Context, taskURI, messageID, eventType, taskMessage string) {
+	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
 	k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
-		log.Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
+		l.LogWithFields(ctx).Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
 		return
 	}
 
@@ -61,8 +61,7 @@ func Publish(taskURI, messageID, eventType, taskMessage string) {
 	}
 
 	if err := k.Distribute(mbevent); err != nil {
-		log.Error("unable to publish the event to message bus: " + err.Error())
+		l.LogWithFields(ctx).Error("TaskURI:" + taskURI + ", EventID:" + eventID + ", MessageID:" + messageID + " : unable to publish the event to message bus: " + err.Error())
 		return
 	}
-	log.Error("info: TaskURI:" + taskURI + ", EventID:" + eventID + ", MessageID:" + messageID)
 }

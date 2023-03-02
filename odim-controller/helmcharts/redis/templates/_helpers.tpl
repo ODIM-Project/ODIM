@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "redis-6.2.6.name" -}}
+{{- define "redis-7.0.8.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "redis-6.2.6.fullname" -}}
+{{- define "redis-7.0.8.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "redis-6.2.6.chart" -}}
+{{- define "redis-7.0.8.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "redis-6.2.6.labels" -}}
-helm.sh/chart: {{ include "redis-6.2.6.chart" . }}
-{{ include "redis-6.2.6.selectorLabels" . }}
+{{- define "redis-7.0.8.labels" -}}
+helm.sh/chart: {{ include "redis-7.0.8.chart" . }}
+{{ include "redis-7.0.8.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "redis-6.2.6.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "redis-6.2.6.name" . }}
+{{- define "redis-7.0.8.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "redis-7.0.8.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "redis-6.2.6.serviceAccountName" -}}
+{{- define "redis-7.0.8.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "redis-6.2.6.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "redis-7.0.8.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

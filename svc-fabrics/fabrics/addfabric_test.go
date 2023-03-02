@@ -12,14 +12,16 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package fabrics ...
+// Package fabrics ...
 package fabrics
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
 	"fmt"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
@@ -27,7 +29,19 @@ import (
 	"gotest.tools/assert"
 )
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
 func TestAddFabric(t *testing.T) {
+	ctx := mockContext()
 	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
@@ -35,6 +49,8 @@ func TestAddFabric(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
+	resp := AddFabric(ctx, &fabricsproto.AddFabricRequest{})
+	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "should be same")
 	err := mockPlugin(t, "CFM", "XAuthToken", "9091")
 	if err != nil {
 		t.Fatalf("Error in creating mock DeviceData :%v", err)
@@ -44,14 +60,15 @@ func TestAddFabric(t *testing.T) {
 		Address:        "10.10.10.10",
 	}
 
-	resp := AddFabric(req)
+	resp = AddFabric(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "should be same")
 
-	resp = AddFabric(req)
+	resp = AddFabric(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "should be same")
 }
 
 func TestAddFabricInvalidPluginID(t *testing.T) {
+	ctx := mockContext()
 	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
@@ -68,11 +85,21 @@ func TestAddFabricInvalidPluginID(t *testing.T) {
 		Address:        "10.10.10.10",
 	}
 
-	resp := AddFabric(req)
+	resp := AddFabric(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "should be same")
 
-	resp = AddFabric(req)
+	resp = AddFabric(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "should be same")
+
+	GetAllFabricPluginDetailsFunc = func() ([]string, error) { return []string{}, fmt.Errorf("") }
+	resp = AddFabric(ctx, req)
+	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "should be same")
+
+	GetAllFabricPluginDetailsFunc = func() ([]string, error) { return []string{"dummy"}, nil }
+	resp = AddFabric(ctx, req)
+	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "should be same")
+	GetAllFabricPluginDetailsFunc = func() ([]string, error) { return fabmodel.GetAllFabricPluginDetails() }
+
 }
 
 func mockPlugin(t *testing.T, pluginID, PreferredAuthType, port string) error {

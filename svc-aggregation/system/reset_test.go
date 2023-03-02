@@ -28,6 +28,7 @@ package system
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -76,17 +77,17 @@ func mockPluginData(t *testing.T, pluginID string) error {
 		plugin.ManagerUUID = "1234877451-1234"
 	case "ILO":
 		plugin.ManagerUUID = "1234877451-1233"
-	case "XAuthPlugin_v1.0.0":
+	case "XAuthPlugin_v2.0.0":
 		plugin.PreferredAuthType = "XAuthToken"
-	case "XAuthPluginFail_v1.0.0":
+	case "XAuthPluginFail_v2.0.0":
 		plugin.PreferredAuthType = "XAuthToken"
 		plugin.Username = "incorrectusername"
-	case "NoStatusPlugin_v1.0.0":
+	case "NoStatusPlugin_v2.0.0":
 		plugin.Username = "noStatusUser"
 		plugin.ManagerUUID = "1234877451-1235"
-	case "GRF_v1.0.0":
+	case "GRF_v2.0.0":
 		plugin.ManagerUUID = "1234877451-1234"
-	case "ILO_v1.0.0":
+	case "ILO_v2.0.0":
 		plugin.ManagerUUID = "1234877451-1233"
 	}
 	connPool, err := common.GetDBConnection(common.OnDisk)
@@ -110,14 +111,14 @@ func mockDeviceData(uuid string, device agmodel.Target) error {
 	return nil
 }
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken != "validToken" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil), nil
 	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	if url == "" {
 		return nil, fmt.Errorf("InvalidRequest")
 	}
@@ -244,7 +245,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		}, nil
 
 	} else if url == host+"/ODIM/v1/Status" {
-		body := `{"Version": "v1.0.0","EventMessageBus":{"EmbQueue":[{"EmbQueueName":"GRF"}]}}`
+		body := `{"Version": "v2.0.0","EventMessageBus":{"EmbQueue":[{"EmbQueueName":"GRF"}]}}`
 		if host == "https://100.0.0.3:9091" {
 			return nil, fmt.Errorf("plugin not reachable")
 		}
@@ -359,6 +360,16 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 	mockSystemData("/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1")
 	mockSystemData("/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1.1")
 	mockSystemData("/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd.1")
+	req := agmodel.Aggregate{
+		Elements: []agmodel.OdataID{
+			{OdataID: "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1"},
+		},
+	}
+
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b74")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
 
 	type args struct {
 		taskID          string
@@ -384,7 +395,14 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9.1",
 		},
 	})
-
+	successAggregateReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b74",
+		},
+	})
 	invalidUUIDReq, _ := json.Marshal(AggregationResetRequest{
 		BatchSize:                    1,
 		DelayBetweenBatchesInSeconds: 2,
@@ -471,6 +489,20 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
 					RequestBody:  successReq,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "postive test Case Aggregate",
+			p:    &pluginContact,
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  successAggregateReq,
 				},
 			},
 			want: response.RPC{
@@ -632,9 +664,10 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 			},
 		},
 	}
+	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.Reset(tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.p.Reset(ctx, tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.Reset() = %v, want %v", got, tt.want)
 			}
 		})

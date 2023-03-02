@@ -15,126 +15,21 @@
 package rpc
 
 import (
-	"bytes"
 	"context"
-	"fmt"
-	"io/ioutil"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	teleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-telemetry/telemetry"
-	"github.com/ODIM-Project/ODIM/svc-telemetry/tmodel"
+	tm "github.com/ODIM-Project/ODIM/svc-telemetry/telemetry"
 	"github.com/stretchr/testify/assert"
 )
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
-	if sessionToken == "InvalidToken" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
-	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
-}
-
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
-	if url == "https://localhost:9091/ODIM/v1/Sessions" {
-		body := `{"Token": "12345"}`
-		return &http.Response{
-			StatusCode: http.StatusCreated,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-			Header: http.Header{
-				"X-Auth-Token": []string{"12345"},
-			},
-		}, nil
-	} else if url == "https://localhost:9092/ODIM/v1/Sessions" {
-		body := `{"Token": ""}`
-		return &http.Response{
-			StatusCode: http.StatusUnauthorized,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-	}
-	if url == "https://localhost:9091/ODIM/v1/TelemetryService/MetricReports/CPUUtilCustom1" && token == "12345" {
-		body := `{"@odata.id":"/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1","@odata.type":"#MetricReport.v1_0_0.MetricReport","Id":"CPUUtilCustom1","Name":"Metric report of CPU Utilization for 10 minutes with sensing interval of 20 seconds.","MetricReportDefinition":{"@odata.id":"/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom1"},"MetricValues":[{"MetricDefinition":{"@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"},"MetricId":"CPUUtil","MetricValue":"0","Timestamp":"2021-06-16T07:59:43Z"},{"MetricDefinition":{"@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"},"MetricId":"CPUUtil","MetricValue":"0","Timestamp":"2021-06-16T08:00:04Z"}]}`
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-	} else if url == "https://localhost:9093/ODIM/v1/TelemetryService/MetricReports/CPUUtilCustom1" {
-		body := `{"@odata.id":"/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1","@odata.type":"#MetricReport.v1_0_0.MetricReport","Id":"CPUUtilCustom1","Name":"Metric report of CPU Utilization for 10 minutes with sensing interval of 20 seconds.","MetricReportDefinition":{"@odata.id":"/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom1"},"MetricValues":[{"MetricDefinition":{"@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"},"MetricId":"CPUUtil","MetricValue":"0","Timestamp":"2021-06-16T07:59:43Z"},{"MetricDefinition":{"@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"},"MetricId":"CPUUtil","MetricValue":"0","Timestamp":"2021-06-16T08:00:04Z"}]}`
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-	} else if url == "https://localhost:9092/ODIM/v1/TelemetryService/MetricReports/CPUUtilCustom1" && token == "23456" {
-		body := `{"data": "ODIM/v1/TelemetryService/MetricReports/CPUUtilCustom1"}`
-		return &http.Response{
-			StatusCode: http.StatusUnauthorized,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-	} else if url == "https://localhost:9091/ODIM/v1/TelemetryService/MetricReports/CPUUtilCustom1" {
-		body := `{"@odata.id": "/ODIM/v1/TelemetryService/MetricReports/CPUUtilCustom1"}`
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-	}
-	return nil, fmt.Errorf("InvalidRequest")
-}
-
-func mockGetResource(table, key string, dbType common.DbType) (string, *errors.Error) {
-	return "body", nil
-}
-
-func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
-	if table == "Plugin" {
-		return []string{"ILO", "GRF"}, nil
-	}
-	return []string{"/redfish/v1/TelemetryService/Triggers/uuid.1"}, nil
-}
-
-func getEncryptedKey(t *testing.T, key []byte) []byte {
-	cryptedKey, err := common.EncryptWithPublicKey(key)
-	if err != nil {
-		t.Fatalf("error: failed to encrypt data: %v", err)
-	}
-	return cryptedKey
-}
-
-func mockGetPluginData(pluginID string) (tmodel.Plugin, *errors.Error) {
-	var t *testing.T
-	password := getEncryptedKey(t, []byte("$2a$10$OgSUYvuYdI/7dLL5KkYNp.RCXISefftdj.MjbBTr6vWyNwAvht6ci"))
-	plugin := tmodel.Plugin{
-		IP:                "localhost",
-		Port:              "9091",
-		Username:          "admin",
-		Password:          password,
-		ID:                pluginID,
-		PreferredAuthType: "XAuthToken",
-		PluginType:        "Compute",
-	}
-	return plugin, nil
-}
-
-func mockGetExternalInterface() *telemetry.ExternalInterface {
-	return &telemetry.ExternalInterface{
-		External: telemetry.External{
-			Auth:          mockIsAuthorized,
-			ContactClient: mockContactClient,
-			GetPluginData: mockGetPluginData,
-		},
-		DB: telemetry.DB{
-			GetAllKeysFromTable: mockGetAllKeysFromTable,
-			GetResource:         mockGetResource,
-		},
-	}
-}
-
 func TestTelemetry_GetTelemetryService(t *testing.T) {
 	telemetry := new(Telemetry)
-	telemetry.connector = mockGetExternalInterface()
+	telemetry.connector = tm.MockGetExternalInterface()
 	type args struct {
 		ctx context.Context
 		req *teleproto.TelemetryRequest
@@ -149,6 +44,7 @@ func TestTelemetry_GetTelemetryService(t *testing.T) {
 			name: "positive GetTelemetryService",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{SessionToken: "validToken"},
 			},
 			wantErr: false,
@@ -157,7 +53,8 @@ func TestTelemetry_GetTelemetryService(t *testing.T) {
 			name: "auth fail",
 			a:    telemetry,
 			args: args{
-				req: &teleproto.TelemetryRequest{SessionToken: "invalidToken"},
+				ctx: context.Background(),
+				req: &teleproto.TelemetryRequest{SessionToken: "InvalidToken"},
 			},
 			wantErr: false,
 		},
@@ -173,7 +70,7 @@ func TestTelemetry_GetTelemetryService(t *testing.T) {
 
 func TestTelemetry_GetMetricDefinitionCollection(t *testing.T) {
 	telemetry := new(Telemetry)
-	telemetry.connector = mockGetExternalInterface()
+	telemetry.connector = tm.MockGetExternalInterface()
 	type args struct {
 		ctx context.Context
 		req *teleproto.TelemetryRequest
@@ -188,6 +85,7 @@ func TestTelemetry_GetMetricDefinitionCollection(t *testing.T) {
 			name: "Request with valid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "validToken",
 				},
@@ -197,8 +95,9 @@ func TestTelemetry_GetMetricDefinitionCollection(t *testing.T) {
 			name: "Request with invalid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
-					SessionToken: "invalidToken",
+					SessionToken: "InvalidToken",
 				},
 			}, StatusCode: 401,
 		},
@@ -214,7 +113,7 @@ func TestTelemetry_GetMetricDefinitionCollection(t *testing.T) {
 
 func TestTelemetry_GetMetricReportDefinitionCollection(t *testing.T) {
 	telemetry := new(Telemetry)
-	telemetry.connector = mockGetExternalInterface()
+	telemetry.connector = tm.MockGetExternalInterface()
 	type args struct {
 		ctx context.Context
 		req *teleproto.TelemetryRequest
@@ -229,6 +128,7 @@ func TestTelemetry_GetMetricReportDefinitionCollection(t *testing.T) {
 			name: "Request with valid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "validToken",
 				},
@@ -238,8 +138,9 @@ func TestTelemetry_GetMetricReportDefinitionCollection(t *testing.T) {
 			name: "Request with invalid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
-					SessionToken: "invalidToken",
+					SessionToken: "InvalidToken",
 				},
 			}, StatusCode: 401,
 		},
@@ -255,7 +156,7 @@ func TestTelemetry_GetMetricReportDefinitionCollection(t *testing.T) {
 
 func TestTelemetry_GetMetricReportCollection(t *testing.T) {
 	telemetry := new(Telemetry)
-	telemetry.connector = mockGetExternalInterface()
+	telemetry.connector = tm.MockGetExternalInterface()
 	type args struct {
 		ctx context.Context
 		req *teleproto.TelemetryRequest
@@ -270,6 +171,7 @@ func TestTelemetry_GetMetricReportCollection(t *testing.T) {
 			name: "Request with valid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "validToken",
 				},
@@ -279,8 +181,9 @@ func TestTelemetry_GetMetricReportCollection(t *testing.T) {
 			name: "Request with invalid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
-					SessionToken: "invalidToken",
+					SessionToken: "InvalidToken",
 				},
 			}, StatusCode: 401,
 		},
@@ -296,7 +199,7 @@ func TestTelemetry_GetMetricReportCollection(t *testing.T) {
 
 func TestTelemetry_GetTriggerCollection(t *testing.T) {
 	telemetry := new(Telemetry)
-	telemetry.connector = mockGetExternalInterface()
+	telemetry.connector = tm.MockGetExternalInterface()
 	type args struct {
 		ctx context.Context
 		req *teleproto.TelemetryRequest
@@ -311,6 +214,7 @@ func TestTelemetry_GetTriggerCollection(t *testing.T) {
 			name: "Request with valid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "validToken",
 				},
@@ -320,8 +224,9 @@ func TestTelemetry_GetTriggerCollection(t *testing.T) {
 			name: "Request with invalid token",
 			a:    telemetry,
 			args: args{
+				ctx: context.Background(),
 				req: &teleproto.TelemetryRequest{
-					SessionToken: "invalidToken",
+					SessionToken: "InvalidToken",
 				},
 			}, StatusCode: 401,
 		},
@@ -337,9 +242,9 @@ func TestTelemetry_GetTriggerCollection(t *testing.T) {
 
 func TestGetMetricDefinitionwithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
-	telemetry.connector = mockGetExternalInterface()
+	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
 		ResourceID:   "custom1",
 		SessionToken: "InvalidToken",
@@ -350,9 +255,9 @@ func TestGetMetricDefinitionwithInValidtoken(t *testing.T) {
 }
 
 func TestGetMetricDefinitionwithValidtoken(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
-	telemetry.connector = mockGetExternalInterface()
+	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
 		ResourceID:   "custom1",
 		SessionToken: "validToken",
@@ -364,9 +269,9 @@ func TestGetMetricDefinitionwithValidtoken(t *testing.T) {
 
 func TestGetMetricReportDefinitionwithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
-	telemetry.connector = mockGetExternalInterface()
+	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
 		ResourceID:   "custom1",
 		SessionToken: "InvalidToken",
@@ -377,9 +282,9 @@ func TestGetMetricReportDefinitionwithInValidtoken(t *testing.T) {
 }
 
 func TestGetMetricReportDefinitionwithValidtoken(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
-	telemetry.connector = mockGetExternalInterface()
+	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
 		ResourceID:   "custom1",
 		SessionToken: "validToken",
@@ -391,9 +296,9 @@ func TestGetMetricReportDefinitionwithValidtoken(t *testing.T) {
 
 func TestGetMetricReportwithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
-	telemetry.connector = mockGetExternalInterface()
+	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
 		SessionToken: "InvalidToken",
 	}
@@ -404,9 +309,9 @@ func TestGetMetricReportwithInValidtoken(t *testing.T) {
 
 func TestGetMetricReportwithValidtoken(t *testing.T) {
 	config.SetUpMockConfig(t)
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
-	telemetry.connector = mockGetExternalInterface()
+	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
 		SessionToken: "validToken",
 		URL:          "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1",
@@ -418,9 +323,9 @@ func TestGetMetricReportwithValidtoken(t *testing.T) {
 
 func TestGetTriggerwithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
-	telemetry.connector = mockGetExternalInterface()
+	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
 		ResourceID:   "custom1",
 		SessionToken: "InvalidToken",
@@ -431,9 +336,9 @@ func TestGetTriggerwithInValidtoken(t *testing.T) {
 }
 
 func TestGetTriggerwithValidtoken(t *testing.T) {
-	var ctx context.Context
+	ctx := mockContext()
 	telemetry := new(Telemetry)
-	telemetry.connector = mockGetExternalInterface()
+	telemetry.connector = tm.MockGetExternalInterface()
 	req := &teleproto.TelemetryRequest{
 		ResourceID:   "custom1",
 		SessionToken: "validToken",
@@ -441,4 +346,61 @@ func TestGetTriggerwithValidtoken(t *testing.T) {
 	resp, err := telemetry.GetTrigger(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
+}
+
+func TestTelemetry_UpdateTrigger(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		req *teleproto.TelemetryRequest
+	}
+	telemetry := new(Telemetry)
+	telemetry.connector = tm.MockGetExternalInterface()
+	reqValid := &teleproto.TelemetryRequest{
+		ResourceID:   "custom1",
+		SessionToken: "validToken",
+	}
+	reqInValid := &teleproto.TelemetryRequest{
+		ResourceID:   "custom1",
+		SessionToken: "InvalidToken",
+	}
+	tests := []struct {
+		name    string
+		a       *Telemetry
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{
+			name: "Update trigger with valid token",
+			a:    telemetry,
+			args: args{
+				ctx: context.Background(),
+				req: reqValid,
+			},
+			want:    0, // as update trigger is not implemented. Need to be changed with http.StatusOK once update trigger operation is implemented
+			wantErr: false,
+		},
+		{
+			name: "Update trigger with invalid token",
+			a:    telemetry,
+			args: args{
+				ctx: context.Background(),
+				req: reqInValid,
+			},
+			want:    http.StatusUnauthorized,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.a.UpdateTrigger(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Telemetry.UpdateTrigger() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(int(got.StatusCode), tt.want) {
+				t.Errorf("Telemetry.UpdateTrigger() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

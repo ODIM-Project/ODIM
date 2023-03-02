@@ -12,30 +12,33 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package pmbhandle ...
+// Package pmbhandle ...
 package pmbhandle
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
-//ContactPlugin is used to send a request to plugin to add a resource
-func ContactPlugin(url, method, token string, odataID string, body interface{}, collaboratedInfo map[string]string) (*http.Response, error) {
+// ContactPlugin is used to send a request to plugin to add a resource
+func ContactPlugin(ctx context.Context, url, method, token string, odataID string, body interface{}, collaboratedInfo map[string]string) (*http.Response, error) {
 	jsonStr, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		log.Error(err.Error())
+		l.Log.Error(err.Error())
 		return nil, err
 	}
-
+	req = CreateHeader(req, ctx)
 	// indicate to close the request created
 	req.Close = true
 
@@ -66,8 +69,27 @@ func ContactPlugin(url, method, token string, odataID string, body interface{}, 
 	}
 
 	if resp.StatusCode >= 300 {
-		log.Warn("got " + resp.Status + " while fetching " + url + " with method " + method)
+		l.Log.Warn("got " + resp.Status + " while fetching " + url + " with method " + method)
 	}
 
 	return resp, nil
+}
+
+// CreateHeader is used to get data from context and set it to header for http request call
+func CreateHeader(req *http.Request, ctx context.Context) *http.Request {
+	if ctx.Value("transactionid") != nil {
+		transactionId := ctx.Value("transactionid").(string)
+		actionId := ctx.Value("actionid").(string)
+		actionName := ctx.Value("actionname").(string)
+		threadId := ctx.Value("threadid").(string)
+		threadName := ctx.Value("threadname").(string)
+		processName := ctx.Value("processname").(string)
+		req.Header.Set(common.TransactionID, transactionId)
+		req.Header.Set(common.ActionID, actionId)
+		req.Header.Set(common.ActionName, actionName)
+		req.Header.Set(common.ThreadID, threadId)
+		req.Header.Set(common.ThreadName, threadName)
+		req.Header.Set(common.ProcessName, processName)
+	}
+	return req
 }

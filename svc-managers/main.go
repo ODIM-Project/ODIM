@@ -24,6 +24,7 @@ import (
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-managers/managers"
@@ -32,20 +33,37 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/rpc"
 )
 
-var log = logrus.New()
-
 func main() {
+	// setting up the logging framework
+	hostName := os.Getenv("HOST_NAME")
+	podName := os.Getenv("POD_NAME")
+	pid := os.Getpid()
+	logs.Adorn(logrus.Fields{
+		"host":   hostName,
+		"procid": podName + fmt.Sprintf("_%d", pid),
+	})
+
+	// log should be initialized after Adorn is invoked
+	// as Adorn will assign new pointer to Log variable in logs package.
+	log := logs.Log
+	configWarnings, err := config.SetConfiguration()
+	if err != nil {
+		log.Logger.SetFormatter(&logs.SysLogFormatter{})
+		log.Fatal("Error while trying set up configuration: " + err.Error())
+	}
+	logs.SetFormatter(config.Data.LogFormat)
+	log.Logger.SetOutput(os.Stdout)
+	log.Logger.SetLevel(config.Data.LogLevel)
 
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Manager Service should not be run as the root user")
 	}
 
-	if err := config.SetConfiguration(); err != nil {
-		log.Fatal("fatal: error while trying set up configuration: %v" + err.Error())
+	config.CollectCLArgs(&configWarnings)
+	for _, warning := range configWarnings {
+		log.Warn(warning)
 	}
-
-	config.CollectCLArgs()
 
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal(err.Error())
@@ -55,7 +73,7 @@ func main() {
 		AddManagertoDBInterface: mgrmodel.AddManagertoDB,
 		GenericSave:             mgrmodel.GenericSave,
 	}
-	err := addManagertoDB(managerInterface)
+	err = addManagertoDB(managerInterface)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -63,9 +81,11 @@ func main() {
 	if configFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	go mgrcommon.TrackConfigFileChanges(configFilePath, managerInterface)
 
-	err = services.InitializeService(services.Managers)
+	errChan := make(chan error)
+	go mgrcommon.TrackConfigFileChanges(configFilePath, managerInterface, errChan)
+
+	err = services.InitializeService(services.Managers, errChan)
 	if err != nil {
 		log.Fatal("fatal: error while trying to initialize service: %v" + err.Error())
 	}

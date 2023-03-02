@@ -20,6 +20,7 @@ import glob, shutil, copy, getpass, socket
 
 import base64
 from cryptography.hazmat.primitives import hashes
+from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
@@ -61,6 +62,8 @@ MIN_REPLICA_COUNT = 0
 MAX_REPLICA_COUNT = 10
 MAX_LOG_FILE_SIZE = 5*1024*1024
 
+key = Fernet.generate_key()
+fernet = Fernet(key)
 # write_node_details is used for creating hosts.yaml required
 # for deploying kuberentes cluster using kubespray. hosts.yaml
 # is prepared based on the parameters provided in odim-controller conf
@@ -175,7 +178,25 @@ def perform_checks(skip_opt_param_check=False):
 		logger.critical("deployment ID not configured, exiting!!!")
 		exit(1)
 	DEPLOYMENT_ID = CONTROLLER_CONF_DATA['deploymentID']
-
+	if 'logLevel' not in CONTROLLER_CONF_DATA['odimra'] or CONTROLLER_CONF_DATA['odimra']['logLevel'] == None or CONTROLLER_CONF_DATA['odimra']['logLevel'] == "": 
+		logger.info("Log level is not set, Setting default value warn")
+		CONTROLLER_CONF_DATA['odimra']['logLevel']="warn"
+	else :
+		log_levels = ['panic', 'fatal', 'error', 'warn','info','debug','trace']
+		if CONTROLLER_CONF_DATA['odimra']['logLevel'] not in log_levels:
+			logger.critical("Log level value is invalid, allowed values are 'panic', 'fatal', 'error', 'warn','info','debug','trace'")
+			exit(1)
+		logger.info("Log level is %s ",CONTROLLER_CONF_DATA['odimra']['logLevel'])
+	if 'logFormat' not in CONTROLLER_CONF_DATA['odimra'] or CONTROLLER_CONF_DATA['odimra']['logFormat'] == None or CONTROLLER_CONF_DATA['odimra']['logFormat'] == "": 
+		logger.info("Log format is not set, Setting default value syslog")
+		CONTROLLER_CONF_DATA['odimra']['logFormat']="syslog"
+	else :
+		log_formats = ['syslog', 'json']
+		if CONTROLLER_CONF_DATA['odimra']['logFormat'] not in log_formats:
+			logger.critical("Log format value is invalid, allowed values are 'syslog', 'json'")
+			exit(1)
+		logger.info("Log format is %s ",CONTROLLER_CONF_DATA['odimra']['logFormat'])
+		
 	if not skip_opt_param_check:
 		logger.debug("Checking if the local user matches with the configured nodes user")
 		cur_user = os.getenv('USER')
@@ -234,7 +255,7 @@ def perform_checks(skip_opt_param_check=False):
 	else:
 		ANSIBLE_SUDO_PW_FILE = CONTROLLER_CONF_DATA['nodePasswordFilePath']
 		if not os.path.exists(ANSIBLE_SUDO_PW_FILE):
-			logger.critical("%s does not exist, exiting!!!", ANSIBLE_SUDO_PW_FILE)
+			logger.critical("node password file path does not exist, exiting!!!")
 
 	if IS_ODIMRA_DEPLOYMENT == True:
 		if 'redisInMemoryPasswordFilePath' not in CONTROLLER_CONF_DATA or \
@@ -246,7 +267,7 @@ def perform_checks(skip_opt_param_check=False):
 		else:
 			REDIS_INMEMORY_PW_FILE = CONTROLLER_CONF_DATA['redisInMemoryPasswordFilePath']
 			if not os.path.exists(REDIS_INMEMORY_PW_FILE):
-				logger.critical("%s does not exist, exiting!!!", REDIS_INMEMORY_PW_FILE)
+				logger.critical("redis in-memory password file path does not exist, exiting!!!")
 
 		if 'redisOnDiskPasswordFilePath' not in CONTROLLER_CONF_DATA or \
 		CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == None or CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath'] == "":
@@ -257,7 +278,7 @@ def perform_checks(skip_opt_param_check=False):
 		else:
 			REDIS_ONDISK_PW_FILE = CONTROLLER_CONF_DATA['redisOnDiskPasswordFilePath']
 			if not os.path.exists(REDIS_ONDISK_PW_FILE):
-				logger.critical("%s does not exist, exiting!!!", REDIS_ONDISK_PW_FILE)
+				logger.critical("redis On-Disk Password File Path does not exist, exiting!!!")
 
 	cert_dir = os.path.join(CONTROLLER_SRC_PATH, 'certs')
 	if not os.path.exists(cert_dir):
@@ -487,6 +508,8 @@ def scale_in_k8s():
 
 	if not DRY_RUN_SET:
 		load_password_from_vault(cur_dir)
+		logger.info("Removing the k8s images")
+		delete_k8_images(K8S_INVENTORY_FILE,nodes_list)
 		logger.info("Starting k8s cluster scale-in")
 		k8s_rm_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root --extra-vars "node={rm_node_list}" -e delete_nodes_confirmation=yes remove-node.yml'.format(host_conf_file=K8S_INVENTORY_FILE, rm_node_list=nodes_list)
 		ret = exec(k8s_rm_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
@@ -513,7 +536,7 @@ def scale_in_k8s():
 		else:
 			logger.info("Post-uninstall action was successful on nodes %s", nodes_list)
 
-		delete_k8_images(K8S_INVENTORY_FILE,nodes_list)
+		#delete_k8_images(K8S_INVENTORY_FILE,nodes_list)
 		# remove copy of controller config file created
 		os.remove(helm_config_file)
 		os.remove(odimra_config_file)
@@ -690,6 +713,7 @@ def remove_k8s():
 	if not DRY_RUN_SET:
 		load_password_from_vault(cur_dir)
 		logger.info("Starting k8s cluster reset")
+		delete_k8_images(host_file,nodes_list)
 		k8s_reset_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root -e reset_confirmation=yes reset.yml'.format(host_conf_file=host_file)
 		ret = exec(k8s_reset_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
 		if ret != 0:
@@ -697,7 +721,7 @@ def remove_k8s():
 			os.chdir(cur_dir)
 			exit(1)
 
-		delete_k8_images(host_file,nodes_list)
+		#delete_k8_images(host_file,nodes_list)
 		logger.debug("Clearing deployment specific data of %s cluster" %(DEPLOYMENT_ID))
 		shutil.rmtree(DEPLOYMENT_SRC_DIR)
 
@@ -1122,7 +1146,8 @@ def store_vault_key():
 			exit(1)
 
 		fd = open(ODIMRA_VAULT_KEY_FILE, "wb")
-		fd.write(first_pw.encode('utf-8'))
+		encpass = fernet.encrypt(first_pw.encode('utf-8'))
+		fd.write(encpass)
 		fd.close()
 
 		encode_cmd = '{vault_bin} -encode {key_file}'.format(vault_bin=ODIMRA_VAULT_BIN, key_file=ODIMRA_VAULT_KEY_FILE)
@@ -1146,7 +1171,8 @@ def store_password_in_vault():
 		exit(1)
 
 	fd = open(ANSIBLE_SUDO_PW_FILE, "wb")
-	fd.write(first_pw.encode('utf-8'))
+	encpass = fernet.encrypt(first_pw.encode('utf-8'))
+	fd.write(encpass)
 	fd.close()
 
 	encrypt_cmd = '{vault_bin} -key {key_file} -encrypt {data_file}'.format(vault_bin=ODIMRA_VAULT_BIN,
@@ -1167,7 +1193,8 @@ def store_redis_password_in_vault(REDIS_PW_FILE_PATH, redis_db_name):
 		exit(1)
 
 	fd = open(REDIS_PW_FILE_PATH, "wb")
-	fd.write(first_pw.encode('utf-8'))
+	encpass = fernet.encrypt(first_pw.encode('utf-8'))
+	fd.write(encpass)
 	fd.close()
 
 	encrypt_cmd = '{vault_bin} -key {key_file} -encrypt {data_file}'.format(vault_bin=ODIMRA_VAULT_BIN,
@@ -1224,7 +1251,7 @@ def get_password_from_vault(cur_dir, password_file_path):
 
 	if execHdlr.returncode != 0 or std_out == "":
 		print(std_out.strip())
-		logger.critical("failed to read the password from "+ password_file_path)
+		logger.critical("failed to read the password from file")
 		os.chdir(cur_dir)
 		exit(1)
 
@@ -1250,7 +1277,7 @@ def check_extract_kubespray_src():
 			data_loaded = yaml.safe_load(defaultMain)
 			if (data_loaded['enable_dual_stack_networks'] == False) and (nwPreference != 'ipv4'):
 				data_loaded['enable_dual_stack_networks'] = True
-				with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml", w) as defaultMainWrite:
+				with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml", "w") as defaultMainWrite:
 					yaml.dump(data_loaded, defaultMainWrite)
 			elif (data_loaded['enable_dual_stack_networks'] == True) and (nwPreference != 'dualStack'):
 				data_loaded['enable_dual_stack_networks'] = False
@@ -1260,7 +1287,7 @@ def check_extract_kubespray_src():
 			data_loaded = yaml.safe_load(defaultMain)
 			if (data_loaded['enable_dual_stack_networks'] == False) and (nwPreference != 'ipv4'):
 				data_loaded['enable_dual_stack_networks'] = True
-				with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml", w) as defaultMainWrite:
+				with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml", "w") as defaultMainWrite:
 					yaml.dump(data_loaded, defaultMainWrite)
 			elif (data_loaded['enable_dual_stack_networks'] == True) and (nwPreference != 'dualStack'):
 				data_loaded['enable_dual_stack_networks'] = False
@@ -1280,7 +1307,7 @@ def read_groupvar():
 
 # upgrade_config_map update the config maps
 def upgrade_config_map(config_map_name):
-	logger.info("Upgrading config map"+config_map_name)
+	logger.info("Upgrading config map "+config_map_name)
 	# Parse the conf file passed
 	read_conf()
 	# Validate conf parameters passed
@@ -1331,7 +1358,7 @@ def upgrade_config_map(config_map_name):
 # update_helm_charts is for upgrading the deployed
 # helm releases
 def update_helm_charts(config_map_name):
-	
+
 	optionHelmChartInfo = {
 		"odimra-config":"odim_pv_pvc_secrets_helmcharts",
 		"odimra-platformconfig":"odim_pv_pvc_secrets_helmcharts",
@@ -1380,9 +1407,12 @@ def update_helm_charts(config_map_name):
 		"redis":"upgrade_thirdparty",
 		"etcd":"upgrade_thirdparty"
 	}
+	if config_map_name =='composition-service':
+		logger.warning("upgrade is not supported")
+		exit(1)
 
 	if config_map_name not in optionHelmChartInfo:
-		logger.critical("%s upgrade is not supported!!!", config_map_name)
+		logger.warning("upgrade is not supported")
 		exit(1)
 
 	helmCharatGroupName=optionHelmChartInfo[config_map_name]
@@ -1395,7 +1425,7 @@ def update_helm_charts(config_map_name):
 	helmchartData=GROUP_VAR_DATA[helmCharatGroupName]
 	fullHelmChartName = helmchartData[config_map_name]
 	if fullHelmChartName=='':
-		logger.critical("%s upgrade is not supported!!!", config_map_name)
+		logger.critical("upgrade is not supported")
 		exit(1)
 
 	logger.info('Full helm chart name %s',fullHelmChartName)
@@ -1424,7 +1454,7 @@ def update_helm_charts(config_map_name):
 					nodes_list += '{hostname},'.format(hostname=node)
 				nodes_list = nodes_list.rstrip(',')
 				dockerImageName=GROUP_VAR_DATA['odim_docker_images'][config_map_name]
-				logger.info("Start copying of docker images for %s",config_map_name)
+				logger.info("Start copying of docker images")
 				docker_copy_image_command= 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 							   --extra-vars "docker_image_name={docker_image_name} helm_config_file={helm_config_file} host={nodes} ignore_err={ignore_err}" pre_upgrade.yaml'.format(\
 									   host_conf_file=host_file,docker_image_name=dockerImageName,\
@@ -1713,6 +1743,25 @@ def deploy_plugin(plugin_name):
 				else:
 					logger.critical("ServiceUUID parameter missing in Config file")
 					exit(1)
+				if 'logLevel' not in pluginConf[plugin_name] or pluginConf[plugin_name]['logLevel'] == None or pluginConf[plugin_name]['logLevel'] == "":
+					logger.info("Log level is not set for %s, Setting default value warn",plugin_name)
+					pluginConf[plugin_name]['logLevel']="warn"
+				else:
+					log_levels = ['panic', 'fatal', 'error', 'warn','info','debug','trace']
+					if pluginConf[plugin_name]['logLevel'] not in log_levels:
+						logger.critical("Log level value is invalid, allowed values are 'panic', 'fatal', 'error', 'warn','info','debug','trace'")
+						exit(1)
+				logger.info("Log level for %s is %s ",plugin_name,pluginConf[plugin_name]['logLevel'])
+				if 'logFormat' not in pluginConf[plugin_name] or pluginConf[plugin_name]['logFormat'] == None or pluginConf[plugin_name]['logFormat'] == "": 
+					logger.info("Log format is not set for %s, Setting default value syslog",plugin_name)
+					pluginConf[plugin_name]['logFormat']="syslog"
+				else :
+					log_formats = ['syslog', 'json']
+					if pluginConf[plugin_name]['logFormat'] not in log_formats:
+						logger.critical("Log format value is invalid, allowed values are 'syslog', 'json'")
+						exit(1)
+				logger.info("Log format for %s is %s ",plugin_name,pluginConf[plugin_name]['logFormat'])
+
 			except yaml.YAMLError as exc:
 				logger.error(exc)
 				exit(1)

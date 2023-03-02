@@ -27,7 +27,7 @@ data:
        "MessageBusConf": {
          "MessageBusConfigFilePath": "/etc/odimra_config/platformconfig.toml",
          "MessageBusType": {{ .Values.odimra.messageBusType | quote }},
-         "MessageBusQueue": {{ .Values.odimra.messageBusQueue | quote | toStrings }}
+         "OdimControlMessageQueue": "ODIM-CONTROL-MESSAGES"
       },
     	"DBConf": {
                 "Protocol": "tcp",
@@ -41,6 +41,8 @@ data:
                 {{ else }}
                 "InMemoryHost": "redis-ha-inmemory",
                 "OnDiskHost": "redis-ha-ondisk",
+                "InMemorySentinelHost": "redis-ha-inmemory-sentinel",
+                "OnDiskSentinelHost": "redis-ha-ondisk-sentinel",
                 "InMemoryPrimarySet": "primaryset",
                 "OnDiskPrimarySet": "primaryset",
                 {{ end }}
@@ -64,6 +66,11 @@ data:
                 "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
     		]
     	},
+      "TaskQueueConf" : {
+        "QueueSize": 20000,
+        "DBCommitInterval": 1000,
+        "RetryInterval": 5000
+      },
     	"FirmwareVersion": "1.0",
     	"SouthBoundRequestTimeoutInSecs": 300,
     	"ServerRediscoveryBatchSize": 30,
@@ -133,7 +140,6 @@ data:
     		"Managers",
     		"UpdateService",
     		"TelemetryService",
-        "CompositionService",
         "LicenseService"
     	],
       "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},
@@ -143,6 +149,9 @@ data:
                  "DeliveryRetryIntervalSeconds" : 60
       },
       "ResourceRateLimit": {{ .Values.odimra.resourceRateLimit | toJson }},
+      "LogLevel": {{ .Values.odimra.logLevel | quote }},
+      "LogFormat": {{ .Values.odimra.logFormat | quote }},
+      "ImageRegistryAddress": {{ .Values.odimra.imageRegistryAddress | quote }},
       "RequestLimitCountPerSession": {{ .Values.odimra.requestLimitPerSession | default 0 }},
       "SessionLimitCountPerUser": {{ .Values.odimra.sessionLimitPerUser | default 0 }}
     }

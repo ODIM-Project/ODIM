@@ -16,6 +16,7 @@ package managers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -164,7 +165,7 @@ func mockGetResource(table, key string) (string, *errors.Error) {
 	return "body", nil
 }
 
-func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
+func mockGetDeviceInfo(ctx context.Context, req mgrcommon.ResourceInfoRequest) (string, error) {
 	if req.URL == "/redfish/v1/Managers/deviceAbsent.1" || req.URL == "/redfish/v1/Managers/uuid1.1/Ethernet" {
 		return "", fmt.Errorf("error")
 	} else if req.URL == "/redfish/v1/Managers/uuid1.1/Virtual" {
@@ -183,7 +184,7 @@ func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
 	return string(dataByte), err
 }
 
-func mockDeviceRequest(req mgrcommon.ResourceInfoRequest) response.RPC {
+func mockDeviceRequest(ctx context.Context, req mgrcommon.ResourceInfoRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 	if req.URL == "/redfish/v1/Managers/deviceAbsent.1" || req.URL == "/redfish/v1/Managers/uuid1.1/Virtual" || req.URL == "/redfish/v1/Managers/uuid.1/Logservice" {
@@ -207,7 +208,7 @@ func mockDeviceRequest(req mgrcommon.ResourceInfoRequest) response.RPC {
 	return resp
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	baseURI := "/redfish/v1"
 	baseURI = mgrcommon.TranslateToSouthBoundURL(baseURI)
 

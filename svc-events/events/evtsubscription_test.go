@@ -22,12 +22,16 @@ package events
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"reflect"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/stretchr/testify/assert"
 )
@@ -61,6 +65,57 @@ func TestCreateEventSubscriptionForAgregate(t *testing.T) {
 	}
 	resp := p.CreateEventSubscription(taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
+
+	SubscriptionReq = map[string]interface{}{
+		"Name":                 "EventSubscription",
+		"Destination":          "https://odim.test24.com:8070/Destination1",
+		"EventTypes":           []string{"Alert"},
+		"Protocol":             "Redfish",
+		"Context":              "Event Subscription",
+		"SubscriptionType":     "RedfishEvent",
+		"EventFormatType":      "Event",
+		"SubordinateResources": true,
+		"OriginResources": []evmodel.OdataIDLink{
+			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da"},
+			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da2"},
+		},
+		"DeliveryRetryPolicy": "TerminateAfterRetries",
+	}
+	postBody, _ = json.Marshal(&SubscriptionReq)
+
+	// Invalid Delivery type
+	req = &eventsproto.EventSubRequest{
+		SessionToken: "token",
+		PostBody:     postBody,
+	}
+	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
+
+	SubscriptionReq = map[string]interface{}{
+		"Name":                 "EventSubscription",
+		"Destination":          "https://odim.test24.com:8070/Destination1",
+		"EventTypes":           []string{"Alert"},
+		"Protocol":             "Redfish",
+		"Context":              "Event Subscription",
+		"SubscriptionType":     "RedfishEvent",
+		"EventFormatType":      "Event",
+		"SubordinateResources": true,
+		"OriginResources": []evmodel.OdataIDLink{
+			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da"},
+			{OdataID: "/redfish/v1/AggregationService/Aggregates/11081de0-4859-984c-c35a-6c50732d72da2"},
+		},
+		"DeliveryRetryPolicy": "TerminateAfterRetries1",
+	}
+	postBody, _ = json.Marshal(&SubscriptionReq)
+
+	// Invalid Delivery type
+	req = &eventsproto.EventSubRequest{
+		SessionToken: "token",
+		PostBody:     postBody,
+	}
+	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
+
 }
 
 // Positive test cases
@@ -491,4 +546,95 @@ func TestCheckCollectionSubscription(t *testing.T) {
 	devSub, _ := p.GetDeviceSubscriptions("*" + originResources)
 	assert.Equal(t, "https://100.100.100.100/ODIM/v1/Subscriptions/1", devSub.Location, "Location should be https://100.100.100.100/ODIM/v1/Subscriptions/12")
 	assert.Equal(t, "100.100.100.100", devSub.EventHostIP, "EventHostIP should be 100.100.100.100")
+}
+
+func TestExternalInterfaces_UpdateEventSubscriptions(t *testing.T) {
+	config.SetUpMockConfig(t)
+	pc := getMockMethods()
+	res := pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{}, false)
+	assert.Nil(t, res, "there shoud be an error ")
+	pc.External.Auth = func(s1 string, s2, s3 []string) (response.RPC, error) { return response.RPC{StatusCode: 200}, nil }
+	res = pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{SessionToken: "", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	assert.Nil(t, res, "there shoud be an error ")
+
+	pc.DB.GetAggregateList = func(hostIP string) ([]string, error) { return []string{}, errors.New("") }
+	res = pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{SessionToken: "", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	assert.Nil(t, res, "there shoud be an error ")
+
+	pc.DB.GetAggregateList = func(hostIP string) ([]string, error) { return []string{"6d4a0a66-7efa-578e-83cf-44dc68d2874e"}, nil }
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+		return []evmodel.Subscription{
+			{
+				UserName:             "admin",
+				SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d7",
+				Destination:          "https://odim.destination.com:9090/events",
+				Name:                 "Subscription",
+				Location:             "https://odim.2.com/EventService/Subscriptions/1",
+				Context:              "context",
+				EventTypes:           []string{"Alert", "ResourceAdded"},
+				MessageIds:           []string{"IndicatorChanged"},
+				ResourceTypes:        []string{"ComputerSystem"},
+				OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+				Hosts:                []string{"6d4a0a66-7efa-578e-83cf-44dc68d2874e"},
+				SubordinateResources: true,
+			},
+		}, nil
+	}
+	res = pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	assert.Nil(t, res, "there shoud be an error ")
+
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) { return []evmodel.Subscription{}, errors.New("error") }
+	res = pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	assert.True(t, true, "there shoud be an error ")
+
+	pc = getMockMethods()
+	GetIPFromHostNameFunc = func(fqdn string) (string, string) { return "", "not Found " }
+	res = pc.UpdateEventSubscriptions(&eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	assert.Nil(t, res, "there shoud be an error ")
+
+}
+
+func TestExternalInterfaces_createFabricSubscription(t *testing.T) {
+	config.SetUpMockConfig(t)
+	p := getMockMethods()
+	postBody := evmodel.RequestBody{
+		Name:                 "EventSubscription",
+		Destination:          "https://odim.test24.com:8070/Destination1",
+		EventTypes:           []string{"Alert"},
+		Protocol:             "Redfish",
+		Context:              "Event Subscription",
+		SubscriptionType:     "RedfishEvent",
+		EventFormatType:      "Event",
+		SubordinateResources: true,
+		OriginResources: []evmodel.OdataIDLink{
+			{OdataID: "/redfish/v1/Systems"},
+		},
+	}
+
+	_, resp := p.createFabricSubscription(postBody, "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "", false)
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusCreated")
+
+	GetIPFromHostNameFunc = func(fqdn string) (string, string) { return "", "Not found" }
+	_, resp = p.createFabricSubscription(postBody, "/redfish/v1/Fabrics/6d4a0a66-7efa-578e-83cf-44dc68d2874e", "", false)
+	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusCreated")
+
+}
+
+func TestExternalInterfaces_getTargetDetails(t *testing.T) {
+	config.SetUpMockConfig(t)
+	p := getMockMethods()
+	_, _, err := p.getTargetDetails("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e")
+	assert.NotNil(t, err, "Their should be no error")
+
+	_, _, err = p.getTargetDetails("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2875d.1")
+	assert.NotNil(t, err, "Their should be no error")
+
+	DecryptWithPrivateKeyFunc = func(ciphertext []byte) ([]byte, error) {
+		return nil, errors.New("")
+	}
+	_, _, err = p.getTargetDetails("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
+	assert.NotNil(t, err, "Their should be no error")
+	DecryptWithPrivateKeyFunc = func(ciphertext []byte) ([]byte, error) {
+		return common.DecryptWithPrivateKey(ciphertext)
+	}
 }

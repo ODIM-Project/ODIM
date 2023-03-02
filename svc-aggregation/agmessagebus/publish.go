@@ -15,6 +15,7 @@
 package agmessagebus
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -22,16 +23,16 @@ import (
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	uuid "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
 )
 
 //Publish will takes the system id,Event type and publishes the data to message bus
-func Publish(systemID, eventType, collectionType string) {
-	topicName := config.Data.MessageBusConf.MessageBusQueue[0]
+func Publish(ctx context.Context, systemID, eventType, collectionType string) {
+	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
 	k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
-		log.Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
+		l.LogWithFields(ctx).Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
 		return
 	}
 
@@ -68,16 +69,16 @@ func Publish(systemID, eventType, collectionType string) {
 	}
 
 	if err := k.Distribute(mbevent); err != nil {
-		log.Error("Unable Publish events to kafka" + err.Error())
+		l.LogWithFields(ctx).Error("Unable Publish events to kafka" + err.Error())
 		return
 	}
-	log.Info("Event Published")
+	l.LogWithFields(ctx).Info("Event Published")
 
 }
 
 // PublishCtrlMsg publishes ODIM control messages to the message bus
 func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
-	topicName := config.Data.MessageBusConf.MessageBusQueue[0]
+	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
 	conn, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
 		return fmt.Errorf("failed to get kafka connection: %s", err.Error())

@@ -20,8 +20,10 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -110,11 +112,12 @@ func TestGetPluginData(t *testing.T) {
 		pluginID string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		exec    func(*Plugin)
-		want    Plugin
-		wantErr bool
+		name                string
+		args                args
+		exec                func(*Plugin)
+		want                Plugin
+		GetDBConnectionFunc func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+		wantErr             bool
 	}{
 		{
 			name: "Positive Case",
@@ -124,6 +127,9 @@ func TestGetPluginData(t *testing.T) {
 			},
 			want:    pluginData,
 			wantErr: false,
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
 		},
 		{
 			name:    "Negative Case - Non-existent plugin",
@@ -131,6 +137,9 @@ func TestGetPluginData(t *testing.T) {
 			exec:    nil,
 			want:    Plugin{},
 			wantErr: true,
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
 		},
 		{
 			name:    "Negative Case - Invalid plugin data",
@@ -138,12 +147,26 @@ func TestGetPluginData(t *testing.T) {
 			exec:    nil,
 			want:    Plugin{},
 			wantErr: true,
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
 		},
 		{
-			name:    "Negative Case - Plugin with invalid password",
-			args:    args{pluginID: "invalidPassword"},
-			exec:    nil,
-			want:    Plugin{},
+			name:                "Negative Case - Get DB connection",
+			args:                args{pluginID: "invalidPassword"},
+			exec:                nil,
+			want:                Plugin{},
+			wantErr:             true,
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) { return nil, &errors.Error{} },
+		},
+		{
+			name: "Negative Case - Plugin with invalid password",
+			args: args{pluginID: "invalidPassword"},
+			exec: nil,
+			want: Plugin{},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
 			wantErr: true,
 		},
 	}
@@ -152,6 +175,7 @@ func TestGetPluginData(t *testing.T) {
 			tt.exec(&tt.want)
 		}
 		t.Run(tt.name, func(t *testing.T) {
+			GetDBConnectionFunc = tt.GetDBConnectionFunc
 			got, err := GetPluginData(tt.args.pluginID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetPluginData() error = %v, wantErr %v", err, tt.wantErr)
@@ -175,6 +199,14 @@ func TestGetAllFabricPluginDetails(t *testing.T) {
 	mockPluginData(t)
 	resp, _ := GetAllFabricPluginDetails()
 	assert.Equal(t, len(resp), 1, "should be same")
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	_, err := GetAllFabricPluginDetails()
+	assert.NotNil(t, err, "There should be an error")
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 
 }
 
@@ -196,6 +228,14 @@ func TestAddFabricData(t *testing.T) {
 	// Adding Duplicate Fabrics Data
 	err = fab1.AddFabricData("12345")
 	assert.Equal(t, "warning: skipped saving of duplicate data with key 12345", err.Error(), "should be same")
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	err = fab1.AddFabricData("12345")
+	assert.NotNil(t, err, "There should be an error")
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 }
 
 func TesGetManagingPluginIDForFabricID(t *testing.T) {
@@ -219,6 +259,17 @@ func TesGetManagingPluginIDForFabricID(t *testing.T) {
 	// negative test case
 	fabric, err = GetManagingPluginIDForFabricID("54321")
 	assert.NotNil(t, err, "there should be an error")
+
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	_, err = GetManagingPluginIDForFabricID("54321")
+
+	assert.NotNil(t, err, "There should be an error")
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
+
 }
 
 func TestGetAllFabrics(t *testing.T) {
@@ -248,4 +299,44 @@ func TestGetAllFabrics(t *testing.T) {
 			}
 		})
 	}
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	_, err = GetAllTheFabrics()
+	assert.NotNil(t, err, "There should be an error")
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
+
+}
+
+func TestFabric_RemoveFabricData(t *testing.T) {
+	var fab1 = Fabric{
+		FabricUUID: "12345",
+		PluginID:   "CFM",
+	}
+	config.SetUpMockConfig(t)
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+
+	fab1.AddFabricData("12345")
+	fab1.RemoveFabricData("12345")
+
+	_, err := GetManagingPluginIDForFabricID("12345")
+	assert.NotNil(t, err, "There should be an error ")
+	mockFabricData("12345", "AFC")
+	_, err = GetManagingPluginIDForFabricID("12345")
+	assert.Nil(t, err, "There should no error ")
+
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	err = fab1.RemoveFabricData("12345")
+	assert.NotNil(t, err, "There should be an error")
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
+
 }

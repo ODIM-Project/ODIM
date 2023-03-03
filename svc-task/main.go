@@ -61,7 +61,6 @@ func main() {
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Task Service should not be run as the root user")
 	}
-
 	config.CollectCLArgs(&configWarnings)
 	for _, warning := range configWarnings {
 		log.Warn(warning)
@@ -77,7 +76,6 @@ func main() {
 	if tcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-
 	errChan := make(chan error)
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go tcommon.TrackConfigFileChanges(errChan)
@@ -117,6 +115,7 @@ func main() {
 	tick := &tmodel.Tick{
 		Ticker: time.NewTicker(time.Duration(config.Data.TaskQueueConf.DBCommitInterval) * time.Microsecond),
 	}
+
 	go tqueue.UpdateTasksWorker(tick)
 
 	// Run server

@@ -327,7 +327,6 @@ func ValidateTaskUserName(ctx context.Context, userName string) error {
 2."conn" is an instance of Conn struct in persistence manager library
 */
 func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
-
 	defer func() {
 		tick.M.Lock()
 		tick.Commit = false
@@ -349,10 +348,6 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 
 	tasks := make(map[string]interface{}, maxSize)
 	completedTasks := make(map[string]int64, maxSize)
-
-	if len(*queue) <= 0 {
-		return
-	}
 
 	tick.M.Lock()
 	tick.Executing = true

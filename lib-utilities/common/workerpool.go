@@ -18,8 +18,6 @@ package common
 import (
 	"context"
 	"sync"
-
-	"github.com/google/uuid"
 )
 
 // RunReadWorkers will create a worker pool for doing a specific task
@@ -33,8 +31,6 @@ func RunReadWorkers(ctx context.Context, jobChannel <-chan interface{}, jobProce
 	for w := 0; w < workerCount; w++ {
 		go func() {
 			for j := range jobChannel {
-				transactionID := uuid.New()
-				ctx = context.WithValue(ctx, TransactionID, transactionID.String())
 				jobProcess(ctx, j)
 			}
 		}()

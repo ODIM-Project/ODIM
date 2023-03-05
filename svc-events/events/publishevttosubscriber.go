@@ -35,12 +35,12 @@ import (
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	fabricproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -55,7 +55,6 @@ var (
 func (e *ExternalInterfaces) addFabric(ctx context.Context, message common.MessageData, host string) {
 	for _, inEvent := range message.Events {
 		if inEvent.OriginOfCondition == nil || len(inEvent.OriginOfCondition.Oid) < 1 {
-			l.LogWithFields(ctx).Info("event not forwarded : Originofcondition is empty in incoming event")
 			continue
 		}
 		if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
@@ -71,17 +70,22 @@ func (e *ExternalInterfaces) addFabric(ctx context.Context, message common.Messa
 
 // PublishEventsToDestination This method sends the event/alert to subscriber's destination
 // Takes:
-// 	data of type interface{}
-//Returns:
+//
+//	data of type interface{}
+//
+// Returns:
+//
 //	bool: return false if any error occurred during execution, else returns true
 func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, data interface{}) bool {
+	eventUniqueID := uuid.NewV4().String()
+	logging = logging.WithFields(logrus.Fields{"transactionid": eventUniqueID})
 	if data == nil {
-		l.LogWithFields(ctx).Info("invalid input params")
+		logging.Info("invalid input params")
 		return false
 	}
 	event := data.(common.Events)
 	if event.EventType == "PluginStartUp" {
-		l.LogWithFields(ctx).Info("received plugin started event from ", event.IP)
+		logging.Info("received plugin started event from ", event.IP)
 		go callPluginStartUp(ctx, event)
 		return true
 	}
@@ -91,7 +95,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 	if err != nil {
 		host = event.IP
 	}
-	l.LogWithFields(ctx).Info("After splitting host address, IP is: ", host)
+	logging.Info("After splitting host address, IP is: ", host)
 
 	var requestData = string(event.Request)
 	//replacing the response with north bound translation URL
@@ -108,18 +112,17 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 	var message, rawMessage common.MessageData
 
 	if err = json.Unmarshal([]byte(requestData), &rawMessage); err != nil {
-		l.LogWithFields(ctx).Error("failed to unmarshal the incoming event: ", requestData, " with the error: ", err.Error())
+		logging.Error("failed to unmarshal the incoming event: ", requestData, " with the error: ", err.Error())
 		return false
 	}
 
 	e.addFabric(ctx, rawMessage, host)
 	systemId, err := getSourceId(host)
 	if err != nil {
-		l.LogWithFields(ctx).Info("no origin resources found in device subscriptions")
+		logging.Info("no origin resources found in device subscriptions")
 		return false
 	}
 	message, deviceUUID = formatEvent(rawMessage, systemId, host)
-	eventUniqueID := uuid.NewV4().String()
 	eventMap := make(map[string][]common.Event)
 
 	for index, inEvent := range message.Events {
@@ -153,11 +156,10 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 		message.Events = value
 		data, err := json.Marshal(message)
 		if err != nil {
-			l.LogWithFields(ctx).Error("unable to converts event into bytes: ", err.Error())
+			logging.Error("unable to converts event into bytes: ", err.Error())
 			continue
 		}
-
-		go e.postEvent(ctx, key, eventUniqueID, data)
+		eventForwardingChanel <- evmodel.EventPost{Destination: key, EventID: eventUniqueID, Message: data}
 	}
 	return flag
 }
@@ -169,7 +171,8 @@ func (e *ExternalInterfaces) publishMetricReport(ctx context.Context, requestDat
 		return false
 	}
 	for _, sub := range subscriptions {
-		go e.postEvent(ctx, sub.EventDestination.Destination, eventUniqueID, []byte(requestData))
+		eventForwardingChanel <- evmodel.EventPost{Destination: sub.EventDestination.Destination, EventID: eventUniqueID, Message: []byte(requestData)}
+		// go e.postEvent()
 	}
 	return true
 }
@@ -259,7 +262,7 @@ func isResourceTypeSubscribed(ctx context.Context, resourceTypes []string, origi
 			}
 		}
 	}
-	l.LogWithFields(ctx).Info("Event not forwarded : No subscription for the incoming event's originofcondition")
+	logging.Info("Event not forwarded : No subscription for the incoming event's originofcondition")
 	return false
 }
 
@@ -273,26 +276,21 @@ func isStringPresentInSlice(ctx context.Context, slice []string, str, message st
 			return true
 		}
 	}
-	l.LogWithFields(ctx).Info("Event not forwarded : No subscription for the incoming event's ", message)
+	logging.Info("Event not forwarded : No subscription for the incoming event's ", message)
 	return false
 }
 
 // postEvent will post the event to destination
-func (e *ExternalInterfaces) postEvent(ctx context.Context, destination, eventUniqueID string, event []byte) {
-	resp, err := SendEventFunc(destination, event)
+func (e *ExternalInterfaces) postEvent(eventMessage evmodel.EventPost) {
+	resp, err := SendEventFunc(eventMessage.Destination, eventMessage.Message)
 	if err == nil {
 		resp.Body.Close()
-		l.LogWithFields(ctx).Info("Event is successfully forwarded")
+		logging.Info("Event is successfully forwarded")
 		// check any undelivered events are present in db for the destination and publish those
-		go e.checkUndeliveredEvents(ctx, destination)
+		// go e.checkUndeliveredEvents(ctx, destination)
 		return
 	}
-	undeliveredEventID := destination + ":" + eventUniqueID
-	serr := e.SaveUndeliveredEvents(undeliveredEventID, event)
-	if serr != nil {
-		l.LogWithFields(ctx).Error("error while saving undelivered event: ", serr.Error())
-	}
-	go e.reAttemptEvents(ctx, destination, undeliveredEventID, event)
+	e.reAttemptEvents(eventMessage)
 
 }
 
@@ -315,36 +313,24 @@ func sendEvent(destination string, event []byte) (*http.Response, error) {
 	return httpClient.Do(req)
 }
 
-func (e *ExternalInterfaces) reAttemptEvents(ctx context.Context, destination, undeliveredEventID string, event []byte) {
+func (e *ExternalInterfaces) reAttemptEvents(eventMessage evmodel.EventPost) {
 	var resp *http.Response
 	var err error
 	count := config.Data.EventConf.DeliveryRetryAttempts
 	for i := 0; i < count; i++ {
-		l.LogWithFields(ctx).Info("Retry event forwarding on destination: ", destination)
+		logging.Info("Retry event forwarding on destination: ")
 		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
-		// if undelivered event already published then ignore retrying
-		eventString, err := e.GetUndeliveredEvents(undeliveredEventID)
-		if err != nil || len(eventString) < 1 {
-			l.LogWithFields(ctx).Info("Event is forwarded to destination")
-			return
-		}
-		resp, err = SendEventFunc(destination, event)
+		resp, err = SendEventFunc(eventMessage.Destination, eventMessage.Message)
 		if err == nil {
 			resp.Body.Close()
-			l.LogWithFields(ctx).Info("Event is successfully forwarded")
-			// if event is delivered then delete the same which is saved in 1st attempt
-			err = e.DeleteUndeliveredEvents(undeliveredEventID)
-			if err != nil {
-				l.LogWithFields(ctx).Error("error while deleting undelivered events: ", err.Error())
-			}
-			// check any undelivered events are present in db for the destination and publish those
-			go e.checkUndeliveredEvents(ctx, destination)
+			logging.Info("Event is successfully forwarded")
 			return
 		}
-
 	}
-	if err != nil {
-		l.LogWithFields(ctx).Error("error while make https call to send the event: ", err.Error())
+	undeliveredEventID := eventMessage.Destination + ":" + eventMessage.EventID
+	serr := e.SaveUndeliveredEvents(undeliveredEventID, eventMessage.Message)
+	if serr != nil {
+		logging.Error("error while saving undelivered event: ", serr.Error())
 	}
 }
 
@@ -356,7 +342,7 @@ func rediscoverSystemInventory(ctx context.Context, systemID, systemURL string) 
 
 	conn, err := ServiceDiscoveryFunc(services.Aggregator)
 	if err != nil {
-		l.LogWithFields(ctx).Error("failed to get client connection object for aggregator service")
+		logging.Error("failed to get client connection object for aggregator service")
 		return
 	}
 	defer conn.Close()
@@ -367,10 +353,10 @@ func rediscoverSystemInventory(ctx context.Context, systemID, systemURL string) 
 		SystemURL: systemURL,
 	})
 	if err != nil {
-		l.LogWithFields(ctx).Info("Error while rediscoverSystemInventory")
+		logging.Info("Error while rediscoverSystemInventory")
 		return
 	}
-	l.LogWithFields(ctx).Info("rediscovery of system and chassis started.")
+	logging.Info("rediscovery of system and chassis started.")
 
 }
 
@@ -380,7 +366,7 @@ func (e *ExternalInterfaces) addFabricRPCCall(ctx context.Context, origin, addre
 	}
 	conn, err := ServiceDiscoveryFunc(services.Fabrics)
 	if err != nil {
-		l.LogWithFields(ctx).Error("Error while AddFabric ", err.Error())
+		logging.Error("Error while AddFabric ", err.Error())
 		return
 	}
 	defer conn.Close()
@@ -390,11 +376,11 @@ func (e *ExternalInterfaces) addFabricRPCCall(ctx context.Context, origin, addre
 		Address:        address,
 	})
 	if err != nil {
-		l.LogWithFields(ctx).Error("Error while AddFabric ", err.Error())
+		logging.Error("Error while AddFabric ", err.Error())
 		return
 	}
 	e.checkCollectionSubscription(ctx, origin, "Redfish")
-	l.LogWithFields(ctx).Info("Fabric Added")
+	logging.Info("Fabric Added")
 }
 func (e *ExternalInterfaces) removeFabricRPCCall(ctx context.Context, origin, address string) {
 	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
@@ -402,7 +388,7 @@ func (e *ExternalInterfaces) removeFabricRPCCall(ctx context.Context, origin, ad
 	}
 	conn, err := ServiceDiscoveryFunc(services.Fabrics)
 	if err != nil {
-		l.LogWithFields(ctx).Error("Error while Remove Fabric ", err.Error())
+		logging.Error("Error while Remove Fabric ", err.Error())
 		return
 	}
 	defer conn.Close()
@@ -412,10 +398,10 @@ func (e *ExternalInterfaces) removeFabricRPCCall(ctx context.Context, origin, ad
 		Address:        address,
 	})
 	if err != nil {
-		l.LogWithFields(ctx).Error("Error while RemoveFabric ", err.Error())
+		logging.Error("Error while RemoveFabric ", err.Error())
 		return
 	}
-	l.LogWithFields(ctx).Info("Fabric Removed")
+	logging.Info("Fabric Removed")
 }
 
 // updateSystemPowerState will be triggered when ever the System Powered Off event is received
@@ -429,7 +415,7 @@ func updateSystemPowerState(ctx context.Context, systemUUID, systemURI, state st
 	id := systemURI[index+1:]
 
 	if strings.ContainsAny(id, ":/-") {
-		l.LogWithFields(ctx).Error("event contains invalid origin of condition - ", systemURI)
+		logging.Error("event contains invalid origin of condition - ", systemURI)
 		return
 	}
 	if strings.Contains(state, "ServerPoweredOn") {
@@ -440,7 +426,7 @@ func updateSystemPowerState(ctx context.Context, systemUUID, systemURI, state st
 
 	conn, err := ServiceDiscoveryFunc(services.Aggregator)
 	if err != nil {
-		l.LogWithFields(ctx).Error("failed to get client connection object for aggregator service")
+		logging.Error("failed to get client connection object for aggregator service")
 		return
 	}
 	defer conn.Close()
@@ -454,23 +440,23 @@ func updateSystemPowerState(ctx context.Context, systemUUID, systemURI, state st
 		UpdateVal:  state,
 	})
 	if err != nil {
-		l.LogWithFields(ctx).Error("system power state update failed with ", err.Error())
+		logging.Error("system power state update failed with ", err.Error())
 		return
 	}
-	l.LogWithFields(ctx).Info("system power state update initiated")
+	logging.Info("system power state update initiated")
 }
 
 func callPluginStartUp(ctx context.Context, event common.Events) {
 	var message common.PluginStatusEvent
 	if err := JSONUnmarshal([]byte(event.Request), &message); err != nil {
-		l.LogWithFields(ctx).Error("failed to unmarshal the plugin startup event from "+event.IP+
+		logging.Error("failed to unmarshal the plugin startup event from "+event.IP+
 			" with the error: ", err.Error())
 		return
 	}
 
 	conn, err := ServiceDiscoveryFunc(services.Aggregator)
 	if err != nil {
-		l.LogWithFields(ctx).Error("failed to get client connection object for aggregator service")
+		logging.Error("failed to get client connection object for aggregator service")
 		return
 	}
 	defer conn.Close()
@@ -479,10 +465,10 @@ func callPluginStartUp(ctx context.Context, event common.Events) {
 		PluginAddr: event.IP,
 		OriginURI:  message.OriginatorID,
 	}); err != nil {
-		l.LogWithFields(ctx).Error("failed to send plugin startup data to " + event.IP + ": " + err.Error())
+		logging.Error("failed to send plugin startup data to " + event.IP + ": " + err.Error())
 		return
 	}
-	l.LogWithFields(ctx).Info("successfully sent plugin startup data to " + event.IP)
+	logging.Info("successfully sent plugin startup data to " + event.IP)
 }
 
 func (e *ExternalInterfaces) checkUndeliveredEvents(ctx context.Context, destination string) {
@@ -493,36 +479,50 @@ func (e *ExternalInterfaces) checkUndeliveredEvents(ctx context.Context, destina
 		// if flag is false then set the flag true, so other instance shouldnt have to read the undelivered events and publish
 		err := e.SetUndeliveredEventsFlag(destination)
 		if err != nil {
-			l.LogWithFields(ctx).Error("error while setting undelivered events flag: ", err.Error())
+			logging.Error("error while setting undelivered events flag: ", err.Error())
 		}
-		destData, _ := e.GetAllMatchingDetails(evmodel.UndeliveredEvents, destination, common.OnDisk)
-		for _, dest := range destData {
-			event, err := e.GetUndeliveredEvents(dest)
-			if err != nil {
-				l.LogWithFields(ctx).Error("error while getting undelivered events: ", err.Error())
-				continue
+		defer func() {
+			derr := e.DeleteUndeliveredEventsFlag(destination)
+			if derr != nil {
+				logging.Error("error while deleting undelivered events flag: ", derr.Error())
 			}
-			event = strings.Replace(event, "\\", "", -1)
-			event = strings.TrimPrefix(event, "\"")
-			event = strings.TrimSuffix(event, "\"")
-			resp, err := SendEventFunc(destination, []byte(event))
-			if resp != nil {
-				defer resp.Body.Close()
+		}()
+		cursorCount := 0
+		for {
+			destData, tempCount, err1 := e.GetUndeliveredEventsKeyList(evmodel.UndeliveredEvents, destination, common.OnDisk, cursorCount)
+			if err1 != nil {
+				logging.Error("error while getting undelivered events keys : ", err.Error())
+				return
 			}
-			if err != nil {
-				l.LogWithFields(ctx).Error("error while make https call to send the event: ", err.Error())
-				continue
+			cursorCount = tempCount
+			for _, dest := range destData {
+
+				event, err := e.GetUndeliveredEvents(dest)
+				if err != nil {
+					logging.Error("error while getting undelivered events: ", err.Error())
+					continue
+				}
+				event = strings.Replace(event, "\\", "", -1)
+				event = strings.TrimPrefix(event, "\"")
+				event = strings.TrimSuffix(event, "\"")
+				resp, err := SendEventFunc(destination, []byte(event))
+				if resp != nil {
+					defer resp.Body.Close()
+				}
+				if err != nil {
+					logging.Error("error while make https call to send the event: ", err.Error())
+					continue
+				}
+				logging.Info("Event is successfully forwarded")
+				err = e.DeleteUndeliveredEvents(dest)
+				if err != nil {
+					logging.Error("error while deleting undelivered events: ", err.Error())
+				}
 			}
-			l.LogWithFields(ctx).Info("Event is successfully forwarded")
-			err = e.DeleteUndeliveredEvents(dest)
-			if err != nil {
-				l.LogWithFields(ctx).Error("error while deleting undelivered events: ", err.Error())
+			if cursorCount == 0 {
+				return
 			}
 		}
-		// handle logic if inter connection fails
-		derr := e.DeleteUndeliveredEventsFlag(destination)
-		if derr != nil {
-			l.LogWithFields(ctx).Error("error while deleting undelivered events flag: ", derr.Error())
-		}
+
 	}
 }

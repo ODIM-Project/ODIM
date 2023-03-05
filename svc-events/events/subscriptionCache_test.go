@@ -75,6 +75,8 @@ func Test_getAllDeviceSubscriptions(t *testing.T) {
 
 func TestLoadSubscriptionData(t *testing.T) {
 	config.SetUpMockConfig(t)
+	pc := getMockMethods()
+
 	tests := []struct {
 		name string
 	}{
@@ -84,7 +86,7 @@ func TestLoadSubscriptionData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			LoadSubscriptionData(mockContext())
+			pc.LoadSubscriptionData(mockContext())
 		})
 	}
 }
@@ -185,6 +187,8 @@ func Test_getSourceId(t *testing.T) {
 }
 
 func Test_getSubscriptions(t *testing.T) {
+	pc := getMockMethods()
+
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -198,7 +202,7 @@ func Test_getSubscriptions(t *testing.T) {
 	config.SetUpMockConfig(t)
 
 	mockData()
-	LoadSubscriptionData(mockContext())
+	pc.LoadSubscriptionData(mockContext())
 	type args struct {
 		originOfCondition string
 		systemId          string

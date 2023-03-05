@@ -1725,11 +1725,11 @@ func (p *ConnPool) DeleteAggregateHosts(index, aggregateID string) error {
 // This function retrieves all data for a given index from sorted sets
 // This maybe used to get all event/device subscriptions and aggregate hosts
 func (p *ConnPool) GetAllDataByIndex(index string) ([]string, error) {
-	dList, ferror := p.getAllDataFromSortedList(index)
+	dList, size, ferror := p.getAllDataFromSortedList(index)
 	if ferror != nil {
 		return []string{}, ferror
 	}
-	EvtSubscriptions, extracterr := getDataAsStringList(dList)
+	EvtSubscriptions, _, extracterr := getDataAsStringList(dList, size)
 	if extracterr != nil {
 		return []string{}, ferror
 	}
@@ -1737,15 +1737,15 @@ func (p *ConnPool) GetAllDataByIndex(index string) ([]string, error) {
 	return EvtSubscriptions, nil
 }
 
-//getAllDataFromSortedList function read all member from index
-func (p *ConnPool) getAllDataFromSortedList(index string) (data interface{}, err error) {
+// getAllDataFromSortedList function read all member from index
+func (p *ConnPool) getAllDataFromSortedList(index string) (data interface{}, size int, err error) {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
 	const cursor float64 = 0
 
 	d, getErr := readConn.Do("ZCOUNT", index, 0, 0)
 	if getErr != nil {
-		return nil, fmt.Errorf("Unable to fetch count of data for index : " +
+		return nil, 0, fmt.Errorf("Unable to fetch count of data for index : " +
 			index + " : " +
 			getErr.Error())
 	}
@@ -1754,21 +1754,23 @@ func (p *ConnPool) getAllDataFromSortedList(index string) (data interface{}, err
 	data, getErr = readConn.Do("ZSCAN", index, cursor, "MATCH",
 		"*", "COUNT", countData)
 	if getErr != nil {
-		return []string{},
+		return []string{}, 0,
 			fmt.Errorf("Error while fetching data for " + index + " : " + getErr.Error())
 	}
-	return data, nil
+	return data, int(countData), nil
 }
 
 // getDataAsStringList function convert list of interface into string
 // filter priority value from list
-func getDataAsStringList(d interface{}) ([]string, error) {
-	var dataList []string
+func getDataAsStringList(d interface{}, size int) ([]string, int, error) {
+	dataList := make([]string, 0, size)
+	var nextCursor int = 0
 	var err error
 	if len(d.([]interface{})) > 1 {
+		nextCursor, err = redis.Int(d.([]interface{})[0], err)
 		data, err := redis.Strings(d.([]interface{})[1], err)
 		if err != nil {
-			return []string{}, fmt.Errorf("error while marshaling data : " + err.Error())
+			return []string{}, 0, fmt.Errorf("error while marshaling data : " + err.Error())
 		}
 		for i := 0; i < len(data); i++ {
 			if data[i] != "0" {
@@ -1776,5 +1778,72 @@ func getDataAsStringList(d interface{}) ([]string, error) {
 			}
 		}
 	}
-	return dataList, nil
+	return dataList, nextCursor, nil
+}
+
+// GetAllKeysFromDb will fetch all the keys which matches pattern present in the database
+func (p *ConnPool) GetAllKeysFromDb(table, pattern string, nextCursor int) ([]string, int, *errors.Error) {
+	readConn := p.ReadPool.Get()
+	defer readConn.Close()
+	count := 500
+	data, getErr := readConn.Do("SCAN", nextCursor, "MATCH",
+		table+":*"+pattern+"*", "COUNT", count)
+	if getErr != nil {
+		return []string{}, 0, errors.PackError(errors.UndefinedErrorType, "Error while fetching data for", getErr.Error())
+	}
+	keys, nextCursor, err := getDataAsStringList(data, count)
+	if err != nil {
+		return []string{}, 0, errors.PackError(errors.JSONUnmarshalFailed, err.Error())
+	}
+	return keys, nextCursor, nil
+}
+
+// GetKeyValue takes "key" sting as input which acts as a unique ID to fetch specific data from DB
+func (p *ConnPool) GetKeyValue(key string) (string, *errors.Error) {
+	readConn := p.ReadPool.Get()
+	defer readConn.Close()
+	var (
+		value interface{}
+		err   error
+	)
+	value, err = readConn.Do("Get", key)
+	if err != nil {
+
+		if err.Error() == "redigo: nil returned" {
+			return "", errors.PackError(errors.DBKeyNotFound, "no data with the with key ", key, " found")
+		}
+		if errs, aye := isDbConnectError(err); aye {
+			return "", errs
+		}
+		return "", errors.PackError(errors.DBKeyFetchFailed, errorCollectingData, err)
+	}
+
+	if value == nil {
+		return "", errors.PackError(errors.DBKeyNotFound, "no data with the with key ", key, " found")
+	}
+	data, err := redis.String(value, err)
+	if err != nil {
+		return "", errors.PackError(errors.UndefinedErrorType, "error while trying to convert the data into string: ", err)
+	}
+	return string(data), nil
+}
+
+// DeleteKey takes "key" sting as input which acts as a unique ID to delete specific data from DB
+func (p *ConnPool) DeleteKey(key string) *errors.Error {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	if writePool == nil {
+		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil ")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+
+	_, doErr := writeConn.Do("DEL", key)
+	if doErr != nil {
+		if errs, aye := isDbConnectError(doErr); aye {
+			atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+			return errors.PackError(errors.DBKeyNotFound, errs.Error())
+		}
+		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: ", doErr)
+	}
+	return nil
 }

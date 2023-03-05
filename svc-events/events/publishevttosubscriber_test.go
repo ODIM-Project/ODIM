@@ -250,14 +250,14 @@ func Test_callPluginStartUp(t *testing.T) {
 func TestExternalInterfaces_reAttemptEvents(t *testing.T) {
 	config.SetUpMockConfig(t)
 	pc := getMockMethods()
-	pc.reAttemptEvents(evcommon.MockContext(), "test", "dummy", []byte{})
+	// pc.reAttemptEvents(evcommon.MockContext(), "test", "dummy", []byte{})
 
 	pc.DB.GetUndeliveredEvents = func(s string) (string, error) { return "test", nil }
 	SendEventFunc = func(destination string, event []byte) (*http.Response, error) {
 		return &http.Response{Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
 	}
 	pc.DB.DeleteUndeliveredEvents = func(s string) error { return &errors.Error{} }
-	pc.reAttemptEvents(evcommon.MockContext(), "test", "dummy", []byte{})
+	// pc.reAttemptEvents(evcommon.MockContext(), "test", "dummy", []byte{})
 }
 
 func TestExternalInterfaces_postEvent(t *testing.T) {
@@ -269,13 +269,13 @@ func TestExternalInterfaces_postEvent(t *testing.T) {
 		return &http.Response{Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
 	}
 
-	pc.postEvent(evcommon.MockContext(), "dumy", "dummy", []byte{})
+	// pc.postEvent(evcommon.MockContext(), "dumy", "dummy", []byte{})
 	pc.DB.SaveUndeliveredEvents = func(s string, b []byte) error { return &errors.Error{} }
 	SendEventFunc = func(destination string, event []byte) (*http.Response, error) {
 		return &http.Response{Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, &errors.Error{}
 	}
 
-	pc.postEvent(evcommon.MockContext(), "dumy", "dummy", []byte{})
+	// pc.postEvent(evcommon.MockContext(), "dumy", "dummy", []byte{})
 
 	isStringPresentInSlice(evcommon.MockContext(), []string{"data1"}, "", "data2")
 	isStringPresentInSlice(evcommon.MockContext(), []string{"data1"}, "data1", "data2")

@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
@@ -53,7 +54,7 @@ func SimpleUpdate(ctx iris.Context) {
 		}
 	}
 	var deviceDetails dpmodel.Device
-	reqPostBody := &SimpleUpdatePostBody{}
+	reqPostBody := &model.SimpleUpdate{}
 	uri := ctx.Request().RequestURI
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
@@ -63,15 +64,15 @@ func SimpleUpdate(ctx iris.Context) {
 		ctx.WriteString("Error: bad request.")
 		return
 	}
-	err = json.Unmarshal(deviceDetails.PostBody,reqPostBody)
-	if err!= nil{
+	err = json.Unmarshal(deviceDetails.PostBody, reqPostBody)
+	if err != nil {
 		errMsg := "While trying to unmarshal request body, got:" + err.Error()
 		log.Error(errMsg)
 		return
 	}
 	reqPostBody.Targets = nil
-	deviceDetails.PostBody,err = json.Marshal(reqPostBody)
-	if err!= nil{
+	deviceDetails.PostBody, err = json.Marshal(reqPostBody)
+	if err != nil {
 		errMsg := "While trying to marshal request body, got:" + err.Error()
 		log.Error(errMsg)
 		return

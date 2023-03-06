@@ -79,7 +79,7 @@ func GetAllKeysFromTable(ctx context.Context, table string, dbtype common.DbType
 	if err != nil {
 		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
 	}
-	l.LogWithFields(ctx).Debugf("all keys from table: ", keysArray)
+	l.LogWithFields(ctx).Debug("all keys from table: ", keysArray)
 	return keysArray, nil
 }
 

@@ -60,7 +60,7 @@ func generateRPCResponse(rpcResp response.RPC, aggResp *updateproto.UpdateRespon
 		StatusMessage: rpcResp.StatusMessage,
 		Header:        rpcResp.Header,
 		Body:          bytes,
-	}
+	} 
 }
 
 func generateTaskRespone(taskID, taskURI string, rpcResp *response.RPC) {

@@ -71,8 +71,11 @@ func (e *ExternalInterfaces) addFabric(ctx context.Context, message common.Messa
 
 // PublishEventsToDestination This method sends the event/alert to subscriber's destination
 // Takes:
-// 	data of type interface{}
-//Returns:
+//
+//	data of type interface{}
+//
+// Returns:
+//
 //	bool: return false if any error occurred during execution, else returns true
 func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, data interface{}) bool {
 	subscribeCacheLock.Lock()
@@ -94,8 +97,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 	if err != nil {
 		host = event.IP
 	}
-	host = strings.ToLower(host)
-	l.LogWithFields(ctx).Info("After splitting host address, IP is: ", host)
+	l.Log.Info("After splitting host address, IP is: ", host)
 
 	var requestData = string(event.Request)
 	//replacing the response with north bound translation URL

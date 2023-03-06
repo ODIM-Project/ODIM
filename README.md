@@ -3,33 +3,39 @@
 
 # Table of contents
 
-1. [Resource Aggregator for ODIM](#resource-aggregator-for-odim)
+- [Resource Aggregator for ODIM](#resource-aggregator-for-odim)
    - [Resource Aggregator for ODIM deployment requirements](#resource-aggregator-for-odim-deployment-requirements)
    - [Deployment guidelines](#deployment-guidelines)
-2. [Resource Aggregator for ODIM compatibility matrix](#resource-aggregator-for-odim-compatibility-matrix)
-3. [Resource Aggregator for ODIM pre-deployment operations](#Resource-Aggregator-for-ODIM-pre-deployment-operations)
+- [Resource Aggregator for ODIM compatibility matrix](#resource-aggregator-for-odim-compatibility-matrix)
+- [Troubleshooting information](#Troubleshooting-information)
+- [Resource Aggregator for ODIM pre-deployment operations](#Resource-Aggregator-for-ODIM-pre-deployment-operations)
    - [Setting up the environment](#setting-up-the-environment)
    - [Pulling Docker images of all Kubernetes microservices](#pulling-docker-images-of-all-kubernetes-microservices)
    - [Building Docker images of all services](#building-docker-images-of-all-services)
    - [Updating additional package versions](#updating-additional-package-versions)
    - [Generating encrypted passwords for nodes and Redis](#generating-encrypted-passwords-for-nodes-and-Redis)
    - [Configuring log path for odim-controller](#configuring-log-path-for-odim-controller)
-4. [Deploying Resource Aggregator for ODIM and the plugins](#deploying-resource-aggregator-for-odim-and-the-plugins)
+- [Deploying Resource Aggregator for ODIM and the plugins](#deploying-resource-aggregator-for-odim-and-the-plugins)
    - [Deploying the resource aggregator services](#deploying-the-resource-aggregator-services)
    - [Deploying the Unmanaged Rack Plugin](#deploying-the-unmanaged-rack-plugin)
    - [Deploying the Dell plugin](#deploying-the-dell-plugin)
    - [Deploying the Lenovo plugin](#deploying-the-lenovo-plugin)
    - [Deploying the Cisco ACI plugin](#deploying-the-cisco-aci-plugin)
    - [Adding a plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework)
-5. [Resource Aggregator for ODIM post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)
+- [Resource Aggregator for ODIM post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)
    - [Scaling up the resources and services of Resource Aggregator for ODIM](#scaling-up-the-resources-and-services-of-resource-aggregator-for-odim)
    - [Scaling down the resources and services of Resource Aggregator for ODIM](#scaling-down-the-resources-and-services-of-resource-aggregator-for-odim)
    - [Rolling back to an earlier deployment revision](#rolling-back-to-an-earlier-deployment-revision)
    - [Upgrading the Resource Aggregator for ODIM deployment](#upgrading-the-resource-aggregator-for-odim-deployment)
-   - [Backup and restore of Kubernetes etcd](#Backup-and-restore-of-Kubernetes-etcd)
-   - [Backup and restore of ODIM etcd](#Backup-and-restore-of-ODIM-etcd)
+   - [Backup and restore of Kubernetes etcd database](#Backup-and-restore-of-Kubernetes-etcd-database)
+     - [Taking a backup of Kubernetes etcd](#Taking-a-backup-of-Kubernetes-etcd)
+     - [Restoring Kubernetes etcd](#Restoring-Kubernetes-etcd)
+   - [Backup and restore of ODIM etcd database](#Backup-and-restore-of-ODIM-etcd-database)
+     - [Taking a backup of ODIM etcd](#Taking-a-backup-of-ODIM-etcd)
+     - [Restoring ODIM etcd](#Restoring-ODIM-etcd)
    - [Backup and restore of Redis](#Backup-and-restore-of-Redis)
-6. [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
+   - [Backup and restore of Resource Aggregator for ODIM and plugin configurations](#Backup-and-restore-of-Resource-Aggregator-for-ODIM-and-plugin-configurations)
+- [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
    - [Adding a server into the resource inventory](#adding-a-server-into-the-resource-inventory)
    - [Viewing the resource inventory](#viewing-the-resource-inventory)
    - [Configuring BIOS settings for a server](#configuring-bios-settings-for-a-server)
@@ -41,14 +47,14 @@
    - [Viewing network fabrics](#viewing-network-fabrics)
    - [Creating and deleting volumes](#creating-and-deleting-volumes)
    - [Removing a server from the resource inventory](#removing-a-server-from-the-resource-inventory)
-7.  [Using odim-controller command-line interface](#using-odim-controller-command-line-interface)
-8. [Contributing to the open source community](#contributing-to-the-open-source-community)
+- [Using odim-controller command-line interface](#using-odim-controller-command-line-interface)
+- [Contributing to the open source community](#contributing-to-the-open-source-community)
    - [Creating a PR](#creating-a-pr)
    - [Filing Resource Aggregator for ODIM defects](#filing-resource-aggregator-for-odim-defects)
    - [Adding new plugins and services](#adding-new-plugins-and-services)
    - [Licensing](#licensing)
    - [Reference links](#reference-links)
-9. [Appendix](#appendix)
+- [Appendix](#appendix)
    - [Setting proxy configuration](#setting-proxy-configuration)
    - [Setting up time sync across nodes](#setting-up-time-sync-across-nodes)
    - [Downloading and installing Go language](#downloading-and-installing-go-language)
@@ -172,10 +178,10 @@ Consider the following guidelines while deploying Resource Aggregator for ODIM:
 
 -   The following two deployment configurations are supported:
 
-    -  **One-node cluster configuration**:
+    -  **One-node cluster configuration**
 	   This configuration has only one cluster node that also functions as a worker node. It does not support scaling of the Resource Aggregator for ODIM resources and services. This implies you cannot add worker nodes in a one-node cluster.
 
-    -  **Three-node cluster configuration**:
+    -  **Three-node cluster configuration**
 	   This configuration has three cluster nodes that also function as worker nodes for sharing the extra load. It provides high availability environment by allowing the scaling of the Resource Aggregator for ODIM resources and services. This implies you can add worker nodes and increase the number of service instances running in a three-node cluster.
     
     To convert an existing one-node cluster into a three-node cluster, you must reset the one-node deployment first, and then modify the required parameters in the odim-controller configuration file.
@@ -199,7 +205,7 @@ The following table lists the software components and versions that are compatib
 |etcd| 3.4.15            |
 |Java JRE|11|
 |Kafka|3.1.0|
-|Redis|6.2.6|
+|Redis|7.0.8|
 |Ubuntu LTS|20.04.4|
 |ZooKeeper|3.7.0|
 |Docker|20.10.12|
@@ -207,12 +213,18 @@ The following table lists the software components and versions that are compatib
 |Kubernetes|1.24.6|
 |Kubespray|2.20.0|
 |containerd|1.6.8|
-|Helm charts|3.9.2|
+|Helm charts|3.10.3|
 |Nginx|1.18.0-0ubuntu1.3|
 |Keepalived|1:2.0.19.2|
 |Stakater/Reloader|v0.0.76|
 |Redfish Schema|2022.1|
 |Redfish Specification|1.15.1|
+
+
+
+# Troubleshooting information
+
+If you experience any issues while deploying Resource Aggregator for ODIM, please see the *Troubleshooting Readme* for solutions, workarounds, and FAQs at *https://github.com/ODIM-Project/ODIM/blob/development/docs/Troubleshooting.md*.
 
 
 
@@ -224,6 +236,8 @@ The following table lists the software components and versions that are compatib
 4. [Updating additional package versions](#updating-additional-package-versions)
 5. [Generating encrypted passwords for nodes and Redis](#generating-encrypted-passwords-for-nodes-and-Redis)
 6. [Configuring log path for odim-controller](#configuring-log-path-for-odim-controller)
+
+
 
 ## Setting up the environment
 
@@ -367,6 +381,7 @@ The following table lists the software components and versions that are compatib
         ```
 
 
+
 ## Pulling Docker images of all Kubernetes microservices
 
 1. On the deployment node, pull the Docker images of all the Kubernetes microservices:
@@ -416,7 +431,7 @@ The following table lists the software components and versions that are compatib
 
    Example: `cp /home/<user>/*.tar /home/<user>/kubernetes_images`
 
-   > **IMPORTANT**: When deploying ODIMRA, update the `kubernetesImagePath` parameter in `kube_deploy_nodes.yaml` file with the path of the `kubernetes_images` directory you choose in this step. The images are automatically installed on all cluster nodes after deployment.
+   > **IMPORTANT**: When deploying Resource Aggregator for ODIM, update the `kubernetesImagePath` parameter in `kube_deploy_nodes.yaml` file with the path of the `kubernetes_images` directory you choose in this step. The images are automatically installed on all cluster nodes after deployment.
 
    The `kube_deploy_nodes.yaml` file is the configuration file used by odim-controller to set up a Kubernetes cluster and to deploy the Resource Aggregator for ODIM services.
    
@@ -427,74 +442,81 @@ The following table lists the software components and versions that are compatib
 
 1. Run the following commands on the deployment node:
    1. ```
+      cd /home/${USER}
+      ```
+   
+   2. ```
       git clone https://github.com/ODIM-Project/ODIM.git
       ```
-      
-   2. ```
+   
+   3. ```
       cd ODIM
       ```
-      
-   3. ```
-      export ODIMRA_USER_ID=2021
-      ```
-	   
    4. ```
-      export ODIMRA_GROUP_ID=2021
+       export ODIMRA_USER_ID=2021
       ```
-      
+   
    5. ```
-      ./build_images.sh
-	   ```
-	   
-	6. ```
-	   sudo docker images
-	   ```
-	   If the images are built successfully, you get an output similar to the following sample:
-	   
-	   <img src="docs/images/odimra_images.png" style="zoom:55%;"   >
-	   
-	7. Pull the reloader and busybox images:
-	   
-	   ```
-	   docker pull stakater/reloader:v0.0.76
+	   export ODIMRA_GROUP_ID=2021
+      ```
+     
+   6. ```
+	   ./build_images.sh
 	   ```
 
-	   ```
-	   docker pull busybox:1.33
-	   ```
+   
+   7. ```
+	    sudo docker images
+	    ```
+	    
+       
+          If the images are built successfully, you get an output similar to the following sample:
+   
+   <img src="docs/images/odimra_images.png" style="zoom:55%;"   >
+   
+9. Pull the reloader and busybox images:
+	
+	```
+	docker pull stakater/reloader:v0.0.76
+	```
+	
+	```
+	docker pull busybox:1.33
+	```
 	
 2. Save the Docker images of all Resource Aggregator for ODIM services to a tar archive.
 
     ```
     docker save -o <image_name.tar> <image_name>:<version>
     ```
-    Example: `docker save -o api.tar api:4.0`
+    Example: `docker save -o api.tar api:5.0`
 
     The following table lists the Docker images of all Resource Aggregator for ODIM services:
 
     | **Docker image name** | **Version** | **Docker image bundle name** |
     | :-------------------- | ----------- | ---------------------------- |
-    | account-session       | 3.1         | account-session.tar          |
-    | aggregation           | 4.0         | aggregation.tar              |
-    | api                   | 4.0         | api.tar                      |
-    | events                | 4.0         | events.tar                   |
-    | fabrics               | 3.1         | fabrics.tar                  |
-    | managers              | 4.0         | managers.tar                 |
-    | systems               | 4.0         | systems.tar                  |
-    | licenses              | 1.0         | licenses.tar                 |
-    | task                  | 3.1         | task.tar                     |
-    | update                | 3.1         | update.tar                   |
+    | account-session       | 4.0         | account-session.tar          |
+    | aggregation           | 5.0         | aggregation.tar              |
+    | api                   | 5.0         | api.tar                      |
+    | events                | 5.0         | events.tar                   |
+    | fabrics               | 4.0         | fabrics.tar                  |
+    | managers              | 5.0         | managers.tar                 |
+    | systems               | 5.0         | systems.tar                  |
+    | licenses              | 2.0         | licenses.tar                 |
+    | task                  | 4.0         | task.tar                     |
+    | update                | 4.0         | update.tar                   |
     | kafka                 | 2.0         | kafka.tar                    |
     | zookeeper             | 2.0         | zookeeper.tar                |
     | etcd                  | 1.16        | etcd.tar                     |
-    | redis                 | 3.0         | redis.tar                    |
+    | redis                 | 4.0         | redis.tar                    |
     | stakater/reloader     | v0.0.76     | stakater_reloader.tar        |
     | busybox               | 1.33        | busybox.tar                  |
-    | dellplugin            | 2.1         | dellplugin.tar               |
-    | lenovoplugin          | 1.1         | lenovoplugin.tar             |
-    | urplugin              | 3.1         | urplugin.tar                 |
-    | grfplugin             | 3.1         | grfplugin.tar                |
-    | telemetry             | 2.1         | telemetry.tar                |
+    | dellplugin            | 2.2         | dellplugin.tar               |
+    | lenovoplugin          | 1.2         | lenovoplugin.tar             |
+    | urplugin              | 3.2         | urplugin.tar                 |
+    | grfplugin             | 3.2         | grfplugin.tar                |
+    | aciplugin             | 3.2         | aciplugin.tar                |
+    | telemetry             | 3.0         | telemetry.tar                |
     
 3. To install the Docker images of all services on the cluster nodes, create a directory called `odimra_images` on the deployment node and copy each tar archive to this directory. 
     For example: `cp /home/<user>/ODIM/*.tar /home/<user>/odimra_images`
@@ -565,7 +587,7 @@ While deploying Resource Aggregator for ODIM, verify the versions of the followi
    sudo apt-cache madison nginx
    ```
 
-2. Verify if the latest version is `nginx=1.18.0-0ubuntu1.2`.
+2. Verify if the latest version is `nginx=1.18.0-0ubuntu1.4`.
 
 3. In case of a version mismatch, update the latest version of the `Nginx` package in:
    
@@ -606,7 +628,7 @@ Resource Aggregator for ODIM uses the odim-vault tool to encrypt and decrypt pas
     scripts/odimVaultKeyFile
     ```
 
-    **Result**: odimVaultKeyFile contains the encoded odim-vault master key.
+    **Result**: odimVaultKeyFile contains the encoded odim-vault primary key.
 
 4. Change the file permissions of odimVaultKeyFile.
 
@@ -798,7 +820,7 @@ Topics covered in this section include:
         haDeploymentEnabled: True
         connectionMethodConf:
         - ConnectionMethodType: Redfish
-          ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+          ConnectionMethodVariant: Compute:BasicAuth:GRF_v2.0.0
         etcHostsEntries:
       
         appsLogPath: /var/log/odimra
@@ -848,10 +870,8 @@ Topics covered in this section include:
        odimraKafkaClientCert:
        odimraKafkaClientKey:
       ```
-   ```
    
    For information on each parameter in this configuration file, see *[Odim-controller configuration parameters](#odim-controller-configuration-parameters)*.
-   ```
    
 4. Update the following mandatory parameters in the `kube_deploy_nodes.yaml` file:
    
@@ -974,6 +994,7 @@ Topics covered in this section include:
         Example output:
 
         <img src="docs/images/all_services_verification.png" alt="screenshot" style="zoom:55%;" />
+        
         If the services are not successfully deployed, reset the deployment and try deploying again:
         
         ```
@@ -1015,13 +1036,13 @@ Topics covered in this section include:
    'https://{odim_host}:{port}/redfish/v1' -k
    ```
    
-   Replace `{path_of_rootCA.crt}` with the path specified for the odimCertsPath parameter in the kube\_deploy\_nodes.yaml file - `<odimcertsPath>/rootCA.crt`. The `rootCA.crt` file is required for secure SSL communication.
+   Replace `{path_of_rootCA.crt}` with the path specified for the odimCertsPath parameter in the `kube_deploy_nodes.yaml` file with `<odimcertsPath>/rootCA.crt`. The `rootCA.crt` file is required for secure SSL communication.
    
    {odim_host} is the virtual IP address of the Kubernetes cluster.
    
-   > **NOTE**: For a single node cluster configuration, {odim_host} is the ip address of master node. For a three node cluster configuration, to use FQDN as `{odim_host}`, ensure that FQDN is configured to the virtual IP address in the `/etc/hosts` file or in the DNS server.
+   > **NOTE**: For a single node cluster configuration, {odim_host} is the ip address of primary node. For a three node cluster configuration, to use FQDN as `{odim_host}`, ensure that FQDN is configured to the virtual IP address in the `/etc/hosts` file or in the DNS server.
    
-   {port} is the API server port configured in Nginx. Default port is `30080`. If you have changed the default port, use that as the port.
+   {port} is the API service port configured in Nginx. Default port is `30080`. If you have changed the default port in the `kube_deploy_nodes.yaml` file, use that as the port.
    
    The following JSON response is returned:
    
@@ -1190,14 +1211,14 @@ Topics covered in this section include:
     
     In this command, replace:
 
-    -  {ODIMRA password} with the password of Resource Aggregator for ODIM (default administrator account password).
-    -  {odimCertsPath} with the path you specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
+    -  `{ODIMRA password}` with the password of Resource Aggregator for ODIM (default administrator account password).
+    -  `{odimCertsPath}` with the path you specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
     
     Example output:
     
-```
-     ip/jrKjQdzKIU1JvT4ZQ6gbCe2XJtCKPRgqOQv6g3aIAYtG+hpVgel3k67TB723h9dN2cABWZgE+b9CAxbIXj3qZZFWrUMMuPkT4fwtW8fTlhdR+phmOvnnSw5bvUrXyl5Se1IczwtMXfhqk7U8eqpJnZ6xWNR8Q1K7baDv1QvZwej/v3bqHRTC93pDL+3SvE8VCyrIgbMVdfvv3+mJKvs2F7hXoTJiwjRfKGyzdP0yRIHAFOB3m/xnv6ZIRm8Ak6+sx18NRq8RH20bktzhZ45fT+iX4twMJG1lI0KRJ3j/PL+IqY4MmYzv/72fQhMznL39Rjr9LR6mB/JGI0ww0sMUCFr6obzQfQWv1so+Ck694fNJMQPXQS64VcqVDuISXSd4cqkdMx9zBmfDbgzMQQVwgjDgt4nC1w8/wGSfMtkms8rSJrBa18hKCWi+jfhASbNM84udKc0kQsQJlsnjcdsL84zrE8iUqqXC/fK2cQbNL31H5C+qEfJqdNTauQSskkK3cpNWh1FVw736WBYYJSja59q5QwMniXldwcvRglEIELsjKgjbuOnQoIZaVTcbheaa2b1XAiRKTKuPmweysyV3fbuR0jgSJTmdTehrtYG9omjUbg/L7WFjC43JWq8suWi5uch+jHtGG5mZJFFdkE37pQd3wzHBSa+/9Yq9/ZSY=
-```
+    ```
+    ip/jrKjQdzKIU1JvT4ZQ6gbCe2XJtCKPRgqOQv6g3aIAYtG+hpVgel3k67TB723h9dN2cABWZgE+b9CAxbIXj3qZZFWrUMMuPkT4fwtW8fTlhdR+phmOvnnSw5bvUrXyl5Se1IczwtMXfhqk7U8eqpJnZ6xWNR8Q1K7baDv1QvZwej/v3bqHRTC93pDL+3SvE8VCyrIgbMVdfvv3+mJKvs2F7hXoTJiwjRfKGyzdP0yRIHAFOB3m/xnv6ZIRm8Ak6+sx18NRq8RH20bktzhZ45fT+iX4twMJG1lI0KRJ3j/PL+IqY4MmYzv/72fQhMznL39Rjr9LR6mB/JGI0ww0sMUCFr6obzQfQWv1so+Ck694fNJMQPXQS64VcqVDuISXSd4cqkdMx9zBmfDbgzMQQVwgjDgt4nC1w8/wGSfMtkms8rSJrBa18hKCWi+jfhASbNM84udKc0kQsQJlsnjcdsL84zrE8iUqqXC/fK2cQbNL31H5C+qEfJqdNTauQSskkK3cpNWh1FVw736WBYYJSja59q5QwMniXldwcvRglEIELsjKgjbuOnQoIZaVTcbheaa2b1XAiRKTKuPmweysyV3fbuR0jgSJTmdTehrtYG9omjUbg/L7WFjC43JWq8suWi5uch+jHtGG5mZJFFdkE37pQd3wzHBSa+/9Yq9/ZSY=
+    ```
 
 4. On the deployment node, copy the UR plugin configuration file and the hook script to `~/plugins/urplugin`.
    ```
@@ -1253,7 +1274,7 @@ Topics covered in this section include:
 8. Save the URP Docker image on the deployment node at `~/plugins/urplugin`.
 
      ```
-     docker save urplugin:3.1 -o ~/plugins/urplugin/urplugin.tar
+     docker save urplugin:3.2 -o ~/plugins/urplugin/urplugin.tar
      ```
 
 9. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
@@ -1270,7 +1291,7 @@ Topics covered in this section include:
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with URP: ConnectionMethodVariant: `Compute:BasicAuth:URP_v1.0.0`<br> |
+    | connectionMethodConf         | The connection method associated with URP: ConnectionMethodVariant: `Compute:BasicAuth:URP_v2.0.0`<br> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`.<br>Add these values to the existing comma-separated list.<br> |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`, `redis-ha-ondisk.odim.svc.cluster.local`.<br>Add these values to the existing comma-separated list.<br><br />**NOTE**: `redis-ha-ondisk.odim.svc.cluster.local` is applicable to three-node deployment only. |
     | odimPluginPath               | The path of the directory where the URP Helm package, the `urplugin` image, and the modified `urplugin-config.yaml` are copied. |
@@ -1288,9 +1309,9 @@ Topics covered in this section include:
       haDeploymentEnabled: True
       connectionMethodConf:
       - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+        ConnectionMethodVariant: Compute:BasicAuth:GRF_v2.0.0
       - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth:URP_v1.0.0
+       ConnectionMethodVariant: Compute:BasicAuth:URP_v2.0.0
       odimraKafkaClientCertFQDNSan: urplugin,api
       odimraServerCertFQDNSan: urplugin,api
     ```
@@ -1401,7 +1422,7 @@ Topics covered in this section include:
 7. Save the Dell plugin Docker image on the deployment node at `~/plugins/dellplugin`.
 
     ```
-    docker save dellplugin:2.1 -o ~/plugins/dellplugin/dellplugin.tar
+    docker save dellplugin:2.2 -o ~/plugins/dellplugin/dellplugin.tar
     ```
 
 8. Navigate to the `ODIM` directory.
@@ -1432,7 +1453,7 @@ Topics covered in this section include:
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with Dell plugin: ConnectionMethodVariant: <br />`Compute:BasicAuth:DELL_v1.0.0`<br> |
+    | connectionMethodConf         | The connection method associated with Dell plugin: ConnectionMethodVariant: <br />`Compute:BasicAuth:DELL_v2.0.0`<br> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the Dell plugin:<br />`dellplugin`, `dellplugin-events`<br>Add these values to the existing comma-separated list.<br> |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the Dell plugin:<br /> `dellplugin`, `dellplugin-events`<br> Add these values to the existing comma-separated list.<br> |
     
@@ -1449,7 +1470,7 @@ Topics covered in this section include:
       haDeploymentEnabled: True
       connectionMethodConf:
       - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth:DELL_v1.0.0
+        ConnectionMethodVariant: Compute:BasicAuth:DELL_v2.0.0
       odimraKafkaClientCertFQDNSan: dellplugin,dellplugin-events
       odimraServerCertFQDNSan: dellplugin,dellplugin-events    
     ```
@@ -1551,7 +1572,7 @@ Topics covered in this section include:
 
 7. Save the Lenovo plugin Docker image on the deployment node at `~/plugins/lenovoplugin`.
 
-       docker save lenovoplugin:1.1 -o ~/plugins/lenovoplugin/lenovoplugin.tar
+       docker save lenovoplugin:1.2 -o ~/plugins/lenovoplugin/lenovoplugin.tar
 
 8. Navigate to the` ODIM` directory.
 
@@ -1581,7 +1602,7 @@ Topics covered in this section include:
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with Lenovo: ConnectionMethodVariant: `Compute:BasicAuth:LENOVO_v1.0.0`<br> |
+    | connectionMethodConf         | The connection method associated with Lenovo: ConnectionMethodVariant: `Compute:BasicAuth:LENOVO_v2.0.0`<br> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying Lenovo plugins: `lenovoplugin`, `lenovoplugin-events`<br />Add these values to the existing comma-separated list. |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying Lenovo: `lenovoplugin` `lenovoplugin-events`<br />Add these values to the existing comma-separated list. |
 
@@ -1598,7 +1619,7 @@ Topics covered in this section include:
       haDeploymentEnabled: True
       connectionMethodConf:
       - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth:LENOVO_v1.0.0
+        ConnectionMethodVariant: Compute:BasicAuth:LENOVO_v2.0.0
       odimraKafkaClientCertFQDNSan: lenovoplugin, lenovoplugin-events
       odimraServerCertFQDNSan: lenovoplugin, lenovoplugin-events  
     ```
@@ -1653,14 +1674,14 @@ The plugin you want to add is successfully deployed.
     `https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources` 
 
     -   `{odim_host}` is the virtual IP address of the Kubernetes cluster. 
-    For one-node odim deployment, `odim_host` is the IP address of the master node.
-    -   `{port}` is the API server port configured in Nginx. Default port is `30080`. If you have changed the default port, use that as the port.
+    For one-node odim deployment, `odim_host` is the IP address of the cluster node.
+    -   `{port}` is the API service port configured in Nginx. Default port is `30080`. If you have changed the default port in `kube_deploy_nodes.yaml` file, use that as the port.
 
     The following ports (except container ports) must be free:
     
     | Port name                                                    | Ports                                                        |
     | ------------------------------------------------------------ | ------------------------------------------------------------ |
-    | Container ports (access restricted only to the Kubernetes cluster network) | 45000 — API service port<br />45101- 45201 — Resource Aggregator for ODIM service ports<br />9082, 9092 — Kafka ports<br />6379 — Redis port<br />26379 — Redis Sentinel port<br />2181 — Zookeeper port<br>2379, 2380 — etcd ports |
+    | Container ports (access restricted only to the Kubernetes cluster network) | 30080 — API service port<br />45101- 45201 — Resource Aggregator for ODIM service ports<br />9082, 9092 — Kafka ports<br />6379 — Redis port<br />26379 — Redis Sentinel port<br />2181 — Zookeeper port<br>2379, 2380 — etcd ports |
     | API node port (for external access)                          | 30080                                                        |
     | Kafka node port (for external access)                        | 30092 for a one-node cluster configuration. 30092, 30093, and 30094 for a three-node cluster configuration |
     | GRF plugin port<br />EventListenerNodePort<br />lbport       | 45001 — Port to be used while adding GRF plugin<br />30081 — Port used for event subscriptions in one-node cluster configuration <br />lbport — For three-node cluster configuration, specify lbport as per your requirement. This port must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as Nginx proxy port for the plugin<br />For one-node cluster configuration, it is the same as EventListenerNodePort |
@@ -1998,7 +2019,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    --upgrade plugin --plugin <plugin_name>
    ```
 
-   Replace <plugin\_name\> with the name of the plugin whose service you want to upgrade.
+   Replace `<plugin_name>` with the name of the plugin whose service you want to upgrade.
 
 3. To update the odim-controller configuration parameters, do the following: 
 
@@ -2058,277 +2079,288 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 
 
 
-## Backup and restore of Kubernetes etcd
+## Backup and restore of Kubernetes etcd database 
 
-1. Make a directory to store the utilities and change the ownership and permission of the directory to odimra:
-
-   ```
-   mkdir -p etcd_backup/
-   ```
+1. Identify the leader etcd node by running the following command on all the three cluster nodes:
 
    ```
-   sudo chown odimra:odimra etcd_backup/
+   ETCDCTL_API=3 sudo etcdctl endpoint status --write-out=table --endpoints=https://127.0.0.1:2379 --cacert=/etc/ssl/etcd/ssl/ca.pem  --cert=/etc/ssl/etcd/ssl/admin-{hostname}.pem  --key=/etc/ssl/etcd/ssl/admin-{hostname}-key.pem
    ```
 
-   ```
-   sudo chmod 755 etcd_backup/
-   ```
+   > **NOTE**: Replace {hostname} with the host name of the cluster node on which you run the command.
 
-2. Get the cert and other details from `etcd.env` file located at `/etc`. 
-   `ETCDCTL_CACERT`, `ETCDCTL_KEY`, `ETCDCTL_CERT` values would be the `caCert.cert`, `server.key` and `cert.crt` files.
+2. Verify the output on each node. The node with `IS LEADER` value as `true` is the leader node.
 
-3. Copy all the `etcd cert`, `caCert`, and `key` from the `etcd` directory to the working directory:
+3. Create a backup directory on the leader node and change the ownership and permission of the directory to odimra:
 
    ```
-   sudo cp /etc/ssl/etcd/ssl/ca.pem etcd_backup/caCert.crt
+   mkdir ~/etcd_backup/
+   sudo chown odimra:odimra ~/etcd_backup/
+   sudo chmod 755 ~/etcd_backup/
    ```
 
-   ```
-   sudo cp /etc/ssl/etcd/ssl/admin-master-node1.pem etcd_backup/cert.crt
-   ```
+4. Find  the directory of the ca certificate and the node certificates by running the following command on leader node:
 
    ```
-   sudo cp /etc/ssl/etcd/ssl/admin-master-node1-key.pem etcd_backup/server.key
+   sudo grep ETCDCTL /etc/etcd.env
    ```
 
-4. Identify the leader node by running the following command in all the three nodes:
+5. Copy all the ca certificate and node certificates to the backup directory as a root user:
 
    ```
-   ETCDCTL_API=3 sudo etcdctl endpoint status --endpoints=https://127.0.0.1:2379 --write-out=table  --cacert=etcd_backup/caCert.crt  --cert=etcd_backup/cert.crt  --key=etcd_backup/server.key
+   sudo -i
+   cp /etc/ssl/etcd/ssl/* ~/etcd_backup/
    ```
 
-5. In the output, if `IS LEADER` is true, follow steps 6 and 7 on that node.
-
-   Output sample:
-
-   | ENDPOINT               | ID               | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
-   | ---------------------- | ---------------- | ------- | ------- | --------- | ---------- | --------- | ---------- | ------------------ | ------ |
-   | https://127.0.0.1:2379 | 50c7d42f7d83108a | 3.5.0   | 18 MB   | true      | false      | 3         | 74390      | 74390              |        |
-
-6. Take the snapshot or backup file from etcd leader node:
+6. Take the snapshot/backup of the etcd database by running the following command from the etcd leader node:
 
    ```
-   ETCDCTL_API=3  sudo etcdctl snapshot save etcd_backup/etcd_backup.db \
+   ETCDCTL_API=3  sudo etcdctl snapshot save ~/etcd_backup/etcd_backup.db \
     --endpoints=https://127.0.0.1:2379 \
-    --cacert=etcd_backup/caCert.crt \
-    --cert=etcd_backup/cert.crt \
-    --key=etcd_backup/server.key
+    --cacert=~/etcd_backup/ca.pem \
+    --cert=~/etcd_backup/ admin-{leader etcd nodename}.pem \
+    --key=~/etcd_backup/ admin-{leader etcd nodename}-keya.pem
    ```
 
-7. Check the status of the snapshot file:
+   >  **NOTE**: Replace `{leader etcd nodename}` appropriately.
+
+7. Check the status of the snapshot file `/etcd_backup/etcd_backup.db` that was created:
 
    ```
-   ETCD_API=3 sudo etcdctl snapshot --write-out=table  status etcd_backup/etcd_backup.db
+   ETCD_API=3 sudo etcdctl snapshot --write-out=table status ~/etcd_backup/etcd_backup.db
    ```
 
-   Output sample: 
+   **Sample output**:
 
-   | HASH     | REVISION | TOTAL KEYS | TOTAL SIZE |
-   | -------- | -------- | ---------- | ---------- |
-   | 107a4572 | 31002    | 1952       | 12` `MB    |
+   | **HASH** | **REVISION** | **TOTAL KEYS** | **TOTAL SIZE** |
+   | -------- | ------------ | -------------- | -------------- |
+   | 107a4572 | 31002        | 1952           | 12 MB          |
 
-8. For three-node cluster deployment, generate restore files from .db file for all the nodes:
+8. Move the contents of the backup directory `~/etcd_backup` to a safe location so you can restore the etcd database later.
 
-   ```
-   ETCDCTL_API=3 sudo etcdctl snapshot restore etcd_backup/etcd_backup.db --name etcd1 --initial-cluster etcd1=https://10.117.2.101:2380,etcd2=https://10.117.2.102:2380,etcd3=https://10.117.2.103:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://10.117.2.101:2380
-   ```
+   > **NOTE**: For a one node setup, execute the above commands on the single node.
 
-   ```
-   ETCDCTL_API=3 sudo etcdctl snapshot restore etcd_backup/etcd_backup.db  --name etcd2 --initial-cluster etcd1=https://10.117.2.101:2380,etcd2=https://10.117.2.102:2380,etcd3=https://10.117.2.103:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://10.117.2.102:2380
-   ```
+### Restoring Kubernetes etcd 
+
+1. Create the backup directory on all the three cluster nodes and copy the backed up files to that directory.
 
    ```
-   ETCDCTL_API=3 sudo etcdctl snapshot restore etcd_backup/etcd_backup.db --name etcd3 --initial-cluster etcd1=https://10.117.2.101:2380,etcd2=https://10.117.2.102:2380,etcd3=https://10.117.2.103:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://10.117.2.103:2380
+   mkdir ~/etcd_backup/
+   sudo chown odimra:odimra ~/etcd_backup/
+   sudo chmod 755 ~/etcd_backup/
    ```
 
-   For one-node cluster deployment, generate restore files from .db file for the single node:
+2. Copy all the files that were backed up and moved to a safe location to the directory `~/etcd_backup`.
+
+3. Generate the restore files for all nodes. Run the following command on all three nodes after replacing the hostnames and ip addresses appropriately.
+
+   **On etcd node 1**:
 
    ```
-   ETCDCTL_API=3 sudo etcdctl snapshot restore etcd_backup/etcd_backup.db
+   ETCDCTL_API=3 sudo etcdctl snapshot restore ~/etcd_backup/etcd_backup.db --name etcd1 --initial-cluster  etcd1=https://{IP address of first node}:2380,etcd2=https://{IP address of second node},etcd3=https://{IP address of third node}:2380 --initial-cluster-token k8s_etcd  --initial-advertise-peer-urls https://{IP address of first node}:2380
    ```
 
-9. Transfer the etcd snapshot of the etcd instance to the respective node:
+   **On etcd node 2**:
 
    ```
-   sudo scp -r etcd2.etcd/ <user>@10.117.2.102:/home/<user>
+   ETCDCTL_API=3 sudo etcdctl snapshot restore ~/etcd_backup/etcd_backup.db --name etcd2 --initial-cluster  etcd1=https://{IP address of first node}:2380,etcd2=https://{IP address of second node},etcd3=https://{IP address of third node}:2380 --initial-cluster-token k8s_etcd  --initial-advertise-peer-urls https://{IP address of second node}:2380
    ```
 
-   ```
-   sudo scp -r etcd3.etcd/ <user>@10.117.2.103:/home/<user>
-   ```
-
-   > Note: This step is not needed for one-node because the backup file will be in the same node.
-
-10. Stop all the Kube services (kube-apiserver, kube-controller, kube-schedule):
-
-    ```
-    sudo mv /etc/kubernetes/manifests/*.yaml etcd_backup/
-    ```
-
-11. Stop all the instances of etcd across the cluster(all three nodes):
-
-    ```
-    systemctl stop etcd
-    ```
-
-12. Move the current member directory to a backup member directory:
-
-    ```
-    sudo mv /var/lib/etcd/member /var/lib/etcd/member.bkp
-    ```
-
-13. Move all the snapshot DB etcd instances to `/var/lib/etcd`:
-
-    ```
-    sudo mv etcd1.etcd/member /var/lib/etcd/
-    ```
-
-    ```
-    sudo mv etcd2.etcd/member /var/lib/etcd/
-    ```
-
-    ```
-    sudo mv etcd3.etcd/member /var/lib/etcd/
-    ```
-
-    For one-node cluster deployment:
-
-    ```
-    sudo mv default.etcd/member /var/lib/etcd
-    ```
-
-14. Start the etcd instances across the cluster (all three nodes):
-
-    ```
-    systemctl start etcd
-    ```
-
-15. Restart all the kube applications by moving to the manifests:
-
-    ```
-    sudo mv etcd_backup/*.yaml /etc/kubernetes/manifests/
-    ```
-
-    
-
-## Backup and restore of ODIM etcd
-
-1.  Inside the etcd pod in odim namespace, run the following command:
+   **On etcd node 3**:
 
    ```
-   kubectl exec -it etcd-0 bash -nodim
+   ETCDCTL_API=3 sudo etcdctl snapshot restore ~/etcd_backup/etcd_backup.db --name etcd3 --initial-cluster  etcd1=https://{IP address of first node}:2380,etcd2=https://{IP address of second node},etcd3=https://{IP address of third node}:2380 --initial-cluster-token k8s_etcd  --initial-advertise-peer-urls https://{IP address of third node}:2380
    ```
 
-2. Check the endpoint health:
+   After the successful restore, directories `~/etcd1.etcd`, `~/etcd2.etcd`, and `~/etcd3.etcd` are created on the three nodes respectively.
+
+4. Stop all the Kube services (kube-apiserver, kube-controller, kube-schedule) on all the cluster nodes by running the following command:
 
    ```
-   /opt/etcd/bin/etcdctl endpoint health --endpoints=https://etcd:2379 --write-out=table  --cacert=/opt/etcd/conf/rootCA.crt  --cert=/opt/etcd/conf/odimra_etcd_server.crt  --key=/opt/etcd/conf/odimra_etcd_server.key
+   sudo mv /etc/kubernetes/manifests/*.yaml ~/etcd_backup/
    ```
 
-3. Identify the leader node by running the following command in all three nodes and if IS LEADER is true, follow all the steps in that node:
+5. Stop the etcd service on all the cluster nodes:
 
    ```
-   /opt/etcd/bin/etcdctl endpoint list --endpoints=https://etcd1:2379 --write-out=table  --cacert=/opt/etcd/conf/rootCA.crt  --cert=/opt/etcd/conf/odimra_etcd_server.crt  --key=/opt/etcd/conf/odimra_etcd_server.key
+   sudo systemctl stop etcd
    ```
 
-4. Navigate to the home/odimra directory and take the backup:
+6. Move the current member directory to a backup member directory on all the three cluster nodes:
+
+   ```
+   sudo mv /var/lib/etcd/member /var/lib/etcd/member.bkp
+   ```
+
+7. Restore the snapshot etcd db files to directory `/var/lib/etcd` on all the three cluster nodes by running the following commands:
+
+   **On node 1**:
+
+   ```
+   sudo mv ~/etcd1.etcd/member /var/lib/etcd/
+   ```
+
+   **On node 2**:
+
+   ```
+   sudo mv ~/etcd2.etcd/member /var/lib/etcd/
+   ```
+
+   **On node 3**:
+
+   ```
+   sudo mv ~/etcd3.etcd/member /var/lib/etcd/
+   ```
+
+   For one-node cluster deployment, run the following command:
+
+   ```
+   sudo mv ~/default.etcd/member /var/lib/etcd
+   ```
+
+8. Start the etcd service on cluster nodes:
+
+   ```
+   sudo systemctl start etcd
+   ```
+
+9. Restart all the kube services on all the three cluster nodes:
+
+   ```
+   sudo mv ~/etcd_backup/*.yaml /etc/kubernetes/manifests/
+   ```
+
+> **NOTE**: For a one-node setup, execute the above commands on the single node.
+
+
+
+## Backup and restore of ODIM etcd database 
+
+### Taking a backup of ODIM etcd 
+
+1. Identify the leader etcd pod by running the following command inside all the three etcd pods:
+
+   ```
+   kubectl exec -it {etcd pod name} bash -nodim
+   ```
+
+   >  **NOTE**: Replace `{etcd pod name}` appropriately.
+
+   ```
+   /opt/etcd/bin/etcdctl endpoint status --write-out=table --endpoints=https://etcd1:2379 --cacert=/opt/etcd/conf/rootCA.crt --cert=/opt/etcd/conf/odimra_etcd_server.crt --key=/opt/etcd/conf/odimra_etcd_server.key
+   ```
+
+   >  **NOTE**: Replace `etcd1` with `etcd2` and `etcd3` on second and third cluster nodes respectively.
+
+2. Verify the output on each node. The node with `IS LEADER` value as `true` is the leader node.
+
+3. Create a backup directory on the leader node and change the ownership and permission of the directory to odimra:
+
+   ```
+   mkdir ~/etcd_odim_backup/
+   sudo chown odimra:odimra ~/etcd_odim_backup/
+   sudo chmod 755 ~/etcd_odim_backup/
+   ```
+
+4. Navigate to the `/home/odimra` directory and take the backup by running the following command inside etcd leader pod:
 
    ```
    cd /home/odimra
-   ```
-
-   ```
-   opt/etcd/bin/etcdctl snapshot save /home/odimra/etcd_backup.db \
+   /opt/etcd/bin/etcdctl snapshot save /home/odimra/etcd_backup.db \
     --endpoints=https://etcd:2379 \
     --cacert=/opt/etcd/conf/rootCA.crt\
     --cert=/opt/etcd/conf/odimra_etcd_server.crt  \
     --key=/opt/etcd/conf/odimra_etcd_server.key
    ```
 
-5. Verify the backup file `etcd_backup.db` is available in `/home/odimra` and see the snapshot status:
+   Verify the backup file `etcd_backup.db` is available in `/home/odimra` directory.
+
+5. Check the status of the snapshot file `~/etcd_backup.db` that was created:
 
    ```
-   /opt/etcd/bin/etcdctl --write-out=table snapshot status
+   /opt/etcd/bin/etcdctl  snapshot status --write-out=table ~/etcd_backup.db
    ```
 
-6. Delete or modify the data in the current etcd:
+   **Sample output**:
+
+   | **HASH** | **REVISION** | **TOTAL KEYS** | **TOTAL SIZE** |
+   | -------- | ------------ | -------------- | -------------- |
+   | b31cc840 | 13           | 19             | 25KB           |
+
+6. Take the file `~/etcd_backup.db` out of the etcd leader pod to safe location which can be used to restore the etcd database later. Run the following command from one of the cluster node:
 
    ```
-   /opt/etcd/bin/etcdctl del svc.account.session-de7a7bc0-7038-4216-a020-70b95591f2db    --endpoints=https://etcd:2379  --cacert=/opt/etcd/conf/rootCA.crt  --cert=/opt/etcd/conf/odimra_etcd_server.crt  --key=/opt/etcd/conf/odimra_etcd_server.key
-    /opt/etcd/bin/etcdctl del greeting    --endpoints=https://etcd:2379  --cacert=/opt/etcd/conf/rootCA.crt  --cert=/opt/etcd/conf/odimra_etcd_server.crt  --key=/opt/etcd/conf/odimra_etcd_server.key
+   sudo kubectl cp odim/{leader etcd pod name}:/home/odimra/etcd_backup.db ~/etcd_odim_backup/etcd_backup.db
    ```
 
-7. Get the restore of the backup DB for all three nodes:
+   >  **NOTE**: Replace `{leader etcd pod name}` appropriately.
+
+> **NOTE**: For a one node setup, execute the above commands on the single node.
+
+### Restoring ODIM etcd 
+
+1. Create the backup directory if the directory is not present on one of the cluster nodes and copy the backed up file to that directory.
 
    ```
-   /opt/etcd/bin/etcdctl snapshot restore home/odimra/etcd_backup.db --name etcd1 --initial-cluster etcd1=https://etcd1:2380,etcd2=https://etcd2:2380,etcd3=https://etcd3:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://etcd1:2380
+   mkdir ~/etcd_odim_backup/
+   sudo chown odimra:odimra ~/etcd_odim_backup/
+   sudo chmod 755 ~/etcd_odim_backup/
    ```
 
-   ```
-   /opt/etcd/bin/etcdctl snapshot restore home/odimra/etcd_backup.db --name etcd2 --initial-cluster etcd1=https://etcd1:2380,etcd2=https://etcd2:2380,etcd3=https://etcd3:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://etcd2:2380
-   ```
+2. Copy the file that was backed up and moved to safe location to the directory `~/etcd_odim_backup` on one of the cluster nodes.
+
+3. Copy the backup file inside the etcd container from the cluster node:
 
    ```
-   /opt/etcd/bin/etcdctl snapshot restore home/odimra/etcd_backup.db --name etcd3 --initial-cluster etcd1=https://etcd1:2380,etcd2=https://etcd2:2380,etcd3=https://etcd3:2380 --initial-cluster-token etcd-cluster-1 --initial-advertise-peer-urls https://etcd3:2380
+   kubectl cp ~/etcd_odim_backup/etcd_backup.db odim/{leader etcd container name}:/home/odimra/etcd_backup.db
    ```
 
-   For one-node cluster deployment, run the following command:
+   > **NOTE**: Replace `{leader etcd container name}` appropriately in all commands.
+
+4. Login to the leader etcd container and restore the backed up etcd configuration:
 
    ```
-   /opt/etcd/bin/etcdctl snapshot restore home/odimra/etcd_backup.db
-   ```
-
-8. Exit from the pod. There is a new directory created `default.etcd`, move the directory content outside the pod to store it for further usage:
-
-   ```
-   kubectl cp odim/etcd-0:/home/odimra/default.etcd/ /[backup directory]/backup
-   ```
-
-9. In case of three nodes, get all the .etcd files outside the pod and move to the different nodes:
-
-   ```
-   sudo scp -r  etcd2.etcd/ <user>@10.117.2.102:/home/<user>
+   kubectl exec -it {leader etcd container name}  bash -nodim
    ```
 
    ```
-   sudo scp -r  etcd3.etcd/ <user>@10.117.2.103:/home/<user>
+   cd /home/odimra
    ```
 
-10. To restore, enter the etcd pod and mv the current data if available and make it backup:
+   ```
+   /opt/etcd/bin/etcdctl snapshot restore /home/odimra/etcd_backup.db --endpoints=https://etcd:2379  --cacert=/opt/etcd/conf/rootCA.crt  --cert=/opt/etcd/conf/odimra_etcd_server.crt  --key=/opt/etcd/conf/odimra_etcd_server.key
+   ```
 
-    ```
-    mv /opt/etcd/data/member /opt/etcd/data/member.bkp/
-    ```
+5. Verify that a directory by name `default.etcd` is created under `/home/odimra` in the leader etcd container. 
 
-11. Get the backup directory back to the Kubernetes pod and store it in the data directory:
+6. Copy the restored directory `/home/odimra/default.etcd` from the leader etcd container to the Kubernetes cluster node.
 
-    ```
-    kubectl cp /home/<user>/backup/member odim/etcd-0:/opt/etcd/data/
-    ```
+   ```
+   kubectl cp odim/{leader etcd container name}:/home/odimra/default.etcd/member" ~/etcd_odim_backup/member
+   ```
 
-    ```
-    kubectl cp /home/<user>/backup/member odim/etcd-1:/opt/etcd/data/
-    ```
+7. Copy the restored directory `~/etcd_odim_backup/member` from Kubernetes cluster node to the remaining two etcd nodes.
 
-    ```
-    kubectl cp /home/<user>/backup/member odim/etcd-2:/opt/etcd/data/
-    ```
+   ```
+   kubectl cp ~/etcd_odim_backup/member odim/{etcd container name}:/home/odimra/member
+   ```
 
-12. Restart the etcd pod in ODIM namespace and check for the existence of old data:
+   Replace `{etcd container name}` appropriately.
 
-    ```
-    kubectl delete pod etcd-0 -nodim
-    ```
+8. Login to leader etcd container first and move the restored directory `member` to `/opt/etcd/data`.
 
-    ```
-    kubectl delete pod etcd-1 -nodim
-    ```
+   ```
+   kubectl exec -it {leader etcd container name}  bash -nodim
+   cd /opt/etcd/data
+   mv member member.bkp
+   cp -r /home/odimra/member /opt/etcd/data/member
+   ```
 
-    ```
-    kubectl delete pod etcd-2 -nodim
-    ```
+9. Repeat step 8 on other two etcd containers.
 
-    
+> **NOTE**: For a one node setup, execute the above commands on the single node.
+
+
 
 ## Backup and restore of Redis
 
@@ -2338,12 +2370,12 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    mkdir <backup directory>/backup
    ```
 
-2. Get the name of the master pod to collect the backup snapshot file and append-only file to restore them later (either ondisk or inmemory database).
+2. For three-node deployment, get the name of the primary pod to collect the backup snapshot file and append-only directory to restore them later (either ondisk or inmemory database).
 
    ```
    kubectl get pods -nodim | grep redis | grep primary
    ```
-   
+
    **Output**:
 
    ```
@@ -2353,36 +2385,38 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    redis-ha-ondisk-primary-0
    ```
 
-3. Copy the rdb files and aof files from the master pod.
+   > **NOTE**: For one-node deployment, enter `kubectl get pods -nodim | grep redis` to get the name of the pod to collect the backup snapshot file and append-only directory to restore them later (either ondisk or inmemory database).
+
+3. Copy the rdb file and aof directory from the primary pod.
 
    ```
    kubectl cp odim/<pod-name>:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
    ```
 
    ```
-   kubectl cp odim/<pod-name>:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
+   kubectl cp odim/<pod-name>:/redis-data/appendonlydir <backup directory>/backup/appendonlydir
    ```
 
    **For example (on-disk)**:
-   
+
    ```
    kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
    ```
 
    ```
-   kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
+   kubectl cp odim/redis-ha-ondisk-primary-0:/redis-data/appendonlydir <backup directory>/backup/appendonlydir
    ```
 
    **For example(in-memory)**:
-   
+
    ```
    kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/dump.rdb <backup directory>/backup/dump.rdb
    ```
-   
+
    ```
-   kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonly.aof <backup directory>/backup/appendonly.aof
+   kubectl cp odim/redis-ha-inmemory-primary-0:/redis-data/appendonlydir <backup directory>/backup/appendonlydir
    ```
-   
+
    These are the backup files to be restored.
 
 4. Copy the above backup files to the pod to restore them.
@@ -2392,7 +2426,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    ```
 
    ```
-   kubectl cp <Copied directory>/backup/appendonly.aof  odim/<pod-name>:/redis-data/appendonly.aof.old
+   kubectl cp <Copied directory>/backup/appendonlydir  odim/<pod-name>:/redis-data/appendonlydir.old
    ```
 
    **For example**:
@@ -2402,7 +2436,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    ```
 
    ```
-   kubectl cp <Copied directory>/backup/appendonly.aof odim/redis-ha-ondisk-primary-0/redis-data/appendonly.aof.old
+   kubectl cp <Copied directory>/backup/appendonlydir odim/redis-ha-ondisk-primary-0/redis-data/appendonlydir.old
    ```
 
    ```
@@ -2410,7 +2444,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    ```
 
    ```
-   kubectl cp <Copied directory>/backup/appendonly.aof  odim/redis-ha-inmemory-primary-0/redis-data/appendonly.aof.old
+   kubectl cp <Copied directory>/backup/appendonlydir  odim/redis-ha-inmemory-primary-0/redis-data/appendonlydir.old
    ```
 
 5. Log in to the pod. 
@@ -2451,14 +2485,14 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 
 8. Exit from the Redis CLI and move to the `redis-data` directory.
 
-9. Remove the existing rdb and aof files and replace the backed up ones with the name.
+9. Remove the existing rdb file and aof directory and replace the backed up ones with the name.
 
    ```
    cd /redis-data
    ```
 
    ```
-   rm -rf dump.rdb appendonly.aof
+   rm -rf dump.rdb appendonlydir
    ```
 
    ```
@@ -2466,7 +2500,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    ```
 
    ```
-   mv appendonly.aof.old appendonly.aof
+   mv appendonlydir.old appendonlydir
    ```
 
 10. Get the pods of the Redis (either in-memory or on-disk) and restart  them.
@@ -2513,6 +2547,71 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
     ```
     keys *
     ```
+
+   
+
+## Backup and restore of Resource Aggregator for ODIM and plugin configurations
+
+You can take a backup of all Resource Aggregator for ODIM and plugin configurations in a single file or in different files. The following procedure has instructions to take a backup of Resource Aggregator for ODIM and plugin configurations in a single file.
+
+1. List down all the configmaps present in the odim namespace:
+
+   ```
+   kubectl get cm -n <odim_namespace>
+   ```
+
+   For example:
+
+   ```
+   kubectl get cm -nodim
+   ```
+
+   The following sample output appears:
+
+   ```
+   NAME                    DATA   AGE
+   configure-hosts         1      10d
+   iloplugin-config        1      3d23h
+   kube-root-ca.crt        1      11d
+   odimra-config           1      10d
+   odimra-platformconfig   1      10da
+   ```
+
+2. Copy all config maps to a file:
+
+   ```
+   kubectl get cm -nodim -o yaml > odim_configs.yaml
+   ```
+
+3. Remove the fields such as `resourceVersion`, `uid`, and `creationtimestamp` from the yaml file. 
+   The backup file of all configurations is ready.
+
+4. To restore the configurations, apply the configuration backup using the `kubectl apply` command:
+
+   ```
+   kubectl apply -f <file-name>
+   ```
+
+   For example: 
+
+   ```
+   kubectl apply -f odim_configs.yaml
+   ```
+
+   The following sample output appears:
+
+   ```
+   configmap/configure-hosts configured
+   configmap/iloplugin-config configured
+   configmap/kube-root-ca.crt configured
+   configmap/odimra-config configured
+   configmap/odimra-platformconfig configured
+   ```
+
+   ### Testing the backup and restore operation
+
+   1. After taking a backup of the configuration files, re-install Resource Aggregator for ODIM with different configurations. 
+   2. Restore the old backup configurations and verify that the parameters would be updated as present in the backup file.
 
    
 
@@ -2607,7 +2706,7 @@ To search servers in the inventory based on specific criteria, perform HTTP `GET
 `/redfish/v1/Systems?$filter={searchKeys}%20{conditionKeys}%20{value/regular_expression}%20{logicalOperand}%20{searchKeys}%20{conditionKeys}%20{value}`
 
 
-Example: `redfish/v1/Systems?filter=MemorySummary/TotalSystemMemoryGiB%20eq%20384`
+Example: `redfish/v1/Systems?$filter=MemorySummary/TotalSystemMemoryGiB%20eq%20384`
 
 
 This URI searches the inventory for servers having total physical memory of 384 GB. On successful completion, it provides links to the filtered servers.
@@ -2747,14 +2846,15 @@ python3 odim-controller.py [option(s)] [argument(s)]
     python3 odim-controller.py --addnode kubernetes --config \
     ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml
     ```
-```
 
-2. ```
-     python3 odim-controller.py --config \
+2.  ```
+    python3 odim-controller.py --config \
     ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
     --scale --svc aggregation --replicas 3
-```
+    ```
 For more examples, see *[Post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)*.
+
+
 
 # Contributing to the open source community
 
@@ -2821,7 +2921,7 @@ The specification and code is licensed under the Apache 2.0 license, and is foun
 
 If you want to make your first contribution on GitHub, refer one of the following procedures:
 
-- *https://github.com/firstcontributions/first-contributions/blob/master/README.md*
+- *https://github.com/firstcontributions/first-contributions/blob/main/README.md*
 
 - *https://www.dataschool.io/how-to-contribute-on-github/*
 
@@ -2860,9 +2960,9 @@ You can also refer the following links for exploring Wiki page and slack channel
    
    ```
    export http_proxy=<your_HTTP_proxy_address>
-      export https_proxy=<your_HTTP_proxy_address>
-      no_proxy="127.0.0.1,localhost,localhost.localdomain,xxx.xxx.xxx.10/12,   <Deployment_Node_IP_address>,<Cluster_Node1_IP>,\
-      <Cluster_Node1_IP>,<Cluster_Node2_IP>,<Cluster_Node3_IP>"
+   export https_proxy=<your_HTTP_proxy_address>
+   no_proxy="127.0.0.1,localhost,localhost.localdomain,xxx.xxx.xxx.10/12,   <Deployment_Node_IP_address>,<Cluster_Node1_IP>,\
+   <Cluster_Node1_IP>,<Cluster_Node2_IP>,<Cluster_Node3_IP>"
    ```
 3. Run the following command: 
 
@@ -2935,9 +3035,9 @@ This procedure shows how to set up time synchronization across all the nodes (de
    sudo systemctl restart chrony
    ```
    
-```
+   ```
    sudo systemctl enable chrony
-```
+   ```
 
    
 
@@ -2946,10 +3046,10 @@ This procedure shows how to set up time synchronization across all the nodes (de
 Run the following commands:
 
 1. ```
-    wget https://dl.google.com/go/go1.17.2.linux-amd64.tar.gz -P /var/tmp
+    wget https://dl.google.com/go/go1.19.5.linux-amd64.tar.gz -P /var/tmp
    ```
 1. ```
-    sudo tar -C /usr/local -xzf /var/tmp/go1.17.2.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf /var/tmp/go1.19.5.linux-amd64.tar.gz
    ```
 1. ```
     export PATH=$PATH:/usr/local/go/bin
@@ -3173,7 +3273,7 @@ Run the following commands:
      haDeploymentEnabled: True
      connectionMethodConf:
      - ConnectionMethodType: Redfish
-       ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+       ConnectionMethodVariant: Compute:BasicAuth:GRF_v2.0.0
      - ConnectionMethodType: Redfish
        ConnectionMethodVariant: Storage:BasicAuth:STG_v1.0.0
      etcHostsEntries: ""
@@ -3229,6 +3329,8 @@ Run the following commands:
      odimraKafkaClientKey:
 ```
 
+
+
 ## Odim-controller configuration parameters
 
 The following table lists all the configuration parameters required by odim-controller to deploy the services of Resource Aggregator for ODIM.
@@ -3270,7 +3372,7 @@ The following table lists all the configuration parameters required by odim-cont
 |MessageBusQueue|Event message bus queue name. Allowed characters for the value are alphabets, numbers, period, underscore, and hyphen. <br />**NOTE**: Do not include blank spaces.|
 |etcHostsEntries|List of FQDNs of the external servers and plugins to be added to the `/etc/hosts` file in each of the service containers of Resource Aggregator for ODIM. The external servers are the servers that you want to add into the resource inventory.<br>**NOTE**: It must be in the YAML multiline format as shown in the "etcHostsEntries template".<br>|
 |appsLogPath|The path where the logs of the Resource Aggregator for ODIM services must be stored. Default path is `/var/log/odimra`.<br>|
-|odimraServerCertFQDNSan|List of FQDNs to be included in the server certificate of Resource Aggregator for ODIM. It is required for deploying plugins.<br><br />The default value for one-node deployment is`redis-inmemory`,`redis-ondisk`.  <br />The default value for three-node deployment is `redis-ha-inmemory,redis-ha-ondisk,redis-ha-inmemory-primary-0.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-inmemory-secondary-0.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-inmemory-secondary-1.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-ondisk-primary-0.redis-ha-ondisk-headless.odim.svc.cluster.local,redis-ha-ondisk-secondary-0.redis-ha-ondisk-headless.odim.svc.cluster.local,redis-ha-ondisk-secondary-1.redis-ha-ondisk-headless.odim.svc.cluster.local` <br />**NOTE**: When you add a plugin, add the FQDN of the new plugin to the existing comma-separated list of FQDNs.|
+|odimraServerCertFQDNSan|List of FQDNs to be included in the server certificate of Resource Aggregator for ODIM. It is required for deploying plugins.<br><br />The default value for one-node deployment is`redis-inmemory`,`redis-ondisk`.  <br />The default value for three-node deployment is `redis-ha-inmemory,redis-ha-inmemory-sentinel,redis-ha-ondisk,redis-ha-ondisk-sentinel,redis-ha-inmemory-primary-0.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-inmemory-sentinel-primary-0.redis-ha-inmemory-sentinel-headless.odim.svc.cluster.local,redis-ha-inmemory-secondary-0.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-inmemory-sentinel-secondary-0.redis-ha-inmemory-sentinel-headless.odim.svc.cluster.local,redis-ha-inmemory-secondary-1.redis-ha-inmemory-headless.odim.svc.cluster.local,redis-ha-inmemory-sentinel-secondary-1.redis-ha-inmemory-sentinel-headless.odim.svc.cluster.local,redis-ha-ondisk-primary-0.redis-ha-ondisk-headless.odim.svc.cluster.local,redis-ha-ondisk-sentinel-primary-0.redis-ha-ondisk-sentinel-headless.odim.svc.cluster.local,redis-ha-ondisk-secondary-0.redis-ha-ondisk-headless.odim.svc.cluster.local,redis-ha-ondisk-sentinel-secondary-0.redis-ha-ondisk-sentinel-headless.odim.svc.cluster.local,redis-ha-ondisk-secondary-1.redis-ha-ondisk-headless.odim.svc.cluster.local,redis-ha-ondisk-sentinel-secondary-1.redis-ha-ondisk-sentinel-headless.odim.svc.cluster.local` <br />**NOTE**: When you add a plugin, add the FQDN of the new plugin to the existing comma-separated list of FQDNs.|
 |odimraServerCertIPSan|List of IP addresses to be included in the server certificate of Resource Aggregator for ODIM. It is required for deploying plugins.<br> **NOTE**: It must be comma-separated values of type String.<br>|
 |odimraKafkaClientCertFQDNSan|List of FQDNs to be included in the Kafka client certificate of Resource Aggregator for ODIM. It is required for deploying plugins.<br> **NOTE**: When you add a plugin, add the FQDN of the new plugin to the existing comma-separated list of FQDNs.<br>|
 |odimraKafkaClientCertIPSan|List of IP addresses to be included in the Kafka client certificate of Resource Aggregator for ODIM. It is required for deploying plugins.|
@@ -3306,7 +3408,7 @@ The following table lists all the configuration parameters required by odim-cont
 
 ```
 etcHostsEntries: |
- <IP_address_of_external_server_or_plugin> <FQDN_of_external_server>
+<IP_address_of_external_server_or_plugin> <FQDN_of_external_server>
 ```
 Example:
 
@@ -3376,7 +3478,6 @@ The following table lists all the configuration parameters required to deploy a 
 | account-session          | Name of the account-sessions service                         |
 | aggregation              | Name of the aggregation service                              |
 | api                      | Name of the api service                                      |
-| composition-service      | Name of the composition-service                              |
 | events                   | Name of the events service                                   |
 | fabrics                  | Name of the fabrics service                                  |
 | managers                 | Name of the managers service                                 |
@@ -3465,7 +3566,7 @@ The protoc compiler provides a language-neutral, platform-neutral, extensible me
       #!/bin/bash -x
       ## Generting protoc
       
-      protos=("account" "aggregator" "auth" "chassis" "events" "fabrics" "managers" "role" "session" "systems" "task" "telemetry" "update" "compositionservice" "licenses")
+      protos=("account" "aggregator" "auth" "chassis" "events" "fabrics" "managers" "role" "session" "systems" "task" "telemetry" "update" "licenses")
       for str in ${protos[@]}; do
       proto_path="$<your_odim_directory>/lib-utilities/proto/$str"
       proto_file_name="$str.proto"
@@ -3789,7 +3890,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 7. Save the GRF plugin Docker image on the deployment node at `~/plugins/grfplugin`.
 
     ```
-    docker save grfplugin:3.0 -o ~/plugins/grfplugin/grfplugin.tar
+    docker save grfplugin:3.2 -o ~/plugins/grfplugin/grfplugin.tar
     ```
 
 8. Navigate to the `ODIM` directory.
@@ -3822,7 +3923,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with the GRF plugin:<br/> ConnectionMethodVariant: `Compute:BasicAuth:GRF_v1.0.0`<br/>Check if it is there already before updating. If yes, do not add it again.<br/> |
+    | connectionMethodConf         | The connection method associated with the GRF plugin:<br/> ConnectionMethodVariant: `Compute:BasicAuth:GRF_v2.0.0`<br/>Check if it is there already before updating. If yes, do not add it again.<br/> |
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the GRF plugin:grfplugin, grfplugin-events<br/>Add these values to the existing comma-separated list.<br/> |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the GRF plugin: grfplugin, grfplugin-events. <br />Add these values to the existing comma-separated list.<br> |
     | odimPluginPath               | The path of the directory where the GRF Helm package, the `grfplugin` image, and the modified `grfplugin-config.yaml` are copied. |
@@ -3840,7 +3941,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
           haDeploymentEnabled: True
           connectionMethodConf:
           - ConnectionMethodType: Redfish
-            ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+            ConnectionMethodVariant: Compute:BasicAuth:GRF_v2.0.0
           odimraKafkaClientCertFQDNSan: grfplugin,grfplugin-events
           odimraServerCertFQDNSan: grfplugin,grfplugin-events
     ```
@@ -4011,7 +4112,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
         kubectl get nodes -o wide
         ```
     
-        If any of the nodes are listed as "Ready,Unschedulable", run the following commands on any of the existing controller nodes:
+        If any of the nodes are listed as `"Ready,Unschedulable"`, run the following commands on any of the existing controller nodes:
     
         ```
         kubectl uncordon <unschedulable_controller_node_name>
@@ -4140,7 +4241,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
 3. Perform the following steps on the deployment node: 
     1. Remove the existing worker node. To know how to remove a node, see step 1 in *[Scaling down the resources and services of Resource Aggregator for ODIM](#Scaling-down-the-resources-and-services-of-Resource-Aggregator-for-ODIM)*. 
-    2. Edit `$\{K8S\_INVENTORY\_FILE\}` to add the removed worker node as a new controller node with required details under the following sections. 
+    2. Edit `${K8S_INVENTORY_FILE}` to add the removed worker node as a new controller node with required details under the following sections. 
 
         - etcd
         - kube_control_plane
@@ -4151,7 +4252,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
         vi ${K8S_INVENTORY_FILE}
         ```
 
-    3. Edit `\{ODIM\_CONTROLLER\_SRC\_PATH\}/kubespray/inventory/k8s-cluster-$\{DEPLOYMENT\_ID\}/group\_vars/all/all.yml` to: 
+    3. Edit `{ODIM_CONTROLLER_SRC_PATH}/kubespray/inventory/k8s-cluster-$\{DEPLOYMENT_ID}/group_vars/all/all.yml` to: 
 
         -   Update the no_proxy parameter with the removed worker node IP.
 
@@ -4286,7 +4387,7 @@ python3 odim-controller.py --config \
 
 ## CI process
 
-GitHub action workflows, also known as checks, are added to the ODIM repository. They are triggered whenever a Pull Request (PR) is raised against the master (development) branch. The result from the workflow execution is then updated to the PR.
+GitHub action workflows, also known as checks, are added to the ODIM repository. They are triggered whenever a Pull Request (PR) is raised against the development branch. The result from the workflow execution is then updated to the PR.
 
 > **NOTE**: You can review and merge PRs only if the checks are passed.
 
@@ -4304,14 +4405,14 @@ These checks run in parallel and take a few minutes to complete.
 
 1. build_unittest.yml
    - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md*.
-   - Installs Go 1.17.2 package
-   - Installs and configures Redis 6.2.6 with two instances running on ports 6379 and 6380
-   - Checks out the PR code into the Go module directory
-   - Builds/compiles the code
-   - Runs the unit tests
+   - Installs Go 1.19.5 package.
+   - Installs and configures Redis 7.0.8 with two instances running on ports 6379 and 6380.
+   - Checks out the PR code into the Go module directory.
+   - Builds/compiles the code.
+   - Runs the unit tests.
 2. build_deploy_test.yml
    - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md*.
-   - Checks out the PR code
+   - Checks out the PR code.
    - Builds and deploys the following docker containers:
      - ODIMRA 
      - Generic Redfish plugin 
@@ -4320,9 +4421,9 @@ These checks run in parallel and take a few minutes to complete.
      - Zookeeper 
      - etcd
      - Redis
-   - Runs the sanity tests
-   - Prepares build artifacts
-   - Uploads the build artifacts
+   - Runs the sanity tests.
+   - Prepares build artifacts.
+   - Uploads the build artifacts.
 
 > **NOTE:** Build status notifications having a link to the GitHub Actions build job page will be sent to the developer’s email address.
 

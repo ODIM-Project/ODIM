@@ -59,9 +59,9 @@ type ResourceInfoRequest struct {
 	DevicePassword      func([]byte) ([]byte, error)
 	GetPluginStatus     func(context.Context, tmodel.Plugin) bool
 	ResourceName        string
-	GetAllKeysFromTable func(string, common.DbType) ([]string, error)
+	GetAllKeysFromTable func(context.Context,string, common.DbType) ([]string, error)
 	GetPluginData       func(string) (tmodel.Plugin, *errors.Error)
-	GetResource         func(string, string, common.DbType) (string, *errors.Error)
+	GetResource         func(context.Context,string, string, common.DbType) (string, *errors.Error)
 	GenericSave         func(context.Context, []byte, string, string) error
 }
 
@@ -73,7 +73,7 @@ var (
 // GetResourceInfoFromDevice will contact to the southbound client and gets the Particual resource info from device
 func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) ([]byte, error) {
 	var metricReportData dmtf.MetricReports
-	plugins, err := req.GetAllKeysFromTable("Plugin", common.OnDisk)
+	plugins, err := req.GetAllKeysFromTable(ctx,"Plugin", common.OnDisk)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -96,6 +96,7 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) ([]
 	if err != nil {
 		return []byte{}, err
 	}
+	l.LogWithFields(ctx).Debugf("resource info from device: %s", string(data))
 	return data, nil
 }
 
@@ -193,6 +194,7 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}
+	l.LogWithFields(ctx).Debugf("response from contact plugin : %s", data)
 	return []byte(data), response.Header.Get("X-Auth-Token"), resp, nil
 }
 
@@ -236,7 +238,7 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 
 func removeNonExistingID(ctx context.Context, req ResourceInfoRequest) {
 	collectionURL := "/redfish/v1/TelemetryService/MetricReports"
-	data, err := req.GetResource("MetricReportsCollection", collectionURL, common.InMemory)
+	data, err := req.GetResource(ctx,"MetricReportsCollection", collectionURL, common.InMemory)
 	if err != nil {
 		return
 	}

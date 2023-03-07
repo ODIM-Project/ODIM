@@ -152,8 +152,7 @@ func (e *ExternalInterface) UpdateAggregationSource(ctx context.Context, req *ag
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	respBody := fmt.Sprintf("%v", resp.Body)
-	l.LogWithFields(ctx).Debugf("final response for get update service request: %s", string(respBody))
+	// password is in resp body, hence cannot log final response
 	return resp
 }
 

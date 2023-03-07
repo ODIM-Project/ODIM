@@ -16,11 +16,13 @@
 package fabmodel
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 var (
@@ -73,7 +75,7 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 }
 
 //GetAllFabricPluginDetails fetches all fabric plugin information from plugin table
-func GetAllFabricPluginDetails() ([]string, error) {
+func GetAllFabricPluginDetails(ctx context.Context) ([]string, error) {
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -82,6 +84,7 @@ func GetAllFabricPluginDetails() ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error while trying to get data from table - Plugin : %v", err.Error())
 	}
+	l.LogWithFields(ctx).Debug("all fabric plugin details: ", keysArray)
 	return keysArray, nil
 }
 
@@ -121,7 +124,7 @@ func (fabric *Fabric) RemoveFabricData(fabuuid string) error {
 }
 
 //GetManagingPluginIDForFabricID fetches the fabric details
-func GetManagingPluginIDForFabricID(fabID string) (Fabric, error) {
+func GetManagingPluginIDForFabricID(fabID string, ctx context.Context) (Fabric, error) {
 	var fabric Fabric
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
@@ -136,12 +139,12 @@ func GetManagingPluginIDForFabricID(fabID string) (Fabric, error) {
 	if err := json.Unmarshal([]byte(data), &fabric); err != nil {
 		return fabric, err
 	}
-
+	l.LogWithFields(ctx).Debug("Managing plugin for given fabricID: ", fabric)
 	return fabric, nil
 }
 
 //GetAllTheFabrics fetches all the fabrics details
-func GetAllTheFabrics() ([]Fabric, error) {
+func GetAllTheFabrics(ctx context.Context) ([]Fabric, error) {
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -163,5 +166,6 @@ func GetAllTheFabrics() ([]Fabric, error) {
 		fabrics = append(fabrics, fabric)
 
 	}
+	l.LogWithFields(ctx).Debug("All fabrics: ",fabrics)
 	return fabrics, nil
 }

@@ -18,6 +18,7 @@ package rpc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"net/http"
@@ -52,6 +53,7 @@ func (f *Fabrics) GetFabricResource(ctx context.Context, req *fabricsproto.Fabri
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("final response for get fabric resource request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp, nil
 }
 
@@ -70,7 +72,7 @@ func (f *Fabrics) UpdateFabricResource(ctx context.Context, req *fabricsproto.Fa
 	resp.StatusCode = data.StatusCode
 	resp.Body = generateResponse(ctx, data.Body)
 	resp.StatusMessage = data.StatusMessage
-
+	l.LogWithFields(ctx).Debugf("final response for update fabric resource request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp, nil
 
 }
@@ -85,6 +87,7 @@ func (f *Fabrics) AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequ
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("final response for add fabric request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp, nil
 
 }
@@ -99,6 +102,7 @@ func (f *Fabrics) RemoveFabric(ctx context.Context, req *fabricsproto.AddFabricR
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("final response for remove fabric request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp, nil
 }
 
@@ -117,6 +121,7 @@ func (f *Fabrics) DeleteFabricResource(ctx context.Context, req *fabricsproto.Fa
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("final response for delete fabric resource request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp, nil
 }
 

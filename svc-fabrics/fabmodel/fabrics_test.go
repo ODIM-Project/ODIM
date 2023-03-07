@@ -16,6 +16,7 @@
 package fabmodel
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"testing"
@@ -197,12 +198,12 @@ func TestGetAllFabricPluginDetails(t *testing.T) {
 		}
 	}()
 	mockPluginData(t)
-	resp, _ := GetAllFabricPluginDetails()
+	resp, _ := GetAllFabricPluginDetails(context.TODO())
 	assert.Equal(t, len(resp), 1, "should be same")
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
-	_, err := GetAllFabricPluginDetails()
+	_, err := GetAllFabricPluginDetails(context.TODO())
 	assert.NotNil(t, err, "There should be an error")
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
@@ -251,19 +252,19 @@ func TesGetManagingPluginIDForFabricID(t *testing.T) {
 	assert.Equal(t, nil, err, "there should be no error")
 
 	// positive test case
-	fabric, err := GetManagingPluginIDForFabricID(fab.FabricUUID)
+	fabric, err := GetManagingPluginIDForFabricID(fab.FabricUUID,context.TODO())
 	assert.Equal(t, nil, err, "there should be no error")
 	assert.Equal(t, "12345", fabric.FabricUUID, "fabric uuid should be 12345")
 	assert.Equal(t, "CFM", fabric.PluginID, "plugin id should be CFM")
 
 	// negative test case
-	fabric, err = GetManagingPluginIDForFabricID("54321")
+	fabric, err = GetManagingPluginIDForFabricID("54321",context.TODO())
 	assert.NotNil(t, err, "there should be an error")
 
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
-	_, err = GetManagingPluginIDForFabricID("54321")
+	_, err = GetManagingPluginIDForFabricID("54321",context.TODO())
 
 	assert.NotNil(t, err, "There should be an error")
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
@@ -293,7 +294,7 @@ func TestGetAllFabrics(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := GetAllTheFabrics()
+			got, _ := GetAllTheFabrics(context.TODO())
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAllTheFabrics() got = %v, want %v", got, tt.want)
 			}
@@ -302,7 +303,7 @@ func TestGetAllFabrics(t *testing.T) {
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
-	_, err = GetAllTheFabrics()
+	_, err = GetAllTheFabrics(context.TODO())
 	assert.NotNil(t, err, "There should be an error")
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
@@ -324,10 +325,10 @@ func TestFabric_RemoveFabricData(t *testing.T) {
 	fab1.AddFabricData("12345")
 	fab1.RemoveFabricData("12345")
 
-	_, err := GetManagingPluginIDForFabricID("12345")
+	_, err := GetManagingPluginIDForFabricID("12345",context.TODO())
 	assert.NotNil(t, err, "There should be an error ")
 	mockFabricData("12345", "AFC")
-	_, err = GetManagingPluginIDForFabricID("12345")
+	_, err = GetManagingPluginIDForFabricID("12345",context.TODO())
 	assert.Nil(t, err, "There should no error ")
 
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {

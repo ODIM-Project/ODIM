@@ -456,7 +456,7 @@ func GetSubscribedEvtTypes(ctx context.Context, searchKey string) ([]string, err
 		}
 	}
 	eventTypes = removeDuplicates(eventTypes)
-	l.LogWithFields(ctx).Debugf("subscribed event types:", eventTypes)
+	l.LogWithFields(ctx).Debug("subscribed event types:", eventTypes)
 	return eventTypes, nil
 }
 

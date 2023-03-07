@@ -1351,7 +1351,7 @@ func getConnectionMethodVariants(ctx context.Context,connectionMethodVariant str
 		PluginID:          cm[2],
 		FirmwareVersion:   firmwareVersion[1],
 	}
-	l.LogWithFields(ctx).Debugf("connection method variants:", cmv)
+	l.LogWithFields(ctx).Debug("connection method variants:", cmv)
 	return cmv
 }
 

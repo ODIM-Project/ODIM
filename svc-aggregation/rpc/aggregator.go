@@ -350,7 +350,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 		l.LogWithFields(ctx).Error(errMsg)
 		return resp, nil
 	}
-	l.LogWithFields(ctx).Debugf("aggregation source request:",addRequest)
+	//password in add request, hence cannot log it
 	//validating the AggregationSourceRequest
 	invalidParam := validateAggregationSourceRequest(addRequest)
 	if invalidParam != "" {

@@ -723,7 +723,7 @@ func GetSystemResetInfo(ctx context.Context, systemURI string) (map[string]strin
 	if err := json.Unmarshal([]byte(plugindata), &resetInfo); err != nil {
 		return resetInfo, errors.PackError(errors.JSONUnmarshalFailed, err)
 	}
-	l.LogWithFields(ctx).Debugf("system reset details: ", resetInfo)
+	l.LogWithFields(ctx).Debug("system reset details: ", resetInfo)
 	return resetInfo, nil
 }
 
@@ -1004,7 +1004,7 @@ func GetConnectionMethod(ctx context.Context, connectionMethodURI string) (Conne
 	if err := json.Unmarshal([]byte(data), &connectionMethod); err != nil {
 		return connectionMethod, errors.PackError(errors.JSONUnmarshalFailed, err)
 	}
-	l.LogWithFields(ctx).Debugf("connection method details: ", connectionMethod)
+	l.LogWithFields(ctx).Debug("connection method details: ", connectionMethod)
 	return connectionMethod, nil
 }
 
@@ -1093,7 +1093,7 @@ func GetDeviceSubscriptions(ctx context.Context, hostIP string) (*common.DeviceS
 		Location:        devSub[1],
 		OriginResources: getSliceFromString(devSub[2]),
 	}
-	l.LogWithFields(ctx).Debugf("device subscription details :", deviceSubscription)
+	l.LogWithFields(ctx).Debug("device subscription details :", deviceSubscription)
 	return deviceSubscription, nil
 }
 

@@ -87,6 +87,7 @@ func (e *ExternalInterface) UpdateSystemState(ctx context.Context, updateReq *ag
 	}
 
 	//replacing the uuid while saving the data
+	l.LogWithFields(ctx).Debugf("update resource data request for UUID %s: %s", req.DeviceUUID, string(rawData))
 	updatedResourceData := updateResourceDataWithUUID(string(rawData), req.DeviceUUID)
 	var systemInfo map[string]interface{}
 

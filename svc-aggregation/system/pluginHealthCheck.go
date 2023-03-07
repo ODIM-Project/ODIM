@@ -86,6 +86,8 @@ func (e *ExternalInterface) SendStartUpData(ctx context.Context, startUpReq *agg
 	}
 
 	SendPluginStartUpData(ctx, startUpReq.OriginURI, plugin)
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("final response for send start up data: %s",string(respBody))
 	return resp
 }
 
@@ -245,6 +247,7 @@ func sendPluginStartupRequest(ctx context.Context, plugin agmodel.Plugin, startu
 	contactRequest.URL = "/ODIM/v1/Startup"
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.PostBody = startupData
+	l.LogWithFields(ctx).Debugf("send plugin startup request: %s",string(fmt.Sprintf("%v", contactRequest.PostBody)))
 	response, err := agcommon.ContactPlugin(ctx, contactRequest, serverName)
 	if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
 		l.LogWithFields(ctx).Errorf("failed to send startup data to %s(%s): %s: %+v", plugin.ID, plugin.IP, err, response)

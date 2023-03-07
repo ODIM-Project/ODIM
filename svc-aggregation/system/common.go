@@ -710,7 +710,7 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 	}
 
 	searchForm := createServerSearchIndex(ctx, computeSystem, oidKey, req.DeviceUUID)
-	//save the final search form here
+	//save the   search form here
 	if req.UpdateFlag {
 		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID, req.BMCAddress)
 	} else {

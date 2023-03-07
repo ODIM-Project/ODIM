@@ -87,6 +87,7 @@ func (e *ExternalInterface) CreateAggregate(ctx context.Context, req *aggregator
 	aggregateUUID := uuid.NewV4().String()
 	var aggregateURI = fmt.Sprintf("%s/%s", targetURI, aggregateUUID)
 
+	l.LogWithFields(ctx).Debug("list of elements to create the aggregate: ", createRequest.Elements)
 	dbErr := agmodel.CreateAggregate(createRequest, aggregateURI)
 	if dbErr != nil {
 		errMsg := dbErr.Error()
@@ -115,6 +116,7 @@ func (e *ExternalInterface) CreateAggregate(ctx context.Context, req *aggregator
 		Elements: createRequest.Elements,
 	}
 	resp.StatusCode = http.StatusCreated
+	l.LogWithFields(ctx).Debugf("final response for create aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -177,6 +179,7 @@ func (e *ExternalInterface) GetAllAggregates(ctx context.Context, req *aggregato
 		MembersCount: len(members),
 		Members:      members,
 	}
+	l.LogWithFields(ctx).Debugf("final response for get all aggregates request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -225,6 +228,7 @@ func (e *ExternalInterface) GetAggregate(ctx context.Context, req *aggregatorpro
 			},
 		},
 	}
+	l.LogWithFields(ctx).Debugf("final response for get aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -255,6 +259,7 @@ func (e *ExternalInterface) DeleteAggregate(ctx context.Context, req *aggregator
 		l.LogWithFields(ctx).Error("Error while delete subscription details ", err.Error())
 	}
 	resp.StatusCode = http.StatusNoContent
+	l.LogWithFields(ctx).Debugf("final response for delete aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -335,6 +340,7 @@ func (e *ExternalInterface) AddElementsToAggregate(ctx context.Context, req *agg
 		Elements: aggregate.Elements,
 	}
 	resp.StatusCode = http.StatusOK
+	l.LogWithFields(ctx).Debugf("final response for all elements to aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -380,6 +386,7 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(ctx context.Context, req
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
+	l.LogWithFields(ctx).Debug("elements to be removed from aggregate:", removeRequest.Elements)
 	if !checkRemovingElementsPresent(removeRequest.Elements, aggregate.Elements) {
 		errMsg := "Elements not present in aggregate"
 		l.LogWithFields(ctx).Error(errMsg)
@@ -414,6 +421,7 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(ctx context.Context, req
 		Elements: aggregate.Elements,
 	}
 	resp.StatusCode = http.StatusOK
+	l.LogWithFields(ctx).Debugf("final response for remove elements from aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -592,6 +600,7 @@ func (e *ExternalInterface) ResetElementsOfAggregate(ctx context.Context, taskID
 		e.UpdateTask(ctx, task)
 		runtime.Goexit()
 	}
+	l.LogWithFields(ctx).Debugf("final response for reset elements of aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -669,6 +678,7 @@ func (e *ExternalInterface) resetSystem(ctx context.Context, taskID, reqBody str
 			"Password": string(plugin.Password),
 		}
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s",pluginContactRequest.OID, string(pluginContactRequest.Data))
 		_, token, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while logging in to plugin: ")
 		if err != nil {
 			subTaskChan <- getResponse.StatusCode
@@ -693,6 +703,7 @@ func (e *ExternalInterface) resetSystem(ctx context.Context, taskID, reqBody str
 	pluginContactRequest.DeviceInfo = target
 	pluginContactRequest.OID = "/ODIM/v1/Systems/" + sysID + "/Actions/ComputerSystem.Reset"
 	pluginContactRequest.HTTPMethodType = http.MethodPost
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s",pluginContactRequest.OID, string(pluginContactRequest.Data))
 	respBody, location, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while reseting the computer system: ")
 
 	if err != nil {
@@ -851,6 +862,7 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(ctx context.C
 		e.UpdateTask(ctx, task)
 		runtime.Goexit()
 	}
+	l.LogWithFields(ctx).Debugf("final response for set default boot order elements of aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 func addAggregateHost(uuid string, aggregate agmodel.Aggregate) (err error) {

@@ -472,7 +472,7 @@ func GetTarget(deviceUUID string) (*Target, error) {
 	if err := json.Unmarshal([]byte(data), &target); err != nil {
 		return nil, err
 	}
-
+	
 	return &target, nil
 }
 
@@ -665,7 +665,7 @@ func GetSystemOperationInfo(ctx context.Context, systemURI string) (SystemOperat
 	if err := json.Unmarshal([]byte(plugindata), &systemOperation); err != nil {
 		return systemOperation, errors.PackError(errors.JSONUnmarshalFailed, err)
 	}
-	l.LogWithFields(ctx).Debugf("system operation details: ", systemOperation)
+	l.LogWithFields(ctx).Debug("system operation details: ", systemOperation)
 	return systemOperation, nil
 }
 
@@ -856,7 +856,6 @@ func GetComputerSystem(systemid string) (string, *errors.Error) {
 
 // CreateAggregate will create aggregate on disk
 func CreateAggregate(aggregate Aggregate, aggregateURI string) *errors.Error {
-
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return err

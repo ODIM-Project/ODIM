@@ -98,6 +98,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 			"Password": string(plugin.Password),
 		}
 		req.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",req.OID,string(req.Data))
 		_, token, _, err := contactPlugin(ctx, req, "error while getting the details "+req.OID+": ")
 		if err != nil {
 			l.LogWithFields(ctx).Error(err.Error())
@@ -153,8 +154,10 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 	progress := int32(100)
 	systemsEstimatedWork := int32(75)
 	if strings.Contains(systemURL, "/Storage") {
+		l.LogWithFields(ctx).Debugf("get storage info request data for %s: %s",req.OID,string(req.Data))
 		_, progress, _ = h.getStorageInfo(ctx, progress, systemsEstimatedWork, req)
 	} else {
+		l.LogWithFields(ctx).Debugf("get system info request data for %s: %s",req.OID,string(req.Data))
 		_, _, progress, _ = h.getSystemInfo(ctx, "", progress, systemsEstimatedWork, req)
 		h.InventoryData = make(map[string]interface{})
 		//rediscovering the Chassis Information
@@ -273,6 +276,7 @@ func (e *ExternalInterface) getTargetSystemCollection(ctx context.Context, targe
 			"Password": string(plugin.Password),
 		}
 		req.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",req.OID,string(req.Data))
 		_, token, _, err := contactPlugin(ctx, req, "error while getting the details "+req.OID+": ")
 		if err != nil {
 			return nil, err
@@ -291,6 +295,7 @@ func (e *ExternalInterface) getTargetSystemCollection(ctx context.Context, targe
 	req.OID = "/redfish/v1/Systems"
 
 	// Make the call to Plugin with above request
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",req.OID,string(req.Data))
 	body, _, _, err := contactPlugin(ctx, req, "error while trying to get the system collection details: ")
 	if err != nil {
 		return nil, fmt.Errorf("error while trying to get the system collection details")

@@ -115,7 +115,7 @@ func (e *ExternalInterface) UpdateAggregationSource(ctx context.Context, req *ag
 	}
 	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/AggregationSources/")
 	links := aggregationSource.Links.(map[string]interface{})
-	l.LogWithFields(ctx).Debug("update request for update aggregation sources with connection methods: ", updateRequest)
+	// Not adding update request log,since it has password in byte format
 	resp = e.updateAggregationSourceWithConnectionMethod(ctx, req.URL, links["ConnectionMethod"].(map[string]interface{}), updateRequest, hostNameUpdated)
 	if resp.StatusMessage != "" {
 		return resp
@@ -173,7 +173,7 @@ func (e *ExternalInterface) updateAggregationSourceWithConnectionMethod(ctx cont
 	uuid := url[strings.LastIndexByte(url, '/')+1:]
 	uuidData := strings.SplitN(uuid, ".", 2)
 	target, terr := agmodel.GetTarget(uuidData[0])
-	l.LogWithFields(ctx).Debug("update request for update manager aggregation source: ",updateRequest)
+	// Not adding update request log,since it has password in byte format
 	if terr != nil || target == nil {
 		return e.updateManagerAggregationSource(ctx, data[1], cmVariants.PluginID, updateRequest, hostNameUpdated)
 	}
@@ -385,6 +385,7 @@ func (e *ExternalInterface) updateBMCAggregationSource(ctx context.Context, aggr
 		for _, object := range systemMembers.([]interface{}) {
 			oDataID := object.(map[string]interface{})["@odata.id"].(string)
 			pluginContactRequest.OID = oDataID
+			l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
 			body, _, getResponse, err = contactPlugin(ctx, pluginContactRequest, "error while trying to get system details: ")
 			if err != nil {
 				errMsg := err.Error()
@@ -401,14 +402,14 @@ func (e *ExternalInterface) updateBMCAggregationSource(ctx context.Context, aggr
 			computeSystemID := computeSystem["Id"].(string)
 			computeSystemUUID := computeSystem["UUID"].(string)
 			oidKey := keyFormation(oDataID, computeSystemID, aggregationSourceID)
-			l.LogWithFields(ctx).Info("Computer SystemUUID" + computeSystemUUID)
+			l.LogWithFields(ctx).Debug("Computer SystemUUID" + computeSystemUUID)
 			indexList, err := agmodel.GetString("UUID", computeSystemUUID)
 			if err != nil {
 				errMsg := "Unable to get computer system index: " + err.Error()
 				l.LogWithFields(ctx).Error(errMsg)
 				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 			}
-			l.LogWithFields(ctx).Info("Index List" + strings.Join(indexList, "::"))
+			l.LogWithFields(ctx).Debug("Index List" + strings.Join(indexList, "::"))
 			if len(indexList) <= 0 {
 				errMsg := "UUID of the added bmc is not matching with given HostName"
 				l.LogWithFields(ctx).Error(errMsg)

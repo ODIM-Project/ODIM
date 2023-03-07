@@ -79,6 +79,7 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, taskInfo)
 	}
+	l.LogWithFields(ctx).Debug("reset request fields sent for validation: %s", string(req.RequestBody))
 	missedProperty, err := resetRequest.validateResetRequestFields(req.RequestBody)
 	if err != nil {
 		errMsg := "Unable to validate request fields: " + err.Error()

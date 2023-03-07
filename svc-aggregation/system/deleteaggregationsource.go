@@ -56,6 +56,7 @@ func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID
 		})
 		go runtime.Goexit()
 	}
+	l.LogWithFields(ctx).Debugf("request data for delete aggregation source: %s", string(req.RequestBody))
 	data := e.DeleteAggregationSource(ctx, req)
 	err = e.UpdateTask(ctx, common.TaskData{
 		TaskID:          taskID,
@@ -187,12 +188,14 @@ func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *ag
 		StatusCode:    http.StatusNoContent,
 		StatusMessage: response.ResourceRemoved,
 	}
+	l.LogWithFields(ctx).Debugf("final response for delete aggregation source request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
 // removeAggregationSourceFromAggregates will remove the element from the aggregate
 // if the system is deleted from ODIM
 func removeAggregationSourceFromAggregates(ctx context.Context, systemList []string) {
+	l.LogWithFields(ctx).Debug("list of aggregation sources to be removed from aggregate: ", systemList)
 	aggregateKeys, err := agmodel.GetAllKeysFromTable(ctx,"Aggregate")
 	if err != nil {
 		l.LogWithFields(ctx).Error("error getting aggregate : " + err.Error())
@@ -285,6 +288,7 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 		"Password": string(plugin.Password),
 	}
 	pluginContactRequest.OID = "/ODIM/v1/Status"
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID, string(pluginContactRequest.Data))
 	_, _, _, err := contactPlugin(ctx, pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err == nil { // no err means plugin is still up, so we can't remove it
 		errMsg := "error: plugin is still up, so it cannot be removed."
@@ -355,6 +359,7 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 		Message: "Request completed successfully",
 	}
 	resp.Body = args.CreateGenericErrorResponse()
+	l.LogWithFields(ctx).Debugf("final response for delete plugin request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -491,6 +496,7 @@ func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index
 		Message: "Request completed successfully",
 	}
 	resp.Body = args.CreateGenericErrorResponse()
+	l.LogWithFields(ctx).Debugf("final response for delete compute request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 

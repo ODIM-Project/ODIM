@@ -50,7 +50,7 @@ func fillProtoResponse(ctx context.Context, resp *updateproto.UpdateResponse, da
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
 	resp.Header = data.Header
-
+	
 }
 
 func generateRPCResponse(rpcResp response.RPC, aggResp *updateproto.UpdateResponse) {
@@ -60,7 +60,7 @@ func generateRPCResponse(rpcResp response.RPC, aggResp *updateproto.UpdateRespon
 		StatusMessage: rpcResp.StatusMessage,
 		Header:        rpcResp.Header,
 		Body:          bytes,
-	}
+	} 
 }
 
 func generateTaskRespone(taskID, taskURI string, rpcResp *response.RPC) {

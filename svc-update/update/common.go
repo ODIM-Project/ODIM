@@ -85,8 +85,8 @@ type responseStatus struct {
 
 // DB struct holds the function pointers to database operations
 type DB struct {
-	GetAllKeysFromTable func(string, common.DbType) ([]string, error)
-	GetResource         func(string, string, common.DbType) (string, *errors.Error)
+	GetAllKeysFromTable func(context.Context, string, common.DbType) ([]string, error)
+	GetResource         func(context.Context, string, string, common.DbType) (string, *errors.Error)
 }
 
 // SimpleUpdateRequest struct defines the request body for update action
@@ -175,7 +175,6 @@ func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskStat
 
 func (e *ExternalInterface) monitorPluginTask(ctx context.Context, subTaskChannel chan<- int32, monitorTaskData *monitorTaskRequest) (ucommon.ResponseStatus, error) {
 	for {
-
 		var task common.TaskData
 		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {
 			subTaskChannel <- http.StatusInternalServerError
@@ -195,6 +194,7 @@ func (e *ExternalInterface) monitorPluginTask(ctx context.Context, subTaskChanne
 		time.Sleep(time.Second * 5)
 		monitorTaskData.pluginRequest.OID = monitorTaskData.location
 		monitorTaskData.pluginRequest.HTTPMethodType = http.MethodGet
+		l.LogWithFields(ctx).Debugf("monitor task data payload: %s", string(monitorTaskData.respBody))
 		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = e.External.ContactPlugin(ctx, monitorTaskData.pluginRequest, "error while performing simple update action: ")
 		if err != nil {
 			subTaskChannel <- monitorTaskData.getResponse.StatusCode

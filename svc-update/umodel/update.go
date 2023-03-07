@@ -47,7 +47,7 @@ type Plugin struct {
 }
 
 // GetAllKeysFromTable fetches all keys in a given table
-func GetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
+func GetAllKeysFromTable(ctx context.Context, table string, dbtype common.DbType) ([]string, error) {
 	conn, err := common.GetDBConnection(dbtype)
 	if err != nil {
 		return nil, err
@@ -56,11 +56,12 @@ func GetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
 	}
+	l.LogWithFields(ctx).Debug("all keys from database:", keysArray)
 	return keysArray, nil
 }
 
 // GetResource fetches a resource from database using table and key
-func GetResource(Table, key string, dbtype common.DbType) (string, *errors.Error) {
+func GetResource(ctx context.Context, Table, key string, dbtype common.DbType) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(dbtype)
 	if err != nil {
 		return "", err
@@ -73,6 +74,7 @@ func GetResource(Table, key string, dbtype common.DbType) (string, *errors.Error
 	if errs := json.Unmarshal([]byte(resourceData), &resource); errs != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
 	}
+	l.LogWithFields(ctx).Debugf("resource from database: %s", resource)
 	return resource, nil
 }
 

@@ -410,6 +410,7 @@ func TestGetRemoteAccountService(t *testing.T) {
 }
 
 func TestCreateRemoteAccountService(t *testing.T) {
+	taskID := "task12345"
 	mgrcommon.Token.Tokens = make(map[string]string)
 	ctx := mockContext()
 	e := mockGetExternalInterface()
@@ -421,21 +422,19 @@ func TestCreateRemoteAccountService(t *testing.T) {
                                  "Password":"Password",
                                  "RoleId":"Administrator"}`),
 	}
-	response := e.CreateRemoteAccountService(ctx, req)
-	assert.Equal(t, http.StatusCreated, int(response.StatusCode), "Status code should be StatusCreated.")
+	e.CreateRemoteAccountService(ctx, req, taskID)
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", &errors.Error{}
 	}
-	response = e.CreateRemoteAccountService(ctx, req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
+
+	e.CreateRemoteAccountService(ctx, req, taskID)
 
 	req = &managersproto.ManagerRequest{
 		ManagerID: "uuid.1",
 		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
 	}
-	response = e.CreateRemoteAccountService(ctx, req)
-	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+	e.CreateRemoteAccountService(ctx, req, taskID)
 
 	req = &managersproto.ManagerRequest{
 		ManagerID: "uuid.1",
@@ -448,20 +447,19 @@ func TestCreateRemoteAccountService(t *testing.T) {
 		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
 	}
 
-	response = e.CreateRemoteAccountService(ctx, req)
-	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+	e.CreateRemoteAccountService(ctx, req, taskID)
 
 	req = &managersproto.ManagerRequest{
 		ManagerID:   "uuid.1",
 		URL:         "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
 		RequestBody: []byte(`{}`),
 	}
-	response = e.CreateRemoteAccountService(ctx, req)
-	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+	e.CreateRemoteAccountService(ctx, req, taskID)
 
 }
 
 func TestDeleteRemoteAccountService(t *testing.T) {
+	taskID := "task12345"
 	mgrcommon.Token.Tokens = make(map[string]string)
 	ctx := mockContext()
 	e := mockGetExternalInterface()
@@ -470,11 +468,11 @@ func TestDeleteRemoteAccountService(t *testing.T) {
 		ManagerID: "uuid.1",
 		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts/5",
 	}
-	response := e.DeleteRemoteAccountService(ctx, req)
-	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
+	e.DeleteRemoteAccountService(ctx, req, taskID)
 }
 
 func TestUpdateRemoteAccountService(t *testing.T) {
+	taskID := "task12345"
 	ctx := mockContext()
 	mgrcommon.Token.Tokens = make(map[string]string)
 	e := mockGetExternalInterface()
@@ -483,8 +481,7 @@ func TestUpdateRemoteAccountService(t *testing.T) {
 		ManagerID: "uuid.1",
 		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
 	}
-	response := e.UpdateRemoteAccountService(ctx, req)
-	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest")
+	e.UpdateRemoteAccountService(ctx, req, taskID)
 
 	req = &managersproto.ManagerRequest{
 		ManagerID: "uuid.1",
@@ -492,8 +489,7 @@ func TestUpdateRemoteAccountService(t *testing.T) {
 		RequestBody: []byte(`{"password":"Password",
                                  "roleId":"Administrator"}`),
 	}
-	response = e.UpdateRemoteAccountService(ctx, req)
-	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+	e.UpdateRemoteAccountService(ctx, req, taskID)
 
 	req = &managersproto.ManagerRequest{
 		ManagerID: "uuid.1",
@@ -501,14 +497,12 @@ func TestUpdateRemoteAccountService(t *testing.T) {
 		RequestBody: []byte(`{"Password":"Password",
 	                           "RoleId":"Administrator"}`),
 	}
-	response = e.UpdateRemoteAccountService(ctx, req)
-	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+	e.UpdateRemoteAccountService(ctx, req, taskID)
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", &errors.Error{}
 	}
-	response = e.UpdateRemoteAccountService(ctx, req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError")
+	e.UpdateRemoteAccountService(ctx, req, taskID)
 
 }
 

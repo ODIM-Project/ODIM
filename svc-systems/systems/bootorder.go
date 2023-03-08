@@ -374,6 +374,9 @@ func (p *PluginContact) ChangeBootOrderSettings(ctx context.Context, req *system
 		return
 	}
 	smodel.AddSystemResetInfo(ctx, "/redfish/v1/Systems/"+req.SystemID, "On")
+	task := fillTaskData(taskID, targetURI, string(req.RequestBody), resp,
+		common.Completed, common.OK, 100, http.MethodPatch)
+	p.UpdateTask(ctx, task)
 	l.LogWithFields(ctx).Debugf("outgoing response for ChangeBootOrderSettings status code: %d", resp.StatusCode)
 	return
 }

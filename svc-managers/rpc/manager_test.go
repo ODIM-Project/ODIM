@@ -156,13 +156,13 @@ func mockGetDeviceInfo(ctx context.Context, req mgrcommon.ResourceInfoRequest) (
 	return string(dataByte), err
 }
 
-func mockDeviceRequest(ctx context.Context, req mgrcommon.ResourceInfoRequest) response.RPC {
+func mockDeviceRequest(ctx context.Context, req mgrcommon.ResourceInfoRequest) (mgrcommon.PluginTaskInfo, response.RPC) {
 	var resp response.RPC
 	resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 	if req.URL == "/redfish/v1/Managers/deviceAbsent.1" || req.URL == "/redfish/v1/Managers/uuid1.1/Virtual" {
 		resp.StatusCode = http.StatusNotFound
 		resp.StatusMessage = response.ResourceNotFound
-		return resp
+		return mgrcommon.PluginTaskInfo{}, resp
 	}
 	manager := mgrmodel.Manager{
 		Status: &mgrmodel.Status{
@@ -174,9 +174,9 @@ func mockDeviceRequest(ctx context.Context, req mgrcommon.ResourceInfoRequest) r
 	resp.StatusMessage = response.Success
 	err = json.Unmarshal(dataByte, &resp.Body)
 	if err != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return mgrcommon.PluginTaskInfo{}, common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
-	return resp
+	return mgrcommon.PluginTaskInfo{}, resp
 }
 
 func mockGetExternalInterface() *managers.ExternalInterface {

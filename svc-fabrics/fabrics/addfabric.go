@@ -37,7 +37,7 @@ func AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) response
 	address := req.Address
 	uuid := origin[strings.LastIndexByte(origin, '/')+1:]
 
-	pluginDetails, err := GetAllFabricPluginDetailsFunc()
+	pluginDetails, err := GetAllFabricPluginDetailsFunc(ctx)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),

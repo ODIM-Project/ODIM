@@ -150,6 +150,7 @@ func GetAllTheFabrics(ctx context.Context) ([]Fabric, error) {
 		return nil, err
 	}
 	keys, err := conn.GetAllDetails("Fabric")
+	l.LogWithFields(ctx).Debug("all keys from fabric database:",keys)
 	if err != nil {
 		return nil, err
 	}

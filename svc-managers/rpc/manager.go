@@ -345,7 +345,7 @@ func CreateTaskAndResponse(ctx context.Context, m *Managers, sessionToken string
 	sessionUserName, err := m.GetSessionUserName(sessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
-		fillManagersProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized,
+		fillManagersProtoResponse(ctx, resp, common.GeneralError(http.StatusUnauthorized,
 			response.NoValidSession, errMsg, nil, nil))
 		return "", fmt.Errorf(errMsg)
 	}
@@ -354,7 +354,7 @@ func CreateTaskAndResponse(ctx context.Context, m *Managers, sessionToken string
 	taskURI, err := m.CreateTask(ctx, sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
-		fillManagersProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError,
+		fillManagersProtoResponse(ctx, resp, common.GeneralError(http.StatusInternalServerError,
 			response.InternalError, errMsg, nil, nil))
 		return "", fmt.Errorf(errMsg)
 	}

@@ -20,15 +20,20 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 )
 
@@ -55,6 +60,13 @@ type PluginContactRequest struct {
 type ResponseStatus struct {
 	StatusCode    int32
 	StatusMessage string
+}
+
+// PluginContactRequest hold the task information from plugin
+type PluginTaskInfo struct {
+	Location         string
+	PluginIP         string
+	PluginServerName string
 }
 
 // ResourceInfoRequest  hold the request of getting  Resource
@@ -104,16 +116,17 @@ func (p *PluginToken) GetToken(pluginID string) string {
 }
 
 // DeviceCommunication to connect with device with all the params
-func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) response.RPC {
+func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) (PluginTaskInfo, response.RPC) {
 	var resp response.RPC
+	var pluginTaskInfo PluginTaskInfo
 	target, gerr := mgrmodel.GetTarget(req.UUID)
 	if gerr != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
+		return pluginTaskInfo, common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
 	}
 	// Get the Plugin info
 	plugin, gerr := GetPluginDataFunc(target.PluginID)
 	if gerr != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
+		return pluginTaskInfo, common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
 	}
 	var contactRequest PluginContactRequest
 	contactRequest.ContactClient = req.ContactClient
@@ -122,7 +135,7 @@ func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) response.
 		token := GetPluginTokenFunc(ctx, contactRequest)
 		if token == "" {
 			var errorMessage = "error while trying to create session with plugin " + plugin.ID
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
+			return pluginTaskInfo, common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
 		}
 		contactRequest.Token = token
 	} else {
@@ -134,7 +147,7 @@ func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) response.
 	decryptedPasswordByte, err := req.DecryptDevicePassword(target.Password)
 	if err != nil {
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
+		return pluginTaskInfo, common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
 	}
 
 	contactRequest.DeviceInfo = map[string]interface{}{
@@ -147,21 +160,23 @@ func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) response.
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = req.HTTPMethod
 	//target.PostBody = req.RequestBody
-	body, _, getResp, err := ContactPluginFunc(ctx, contactRequest, "error while performing virtual media actions "+contactRequest.OID+": ")
+	body, _, pluginTaskInfo, getResp, err := ContactPluginFunc(ctx, contactRequest, "error while performing virtual media actions "+contactRequest.OID+": ")
 	if err != nil {
 		resp.StatusCode = getResp.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		return resp
+		return pluginTaskInfo, resp
 	}
+	pluginTaskInfo.PluginServerName = plugin.IP
+
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	err = JSON_UnmarshalFunc(body, &resp.Body)
 	if err != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return pluginTaskInfo, common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 	respBody := fmt.Sprintf("%v", resp.Body)
 	l.LogWithFields(ctx).Debugf("Outgoing device communication response to northbound: %s", string(respBody))
-	return resp
+	return pluginTaskInfo, resp
 }
 
 // GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
@@ -220,10 +235,10 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) (st
 	//replace the uuid:system id with the system to the @odata.id from request url
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet
-	body, _, getResp, err := ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
+	body, _, _, getResp, err := ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
 	if err != nil {
 		if getResp.StatusCode == http.StatusUnauthorized && strings.EqualFold(contactRequest.Plugin.PreferredAuthType, "XAuthToken") {
-			if body, _, _, err = RetryManagersOperation(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": "); err != nil {
+			if body, _, _, _, err = RetryManagersOperation(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": "); err != nil {
 				return "", fmt.Errorf("error while trying to get data from plugin: %v", err)
 			}
 		} else {
@@ -241,9 +256,10 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) (st
 }
 
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
-func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
+func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, PluginTaskInfo, ResponseStatus, error) {
 	var resp ResponseStatus
 	var response *http.Response
+	var pluginTaskInfo PluginTaskInfo
 	var err error
 	response, err = callPlugin(ctx, req)
 	if err != nil {
@@ -255,7 +271,7 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = errors.InternalError
 			l.LogWithFields(ctx).Error(errorMessage)
-			return nil, "", resp, fmt.Errorf(errorMessage)
+			return nil, "", pluginTaskInfo, resp, fmt.Errorf(errorMessage)
 		}
 	}
 	defer response.Body.Close()
@@ -265,20 +281,25 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
 		l.LogWithFields(ctx).Error(errorMessage)
-		return nil, "", resp, fmt.Errorf(errorMessage)
+		return nil, "", pluginTaskInfo, resp, fmt.Errorf(errorMessage)
+	}
+
+	if response.StatusCode == http.StatusAccepted {
+		pluginTaskInfo.Location = response.Header.Get("Location")
+		pluginTaskInfo.PluginIP = response.Header.Get(common.XForwardedFor)
 	}
 
 	if !(response.StatusCode == http.StatusOK || response.StatusCode == http.StatusCreated) {
 		resp.StatusCode = int32(response.StatusCode)
 		l.LogWithFields(ctx).Error(errorMessage)
-		return body, "", resp, fmt.Errorf(errorMessage)
+		return body, "", pluginTaskInfo, resp, fmt.Errorf(errorMessage)
 	}
 	data := string(body)
 	//replacing the resposne with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}
-	return []byte(data), response.Header.Get("X-Auth-Token"), resp, nil
+	return []byte(data), response.Header.Get("X-Auth-Token"), pluginTaskInfo, resp, nil
 }
 
 // getPluginStatus checks the status of given plugin in configured interval
@@ -339,7 +360,7 @@ func createToken(ctx context.Context, req PluginContactRequest) string {
 		"Password": string(req.Plugin.Password),
 	}
 	contactRequest.OID = "/ODIM/v1/Sessions"
-	_, token, _, err := ContactPlugin(ctx, contactRequest, "error while logging in to plugin: ")
+	_, token, _, _, err := ContactPlugin(ctx, contactRequest, "error while logging in to plugin: ")
 	if err != nil {
 		l.LogWithFields(ctx).Error(err.Error())
 	}
@@ -351,15 +372,16 @@ func createToken(ctx context.Context, req PluginContactRequest) string {
 
 // RetryManagersOperation will be called whenever  the unauthorized status code during the plugin call
 // This function will create a new session token reexcutes the plugin call
-func RetryManagersOperation(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
+func RetryManagersOperation(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, PluginTaskInfo, ResponseStatus, error) {
 	var resp response.RPC
+	var pluginTaskInfo PluginTaskInfo
 	var token = createToken(ctx, req)
 	if token == "" {
 		var tokenErrorMessage = "error: Unable to create session with plugin " + req.Plugin.ID
 		resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, tokenErrorMessage,
 			[]interface{}{}, nil)
 		data, _ := json.Marshal(resp.Body)
-		return data, "", ResponseStatus{
+		return data, "", pluginTaskInfo, ResponseStatus{
 			StatusCode: resp.StatusCode,
 		}, fmt.Errorf(tokenErrorMessage)
 	}
@@ -412,4 +434,35 @@ func TranslateToSouthBoundURL(url string) string {
 		url = strings.Replace(url, key, value, -1)
 	}
 	return url
+}
+
+// UpdateTaskData update the task with the given data
+func UpdateTask(ctx context.Context, taskData common.TaskData) error {
+	var res map[string]interface{}
+	if err := json.Unmarshal([]byte(taskData.TaskRequest), &res); err != nil {
+		l.Log.Error(err)
+	}
+	reqStr := logs.MaskRequestBody(res)
+
+	respBody, _ := json.Marshal(taskData.Response.Body)
+	payLoad := &taskproto.Payload{
+		HTTPHeaders:   taskData.Response.Header,
+		HTTPOperation: taskData.HTTPMethod,
+		JSONBody:      reqStr,
+		StatusCode:    taskData.Response.StatusCode,
+		TargetURI:     taskData.TargetURI,
+		ResponseBody:  respBody,
+	}
+
+	err := services.UpdateTask(ctx, taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	if err != nil && (err.Error() == common.Cancelling) {
+		// We cant do anything here as the task has done it work completely, we cant reverse it.
+		//Unless if we can do opposite/reverse action for delete server which is add server.
+		services.UpdateTask(ctx, taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+		if taskData.PercentComplete == 0 {
+			return fmt.Errorf("error while starting the task: %v", err)
+		}
+		runtime.Goexit()
+	}
+	return nil
 }

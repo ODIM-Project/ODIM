@@ -44,6 +44,8 @@ func mockContext() context.Context {
 	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	return ctx
 }
+
+var mockCtx = mockContext()
 func TestAddConnectionMethods(t *testing.T) {
 	var e = DBInterface{
 		GetAllKeysFromTableInterface: stubGetAllkeys,
@@ -52,7 +54,7 @@ func TestAddConnectionMethods(t *testing.T) {
 		DeleteInterface:              stubDeleteConnectionMethod,
 	}
 	config.SetUpMockConfig(t)
-	err := e.AddConnectionMethods(context.TODO(),config.Data.ConnectionMethodConf)
+	err := e.AddConnectionMethods(mockCtx,config.Data.ConnectionMethodConf)
 	assert.Nil(t, err, "err should be nil")
 }
 
@@ -64,7 +66,7 @@ func TestAddConnectionMethods_failGetAllKeys(t *testing.T) {
 		DeleteInterface:              stubDeleteConnectionMethod,
 	}
 	config.SetUpMockConfig(t)
-	err := e.AddConnectionMethods(context.TODO(),config.Data.ConnectionMethodConf)
+	err := e.AddConnectionMethods(mockCtx,config.Data.ConnectionMethodConf)
 
 	assert.NotNil(t, err, "error should be not nil")
 }
@@ -77,7 +79,7 @@ func TestAddConnectionMethods_failGetConnectionMethod(t *testing.T) {
 		DeleteInterface:              stubDeleteConnectionMethod,
 	}
 	config.SetUpMockConfig(t)
-	err := e.AddConnectionMethods(context.TODO(),config.Data.ConnectionMethodConf)
+	err := e.AddConnectionMethods(mockCtx,config.Data.ConnectionMethodConf)
 
 	assert.NotNil(t, err, "error should be not nil")
 }
@@ -90,7 +92,7 @@ func TestAddConnectionMethods_failConnectionMethodInterface(t *testing.T) {
 		DeleteInterface:              stubDeleteConnectionMethod,
 	}
 	config.SetUpMockConfig(t)
-	err := e.AddConnectionMethods(context.TODO(),config.Data.ConnectionMethodConf)
+	err := e.AddConnectionMethods(mockCtx,config.Data.ConnectionMethodConf)
 
 	assert.NotNil(t, err, "error should be not nil")
 }
@@ -103,7 +105,7 @@ func TestAddConnectionMethods_failDeleteConnectionMethod(t *testing.T) {
 		DeleteInterface:              invalidDeleteConnectionMethod,
 	}
 	config.SetUpMockConfig(t)
-	err := e.AddConnectionMethods(context.TODO(),config.Data.ConnectionMethodConf)
+	err := e.AddConnectionMethods(mockCtx,config.Data.ConnectionMethodConf)
 
 	assert.NotNil(t, err, "error should be not nil")
 }
@@ -118,7 +120,7 @@ func TestAddConnectionMethods_failConnection(t *testing.T) {
 	config.SetUpMockConfig(t)
 	var ConnectionMethodConf = []config.ConnectionMethodConf{}
 	config.Data.ConnectionMethodConf = ConnectionMethodConf
-	err := e.AddConnectionMethods(context.TODO(),config.Data.ConnectionMethodConf)
+	err := e.AddConnectionMethods(mockCtx,config.Data.ConnectionMethodConf)
 	assert.Nil(t, err, "err should be nil")
 }
 
@@ -421,7 +423,7 @@ func TestLookupPlugin(t *testing.T) {
 func TestGetDeviceSubscriptionDetails(t *testing.T) {
 	config.SetUpMockConfig(t)
 	var data = ""
-	res, _, _ := GetDeviceSubscriptionDetails(context.TODO(),"10.0.0.0")
+	res, _, _ := GetDeviceSubscriptionDetails(mockCtx,"10.0.0.0")
 	assert.Equal(t, res, data, "It should be same")
 
 }
@@ -451,7 +453,7 @@ func TestGetSearchKey(t *testing.T) {
 
 func TestGetSubscribedEvtTypes(t *testing.T) {
 	config.SetUpMockConfig(t)
-	res, _ := GetSubscribedEvtTypes(context.TODO(),"100.100.100.100")
+	res, _ := GetSubscribedEvtTypes(mockCtx,"100.100.100.100")
 	assert.Equal(t, []string([]string{}), res, "It should be same")
 
 }
@@ -469,7 +471,7 @@ func TestGetSubscribedEvtTypes_fail(t *testing.T) {
 		}
 	}()
 	mockGetEventSubscriptionsFunc("*" + "100.100.100.100" + "*")
-	res, _ := GetSubscribedEvtTypes(context.TODO(),"100.100.100.100")
+	res, _ := GetSubscribedEvtTypes(mockCtx,"100.100.100.100")
 	assert.Equal(t, []string([]string{}), res, "It should be same")
 
 }
@@ -597,7 +599,7 @@ func TestContactPlugin(t *testing.T) {
 
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
-	_, err = ContactPlugin(context.TODO(), contactRequest, "")
+	_, err = ContactPlugin(mockCtx, contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }
 
@@ -622,7 +624,7 @@ func TestContactPlugin_XAuth(t *testing.T) {
 
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
-	_, err = ContactPlugin(context.TODO(), contactRequest, "")
+	_, err = ContactPlugin(mockCtx, contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }
 

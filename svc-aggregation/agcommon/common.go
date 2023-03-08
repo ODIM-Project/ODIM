@@ -162,7 +162,7 @@ func (e *DBInterface) AddConnectionMethods(ctx context.Context, connectionMethod
 				l.Log.Error("Unable to add connection method : " + err.Error())
 				return err
 			}
-			l.Log.Info(
+			l.LogWithFields(ctx).Info(
 				"Connection method info with connection method type " + connectionMethodConf[i].ConnectionMethodType +
 					" and connection method variant " + connectionMethodConf[i].ConnectionMethodVariant + " added to ODIM")
 		}
@@ -177,7 +177,7 @@ func (e *DBInterface) AddConnectionMethods(ctx context.Context, connectionMethod
 				string(rune(len(connectionMethodData.Links.AggregationSources))) + " aggregation sources it can't be removed")
 
 		} else {
-			l.Log.Info("Removing connection method id "+connectionMethodID+
+			l.LogWithFields(ctx).Info("Removing connection method id "+connectionMethodID+
 				" with Connection Method Type"+connectionMethodData.ConnectionMethodType+
 				" and Connection Method Variant", connectionMethodData.ConnectionMethodVariant)
 			err := e.DeleteInterface("ConnectionMethod", connectionMethodID, common.OnDisk)
@@ -199,23 +199,23 @@ func TrackConfigFileChanges(ctx context.Context, dbInterface DBInterface, errCha
 	for {
 		select {
 		case info := <-eventChan:
-			l.Log.Info(info) // new data arrives through eventChan channel
+			l.LogWithFields(ctx).Info(info) // new data arrives through eventChan channel
 			config.TLSConfMutex.RLock()
-			l.Log.Info("Updating connection method ")
+			l.LogWithFields(ctx).Info("Updating connection method ")
 			err := dbInterface.AddConnectionMethods(ctx, config.Data.ConnectionMethodConf)
 			if err != nil {
 				l.Log.Error("error while trying to Add connection methods:" + err.Error())
 			}
 			config.TLSConfMutex.RUnlock()
-			l.Log.Info("Update connection method completed")
+			l.LogWithFields(ctx).Info("Update connection method completed")
 			if l.Log.Level != config.Data.LogLevel {
-				l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+				l.LogWithFields(ctx).Info("Log level is updated, new log level is ", config.Data.LogLevel)
 				l.Log.Logger.SetLevel(config.Data.LogLevel)
 			}
 			if format != config.Data.LogFormat {
 				l.SetFormatter(config.Data.LogFormat)
 				format = config.Data.LogFormat
-				l.Log.Info("Log format is updated, new log format is ", config.Data.LogFormat)
+				l.LogWithFields(ctx).Info("Log format is updated, new log format is ", config.Data.LogFormat)
 			}
 		case err := <-errChan:
 			l.Log.Error(err)

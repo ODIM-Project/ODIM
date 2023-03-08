@@ -14,6 +14,7 @@
 package update
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -131,28 +132,28 @@ func TestExternalInterface_StartUpdate(t *testing.T) {
 	req := &updateproto.UpdateRequest{
 		SessionToken: "validToken",
 	}
-	GetAllKeysFromTableFunc = func(table string, dbtype common.DbType) ([]string, error) {
+	GetAllKeysFromTableFunc = func(ctx context.Context, table string, dbtype common.DbType) ([]string, error) {
 		return nil, errors.New("")
 	}
 	e.StartUpdate(ctx, "uuid", "dummySessionName", req)
-	GetAllKeysFromTableFunc = func(table string, dbtype common.DbType) ([]string, error) {
+	GetAllKeysFromTableFunc = func(ctx context.Context, table string, dbtype common.DbType) ([]string, error) {
 		return []string{}, nil
 	}
 	e.StartUpdate(ctx, "uuid", "dummySessionName", req)
 
-	GetAllKeysFromTableFunc = func(table string, dbtype common.DbType) ([]string, error) {
+	GetAllKeysFromTableFunc = func(ctx context.Context, table string, dbtype common.DbType) ([]string, error) {
 		return []string{"/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1"}, nil
 	}
 	e.DB.GetResource = mockGetResource
 	e.StartUpdate(ctx, "uuid", "dummySessionName", req)
 
-	GetAllKeysFromTableFunc = func(table string, dbtype common.DbType) ([]string, error) {
+	GetAllKeysFromTableFunc = func(ctx context.Context, table string, dbtype common.DbType) ([]string, error) {
 		return []string{"dummy"}, nil
 	}
 	e.DB.GetResource = mockGetResource
 	e.StartUpdate(ctx, "uuid", "dummySessionName", req)
 
-	GetAllKeysFromTableFunc = func(table string, dbtype common.DbType) ([]string, error) {
+	GetAllKeysFromTableFunc = func(ctx context.Context, table string, dbtype common.DbType) ([]string, error) {
 		return []string{"dummy", "dummy", "dummy"}, nil
 	}
 	e.DB.GetResource = mockGetResource

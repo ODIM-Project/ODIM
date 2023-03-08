@@ -116,7 +116,6 @@ func (e *ExternalInterface) CreateAggregate(ctx context.Context, req *aggregator
 		Elements: createRequest.Elements,
 	}
 	resp.StatusCode = http.StatusCreated
-	l.LogWithFields(ctx).Debugf("final response for create aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -179,7 +178,6 @@ func (e *ExternalInterface) GetAllAggregates(ctx context.Context, req *aggregato
 		MembersCount: len(members),
 		Members:      members,
 	}
-	l.LogWithFields(ctx).Debugf("final response for get all aggregates request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -228,7 +226,6 @@ func (e *ExternalInterface) GetAggregate(ctx context.Context, req *aggregatorpro
 			},
 		},
 	}
-	l.LogWithFields(ctx).Debugf("final response for get aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -259,7 +256,6 @@ func (e *ExternalInterface) DeleteAggregate(ctx context.Context, req *aggregator
 		l.LogWithFields(ctx).Error("Error while delete subscription details ", err.Error())
 	}
 	resp.StatusCode = http.StatusNoContent
-	l.LogWithFields(ctx).Debugf("final response for delete aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -340,7 +336,6 @@ func (e *ExternalInterface) AddElementsToAggregate(ctx context.Context, req *agg
 		Elements: aggregate.Elements,
 	}
 	resp.StatusCode = http.StatusOK
-	l.LogWithFields(ctx).Debugf("final response for all elements to aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -421,7 +416,6 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(ctx context.Context, req
 		Elements: aggregate.Elements,
 	}
 	resp.StatusCode = http.StatusOK
-	l.LogWithFields(ctx).Debugf("final response for remove elements from aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -600,7 +594,6 @@ func (e *ExternalInterface) ResetElementsOfAggregate(ctx context.Context, taskID
 		e.UpdateTask(ctx, task)
 		runtime.Goexit()
 	}
-	l.LogWithFields(ctx).Debugf("final response for reset elements of aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -862,7 +855,6 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(ctx context.C
 		e.UpdateTask(ctx, task)
 		runtime.Goexit()
 	}
-	l.LogWithFields(ctx).Debugf("final response for set default boot order elements of aggregate request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 func addAggregateHost(uuid string, aggregate agmodel.Aggregate) (err error) {

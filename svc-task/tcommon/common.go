@@ -1,6 +1,7 @@
 package tcommon
 
 import (
+	"encoding/json"
 	"net/http"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
@@ -45,6 +46,14 @@ func GetStatusCode(taskState dmtf.TaskState, taskStatus string) int {
 // GetTaskResponse return status task response using status code and message
 func GetTaskResponse(statusCode int, message string) response.RPC {
 	var resp response.RPC
+
+	err := json.Unmarshal([]byte(message), &resp.Body)
+	if err == nil {
+		resp.StatusCode = int32(statusCode)
+		resp.StatusMessage = response.ExtendedInfo
+		return resp
+	}
+
 	switch statusCode {
 	case http.StatusOK:
 		resp = common.GeneralError(int32(statusCode), response.Success, message, nil, nil)

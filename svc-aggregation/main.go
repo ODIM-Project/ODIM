@@ -41,13 +41,6 @@ type Schema struct {
 	QueryKeys     []string `json:"queryKeys"`
 }
 
-const (
-	aggActionID = "210"
-	aggActionName = "ConnectionMethods"
-	trackActionID = "211"
-	trackActionName = "TrackConfigFile"
-)
-
 func main() {
 	// setting up the logging framework
 	hostName := os.Getenv("HOST_NAME")
@@ -93,7 +86,7 @@ func main() {
 		DeleteInterface:              agmodel.Delete,
 	}
 	aggTransactionID := uuid.New()
-	aggCtx := agcommon.CreateContext(aggTransactionID.String(), aggActionID, aggActionName, "1", common.AggregationService, podName)
+	aggCtx := agcommon.CreateContext(aggTransactionID.String(), common.AggActionID, common.AggActionName, "1", common.AggregationService, podName)
 	if err := connectionMethodInterface.AddConnectionMethods(aggCtx, config.Data.ConnectionMethodConf); err != nil {
 		log.Fatal("error while trying add connection method: " + err.Error())
 	}
@@ -125,7 +118,7 @@ func main() {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 	trackTransactionID := uuid.New()
-	trackCtx := agcommon.CreateContext(trackTransactionID.String(), trackActionID, trackActionName, "1", common.AggregationService, podName)
+	trackCtx := agcommon.CreateContext(trackTransactionID.String(), common.TrackActionID, common.TrackActionName, "1", common.AggregationService, podName)
 	go agcommon.TrackConfigFileChanges(trackCtx, connectionMethodInterface, errChan)
 
 	go system.PerformPluginHealthCheck()

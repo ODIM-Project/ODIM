@@ -36,7 +36,7 @@ func RemoveFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) respo
 	fab := fabmodel.Fabric{
 		FabricUUID: uuid,
 	}
-	err = fab.RemoveFabricData(uuid)
+	err = fab.RemoveFabricData(ctx,uuid)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),

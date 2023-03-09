@@ -37,6 +37,19 @@ var plugin = Plugin{
 	PluginType:        "Fabric",
 }
 
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
+}
+
+var mockCtx = mockContext()
+
 func mockPluginData(t *testing.T) error {
 	plugin.Password = getEncryptedKey(t, []byte("12345"))
 	connPool, err := common.GetDBConnection(common.OnDisk)
@@ -223,16 +236,16 @@ func TestAddFabricData(t *testing.T) {
 		FabricUUID: "12345",
 		PluginID:   "CFM",
 	}
-	err := fab1.AddFabricData("12345")
+	err := fab1.AddFabricData(mockCtx,"12345")
 	assert.Equal(t, nil, err, "should be same")
 
 	// Adding Duplicate Fabrics Data
-	err = fab1.AddFabricData("12345")
+	err = fab1.AddFabricData(mockCtx,"12345")
 	assert.Equal(t, "warning: skipped saving of duplicate data with key 12345", err.Error(), "should be same")
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
-	err = fab1.AddFabricData("12345")
+	err = fab1.AddFabricData(mockCtx,"12345")
 	assert.NotNil(t, err, "There should be an error")
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
@@ -248,7 +261,7 @@ func TesGetManagingPluginIDForFabricID(t *testing.T) {
 		FabricUUID: "12345",
 		PluginID:   "CFM",
 	}
-	err := fab.AddFabricData("12345")
+	err := fab.AddFabricData(mockCtx,"12345")
 	assert.Equal(t, nil, err, "there should be no error")
 
 	// positive test case
@@ -322,19 +335,19 @@ func TestFabric_RemoveFabricData(t *testing.T) {
 		common.TruncateDB(common.InMemory)
 	}()
 
-	fab1.AddFabricData("12345")
-	fab1.RemoveFabricData("12345")
+	fab1.AddFabricData(mockCtx,"12345")
+	fab1.RemoveFabricData(mockCtx,"12345")
 
-	_, err := GetManagingPluginIDForFabricID("12345",context.TODO())
+	_, err := GetManagingPluginIDForFabricID("12345",mockCtx)
 	assert.NotNil(t, err, "There should be an error ")
 	mockFabricData("12345", "AFC")
-	_, err = GetManagingPluginIDForFabricID("12345",context.TODO())
+	_, err = GetManagingPluginIDForFabricID("12345",mockCtx)
 	assert.Nil(t, err, "There should no error ")
 
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
-	err = fab1.RemoveFabricData("12345")
+	err = fab1.RemoveFabricData(mockCtx,"12345")
 	assert.NotNil(t, err, "There should be an error")
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)

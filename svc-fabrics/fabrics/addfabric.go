@@ -85,7 +85,7 @@ func AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) response
 		PluginID:   pluginID,
 	}
 
-	err = fab.AddFabricData(uuid)
+	err = fab.AddFabricData(ctx,uuid)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),

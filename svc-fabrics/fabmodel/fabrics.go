@@ -89,8 +89,8 @@ func GetAllFabricPluginDetails(ctx context.Context) ([]string, error) {
 }
 
 // AddFabricData will add the fabric uuid and pluginid details into ondisk
-func (fabric *Fabric) AddFabricData(fabuuid string) error {
-
+func (fabric *Fabric) AddFabricData(ctx context.Context,fabuuid string) error {
+	l.LogWithFields(ctx).Debugf("UUID of Fabric to be added: %s",fabuuid)
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return errors.PackError(errors.UndefinedErrorType, err)
@@ -109,7 +109,8 @@ func (fabric *Fabric) AddFabricData(fabuuid string) error {
 }
 
 // RemoveFabricData will remove the fabric uuid and pluginid details into ondisk
-func (fabric *Fabric) RemoveFabricData(fabuuid string) error {
+func (fabric *Fabric) RemoveFabricData(ctx context.Context,fabuuid string) error {
+	l.LogWithFields(ctx).Debugf("UUID of Fabric to be removed: %s",fabuuid)
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return errors.PackError(errors.UndefinedErrorType, err)

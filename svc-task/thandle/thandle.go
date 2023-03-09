@@ -1168,6 +1168,10 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 	return err
 }
 
+// ProcessTaskEvents receive the task event from plugins
+// The function will find out the ODIM task corresponding to the plugin task ID
+// and task progress from the events
+// Then the function update the ODIM task with the task progress received
 func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
 	event := data.(dmtf.EventRecord)
 	var taskID string
@@ -1179,6 +1183,8 @@ func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
 	}
 
 	taskID = event.MessageArgs[0]
+	// get the plugin task information from DB which including ODIM task ID
+	// plugin IP, and plugin task ID
 	pluginTask, err := tmodel.GetPluginTaskInfo(taskID)
 	if err != nil {
 		l.Log.Error("error while processing task event", err.Error())

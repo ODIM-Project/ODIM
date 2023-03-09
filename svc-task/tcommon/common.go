@@ -22,6 +22,7 @@ const (
 	IterationCount = "IterationCount"
 )
 
+// TaskStatusMap holds the task state against the message ID from task event
 var TaskStatusMap = map[string]dmtf.TaskState{
 	"TaskStarted":          dmtf.TaskStateStarting,
 	"TaskProgressChanged":  dmtf.TaskStateRunning,

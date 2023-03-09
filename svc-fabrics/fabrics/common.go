@@ -248,9 +248,9 @@ func (f *Fabrics) parseFabricsRequest(ctx context.Context, req *fabricsproto.Fab
 		resp = getFabricCollection(ctx)
 		return contactRequest, resp, nil
 	}
-	l.LogWithFields(ctx).Info("Request url" + req.URL)
+	l.LogWithFields(ctx).Info("Request url: " + req.URL)
 	fabID := getFabricID(req.URL)
-	l.LogWithFields(ctx).Info("Fabric UUID" + fabID)
+	l.LogWithFields(ctx).Info("Fabric UUID: " + fabID)
 	fabric, err := fabmodel.GetManagingPluginIDForFabricID(fabID,ctx)
 	if err != nil {
 		errMsg := fmt.Sprintf("error while trying to get fabric Data: %v", err.Error())

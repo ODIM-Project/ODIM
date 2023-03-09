@@ -53,7 +53,7 @@ func (f *Fabrics) GetFabricResource(ctx context.Context, req *fabricsproto.Fabri
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
-	l.LogWithFields(ctx).Debugf("final response for get fabric resource request: %s", string(fmt.Sprintf("%v", resp.Body)))
+	l.LogWithFields(ctx).Debugf("final response for get fabric resource request: %s", string(resp.Body))
 	return resp, nil
 }
 

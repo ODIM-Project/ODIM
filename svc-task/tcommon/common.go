@@ -21,6 +21,7 @@ const (
 	IterationCount = "IterationCount"
 )
 
+// TaskStatusMap is used to get task state
 var TaskStatusMap = map[string]dmtf.TaskState{
 	"TaskStarted":          dmtf.TaskStateStarting,
 	"TaskProgressChanged":  dmtf.TaskStateRunning,

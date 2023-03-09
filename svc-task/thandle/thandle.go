@@ -1246,6 +1246,7 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 	return nil
 }
 
+// ProcessTaskEvents is used to process task events
 func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
 	event := data.(dmtf.EventRecord)
 	var taskID string

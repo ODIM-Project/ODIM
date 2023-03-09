@@ -25,7 +25,9 @@ import (
 )
 
 var (
+	// TaskEventRecvQueue ...
 	TaskEventRecvQueue chan<- interface{}
+	// TaskEventProcQueue ...
 	TaskEventProcQueue <-chan interface{}
 )
 

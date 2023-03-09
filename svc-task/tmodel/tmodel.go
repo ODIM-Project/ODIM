@@ -254,6 +254,7 @@ func GetAllTaskKeys(ctx context.Context) ([]string, error) {
 	return taskKeys, nil
 }
 
+// GetPluginTaskInfo used to get plugin task info
 func GetPluginTaskInfo(taskID string) (*common.PluginTask, error) {
 	errPrefix := "error while trying to get plugin task info"
 	pluginTask := new(common.PluginTask)

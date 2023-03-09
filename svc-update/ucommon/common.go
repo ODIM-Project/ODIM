@@ -307,6 +307,8 @@ func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, 
 	}
 	return req.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
+
+// TrackConfigFileChanges ...
 func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat

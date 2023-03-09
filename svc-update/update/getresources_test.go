@@ -42,20 +42,20 @@ func mockContactClient(ctx context.Context, url, method, token string, odataID s
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
-func mockGetResource(table, key string, dbType common.DbType) (string, *errors.Error) {
+func mockGetResource(ctx context.Context, table, key string, dbType common.DbType) (string, *errors.Error) {
 	if (key == "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") || (key == "/redfish/v1/UpdateService/SoftwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	}
 	return "body", nil
 }
-func mockGetResourceError(table, key string, dbType common.DbType) (string, *errors.Error) {
+func mockGetResourceError(ctx context.Context, table, key string, dbType common.DbType) (string, *errors.Error) {
 	if (key == "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") || (key == "/redfish/v1/UpdateService/SoftwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	}
 	return "body", &errors.Error{}
 }
 
-func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
+func mockGetAllKeysFromTable(ctx context.Context, table string, dbType common.DbType) ([]string, error) {
 	return []string{"/redfish/v1/UpdateService/FirmwareInentory/uuid.1"}, nil
 }
 func mockGetTarget(id string) (*umodel.Target, *errors.Error) {

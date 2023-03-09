@@ -38,7 +38,7 @@ func TestExternalInterface_GetTelemetryService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetTelemetryService(); int(got.StatusCode) != tt.want {
+			if got := tt.e.GetTelemetryService(context.TODO()); int(got.StatusCode) != tt.want {
 				t.Errorf("ExternalInterface.GetTelemetryService() = %v, want %v", int(got.StatusCode), tt.want)
 			}
 		})
@@ -81,7 +81,7 @@ func TestExternalInterface_GetMetricDefinitionCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetMetricDefinitionCollection(tt.args.req); int(got.StatusCode) != tt.want {
+			if got := tt.e.GetMetricDefinitionCollection(context.TODO(),tt.args.req); int(got.StatusCode) != tt.want {
 				t.Errorf("ExternalInterface.GetMetricDefinitionCollection() = %v, want %v", int(got.StatusCode), tt.want)
 			}
 		})
@@ -124,7 +124,7 @@ func TestExternalInterface_GetMetricReportDefinitionCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetMetricReportDefinitionCollection(tt.args.req); int(got.StatusCode) != tt.want {
+			if got := tt.e.GetMetricReportDefinitionCollection(context.TODO(),tt.args.req); int(got.StatusCode) != tt.want {
 				t.Errorf("ExternalInterface.GetMetricReportDefinitionCollection() = %v, want %v", int(got.StatusCode), tt.want)
 			}
 		})
@@ -167,7 +167,7 @@ func TestExternalInterface_GetMetricReportCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetMetricReportCollection(tt.args.req); int(got.StatusCode) != tt.want {
+			if got := tt.e.GetMetricReportCollection(context.TODO(),tt.args.req); int(got.StatusCode) != tt.want {
 				t.Errorf("ExternalInterface.GetMetricReportCollection() = %v, want %v", int(got.StatusCode), tt.want)
 			}
 		})
@@ -210,7 +210,7 @@ func TestExternalInterface_GetTriggerCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.GetTriggerCollection(tt.args.req); int(got.StatusCode) != tt.want {
+			if got := tt.e.GetTriggerCollection(context.TODO(),tt.args.req); int(got.StatusCode) != tt.want {
 				t.Errorf("ExternalInterface.GetTriggerCollection() = %v, want %v", int(got.StatusCode), tt.want)
 			}
 		})

@@ -40,7 +40,7 @@ type External struct {
 	DevicePassword     func([]byte) ([]byte, error)
 	GetPluginData      func(string) (tmodel.Plugin, *errors.Error)
 	ContactPlugin      func(context.Context, tcommon.PluginContactRequest, string) ([]byte, string, tcommon.ResponseStatus, error)
-	GetTarget          func(string) (*tmodel.Target, *errors.Error)
+	GetTarget          func(context.Context, string) (*tmodel.Target, *errors.Error)
 	GetSessionUserName func(string) (string, error)
 	GenericSave        func(context.Context, []byte, string, string) error
 	GetPluginStatus    func(context.Context, tmodel.Plugin) bool
@@ -54,8 +54,8 @@ type responseStatus struct {
 
 // DB struct holds the function pointers to database operations
 type DB struct {
-	GetAllKeysFromTable func(string, common.DbType) ([]string, error)
-	GetResource         func(string, string, common.DbType) (string, *errors.Error)
+	GetAllKeysFromTable func(context.Context, string, common.DbType) ([]string, error)
+	GetResource         func(context.Context, string, string, common.DbType) (string, *errors.Error)
 }
 
 // GetExternalInterface retrieves all the external connections update package functions uses

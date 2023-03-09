@@ -123,8 +123,8 @@ func GetStorageResources(ctx context.Context, oid string) map[string]interface{}
 func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) error {
 	aggTransactionID := uuid.New()
 	podName := os.Getenv("POD_NAME")
-	actionID := common.Actions[common.ActionKey{Service: "AggregationService", Uri: "ConnectionMethods", Method: "GET"}].ActionID
-	actionName := common.Actions[common.ActionKey{Service: "AggregationService", Uri: "ConnectionMethods", Method: "GET"}].ActionName
+	actionID := common.Actions[common.ActionKey{Service: "AddConnectionMethods", Uri: "ConnectionMethod", Method: "POST-TO-DB"}].ActionID
+	actionName := common.Actions[common.ActionKey{Service: "AddConnectionMethods", Uri: "ConnectionMethod", Method: "POST-TO-DB"}].ActionName
 	ctx := CreateContext(aggTransactionID.String(), actionID, actionName, "1", common.AggregationService, podName)
 	connectionMethodsKeys, err := e.GetAllKeysFromTableInterface(ctx, "ConnectionMethod")
 	if err != nil {

@@ -994,6 +994,7 @@ Topics covered in this section include:
         Example output:
 
         <img src="docs/images/all_services_verification.png" alt="screenshot" style="zoom:55%;" />
+        
         If the services are not successfully deployed, reset the deployment and try deploying again:
         
         ```
@@ -2080,17 +2081,17 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 
 ## Backup and restore of Kubernetes etcd database 
 
-### Taking a backup of Kubernetes etcd 
-
 1. Identify the leader etcd node by running the following command on all the three cluster nodes:
 
    ```
-   ETCDCTL_API=3 sudo etcdctl endpoint status --write-out=table --endpoints=https://127.0.0.1:2379 --cacert=/etc/ssl/etcd/ssl/ca.pem  --cert=/etc/ssl/etcd/ssl/admin-<hostname>.pem  --key=/etc/ssl/etcd/ssl/admin-<hostname>-key.pem
+   ETCDCTL_API=3 sudo etcdctl endpoint status --write-out=table --endpoints=https://127.0.0.1:2379 --cacert=/etc/ssl/etcd/ssl/ca.pem  --cert=/etc/ssl/etcd/ssl/admin-{hostname}.pem  --key=/etc/ssl/etcd/ssl/admin-{hostname}-key.pem
    ```
 
-   Verify the output on each node. The node with `IS LEADER` value as `true` is the leader node.
+   > **NOTE**: Replace {hostname} with the host name of the cluster node on which you run the command.
 
-2. Create a backup directory on the leader node and change the ownership and permission of the directory to odimra:
+2. Verify the output on each node. The node with `IS LEADER` value as `true` is the leader node.
+
+3. Create a backup directory on the leader node and change the ownership and permission of the directory to odimra:
 
    ```
    mkdir ~/etcd_backup/
@@ -2098,30 +2099,32 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    sudo chmod 755 ~/etcd_backup/
    ```
 
-3. Find  the directory of the ca certificate and the node certificates by running the following command on leader node:
+4. Find  the directory of the ca certificate and the node certificates by running the following command on leader node:
 
    ```
    sudo grep ETCDCTL /etc/etcd.env
    ```
 
-4. Copy all the ca certificate and node certificates to the backup directory as a root user:
+5. Copy all the ca certificate and node certificates to the backup directory as a root user:
 
    ```
    sudo -i
    cp /etc/ssl/etcd/ssl/* ~/etcd_backup/
    ```
 
-5. Take the snapshot/backup of the etcd database by running the following command from the etcd leader node:
+6. Take the snapshot/backup of the etcd database by running the following command from the etcd leader node:
 
    ```
    ETCDCTL_API=3  sudo etcdctl snapshot save ~/etcd_backup/etcd_backup.db \
     --endpoints=https://127.0.0.1:2379 \
     --cacert=~/etcd_backup/ca.pem \
-    --cert=~/etcd_backup/ admin-<leader etcd nodename>.pem \
-    --key=~/etcd_backup/ admin-<leader etcd nodename>-keya.pem
+    --cert=~/etcd_backup/ admin-{leader etcd nodename}.pem \
+    --key=~/etcd_backup/ admin-{leader etcd nodename}-keya.pem
    ```
 
-6. Check the status of the snapshot file “`/etcd_backup/etcd_backup.db` that was created:
+   >  **NOTE**: Replace `{leader etcd nodename}` appropriately.
+
+7. Check the status of the snapshot file `/etcd_backup/etcd_backup.db` that was created:
 
    ```
    ETCD_API=3 sudo etcdctl snapshot --write-out=table status ~/etcd_backup/etcd_backup.db
@@ -2133,13 +2136,13 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    | -------- | ------------ | -------------- | -------------- |
    | 107a4572 | 31002        | 1952           | 12 MB          |
 
-7. Move the contents of the backup directory `~/etcd_backup` to a safe location so you can restore the etcd database later.
+8. Move the contents of the backup directory `~/etcd_backup` to a safe location so you can restore the etcd database later.
 
-   > Note: For a one node setup, execute the above commands on the cluster node alone.
+   > **NOTE**: For a one node setup, execute the above commands on the single node.
 
 ### Restoring Kubernetes etcd 
 
-1. Create the backup directory on all the three cluster nodes and copy the backed up files to that directory.t
+1. Create the backup directory on all the three cluster nodes and copy the backed up files to that directory.
 
    ```
    mkdir ~/etcd_backup/
@@ -2147,47 +2150,49 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    sudo chmod 755 ~/etcd_backup/
    ```
 
-2. Generate the restore files for all nodes. Run the following command on all three nodes after replacing the hostnames and ip addresses appropriately.
+2. Copy all the files that were backed up and moved to a safe location to the directory `~/etcd_backup`.
+
+3. Generate the restore files for all nodes. Run the following command on all three nodes after replacing the hostnames and ip addresses appropriately.
 
    **On etcd node 1**:
 
    ```
-   ETCDCTL_API=3 sudo etcdctl snapshot restore ~/etcd_backup/etcd_backup.db --name etcd1 --initial-cluster  etcd1=https://<IP address of first node>:2380,etcd2=https://<IP address of second node><IP address of first node>:2380,etcd3=https://<IP address of third node>:2380 --initial-cluster-token k8s_etcd  --initial-advertise-peer-urls https://<IP address of first node>:2380
+   ETCDCTL_API=3 sudo etcdctl snapshot restore ~/etcd_backup/etcd_backup.db --name etcd1 --initial-cluster  etcd1=https://{IP address of first node}:2380,etcd2=https://{IP address of second node},etcd3=https://{IP address of third node}:2380 --initial-cluster-token k8s_etcd  --initial-advertise-peer-urls https://{IP address of first node}:2380
    ```
 
    **On etcd node 2**:
 
    ```
-   ETCDCTL_API=3 sudo etcdctl snapshot restore ~/etcd_backup/etcd_backup.db --name etcd2 --initial-cluster  etcd1=https://<IP address of first node>:2380,etcd2=https://<IP address of second node><IP address of first node>:2380,etcd3=https://<IP address of third node>:2380 --initial-cluster-token k8s_etcd  --initial-advertise-peer-urls https://<IP address of second node>:2380
+   ETCDCTL_API=3 sudo etcdctl snapshot restore ~/etcd_backup/etcd_backup.db --name etcd2 --initial-cluster  etcd1=https://{IP address of first node}:2380,etcd2=https://{IP address of second node},etcd3=https://{IP address of third node}:2380 --initial-cluster-token k8s_etcd  --initial-advertise-peer-urls https://{IP address of second node}:2380
    ```
 
    **On etcd node 3**:
 
    ```
-   ETCDCTL_API=3 sudo etcdctl snapshot restore ~/etcd_backup/etcd_backup.db --name etcd3 --initial-cluster  etcd1=https://<IP address of first node>:2380,etcd2=https://<IP address of second node><IP address of first node>:2380,etcd3=https://<IP address of third node>:2380 --initial-cluster-token k8s_etcd  --initial-advertise-peer-urls https://<IP address of third node>:2380
+   ETCDCTL_API=3 sudo etcdctl snapshot restore ~/etcd_backup/etcd_backup.db --name etcd3 --initial-cluster  etcd1=https://{IP address of first node}:2380,etcd2=https://{IP address of second node},etcd3=https://{IP address of third node}:2380 --initial-cluster-token k8s_etcd  --initial-advertise-peer-urls https://{IP address of third node}:2380
    ```
 
    After the successful restore, directories `~/etcd1.etcd`, `~/etcd2.etcd`, and `~/etcd3.etcd` are created on the three nodes respectively.
 
-3. Stop all the Kube services (kube-apiserver, kube-controller, kube-schedule) on all the cluster nodes by running the following command:
+4. Stop all the Kube services (kube-apiserver, kube-controller, kube-schedule) on all the cluster nodes by running the following command:
 
    ```
    sudo mv /etc/kubernetes/manifests/*.yaml ~/etcd_backup/
    ```
-   
-4. Stop the etcd service on all the cluster nodes:
+
+5. Stop the etcd service on all the cluster nodes:
 
    ```
    sudo systemctl stop etcd
    ```
 
-5. Move the current member directory to a backup member directory on all the three cluster nodes:
+6. Move the current member directory to a backup member directory on all the three cluster nodes:
 
    ```
    sudo mv /var/lib/etcd/member /var/lib/etcd/member.bkp
    ```
 
-6. Restore the snapshot etcd db files to directory `/var/lib/etcd` on all the three cluster nodes by running the following commands:
+7. Restore the snapshot etcd db files to directory `/var/lib/etcd` on all the three cluster nodes by running the following commands:
 
    **On node 1**:
 
@@ -2210,22 +2215,22 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    For one-node cluster deployment, run the following command:
 
    ```
-   sudo mv default.etcd/member /var/lib/etcd
+   sudo mv ~/default.etcd/member /var/lib/etcd
    ```
 
-7. Start the etcd service on cluster nodes:
+8. Start the etcd service on cluster nodes:
 
    ```
    sudo systemctl start etcd
    ```
 
-8. Restart all the kube services on all the three cluster nodes:
+9. Restart all the kube services on all the three cluster nodes:
 
    ```
-   sudo mv etcd_backup/*.yaml /etc/kubernetes/manifests/
+   sudo mv ~/etcd_backup/*.yaml /etc/kubernetes/manifests/
    ```
 
-> NOTE: For a one-node setup, execute the above commands on the single cluster node.
+> **NOTE**: For a one-node setup, execute the above commands on the single node.
 
 
 
@@ -2236,18 +2241,20 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 1. Identify the leader etcd pod by running the following command inside all the three etcd pods:
 
    ```
-   kubectl exec -it <etcd pod name> bash -nodim
+   kubectl exec -it {etcd pod name} bash -nodim
    ```
+
+   >  **NOTE**: Replace `{etcd pod name}` appropriately.
 
    ```
    /opt/etcd/bin/etcdctl endpoint status --write-out=table --endpoints=https://etcd1:2379 --cacert=/opt/etcd/conf/rootCA.crt --cert=/opt/etcd/conf/odimra_etcd_server.crt --key=/opt/etcd/conf/odimra_etcd_server.key
    ```
 
-   Replace etcd1:2379 with etcd2 and etcd3 respectively on second and third cluster nodes.
+   >  **NOTE**: Replace `etcd1` with `etcd2` and `etcd3` on second and third cluster nodes respectively.
 
-   Verify the output on each node. The node with `IS LEADER` value as `true` is the leader node.
+2. Verify the output on each node. The node with `IS LEADER` value as `true` is the leader node.
 
-2. Create a backup directory on the leader node and change the ownership and permission of the directory to odimra:
+3. Create a backup directory on the leader node and change the ownership and permission of the directory to odimra:
 
    ```
    mkdir ~/etcd_odim_backup/
@@ -2255,7 +2262,7 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    sudo chmod 755 ~/etcd_odim_backup/
    ```
 
-3. Navigate to the `/home/odimra` directory and take the backup by running the following command inside etcd leader pod:
+4. Navigate to the `/home/odimra` directory and take the backup by running the following command inside etcd leader pod:
 
    ```
    cd /home/odimra
@@ -2268,24 +2275,27 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 
    Verify the backup file `etcd_backup.db` is available in `/home/odimra` directory.
 
-4. Check the status of the snapshot file “`~/etcd_backup.db` that was created:
+5. Check the status of the snapshot file `~/etcd_backup.db` that was created:
 
    ```
    /opt/etcd/bin/etcdctl  snapshot status --write-out=table ~/etcd_backup.db
    ```
 
-   Sample output:
+   **Sample output**:
 
    | **HASH** | **REVISION** | **TOTAL KEYS** | **TOTAL SIZE** |
    | -------- | ------------ | -------------- | -------------- |
    | b31cc840 | 13           | 19             | 25KB           |
 
-5. Take the file `~/etcd_backup.db` out of the etcd leader pod to safe location which can be used to restore the etcd database later. Run the following command from one of the cluster node:
+6. Take the file `~/etcd_backup.db` out of the etcd leader pod to safe location which can be used to restore the etcd database later. Run the following command from one of the cluster node:
 
    ```
-   sudo kubectl cp odim/<leader etcd pod name>:/home/odimra/etcd_backup.db ~/etcd_odim_backup/etcd_backup.db
+   sudo kubectl cp odim/{leader etcd pod name}:/home/odimra/etcd_backup.db ~/etcd_odim_backup/etcd_backup.db
    ```
-> NOTE: For a one node setup, execute the above commands on the cluster node alone.
+
+   >  **NOTE**: Replace `{leader etcd pod name}` appropriately.
+
+> **NOTE**: For a one node setup, execute the above commands on the single node.
 
 ### Restoring ODIM etcd 
 
@@ -2297,16 +2307,20 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    sudo chmod 755 ~/etcd_odim_backup/
    ```
 
-2. Copy the backup file inside the etcd container from the cluster node:
+2. Copy the file that was backed up and moved to safe location to the directory `~/etcd_odim_backup` on one of the cluster nodes.
+
+3. Copy the backup file inside the etcd container from the cluster node:
 
    ```
-   kubectl cp ~/etcd_odim_backup/etcd_backup.db odim/<leader etcd container name>:/home/odimra/etcd_backup.db
+   kubectl cp ~/etcd_odim_backup/etcd_backup.db odim/{leader etcd container name}:/home/odimra/etcd_backup.db
    ```
 
-3. Login to the leader etcd container and restore the backed up etcd configuration:
+   > **NOTE**: Replace `{leader etcd container name}` appropriately in all commands.
+
+4. Login to the leader etcd container and restore the backed up etcd configuration:
 
    ```
-   kubectl exec -it <leader etcd container name>  bash -nodim
+   kubectl exec -it {leader etcd container name}  bash -nodim
    ```
 
    ```
@@ -2317,36 +2331,34 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    /opt/etcd/bin/etcdctl snapshot restore /home/odimra/etcd_backup.db --endpoints=https://etcd:2379  --cacert=/opt/etcd/conf/rootCA.crt  --cert=/opt/etcd/conf/odimra_etcd_server.crt  --key=/opt/etcd/conf/odimra_etcd_server.key
    ```
 
-4. Verify that a directory by name `default.etcd` is created under `/home/odimra` in the leader etcd container. 
+5. Verify that a directory by name `default.etcd` is created under `/home/odimra` in the leader etcd container. 
 
-5. Copy the restored directory `/home/odimra/default.etcd` from the leader etcd container to the Kubernetes cluster node.
-
-   ```
-   kubectl cp odim/<leader etcd container name>:/home/odimra/default.etcd/member" ~/etcd_odim_backup/member
-   ```
-
-6. Copy the restored directory `~/etcd_odim_backup/member` from Kubernetes cluster node to the remaining two etcd nodes.
+6. Copy the restored directory `/home/odimra/default.etcd` from the leader etcd container to the Kubernetes cluster node.
 
    ```
-   kubectl cp ~/etcd_odim_backup/member odim/<etcd container name>:/home/odimra/member
+   kubectl cp odim/{leader etcd container name}:/home/odimra/default.etcd/member" ~/etcd_odim_backup/member
    ```
 
-7. Login to leader etcd container first and move the restored directory `member` to `/opt/etcd/data`.
+7. Copy the restored directory `~/etcd_odim_backup/member` from Kubernetes cluster node to the remaining two etcd nodes.
 
    ```
-   kubectl exec -it <leader etcd container name>  bash -nodim
+   kubectl cp ~/etcd_odim_backup/member odim/{etcd container name}:/home/odimra/member
+   ```
+
+   Replace `{etcd container name}` appropriately.
+
+8. Login to leader etcd container first and move the restored directory `member` to `/opt/etcd/data`.
+
+   ```
+   kubectl exec -it {leader etcd container name}  bash -nodim
    cd /opt/etcd/data
    mv member member.bkp
    cp -r /home/odimra/member /opt/etcd/data/member
    ```
 
-8. Repeat step 7 on other 2 etcd containers.
+9. Repeat step 8 on other two etcd containers.
 
-> NOTE: For a one node setup, execute the above commands on the cluster node alone.
-
-
-
-
+> **NOTE**: For a one node setup, execute the above commands on the single node.
 
 
 

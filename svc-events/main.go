@@ -82,27 +82,6 @@ func main() {
 	events := rpc.GetPluginContactInitializer()
 	eventsproto.RegisterEventsServer(services.ODIMService.Server(), events)
 
-	evcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
-	if evcommon.ConfigFilePath == "" {
-		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
-	}
-
-	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go evcommon.TrackConfigFileChanges(errChan)
-
-	// Subscribe to intercomm messagebus queue
-	go func() {
-		consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.OdimControlMessageQueue)
-		startUPInterface := evcommon.StartUpInteraface{
-			DecryptPassword: common.DecryptWithPrivateKey,
-			EMBConsume:      consumer.Consume,
-		}
-		startUPInterface.SubscribePluginEMB()
-	}()
-	//consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.OdimControlMessageQueue)
-
-	// Subscribe to EMBs of all the available plugins
-
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
 	jobQueueSize := 10
@@ -118,6 +97,24 @@ func main() {
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as ProcessCtrlMsg method after reading the data from the channel.
 	common.RunReadWorkers(consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 1)
+
+	evcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
+	if evcommon.ConfigFilePath == "" {
+		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
+	}
+
+	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+	go evcommon.TrackConfigFileChanges(errChan)
+
+	// Subscribe to intercomm messagebus queue
+	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.OdimControlMessageQueue)
+
+	// Subscribe to EMBs of all the available plugins
+	startUPInterface := evcommon.StartUpInteraface{
+		DecryptPassword: common.DecryptWithPrivateKey,
+		EMBConsume:      consumer.Consume,
+	}
+	go startUPInterface.SubscribePluginEMB()
 
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {

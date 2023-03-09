@@ -849,7 +849,7 @@ func (e *ExternalInterface) DeleteRemoteAccountService(ctx context.Context, req 
 		resp.StatusCode = http.StatusNoContent
 	}
 	task := fillTaskData(taskID, uri, string(req.RequestBody), resp,
-		common.Completed, common.OK, 100, http.MethodPatch)
+		common.Completed, common.OK, 100, http.MethodDelete)
 	e.RPC.UpdateTask(ctx, task)
 	respBody := fmt.Sprintf("%v", resp.Body)
 	l.LogWithFields(ctx).Debugf("Outgoing delete remote account service response to northbound: %s", string(respBody))

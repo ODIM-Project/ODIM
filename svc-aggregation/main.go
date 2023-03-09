@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
@@ -85,9 +84,7 @@ func main() {
 		AddConnectionMethodInterface: agmodel.AddConnectionMethod,
 		DeleteInterface:              agmodel.Delete,
 	}
-	aggTransactionID := uuid.New()
-	aggCtx := agcommon.CreateContext(aggTransactionID.String(), common.AggActionID, common.AggActionName, "1", common.AggregationService, podName)
-	if err := connectionMethodInterface.AddConnectionMethods(aggCtx, config.Data.ConnectionMethodConf); err != nil {
+	if err := connectionMethodInterface.AddConnectionMethods(config.Data.ConnectionMethodConf); err != nil {
 		log.Fatal("error while trying add connection method: " + err.Error())
 	}
 
@@ -117,9 +114,7 @@ func main() {
 	if agcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	trackTransactionID := uuid.New()
-	trackCtx := agcommon.CreateContext(trackTransactionID.String(), common.TrackActionID, common.TrackActionName, "1", common.AggregationService, podName)
-	go agcommon.TrackConfigFileChanges(trackCtx, connectionMethodInterface, errChan)
+	go agcommon.TrackConfigFileChanges(connectionMethodInterface, errChan)
 
 	go system.PerformPluginHealthCheck()
 

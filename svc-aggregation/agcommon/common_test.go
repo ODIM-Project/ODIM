@@ -45,7 +45,6 @@ func mockContext() context.Context {
 	return ctx
 }
 
-var mockCtx = mockContext()
 func TestAddConnectionMethods(t *testing.T) {
 	var e = DBInterface{
 		GetAllKeysFromTableInterface: stubGetAllkeys,
@@ -54,7 +53,7 @@ func TestAddConnectionMethods(t *testing.T) {
 		DeleteInterface:              stubDeleteConnectionMethod,
 	}
 	config.SetUpMockConfig(t)
-	err := e.AddConnectionMethods(mockCtx,config.Data.ConnectionMethodConf)
+	err := e.AddConnectionMethods(config.Data.ConnectionMethodConf)
 	assert.Nil(t, err, "err should be nil")
 }
 
@@ -66,7 +65,7 @@ func TestAddConnectionMethods_failGetAllKeys(t *testing.T) {
 		DeleteInterface:              stubDeleteConnectionMethod,
 	}
 	config.SetUpMockConfig(t)
-	err := e.AddConnectionMethods(mockCtx,config.Data.ConnectionMethodConf)
+	err := e.AddConnectionMethods(config.Data.ConnectionMethodConf)
 
 	assert.NotNil(t, err, "error should be not nil")
 }
@@ -79,7 +78,7 @@ func TestAddConnectionMethods_failGetConnectionMethod(t *testing.T) {
 		DeleteInterface:              stubDeleteConnectionMethod,
 	}
 	config.SetUpMockConfig(t)
-	err := e.AddConnectionMethods(mockCtx,config.Data.ConnectionMethodConf)
+	err := e.AddConnectionMethods(config.Data.ConnectionMethodConf)
 
 	assert.NotNil(t, err, "error should be not nil")
 }
@@ -92,7 +91,7 @@ func TestAddConnectionMethods_failConnectionMethodInterface(t *testing.T) {
 		DeleteInterface:              stubDeleteConnectionMethod,
 	}
 	config.SetUpMockConfig(t)
-	err := e.AddConnectionMethods(mockCtx,config.Data.ConnectionMethodConf)
+	err := e.AddConnectionMethods(config.Data.ConnectionMethodConf)
 
 	assert.NotNil(t, err, "error should be not nil")
 }
@@ -105,7 +104,7 @@ func TestAddConnectionMethods_failDeleteConnectionMethod(t *testing.T) {
 		DeleteInterface:              invalidDeleteConnectionMethod,
 	}
 	config.SetUpMockConfig(t)
-	err := e.AddConnectionMethods(mockCtx,config.Data.ConnectionMethodConf)
+	err := e.AddConnectionMethods(config.Data.ConnectionMethodConf)
 
 	assert.NotNil(t, err, "error should be not nil")
 }
@@ -120,7 +119,7 @@ func TestAddConnectionMethods_failConnection(t *testing.T) {
 	config.SetUpMockConfig(t)
 	var ConnectionMethodConf = []config.ConnectionMethodConf{}
 	config.Data.ConnectionMethodConf = ConnectionMethodConf
-	err := e.AddConnectionMethods(mockCtx,config.Data.ConnectionMethodConf)
+	err := e.AddConnectionMethods(config.Data.ConnectionMethodConf)
 	assert.Nil(t, err, "err should be nil")
 }
 
@@ -128,15 +127,15 @@ var connectionMethod = []string{"/redfish/v1/AggregationService/ConnectionMethod
 	"/redfish/v1/AggregationService/ConnectionMethods/1234567545691234g",
 	"/redfish/v1/AggregationService/ConnectionMethods/1234567545691234h"}
 
-func stubGetAllkeys(ctx context.Context,tableName string) ([]string, error) {
+func stubGetAllkeys(ctx context.Context, tableName string) ([]string, error) {
 	return connectionMethod, nil
 }
 
-func invalidGetAllkeys(ctx context.Context,tableName string) ([]string, error) {
+func invalidGetAllkeys(ctx context.Context, tableName string) ([]string, error) {
 	return nil, errors.PackError(0, "error while trying to connecting to DB: ")
 }
 
-func invalidGetConnectionMethod(ctx context.Context,key string) (agmodel.ConnectionMethod, *errors.Error) {
+func invalidGetConnectionMethod(ctx context.Context, key string) (agmodel.ConnectionMethod, *errors.Error) {
 	return agmodel.ConnectionMethod{}, errors.PackError(0, "error while trying to connecting to DB: ")
 }
 
@@ -148,7 +147,7 @@ func invalidDeleteConnectionMethod(table, key string, dbtype common.DbType) *err
 	return errors.PackError(0, "error while trying to connecting to DB: ")
 }
 
-func stubGetConnectionMethod(ctx context.Context,key string) (agmodel.ConnectionMethod, *errors.Error) {
+func stubGetConnectionMethod(ctx context.Context, key string) (agmodel.ConnectionMethod, *errors.Error) {
 	if key == "/redfish/v1/AggregationService/ConnectionMethods/1234567545691234f" {
 		return agmodel.ConnectionMethod{
 			ConnectionMethodType:    "Redfish",
@@ -219,13 +218,13 @@ func mockData(t *testing.T, dbType common.DbType, table, id string, data interfa
 func TestGetStorageResources(t *testing.T) {
 	config.SetUpMockConfig(t)
 	storageURI := "/redfish/v1/Systems/12345677651245-12341/Storage"
-	GetResourceDetailsFunc = func(ctx context.Context,key string) (string, *errors.Error) {
+	GetResourceDetailsFunc = func(ctx context.Context, key string) (string, *errors.Error) {
 		return "", errors.PackError(0, "error while trying to connecting to DB: ")
 	}
 	ctx := mockContext()
 	resp := GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "There should be an error ")
-	GetResourceDetailsFunc = func(ctx context.Context,key string) (string, *errors.Error) {
+	GetResourceDetailsFunc = func(ctx context.Context, key string) (string, *errors.Error) {
 		return string([]byte(`{"user":"name"}`)), nil
 	}
 	resp = GetStorageResources(ctx, storageURI)
@@ -235,13 +234,13 @@ func TestGetStorageResources(t *testing.T) {
 func TestGetStorageResources_invalidJson(t *testing.T) {
 	config.SetUpMockConfig(t)
 	storageURI := "/redfish/v1/Systems/12345677651245-12341/Storage"
-	GetResourceDetailsFunc = func(ctx context.Context,key string) (string, *errors.Error) {
+	GetResourceDetailsFunc = func(ctx context.Context, key string) (string, *errors.Error) {
 		return "", errors.PackError(0, "error while trying to connecting to DB: ")
 	}
 	ctx := mockContext()
 	resp := GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "There should be an error ")
-	GetResourceDetailsFunc = func(ctx context.Context,key string) (string, *errors.Error) {
+	GetResourceDetailsFunc = func(ctx context.Context, key string) (string, *errors.Error) {
 		return string([]byte(`{"user":"name"}`)), nil
 	}
 	JSONUnMarshalFunc = func(data []byte, v interface{}) error {
@@ -423,7 +422,7 @@ func TestLookupPlugin(t *testing.T) {
 func TestGetDeviceSubscriptionDetails(t *testing.T) {
 	config.SetUpMockConfig(t)
 	var data = ""
-	res, _, _ := GetDeviceSubscriptionDetails(mockCtx,"10.0.0.0")
+	res, _, _ := GetDeviceSubscriptionDetails(mockCtx, "10.0.0.0")
 	assert.Equal(t, res, data, "It should be same")
 
 }
@@ -453,7 +452,7 @@ func TestGetSearchKey(t *testing.T) {
 
 func TestGetSubscribedEvtTypes(t *testing.T) {
 	config.SetUpMockConfig(t)
-	res, _ := GetSubscribedEvtTypes(mockCtx,"100.100.100.100")
+	res, _ := GetSubscribedEvtTypes(mockCtx, "100.100.100.100")
 	assert.Equal(t, []string([]string{}), res, "It should be same")
 
 }
@@ -471,7 +470,7 @@ func TestGetSubscribedEvtTypes_fail(t *testing.T) {
 		}
 	}()
 	mockGetEventSubscriptionsFunc("*" + "100.100.100.100" + "*")
-	res, _ := GetSubscribedEvtTypes(mockCtx,"100.100.100.100")
+	res, _ := GetSubscribedEvtTypes(mockCtx, "100.100.100.100")
 	assert.Equal(t, []string([]string{}), res, "It should be same")
 
 }

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -30,7 +31,9 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
-	uuid "github.com/satori/go.uuid"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
+	"github.com/google/uuid"
+	uu "github.com/satori/go.uuid"
 )
 
 // DBInterface hold interface for db functions
@@ -118,7 +121,12 @@ func GetStorageResources(ctx context.Context, oid string) map[string]interface{}
 }
 
 // AddConnectionMethods will add the connection method type and variant into DB
-func (e *DBInterface) AddConnectionMethods(ctx context.Context, connectionMethodConf []config.ConnectionMethodConf) error {
+func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) error {
+	aggTransactionID := uuid.New()
+	podName := os.Getenv("POD_NAME")
+	actionID := common.Actions[common.ActionKey{Service: "AggregationService", Uri: "ConnectionMethods", Method: "GET"}].ActionID
+	actionName := common.Actions[common.ActionKey{Service: "AggregationService", Uri: "ConnectionMethods", Method: "GET"}].ActionName
+	ctx := agcommon.CreateContext(aggTransactionID.String(), actionID, actionName, "1", common.AggregationService, podName)
 	connectionMethodsKeys, err := e.GetAllKeysFromTableInterface(ctx, "ConnectionMethod")
 	if err != nil {
 		l.Log.Error("Unable to get connection methods : " + err.Error())
@@ -149,7 +157,7 @@ func (e *DBInterface) AddConnectionMethods(ctx context.Context, connectionMethod
 				connectionMethodConf[i].ConnectionMethodType+":"+connectionMethodConf[i].ConnectionMethodVariant)
 			delete(connectionMethodInfo, connectionMethodID)
 		} else {
-			connectionMethodURI := "/redfish/v1/AggregationService/ConnectionMethods/" + uuid.NewV4().String()
+			connectionMethodURI := "/redfish/v1/AggregationService/ConnectionMethods/" + uu.NewV4().String()
 			connectionMethod := agmodel.ConnectionMethod{
 				ConnectionMethodType:    connectionMethodConf[i].ConnectionMethodType,
 				ConnectionMethodVariant: connectionMethodConf[i].ConnectionMethodVariant,
@@ -192,7 +200,12 @@ func (e *DBInterface) AddConnectionMethods(ctx context.Context, connectionMethod
 
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 // Whenever  any config file changes and events  will be  and  reload the configuration and verify the existing connection methods
-func TrackConfigFileChanges(ctx context.Context, dbInterface DBInterface, errChan chan error) {
+func TrackConfigFileChanges(dbInterface DBInterface, errChan chan error) {
+	trackTransactionID := uuid.New()
+	podName := os.Getenv("POD_NAME")
+	actionID := common.Actions[common.ActionKey{Service: "TrackConfigFileChanges", Uri: "TrackFile", Method: "GET"}].ActionID
+	actionName := common.Actions[common.ActionKey{Service: "TrackConfigFileChanges", Uri: "TrackFile", Method: "GET"}].ActionName
+	ctx := agcommon.CreateContext(trackTransactionID.String(), actionID, actionName, "1", common.AggregationService, podName)
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat
 	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, errChan)

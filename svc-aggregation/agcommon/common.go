@@ -31,7 +31,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
-	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
 	"github.com/google/uuid"
 	uu "github.com/satori/go.uuid"
 )
@@ -126,7 +125,7 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 	podName := os.Getenv("POD_NAME")
 	actionID := common.Actions[common.ActionKey{Service: "AggregationService", Uri: "ConnectionMethods", Method: "GET"}].ActionID
 	actionName := common.Actions[common.ActionKey{Service: "AggregationService", Uri: "ConnectionMethods", Method: "GET"}].ActionName
-	ctx := agcommon.CreateContext(aggTransactionID.String(), actionID, actionName, "1", common.AggregationService, podName)
+	ctx := CreateContext(aggTransactionID.String(), actionID, actionName, "1", common.AggregationService, podName)
 	connectionMethodsKeys, err := e.GetAllKeysFromTableInterface(ctx, "ConnectionMethod")
 	if err != nil {
 		l.Log.Error("Unable to get connection methods : " + err.Error())
@@ -205,7 +204,7 @@ func TrackConfigFileChanges(dbInterface DBInterface, errChan chan error) {
 	podName := os.Getenv("POD_NAME")
 	actionID := common.Actions[common.ActionKey{Service: "TrackConfigFileChanges", Uri: "TrackFile", Method: "GET"}].ActionID
 	actionName := common.Actions[common.ActionKey{Service: "TrackConfigFileChanges", Uri: "TrackFile", Method: "GET"}].ActionName
-	ctx := agcommon.CreateContext(trackTransactionID.String(), actionID, actionName, "1", common.AggregationService, podName)
+	ctx := CreateContext(trackTransactionID.String(), actionID, actionName, "1", common.AggregationService, podName)
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat
 	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, errChan)
@@ -215,7 +214,7 @@ func TrackConfigFileChanges(dbInterface DBInterface, errChan chan error) {
 			l.LogWithFields(ctx).Info(info) // new data arrives through eventChan channel
 			config.TLSConfMutex.RLock()
 			l.LogWithFields(ctx).Info("Updating connection method ")
-			err := dbInterface.AddConnectionMethods(ctx, config.Data.ConnectionMethodConf)
+			err := dbInterface.AddConnectionMethods(config.Data.ConnectionMethodConf)
 			if err != nil {
 				l.Log.Error("error while trying to Add connection methods:" + err.Error())
 			}

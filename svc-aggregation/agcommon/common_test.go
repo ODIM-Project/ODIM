@@ -45,6 +45,8 @@ func mockContext() context.Context {
 	return ctx
 }
 
+var mockCtx = mockContext()
+
 func TestAddConnectionMethods(t *testing.T) {
 	var e = DBInterface{
 		GetAllKeysFromTableInterface: stubGetAllkeys,

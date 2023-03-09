@@ -91,6 +91,7 @@ func main() {
 	task.GetSessionUserNameRPC = auth.GetSessionUserName
 	task.GetTaskStatusModel = tmodel.GetTaskStatus
 	task.GetAllTaskKeysModel = tmodel.GetAllTaskKeys
+	task.GetMultipleTaskKeysModel = tmodel.GetMultipleTaskKeys
 	task.TransactionModel = tmodel.Transaction
 	task.CreateTaskUtilHelper = task.CreateTaskUtil
 	task.DeleteTaskFromDBModel = tmodel.DeleteTaskFromDB

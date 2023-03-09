@@ -461,6 +461,37 @@ func (p *ConnPool) Read(table, key string) (string, *errors.Error) {
 	return string(data), nil
 }
 
+// ReadMultipleKeys function is used to read data for multiple keys from DB
+func (p *ConnPool) ReadMultipleKeys(key []interface{}) ([]string, *errors.Error) {
+	readConn := p.ReadPool.Get()
+	defer readConn.Close()
+	var (
+		value interface{}
+		err   error
+	)
+	value, err = readConn.Do("MGET", key...)
+	if err != nil {
+
+		if err.Error() == "redigo: nil returned" {
+			return nil, errors.PackError(errors.DBKeyNotFound, "no data with the key ", key, " found")
+		}
+		if errs, aye := isDbConnectError(err); aye {
+			return nil, errs
+		}
+		return nil, errors.PackError(errors.DBKeyFetchFailed, errorCollectingData, err)
+	}
+
+	if value == nil {
+		return nil, errors.PackError(errors.DBKeyNotFound, "no data with the key ", key, " found")
+	}
+
+	data, err := redis.Strings(value, err)
+	if err != nil {
+		return nil, errors.PackError(errors.UndefinedErrorType, "error while trying to convert the data into string: ", err)
+	}
+	return data, nil
+}
+
 // FindOrNull is a wrapper for Read function. If requested asset doesn't exist errors.DBKeyNotFound error returned by Read is converted to nil
 func (p *ConnPool) FindOrNull(table, key string) (string, error) {
 	r, e := p.Read(table, key)

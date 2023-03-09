@@ -208,6 +208,29 @@ func GetTaskStatus(ctx context.Context, taskID string, db common.DbType) (*Task,
 	return task, nil
 }
 
+// GetMultipleTaskKeys is used to get multiple keys
+func GetMultipleTaskKeys(ctx context.Context, taskIDs []interface{}, db common.DbType) (*[]Task, error) {
+	var task []Task
+	subtask := new(Task)
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		l.LogWithFields(ctx).Error("GetTaskStatus : error while trying to get DB Connection : " + err.Error())
+		return &task, fmt.Errorf("error while trying to connnect to DB: %v", err.Error())
+	}
+	taskData, err := connPool.ReadMultipleKeys(taskIDs)
+	if err != nil {
+		l.LogWithFields(ctx).Error("GetTaskStatus : Unable to read taskdata from DB: " + err.Error())
+		return &task, fmt.Errorf("error while trying to read from DB: %v", err.Error())
+	}
+	for _, data := range taskData {
+		if errs := json.Unmarshal([]byte(data), subtask); errs != nil {
+			return &task, fmt.Errorf("error while trying to unmarshal task data: %v", errs)
+		}
+		task = append(task, *subtask)
+	}
+	return &task, nil
+}
+
 // GetAllTaskKeys will collect all task keys available in the DB
 // Takes:
 //

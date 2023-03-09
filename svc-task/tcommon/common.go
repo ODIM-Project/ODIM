@@ -48,6 +48,12 @@ func GetStatusCode(taskState dmtf.TaskState, taskStatus string) int {
 func GetTaskResponse(statusCode int, message string) response.RPC {
 	var resp response.RPC
 
+	if statusCode == http.StatusNoContent {
+		resp.StatusCode = int32(statusCode)
+		resp.StatusMessage = response.ResourceRemoved
+		return resp
+	}
+
 	err := json.Unmarshal([]byte(message), &resp.Body)
 	if err == nil {
 		resp.StatusCode = int32(statusCode)

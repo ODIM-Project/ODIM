@@ -98,7 +98,7 @@ func TestAddFabricInvalidPluginID(t *testing.T) {
 	GetAllFabricPluginDetailsFunc = func(ctx context.Context) ([]string, error) { return []string{"dummy"}, nil }
 	resp = AddFabric(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "should be same")
-	GetAllFabricPluginDetailsFunc = func(ctx context.Context) ([]string, error) { return fabmodel.GetAllFabricPluginDetails(context.TODO()) }
+	GetAllFabricPluginDetailsFunc = func(ctx context.Context) ([]string, error) { return fabmodel.GetAllFabricPluginDetails(mockCtx) }
 
 }
 

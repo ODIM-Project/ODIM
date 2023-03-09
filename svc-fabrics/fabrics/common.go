@@ -147,16 +147,16 @@ func contactPlugin(ctx context.Context, req pluginContactRequest, errorMessage s
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 	resp.Location = pluginResponse.Header.Get("Location")
-	l.LogWithFields(ctx).Debug("Plugin response: ",string(body))
+	l.LogWithFields(ctx).Debug("Plugin response: ", string(body))
 	return body, pluginResponse.Header.Get("X-Auth-Token"), resp, nil
 }
 
 func callPlugin(req pluginContactRequest) (*http.Response, error) {
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.URL
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
+		req.ContactClient(mockCtx, reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
 	}
-	return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
+	return req.ContactClient(mockCtx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
 }
 
 // getPluginStatus checks the status of given plugin in configured interval
@@ -251,7 +251,7 @@ func (f *Fabrics) parseFabricsRequest(ctx context.Context, req *fabricsproto.Fab
 	l.LogWithFields(ctx).Info("Request url: " + req.URL)
 	fabID := getFabricID(req.URL)
 	l.LogWithFields(ctx).Info("Fabric UUID: " + fabID)
-	fabric, err := fabmodel.GetManagingPluginIDForFabricID(fabID,ctx)
+	fabric, err := fabmodel.GetManagingPluginIDForFabricID(fabID, ctx)
 	if err != nil {
 		errMsg := fmt.Sprintf("error while trying to get fabric Data: %v", err.Error())
 		l.LogWithFields(ctx).Error(errMsg)
@@ -317,7 +317,7 @@ func (f *Fabrics) parseFabricsRequest(ctx context.Context, req *fabricsproto.Fab
 			return contactRequest, resp, fmt.Errorf("error while trying to get JSON request body: %v", err)
 		}
 	}
-	l.LogWithFields(ctx).Debugf("response from parse fabric request: %s",string(fmt.Sprintf("%v", resp.Body)))
+	l.LogWithFields(ctx).Debugf("response from parse fabric request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return contactRequest, resp, nil
 }
 
@@ -380,7 +380,7 @@ func fillResponse(ctx context.Context, body []byte, location string, method stri
 
 	resp.StatusCode = statusCode
 	resp.StatusMessage = response.Success
-	
+
 	return resp
 
 }

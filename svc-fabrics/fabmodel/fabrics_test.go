@@ -265,19 +265,19 @@ func TesGetManagingPluginIDForFabricID(t *testing.T) {
 	assert.Equal(t, nil, err, "there should be no error")
 
 	// positive test case
-	fabric, err := GetManagingPluginIDForFabricID(fab.FabricUUID, mockCtx)
+	fabric, err := GetManagingPluginIDForFabricID(mockCtx, fab.FabricUUID)
 	assert.Equal(t, nil, err, "there should be no error")
 	assert.Equal(t, "12345", fabric.FabricUUID, "fabric uuid should be 12345")
 	assert.Equal(t, "CFM", fabric.PluginID, "plugin id should be CFM")
 
 	// negative test case
-	fabric, err = GetManagingPluginIDForFabricID("54321", mockCtx)
+	fabric, err = GetManagingPluginIDForFabricID(mockCtx, "54321")
 	assert.NotNil(t, err, "there should be an error")
 
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
-	_, err = GetManagingPluginIDForFabricID("54321", mockCtx)
+	_, err = GetManagingPluginIDForFabricID(mockCtx, "54321")
 
 	assert.NotNil(t, err, "There should be an error")
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
@@ -338,10 +338,10 @@ func TestFabric_RemoveFabricData(t *testing.T) {
 	fab1.AddFabricData(mockCtx, "12345")
 	fab1.RemoveFabricData(mockCtx, "12345")
 
-	_, err := GetManagingPluginIDForFabricID("12345", mockCtx)
+	_, err := GetManagingPluginIDForFabricID(mockCtx, "12345")
 	assert.NotNil(t, err, "There should be an error ")
 	mockFabricData("12345", "AFC")
-	_, err = GetManagingPluginIDForFabricID("12345", mockCtx)
+	_, err = GetManagingPluginIDForFabricID(mockCtx, "12345")
 	assert.Nil(t, err, "There should no error ")
 
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {

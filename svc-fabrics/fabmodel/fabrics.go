@@ -89,8 +89,8 @@ func GetAllFabricPluginDetails(ctx context.Context) ([]string, error) {
 }
 
 // AddFabricData will add the fabric uuid and pluginid details into ondisk
-func (fabric *Fabric) AddFabricData(ctx context.Context,fabuuid string) error {
-	l.LogWithFields(ctx).Debugf("UUID of Fabric to be added: %s",fabuuid)
+func (fabric *Fabric) AddFabricData(ctx context.Context, fabuuid string) error {
+	l.LogWithFields(ctx).Debugf("UUID of Fabric to be added: %s", fabuuid)
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return errors.PackError(errors.UndefinedErrorType, err)
@@ -109,8 +109,8 @@ func (fabric *Fabric) AddFabricData(ctx context.Context,fabuuid string) error {
 }
 
 // RemoveFabricData will remove the fabric uuid and pluginid details into ondisk
-func (fabric *Fabric) RemoveFabricData(ctx context.Context,fabuuid string) error {
-	l.LogWithFields(ctx).Debugf("UUID of Fabric to be removed: %s",fabuuid)
+func (fabric *Fabric) RemoveFabricData(ctx context.Context, fabuuid string) error {
+	l.LogWithFields(ctx).Debugf("UUID of Fabric to be removed: %s", fabuuid)
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return errors.PackError(errors.UndefinedErrorType, err)
@@ -125,7 +125,7 @@ func (fabric *Fabric) RemoveFabricData(ctx context.Context,fabuuid string) error
 }
 
 //GetManagingPluginIDForFabricID fetches the fabric details
-func GetManagingPluginIDForFabricID(fabID string, ctx context.Context) (Fabric, error) {
+func GetManagingPluginIDForFabricID(ctx context.Context,fabID string) (Fabric, error) {
 	var fabric Fabric
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
@@ -151,7 +151,7 @@ func GetAllTheFabrics(ctx context.Context) ([]Fabric, error) {
 		return nil, err
 	}
 	keys, err := conn.GetAllDetails("Fabric")
-	l.LogWithFields(ctx).Debug("all keys from fabric database:",keys)
+	l.LogWithFields(ctx).Debug("all keys from fabric database:", keys)
 	if err != nil {
 		return nil, err
 	}
@@ -168,6 +168,6 @@ func GetAllTheFabrics(ctx context.Context) ([]Fabric, error) {
 		fabrics = append(fabrics, fabric)
 
 	}
-	l.LogWithFields(ctx).Debug("All fabrics: ",fabrics)
+	l.LogWithFields(ctx).Debug("All fabrics: ", fabrics)
 	return fabrics, nil
 }

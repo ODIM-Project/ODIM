@@ -154,9 +154,9 @@ func contactPlugin(ctx context.Context, req pluginContactRequest, errorMessage s
 func callPlugin(req pluginContactRequest) (*http.Response, error) {
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.URL
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
-		req.ContactClient(mockCtx, reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
+		req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, "", "", req.PostBody, req.LoginCredential)
 	}
-	return req.ContactClient(mockCtx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
+	return req.ContactClient(context.TODO(), reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
 }
 
 // getPluginStatus checks the status of given plugin in configured interval
@@ -251,7 +251,7 @@ func (f *Fabrics) parseFabricsRequest(ctx context.Context, req *fabricsproto.Fab
 	l.LogWithFields(ctx).Info("Request url: " + req.URL)
 	fabID := getFabricID(req.URL)
 	l.LogWithFields(ctx).Info("Fabric UUID: " + fabID)
-	fabric, err := fabmodel.GetManagingPluginIDForFabricID(fabID, ctx)
+	fabric, err := fabmodel.GetManagingPluginIDForFabricID(ctx, fabID)
 	if err != nil {
 		errMsg := fmt.Sprintf("error while trying to get fabric Data: %v", err.Error())
 		l.LogWithFields(ctx).Error(errMsg)
@@ -458,6 +458,7 @@ func validateReqParamsCase(ctx context.Context, req *fabricsproto.FabricRequest)
 	return resp, nil
 }
 
+// TrackConfigFileChanges to track config changes
 func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat

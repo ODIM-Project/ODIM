@@ -40,6 +40,8 @@ func mockContext() context.Context {
 	return ctx
 }
 
+var mockCtx = mockContext()
+
 func TestAddFabric(t *testing.T) {
 	ctx := mockContext()
 	config.SetUpMockConfig(t)

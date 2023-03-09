@@ -145,7 +145,7 @@ func TestGetManagerLinkDetails(t *testing.T) {
 	assert.Equal(t, serverLink, response.Links.ManagerForServers, "ManagerForServers should be returned.")
 	assert.Equal(t, managerLink, response.Links.ManagerForManagers, "ManagerForManagers should be returned.")
 
-	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+	jsonUnMarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	response, err := e.getManagerDetails(ctx, "/redfish/v1/Managers/uuid.1")
@@ -162,7 +162,7 @@ func TestGetManagerInvalidID(t *testing.T) {
 	response := e.GetManagers(ctx, req)
 
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound")
-	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+	jsonUnMarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	response = e.GetManagers(ctx, req)
@@ -330,7 +330,7 @@ func TestVirtualMediaActionsResource(t *testing.T) {
 	response := e.VirtualMediaActions(ctx, req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
-	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+	requestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "test", &errors.Error{}
 	}
 	response = e.VirtualMediaActions(ctx, req)
@@ -360,7 +360,7 @@ func TestVirtualMediaActionsResource(t *testing.T) {
 		"writeProtected":true,
 		"inserted":true}`),
 	}
-	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+	requestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
 	}
 	response = e.VirtualMediaActions(ctx, req)
@@ -424,7 +424,7 @@ func TestCreateRemoteAccountService(t *testing.T) {
 	}
 	e.CreateRemoteAccountService(ctx, req, taskID)
 
-	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+	requestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", &errors.Error{}
 	}
 
@@ -443,7 +443,7 @@ func TestCreateRemoteAccountService(t *testing.T) {
                                  "password":"Password",
                                  "roleId":"Administrator"}`),
 	}
-	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+	requestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
 	}
 
@@ -499,7 +499,7 @@ func TestUpdateRemoteAccountService(t *testing.T) {
 	}
 	e.UpdateRemoteAccountService(ctx, req, taskID)
 
-	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+	requestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", &errors.Error{}
 	}
 	e.UpdateRemoteAccountService(ctx, req, taskID)

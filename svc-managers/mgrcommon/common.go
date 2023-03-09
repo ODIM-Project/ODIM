@@ -38,11 +38,11 @@ import (
 )
 
 var (
-	GetPluginTokenFunc = GetPluginToken
-	GetPluginDataFunc  = mgrmodel.GetPluginData
-	StringEqualFold    = strings.EqualFold
-	ContactPluginFunc  = ContactPlugin
-	JSON_UnmarshalFunc = json.Unmarshal
+	getPluginTokenFunc = GetPluginToken
+	getPluginDataFunc  = mgrmodel.GetPluginData
+	stringEqualFold    = strings.EqualFold
+	contactPluginFunc  = ContactPlugin
+	jsonUnmarshalFunc  = json.Unmarshal
 )
 
 // PluginContactRequest  hold the request of contact plugin
@@ -62,7 +62,7 @@ type ResponseStatus struct {
 	StatusMessage string
 }
 
-// PluginContactRequest hold the task information from plugin
+// PluginTaskInfo hold the task information from plugin
 type PluginTaskInfo struct {
 	Location         string
 	PluginIP         string
@@ -81,6 +81,7 @@ type ResourceInfoRequest struct {
 	BmcUpdatedCreds       *BmcUpdatedCreds
 }
 
+// BmcUpdatedCreds holds the updated credentials of a BMC
 type BmcUpdatedCreds struct {
 	UserName        string
 	UpdatedPassword string
@@ -124,15 +125,15 @@ func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) (PluginTa
 		return pluginTaskInfo, common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
 	}
 	// Get the Plugin info
-	plugin, gerr := GetPluginDataFunc(target.PluginID)
+	plugin, gerr := getPluginDataFunc(target.PluginID)
 	if gerr != nil {
 		return pluginTaskInfo, common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
 	}
 	var contactRequest PluginContactRequest
 	contactRequest.ContactClient = req.ContactClient
 	contactRequest.Plugin = plugin
-	if StringEqualFold(plugin.PreferredAuthType, "XAuthToken") {
-		token := GetPluginTokenFunc(ctx, contactRequest)
+	if stringEqualFold(plugin.PreferredAuthType, "XAuthToken") {
+		token := getPluginTokenFunc(ctx, contactRequest)
 		if token == "" {
 			var errorMessage = "error while trying to create session with plugin " + plugin.ID
 			return pluginTaskInfo, common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
@@ -160,7 +161,7 @@ func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) (PluginTa
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = req.HTTPMethod
 	//target.PostBody = req.RequestBody
-	body, _, pluginTaskInfo, getResp, err := ContactPluginFunc(ctx, contactRequest, "error while performing virtual media actions "+contactRequest.OID+": ")
+	body, _, pluginTaskInfo, getResp, err := contactPluginFunc(ctx, contactRequest, "error while performing virtual media actions "+contactRequest.OID+": ")
 	if err != nil {
 		resp.StatusCode = getResp.StatusCode
 		json.Unmarshal(body, &resp.Body)
@@ -170,7 +171,7 @@ func DeviceCommunication(ctx context.Context, req ResourceInfoRequest) (PluginTa
 
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	err = JSON_UnmarshalFunc(body, &resp.Body)
+	err = jsonUnmarshalFunc(body, &resp.Body)
 	if err != nil {
 		return pluginTaskInfo, common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
@@ -186,7 +187,7 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) (st
 		return "", gerr
 	}
 	// Get the Plugin info
-	plugin, gerr := GetPluginDataFunc(target.PluginID)
+	plugin, gerr := getPluginDataFunc(target.PluginID)
 	if gerr != nil {
 		return "", gerr
 	}
@@ -436,7 +437,7 @@ func TranslateToSouthBoundURL(url string) string {
 	return url
 }
 
-// UpdateTaskData update the task with the given data
+// UpdateTask update the task with the given data
 func UpdateTask(ctx context.Context, taskData common.TaskData) error {
 	var res map[string]interface{}
 	if err := json.Unmarshal([]byte(taskData.TaskRequest), &res); err != nil {

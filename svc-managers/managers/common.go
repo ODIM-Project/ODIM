@@ -52,7 +52,7 @@ type DB struct {
 	GetResource         func(string, string) (string, *errors.Error)
 }
 
-// DB struct to inject the rpc call to other services
+// RPC struct to inject the rpc call to other services
 type RPC struct {
 	UpdateTask func(context.Context, common.TaskData) error
 }

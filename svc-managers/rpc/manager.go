@@ -341,6 +341,9 @@ func (m *Managers) DeleteRemoteAccountService(ctx context.Context, req *managers
 	return &resp, nil
 }
 
+// CreateTaskAndResponse will create the task for corresponding request using
+// the RPC call to task service and it will prepare custom task response to the user
+// The function returns the ID of created task back.
 func CreateTaskAndResponse(ctx context.Context, m *Managers, sessionToken string, resp *managersproto.ManagerResponse) (string, error) {
 	sessionUserName, err := m.GetSessionUserName(sessionToken)
 	if err != nil {

@@ -163,6 +163,7 @@ func (i *CommonInterface) GetResourceInfoFromDevice(ctx context.Context, req Res
 			return "", err
 		}
 	}
+	l.LogWithFields(ctx).Debugf("final response for get resource info request: %s", updatedData)
 	return updatedData, nil
 }
 
@@ -254,6 +255,7 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 	if pluginResponse.StatusCode == http.StatusAccepted {
 		return []byte(data), pluginResponse.Header.Get("Location"), resp, nil
 	}
+	l.LogWithFields(ctx).Debugf("final response for contact plugin request: %s", data)
 	return []byte(data), pluginResponse.Header.Get("X-Auth-Token"), resp, nil
 }
 
@@ -302,6 +304,7 @@ func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, 
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "BasicAuth") {
 		return req.ContactClient(ctx, reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
+	l.LogWithFields(ctx).Debugf("plugin request URL: %s", reqURL)
 	return req.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
 func TrackConfigFileChanges(errChan chan error) {

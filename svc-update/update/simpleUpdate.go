@@ -52,7 +52,7 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 	targetURI := "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
 
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
-
+	l.LogWithFields(ctx).Debug("task info payload: ", taskInfo)
 	var updateRequest SimpleUpdateRequest
 	err := json.Unmarshal(req.RequestBody, &updateRequest)
 	if err != nil {
@@ -168,6 +168,8 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 		e.External.UpdateTask(ctx, task)
 		runtime.Goexit()
 	}
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("final response for simple update request: %s", string(respBody))
 	return resp
 }
 
@@ -188,7 +190,6 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 	}
 
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: subTaskID, TargetURI: serverURI, UpdateTask: e.External.UpdateTask, TaskRequest: updateRequestBody}
-
 	var percentComplete int32
 	target, gerr := e.External.GetTarget(uuid)
 	if gerr != nil {
@@ -208,12 +209,12 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 			return
 		}
 	}
+	l.LogWithFields(ctx).Debugf("payload to plugin : %s", updateRequestBody)
 	updateRequestBody = strings.Replace(string(updateRequestBody), uuid+".", "", -1)
 	//replacing the reruest url with south bound translation URL
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
 	}
-
 	decryptedPasswordByte, err := e.External.DevicePassword(target.Password)
 	if err != nil {
 		subTaskChannel <- http.StatusInternalServerError
@@ -264,6 +265,7 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 	}
 
 	target.PostBody = []byte(updateRequestBody)
+	l.LogWithFields(ctx).Debugf("updated payload to plugin : %s", updateRequestBody)
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost

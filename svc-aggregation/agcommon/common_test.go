@@ -36,14 +36,17 @@ import (
 
 func mockContext() context.Context {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
-	ctx = context.WithValue(ctx, common.ActionID, "001")
-	ctx = context.WithValue(ctx, common.ActionName, "xyz")
-	ctx = context.WithValue(ctx, common.ThreadID, "0")
-	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
-	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	ctx = context.WithValue(ctx, common.Key(common.TransactionID), "xyz")
+	ctx = context.WithValue(ctx, common.Key(common.ActionID), "001")
+	ctx = context.WithValue(ctx, common.Key(common.ActionName), "xyz")
+	ctx = context.WithValue(ctx, common.Key(common.ThreadID), "0")
+	ctx = context.WithValue(ctx, common.Key(common.ThreadName), "xyz")
+	ctx = context.WithValue(ctx, common.Key(common.ProcessName), "xyz")
 	return ctx
 }
+
+var mockCtx = mockContext()
+
 func TestAddConnectionMethods(t *testing.T) {
 	var e = DBInterface{
 		GetAllKeysFromTableInterface: stubGetAllkeys,
@@ -126,15 +129,15 @@ var connectionMethod = []string{"/redfish/v1/AggregationService/ConnectionMethod
 	"/redfish/v1/AggregationService/ConnectionMethods/1234567545691234g",
 	"/redfish/v1/AggregationService/ConnectionMethods/1234567545691234h"}
 
-func stubGetAllkeys(tableName string) ([]string, error) {
+func stubGetAllkeys(ctx context.Context, tableName string) ([]string, error) {
 	return connectionMethod, nil
 }
 
-func invalidGetAllkeys(tableName string) ([]string, error) {
+func invalidGetAllkeys(ctx context.Context, tableName string) ([]string, error) {
 	return nil, errors.PackError(0, "error while trying to connecting to DB: ")
 }
 
-func invalidGetConnectionMethod(key string) (agmodel.ConnectionMethod, *errors.Error) {
+func invalidGetConnectionMethod(ctx context.Context, key string) (agmodel.ConnectionMethod, *errors.Error) {
 	return agmodel.ConnectionMethod{}, errors.PackError(0, "error while trying to connecting to DB: ")
 }
 
@@ -146,7 +149,7 @@ func invalidDeleteConnectionMethod(table, key string, dbtype common.DbType) *err
 	return errors.PackError(0, "error while trying to connecting to DB: ")
 }
 
-func stubGetConnectionMethod(key string) (agmodel.ConnectionMethod, *errors.Error) {
+func stubGetConnectionMethod(ctx context.Context, key string) (agmodel.ConnectionMethod, *errors.Error) {
 	if key == "/redfish/v1/AggregationService/ConnectionMethods/1234567545691234f" {
 		return agmodel.ConnectionMethod{
 			ConnectionMethodType:    "Redfish",
@@ -217,13 +220,13 @@ func mockData(t *testing.T, dbType common.DbType, table, id string, data interfa
 func TestGetStorageResources(t *testing.T) {
 	config.SetUpMockConfig(t)
 	storageURI := "/redfish/v1/Systems/12345677651245-12341/Storage"
-	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
+	GetResourceDetailsFunc = func(ctx context.Context, key string) (string, *errors.Error) {
 		return "", errors.PackError(0, "error while trying to connecting to DB: ")
 	}
 	ctx := mockContext()
 	resp := GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "There should be an error ")
-	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
+	GetResourceDetailsFunc = func(ctx context.Context, key string) (string, *errors.Error) {
 		return string([]byte(`{"user":"name"}`)), nil
 	}
 	resp = GetStorageResources(ctx, storageURI)
@@ -233,13 +236,13 @@ func TestGetStorageResources(t *testing.T) {
 func TestGetStorageResources_invalidJson(t *testing.T) {
 	config.SetUpMockConfig(t)
 	storageURI := "/redfish/v1/Systems/12345677651245-12341/Storage"
-	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
+	GetResourceDetailsFunc = func(ctx context.Context, key string) (string, *errors.Error) {
 		return "", errors.PackError(0, "error while trying to connecting to DB: ")
 	}
 	ctx := mockContext()
 	resp := GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "There should be an error ")
-	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
+	GetResourceDetailsFunc = func(ctx context.Context, key string) (string, *errors.Error) {
 		return string([]byte(`{"user":"name"}`)), nil
 	}
 	JSONUnMarshalFunc = func(data []byte, v interface{}) error {
@@ -421,7 +424,7 @@ func TestLookupPlugin(t *testing.T) {
 func TestGetDeviceSubscriptionDetails(t *testing.T) {
 	config.SetUpMockConfig(t)
 	var data = ""
-	res, _, _ := GetDeviceSubscriptionDetails("10.0.0.0")
+	res, _, _ := GetDeviceSubscriptionDetails(mockCtx, "10.0.0.0")
 	assert.Equal(t, res, data, "It should be same")
 
 }
@@ -451,7 +454,7 @@ func TestGetSearchKey(t *testing.T) {
 
 func TestGetSubscribedEvtTypes(t *testing.T) {
 	config.SetUpMockConfig(t)
-	res, _ := GetSubscribedEvtTypes("100.100.100.100")
+	res, _ := GetSubscribedEvtTypes(mockCtx, "100.100.100.100")
 	assert.Equal(t, []string([]string{}), res, "It should be same")
 
 }
@@ -469,7 +472,7 @@ func TestGetSubscribedEvtTypes_fail(t *testing.T) {
 		}
 	}()
 	mockGetEventSubscriptionsFunc("*" + "100.100.100.100" + "*")
-	res, _ := GetSubscribedEvtTypes("100.100.100.100")
+	res, _ := GetSubscribedEvtTypes(mockCtx, "100.100.100.100")
 	assert.Equal(t, []string([]string{}), res, "It should be same")
 
 }
@@ -597,7 +600,7 @@ func TestContactPlugin(t *testing.T) {
 
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
-	_, err = ContactPlugin(context.TODO(), contactRequest, "")
+	_, err = ContactPlugin(mockCtx, contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }
 
@@ -622,7 +625,7 @@ func TestContactPlugin_XAuth(t *testing.T) {
 
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
-	_, err = ContactPlugin(context.TODO(), contactRequest, "")
+	_, err = ContactPlugin(mockCtx, contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }
 
@@ -825,10 +828,10 @@ func MockInvalidGetAllSystems() ([]string, error) {
 
 func TestCreateContext(t *testing.T) {
 	ctx := CreateContext("123", "001", "TestAction", "0", "Test-svc-aggregation", "TestCreateContext")
-	assert.Equal(t, ctx.Value("transactionid"), "123", "Context id  is not the same")
-	assert.Equal(t, ctx.Value("actionid"), "001", "Context  actionId is not the same")
-	assert.Equal(t, ctx.Value("actionname"), "TestAction", "Context actionName is not the same")
-	assert.Equal(t, ctx.Value("threadid"), "0", "Context threadId is not the same")
-	assert.Equal(t, ctx.Value("threadname"), "Test-svc-aggregation", "Context threadName is not the same")
-	assert.Equal(t, ctx.Value("processname"), "TestCreateContext", "Context processName is not the same")
+	assert.Equal(t, ctx.Value(common.Key("transactionid")), "123", "Context id  is not the same")
+	assert.Equal(t, ctx.Value(common.Key("actionid")), "001", "Context  actionId is not the same")
+	assert.Equal(t, ctx.Value(common.Key("actionname")), "TestAction", "Context actionName is not the same")
+	assert.Equal(t, ctx.Value(common.Key("threadid")), "0", "Context threadId is not the same")
+	assert.Equal(t, ctx.Value(common.Key("threadname")), "Test-svc-aggregation", "Context threadName is not the same")
+	assert.Equal(t, ctx.Value(common.Key("processname")), "TestCreateContext", "Context processName is not the same")
 }

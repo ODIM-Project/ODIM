@@ -18,6 +18,7 @@ package system
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -67,6 +68,7 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 			"Password": string(plugin.Password),
 		}
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 		_, token, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 		if err != nil {
 			errMsg := err.Error()
@@ -85,7 +87,7 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	pluginContactRequest.DeviceInfo = saveSystem
 	pluginContactRequest.OID = "/ODIM/v1/validate"
 	pluginContactRequest.HTTPMethodType = http.MethodPost
-
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 	body, _, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while trying to authenticate the compute server: ")
 	if err != nil {
 		errMsg := err.Error()
@@ -337,7 +339,7 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	managerLinks := make(map[string]interface{})
 	var chassisLink, serverLink, listOfChassis, listOfServer []interface{}
 
-	data, jerr := agmodel.GetResource("Managers", managerURI)
+	data, jerr := agmodel.GetResource(ctx, "Managers", managerURI)
 	if jerr != nil {
 		errorMessage := "error getting manager details: " + jerr.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
@@ -392,6 +394,6 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil), "", nil
 	}
-
+	l.LogWithFields(ctx).Debugf("final response for add compute request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp, aggregationSourceID, ciphertext
 }

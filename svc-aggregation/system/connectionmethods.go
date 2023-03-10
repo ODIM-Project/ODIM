@@ -16,6 +16,7 @@ package system
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -31,7 +32,8 @@ import (
 
 // GetAllConnectionMethods is the handler for getting the connection methods collection
 func (e *ExternalInterface) GetAllConnectionMethods(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {
-	connectionMethods, err := e.GetAllKeysFromTable("ConnectionMethod")
+	l.LogWithFields(ctx).Debugf("get all connection methods request body: %s", string(fmt.Sprintf("%v", req.RequestBody)))
+	connectionMethods, err := e.GetAllKeysFromTable(ctx, "ConnectionMethod")
 	if err != nil {
 		l.LogWithFields(ctx).Error("error getting connection methods : " + err.Error())
 		errorMessage := err.Error()
@@ -59,12 +61,14 @@ func (e *ExternalInterface) GetAllConnectionMethods(ctx context.Context, req *ag
 		MembersCount: len(members),
 		Members:      members,
 	}
+	l.LogWithFields(ctx).Debugf("final response for get all connection methods request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
 // GetConnectionMethodInfo is the handler for getting the connection method
 func (e *ExternalInterface) GetConnectionMethodInfo(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {
-	connectionmethod, err := e.GetConnectionMethod(req.URL)
+	l.LogWithFields(ctx).Debugf("get connection method info request body: %s", string(fmt.Sprintf("%v", req.RequestBody)))
+	connectionmethod, err := e.GetConnectionMethod(ctx, req.URL)
 	if err != nil {
 		l.LogWithFields(ctx).Error("error getting  connectionmethod : " + err.Error())
 		errorMessage := err.Error()
@@ -98,5 +102,6 @@ func (e *ExternalInterface) GetConnectionMethodInfo(ctx context.Context, req *ag
 		ConnectionMethodVariant: connectionmethod.ConnectionMethodVariant,
 		Links:                   links,
 	}
+	l.LogWithFields(ctx).Debugf("final response for get connection method info request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }

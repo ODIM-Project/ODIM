@@ -79,6 +79,7 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, taskInfo)
 	}
+	l.LogWithFields(ctx).Debugf("reset request fields sent for validation: %s", string(req.RequestBody))
 	missedProperty, err := resetRequest.validateResetRequestFields(req.RequestBody)
 	if err != nil {
 		errMsg := "Unable to validate request fields: " + err.Error()
@@ -98,6 +99,7 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
 		return resp
 	}
+	l.LogWithFields(ctx).Debug("reset request data: ", resetRequest)
 	// subTaskChan is a buffered channel with buffer size equal to total number of resources.
 	// this also helps while cancelling the task. even if the reader is not available for reading
 	// the channel buffer will collect them and allows gracefull exit for already spanned goroutines.
@@ -106,8 +108,8 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 	var cancelled, partialResultFlag bool
 	var wg, writeWG sync.WaitGroup
 	threadID := 1
-	ctxt := context.WithValue(ctx, common.ThreadName, common.ResetAggregate)
-	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.ResetAggregate)
+	ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
 	threadID++
 	go func() {
 
@@ -150,8 +152,8 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 				e.aggregateSystems(ctx, resetRequest.ResetType, resource, taskID, string(req.RequestBody), subTaskChan, sessionUserName, resource, resetRequest.ResetType, &wg)
 			} else {
 				threadID := 1
-				resetCtx := context.WithValue(ctxt, common.ThreadName, common.ResetAggregate)
-				resetCtx = context.WithValue(resetCtx, common.ThreadID, strconv.Itoa(threadID))
+				resetCtx := context.WithValue(ctxt, common.Key(common.ThreadName), common.ResetAggregate)
+				resetCtx = context.WithValue(resetCtx, common.Key(common.ThreadID), strconv.Itoa(threadID))
 				go e.resetSystem(resetCtx, taskID, string(req.RequestBody), subTaskChan, sessionUserName, resource, resetRequest.ResetType, &wg)
 				threadID++
 			}
@@ -238,8 +240,8 @@ func (e *ExternalInterface) aggregateSystems(ctx context.Context, requestType, u
 	var cancelled, partialResultFlag bool
 
 	threadID := 1
-	ctxt := context.WithValue(ctx, common.ThreadName, common.SubTaskStatusUpdate)
-	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.SubTaskStatusUpdate)
+	ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
 	threadID++
 	var wg1, writeWG sync.WaitGroup
 	go func() {
@@ -273,8 +275,8 @@ func (e *ExternalInterface) aggregateSystems(ctx context.Context, requestType, u
 		wg1.Add(1)
 		writeWG.Add(1)
 		threadID := 1
-		resetCtxt := context.WithValue(ctxt, common.ThreadName, common.ResetSystem)
-		resetCtxt = context.WithValue(resetCtxt, common.ThreadID, strconv.Itoa(threadID))
+		resetCtxt := context.WithValue(ctxt, common.Key(common.ThreadName), common.ResetSystem)
+		resetCtxt = context.WithValue(resetCtxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
 		go e.resetSystem(resetCtxt, subTaskID, reqBody, subTaskChan1, sessionUserName, element.OdataID, requestType, &wg1)
 		threadID++
 	}

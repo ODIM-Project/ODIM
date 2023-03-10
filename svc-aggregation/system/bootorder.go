@@ -86,8 +86,8 @@ func (e *ExternalInterface) SetDefaultBootOrder(ctx context.Context, taskID stri
 	subTaskChannel := make(chan int32, len(setOrderReq.Systems))
 	for _, serverURI := range setOrderReq.Systems {
 		threadID := 1
-		ctxt := context.WithValue(ctx, common.ThreadName, common.CollectAndSetDefaultBootOrder)
-		ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+		ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.CollectAndSetDefaultBootOrder)
+		ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
 		go e.collectAndSetDefaultOrder(ctxt, taskID, serverURI.OdataID, string(req.RequestBody), subTaskChannel, sessionUserName)
 		threadID++
 	}
@@ -224,7 +224,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(ctx context.Context, taskI
 			"Password": string(plugin.Password),
 		}
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
-		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID, string(pluginContactRequest.Data))
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 		_, token, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while logging in to plugin: ")
 		if err != nil {
 			subTaskChannel <- getResponse.StatusCode
@@ -247,7 +247,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(ctx context.Context, taskI
 	pluginContactRequest.DeviceInfo = target
 	pluginContactRequest.OID = "/ODIM/v1/Systems/" + systemID + "/Actions/ComputerSystem.SetDefaultBootOrder"
 	pluginContactRequest.HTTPMethodType = http.MethodPost
-	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID, string(pluginContactRequest.Data))
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 	_, _, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while setting the default boot order: ")
 	if err != nil {
 		subTaskChannel <- getResponse.StatusCode

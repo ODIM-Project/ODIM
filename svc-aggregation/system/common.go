@@ -96,14 +96,14 @@ type ExternalInterface struct {
 	GetConnectionMethod      func(context.Context, string) (agmodel.ConnectionMethod, *errors.Error)
 	UpdateConnectionMethod   func(agmodel.ConnectionMethod, string) *errors.Error
 	GetPluginMgrAddr         func(string) (agmodel.Plugin, *errors.Error)
-	GetAggregationSourceInfo func(context.Context,string) (agmodel.AggregationSource, *errors.Error)
+	GetAggregationSourceInfo func(context.Context, string) (agmodel.AggregationSource, *errors.Error)
 	GenericSave              func([]byte, string, string) error
 	CheckActiveRequest       func(string) (bool, *errors.Error)
 	DeleteActiveRequest      func(string) *errors.Error
 	GetAllMatchingDetails    func(string, string, common.DbType) ([]string, *errors.Error)
 	CheckMetricRequest       func(string) (bool, *errors.Error)
 	DeleteMetricRequest      func(string) *errors.Error
-	GetResource              func(context.Context,string, string) (string, *errors.Error)
+	GetResource              func(context.Context, string, string) (string, *errors.Error)
 	Delete                   func(string, string, common.DbType) *errors.Error
 }
 
@@ -755,7 +755,7 @@ func (h *respHolder) getStorageInfo(ctx context.Context, progress int32, alotted
 	// Read system data from DB
 	systemURI := strings.Replace(req.OID, "/Storage", "", -1)
 	systemURI = strings.Replace(systemURI, "/Systems/", "/Systems/"+req.DeviceUUID+".", -1)
-	data, dbErr := agmodel.GetResource(context.TODO(),"ComputerSystem", systemURI)
+	data, dbErr := agmodel.GetResource(context.TODO(), "ComputerSystem", systemURI)
 	if dbErr != nil {
 		errMsg := fmt.Errorf("error while getting the systems data %v", dbErr.Error())
 		return "", progress, errMsg
@@ -1130,7 +1130,7 @@ func getFirmwareVersion(oid, deviceUUID string) (string, error) {
 	} else if len(keys) == 0 {
 		return "", fmt.Errorf("Manager data is not available")
 	}
-	data, dberr := agmodel.GetResource(context.TODO(),"Managers", keys[0])
+	data, dberr := agmodel.GetResource(context.TODO(), "Managers", keys[0])
 	if dberr != nil {
 		return "", fmt.Errorf("while getting the managers data: %v", dberr.Error())
 	}
@@ -1340,7 +1340,7 @@ func checkStatus(ctx context.Context, pluginContactRequest getResourceRequest, r
 	return response.RPC{}, getResponse.StatusCode, queueList
 }
 
-func getConnectionMethodVariants(ctx context.Context,connectionMethodVariant string) connectionMethodVariants {
+func getConnectionMethodVariants(ctx context.Context, connectionMethodVariant string) connectionMethodVariants {
 	// Split the connectionmethodvariant and get the PluginType, PreferredAuthType, PluginID and FirmwareVersion.
 	// Example: Compute:BasicAuth:GRF_v1.0.0
 	cm := strings.Split(connectionMethodVariant, ":")
@@ -1414,7 +1414,7 @@ func (e *ExternalInterface) storeTelemetryCollectionInfo(ctx context.Context, re
 		return progress, err
 	}
 
-	data, dbErr := e.GetResource(context.TODO(),resourceName, req.OID)
+	data, dbErr := e.GetResource(context.TODO(), resourceName, req.OID)
 	if dbErr != nil {
 		// if no resource found then save the metric data into db.
 		if err = e.GenericSave(body, resourceName, req.OID); err != nil {
@@ -1529,7 +1529,7 @@ func (e *ExternalInterface) createWildCard(resourceData, resourceName, oid strin
 	if err != nil {
 		return "", err
 	}
-	data, _ := e.GetResource(context.TODO(),resourceName, oid)
+	data, _ := e.GetResource(context.TODO(), resourceName, oid)
 	return formWildCard(data, resourceDataMap)
 }
 

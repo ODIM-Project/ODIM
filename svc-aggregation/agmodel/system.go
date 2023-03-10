@@ -472,7 +472,7 @@ func GetTarget(deviceUUID string) (*Target, error) {
 	if err := json.Unmarshal([]byte(data), &target); err != nil {
 		return nil, err
 	}
-	
+
 	return &target, nil
 }
 

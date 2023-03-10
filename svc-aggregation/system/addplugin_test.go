@@ -202,7 +202,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqSuccess,
-				cmVariants: getConnectionMethodVariants(context.TODO(),"Compute:BasicAuth:GRF_v2.0.0"),
+				cmVariants: getConnectionMethodVariants(context.TODO(), "Compute:BasicAuth:GRF_v2.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusCreated,
@@ -214,7 +214,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqExistingPlugin,
-				cmVariants: getConnectionMethodVariants(context.TODO(),"Compute:BasicAuth:ILO_v2.0.0"),
+				cmVariants: getConnectionMethodVariants(context.TODO(), "Compute:BasicAuth:ILO_v2.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
@@ -226,7 +226,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqInvalidAuthType,
-				cmVariants: getConnectionMethodVariants(context.TODO(),"Compute:BasicAuthentication:ILO_v2.0.0"),
+				cmVariants: getConnectionMethodVariants(context.TODO(), "Compute:BasicAuthentication:ILO_v2.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusBadRequest,
@@ -238,7 +238,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqInvalidPluginType,
-				cmVariants: getConnectionMethodVariants(context.TODO(),"plugin:BasicAuth:ILO_v2.0.0"),
+				cmVariants: getConnectionMethodVariants(context.TODO(), "plugin:BasicAuth:ILO_v2.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusBadRequest,
@@ -250,7 +250,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqExistingPluginBadPassword,
-				cmVariants: getConnectionMethodVariants(context.TODO(),"Compute:BasicAuth:PluginWithBadPassword_v2.0.0"),
+				cmVariants: getConnectionMethodVariants(context.TODO(), "Compute:BasicAuth:PluginWithBadPassword_v2.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
@@ -262,7 +262,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqExistingPluginBadData,
-				cmVariants: getConnectionMethodVariants(context.TODO(),"Compute:BasicAuth:PluginWithBadData_v2.0.0"),
+				cmVariants: getConnectionMethodVariants(context.TODO(), "Compute:BasicAuth:PluginWithBadData_v2.0.0"),
 			},
 
 			want: response.RPC{
@@ -276,7 +276,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqPluginWithDuplciateUUID,
-				cmVariants: getConnectionMethodVariants(context.TODO(),"Compute:BasicAuth:STGtest_v1.0.0"),
+				cmVariants: getConnectionMethodVariants(context.TODO(), "Compute:BasicAuth:STGtest_v1.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
@@ -377,7 +377,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqXAuthSuccess,
-				cmVariants: getConnectionMethodVariants(context.TODO(),"Compute:XAuthToken:GRF_v2.0.0"),
+				cmVariants: getConnectionMethodVariants(context.TODO(), "Compute:XAuthToken:GRF_v2.0.0"),
 			},
 
 			want: response.RPC{
@@ -390,7 +390,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqXAuthFail,
-				cmVariants: getConnectionMethodVariants(context.TODO(),"Compute:XAuthToken:ILO_v2.0.0"),
+				cmVariants: getConnectionMethodVariants(context.TODO(), "Compute:XAuthToken:ILO_v2.0.0"),
 			},
 
 			want: response.RPC{
@@ -403,7 +403,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqManagerGetFail,
-				cmVariants: getConnectionMethodVariants(context.TODO(),"Compute:XAuthToken:ILO_v2.0.0"),
+				cmVariants: getConnectionMethodVariants(context.TODO(), "Compute:XAuthToken:ILO_v2.0.0"),
 			},
 
 			want: response.RPC{
@@ -416,7 +416,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqInvalidManagerBody,
-				cmVariants: getConnectionMethodVariants(context.TODO(),"Compute:XAuthToken:ILO_v2.0.0"),
+				cmVariants: getConnectionMethodVariants(context.TODO(), "Compute:XAuthToken:ILO_v2.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusInternalServerError,

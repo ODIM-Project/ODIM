@@ -149,7 +149,7 @@ func checkDuplicateElements(elelments []agmodel.OdataID) bool {
 
 // GetAllAggregates is the handler for getting collection of aggregates
 func (e *ExternalInterface) GetAllAggregates(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {
-	aggregateKeys, err := agmodel.GetAllKeysFromTable(ctx,"Aggregate")
+	aggregateKeys, err := agmodel.GetAllKeysFromTable(ctx, "Aggregate")
 	if err != nil {
 		l.LogWithFields(ctx).Error("error getting aggregate : " + err.Error())
 		errorMessage := err.Error()
@@ -512,8 +512,8 @@ func (e *ExternalInterface) ResetElementsOfAggregate(ctx context.Context, taskID
 	var wg, writeWG sync.WaitGroup
 
 	threadID := 1
-	ctxt := context.WithValue(ctx, common.ThreadName, common.SubTaskStatusUpdate)
-	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.SubTaskStatusUpdate)
+	ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
 	threadID++
 	go func() {
 		for i := 0; i < len(aggregate.Elements); i++ {
@@ -553,8 +553,8 @@ func (e *ExternalInterface) ResetElementsOfAggregate(ctx context.Context, taskID
 		tempIndex = tempIndex + 1
 		if resetRequest.BatchSize == 0 || tempIndex <= resetRequest.BatchSize {
 			threadID = 1
-			resetCtx := context.WithValue(ctxt, common.ThreadName, common.ResetSystem)
-			resetCtx = context.WithValue(resetCtx, common.ThreadID, strconv.Itoa(threadID))
+			resetCtx := context.WithValue(ctxt, common.Key(common.ThreadName), common.ResetSystem)
+			resetCtx = context.WithValue(resetCtx, common.Key(common.ThreadID), strconv.Itoa(threadID))
 			go e.resetSystem(resetCtx, taskID, string(req.RequestBody), subTaskChan, sessionUserName, element.OdataID, resetRequest.ResetType, &wg)
 			threadID++
 		}
@@ -671,7 +671,7 @@ func (e *ExternalInterface) resetSystem(ctx context.Context, taskID, reqBody str
 			"Password": string(plugin.Password),
 		}
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
-		l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s",pluginContactRequest.OID, string(pluginContactRequest.Data))
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 		_, token, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while logging in to plugin: ")
 		if err != nil {
 			subTaskChan <- getResponse.StatusCode
@@ -696,7 +696,7 @@ func (e *ExternalInterface) resetSystem(ctx context.Context, taskID, reqBody str
 	pluginContactRequest.DeviceInfo = target
 	pluginContactRequest.OID = "/ODIM/v1/Systems/" + sysID + "/Actions/ComputerSystem.Reset"
 	pluginContactRequest.HTTPMethodType = http.MethodPost
-	l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s",pluginContactRequest.OID, string(pluginContactRequest.Data))
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 	respBody, location, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while reseting the computer system: ")
 
 	if err != nil {
@@ -792,8 +792,8 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(ctx context.C
 	subTaskChan := make(chan int32, len(aggregate.Elements))
 	for _, element := range aggregate.Elements {
 		threadID := 1
-		ctxt := context.WithValue(ctx, common.ThreadName, common.CollectAndSetDefaultBootOrder)
-		ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+		ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.CollectAndSetDefaultBootOrder)
+		ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
 		go e.collectAndSetDefaultOrder(ctxt, taskID, element.OdataID, reqJSON, subTaskChan, sessionUserName)
 		threadID++
 	}

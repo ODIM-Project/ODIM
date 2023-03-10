@@ -59,7 +59,7 @@ var connector = &system.ExternalInterface{
 	DeleteActiveRequest:      mockDeleteActiveRequest,
 }
 
-func mockGetAggregationSourceInfo(ctx context.Context,reqURI string) (agmodel.AggregationSource, *errors.Error) {
+func mockGetAggregationSourceInfo(ctx context.Context, reqURI string) (agmodel.AggregationSource, *errors.Error) {
 	var aggSource agmodel.AggregationSource
 	if reqURI == "/redfish/v1/AggregationService/AggregationSources/36474ba4-a201-46aa-badf-d8104da418e8" {
 		aggSource = agmodel.AggregationSource{
@@ -77,7 +77,7 @@ func mockGetAggregationSourceInfo(ctx context.Context,reqURI string) (agmodel.Ag
 	return aggSource, errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+reqURI+" found")
 }
 
-func mockGetAllKeysFromTable(ctx context.Context,table string) ([]string, error) {
+func mockGetAllKeysFromTable(ctx context.Context, table string) ([]string, error) {
 	if table == "ConnectionMethod" {
 		return []string{"/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}, nil
 	}
@@ -87,7 +87,7 @@ func mockGetAllKeysFromTable(ctx context.Context,table string) ([]string, error)
 func mockUpdateConnectionMethod(connectionMethod agmodel.ConnectionMethod, cmURI string) *errors.Error {
 	return nil
 }
-func mockGetConnectionMethod(ctx context.Context,ConnectionMethodURI string) (agmodel.ConnectionMethod, *errors.Error) {
+func mockGetConnectionMethod(ctx context.Context, ConnectionMethodURI string) (agmodel.ConnectionMethod, *errors.Error) {
 	var connMethod agmodel.ConnectionMethod
 	if ConnectionMethodURI == "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73" {
 		connMethod.ConnectionMethodType = "Redfish"

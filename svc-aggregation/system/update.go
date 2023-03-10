@@ -204,7 +204,7 @@ func (e *ExternalInterface) updateManagerAggregationSource(ctx context.Context, 
 			"Password": string(plugin.Password),
 		}
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
-		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 		_, token, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while creating the session: ")
 		if err != nil {
 			errMsg := err.Error()
@@ -222,7 +222,7 @@ func (e *ExternalInterface) updateManagerAggregationSource(ctx context.Context, 
 	// Verfiying the plugin Status
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 	pluginContactRequest.OID = "/ODIM/v1/Status"
-	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 	body, _, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err != nil {
 		errMsg := err.Error()
@@ -233,7 +233,7 @@ func (e *ExternalInterface) updateManagerAggregationSource(ctx context.Context, 
 	var managersMap map[string]interface{}
 	// Getting all managers info from plugin
 	pluginContactRequest.OID = "/ODIM/v1/Managers"
-	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 	body, _, getResponse, err = contactPlugin(ctx, pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err != nil {
 		errMsg := err.Error()
@@ -323,7 +323,7 @@ func (e *ExternalInterface) updateBMCAggregationSource(ctx context.Context, aggr
 			"Password": string(plugin.Password),
 		}
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
-		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 		_, token, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while logging in to plugin: ")
 		if err != nil {
 			errMsg := err.Error()
@@ -347,7 +347,7 @@ func (e *ExternalInterface) updateBMCAggregationSource(ctx context.Context, aggr
 	pluginContactRequest.DeviceInfo = saveSystem
 	pluginContactRequest.OID = "/ODIM/v1/validate"
 	pluginContactRequest.HTTPMethodType = http.MethodPost
-	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 	body, _, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while trying to authenticate the compute server: ")
 	if err != nil {
 		errMsg := err.Error()
@@ -366,7 +366,7 @@ func (e *ExternalInterface) updateBMCAggregationSource(ctx context.Context, aggr
 		// Get All systems
 		pluginContactRequest.OID = "/redfish/v1/Systems"
 		pluginContactRequest.HTTPMethodType = http.MethodGet
-		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 		body, _, getResponse, err = contactPlugin(ctx, pluginContactRequest, "error while trying to get system collection details: ")
 		if err != nil {
 			errMsg := err.Error()
@@ -384,7 +384,7 @@ func (e *ExternalInterface) updateBMCAggregationSource(ctx context.Context, aggr
 		for _, object := range systemMembers.([]interface{}) {
 			oDataID := object.(map[string]interface{})["@odata.id"].(string)
 			pluginContactRequest.OID = oDataID
-			l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",pluginContactRequest.OID,string(pluginContactRequest.Data))
+			l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 			body, _, getResponse, err = contactPlugin(ctx, pluginContactRequest, "error while trying to get system details: ")
 			if err != nil {
 				errMsg := err.Error()

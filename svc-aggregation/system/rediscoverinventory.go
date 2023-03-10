@@ -34,8 +34,9 @@ import (
 )
 
 const (
+	// RediscoverResourcesActionID action id
 	RediscoverResourcesActionID = "217"
-
+	// RediscoverResourcesActionName action name
 	RediscoverResourcesActionName = "RediscoverResources"
 )
 
@@ -98,7 +99,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 			"Password": string(plugin.Password),
 		}
 		req.OID = "/ODIM/v1/Sessions"
-		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",req.OID,string(req.Data))
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", req.OID, string(req.Data))
 		_, token, _, err := contactPlugin(ctx, req, "error while getting the details "+req.OID+": ")
 		if err != nil {
 			l.LogWithFields(ctx).Error(err.Error())
@@ -116,7 +117,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 	if strings.Contains(systemURL, "/Storage") {
 		systemURL = strings.Replace(systemURL, "/Storage", "", -1)
 	}
-	systemOperation, dbErr := agmodel.GetSystemOperationInfo(ctx,systemURL)
+	systemOperation, dbErr := agmodel.GetSystemOperationInfo(ctx, systemURL)
 	if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
 		l.LogWithFields(ctx).Error("Rediscovery for system: " + systemURL + " can't be processed " + dbErr.Error())
 		return
@@ -154,10 +155,10 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 	progress := int32(100)
 	systemsEstimatedWork := int32(75)
 	if strings.Contains(systemURL, "/Storage") {
-		l.LogWithFields(ctx).Debugf("get storage info request data for %s: %s",req.OID,string(req.Data))
+		l.LogWithFields(ctx).Debugf("get storage info request data for %s: %s", req.OID, string(req.Data))
 		_, progress, _ = h.getStorageInfo(ctx, progress, systemsEstimatedWork, req)
 	} else {
-		l.LogWithFields(ctx).Debugf("get system info request data for %s: %s",req.OID,string(req.Data))
+		l.LogWithFields(ctx).Debugf("get system info request data for %s: %s", req.OID, string(req.Data))
 		_, _, progress, _ = h.getSystemInfo(ctx, "", progress, systemsEstimatedWork, req)
 		h.InventoryData = make(map[string]interface{})
 		//rediscovering the Chassis Information
@@ -211,8 +212,8 @@ func (e *ExternalInterface) RediscoverResources() error {
 		serverBatchSize = 1
 	}
 	threadID := 1
-	ctxt := context.WithValue(ctx, common.ThreadName, common.RediscoverSystemInventory)
-	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.RediscoverSystemInventory)
+	ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
 	threadID++
 	var semaphoreChan = make(chan int, serverBatchSize)
 	for index := range targets {
@@ -276,7 +277,7 @@ func (e *ExternalInterface) getTargetSystemCollection(ctx context.Context, targe
 			"Password": string(plugin.Password),
 		}
 		req.OID = "/ODIM/v1/Sessions"
-		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",req.OID,string(req.Data))
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", req.OID, string(req.Data))
 		_, token, _, err := contactPlugin(ctx, req, "error while getting the details "+req.OID+": ")
 		if err != nil {
 			return nil, err
@@ -295,7 +296,7 @@ func (e *ExternalInterface) getTargetSystemCollection(ctx context.Context, targe
 	req.OID = "/redfish/v1/Systems"
 
 	// Make the call to Plugin with above request
-	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",req.OID,string(req.Data))
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", req.OID, string(req.Data))
 	body, _, _, err := contactPlugin(ctx, req, "error while trying to get the system collection details: ")
 	if err != nil {
 		return nil, fmt.Errorf("error while trying to get the system collection details")
@@ -306,7 +307,7 @@ func (e *ExternalInterface) getTargetSystemCollection(ctx context.Context, targe
 func (e *ExternalInterface) isServerRediscoveryRequired(ctx context.Context, deviceUUID string, systemKey string) bool {
 	systemKey = strings.TrimSuffix(systemKey, "/")
 	key := strings.Replace(systemKey, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+deviceUUID+".", -1)
-	_, err := agmodel.GetResource(ctx,"ComputerSystem", key)
+	_, err := agmodel.GetResource(ctx, "ComputerSystem", key)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err.Error())
 		l.LogWithFields(ctx).Info("Rediscovery required for the server with UUID: " + deviceUUID)
@@ -321,7 +322,7 @@ func (e *ExternalInterface) isServerRediscoveryRequired(ctx context.Context, dev
 		return true
 	}
 	for _, chassiskey := range keys {
-		if _, err = agmodel.GetResource(ctx,"Chassis", chassiskey); err != nil {
+		if _, err = agmodel.GetResource(ctx, "Chassis", chassiskey); err != nil {
 			l.LogWithFields(ctx).Error(err.Error())
 			l.LogWithFields(ctx).Info("Rediscovery required for the server with UUID: " + deviceUUID)
 			return true
@@ -335,7 +336,7 @@ func (e *ExternalInterface) isServerRediscoveryRequired(ctx context.Context, dev
 		return true
 	}
 	for _, managerKey := range keys {
-		if _, err = agmodel.GetResource(ctx,"Managers", managerKey); err != nil {
+		if _, err = agmodel.GetResource(ctx, "Managers", managerKey); err != nil {
 			l.LogWithFields(ctx).Error(err.Error())
 			l.LogWithFields(ctx).Info("Rediscovery required for the server with UUID: " + deviceUUID)
 			return true

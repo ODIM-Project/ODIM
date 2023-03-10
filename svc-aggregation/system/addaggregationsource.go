@@ -128,13 +128,13 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 		}
 	}()
 
-	connectionMethod, err1 := e.GetConnectionMethod(ctx,addResourceRequest.ConnectionMethod.OdataID)
+	connectionMethod, err1 := e.GetConnectionMethod(ctx, addResourceRequest.ConnectionMethod.OdataID)
 	if err1 != nil {
 		errMsg := "Unable to get connection method id: " + err1.Error()
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"connectionmethod id", addResourceRequest.ConnectionMethod.OdataID}, taskInfo)
 	}
-	cmVariants := getConnectionMethodVariants(ctx,connectionMethod.ConnectionMethodVariant)
+	cmVariants := getConnectionMethodVariants(ctx, connectionMethod.ConnectionMethodVariant)
 	var pluginContactRequest getResourceRequest
 	pluginContactRequest.ContactClient = e.ContactClient
 	pluginContactRequest.GetPluginStatus = e.GetPluginStatus

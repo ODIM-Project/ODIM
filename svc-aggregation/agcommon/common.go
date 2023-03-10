@@ -514,13 +514,15 @@ func SetPluginStatusRecord(plugin string, count int) {
 	return
 }
 
-func CreateContext(transactionId, actionId, actionName, threadId, threadName, ProcessName string) context.Context {
+// CreateContext creates a new context based on transactionId, actionId, actionName, threadId, threadName, ProcessName
+func CreateContext(transactionID, actionID, actionName, threadID, threadName, ProcessName string) context.Context {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, transactionId)
-	ctx = context.WithValue(ctx, common.ActionID, actionId)
-	ctx = context.WithValue(ctx, common.ActionName, actionName)
-	ctx = context.WithValue(ctx, common.ThreadID, threadId)
-	ctx = context.WithValue(ctx, common.ThreadName, threadName)
-	ctx = context.WithValue(ctx, common.ProcessName, ProcessName)
+	//using common.Key to avoid golint issues
+	ctx = context.WithValue(ctx, common.Key(common.TransactionID), transactionID)
+	ctx = context.WithValue(ctx, common.Key(common.ActionID), actionID)
+	ctx = context.WithValue(ctx, common.Key(common.ActionName), actionName)
+	ctx = context.WithValue(ctx, common.Key(common.ThreadID), threadID)
+	ctx = context.WithValue(ctx, common.Key(common.ThreadName), threadName)
+	ctx = context.WithValue(ctx, common.Key(common.ProcessName), ProcessName)
 	return ctx
 }

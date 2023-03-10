@@ -48,8 +48,9 @@ var (
 )
 
 const (
+	// PluginHealthCheckActionID action id for logging
 	PluginHealthCheckActionID = "216"
-
+	// PluginHealthCheckActionName action name for logging
 	PluginHealthCheckActionName = "PluginHealthCheck"
 )
 
@@ -87,7 +88,7 @@ func (e *ExternalInterface) SendStartUpData(ctx context.Context, startUpReq *agg
 
 	SendPluginStartUpData(ctx, startUpReq.OriginURI, plugin)
 	respBody := fmt.Sprintf("%v", resp.Body)
-	l.LogWithFields(ctx).Debugf("final response for send start up data: %s",string(respBody))
+	l.LogWithFields(ctx).Debugf("final response for send start up data: %s", string(respBody))
 	return resp
 }
 
@@ -107,8 +108,8 @@ func PerformPluginHealthCheck() {
 		} else {
 			for _, plugin := range pluginList {
 				threadID := 1
-				ctxt := context.WithValue(ctx, common.ThreadName, common.CheckPluginStatus)
-				ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+				ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.CheckPluginStatus)
+				ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
 				go checkPluginStatus(ctxt, &phc, plugin)
 				threadID++
 			}
@@ -181,7 +182,7 @@ func sharePluginInventory(ctx context.Context, plugin agmodel.Plugin, resyncSubs
 		pluginStartUpData.Devices = make(map[string]agmodel.DeviceData, phc.PluginConfig.StartUpResouceBatchSize)
 		for _, server := range batchedServersData {
 			evtSubsInfo := &agmodel.EventSubscriptionInfo{}
-			subsID, evtTypes, err := agcommon.GetDeviceSubscriptionDetails(ctx,server.ManagerAddress)
+			subsID, evtTypes, err := agcommon.GetDeviceSubscriptionDetails(ctx, server.ManagerAddress)
 			if err != nil {
 				l.LogWithFields(ctx).Error("failed to get event subscription details for " + server.ManagerAddress + ": " + err.Error())
 			} else {

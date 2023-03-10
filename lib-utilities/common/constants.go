@@ -18,7 +18,7 @@ package common
 // EventConst constant
 type EventConst int
 
-// Key type
+// key type
 type Key string
 
 const (

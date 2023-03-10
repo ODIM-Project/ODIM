@@ -828,10 +828,10 @@ func MockInvalidGetAllSystems() ([]string, error) {
 
 func TestCreateContext(t *testing.T) {
 	ctx := CreateContext("123", "001", "TestAction", "0", "Test-svc-aggregation", "TestCreateContext")
-	assert.Equal(t, ctx.Value("transactionid"), "123", "Context id  is not the same")
-	assert.Equal(t, ctx.Value("actionid"), "001", "Context  actionId is not the same")
-	assert.Equal(t, ctx.Value("actionname"), "TestAction", "Context actionName is not the same")
-	assert.Equal(t, ctx.Value("threadid"), "0", "Context threadId is not the same")
-	assert.Equal(t, ctx.Value("threadname"), "Test-svc-aggregation", "Context threadName is not the same")
-	assert.Equal(t, ctx.Value("processname"), "TestCreateContext", "Context processName is not the same")
+	assert.Equal(t, ctx.Value(common.Key("transactionid")), "123", "Context id  is not the same")
+	assert.Equal(t, ctx.Value(common.Key("actionid")), "001", "Context  actionId is not the same")
+	assert.Equal(t, ctx.Value(common.Key("actionname")), "TestAction", "Context actionName is not the same")
+	assert.Equal(t, ctx.Value(common.Key("threadid")), "0", "Context threadId is not the same")
+	assert.Equal(t, ctx.Value(common.Key("threadname")), "Test-svc-aggregation", "Context threadName is not the same")
+	assert.Equal(t, ctx.Value(common.Key("processname")), "TestCreateContext", "Context processName is not the same")
 }

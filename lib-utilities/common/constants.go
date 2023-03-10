@@ -153,14 +153,6 @@ const (
 	AggregationSourceType = "#AggregationSource.v1_2_0.AggregationSource"
 	//ChassisType has version to be returned with Chassis Service
 	ChassisType = "#Chassis.v1_20_0.Chassis"
-	// Aggregation service Action ID
-	AggActionID = "210"
-	// Aggregation service Action Name
-	AggActionName = "ConnectionMethods"
-	//Track Action ID
-	TrackActionID = "211"
-	//Track Action Name
-	TrackActionName = "TrackConfigFile"
 	// AggregateSubscriptionIndex is a index name which required for indexing
 	// subscription of aggregate
 	AggregateSubscriptionIndex = "AggregateToHost"

@@ -458,7 +458,7 @@ func validateReqParamsCase(ctx context.Context, req *fabricsproto.FabricRequest)
 	return resp, nil
 }
 
-// TrackConfigFileChanges to track config changes
+// TrackConfigFileChanges to dynamically track the config file changes
 func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat

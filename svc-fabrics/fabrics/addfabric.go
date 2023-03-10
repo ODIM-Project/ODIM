@@ -29,7 +29,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
 )
 
-// AddFabric holds the logic for Adding fabric
+// AddFabric holds the logic for Adding fabric 
 // It accepts post body and store the fabric details in DB
 func AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) response.RPC {
 	var resp response.RPC

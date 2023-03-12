@@ -119,8 +119,8 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string, error) {
 	return masterIP, masterPort, nil
 }
 
-// resetDBWriteConection is used to reset the WriteConnection Pool (inmemory / OnDisk).
-func resetDBWriteConection(dbFlag DbType) error {
+// resetDBWriteConnection is used to reset the WriteConnection Pool (inmemory / OnDisk).
+func resetDBWriteConnection(dbFlag DbType) error {
 	switch dbFlag {
 	case InMemory:
 		config := getInMemoryDBConfig()
@@ -221,7 +221,7 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 			inMemDBConnPool.PoolUpdatedTime = time.Now()
 		}
 		if inMemDBConnPool.WritePool == nil {
-			resetDBWriteConection(InMemory)
+			resetDBWriteConnection(InMemory)
 		}
 
 		return inMemDBConnPool, err
@@ -237,7 +237,7 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 			onDiskDBConnPool.PoolUpdatedTime = time.Now()
 		}
 		if onDiskDBConnPool.WritePool == nil {
-			resetDBWriteConection(OnDisk)
+			resetDBWriteConnection(OnDisk)
 		}
 		return onDiskDBConnPool, err
 	default:
@@ -904,6 +904,19 @@ func (p *ConnPool) AddResourceData(table, key string, data interface{}) *errors.
 		return errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
 	}
 	_, createErr := writeConn.Do("SET", saveID, jsondata)
+	if createErr != nil {
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+		return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
+	}
+
+	return nil
+}
+
+// SaveUndeliveredEvents method store undelivered event data in db
+// takes table name ,key data and connection pool as input
+func (p *ConnPool) SaveUndeliveredEvents(table, key string, data []byte, writeConn redis.Conn) *errors.Error {
+	saveID := table + ":" + key
+	_, createErr := writeConn.Do("SET", saveID, data)
 	if createErr != nil {
 		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
 		return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
@@ -1708,7 +1721,7 @@ func (p *ConnPool) DeleteAggregateHosts(index, aggregateID string) error {
 		return err
 	}
 	if len(value) < 1 {
-		return fmt.Errorf("No data found for the key: %v", aggregateID)
+		return fmt.Errorf("no data found for the key: %v", aggregateID)
 	}
 	for _, data := range value {
 		delErr := writeConn.Send("ZREM", index, data)
@@ -1761,7 +1774,6 @@ func (p *ConnPool) getAllDataFromSortedList(index string) (data interface{}, siz
 }
 
 // getDataAsStringList function convert list of interface into string
-// filter priority value from list
 func getDataAsStringList(d interface{}, size int) ([]string, int, error) {
 	dataList := make([]string, 0, size)
 	var nextCursor int = 0
@@ -1781,7 +1793,8 @@ func getDataAsStringList(d interface{}, size int) ([]string, int, error) {
 	return dataList, nextCursor, nil
 }
 
-// GetAllKeysFromDb will fetch all the keys which matches pattern present in the database
+// GetAllKeysFromDb will fetch all the keys which matches pattern present
+// in the database using scan command, return list of key and nextCursor
 func (p *ConnPool) GetAllKeysFromDb(table, pattern string, nextCursor int) ([]string, int, *errors.Error) {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
@@ -1828,7 +1841,8 @@ func (p *ConnPool) GetKeyValue(key string) (string, *errors.Error) {
 	return string(data), nil
 }
 
-// DeleteKey takes "key" sting as input which acts as a unique ID to delete specific data from DB
+// DeleteKey takes "key" sting as input which acts as a unique ID
+// to delete specific data from DB
 func (p *ConnPool) DeleteKey(key string) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
@@ -1843,6 +1857,23 @@ func (p *ConnPool) DeleteKey(key string) *errors.Error {
 			atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
 			return errors.PackError(errors.DBKeyNotFound, errs.Error())
 		}
+		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: ", doErr)
+	}
+	return nil
+}
+
+// EnableKeySpaceNotifier enable keyspace event notifications
+// takes notifierType ad filterType as input to set value to filter redis event
+func (p *ConnPool) EnableKeySpaceNotifier(notifierType, filterType string) *errors.Error {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	if writePool == nil {
+		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil ")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+
+	_, doErr := writeConn.Do("CONFIG", "SET", notifierType, filterType)
+	if doErr != nil {
 		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: ", doErr)
 	}
 	return nil

@@ -55,7 +55,7 @@ func GeneralError(statusCode int32, statusMsg, errMsg string, msgArgs []interfac
 		Code:    response.GeneralError,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
+			{
 				StatusMessage: resp.StatusMessage,
 				ErrorMessage:  errMsg,
 				MessageArgs:   msgArgs,

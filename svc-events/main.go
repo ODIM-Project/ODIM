@@ -16,8 +16,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
-	"net/http"
 	_ "net/http/pprof"
 	"os"
 
@@ -30,7 +28,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/consumer"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/rpc"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -134,19 +131,9 @@ func main() {
 		EMBConsume:      consumer.Consume,
 	}
 	go startUPInterface.SubscribePluginEMB(ctx)
-	ctx = context.WithValue(ctx, common.TransactionID, uuid.New())
 
-	//Remove after test
-	addProfiler()
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())
 	}
-}
-
-// Added for debug, should not merged in development
-func addProfiler() {
-	go func() {
-		log.Println(http.ListenAndServe(":6060", nil))
-	}()
 }

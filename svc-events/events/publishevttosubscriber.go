@@ -35,6 +35,7 @@ import (
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	fabricproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
@@ -49,24 +50,6 @@ var (
 	//ServiceDiscoveryFunc func pointer for calling the files
 	ServiceDiscoveryFunc = services.ODIMService.Client
 )
-
-// addFabric will add the new fabric resource to db when an event is ResourceAdded and
-// originofcondition has fabrics odataid.
-func (e *ExternalInterfaces) addFabric(ctx context.Context, message common.MessageData, host string) {
-	for _, inEvent := range message.Events {
-		if inEvent.OriginOfCondition == nil || len(inEvent.OriginOfCondition.Oid) < 1 {
-			continue
-		}
-		if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
-			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
-			e.addFabricRPCCall(ctx, inEvent.OriginOfCondition.Oid, host)
-		}
-		if strings.EqualFold(inEvent.EventType, "ResourceRemoved") &&
-			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
-			e.removeFabricRPCCall(ctx, inEvent.OriginOfCondition.Oid, host)
-		}
-	}
-}
 
 // PublishEventsToDestination This method sends the event/alert to subscriber's destination
 // Takes:
@@ -110,13 +93,10 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 	var flag bool
 	var deviceUUID string
 	var message, rawMessage common.MessageData
-
 	if err = json.Unmarshal([]byte(requestData), &rawMessage); err != nil {
 		logging.Error("failed to unmarshal the incoming event: ", requestData, " with the error: ", err.Error())
 		return false
 	}
-
-	e.addFabric(ctx, rawMessage, host)
 	systemId, err := getSourceId(host)
 	if err != nil {
 		logging.Info("no origin resources found in device subscriptions")
@@ -149,6 +129,14 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 				go rediscoverSystemInventory(ctx, deviceUUID, storageURI)
 				flag = true
 			}
+			if strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
+				if strings.EqualFold(inEvent.EventType, "ResourceAdded") {
+					e.addFabricRPCCall(ctx, rawMessage.Events[index].OriginOfCondition.Oid, host)
+				}
+				if strings.EqualFold(inEvent.EventType, "ResourceRemoved") {
+					e.removeFabricRPCCall(ctx, rawMessage.Events[index].OriginOfCondition.Oid, host)
+				}
+			}
 		}
 	}
 
@@ -172,7 +160,6 @@ func (e *ExternalInterfaces) publishMetricReport(ctx context.Context, requestDat
 	}
 	for _, sub := range subscriptions {
 		eventForwardingChanel <- evmodel.EventPost{Destination: sub.EventDestination.Destination, EventID: eventUniqueID, Message: []byte(requestData)}
-		// go e.postEvent()
 	}
 	return true
 }
@@ -285,25 +272,30 @@ func (e *ExternalInterfaces) postEvent(eventMessage evmodel.EventPost) {
 	resp, err := SendEventFunc(eventMessage.Destination, eventMessage.Message)
 	if err == nil {
 		resp.Body.Close()
-		logging.Info("Event is successfully forwarded")
-		// check any undelivered events are present in db for the destination and publish those
-		// go e.checkUndeliveredEvents(ctx, destination)
+		logging.Info("Event is successfully forwarded 1 ")
 		return
 	}
-	e.reAttemptEvents(eventMessage)
-
+	undeliveredEventID := eventMessage.Destination + ":" + eventMessage.EventID
+	eventMessage.UndeliveredEventID = undeliveredEventID
+	saveEventChanel <- eventMessage
+	if reAttemptInQueue[eventMessage.Destination] <= 5 {
+		e.reAttemptEvents(eventMessage)
+	}
 }
 
+// sendEvent function is forward data to destination
 func sendEvent(destination string, event []byte) (*http.Response, error) {
 	httpConf := &config.HTTPConfig{
 		CACertificate: &config.Data.KeyCertConf.RootCACertificate,
 	}
 	httpClient, err := httpConf.GetHTTPClientObj()
 	if err != nil {
+		l.Log.Error("failed to get http client object: ", err.Error())
 		return &http.Response{}, err
 	}
 	req, err := http.NewRequest("POST", destination, bytes.NewBuffer(event))
 	if err != nil {
+		l.Log.Error("error while getting new http request: ", err.Error())
 		return &http.Response{}, err
 	}
 	req.Close = true
@@ -312,26 +304,37 @@ func sendEvent(destination string, event []byte) (*http.Response, error) {
 	defer config.TLSConfMutex.RUnlock()
 	return httpClient.Do(req)
 }
-
 func (e *ExternalInterfaces) reAttemptEvents(eventMessage evmodel.EventPost) {
+	reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] + 1
 	var resp *http.Response
 	var err error
 	count := config.Data.EventConf.DeliveryRetryAttempts
 	for i := 0; i < count; i++ {
 		logging.Info("Retry event forwarding on destination: ")
 		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
+		// if undelivered event already published then ignore retrying
+		eventString, err := e.GetUndeliveredEvents(eventMessage.UndeliveredEventID)
+		if err != nil || len(eventString) < 1 {
+			l.Log.Info("Event is forwarded to destination")
+			reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] - 1
+			return
+		}
 		resp, err = SendEventFunc(eventMessage.Destination, eventMessage.Message)
 		if err == nil {
 			resp.Body.Close()
-			logging.Info("Event is successfully forwarded")
+			logging.Info("Event is successfully forwarded after reattempt ", count)
+			reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] - 1
+			err = e.DeleteUndeliveredEvents(eventMessage.UndeliveredEventID)
+			if err != nil {
+				l.Log.Error("error while deleting undelivered events: ", err.Error())
+			}
 			return
 		}
 	}
-	undeliveredEventID := eventMessage.Destination + ":" + eventMessage.EventID
-	serr := e.SaveUndeliveredEvents(undeliveredEventID, eventMessage.Message)
-	if serr != nil {
-		logging.Error("error while saving undelivered event: ", serr.Error())
+	if err != nil {
+		logging.Error("error while make https call to send the event: ", err.Error())
 	}
+	reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] - 1
 }
 
 // rediscoverSystemInventory will be triggered when ever the System Restart or Power On
@@ -471,27 +474,27 @@ func callPluginStartUp(ctx context.Context, event common.Events) {
 	logging.Info("successfully sent plugin startup data to " + event.IP)
 }
 
-func (e *ExternalInterfaces) checkUndeliveredEvents(ctx context.Context, destination string) {
+func (e *ExternalInterfaces) checkUndeliveredEvents(destination string) {
 	// first check any of the instance have already picked up for publishing
 	// undelivered events for the destination
 	flag, _ := e.GetUndeliveredEventsFlag(destination)
 	if !flag {
-		// if flag is false then set the flag true, so other instance shouldnt have to read the undelivered events and publish
+		// if flag is false then set the flag true, so other instance shouldn't have to read the undelivered events and publish
 		err := e.SetUndeliveredEventsFlag(destination)
 		if err != nil {
 			logging.Error("error while setting undelivered events flag: ", err.Error())
 		}
 		defer func() {
-			derr := e.DeleteUndeliveredEventsFlag(destination)
-			if derr != nil {
-				logging.Error("error while deleting undelivered events flag: ", derr.Error())
+			err := e.DeleteUndeliveredEventsFlag(destination)
+			if err != nil {
+				logging.Error("error while deleting undelivered events flag: ", err.Error())
 			}
 		}()
 		cursorCount := 0
 		for {
-			destData, tempCount, err1 := e.GetUndeliveredEventsKeyList(evmodel.UndeliveredEvents, destination, common.OnDisk, cursorCount)
-			if err1 != nil {
-				logging.Error("error while getting undelivered events keys : ", err.Error())
+			destData, tempCount, err := e.GetUndeliveredEventsKeyList(evmodel.UndeliveredEvents, destination, common.OnDisk, cursorCount)
+			if err != nil {
+				logging.Error("error while getting undelivered events list : ", err.Error())
 				return
 			}
 			cursorCount = tempCount
@@ -511,7 +514,8 @@ func (e *ExternalInterfaces) checkUndeliveredEvents(ctx context.Context, destina
 				}
 				if err != nil {
 					logging.Error("error while make https call to send the event: ", err.Error())
-					continue
+					time.Sleep(100 * time.Millisecond)
+					break
 				}
 				logging.Info("Event is successfully forwarded")
 				err = e.DeleteUndeliveredEvents(dest)
@@ -520,7 +524,7 @@ func (e *ExternalInterfaces) checkUndeliveredEvents(ctx context.Context, destina
 				}
 			}
 			if cursorCount == 0 {
-				return
+				break
 			}
 		}
 

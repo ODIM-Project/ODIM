@@ -82,9 +82,10 @@ type Fabric struct {
 
 // EventPost is the model for post data to client
 type EventPost struct {
-	Destination string
-	EventID     string
-	Message     []byte
+	Destination        string
+	EventID            string
+	UndeliveredEventID string
+	Message            []byte
 }
 
 // Aggregate is the model for Aggregate information

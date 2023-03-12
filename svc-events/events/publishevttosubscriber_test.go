@@ -37,8 +37,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-func TestPublishEventsToDestiantion(t *testing.T) {
+func TestPublishEventsToDestination(t *testing.T) {
 	config.SetUpMockConfig(t)
+	pc := getMockMethods()
+	pc.LoadSubscriptionData(mockContext())
+
 	messages := []common.MessageData{
 		{
 			OdataType: "#Event",
@@ -61,7 +64,6 @@ func TestPublishEventsToDestiantion(t *testing.T) {
 
 	ip := []string{"100.100.100.100", "100.100.100.100", "10.10.1.3", "10.10.1.3"}
 	mockCacheData()
-	pc := getMockMethods()
 	for i, v := range messages {
 		var event common.Events
 		event.IP = ip[i]
@@ -88,17 +90,21 @@ func TestPublishEventsToDestiantion(t *testing.T) {
 
 func TestPublishEventsWithEmptyOriginOfCondition(t *testing.T) {
 	common.SetUpMockConfig()
+	pc := getMockMethods()
+	pc.LoadSubscriptionData(mockContext())
+	mockCacheData()
 	message := common.MessageData{
 		OdataType: "#Event",
 		Events: []common.Event{
 			{
-				MemberID:       "1",
-				EventType:      "Alert",
-				EventID:        "123",
-				Severity:       "OK",
-				EventTimestamp: "",
-				Message:        "IndicatorChanged",
-				MessageID:      "IndicatorChanged",
+				MemberID:          "1",
+				EventType:         "Alert",
+				EventID:           "123",
+				Severity:          "OK",
+				EventTimestamp:    "",
+				Message:           "IndicatorChanged",
+				MessageID:         "IndicatorChanged",
+				OriginOfCondition: &common.Link{},
 			},
 		},
 	}
@@ -110,9 +116,8 @@ func TestPublishEventsWithEmptyOriginOfCondition(t *testing.T) {
 		t.Errorf("expected err is nil but got : %v", err)
 	}
 	event.Request = msg
-	pc := getMockMethods()
 	flag := pc.PublishEventsToDestination(evcommon.MockContext(), event)
-	assert.False(t, flag)
+	assert.True(t, flag)
 
 	// nil events
 	flag = pc.PublishEventsToDestination(evcommon.MockContext(), nil)
@@ -169,9 +174,11 @@ func TestPublishEventsToDestinationWithMultipleEvents(t *testing.T) {
 			},
 		},
 	}
-	mockCacheData()
+
 	ip := []string{"100.100.100.100", "100.100.100.100", "10.10.1.3", "10.10.1.3"}
 	pc := getMockMethods()
+	pc.LoadSubscriptionData(mockContext())
+	mockCacheData()
 	for i, v := range messages {
 		var event common.Events
 		event.IP = ip[i]
@@ -187,7 +194,8 @@ func TestPublishEventsToDestinationWithMultipleEvents(t *testing.T) {
 
 func TestExternalInterfaces_checkUndeliveredEvents(t *testing.T) {
 	pc := getMockMethods()
-	pc.checkUndeliveredEvents(evcommon.MockContext(), "dummy")
+	pc.checkUndeliveredEvents("dummy")
+	pc.LoadSubscriptionData(mockContext())
 	pc.DB.GetUndeliveredEventsFlag = func(s string) (bool, error) { return false, nil }
 	pc.DB.GetAllMatchingDetails = func(s1, s2 string, dt common.DbType) ([]string, *errors.Error) {
 		return []string{"/dummydestination"}, nil
@@ -195,13 +203,13 @@ func TestExternalInterfaces_checkUndeliveredEvents(t *testing.T) {
 	SendEventFunc = func(destination string, event []byte) (*http.Response, error) {
 		return &http.Response{Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, &errors.Error{}
 	}
-	pc.checkUndeliveredEvents(evcommon.MockContext(), "dummy")
+	pc.checkUndeliveredEvents("dummy")
 	SendEventFunc = func(destination string, event []byte) (*http.Response, error) {
 		return &http.Response{Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
 	}
-	pc.checkUndeliveredEvents(evcommon.MockContext(), "dummy")
+	pc.checkUndeliveredEvents("dummy")
 	pc.DB.GetUndeliveredEvents = func(s string) (string, error) { return "", &errors.Error{} }
-	pc.checkUndeliveredEvents(evcommon.MockContext(), "dummy")
+	pc.checkUndeliveredEvents("dummy")
 
 	SendEventFunc = func(destination string, event []byte) (*http.Response, error) {
 		return sendEvent(destination, event)
@@ -211,6 +219,8 @@ func TestExternalInterfaces_checkUndeliveredEvents(t *testing.T) {
 
 func Test_callPluginStartUp(t *testing.T) {
 	pc := getMockMethods()
+	config.SetUpMockConfig(t)
+	pc.LoadSubscriptionData(mockContext())
 	pc.publishMetricReport(evcommon.MockContext(), "")
 	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
 		return []evmodel.SubscriptionResource{{
@@ -280,8 +290,6 @@ func TestExternalInterfaces_postEvent(t *testing.T) {
 	isStringPresentInSlice(evcommon.MockContext(), []string{"data1"}, "", "data2")
 	isStringPresentInSlice(evcommon.MockContext(), []string{"data1"}, "data1", "data2")
 	isStringPresentInSlice(evcommon.MockContext(), []string{"data1"}, "data3", "data2")
-	pc.addFabric(evcommon.MockContext(), common.MessageData{}, "dummy")
-
 }
 
 func Test_isResourceTypeSubscribed(t *testing.T) {
@@ -305,11 +313,15 @@ func mockCacheData() {
 	eventSourceToManagerIDMap = make(map[string]string, 2)
 	eventSourceToManagerIDMap["100.100.100.100"] = "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"
 	eventSourceToManagerIDMap["10.10.1.3"] = "11081de0-4859-984c-c35a-6c50732d72da.1"
-
 	subscriptionsCache = make(map[string]model.EventDestination, 1)
 	subscriptionsCache["11081de0-4859-984c-c35a-6c50732d7"] = model.EventDestination{
 		Destination: "https://10.10.10.10:8080/Destination",
 	}
+	aggregateIdToSubscriptionsMap = make(map[string]map[string]bool)
 	emptyOriginResourceToSubscriptionsMap = make(map[string]bool, 0)
 	emptyOriginResourceToSubscriptionsMap["11081de0-4859-984c-c35a-6c50732d7"] = true
+
+	systemToSubscriptionsMap = map[string]map[string]bool{}
+	systemToSubscriptionsMap["100.100.100.100"] = map[string]bool{"11081de0-4859-984c-c35a-6c50732d7": true}
+
 }

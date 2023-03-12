@@ -73,6 +73,8 @@ type configModel struct {
 	LogFormat                      lgr.LogFormat            `json:"LogFormat"`
 	ImageRegistryAddress           string                   `json:"ImageRegistryAddress,omitempty"`
 	KeyExpiryInterval              int                      `json:"KeyExpiryInterval"`
+	EventForwardingWorkerPoolCount int                      `json:"EventForwardingWorkerPoolCount"`
+	EventSaveWorkerPoolCount       int                      `json:"EventSaveWorkerPoolCount"`
 }
 
 // DBConf holds all DB related configurations
@@ -156,13 +158,13 @@ type URLTranslation struct {
 	SouthBoundURL map[string]string `json:"SouthBoundURL"` // holds value of SouthBound Translation
 }
 
-// PluginStatusPolling stores all inforamtion related to status polling
+// PluginStatusPolling stores all information related to status polling
 type PluginStatusPolling struct {
-	PollingFrequencyInMins  int `json:"PollingFrequencyInMins"` // holds value of  duration in which status polling to be intiated ,value will be in minutes
-	MaxRetryAttempt         int `json:"MaxRetryAttempt"`        // holds value number retry attempts
-	RetryIntervalInMins     int `json:"RetryIntervalInMins"`    // holds value of  duration in which retry of status polling to be intiated,value will be in minutes
-	ResponseTimeoutInSecs   int `json:"ResponseTimeoutInSecs"`  // holds value of duation in which it need wait for resposne ,value will be in seconds
-	StartUpResouceBatchSize int `json:"StartUpResouceBatchSize"`
+	PollingFrequencyInMins   int `json:"PollingFrequencyInMins"` // holds value of  duration in which status polling to be initiated ,value will be in minutes
+	MaxRetryAttempt          int `json:"MaxRetryAttempt"`        // holds value number retry attempts
+	RetryIntervalInMins      int `json:"RetryIntervalInMins"`    // holds value of  duration in which retry of status polling to be initiated,value will be in minutes
+	ResponseTimeoutInSecs    int `json:"ResponseTimeoutInSecs"`  // holds value of duration in which it need wait for response ,value will be in seconds
+	StartUpResourceBatchSize int `json:"StartUpResourceBatchSize"`
 }
 
 // ExecPriorityDelayConf holds priority and delay configurations for exec actions
@@ -172,7 +174,7 @@ type ExecPriorityDelayConf struct {
 	MaxResetDelayInSecs int `json:"MaxResetDelayInSecs"`
 }
 
-// TLSConf holds TLS confifurations used in https queries
+// TLSConf holds TLS configurations used in https queries
 type TLSConf struct {
 	VerifyPeer            bool     `json:"VerifyPeer"`
 	MinVersion            string   `json:"MinVersion"`
@@ -193,7 +195,7 @@ type ConnectionMethodConf struct {
 	ConnectionMethodVariant string `json:"ConnectionMethodVariant"`
 }
 
-// EventConf stores all inforamtion related to event delivery configurations
+// EventConf stores all information related to event delivery configurations
 type EventConf struct {
 	DeliveryRetryAttempts        int `json:"DeliveryRetryAttempts"`        // holds value of retrying event posting to destination
 	DeliveryRetryIntervalSeconds int `json:"DeliveryRetryIntervalSeconds"` // holds value of retrying events posting in interval
@@ -203,7 +205,7 @@ type EventConf struct {
 func SetConfiguration() (WarningList, error) {
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
 	if configFilePath == "" {
-		return WarningList{}, fmt.Errorf("No value set to environment variable CONFIG_FILE_PATH")
+		return WarningList{}, fmt.Errorf("no value set to environment variable CONFIG_FILE_PATH")
 	}
 	configData, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
@@ -287,6 +289,14 @@ func checkMiscellaneousConf(wl *WarningList) error {
 	}
 	if len(Data.SupportedPluginTypes) == 0 {
 		return fmt.Errorf("error: no value set for SupportedPluginTypes")
+	}
+	if Data.EventForwardingWorkerPoolCount == 0 {
+		wl.add("No value configured for EventForwardingWorkerPoolCount, setting default value")
+		Data.EventForwardingWorkerPoolCount = DefaultEventForwardingWorkerPoolCount
+	}
+	if Data.EventSaveWorkerPoolCount == 0 {
+		wl.add("No value configured for EventSaveWorkerPoolCount, setting default value")
+		Data.EventSaveWorkerPoolCount = DefaultEventSaveWorkerPoolCount
 	}
 	return nil
 }
@@ -563,11 +573,11 @@ func checkPluginStatusPolling(wl *WarningList) {
 	if Data.PluginStatusPolling == nil {
 		wl.add("PluginStatusPolling not provided, setting default value")
 		Data.PluginStatusPolling = &PluginStatusPolling{
-			PollingFrequencyInMins:  DefaultPollingFrequencyInMins,
-			MaxRetryAttempt:         DefaultMaxRetryAttempt,
-			RetryIntervalInMins:     DefaultRetryIntervalInMins,
-			ResponseTimeoutInSecs:   DefaultResponseTimeoutInSecs,
-			StartUpResouceBatchSize: DefaultStartUpResouceBatchSize,
+			PollingFrequencyInMins:   DefaultPollingFrequencyInMins,
+			MaxRetryAttempt:          DefaultMaxRetryAttempt,
+			RetryIntervalInMins:      DefaultRetryIntervalInMins,
+			ResponseTimeoutInSecs:    DefaultResponseTimeoutInSecs,
+			StartUpResourceBatchSize: DefaultStartUpResourceBatchSize,
 		}
 		return
 	}
@@ -587,9 +597,9 @@ func checkPluginStatusPolling(wl *WarningList) {
 		wl.add("No value found for ResponseTimeoutInSecs, setting default value")
 		Data.PluginStatusPolling.ResponseTimeoutInSecs = DefaultResponseTimeoutInSecs
 	}
-	if Data.PluginStatusPolling.StartUpResouceBatchSize <= 0 {
-		wl.add("No value found for StartUpResouceBatchSize, setting default value")
-		Data.PluginStatusPolling.StartUpResouceBatchSize = DefaultStartUpResouceBatchSize
+	if Data.PluginStatusPolling.StartUpResourceBatchSize <= 0 {
+		wl.add("No value found for StartUpResourceBatchSize, setting default value")
+		Data.PluginStatusPolling.StartUpResourceBatchSize = DefaultStartUpResourceBatchSize
 	}
 }
 
@@ -643,7 +653,7 @@ func checkTLSConf(wl *WarningList) error {
 	return nil
 }
 
-//CheckRootServiceuuid function is used to validate format of Root Service UUID. The same function is used in plugin-redfish config.go
+// CheckRootServiceuuid function is used to validate format of Root Service UUID. The same function is used in plugin-redfish config.go
 func CheckRootServiceuuid(uid string) error {
 	_, err := uuid.Parse(uid)
 	return err

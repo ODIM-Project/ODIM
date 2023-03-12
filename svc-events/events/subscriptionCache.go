@@ -11,6 +11,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
@@ -40,12 +41,16 @@ var (
 	systemToSubscriptionsMapTemp      map[string]map[string]bool
 	aggregateIdToSubscriptionsMapTemp map[string]map[string]bool
 	collectionToSubscriptionsMapTemp  map[string]map[string]bool
-	workerCount                       = 2000
+	reAttemptInQueue                  = make(map[string]int)
 )
 
 // eventForwardingChanel channel is used for communicate
 // between event forwarding go routine pools
 var eventForwardingChanel = make(chan evmodel.EventPost)
+
+// saveEventChanel channel is used for communicate
+// between event forwarding go routine pools
+var saveEventChanel = make(chan evmodel.EventPost)
 
 // LoadSubscriptionData method calls whenever service is started
 // Here we load Subscription, DeviceSubscription, AggregateToHost
@@ -56,6 +61,7 @@ func (e *ExternalInterfaces) LoadSubscriptionData(ctx context.Context) error {
 	transactionId := uuid.NewV4().String()
 	ctx = context.WithValue(ctx, common.TransactionID, transactionId)
 	logging = l.LogWithFields(ctx)
+
 	logging.Debug("Event cache is initialized")
 	err := getAllSubscriptions(ctx)
 	if err != nil {
@@ -73,8 +79,13 @@ func (e *ExternalInterfaces) LoadSubscriptionData(ctx context.Context) error {
 	ctx = context.WithValue(ctx, common.ThreadID, strconv.Itoa(threadID))
 	go initializeDbObserver(ctx)
 	go e.forwardUndeliveredEventToClient(ctx)
-	for i := 0; i < workerCount; i++ {
+	// create event forwarding worker pool
+	for i := 0; i < config.Data.EventForwardingWorkerPoolCount; i++ {
 		go e.runEventForwardingWorkers()
+	}
+	// init event save undelivered worker pool
+	for i := 0; i < config.Data.EventSaveWorkerPoolCount; i++ {
+		go e.saveEventWorkers()
 	}
 	return nil
 }
@@ -316,6 +327,7 @@ func getCollectionKey(oid, host string) (key string) {
 }
 
 // initializeDbObserver function subscribe redis keySpace notifier
+// function notify by channel if any update happened subscribed key
 func initializeDbObserver(ctx context.Context) {
 START:
 	logging.Info("Initializing observer ")
@@ -324,15 +336,15 @@ START:
 		l.Log.Error("error while getDbConnection  ", errDbConn)
 		goto START
 	}
-	writeConn := conn.WritePool.Get()
-	defer writeConn.Close()
-	_, err := writeConn.Do("CONFIG", "SET", evcommon.RedisNotifierType, evcommon.RedisNotifierFilterKey)
+	readConn := conn.ReadPool.Get()
+	defer readConn.Close()
+	err := conn.EnableKeySpaceNotifier(evcommon.RedisNotifierType, evcommon.RedisNotifierFilterKey)
 	if err != nil {
 		l.LogWithFields(ctx).Error("error occurred configuring key event ", err)
 		time.Sleep(time.Second * 1)
 		goto START
 	}
-	psc := redis.PubSubConn{Conn: writeConn}
+	psc := redis.PubSubConn{Conn: readConn}
 
 	psc.PSubscribe(evcommon.AggregateToHostChannelKey, evcommon.DeviceSubscriptionChannelKey,
 		evcommon.SubscriptionChannelKey)
@@ -369,7 +381,7 @@ func (e *ExternalInterfaces) forwardUndeliveredEventToClient(ctx context.Context
 	for {
 		for _, sub := range subscriptionsCache {
 			if sub.Destination != "" {
-				go e.checkUndeliveredEvents(ctx, sub.Destination)
+				go e.checkUndeliveredEvents(sub.Destination)
 			}
 		}
 		time.Sleep(1 * time.Minute)
@@ -379,7 +391,40 @@ func (e *ExternalInterfaces) forwardUndeliveredEventToClient(ctx context.Context
 // RunEventForwardingWorkers will create a worker pool for forwarding
 // event to destination
 func (e *ExternalInterfaces) runEventForwardingWorkers() {
-	for j := range eventForwardingChanel {
-		e.postEvent(j)
+	for job := range eventForwardingChanel {
+		e.postEvent(job)
+	}
+}
+
+// RunEventForwardingWorkers will create a worker pool for forwarding
+// event to destination
+func (e *ExternalInterfaces) saveEventWorkers() {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		logging.Error("error occurred saveEventWorker ", err.Error())
+		e.saveEventWorkers()
+		return
+	}
+	writePool := conn.WritePool.Get()
+	if err != nil {
+		logging.Error("error occurred get write pool in saveEventWorker ", err.Error())
+		e.saveEventWorkers()
+		return
+	}
+	for job := range saveEventChanel {
+
+		err := conn.SaveUndeliveredEvents(evmodel.UndeliveredEvents, job.UndeliveredEventID, job.Message, writePool)
+		if err != nil {
+			logging.Error("error while save undelivered event ", err)
+			time.Sleep(time.Second)
+			writePool = conn.WritePool.Get()
+			if err != nil {
+				continue
+			}
+			err = conn.SaveUndeliveredEvents(evmodel.UndeliveredEvents, job.UndeliveredEventID, job.Message, writePool)
+			if err != nil {
+				logging.Error("error occurred while save saveEventWorker ", err.Error())
+			}
+		}
 	}
 }

@@ -731,7 +731,7 @@ func TestGetUndeliveredEvents(t *testing.T) {
 		t.Errorf("Error while making save undelivered events : %v\n", cerr.Error())
 	}
 
-	eventData, err := GetUndeliveredEvents("destination")
+	eventData, err := GetUndeliveredEvents("UndeliveredEvents:destination")
 	assert.Nil(t, err, "error should be nil")
 	assert.Equal(t, string(eventData), eventData, "there should be event data")
 }

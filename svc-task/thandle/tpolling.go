@@ -51,7 +51,6 @@ For each plugin tasks, it will poll the plugin instance with IP.
 If IP is not not accessible for multiple retry, that instance will be marked
 as unavailable and will fail the tasks those has been handled by the plugin
 */
-
 func (ts *TasksRPC) PollPlugin(ctx context.Context) {
 	l.LogWithFields(ctx).Info("Started polling plugin to monitor the plugin tasks")
 	unAvailableInstances := make(map[string]struct{})
@@ -106,7 +105,6 @@ func (ts *TasksRPC) PollPlugin(ctx context.Context) {
 updateFailedPluginTasks will update the odim task corresponding to the plugin task as failed
 and it will remove the plugin task from the active plugin tasks set in DB
 */
-
 func updateFailedPluginTasks(ctx context.Context, ts *TasksRPC, pluginTaskID string, task *common.PluginTask) {
 	statusCode := http.StatusServiceUnavailable
 	message := errors.InternalError
@@ -128,7 +126,6 @@ func updateFailedPluginTasks(ctx context.Context, ts *TasksRPC, pluginTaskID str
 /*
 isPluginConnectionError check the error returned by the plugin is a connection error or not
 */
-
 func isPluginConnectionError(err error) bool {
 	if netError, ok := err.(net.Error); ok && netError.Timeout() {
 		return true
@@ -150,7 +147,6 @@ func isPluginConnectionError(err error) bool {
 /*
 GetContextForPolling create and returns a new context for polling the plugin
 */
-
 func GetContextForPolling() context.Context {
 	transactionID := uuid.New().String()
 	actionID := "218"

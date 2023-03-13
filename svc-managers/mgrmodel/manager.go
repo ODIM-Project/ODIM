@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package mgrmodel ....
+// Package mgrmodel ....
 package mgrmodel
 
 import (
@@ -25,8 +25,8 @@ import (
 )
 
 var (
-	GetDBConnectionFunc = common.GetDBConnection
-	MarshalFunc         = json.Marshal
+	getDBConnectionFunc = common.GetDBConnection
+	marshalFunc         = json.Marshal
 )
 
 // Manager struct for manager deta
@@ -154,15 +154,14 @@ type CreateBMCAccount struct {
 }
 
 // UpdateBMCAccount struct is to store the update BMC account request payload
-
 type UpdateBMCAccount struct {
 	Password string `json:"Password,omitempty"`
 	RoleID   string `json:"RoleId,omitempty"`
 }
 
-//GetResource fetches a resource from database using table and key
+// GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
-	conn, err := GetDBConnectionFunc(common.InMemory)
+	conn, err := getDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return "", err
 	}
@@ -177,9 +176,9 @@ func GetResource(Table, key string) (string, *errors.Error) {
 	return resource, nil
 }
 
-//GetAllKeysFromTable fetches all keys in a given table
+// GetAllKeysFromTable fetches all keys in a given table
 func GetAllKeysFromTable(table string) ([]string, error) {
-	conn, err := GetDBConnectionFunc(common.InMemory)
+	conn, err := getDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +192,7 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 // GetManagerByURL fetches computer manager details by URL from database
 func GetManagerByURL(url string) (string, *errors.Error) {
 	var manager string
-	conn, err := GetDBConnectionFunc(common.InMemory)
+	conn, err := getDBConnectionFunc(common.InMemory)
 	if err != nil {
 		// connection error
 		return manager, err
@@ -210,11 +209,11 @@ func GetManagerByURL(url string) (string, *errors.Error) {
 
 // UpdateData will modify the current details to given changes
 func UpdateData(key string, updateData map[string]interface{}, table string) error {
-	conn, err := GetDBConnectionFunc(common.InMemory)
+	conn, err := getDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("error trying to connect DB: %v", err)
 	}
-	data, jerr := MarshalFunc(updateData)
+	data, jerr := marshalFunc(updateData)
 	if jerr != nil {
 		return fmt.Errorf("error trying to marshal data for updating: %v", jerr)
 	}
@@ -224,10 +223,10 @@ func UpdateData(key string, updateData map[string]interface{}, table string) err
 	return nil
 }
 
-//GenericSave will save any resource data into the database
+// GenericSave will save any resource data into the database
 func GenericSave(body []byte, table string, key string) error {
 
-	connPool, err := GetDBConnectionFunc(common.InMemory)
+	connPool, err := getDBConnectionFunc(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("error trying to connect DB: %v", err.Error())
 	}
@@ -240,11 +239,11 @@ func GenericSave(body []byte, table string, key string) error {
 // AddManagertoDB will add odimra Manager details to DB
 func AddManagertoDB(mgr RAManager) error {
 	key := "/redfish/v1/Managers/" + mgr.UUID
-	data, err := MarshalFunc(mgr)
+	data, err := marshalFunc(mgr)
 	if err != nil {
 		return fmt.Errorf("error trying to marshal manager data: %v", err)
 	}
-	connPool, connErr := GetDBConnectionFunc(common.InMemory)
+	connPool, connErr := getDBConnectionFunc(common.InMemory)
 	if connErr != nil {
 		return fmt.Errorf("error trying to connect DB: %v", connErr.Error())
 	}

@@ -203,6 +203,10 @@ const (
 	CheckPluginStatus                      = "CheckPluginStatus"
 	GetTelemetryResource                   = "GetTelemetryResource"
 	PollPlugin                             = "PollPlugin"
+	CreateRemoteAccountService             = "CreateRemoteAccountService"
+	UpdateRemoteAccountService             = "UpdateRemoteAccountService"
+	DeleteRemoteAccountService             = "DeleteRemoteAccountService"
+
 	// constants for log
 	SessionToken            = "sessiontoken"
 	SessionUserID           = "sessionuserid"

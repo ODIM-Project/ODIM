@@ -582,6 +582,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 	pluginContact := PluginContact{
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
+		UpdateTask:     mockUpdateTask,
 	}
 	errArg1 := response.Args{
 		Code:    response.GeneralError,

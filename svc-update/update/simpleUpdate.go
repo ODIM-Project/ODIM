@@ -33,6 +33,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 )
 
@@ -286,7 +287,7 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
-		ucommon.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, subTaskID, location)
+		services.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, subTaskID, location)
 		return
 	}
 	resp.StatusCode = http.StatusOK

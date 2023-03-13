@@ -25,9 +25,9 @@ import (
 )
 
 var (
-	// TaskEventRecvQueue ...
+	// TaskEventRecvQueue is a channel where task events are pushed
 	TaskEventRecvQueue chan<- interface{}
-	// TaskEventProcQueue ...
+	// TaskEventProcQueue is a channel from where task events popped and processed
 	TaskEventProcQueue <-chan interface{}
 )
 

@@ -105,7 +105,6 @@ func (ts *TasksRPC) PollPlugin(ctx context.Context) {
 updateFailedPluginTasks will update the odim task corresponding to the plugin task as failed
 and it will remove the plugin task from the active plugin tasks set in DB
 */
-
 func updateFailedPluginTasks(ctx context.Context, ts *TasksRPC, pluginTaskID string, task *common.PluginTask) {
 	statusCode := http.StatusServiceUnavailable
 	message := errors.InternalError
@@ -127,7 +126,6 @@ func updateFailedPluginTasks(ctx context.Context, ts *TasksRPC, pluginTaskID str
 /*
 isPluginConnectionError check the error returned by the plugin is a connection error or not
 */
-
 func isPluginConnectionError(err error) bool {
 	if netError, ok := err.(net.Error); ok && netError.Timeout() {
 		return true

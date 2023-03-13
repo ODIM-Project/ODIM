@@ -18,9 +18,6 @@ package common
 // EventConst constant
 type EventConst int
 
-// key type
-type Key string
-
 const (
 	// RedfishEvent constant
 	RedfishEvent EventConst = iota

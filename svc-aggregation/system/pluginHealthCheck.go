@@ -108,8 +108,8 @@ func PerformPluginHealthCheck() {
 		} else {
 			for _, plugin := range pluginList {
 				threadID := 1
-				ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.CheckPluginStatus)
-				ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
+				ctxt := context.WithValue(ctx, common.ThreadName, common.CheckPluginStatus)
+				ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 				go checkPluginStatus(ctxt, &phc, plugin)
 				threadID++
 			}

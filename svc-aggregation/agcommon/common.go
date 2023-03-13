@@ -400,8 +400,6 @@ func ContactPlugin(ctx context.Context, req agmodel.PluginContactRequest, server
 		req.LoginCredential["Password"] = string(req.Plugin.Password)
 	}
 	reqURL := fmt.Sprintf("https://%s%s", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port), req.URL)
-	respBody := fmt.Sprintf("%v", req.PostBody)
-	l.LogWithFields(ctx).Debugf("payload request going to plugin : %s", string(respBody))
 	return pmbhandle.ContactPlugin(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, req.LoginCredential)
 }
 
@@ -517,12 +515,11 @@ func SetPluginStatusRecord(plugin string, count int) {
 // CreateContext creates a new context based on transactionId, actionId, actionName, threadId, threadName, ProcessName
 func CreateContext(transactionID, actionID, actionName, threadID, threadName, ProcessName string) context.Context {
 	ctx := context.Background()
-	//using common.Key to avoid golint issues
-	ctx = context.WithValue(ctx, common.Key(common.TransactionID), transactionID)
-	ctx = context.WithValue(ctx, common.Key(common.ActionID), actionID)
-	ctx = context.WithValue(ctx, common.Key(common.ActionName), actionName)
-	ctx = context.WithValue(ctx, common.Key(common.ThreadID), threadID)
-	ctx = context.WithValue(ctx, common.Key(common.ThreadName), threadName)
-	ctx = context.WithValue(ctx, common.Key(common.ProcessName), ProcessName)
+	ctx = context.WithValue(ctx, common.TransactionID, transactionID)
+	ctx = context.WithValue(ctx, common.ActionID, actionID)
+	ctx = context.WithValue(ctx, common.ActionName, actionName)
+	ctx = context.WithValue(ctx, common.ThreadID, threadID)
+	ctx = context.WithValue(ctx, common.ThreadName, threadName)
+	ctx = context.WithValue(ctx, common.ProcessName, ProcessName)
 	return ctx
 }

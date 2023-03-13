@@ -106,9 +106,6 @@ func (rp *RedisStreamsPacket) Distribute(data interface{}) error {
 
 // Accept implmentation need to be added
 func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
-	// errChan to hold the errors faced in the  below go-rotines
-	errChan := make(chan error)
-	defer close(errChan)
 	redisClient, err := getDBConnection()
 	if err != nil {
 		return err
@@ -126,6 +123,8 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 		}
 
 	}
+	// errChan to hold the errors faced in the  below go-rotines
+	errChan := make(chan error)
 	go rp.checkUnacknowledgedEvents(fn, id, errChan)
 	err = <-errChan
 	if err != nil {

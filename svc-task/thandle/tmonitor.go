@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package thandle ...
+// Package thandle ...
 package thandle
 
 import (
@@ -28,9 +28,9 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-task/tresponse"
 )
 
-//GetTaskMonitor is an API end point to get the task details and response body.
+// GetTaskMonitor is an API end point to get the task details and response body.
 // Takes X-Auth-Token and authorize the request.
-//If X-Auth-Token is empty or invalid then it returns "StatusUnauthorized".
+// If X-Auth-Token is empty or invalid then it returns "StatusUnauthorized".
 // If the TaskID is not found then it return "StatusNotFound".
 // If the task is still not completed or cancelled or killed then it return with 202
 // with empty response body, else it return with "200 OK" with full task info in the

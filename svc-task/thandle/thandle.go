@@ -52,6 +52,7 @@ type TasksRPC struct {
 	AuthenticationRPC                func(sessionToken string, privileges []string) (response.RPC, error)
 	GetSessionUserNameRPC            func(sessionToken string) (string, error)
 	GetTaskStatusModel               func(ctx context.Context, taskID string, db common.DbType) (*tmodel.Task, error)
+	GetMultipleTaskKeysModel         func(ctx context.Context, taskIDs []interface{}, db common.DbType) (*[]tmodel.Task, error)
 	GetAllTaskKeysModel              func(ctx context.Context) ([]string, error)
 	TransactionModel                 func(ctx context.Context, key string, cb func(context.Context, string) error) error
 	OverWriteCompletedTaskUtilHelper func(ctx context.Context, userName string) error
@@ -930,6 +931,15 @@ func (ts *TasksRPC) CreateChildTaskUtil(ctx context.Context, userName string, pa
 	return "/redfish/v1/TaskService/Tasks/" + childTaskID, err
 }
 
+// getAllChildTasks is used to get All child task ID's associated with parent task
+func (ts *TasksRPC) getAllChildTasks(ctx context.Context, parentID string) ([]string, error) {
+	task, err := ts.GetTaskStatusModel(ctx, parentID, common.InMemory)
+	if err != nil {
+		return nil, fmt.Errorf("error while retrieving the task details from db: " + err.Error())
+	}
+	return task.ChildTaskIDs, nil
+}
+
 // updateTaskUtil is a function to update the existing task and/or to create sub-task under a parent task.
 // This function is to set task status, task end time along with task state based on the task state.
 // Takes:
@@ -1165,7 +1175,75 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 	if !TaskCollection.getTaskFromCollectionData(taskID, int(percentComplete)) {
 		ts.PublishToMessageBus(ctx, task.URI, taskEvenMessageID, eventType, taskMessage)
 	}
+
+	if task.ParentID != "" && (taskState == common.Completed || taskState == common.Exception ||
+		taskState == common.Killed || taskState == common.Cancelled || taskState == common.New) {
+		err = ts.updateParentTask(ctx, taskID, taskStatus, taskState, task, payLoad)
+		if err != nil {
+			return err
+		}
+	}
 	return err
+}
+
+// updateParentTask is used to update the status of parent task according to the status of child task
+func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, taskState string, task *tmodel.Task, payLoad *taskproto.Payload) error {
+	parentTask, err := ts.GetTaskStatusModel(ctx, task.ParentID, common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while retrieving the task details from db: " + err.Error())
+	}
+	if taskState != common.Completed && taskState != common.New {
+		errMsg := "One or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + task.ParentID
+		parentTask.TaskState = taskState
+		parentTask.PercentComplete = 100
+		parentTask.StatusCode = payLoad.StatusCode
+		parentTask.Messages = []*tmodel.Message{{MessageID: response.Failure, Message: errMsg}}
+		parentTask.TaskResponse = payLoad.ResponseBody
+		ts.UpdateTaskQueue(parentTask)
+		return fmt.Errorf(errMsg)
+	}
+	childIDs, err := ts.getAllChildTasks(ctx, task.ParentID)
+	if err != nil {
+		return err
+	}
+	l.LogWithFields(ctx).Debugf("Child ID's associated with parent task %s: %v", task.ParentID, childIDs)
+	if len(childIDs) < 1 || (len(childIDs) == 1 && taskState == common.Completed && payLoad.StatusCode < http.StatusAccepted) {
+		parentTask.TaskState = common.Completed
+		parentTask.PercentComplete = 100
+		parentTask.StatusCode = http.StatusOK
+		parentTask.TaskStatus = common.OK
+		parentTask.TaskResponse = payLoad.ResponseBody
+		ts.UpdateTaskQueue(parentTask)
+		return nil
+	}
+	s := make([]interface{}, len(childIDs))
+	for i, v := range childIDs {
+		if v != taskID {
+			s[i] = "task:" + v
+		}
+	}
+	data, _ := ts.GetMultipleTaskKeysModel(ctx, s, common.InMemory)
+	var isRunning bool
+	for _, subtask := range *data {
+		if subtask.TaskState == common.Running || subtask.TaskState == common.New || subtask.TaskState == common.Pending ||
+			subtask.TaskState == common.Starting || subtask.TaskState == common.Suspended || subtask.TaskState == common.Interrupted ||
+			subtask.TaskState == common.Cancelling {
+			isRunning = true
+			break
+		}
+
+	}
+	if !isRunning {
+		l.LogWithFields(ctx).Debugf("All tasks are completed !")
+		parentTask.TaskState = common.Completed
+		parentTask.TaskStatus = common.OK
+		parentTask.PercentComplete = 100
+		parentTask.StatusCode = http.StatusOK
+		parentTask.TaskResponse = payLoad.ResponseBody
+		ts.UpdateTaskQueue(parentTask)
+	}
+
+	return nil
 }
 
 // ProcessTaskEvents receive the task event from plugins

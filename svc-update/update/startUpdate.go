@@ -216,7 +216,7 @@ func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := e.External.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
+		_, token, _, getResponse, err := e.External.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			subTaskChannel <- getResponse.StatusCode
@@ -239,7 +239,7 @@ func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.StartUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost
-	respBody, location, getResponse, contactErr := e.External.ContactPlugin(ctx, contactRequest, "error while performing simple update action: ")
+	respBody, location, _, getResponse, contactErr := e.External.ContactPlugin(ctx, contactRequest, "error while performing simple update action: ")
 	if contactErr != nil {
 		subTaskChannel <- getResponse.StatusCode
 		errMsg := contactErr.Error()

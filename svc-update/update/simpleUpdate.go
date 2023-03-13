@@ -288,6 +288,7 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
 		services.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, subTaskID, location)
+		subTaskChannel <- int32(getResponse.StatusCode)
 		return
 	}
 	resp.StatusCode = http.StatusOK

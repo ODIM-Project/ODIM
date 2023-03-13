@@ -127,7 +127,11 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 	errChan := make(chan error)
 	defer close(errChan)
 
-	go rp.checkUnacknowledgedEvents(fn, id)
+	go rp.checkUnacknowledgedEvents(fn, id, errChan)
+	err = <-errChan
+	if err != nil {
+		return err
+	}
 
 	go func() {
 		for {
@@ -230,6 +234,8 @@ func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string
 			fn(evt)
 			redisClient.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
 		}
+		// Pass the nil to errChan when no error encountered
+		errChan <- nil
 		time.Sleep(time.Minute * 10)
 	}
 }

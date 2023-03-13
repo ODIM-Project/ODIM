@@ -2093,6 +2093,10 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 
 3. Create a backup directory on the leader node and change the ownership and permission of the directory to odimra:
 
+   Verify the output on each node. The node with `IS LEADER` value as `true` is the leader node.
+
+2. Create a backup directory on the leader node and change the ownership and permission of the directory to odimra:
+
    ```
    mkdir ~/etcd_backup/
    sudo chown odimra:odimra ~/etcd_backup/
@@ -2185,6 +2189,8 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    ```
    sudo systemctl stop etcd
    ```
+   
+4. Stop the etcd service on all the cluster nodes:
 
 6. Move the current member directory to a backup member directory on all the three cluster nodes:
 
@@ -2292,6 +2298,11 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    ```
    sudo kubectl cp odim/{leader etcd pod name}:/home/odimra/etcd_backup.db ~/etcd_odim_backup/etcd_backup.db
    ```
+> NOTE: For a one node setup, execute the above commands on the cluster node alone.
+
+### Restoring ODIM etcd 
+
+1. Create the backup directory if the directory is not present on one of the cluster nodes and copy the backed up file to that directory.
 
    >  **NOTE**: Replace `{leader etcd pod name}` appropriately.
 
@@ -2300,6 +2311,8 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
 ### Restoring ODIM etcd 
 
 1. Create the backup directory if the directory is not present on one of the cluster nodes and copy the backed up file to that directory.
+
+2. Copy the backup file inside the etcd container from the cluster node:
 
    ```
    mkdir ~/etcd_odim_backup/
@@ -2326,6 +2339,8 @@ Upgrading the Resource Aggregator for ODIM deployment involves:
    ```
    cd /home/odimra
    ```
+
+6. Copy the restored directory `~/etcd_odim_backup/member` from Kubernetes cluster node to the remaining two etcd nodes.
 
    ```
    /opt/etcd/bin/etcdctl snapshot restore /home/odimra/etcd_backup.db --endpoints=https://etcd:2379  --cacert=/opt/etcd/conf/rootCA.crt  --cert=/opt/etcd/conf/odimra_etcd_server.crt  --key=/opt/etcd/conf/odimra_etcd_server.key

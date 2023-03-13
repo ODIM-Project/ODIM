@@ -29,6 +29,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// SimpleUpdatePostBody struct defines the received request body for update action
+type SimpleUpdatePostBody struct {
+	ImageURI                  string   `json:"ImageURI"`
+	Password                  string   `json:"Password,omitempty"`
+	Targets                   []string `json:"Targets,omitempty"`
+	TransferProtocol          string   `json:"TransferProtocol,omitempty"`
+	Username                  string   `json:"Username,omitempty"`
+	RedfishOperationApplyTime string   `json:"@Redfish.OperationApplyTime,omitempty"`
+}
+
 // SimpleUpdate updates the BMC resources
 func SimpleUpdate(ctx iris.Context) {
 	//Get token from Request

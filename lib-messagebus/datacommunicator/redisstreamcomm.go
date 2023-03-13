@@ -122,15 +122,11 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 		}
 
 	}
-
-	// create a unique consumer id for the  instance
 	errChan := make(chan error)
 	defer close(errChan)
-	go rp.checkUnacknowledgedEvents(fn, id, errChan)
-	err = <-errChan
-	if err != nil {
-		return err
-	}
+	// create a unique consumer id for the  instance
+	go rp.checkUnacknowledgedEvents(fn, id)
+
 	go func() {
 		for {
 			events, err := redisClient.XReadGroup(context.Background(),
@@ -166,6 +162,8 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 			}
 		}
 	}()
+
+	// channel to handle the errors occured during go routines
 	err = <-errChan
 	if err != nil {
 		return err
@@ -193,10 +191,10 @@ func (rp *RedisStreamsPacket) Remove() error {
 func (rp *RedisStreamsPacket) Close() error {
 	return nil
 }
-func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string, errChan chan<- error) {
+func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string) {
 	redisClient, err := getDBConnection()
 	if err != nil {
-		errChan <- err
+		fmt.Print(fmt.Errorf("Error occured %v", err.Error()))
 		return
 	}
 	for {
@@ -212,7 +210,7 @@ func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string
 			if strings.Contains(err.Error(), " connection timed out") {
 				redisClient, err = getDBConnection()
 				if err != nil {
-					errChan <- err
+					fmt.Print(fmt.Errorf("Error occured %v", err.Error()))
 					return
 				}
 			}
@@ -223,7 +221,7 @@ func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string
 			var evt interface{}
 			Decode([]byte(evtStr), &evt)
 			if err != nil {
-				errChan <- err
+				fmt.Print(fmt.Errorf("Error occured %v", err.Error()))
 				return
 			}
 			fn(evt)

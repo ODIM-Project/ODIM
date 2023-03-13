@@ -18,7 +18,6 @@ package model
 type SimpleUpdate struct {
 	ImageURI                  string   `json:"ImageURI"`
 	Password                  string   `json:"Password,omitempty"`
-	Targets                   []string `json:"Targets,omitempty"`
 	TransferProtocol          string   `json:"TransferProtocol,omitempty"`
 	Username                  string   `json:"Username,omitempty"`
 	RedfishOperationApplyTime string   `json:"@Redfish.OperationApplyTime,omitempty"`

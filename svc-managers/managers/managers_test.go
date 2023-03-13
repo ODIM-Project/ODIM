@@ -327,22 +327,19 @@ func TestVirtualMediaActionsResource(t *testing.T) {
 							"Inserted":true}`),
 	}
 	e := mockGetExternalInterface()
-	response := e.VirtualMediaActions(ctx, req)
-	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+	e.VirtualMediaActions(ctx, req, "1234")
 
 	requestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "test", &errors.Error{}
 	}
-	response = e.VirtualMediaActions(ctx, req)
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusOK.")
+	e.VirtualMediaActions(ctx, req, "1234")
 
 	req = &managersproto.ManagerRequest{
 		ManagerID:  "uuid1.1",
 		ResourceID: "1",
 		URL:        "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia",
 	}
-	response = e.VirtualMediaActions(ctx, req)
-	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+	e.VirtualMediaActions(ctx, req, "1234")
 
 	req = &managersproto.ManagerRequest{
 		ManagerID:   "uuid1.1",
@@ -350,8 +347,7 @@ func TestVirtualMediaActionsResource(t *testing.T) {
 		URL:         "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
 		RequestBody: []byte("dummydata"),
 	}
-	response = e.VirtualMediaActions(ctx, req)
-	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+	e.VirtualMediaActions(ctx, req, "1234")
 	req = &managersproto.ManagerRequest{
 		ManagerID:  "uuid1.1",
 		ResourceID: "1",
@@ -363,8 +359,7 @@ func TestVirtualMediaActionsResource(t *testing.T) {
 	requestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
 	}
-	response = e.VirtualMediaActions(ctx, req)
-	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+	e.VirtualMediaActions(ctx, req, "1234")
 
 	req = &managersproto.ManagerRequest{
 		ManagerID:  "uuid1.1",
@@ -374,8 +369,7 @@ func TestVirtualMediaActionsResource(t *testing.T) {
 		"WriteProtected":true
 		}`),
 	}
-	response = e.VirtualMediaActions(ctx, req)
-	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+	e.VirtualMediaActions(ctx, req, "1234")
 
 }
 

@@ -157,11 +157,33 @@ func (m *Managers) VirtualMediaInsert(ctx context.Context, req *managersproto.Ma
 		resp.Header = authResp.Header
 		return resp, nil
 	}
-	data := m.EI.VirtualMediaActions(ctx, req)
-	resp.Header = data.Header
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(ctx, data.Body)
+	sessionUserName, err := m.GetSessionUserName(req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillManagersProtoResponse(ctx, resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return resp, nil
+	}
+	// Task Service using RPC and get the taskID
+	taskURI, err := m.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillManagersProtoResponse(ctx, resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskResponse(taskID, taskURI, &rpcResp)
+	fillManagersProtoResponse(ctx, resp, rpcResp)
+	go m.EI.VirtualMediaActions(ctx, req, taskID)
 	l.LogWithFields(ctx).Debugf("Outgoing virtual media response to northbound: %s", string(resp.Body))
 	return resp, nil
 }
@@ -187,11 +209,33 @@ func (m *Managers) VirtualMediaEject(ctx context.Context, req *managersproto.Man
 		resp.Header = authResp.Header
 		return resp, nil
 	}
-	data := m.EI.VirtualMediaActions(ctx, req)
-	resp.Header = data.Header
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(ctx, data.Body)
+	sessionUserName, err := m.GetSessionUserName(req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillManagersProtoResponse(ctx, resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return resp, nil
+	}
+	// Task Service using RPC and get the taskID
+	taskURI, err := m.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillManagersProtoResponse(ctx, resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskResponse(taskID, taskURI, &rpcResp)
+	fillManagersProtoResponse(ctx, resp, rpcResp)
+	go m.EI.VirtualMediaActions(ctx, req, taskID)
 	l.LogWithFields(ctx).Debugf("Outgoing virtual media eject response to northbound: %s", string(resp.Body))
 	return resp, nil
 }
@@ -371,7 +415,7 @@ func CreateTaskAndResponse(ctx context.Context, m *Managers, sessionToken string
 		},
 	}
 
-	generateTaskRespone(taskID, taskURI, &rpcResp)
+	generateTaskResponse(taskID, taskURI, &rpcResp)
 	fillManagersProtoResponse(ctx, resp, rpcResp)
 	return taskID, nil
 }
@@ -383,7 +427,8 @@ func fillManagersProtoResponse(ctx context.Context, resp *managersproto.ManagerR
 	resp.Header = data.Header
 }
 
-func generateTaskRespone(taskID, taskURI string, rpcResp *response.RPC) {
+// generateTaskResponse is used to generate task response
+func generateTaskResponse(taskID, taskURI string, rpcResp *response.RPC) {
 	commonResponse := response.Response{
 		OdataType:    common.TaskType,
 		ID:           taskID,

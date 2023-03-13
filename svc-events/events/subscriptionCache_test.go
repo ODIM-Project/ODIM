@@ -75,6 +75,8 @@ func Test_getAllDeviceSubscriptions(t *testing.T) {
 
 func TestLoadSubscriptionData(t *testing.T) {
 	config.SetUpMockConfig(t)
+	pc := getMockMethods()
+
 	tests := []struct {
 		name string
 	}{
@@ -84,7 +86,7 @@ func TestLoadSubscriptionData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			LoadSubscriptionData(mockContext())
+			pc.LoadSubscriptionData(mockContext())
 		})
 	}
 }
@@ -185,6 +187,11 @@ func Test_getSourceId(t *testing.T) {
 }
 
 func Test_getSubscriptions(t *testing.T) {
+	config.SetUpMockConfig(t)
+	mockData()
+	pc := getMockMethods()
+	pc.LoadSubscriptionData(mockContext())
+
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -195,10 +202,6 @@ func Test_getSubscriptions(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	config.SetUpMockConfig(t)
-
-	mockData()
-	LoadSubscriptionData(mockContext())
 	type args struct {
 		originOfCondition string
 		systemId          string
@@ -327,6 +330,80 @@ func Test_getSubscriptionDetails(t *testing.T) {
 			}
 			if got1 != tt.want1 {
 				t.Errorf("getSubscriptionDetails() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func Test_addSubscriptionCache(t *testing.T) {
+	config.SetUpMockConfig(t)
+	mockData()
+	pc := getMockMethods()
+	pc.LoadSubscriptionData(mockContext())
+
+	type args struct {
+		key            string
+		subscriptionId string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "Positive test - Collection",
+			args: args{
+				key:            "SystemsCollection",
+				subscriptionId: "SystemsCollection",
+			},
+		}, {
+			name: "Positive test - UUID",
+			args: args{
+				key:            "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
+				subscriptionId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
+			},
+		}, {
+			name: "Positive test - Host",
+			args: args{
+				key:            "10.10.10.10",
+				subscriptionId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			addSubscriptionCache(tt.args.key, tt.args.subscriptionId)
+		})
+	}
+}
+
+func Test_getSystemSubscriptionList(t *testing.T) {
+	config.SetUpMockConfig(t)
+	mockData()
+	pc := getMockMethods()
+	pc.LoadSubscriptionData(mockContext())
+	mockCacheData()
+	type args struct {
+		hostIp string
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantSubs []dmtf.EventDestination
+	}{
+		{
+			name: "Positive case",
+			args: args{
+				hostIp: "100.100.100.100",
+			},
+			wantSubs: []dmtf.EventDestination{model.EventDestination{
+				Destination: "https://10.10.10.10:8080/Destination",
+			}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotSubs := getSystemSubscriptionList(tt.args.hostIp); !reflect.DeepEqual(gotSubs, tt.wantSubs) {
+				t.Errorf("getSystemSubscriptionList() = %v, want %v", gotSubs, tt.wantSubs)
 			}
 		})
 	}

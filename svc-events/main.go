@@ -16,6 +16,7 @@ package main
 import (
 	"context"
 	"fmt"
+	_ "net/http/pprof"
 	"os"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
@@ -26,15 +27,11 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/consumer"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
-	ev "github.com/ODIM-Project/ODIM/svc-events/events"
 	"github.com/ODIM-Project/ODIM/svc-events/rpc"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
 var (
-	EventConsumerActionID    = "218"
-	EventConsumerActionName  = "EventConsumer"
 	ProcessControlActionId   = "219"
 	ProcessControlActionName = "ProcessControl"
 )
@@ -87,8 +84,6 @@ func main() {
 	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	ctx = context.WithValue(ctx, common.ThreadName, common.EventService)
 	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
-	ctx = context.WithValue(ctx, common.TransactionID, uuid.New())
-
 	// Intializing the TopicsList
 	evcommon.EMBTopics.TopicsList = make(map[string]bool)
 	// Intializing plugin token
@@ -98,14 +93,16 @@ func main() {
 	events := rpc.GetPluginContactInitializer()
 	eventsproto.RegisterEventsServer(services.ODIMService.Server(), events)
 
+	// Load event cache
+	if err = events.Connector.LoadSubscriptionData(ctx); err != nil {
+		log.Fatal("fatal: error while trying to load cache : " + err.Error())
+	}
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
 	jobQueueSize := 10
 	consumer.In, consumer.Out = common.CreateJobQueue(jobQueueSize)
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as PublishEventsToDestination method after reading the data from the channel.
-	ctx = context.WithValue(ctx, common.ActionName, EventConsumerActionName)
-	ctx = context.WithValue(ctx, common.ActionID, EventConsumerActionID)
 	common.RunReadWorkers(ctx, consumer.Out, events.Connector.PublishEventsToDestination, 5)
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
@@ -122,8 +119,6 @@ func main() {
 	if evcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	ctx = context.WithValue(ctx, common.ActionName, EventConsumerActionName)
-	ctx = context.WithValue(ctx, common.ActionID, EventConsumerActionID)
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go evcommon.TrackConfigFileChanges(ctx, errChan)
 
@@ -136,8 +131,7 @@ func main() {
 		EMBConsume:      consumer.Consume,
 	}
 	go startUPInterface.SubscribePluginEMB(ctx)
-	ctx = context.WithValue(ctx, common.TransactionID, uuid.New())
-	go ev.LoadSubscriptionData(ctx)
+
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())

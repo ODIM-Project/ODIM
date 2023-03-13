@@ -6,17 +6,18 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/gomodule/redigo/redis"
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -29,37 +30,78 @@ var (
 	eventSourceToManagerIDMap             map[string]string
 	managerIDToSystemIDsMap               map[string][]string
 	managerIDToChassisIDsMap              map[string][]string
-	subscribeCacheLock                    sync.Mutex
+
+	EventConsumerActionID   = "218"
+	EventConsumerActionName = "EventConsumer"
+	logging                 *logrus.Entry
 )
+
+// temporary variable hold data till reading process happening
+var (
+	systemToSubscriptionsMapTemp      map[string]map[string]bool
+	aggregateIdToSubscriptionsMapTemp map[string]map[string]bool
+	collectionToSubscriptionsMapTemp  map[string]map[string]bool
+	reAttemptInQueue                  = make(map[string]int)
+)
+
+// eventForwardingChanel channel is used for communicate
+// between event forwarding go routine pools
+var eventForwardingChanel = make(chan evmodel.EventPost)
+
+// saveEventChanel channel is used for communicate
+// between event forwarding go routine pools
+var saveEventChanel = make(chan evmodel.EventPost)
 
 // LoadSubscriptionData method calls whenever service is started
 // Here we load Subscription, DeviceSubscription, AggregateToHost
 // table data into cache memory
-func LoadSubscriptionData(ctx context.Context) {
-	l.LogWithFields(ctx).Debug("Event cache is initialized")
-	getAllSubscriptions(ctx)
-	getAllAggregates(ctx)
-	getAllDeviceSubscriptions(ctx)
+func (e *ExternalInterfaces) LoadSubscriptionData(ctx context.Context) error {
+	ctx = context.WithValue(ctx, common.ActionName, EventConsumerActionName)
+	ctx = context.WithValue(ctx, common.ActionID, EventConsumerActionID)
+	transactionId := uuid.NewV4().String()
+	ctx = context.WithValue(ctx, common.TransactionID, transactionId)
+	logging = l.LogWithFields(ctx)
+
+	logging.Debug("Event cache is initialized")
+	err := getAllSubscriptions(ctx)
+	if err != nil {
+		return err
+	}
+	err = getAllAggregates(ctx)
+	if err != nil {
+		return err
+	}
+	err = getAllDeviceSubscriptions(ctx)
+	if err != nil {
+		return err
+	}
 	threadID := 1
 	ctx = context.WithValue(ctx, common.ThreadID, strconv.Itoa(threadID))
 	go initializeDbObserver(ctx)
+	go e.forwardUndeliveredEventToClient(ctx)
+	// create event forwarding worker pool
+	for i := 0; i < config.Data.EventForwardingWorkerPoolCount; i++ {
+		go e.runEventForwardingWorkers()
+	}
+	// init event save undelivered worker pool
+	for i := 0; i < config.Data.EventSaveWorkerPoolCount; i++ {
+		go e.saveEventWorkers()
+	}
+	return nil
 }
 
 // getAllSubscriptions this method read data from Subscription table and
 // load in corresponding cache
-func getAllSubscriptions(ctx context.Context) {
-	subscribeCacheLock.Lock()
-	defer subscribeCacheLock.Unlock()
-	systemToSubscriptionsMap = make(map[string]map[string]bool)
-	aggregateIdToSubscriptionsMap = make(map[string]map[string]bool)
-	collectionToSubscriptionsMap = make(map[string]map[string]bool)
-	emptyOriginResourceToSubscriptionsMap = make(map[string]bool)
+func getAllSubscriptions(ctx context.Context) error {
 	subscriptions, err := evmodel.GetAllEvtSubscriptions()
 	if err != nil {
-		l.LogWithFields(ctx).Error("Error while reading all subscription data ", err)
-		return
+		logging.Error("Error while reading all subscription data ", err)
+		return err
 	}
-
+	systemToSubscriptionsMapTemp = make(map[string]map[string]bool)
+	aggregateIdToSubscriptionsMapTemp = make(map[string]map[string]bool)
+	collectionToSubscriptionsMapTemp = make(map[string]map[string]bool)
+	emptyOriginResourceToSubscriptionsMapTemp := make(map[string]bool)
 	subscriptionsCache = make(map[string]dmtf.EventDestination, len(subscriptions))
 	for _, subscription := range subscriptions {
 		var sub evmodel.SubscriptionResource
@@ -71,35 +113,41 @@ func getAllSubscriptions(ctx context.Context) {
 		subCache.ID = sub.SubscriptionID
 		subscriptionsCache[subCache.ID] = *subCache
 		if len(sub.EventDestination.OriginResources) == 0 && sub.SubscriptionID != evcommon.DefaultSubscriptionID {
-			emptyOriginResourceToSubscriptionsMap[sub.SubscriptionID] = true
+			emptyOriginResourceToSubscriptionsMapTemp[sub.SubscriptionID] = true
 		} else {
 			loadSubscriptionCacheData(sub.SubscriptionID, sub.Hosts)
 		}
 	}
-	l.LogWithFields(ctx).Debug("Subscriptions cache updated ")
+	emptyOriginResourceToSubscriptionsMap = emptyOriginResourceToSubscriptionsMapTemp
+	systemToSubscriptionsMap = systemToSubscriptionsMapTemp
+	aggregateIdToSubscriptionsMap = aggregateIdToSubscriptionsMapTemp
+	collectionToSubscriptionsMap = collectionToSubscriptionsMapTemp
+
+	logging.Debug("Subscriptions cache updated ")
+	return nil
 }
 
 // getAllDeviceSubscriptions method fetch data from DeviceSubscription table
-func getAllDeviceSubscriptions(ctx context.Context) {
-	subscribeCacheLock.Lock()
-	defer subscribeCacheLock.Unlock()
+func getAllDeviceSubscriptions(ctx context.Context) error {
 	deviceSubscriptionList, err := evmodel.GetAllDeviceSubscriptions()
 	if err != nil {
 		l.LogWithFields(ctx).Error("Error while reading all aggregate data ", err)
-		return
+		return err
 	}
-	eventSourceToManagerIDMap = make(map[string]string, len(deviceSubscriptionList))
+	eventSourceToManagerIDMapTemp := make(map[string]string, len(deviceSubscriptionList))
 	for _, device := range deviceSubscriptionList {
 		devSub := strings.Split(device, "||")
-		updateCatchDeviceSubscriptionData(devSub[0], evmodel.GetSliceFromString(devSub[2]))
+		updateCatchDeviceSubscriptionData(devSub[0], evmodel.GetSliceFromString(devSub[2]), eventSourceToManagerIDMapTemp)
 	}
+	eventSourceToManagerIDMap = eventSourceToManagerIDMapTemp
 	l.LogWithFields(ctx).Debug("DeviceSubscription cache updated ")
+	return nil
 }
 
 // updateCatchDeviceSubscriptionData update eventSourceToManagerMap for each key with their system IDs
-func updateCatchDeviceSubscriptionData(key string, originResources []string) {
+func updateCatchDeviceSubscriptionData(key string, originResources []string, cacheMap map[string]string) {
 	systemId := originResources[0][strings.LastIndexByte(originResources[0], '/')+1:]
-	eventSourceToManagerIDMap[key] = systemId
+	cacheMap[key] = systemId
 }
 
 // loadSubscriptionCacheData update collectionToSubscriptionsMap,
@@ -114,28 +162,28 @@ func loadSubscriptionCacheData(id string, hosts []string) {
 // collectionToSubscriptionsMap, aggregateIdToSubscriptionsMap, systemToSubscriptionsMap
 func addSubscriptionCache(key string, subscriptionId string) {
 	if strings.Contains(key, "Collection") {
-		updateCacheMaps(key, subscriptionId, collectionToSubscriptionsMap)
+		updateCacheMaps(key, subscriptionId, collectionToSubscriptionsMapTemp)
 		return
+	} else {
+		_, err := uuid.FromString(key)
+		if err == nil {
+			updateCacheMaps(key, subscriptionId, aggregateIdToSubscriptionsMapTemp)
+			return
+		} else {
+			updateCacheMaps(key, subscriptionId, systemToSubscriptionsMapTemp)
+			return
+		}
 	}
-	_, err := uuid.FromString(key)
-	if err == nil {
-		updateCacheMaps(key, subscriptionId, aggregateIdToSubscriptionsMap)
-		return
-	}
-	updateCacheMaps(key, subscriptionId, systemToSubscriptionsMap)
 }
 
 // getAllAggregates method will read all aggregate from db and
 // update systemIdToAggregateIdsMap to corresponding member in aggregate
-func getAllAggregates(ctx context.Context) {
-	subscribeCacheLock.Lock()
-	defer subscribeCacheLock.Unlock()
-
-	systemIdToAggregateIdsMap = make(map[string]map[string]bool)
+func getAllAggregates(ctx context.Context) error {
+	systemIdToAggregateIdsMapTemp := make(map[string]map[string]bool)
 	aggregateUrls, err := evmodel.GetAllAggregates()
 	if err != nil {
-		l.LogWithFields(ctx).Debug("error occurred while getting aggregate list ", err)
-		return
+		logging.Debug("error occurred while getting aggregate list ", err)
+		return err
 	}
 	for _, aggregateUrl := range aggregateUrls {
 		aggregate, err := evmodel.GetAggregate(aggregateUrl)
@@ -143,32 +191,35 @@ func getAllAggregates(ctx context.Context) {
 			continue
 		}
 		aggregateId := aggregateUrl[strings.LastIndexByte(aggregateUrl, '/')+1:]
-		addSystemIdToAggregateCache(aggregateId, aggregate)
+		addSystemIdToAggregateCache(aggregateId, aggregate, systemIdToAggregateIdsMapTemp)
 	}
-	l.LogWithFields(ctx).Debug("AggregateToHost cache updated ")
+	systemIdToAggregateIdsMap = systemIdToAggregateIdsMapTemp
+	logging.Debug("AggregateToHost cache updated ")
+	return nil
 }
 
 // addSystemIdToAggregateCache update cache for each aggregate member
-func addSystemIdToAggregateCache(aggregateId string, aggregate evmodel.Aggregate) {
+func addSystemIdToAggregateCache(aggregateId string, aggregate evmodel.Aggregate, cacheMap map[string]map[string]bool) {
 	for _, ids := range aggregate.Elements {
 		ids.Oid = ids.Oid[strings.LastIndexByte(strings.TrimSuffix(ids.Oid, "/"), '/')+1:]
-		updateCacheMaps(ids.Oid, aggregateId, systemIdToAggregateIdsMap)
+		updateCacheMaps(ids.Oid, aggregateId, cacheMap)
 	}
 }
 
-//getSourceId function return system id corresponding host, if not found then return host
+// getSourceId function return system id corresponding host, if not found then return host
 func getSourceId(host string) (string, error) {
 	data, isExists := eventSourceToManagerIDMap[host]
 	if !isExists {
 		if strings.Contains(host, "Collection") {
 			return host, nil
+		} else {
+			return "", fmt.Errorf("invalid source")
 		}
-		return "", fmt.Errorf("invalid source")
 	}
 	return data, nil
 }
 
-//updateCacheMaps update map value corresponding key
+// updateCacheMaps update map value corresponding key
 func updateCacheMaps(key, value string, cacheData map[string]map[string]bool) {
 	elements, isExists := cacheData[key]
 	if isExists {
@@ -188,7 +239,7 @@ func getSubscriptions(originOfCondition, systemId, hostIp string) (subs []dmtf.E
 	return
 }
 
-//getSystemSubscriptionList return list of subscription corresponding to host
+// getSystemSubscriptionList return list of subscription corresponding to host
 func getSystemSubscriptionList(hostIp string) (subs []dmtf.EventDestination) {
 	systemSubscription, isExists := systemToSubscriptionsMap[hostIp]
 	if isExists {
@@ -229,6 +280,7 @@ func getAggregateSubscriptionList(systemId string) (subs []dmtf.EventDestination
 func getCollectionSubscriptionList(originOfCondition, hostIp string) (subs []dmtf.EventDestination) {
 	collectionsKey := getCollectionKey(originOfCondition, hostIp)
 	collectionSubscription, isExists := collectionToSubscriptionsMap[collectionsKey]
+
 	if isExists {
 		for subId := range collectionSubscription {
 			sub, isValidSubId := getSubscriptionDetails(subId)
@@ -252,7 +304,7 @@ func getEmptyOriginResourceSubscriptionList() (subs []dmtf.EventDestination) {
 	return
 }
 
-//getSubscriptionDetails this method return subscription details corresponding subscription Id
+// getSubscriptionDetails this method return subscription details corresponding subscription Id
 func getSubscriptionDetails(subscriptionID string) (sub dmtf.EventDestination, status bool) {
 	if sub, isExists := subscriptionsCache[subscriptionID]; isExists {
 		return sub, true
@@ -274,20 +326,25 @@ func getCollectionKey(oid, host string) (key string) {
 	return
 }
 
-// initializeDbObserver function subscribe redis keyspace notifier
+// initializeDbObserver function subscribe redis keySpace notifier
+// function notify by channel if any update happened subscribed key
 func initializeDbObserver(ctx context.Context) {
-	l.LogWithFields(ctx).Debug("Initializing observer ")
 START:
-	conn, _ := common.GetDBConnection(common.OnDisk)
-	writeConn := conn.WritePool.Get()
-	defer writeConn.Close()
-	_, err := writeConn.Do("CONFIG", "SET", evcommon.RedisNotifierType, evcommon.RedisNotifierFilterKey)
+	logging.Info("Initializing observer ")
+	conn, errDbConn := common.GetDBConnection(common.OnDisk)
+	if errDbConn != nil {
+		l.Log.Error("error while getDbConnection  ", errDbConn)
+		goto START
+	}
+	readConn := conn.ReadPool.Get()
+	defer readConn.Close()
+	err := conn.EnableKeySpaceNotifier(evcommon.RedisNotifierType, evcommon.RedisNotifierFilterKey)
 	if err != nil {
 		l.LogWithFields(ctx).Error("error occurred configuring key event ", err)
 		time.Sleep(time.Second * 1)
 		goto START
 	}
-	psc := redis.PubSubConn{Conn: writeConn}
+	psc := redis.PubSubConn{Conn: readConn}
 
 	psc.PSubscribe(evcommon.AggregateToHostChannelKey, evcommon.DeviceSubscriptionChannelKey,
 		evcommon.SubscriptionChannelKey)
@@ -296,15 +353,78 @@ START:
 		case redis.Message:
 			switch string(v.Pattern) {
 			case evcommon.DeviceSubscriptionChannelKey:
-				getAllDeviceSubscriptions(ctx)
+				err := getAllDeviceSubscriptions(ctx)
+				if err != nil {
+					l.LogWithFields(ctx).Error(err)
+				}
 			case evcommon.SubscriptionChannelKey:
-				getAllSubscriptions(ctx)
+				err := getAllSubscriptions(ctx)
+				if err != nil {
+					l.LogWithFields(ctx).Error(err)
+				}
 			case evcommon.AggregateToHostChannelKey:
-				getAllAggregates(ctx)
+				err := getAllAggregates(ctx)
+				if err != nil {
+					l.LogWithFields(ctx).Error(err)
+				}
 			}
 		case error:
-			l.LogWithFields(ctx).Error("Error occurred in redis keyspace notifier publisher ", v)
+			logging.Error("Error occurred in redis keySpace notifier publisher ", v)
 			goto START
+		}
+	}
+}
+
+// forwardUndeliveredEventToClient function read the undelivered event from db
+// and forward event to destination after specified interval
+func (e *ExternalInterfaces) forwardUndeliveredEventToClient(ctx context.Context) {
+	for {
+		for _, sub := range subscriptionsCache {
+			if sub.Destination != "" {
+				go e.checkUndeliveredEvents(sub.Destination)
+			}
+		}
+		time.Sleep(1 * time.Minute)
+	}
+}
+
+// RunEventForwardingWorkers will create a worker pool for forwarding
+// event to destination
+func (e *ExternalInterfaces) runEventForwardingWorkers() {
+	for job := range eventForwardingChanel {
+		e.postEvent(job)
+	}
+}
+
+// RunEventForwardingWorkers will create a worker pool for forwarding
+// event to destination
+func (e *ExternalInterfaces) saveEventWorkers() {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		logging.Error("error occurred saveEventWorker ", err.Error())
+		e.saveEventWorkers()
+		return
+	}
+	writePool := conn.WritePool.Get()
+	if err != nil {
+		logging.Error("error occurred get write pool in saveEventWorker ", err.Error())
+		e.saveEventWorkers()
+		return
+	}
+	for job := range saveEventChanel {
+
+		err := conn.SaveUndeliveredEvents(evmodel.UndeliveredEvents, job.UndeliveredEventID, job.Message, writePool)
+		if err != nil {
+			logging.Error("error while save undelivered event ", err)
+			time.Sleep(time.Second)
+			writePool = conn.WritePool.Get()
+			if err != nil {
+				continue
+			}
+			err = conn.SaveUndeliveredEvents(evmodel.UndeliveredEvents, job.UndeliveredEventID, job.Message, writePool)
+			if err != nil {
+				logging.Error("error occurred while save saveEventWorker ", err.Error())
+			}
 		}
 	}
 }

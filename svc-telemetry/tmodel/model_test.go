@@ -63,7 +63,7 @@ func TestGetResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := GetResource(tt.args.Table, tt.args.key, common.InMemory)
+			got, _ := GetResource(context.TODO(),tt.args.Table, tt.args.key, common.InMemory)
 			if got != tt.want {
 				t.Errorf("GetResource() got = %v, want %v", got, tt.want)
 			}
@@ -126,7 +126,7 @@ func TestGetAllKeysFromTable(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := GetAllKeysFromTable(tt.args.table, tt.args.dbtype)
+			got, _ := GetAllKeysFromTable(context.TODO(),tt.args.table, tt.args.dbtype)
 
 			if len(got) != len(tt.want) {
 				t.Errorf("GetAllKeysFromTable() = %v, want %v", got, tt.want)
@@ -136,10 +136,10 @@ func TestGetAllKeysFromTable(t *testing.T) {
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
-	_, err := GetAllKeysFromTable("System", common.OnDisk)
+	_, err := GetAllKeysFromTable(context.TODO(),"System", common.OnDisk)
 	assert.NotNil(t, err, "There should be an error ")
 
-	_, err = GetResource("System", "dummy", common.OnDisk)
+	_, err = GetResource(context.TODO(),"System", "dummy", common.OnDisk)
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
 	}
@@ -223,18 +223,18 @@ func TestGetTarget(t *testing.T) {
 		PreferredAuthType: "BasicAuth",
 	}
 	mockData(t, common.OnDisk, "System", "system_id", pluginData)
-	_, err := GetTarget("system_id")
+	_, err := GetTarget(context.TODO(),"system_id")
 	assert.Nil(t, err, "There should be no error ")
 
-	_, err = GetTarget("invalid")
+	_, err = GetTarget(context.TODO(),"invalid")
 	assert.NotNil(t, err, "There should be an error ")
 	mockData(t, common.OnDisk, "System", "invalid", "dummy")
-	_, err = GetTarget("invalid")
+	_, err = GetTarget(context.TODO(),"invalid")
 	assert.NotNil(t, err, "There should be no error ")
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
-	_, err = GetTarget("system_id")
+	_, err = GetTarget(context.TODO(),"system_id")
 	assert.NotNil(t, err, "There should be an error ")
 	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)

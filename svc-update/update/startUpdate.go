@@ -47,8 +47,9 @@ func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sess
 	targetURI := "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate"
 
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
+	l.LogWithFields(ctx).Debug("task info payload: ", taskInfo)
 	// Read all the requests from database
-	targetList, err := GetAllKeysFromTableFunc("SimpleUpdate", common.OnDisk)
+	targetList, err := GetAllKeysFromTableFunc(ctx,"SimpleUpdate", common.OnDisk)
 	if err != nil {
 		errMsg := "Unable to read SimpleUpdate requests from database: " + err.Error()
 		l.LogWithFields(ctx).Warn(errMsg)
@@ -76,7 +77,7 @@ func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sess
 		return resp
 	}
 	for _, target := range targetList {
-		data, gerr := e.DB.GetResource("SimpleUpdate", target, common.OnDisk)
+		data, gerr := e.DB.GetResource(ctx,"SimpleUpdate", target, common.OnDisk)
 		if gerr != nil {
 			errMsg := "Unable to retrive the start update request" + gerr.Error()
 			l.LogWithFields(ctx).Warn(errMsg)
@@ -147,6 +148,8 @@ func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sess
 		e.External.UpdateTask(ctx, task)
 		runtime.Goexit()
 	}
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("final response for start update request: %s", string(respBody))
 	return resp
 }
 
@@ -182,7 +185,6 @@ func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data
 		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, taskInfo)
 		return
 	}
-
 	decryptedPasswordByte, passwdErr := e.External.DevicePassword(target.Password)
 	if passwdErr != nil {
 		subTaskChannel <- http.StatusInternalServerError
@@ -233,6 +235,7 @@ func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data
 	}
 
 	target.PostBody = []byte(updateRequestBody)
+	l.LogWithFields(ctx).Debugf("updated payload to plugin : %s", updateRequestBody)
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.StartUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost

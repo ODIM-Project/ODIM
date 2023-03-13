@@ -21,6 +21,7 @@ package update
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -99,7 +100,8 @@ func (e *ExternalInterface) GetUpdateService(ctx context.Context) response.RPC {
 			},
 		},
 	}
-
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("final response for start update request: %s", string(respBody))
 	return resp
 
 }
@@ -117,7 +119,7 @@ func (e *ExternalInterface) GetAllFirmwareInventory(ctx context.Context, req *up
 	}
 
 	members := []dmtf.Link{}
-	firmwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("FirmwareInventory", common.InMemory)
+	firmwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable(ctx,"FirmwareInventory", common.InMemory)
 	if err != nil || len(firmwareCollectionKeysArray) == 0 {
 		l.LogWithFields(ctx).Warn("odimra doesnt have servers")
 	}
@@ -129,6 +131,8 @@ func (e *ExternalInterface) GetAllFirmwareInventory(ctx context.Context, req *up
 	firmwareCollection.MembersCount = len(members)
 	resp.Body = firmwareCollection
 	resp.StatusCode = http.StatusOK
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("final response for get all firmware inventory request: %s", string(respBody))
 	return resp
 }
 
@@ -146,7 +150,7 @@ func (e *ExternalInterface) GetFirmwareInventory(ctx context.Context, req *updat
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"FirmwareInventory", req.ResourceID}, nil)
 	}
-	data, gerr := e.DB.GetResource("FirmwareInventory", req.URL, common.InMemory)
+	data, gerr := e.DB.GetResource(ctx,"FirmwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
 		l.LogWithFields(ctx).Warn("Unable to get firmware inventory details : " + gerr.Error())
 		errorMessage := gerr.Error()
@@ -176,7 +180,8 @@ func (e *ExternalInterface) GetFirmwareInventory(ctx context.Context, req *updat
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("final response for get firmware inventory request: %s", string(respBody))
 	return resp
 
 }
@@ -194,7 +199,7 @@ func (e *ExternalInterface) GetAllSoftwareInventory(ctx context.Context, req *up
 	}
 
 	members := []dmtf.Link{}
-	softwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("SoftwareInventory", common.InMemory)
+	softwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable(ctx,"SoftwareInventory", common.InMemory)
 	if err != nil || len(softwareCollectionKeysArray) == 0 {
 		l.LogWithFields(ctx).Warn("odimra doesnt have servers")
 	}
@@ -206,6 +211,8 @@ func (e *ExternalInterface) GetAllSoftwareInventory(ctx context.Context, req *up
 	softwareCollection.MembersCount = len(members)
 	resp.Body = softwareCollection
 	resp.StatusCode = http.StatusOK
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("final response for get all software inventory request: %s", string(respBody))
 	return resp
 }
 
@@ -223,7 +230,7 @@ func (e *ExternalInterface) GetSoftwareInventory(ctx context.Context, req *updat
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"SoftwareInventory", req.ResourceID}, nil)
 	}
-	data, gerr := e.DB.GetResource("SoftwareInventory", req.URL, common.InMemory)
+	data, gerr := e.DB.GetResource(ctx,"SoftwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
 		l.LogWithFields(ctx).Warn("Unable to get software inventory details : " + gerr.Error())
 		errorMessage := gerr.Error()
@@ -253,7 +260,8 @@ func (e *ExternalInterface) GetSoftwareInventory(ctx context.Context, req *updat
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("final response for get software inventory request: %s", string(respBody))
 	return resp
 
 }

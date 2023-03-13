@@ -64,7 +64,7 @@ var (
 	GetDbConnection = common.GetDBConnection
 )
 
-//SubscriptionResource is a model to store the subscription details
+// SubscriptionResource is a model to store the subscription details
 type SubscriptionResource struct {
 	EventDestination *dmtf.EventDestination `json:"EventDestination"`
 	EventHostIP      string                 `json:"EventHostIP,omitempty"`
@@ -80,12 +80,20 @@ type Fabric struct {
 	PluginID   string
 }
 
-//Aggregate is the model for Aggregate information
+// EventPost is the model for post data to client
+type EventPost struct {
+	Destination        string
+	EventID            string
+	UndeliveredEventID string
+	Message            []byte
+}
+
+// Aggregate is the model for Aggregate information
 type Aggregate struct {
 	Elements []dmtf.Link `json:"Elements"`
 }
 
-//GetResource fetches a resource from database using table and key
+// GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
 	conn, err := GetDbConnection(common.InMemory)
 	if err != nil {
@@ -102,7 +110,7 @@ func GetResource(Table, key string) (string, *errors.Error) {
 	return resource, nil
 }
 
-//GetTarget fetches the System(Target Device Credentials) table details
+// GetTarget fetches the System(Target Device Credentials) table details
 func GetTarget(deviceUUID string) (*common.Target, error) {
 	var target common.Target
 	conn, err := GetDbConnection(common.OnDisk)
@@ -121,7 +129,7 @@ func GetTarget(deviceUUID string) (*common.Target, error) {
 
 }
 
-//GetPluginData will fetch plugin details
+// GetPluginData will fetch plugin details
 func GetPluginData(pluginID string) (*common.Plugin, *errors.Error) {
 	var plugin common.Plugin
 
@@ -148,7 +156,7 @@ func GetPluginData(pluginID string) (*common.Plugin, *errors.Error) {
 	return &plugin, nil
 }
 
-//GetAllPlugins gets all the Plugin from the db
+// GetAllPlugins gets all the Plugin from the db
 func GetAllPlugins() ([]common.Plugin, *errors.Error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -182,7 +190,7 @@ func GetAllPlugins() ([]common.Plugin, *errors.Error) {
 	return plugins, nil
 }
 
-//GetAllKeysFromTable return all matching data give table name
+// GetAllKeysFromTable return all matching data give table name
 func GetAllKeysFromTable(table string) ([]string, error) {
 	conn, err := GetDbConnection(common.InMemory)
 	if err != nil {
@@ -195,7 +203,7 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 	return keysArray, nil
 }
 
-//GetAllSystems retrieves all the compute systems in odimra
+// GetAllSystems retrieves all the compute systems in odimra
 func GetAllSystems() ([]string, error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -208,7 +216,7 @@ func GetAllSystems() ([]string, error) {
 	return keysArray, nil
 }
 
-//GetSingleSystem retrieves specific compute system in odimra based on the ID
+// GetSingleSystem retrieves specific compute system in odimra based on the ID
 func GetSingleSystem(id string) (string, error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -261,7 +269,7 @@ func GetAggregateData(aggreagetKey string) (Aggregate, error) {
 	return aggregate, nil
 }
 
-//GetAllFabrics return all Fabrics
+// GetAllFabrics return all Fabrics
 func GetAllFabrics() ([]string, error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -418,7 +426,7 @@ func UpdateEventSubscription(evtSubscription SubscriptionResource) error {
 	return nil
 }
 
-//GetAllMatchingDetails accepts the table name ,pattern and DB type and return all the keys which mathces the pattern
+// GetAllMatchingDetails accepts the table name ,pattern and DB type and return all the keys which mathces the pattern
 func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
 	conn, err := GetDbConnection(dbtype)
 	if err != nil {
@@ -446,7 +454,7 @@ func GetUndeliveredEvents(destination string) (string, error) {
 		return "", fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
 
-	eventData, err := conn.Read(UndeliveredEvents, destination)
+	eventData, err := conn.GetKeyValue(destination)
 	if err != nil {
 		return "", fmt.Errorf("error: while trying to fetch details: %v", err.Error())
 	}
@@ -460,7 +468,7 @@ func DeleteUndeliveredEvents(destination string) error {
 	if err != nil {
 		return fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
-	if err := conn.Delete(UndeliveredEvents, destination); err != nil {
+	if err := conn.DeleteKey(destination); err != nil {
 		return fmt.Errorf("%v", err.Error())
 	}
 	return nil
@@ -590,7 +598,7 @@ func GetAggregate(aggregateURI string) (Aggregate, *errors.Error) {
 	return aggregate, nil
 }
 
-//GetAllAggregates return all aggregate url added in DB
+// GetAllAggregates return all aggregate url added in DB
 func GetAllAggregates() ([]string, error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -638,4 +646,14 @@ func GetAllEvtSubscriptions() ([]string, error) {
 		return nil, fmt.Errorf("error while trying to get subscription of device %v", gerr.Error())
 	}
 	return evtSub, nil
+}
+
+// GetUndeliveredEventsKeyList accepts the table name ,pattern ,cursor value
+// and DB type and return all the keys which matches the pattern
+func GetUndeliveredEventsKeyList(table, pattern string, dbtype common.DbType, nextCursor int) ([]string, int, *errors.Error) {
+	conn, err := GetDbConnection(dbtype)
+	if err != nil {
+		return []string{}, 0, err
+	}
+	return conn.GetAllKeysFromDb(table, pattern, nextCursor)
 }

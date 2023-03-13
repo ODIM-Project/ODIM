@@ -35,6 +35,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 )
 
 var (
@@ -115,7 +116,7 @@ func (e *ExternalInterfaces) SubmitTestEvent(ctx context.Context, req *eventspro
 
 				if filterEventsToBeForwarded(ctx, subscription, message.Events[0], []model.Link{{Oid: origin.Oid}}) {
 					l.LogWithFields(ctx).Info("Destination: " + sub.EventDestination.Destination)
-					go e.postEvent(ctx, sub.EventDestination.Destination, eventUniqueID, messageBytes)
+					go e.postEvent(evmodel.EventPost{Destination: sub.EventDestination.Destination, EventID: eventUniqueID, Message: messageBytes})
 				}
 			}
 		}

@@ -42,7 +42,7 @@
 |PluginStatusPolling||MaxRetryAttempt|integer|Max status polling retries
 |PluginStatusPolling||RetryIntervalInMins|integer|Interval between status polling retries
 |PluginStatusPolling||ResponseTimeoutInSecs|integer|Timeout for status polling requests
-|PluginStatusPolling||StartUpResouceBatchSize|integer|Number of resources to retrieve in batch
+|PluginStatusPolling||StartUpResourceBatchSize|integer|Number of resources to retrieve in batch
 |ExecPriorityDelayConf||MinResetPriority|integer|Minimum priority for a serverreset action
 |ExecPriorityDelayConf||MaxResetPriority|integer|Maximum priority for a server reset action
 |ExecPriorityDelayConf||MaxResetDelayInSecs|integer|Maximum delay before executing server reset action

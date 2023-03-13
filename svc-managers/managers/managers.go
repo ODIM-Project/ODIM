@@ -31,6 +31,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrresponse"
@@ -339,9 +340,13 @@ func (e *ExternalInterface) GetManagersResource(ctx context.Context, req *manage
 }
 
 // VirtualMediaActions is used to perform action on VirtualMedia. For insert and eject of virtual media this function is used
-func (e *ExternalInterface) VirtualMediaActions(ctx context.Context, req *managersproto.ManagerRequest) response.RPC {
+func (e *ExternalInterface) VirtualMediaActions(ctx context.Context, req *managersproto.ManagerRequest, taskID string) {
 	var resp response.RPC
 	var requestBody = req.RequestBody
+	targetURI := req.GetURL()
+	//create task
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI,
+		UpdateTask: e.RPC.UpdateTask, TaskRequest: string(req.RequestBody)}
 	//InsertMedia payload validation
 	if strings.Contains(req.URL, "VirtualMedia.InsertMedia") {
 		var vmiReq mgrmodel.VirtualMediaInsert
@@ -352,8 +357,8 @@ func (e *ExternalInterface) VirtualMediaActions(ctx context.Context, req *manage
 		if err != nil {
 			errorMessage := "while unmarshaling the virtual media insert request: " + err.Error()
 			l.LogWithFields(ctx).Error(errorMessage)
-			resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
-			return resp
+			common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, taskInfo)
+			return
 		}
 
 		// Validating the request JSON properties for case sensitive
@@ -361,12 +366,13 @@ func (e *ExternalInterface) VirtualMediaActions(ctx context.Context, req *manage
 		if err != nil {
 			errMsg := "while validating request parameters for virtual media insert: " + err.Error()
 			l.LogWithFields(ctx).Error(errMsg)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+			return
 		} else if invalidProperties != "" {
 			errorMessage := "one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 			l.LogWithFields(ctx).Error(errorMessage)
-			response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
-			return response
+			common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
+			return
 		}
 
 		// Check mandatory fields
@@ -374,44 +380,51 @@ func (e *ExternalInterface) VirtualMediaActions(ctx context.Context, req *manage
 		if err != nil {
 			errorMessage := "request payload validation failed: " + err.Error()
 			l.LogWithFields(ctx).Error(errorMessage)
-			resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
-			return resp
+			common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, taskInfo)
+			return
 		}
 		requestBody, err = json.Marshal(vmiReq)
 		if err != nil {
 			l.LogWithFields(ctx).Error("while marshalling the virtual media insert request: " + err.Error())
-			resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-			return resp
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
+			return
 		}
 	}
 	// splitting managerID to get uuid
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
-	_, resp = e.deviceCommunication(ctx, req.URL, uuid, requestData[1], http.MethodPost, requestBody)
+	plugin, resp := e.deviceCommunication(ctx, req.URL, uuid, requestData[1], http.MethodPost, requestBody)
 
 	// If the virtualmedia action is success then updating DB
-	if resp.StatusCode == http.StatusOK {
-		vmURI := strings.Replace(req.URL, "/Actions/VirtualMedia.InsertMedia", "", -1)
-		vmURI = strings.Replace(vmURI, "/Actions/VirtualMedia.EjectMedia", "", -1)
-		deviceData, err := e.getResourceInfoFromDevice(ctx, vmURI, uuid, requestData[1], nil)
-		if err != nil {
-			l.LogWithFields(ctx).Error("while trying get on URI " + vmURI + " : " + err.Error())
+	if resp.StatusCode == http.StatusAccepted {
+		services.SavePluginTaskInfo(ctx, plugin.PluginIP, plugin.PluginServerName, taskID, plugin.Location)
+	}
+	e.saveMediaDetails(ctx, req)
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("Outgoing virtual media response to northbound: %s", string(respBody))
+}
+
+// saveMediaDetails is used to save virtual media data in DB
+func (e *ExternalInterface) saveMediaDetails(ctx context.Context, req *managersproto.ManagerRequest) {
+	vmURI := strings.Replace(req.URL, "/Actions/VirtualMedia.InsertMedia", "", -1)
+	vmURI = strings.Replace(vmURI, "/Actions/VirtualMedia.EjectMedia", "", -1)
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
+	uuid := requestData[0]
+	deviceData, err := e.getResourceInfoFromDevice(ctx, vmURI, uuid, requestData[1], nil)
+	if err != nil {
+		l.LogWithFields(ctx).Error("while trying get on URI " + vmURI + " : " + err.Error())
+	} else {
+		var vmData map[string]interface{}
+		jerr := json.Unmarshal([]byte(deviceData), &vmData)
+		if jerr != nil {
+			l.LogWithFields(ctx).Error("while unmarshaling virtual media details: " + jerr.Error())
 		} else {
-			var vmData map[string]interface{}
-			jerr := json.Unmarshal([]byte(deviceData), &vmData)
-			if jerr != nil {
-				l.LogWithFields(ctx).Error("while unmarshaling virtual media details: " + jerr.Error())
-			} else {
-				err = e.DB.UpdateData(vmURI, vmData, "VirtualMedia")
-				if err != nil {
-					l.LogWithFields(ctx).Error("while saving virtual media details: " + err.Error())
-				}
+			err = e.DB.UpdateData(vmURI, vmData, "VirtualMedia")
+			if err != nil {
+				l.LogWithFields(ctx).Error("while saving virtual media details: " + err.Error())
 			}
 		}
 	}
-	respBody := fmt.Sprintf("%v", resp.Body)
-	l.LogWithFields(ctx).Debugf("Outgoing virtual media response to northbound: %s", string(respBody))
-	return resp
 }
 
 // validateFields will validate the request payload, if any mandatory fields are missing then it will generate an error

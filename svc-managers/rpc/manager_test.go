@@ -343,6 +343,8 @@ func TestVirtualMediaEject(t *testing.T) {
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
+	mgr.GetSessionUserName = mockGetSessionUserName
+	mgr.CreateTask = mockCreateTask
 	req := &managersproto.ManagerRequest{
 		ManagerID:    "uuid.1",
 		SessionToken: "validToken",
@@ -353,7 +355,7 @@ func TestVirtualMediaEject(t *testing.T) {
 	resp, err := mgr.VirtualMediaEject(ctx, req)
 	fmt.Println(resp)
 	assert.Nil(t, err, "The two words should be the same.")
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusAccepted, "Status code should be StatusOK.")
 
 	// Invalid
 	req = &managersproto.ManagerRequest{
@@ -373,7 +375,8 @@ func TestVirtualMediaInsert(t *testing.T) {
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
-
+	mgr.GetSessionUserName = mockGetSessionUserName
+	mgr.CreateTask = mockCreateTask
 	req := &managersproto.ManagerRequest{
 		ManagerID:    "uuid.1",
 		SessionToken: "validToken",
@@ -387,7 +390,7 @@ func TestVirtualMediaInsert(t *testing.T) {
 	var resp = &managersproto.ManagerResponse{}
 	resp, err := mgr.VirtualMediaInsert(ctx, req)
 	assert.Nil(t, err, "The two words should be the same.")
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusAccepted, "Status code should be StatusOK.")
 
 	// Invalid
 	req = &managersproto.ManagerRequest{

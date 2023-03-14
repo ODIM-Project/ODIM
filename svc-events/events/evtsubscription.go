@@ -45,91 +45,70 @@ import (
 	"github.com/google/uuid"
 )
 
-func (e *ExternalInterfaces) ValidateRequest(ctx context.Context, taskID, targetURI string, req *eventsproto.EventSubRequest, postRequest model.EventDestination) {
+// ValidateRequest input request for create subscription
+func (e *ExternalInterfaces) ValidateRequest(ctx context.Context, req *eventsproto.EventSubRequest,
+	postRequest model.EventDestination) (int32, string, []interface{}, error) {
 	invalidProperties, err := common.RequestParamsCaseValidator(req.PostBody, postRequest)
-	var percentComplete int32 = 100
-	var resp errResponse.RPC
 	if err != nil {
-		l.LogWithFields(ctx).Error(err.Error())
-		common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, err.Error(), nil, nil)
-		return
+		return http.StatusInternalServerError, errResponse.InternalError, nil, err
 	} else if invalidProperties != "" {
-		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		l.LogWithFields(ctx).Error(errorMessage)
-		resp := common.GeneralError(http.StatusBadRequest, errResponse.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
-		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
-		return
+		return http.StatusBadRequest, errResponse.PropertyUnknown, []interface{}{invalidProperties}, err
 	}
 
 	//check mandatory fields
 	statusCode, statusMessage, messageArgs, err := validateFields(&postRequest)
 	if err != nil {
-		// Update the task here with error response
-		errorMessage := "error: request payload validation failed: " + err.Error()
-		l.LogWithFields(ctx).Error(errorMessage)
-
-		resp = common.GeneralError(statusCode, statusMessage, errorMessage, messageArgs, nil)
-		// Fill task and update
-		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
-		return
+		return statusCode, statusMessage, messageArgs, err
 	}
 
 	//validate destination URI in the request
 	if !common.URIValidator(postRequest.Destination) {
-		errorMessage := "error: request body contains invalid value for Destination field, " + postRequest.Destination
-		l.LogWithFields(ctx).Error(errorMessage)
-
-		resp = common.GeneralError(http.StatusBadRequest, errResponse.PropertyValueFormatError, errorMessage, []interface{}{postRequest.Destination, "Destination"}, nil)
-		// Fill task and update
-		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
-		return
+		return http.StatusBadRequest, errResponse.PropertyValueFormatError, []interface{}{postRequest.Destination, "Destination"}, err
 	}
 
 	// check any of the subscription present for the destination from the request
 	// if errored out or no subscriptions then add subscriptions else return an error
 	subscriptionDetails, _ := e.GetEvtSubscriptions(postRequest.Destination)
 	if len(subscriptionDetails) > 0 {
-		errorMessage := "Subscription already present for the requested destination"
-		evcommon.GenErrorResponse(errorMessage, errResponse.ResourceInUse, http.StatusConflict,
-			[]interface{}{}, &resp)
-		l.LogWithFields(ctx).Error(errorMessage)
-		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
-		return
+		return http.StatusConflict, errResponse.ResourceInUse, []interface{}{postRequest.Destination, "Destination"}, fmt.Errorf("subscription already present for the requested destination")
 	}
-	fmt.Println("Request is valid ")
+	return http.StatusOK, common.OK, []interface{}{}, nil
 }
 
 // CreateEventSubscription is a API to create event subscription
 func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID string, sessionUserName string, req *eventsproto.EventSubRequest) errResponse.RPC {
 	var (
-		err             error
-		resp            errResponse.RPC
-		postRequest     model.EventDestination
-		percentComplete int32 = 100
-		targetURI             = "/redfish/v1/EventService/Subscriptions"
+		err                  error
+		resp                 errResponse.RPC
+		postRequest          model.EventDestination
+		percentComplete      int32 = 100
+		targetURI                  = "/redfish/v1/EventService/Subscriptions"
+		wg, taskCollectionWG sync.WaitGroup
+		result               = &evresponse.MutexLock{
+			Response: make(map[string]evresponse.EventResponse),
+			Hosts:    make(map[string]string),
+			Lock:     &sync.Mutex{},
+		}
 	)
-
 	if err = json.Unmarshal(req.PostBody, &postRequest); err != nil {
-		// Update the task here with error response
 		l.LogWithFields(ctx).Error(err.Error())
-		resp = common.GeneralError(http.StatusBadRequest, errResponse.MalformedJSON, err.Error(), []interface{}{}, nil)
-		// Fill task and update
+		evcommon.GenErrorResponse(err.Error(), errResponse.MalformedJSON, http.StatusBadRequest, []interface{}{}, &resp)
 		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
 	// ValidateRequest input request for create subscription
-	e.ValidateRequest(ctx, targetURI, targetURI, req, postRequest)
-	fmt.Println("Vvalid Request ")
-
+	statusCode, statusMessage, messageArgs, err := e.ValidateRequest(ctx, req, postRequest)
+	if err != nil {
+		evcommon.GenErrorResponse(err.Error(), statusMessage, statusCode,
+			messageArgs, &resp)
+		l.LogWithFields(ctx).Error(err.Error())
+		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody),
+			resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		return resp
+	}
 	// Get the target device  details from the origin resources
 	// Loop through all origin list and form individual event subscription request,
 	// Which will then forward to plugin to make subscription with target device
-	var wg, taskCollectionWG sync.WaitGroup
-	var result = &evresponse.MutexLock{
-		Response: make(map[string]evresponse.EventResponse),
-		Hosts:    make(map[string]string),
-		Lock:     &sync.Mutex{},
-	}
 
 	// remove odataid in the origin resources
 	originResources := removeOdataIDfromOriginResources(postRequest.OriginResources)

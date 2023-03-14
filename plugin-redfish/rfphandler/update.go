@@ -17,6 +17,7 @@ package rfphandler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -61,6 +62,7 @@ func SimpleUpdate(ctx iris.Context) {
 		log.Error(errMsg)
 		return
 	}
+	reqPostBody.Targets = nil
 	deviceDetails.PostBody, err = json.Marshal(reqPostBody)
 	if err != nil {
 		errMsg := "While trying to marshal request body, got:" + err.Error()

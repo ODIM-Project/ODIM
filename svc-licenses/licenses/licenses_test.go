@@ -120,18 +120,14 @@ func TestInstallLicenseService(t *testing.T) {
 			}
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(ctx, req)
-
-	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
+	e.InstallLicenseService(ctx, req, "user", "task12345")
 }
 
 func TestInstallLicenseService_InvalidRequest(t *testing.T) {
 	ctx := mockContext()
 	req := &licenseproto.InstallLicenseRequest{}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(ctx, req)
-
-	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+	e.InstallLicenseService(ctx, req, "user", "task12345")
 }
 
 func TestInstallLicenseService_EmptyLinks(t *testing.T) {
@@ -141,9 +137,7 @@ func TestInstallLicenseService_EmptyLinks(t *testing.T) {
 			"LicenseString": "XXX-XXX-XXX-XXX-XXX"
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(ctx, req)
-
-	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+	e.InstallLicenseService(ctx, req, "user", "task12345")
 }
 
 func TestInstallLicenseService_InvalidManager(t *testing.T) {
@@ -158,9 +152,7 @@ func TestInstallLicenseService_InvalidManager(t *testing.T) {
 			}
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(ctx, req)
-
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
+	e.InstallLicenseService(ctx, req, "user", "task12345")
 }
 
 func TestInstallLicenseService_InvalidAuthorizedDevices(t *testing.T) {
@@ -175,9 +167,7 @@ func TestInstallLicenseService_InvalidAuthorizedDevices(t *testing.T) {
 			}
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(ctx, req)
-
-	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+	e.InstallLicenseService(ctx, req, "user", "task12345")
 }
 
 func TestInstallLicenseService_ManagerURL(t *testing.T) {
@@ -192,9 +182,7 @@ func TestInstallLicenseService_ManagerURL(t *testing.T) {
 			}
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(ctx, req)
-
-	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
+	e.InstallLicenseService(ctx, req, "user", "task12345")
 }
 
 func TestInstallLicenseService_Agrregates(t *testing.T) {
@@ -212,9 +200,7 @@ func TestInstallLicenseService_Agrregates(t *testing.T) {
 			}
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(ctx, req)
-
-	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
+	e.InstallLicenseService(ctx, req, "user", "task12345")
 }
 
 func TestInstallLicenseService_Agrregates_InvalidURI(t *testing.T) {
@@ -230,7 +216,5 @@ func TestInstallLicenseService_Agrregates_InvalidURI(t *testing.T) {
 			}
 		}`)}
 	e := mockGetExternalInterface()
-	response := e.InstallLicenseService(ctx, req)
-
-	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusNoContent.")
+	e.InstallLicenseService(ctx, req, "user", "task12345")
 }

@@ -131,8 +131,6 @@ func (e *ExternalInterface) InstallLicenseService(ctx context.Context, req *lice
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI,
 		UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
 
-	fmt.Println("taskID", taskID)
-
 	genErr := JsonUnMarshalFunc(req.RequestBody, &installreq)
 	if genErr != nil {
 		errMsg := "Unable to unmarshal the install license request" + genErr.Error()

@@ -20,15 +20,20 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-licenses/model"
 )
 
@@ -36,6 +41,13 @@ var (
 	// ConfigFilePath holds the value of odim config file path
 	ConfigFilePath string
 )
+
+// PluginTaskInfo hold the task information from plugin
+type PluginTaskInfo struct {
+	Location         string
+	PluginIP         string
+	PluginServerName string
+}
 
 // GetAllKeysFromTable fetches all keys in a given table
 func GetAllKeysFromTable(table string, dbtype persistencemgr.DbType) ([]string, error) {
@@ -112,8 +124,11 @@ func GetPluginData(pluginID string) (*model.Plugin, *errors.Error) {
 }
 
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
-func ContactPlugin(ctx context.Context, req model.PluginContactRequest, errorMessage string) ([]byte, string, model.ResponseStatus, error) {
+func ContactPlugin(ctx context.Context, req model.PluginContactRequest,
+	errorMessage string) ([]byte, string, PluginTaskInfo, model.ResponseStatus, error) {
+
 	var resp model.ResponseStatus
+	var pluginTaskInfo PluginTaskInfo
 	var err error
 	pluginResponse, err := callPlugin(ctx, req)
 	if err != nil {
@@ -125,41 +140,52 @@ func ContactPlugin(ctx context.Context, req model.PluginContactRequest, errorMes
 			resp.StatusCode = http.StatusServiceUnavailable
 			resp.StatusMessage = response.CouldNotEstablishConnection
 			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
-			return nil, "", resp, fmt.Errorf(errorMessage)
+			return nil, "", pluginTaskInfo, resp, fmt.Errorf(errorMessage)
 		}
 	}
 	defer pluginResponse.Body.Close()
+
 	body, err := ioutil.ReadAll(pluginResponse.Body)
 	if err != nil {
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
 		l.LogWithFields(ctx).Warn(errorMessage)
-		return nil, "", resp, fmt.Errorf(errorMessage)
+		return nil, "", pluginTaskInfo, resp, fmt.Errorf(errorMessage)
 	}
 
-	if pluginResponse.StatusCode != http.StatusCreated && pluginResponse.StatusCode != http.StatusOK {
+	if pluginResponse.StatusCode == http.StatusAccepted {
+		pluginTaskInfo.Location = pluginResponse.Header.Get("Location")
+		pluginTaskInfo.PluginIP = pluginResponse.Header.Get(common.XForwardedFor)
+	}
+
+	if pluginResponse.StatusCode != http.StatusCreated &&
+		pluginResponse.StatusCode != http.StatusOK &&
+		pluginResponse.StatusCode != http.StatusAccepted {
 		if pluginResponse.StatusCode == http.StatusUnauthorized {
 			errorMessage += "error: invalid resource username/password"
 			resp.StatusCode = int32(pluginResponse.StatusCode)
 			resp.StatusMessage = response.ResourceAtURIUnauthorized
 			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
 			l.LogWithFields(ctx).Warn(errorMessage)
-			return nil, "", resp, fmt.Errorf(errorMessage)
+			return nil, "", pluginTaskInfo, resp, fmt.Errorf(errorMessage)
 		}
 		errorMessage += string(body)
 		resp.StatusCode = int32(pluginResponse.StatusCode)
 		resp.StatusMessage = response.InternalError
 		l.LogWithFields(ctx).Warn(errorMessage)
-		return body, "", resp, fmt.Errorf(errorMessage)
+		return body, "", pluginTaskInfo, resp, fmt.Errorf(errorMessage)
 	}
+
+	resp.StatusCode = int32(pluginResponse.StatusCode)
+	resp.StatusMessage = response.Success
 
 	data := string(body)
 	//replacing the resposne with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}
-	return []byte(data), pluginResponse.Header.Get("X-Auth-Token"), resp, nil
+	return []byte(data), pluginResponse.Header.Get("X-Auth-Token"), pluginTaskInfo, resp, nil
 }
 
 // getPluginStatus checks the status of given plugin in configured interval
@@ -249,4 +275,35 @@ func TrackConfigFileChanges(errChan chan error) {
 			l.Log.Error(err)
 		}
 	}
+}
+
+// UpdateTask update the task with the given data
+func UpdateTask(ctx context.Context, taskData common.TaskData) error {
+	var res map[string]interface{}
+	if err := json.Unmarshal([]byte(taskData.TaskRequest), &res); err != nil {
+		l.Log.Error(err)
+	}
+	reqStr := logs.MaskRequestBody(res)
+
+	respBody, _ := json.Marshal(taskData.Response.Body)
+	payLoad := &taskproto.Payload{
+		HTTPHeaders:   taskData.Response.Header,
+		HTTPOperation: taskData.HTTPMethod,
+		JSONBody:      reqStr,
+		StatusCode:    taskData.Response.StatusCode,
+		TargetURI:     taskData.TargetURI,
+		ResponseBody:  respBody,
+	}
+
+	err := services.UpdateTask(ctx, taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	if err != nil && (err.Error() == common.Cancelling) {
+		// We cant do anything here as the task has done it work completely, we cant reverse it.
+		//Unless if we can do opposite/reverse action for delete server which is add server.
+		services.UpdateTask(ctx, taskData.TaskID, common.Cancelled, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+		if taskData.PercentComplete == 0 {
+			return fmt.Errorf("error while starting the task: %v", err)
+		}
+		runtime.Goexit()
+	}
+	return nil
 }

@@ -1265,7 +1265,7 @@ func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
 	// plugin IP, and plugin task ID
 	pluginTask, err := tmodel.GetPluginTaskInfo(taskID)
 	if err != nil {
-		l.Log.Error("error while processing task event", err.Error())
+		l.Log.Error("error while processing task event :", err.Error())
 		return false
 	}
 

@@ -210,6 +210,8 @@ const (
 	GetFabricManagerChassis = "GetFabricManagerChassis"
 	CollectChassisResource  = "CollectChassisResource"
 	UpdateChassisResource   = "UpdateChassisResource"
+
+	ENV_POD_NAME = "POD_NAME"
 )
 
 // ActionType defines type of action
@@ -642,7 +644,7 @@ var URIWithNoAuth = []string{
 
 var SessionURI = "/redfish/v1/SessionService/Sessions"
 
-//Target is for sending the request to south bound/plugin
+// Target is for sending the request to south bound/plugin
 type Target struct {
 	ManagerAddress string `json:"ManagerAddress"`
 	Password       []byte `json:"Password"`

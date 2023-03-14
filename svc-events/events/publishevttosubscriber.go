@@ -71,8 +71,11 @@ func (e *ExternalInterfaces) addFabric(ctx context.Context, message common.Messa
 
 // PublishEventsToDestination This method sends the event/alert to subscriber's destination
 // Takes:
-// 	data of type interface{}
-//Returns:
+//
+//	data of type interface{}
+//
+// Returns:
+//
 //	bool: return false if any error occurred during execution, else returns true
 func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, data interface{}) bool {
 	subscribeCacheLock.Lock()
@@ -206,8 +209,8 @@ func filterEventsToBeForwarded(ctx context.Context, subscription dmtf.EventDesti
 	if (len(eventTypes) == 0 || isStringPresentInSlice(ctx, eventTypes, event.EventType, "event type")) &&
 		(len(messageIds) == 0 || isStringPresentInSlice(ctx, messageIds, event.MessageID, "message id")) &&
 		(len(resourceTypes) == 0 || isResourceTypeSubscribed(ctx, resourceTypes, event.OriginOfCondition.Oid, subscription.SubordinateResources)) {
-		// if SubordinateResources is true then check if originofresource is top level of originofcondition
-		// if SubordinateResources is flase then check originofresource is same as originofcondition
+		// if SubordinateResources is true then check if originOfresource is top level of originofcondition
+		// if SubordinateResources is false then check originofresource is same as originofcondition
 
 		if len(subscription.OriginResources) == 0 {
 			return true
@@ -228,7 +231,7 @@ func filterEventsToBeForwarded(ctx context.Context, subscription dmtf.EventDesti
 }
 
 // formatEvent will format the event string according to the odimra
-// add uuid:systemid/chassisid inplace of systemid/chassisid
+// add uuid:systemid/chassisid in place of systemid/chassisid
 func formatEvent(event common.MessageData, originResource, hostIP string) (common.MessageData, string) {
 	deviceUUID, _ := getUUID(originResource)
 	if !strings.Contains(hostIP, "Collection") {
@@ -261,7 +264,7 @@ func isResourceTypeSubscribed(ctx context.Context, resourceTypes []string, origi
 		res := common.ResourceTypes[resourceType]
 		if subordinateResources {
 
-			// if subordinateResources is true then first check the child resourcetype is present in db.
+			// if subordinateResources is true then first check the child resourceType is present in db.
 			// if its there then return true
 			// if its not then check collection resource type
 			// Ex : originofcondition:/redfish/v1/Systems/uuid:1/processors/1

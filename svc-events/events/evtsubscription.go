@@ -45,6 +45,60 @@ import (
 	"github.com/google/uuid"
 )
 
+func (e *ExternalInterfaces) ValidateRequest(ctx context.Context, taskID, targetURI string, req *eventsproto.EventSubRequest, postRequest model.EventDestination) {
+	invalidProperties, err := common.RequestParamsCaseValidator(req.PostBody, postRequest)
+	var percentComplete int32 = 100
+	var resp errResponse.RPC
+	if err != nil {
+		l.LogWithFields(ctx).Error(err.Error())
+		common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, err.Error(), nil, nil)
+		return
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		l.LogWithFields(ctx).Error(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, errResponse.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		return
+	}
+
+	//check mandatory fields
+	statusCode, statusMessage, messageArgs, err := validateFields(&postRequest)
+	if err != nil {
+		// Update the task here with error response
+		errorMessage := "error: request payload validation failed: " + err.Error()
+		l.LogWithFields(ctx).Error(errorMessage)
+
+		resp = common.GeneralError(statusCode, statusMessage, errorMessage, messageArgs, nil)
+		// Fill task and update
+		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		return
+	}
+
+	//validate destination URI in the request
+	if !common.URIValidator(postRequest.Destination) {
+		errorMessage := "error: request body contains invalid value for Destination field, " + postRequest.Destination
+		l.LogWithFields(ctx).Error(errorMessage)
+
+		resp = common.GeneralError(http.StatusBadRequest, errResponse.PropertyValueFormatError, errorMessage, []interface{}{postRequest.Destination, "Destination"}, nil)
+		// Fill task and update
+		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		return
+	}
+
+	// check any of the subscription present for the destination from the request
+	// if errored out or no subscriptions then add subscriptions else return an error
+	subscriptionDetails, _ := e.GetEvtSubscriptions(postRequest.Destination)
+	if len(subscriptionDetails) > 0 {
+		errorMessage := "Subscription already present for the requested destination"
+		evcommon.GenErrorResponse(errorMessage, errResponse.ResourceInUse, http.StatusConflict,
+			[]interface{}{}, &resp)
+		l.LogWithFields(ctx).Error(errorMessage)
+		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		return
+	}
+	fmt.Println("Request is valid ")
+}
+
 // CreateEventSubscription is a API to create event subscription
 func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID string, sessionUserName string, req *eventsproto.EventSubRequest) errResponse.RPC {
 	var (
@@ -57,81 +111,19 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 
 	if err = json.Unmarshal(req.PostBody, &postRequest); err != nil {
 		// Update the task here with error response
-		errorMessage := "Error while Unmarshaling the Request: " + err.Error()
-		if strings.Contains(err.Error(), "evmodel.OdataIDLink") {
-			errorMessage = "Error processing subscription request: @odata.id key(s) is missing in origin resources list"
-		}
-		l.LogWithFields(ctx).Error(errorMessage)
-
-		resp = common.GeneralError(http.StatusBadRequest, errResponse.MalformedJSON, errorMessage, []interface{}{}, nil)
+		l.LogWithFields(ctx).Error(err.Error())
+		resp = common.GeneralError(http.StatusBadRequest, errResponse.MalformedJSON, err.Error(), []interface{}{}, nil)
 		// Fill task and update
 		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
-
-	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.PostBody, postRequest)
-	if err != nil {
-		errMsg := "error while validating request parameters: " + err.Error()
-		l.LogWithFields(ctx).Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil, nil)
-	} else if invalidProperties != "" {
-		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		l.LogWithFields(ctx).Error(errorMessage)
-		resp := common.GeneralError(http.StatusBadRequest, errResponse.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
-		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
-		return resp
-	}
-
-	//check mandatory fields
-	statuscode, statusMessage, messageArgs, err := validateFields(&postRequest)
-	if err != nil {
-		// Update the task here with error response
-		errorMessage := "error: request payload validation failed: " + err.Error()
-		l.LogWithFields(ctx).Error(errorMessage)
-
-		resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
-		// Fill task and update
-		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
-		return resp
-	}
-
-	//validate destination URI in the request
-	if !common.URIValidator(postRequest.Destination) {
-		errorMessage := "error: request body contains invalid value for Destination field, " + postRequest.Destination
-		l.LogWithFields(ctx).Error(errorMessage)
-
-		resp = common.GeneralError(http.StatusBadRequest, errResponse.PropertyValueFormatError, errorMessage, []interface{}{postRequest.Destination, "Destination"}, nil)
-		// Fill task and update
-		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
-		return resp
-	}
-
-	// check any of the subscription present for the destination from the request
-	// if errored out or no subscriptions then add subscriptions else return an error
-	subscriptionDetails, err := e.GetEvtSubscriptions("")
-	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
-		errorMessage := "Error while get subscription details: " + err.Error()
-		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
-			[]interface{}{}, &resp)
-		l.LogWithFields(ctx).Error(errorMessage)
-		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
-		return resp
-	}
-	for _, evtSubscription := range subscriptionDetails {
-		if evtSubscription.EventDestination.Destination == postRequest.Destination {
-			errorMessage := "Subscription already present for the requested destination"
-			evcommon.GenErrorResponse(errorMessage, errResponse.ResourceInUse, http.StatusConflict,
-				[]interface{}{}, &resp)
-			l.LogWithFields(ctx).Error(errorMessage)
-			e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
-			return resp
-		}
-	}
+	// ValidateRequest input request for create subscription
+	e.ValidateRequest(ctx, targetURI, targetURI, req, postRequest)
+	fmt.Println("Vvalid Request ")
 
 	// Get the target device  details from the origin resources
 	// Loop through all origin list and form individual event subscription request,
-	// Which will then forward to plugin to make subscrption with target device
+	// Which will then forward to plugin to make subscription with target device
 	var wg, taskCollectionWG sync.WaitGroup
 	var result = &evresponse.MutexLock{
 		Response: make(map[string]evresponse.EventResponse),
@@ -139,7 +131,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 		Lock:     &sync.Mutex{},
 	}
 
-	// remove odataid in the originresources
+	// remove odataid in the origin resources
 	originResources := removeOdataIDfromOriginResources(postRequest.OriginResources)
 
 	// check and remove if duplicate OriginResources exist in the request
@@ -248,10 +240,6 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			}
 		}
 	}
-	// if Subscription Name is empty then use default name
-	if postRequest.Name == "" {
-		postRequest.Name = evmodel.SubscriptionName
-	}
 
 	successOriginResourceCount := len(successfulSubscriptionList)
 	if successOriginResourceCount > 0 {
@@ -279,7 +267,6 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 				OriginResources:      successfulSubscriptionList,
 				DeliveryRetryPolicy:  postRequest.DeliveryRetryPolicy,
 			},
-
 			Hosts: hosts,
 		}
 
@@ -316,6 +303,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 	return resp
 }
 
+// eventSubscription method
 func (e *ExternalInterfaces) eventSubscription(ctx context.Context, postRequest model.EventDestination, origin, collectionName string, collectionFlag bool) (string, evresponse.EventResponse) {
 	var resp evresponse.EventResponse
 	var err error
@@ -616,7 +604,6 @@ func (e *ExternalInterfaces) IsEventsSubscribed(ctx context.Context, token, orig
 		}
 	}
 	// updating the subscription information
-
 	removeDuplicatesFromSlice(&eventTypes)
 	removeDuplicatesFromSlice(&messageIDs)
 	removeDuplicatesFromSlice(&resourceTypes)
@@ -661,29 +648,6 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(ctx context.Context,
 		resp.StatusCode = int32(bubbleUpStatusCode)
 	}
 
-	// Removed creation of default subscription for each server add, adding only single default subscription at time of deployment with subscriptionID 0
-
-	// subscriptionID := uuid.New().String()
-	// evtSubscription := evmodel.Subscription{
-	// 	SubscriptionID:       subscriptionID,
-	// 	EventTypes:           eventTypes,
-	// 	MessageIds:           messageIDs,
-	// 	ResourceTypes:        resourceTypes,
-	// 	OriginResources:      originResources,
-	// 	Hosts:                []string{host},
-	// 	Protocol:             protocol,
-	// 	SubscriptionType:     evmodel.SubscriptionType,
-	// 	SubordinateResources: true,
-	// }
-	// err := e.SaveEventSubscription(evtSubscription)
-	// if err != nil {
-	// 	errorMessage := "error while trying to save event subscription data: " + err.Error()
-	// 	evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
-	// 		[]interface{}{}, &resp)
-	// 	l.Log.Error(errorMessage)
-	// 	return resp
-	// }
-
 	resp.Body = response.Response
 	resp.StatusCode = http.StatusCreated
 	l.LogWithFields(ctx).Info("Creation of default subscriptions completed for : " + strings.Join(originResources, "::"))
@@ -726,6 +690,7 @@ func (e *ExternalInterfaces) saveDeviceSubscriptionDetails(evtSubscription commo
 	return nil
 }
 
+// getTargetDetails return device credentials from using device UUID
 func (e *ExternalInterfaces) getTargetDetails(origin string) (*common.Target, evresponse.EventResponse, error) {
 	var resp evresponse.EventResponse
 	uuid, err := getUUID(origin)
@@ -1213,7 +1178,6 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(ctx context.Context, req *
 	}
 	_, err = e.UpdateEventsSubscribed(ctx, "", req.SystemID, &subscriptionPost, plugin, target, false, "", true, req.AggregateId, isRemove)
 	if err != nil {
-
 		return err
 	}
 	postBody, _ := json.Marshal(subscriptionPost)

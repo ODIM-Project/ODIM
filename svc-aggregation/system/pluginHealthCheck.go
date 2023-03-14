@@ -48,8 +48,9 @@ var (
 )
 
 const (
+	// PluginHealthCheckActionID action id for logging
 	PluginHealthCheckActionID = "216"
-
+	// PluginHealthCheckActionName action name for logging
 	PluginHealthCheckActionName = "PluginHealthCheck"
 )
 
@@ -86,6 +87,8 @@ func (e *ExternalInterface) SendStartUpData(ctx context.Context, startUpReq *agg
 	}
 
 	SendPluginStartUpData(ctx, startUpReq.OriginURI, plugin)
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("final response for send start up data: %s", string(respBody))
 	return resp
 }
 
@@ -179,7 +182,7 @@ func sharePluginInventory(ctx context.Context, plugin agmodel.Plugin, resyncSubs
 		pluginStartUpData.Devices = make(map[string]agmodel.DeviceData, phc.PluginConfig.StartUpResourceBatchSize)
 		for _, server := range batchedServersData {
 			evtSubsInfo := &agmodel.EventSubscriptionInfo{}
-			subsID, evtTypes, err := agcommon.GetDeviceSubscriptionDetails(server.ManagerAddress)
+			subsID, evtTypes, err := agcommon.GetDeviceSubscriptionDetails(ctx, server.ManagerAddress)
 			if err != nil {
 				l.LogWithFields(ctx).Error("failed to get event subscription details for " + server.ManagerAddress + ": " + err.Error())
 			} else {
@@ -245,6 +248,7 @@ func sendPluginStartupRequest(ctx context.Context, plugin agmodel.Plugin, startu
 	contactRequest.URL = "/ODIM/v1/Startup"
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.PostBody = startupData
+	//password comes as part of PostBody hence cannot log the request
 	response, err := agcommon.ContactPlugin(ctx, contactRequest, serverName)
 	if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
 		l.LogWithFields(ctx).Errorf("failed to send startup data to %s(%s): %s: %+v", plugin.ID, plugin.IP, err, response)

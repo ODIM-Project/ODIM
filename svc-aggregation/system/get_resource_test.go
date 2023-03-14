@@ -27,6 +27,7 @@
 package system
 
 import (
+	"context"
 	"net/http"
 	"reflect"
 	"testing"
@@ -38,7 +39,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 )
 
-func mockGetAggregationSourceInfo(reqURI string) (agmodel.AggregationSource, *errors.Error) {
+func mockGetAggregationSourceInfo(ctx context.Context, reqURI string) (agmodel.AggregationSource, *errors.Error) {
 	var aggSource agmodel.AggregationSource
 	if reqURI == "/redfish/v1/AggregationService/AggregationSources/36474ba4-a201-46aa-badf-d8104da418e8" {
 		aggSource = agmodel.AggregationSource{

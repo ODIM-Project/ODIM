@@ -196,7 +196,7 @@ func TestSetConfiguration(t *testing.T) {
                 "MaxRetryAttempt": 3,
                 "RetryIntervalInMins": 2,
                 "ResponseTimeoutInSecs": 30,
-                "StartUpResouceBatchSize": 10
+                "StartUpResourceBatchSize": 10
         },
         "ExecPriorityDelayConf": {
                 "MinResetPriority": 1,

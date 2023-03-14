@@ -70,6 +70,7 @@ func getMockMethods() ExternalInterfaces {
 			GetAggregateHosts:                evcommon.MockGetAggregateHosts,
 			UpdateAggregateHosts:             evcommon.MockSaveAggregateSubscription,
 			GetAggregateList:                 evcommon.MockGetAggregateHosts,
+			GetUndeliveredEventsKeyList:      evcommon.MockGetUndeliveredEventsKeyList,
 		},
 	}
 }

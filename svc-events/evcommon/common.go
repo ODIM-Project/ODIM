@@ -48,7 +48,7 @@ var (
 	RedisNotifierFilterKey       = "Kz"
 )
 
-//StartUpInterface Holds the function pointer of  external interface functions
+// StartUpInterface Holds the function pointer of  external interface functions
 type StartUpInterface struct {
 	DecryptPassword                  func([]byte) ([]byte, error)
 	EMBConsume                       func(string)
@@ -167,7 +167,7 @@ func (st *StartUpInterface) GetAllPluginStatus(ctx context.Context) {
 
 func (st *StartUpInterface) getPluginStatus(ctx context.Context, plugin common.Plugin) {
 	PluginsMap := make(map[string]bool)
-	StartUpResourceBatchSize := config.Data.PluginStatusPolling.StartUpResouceBatchSize
+	StartUpResourceBatchSize := config.Data.PluginStatusPolling.StartUpResourceBatchSize
 	config.TLSConfMutex.RLock()
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,

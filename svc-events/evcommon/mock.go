@@ -702,3 +702,8 @@ func MockContext() context.Context {
 	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	return ctx
 }
+
+// MockGetUndeliveredEventsKeyList is for mocking up of get all matching details from the given table
+func MockGetUndeliveredEventsKeyList(table, pattern string, dbtype common.DbType, nextCursor int) ([]string, int, *errors.Error) {
+	return []string{}, 0, nil
+}

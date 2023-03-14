@@ -164,16 +164,14 @@ func addSubscriptionCache(key string, subscriptionId string) {
 	if strings.Contains(key, "Collection") {
 		updateCacheMaps(key, subscriptionId, collectionToSubscriptionsMapTemp)
 		return
-	} else {
-		_, err := uuid.FromString(key)
-		if err == nil {
-			updateCacheMaps(key, subscriptionId, aggregateIdToSubscriptionsMapTemp)
-			return
-		} else {
-			updateCacheMaps(key, subscriptionId, systemToSubscriptionsMapTemp)
-			return
-		}
 	}
+	_, err := uuid.FromString(key)
+	if err == nil {
+		updateCacheMaps(key, subscriptionId, aggregateIdToSubscriptionsMapTemp)
+		return
+	}
+	updateCacheMaps(key, subscriptionId, systemToSubscriptionsMapTemp)
+
 }
 
 // getAllAggregates method will read all aggregate from db and
@@ -212,9 +210,8 @@ func getSourceId(host string) (string, error) {
 	if !isExists {
 		if strings.Contains(host, "Collection") {
 			return host, nil
-		} else {
-			return "", fmt.Errorf("invalid source")
 		}
+		return "", fmt.Errorf("invalid source")
 	}
 	return data, nil
 }

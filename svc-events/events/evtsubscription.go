@@ -229,35 +229,14 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			successfulSubscriptionList = []model.Link{}
 			hosts = []string{}
 		}
-		evtSubscription := evmodel.SubscriptionResource{
-			UserName:       sessionUserName,
-			SubscriptionID: subscriptionID,
-			EventDestination: &model.EventDestination{
-				Destination:          postRequest.Destination,
-				Name:                 postRequest.Name,
-				Context:              postRequest.Context,
-				EventTypes:           postRequest.EventTypes,
-				MessageIds:           postRequest.MessageIds,
-				ResourceTypes:        postRequest.ResourceTypes,
-				EventFormatType:      postRequest.EventFormatType,
-				SubordinateResources: postRequest.SubordinateResources,
-				Protocol:             postRequest.Protocol,
-				SubscriptionType:     postRequest.SubscriptionType,
-				OriginResources:      successfulSubscriptionList,
-				DeliveryRetryPolicy:  postRequest.DeliveryRetryPolicy,
-			},
-			Hosts: hosts,
-		}
-
-		if err = e.SaveEventSubscription(evtSubscription); err != nil {
-			// Update the task here with error response
-			errorMessage := "error while trying to save event subscription data: " + err.Error()
-			l.LogWithFields(ctx).Error(errorMessage)
-
-			resp = common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, []interface{}{}, nil)
-			// Fill task and update
-			percentComplete = 100
-			e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		statusCode, statusMessage, messageArgs, err = e.SaveSubscription(ctx, sessionUserName, subscriptionID,
+			hosts, successfulSubscriptionList, postRequest)
+		if err != nil {
+			l.LogWithFields(ctx).Error(err.Error())
+			evcommon.GenErrorResponse(err.Error(), statusMessage, statusCode,
+				messageArgs, &resp)
+			e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody),
+				resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 			return resp
 		}
 		locationHeader = resp.Header["Location"]
@@ -280,6 +259,35 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 	}
 	return resp
+}
+
+// SaveSubscription function save subscription in db
+func (e *ExternalInterfaces) SaveSubscription(ctx context.Context, sessionUserName, subscriptionID string,
+	hosts []string, successfulSubscriptionList []model.Link, postRequest model.EventDestination) (int32, string, []interface{}, error) {
+	evtSubscription := evmodel.SubscriptionResource{
+		UserName:       sessionUserName,
+		SubscriptionID: subscriptionID,
+		EventDestination: &model.EventDestination{
+			Destination:          postRequest.Destination,
+			Name:                 postRequest.Name,
+			Context:              postRequest.Context,
+			EventTypes:           postRequest.EventTypes,
+			MessageIds:           postRequest.MessageIds,
+			ResourceTypes:        postRequest.ResourceTypes,
+			EventFormatType:      postRequest.EventFormatType,
+			SubordinateResources: postRequest.SubordinateResources,
+			Protocol:             postRequest.Protocol,
+			SubscriptionType:     postRequest.SubscriptionType,
+			OriginResources:      successfulSubscriptionList,
+			DeliveryRetryPolicy:  postRequest.DeliveryRetryPolicy,
+		},
+		Hosts: hosts,
+	}
+
+	if err := e.SaveEventSubscription(evtSubscription); err != nil {
+		return http.StatusInternalServerError, errResponse.InternalError, []interface{}{}, err
+	}
+	return http.StatusOK, common.OK, []interface{}{}, nil
 }
 
 // eventSubscription method

@@ -33,7 +33,7 @@ func mockPublishEventMB(ctx context.Context, systemID, eventType, collectionType
 	return
 }
 
-func mockGetResource(Table, key string) (string, *errors.Error) {
+func mockGetResource(ctx context.Context, Table, key string) (string, *errors.Error) {
 	return "", nil
 }
 func mockChassisData(systemID string) error {

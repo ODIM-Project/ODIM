@@ -206,7 +206,7 @@ const (
 	CreateRemoteAccountService             = "CreateRemoteAccountService"
 	UpdateRemoteAccountService             = "UpdateRemoteAccountService"
 	DeleteRemoteAccountService             = "DeleteRemoteAccountService"
-
+	InstallLicenseService                  = "InstallLicenseService"
 	// constants for log
 	SessionToken            = "sessiontoken"
 	SessionUserID           = "sessionuserid"

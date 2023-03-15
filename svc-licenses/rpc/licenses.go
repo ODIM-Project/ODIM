@@ -18,6 +18,7 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	lgr "github.com/ODIM-Project/ODIM/lib-utilities/logs"
@@ -90,6 +91,15 @@ func (l *Licenses) InstallLicenseService(ctx context.Context, req *licenseproto.
 		fillProtoResponse(ctx, resp, authResp)
 		return resp, nil
 	}
-	fillProtoResponse(ctx, resp, l.connector.InstallLicenseService(ctx, req))
+	sessionUserName, taskID, err := CreateTaskAndResponse(ctx, l, req.SessionToken, resp)
+	if err != nil {
+		lgr.LogWithFields(ctx).Error(err)
+		return resp, nil
+	}
+
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.InstallLicenseService)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go l.connector.InstallLicenseService(ctx, req, sessionUserName, taskID)
 	return resp, nil
 }

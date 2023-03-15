@@ -1212,8 +1212,12 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 		parentTask.PercentComplete = 100
 		parentTask.StatusCode = http.StatusOK
 		parentTask.TaskStatus = common.OK
-		parentTask.TaskResponse = payLoad.ResponseBody
+		parentTask.StatusCode = http.StatusOK
+		resp := tcommon.GetTaskResponse(http.StatusOK, response.Success)
+		body, _ := json.Marshal(resp.Body)
+		parentTask.TaskResponse = body
 		ts.UpdateTaskQueue(parentTask)
+		l.LogWithFields(ctx).Debugf("All tasks are completed !")
 		return nil
 	}
 	s := make([]interface{}, len(childIDs))
@@ -1239,7 +1243,9 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 		parentTask.TaskStatus = common.OK
 		parentTask.PercentComplete = 100
 		parentTask.StatusCode = http.StatusOK
-		parentTask.TaskResponse = payLoad.ResponseBody
+		resp := tcommon.GetTaskResponse(http.StatusOK, response.Success)
+		body, _ := json.Marshal(resp.Body)
+		parentTask.TaskResponse = body
 		ts.UpdateTaskQueue(parentTask)
 	}
 
@@ -1265,7 +1271,7 @@ func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
 	// plugin IP, and plugin task ID
 	pluginTask, err := tmodel.GetPluginTaskInfo(taskID)
 	if err != nil {
-		l.Log.Error("error while processing task event", err.Error())
+		l.Log.Error("error while processing task event :", err.Error())
 		return false
 	}
 

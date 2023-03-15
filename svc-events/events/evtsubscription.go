@@ -50,20 +50,23 @@ func (e *ExternalInterfaces) ValidateRequest(ctx context.Context, req *eventspro
 	postRequest model.EventDestination) (int32, string, []interface{}, error) {
 	invalidProperties, err := common.RequestParamsCaseValidator(req.PostBody, postRequest)
 	if err != nil {
-		return http.StatusInternalServerError, errResponse.InternalError, nil, err
+		errMsg := "error while validating request parameters: " + err.Error()
+		return http.StatusInternalServerError, errResponse.InternalError, nil, fmt.Errorf(errMsg)
 	} else if invalidProperties != "" {
-		return http.StatusBadRequest, errResponse.PropertyUnknown, []interface{}{invalidProperties}, err
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		return http.StatusBadRequest, errResponse.PropertyUnknown, []interface{}{invalidProperties}, fmt.Errorf(errorMessage)
 	}
 
 	//check mandatory fields
-	statusCode, statusMessage, messageArgs, err := validateFields(&postRequest)
-	if err != nil {
-		return statusCode, statusMessage, messageArgs, err
+	statusCode, statusMessage, messageArgs, invalidFieldError := validateFields(&postRequest)
+	if invalidFieldError != nil {
+		return statusCode, statusMessage, messageArgs, invalidFieldError
 	}
 
 	//validate destination URI in the request
 	if !common.URIValidator(postRequest.Destination) {
-		return http.StatusBadRequest, errResponse.PropertyValueFormatError, []interface{}{postRequest.Destination, "Destination"}, err
+		errorMessage := "error: request body contains invalid value for Destination field, " + postRequest.Destination
+		return http.StatusBadRequest, errResponse.PropertyValueFormatError, []interface{}{postRequest.Destination, "Destination"}, fmt.Errorf(errorMessage)
 	}
 
 	// check any of the subscription present for the destination from the request
@@ -97,11 +100,11 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 		return resp
 	}
 	// ValidateRequest input request for create subscription
-	statusCode, statusMessage, messageArgs, err := e.ValidateRequest(ctx, req, postRequest)
-	if err != nil {
-		evcommon.GenErrorResponse(err.Error(), statusMessage, statusCode,
+	statusCode, statusMessage, messageArgs, validationErr := e.ValidateRequest(ctx, req, postRequest)
+	if validationErr != nil {
+		evcommon.GenErrorResponse(validationErr.Error(), statusMessage, statusCode,
 			messageArgs, &resp)
-		l.LogWithFields(ctx).Error(err.Error())
+		l.LogWithFields(ctx).Error(validationErr.Error())
 		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody),
 			resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
@@ -127,7 +130,6 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			"/redfish/v1/Managers",
 			"/redfish/v1/TaskService/Tasks",
 		}
-
 	}
 	var collectionList = make([]string, 0)
 	subTaskChan := make(chan int32, len(originResources))

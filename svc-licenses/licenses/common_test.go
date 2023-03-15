@@ -107,7 +107,7 @@ func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (
 	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
-func mockGetAllKeysFromTable(table string, dbtype persistencemgr.DbType) ([]string, error) {
+func mockGetAllKeysFromTable(ctx context.Context,table string, dbtype persistencemgr.DbType) ([]string, error) {
 	return []string{"/redfish/v1/LicenseService/Licenses/uuid.1.1", "/redfish/v1/LicenseService/Licenses/uuid.1.2"}, nil
 }
 

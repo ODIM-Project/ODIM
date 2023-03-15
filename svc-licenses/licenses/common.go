@@ -48,7 +48,7 @@ type External struct {
 
 // DB struct holds the function pointers to database operations
 type DB struct {
-	GetAllKeysFromTable func(string, persistencemgr.DbType) ([]string, error)
+	GetAllKeysFromTable func(context.Context,string, persistencemgr.DbType) ([]string, error)
 	GetResource         func(string, string, persistencemgr.DbType) (interface{}, *errors.Error)
 }
 

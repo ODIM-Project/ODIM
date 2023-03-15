@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -67,7 +68,7 @@ func (e *ExternalInterface) GetLicenseCollection(ctx context.Context, req *licen
 	}
 	var members = make([]*dmtf.Link, 0)
 
-	licenseCollectionKeysArray, err := e.DB.GetAllKeysFromTable("Licenses", persistencemgr.InMemory)
+	licenseCollectionKeysArray, err := e.DB.GetAllKeysFromTable(ctx, "Licenses", persistencemgr.InMemory)
 	if err != nil {
 		l.LogWithFields(ctx).Error("error while getting license collection details from db")
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
@@ -179,7 +180,7 @@ func (e *ExternalInterface) InstallLicenseService(ctx context.Context, req *lice
 			return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, nil)
 		}
 	}
-	l.LogWithFields(ctx).Info("Map with manager Links: ", linksMap)
+	l.LogWithFields(ctx).Debug("Map with manager Links: ", linksMap)
 
 	for serverURI := range linksMap {
 		uuid, managerID, err := lcommon.GetIDsFromURI(serverURI)
@@ -211,7 +212,6 @@ func (e *ExternalInterface) InstallLicenseService(ctx context.Context, req *lice
 			l.LogWithFields(ctx).Error(errMsg)
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, nil)
 		}
-		l.LogWithFields(ctx).Info("Plugin info: ", plugin)
 
 		encodedKey := base64.StdEncoding.EncodeToString([]byte(installreq.LicenseString))
 		managerURI := "/redfish/v1/Managers/" + managerID
@@ -229,6 +229,7 @@ func (e *ExternalInterface) InstallLicenseService(ctx context.Context, req *lice
 				"Password": string(plugin.Password),
 			}
 			contactRequest.OID = "/ODIM/v1/Sessions"
+			l.LogWithFields(ctx).Debug("plugin contact request data for %s: %s",contactRequest.OID, string(fmt.Sprintf("%v", contactRequest.PostBody)))
 			_, token, getResponse, err := lcommon.ContactPlugin(ctx, contactRequest, "error while logging in to plugin: ")
 			if err != nil {
 				errMsg := err.Error()
@@ -247,13 +248,14 @@ func (e *ExternalInterface) InstallLicenseService(ctx context.Context, req *lice
 		contactRequest.DeviceInfo = target
 		contactRequest.OID = "/ODIM/v1/LicenseService/Licenses"
 		contactRequest.PostBody = reqBody
+		l.LogWithFields(ctx).Debug("plugin contact request data for %s: %s",contactRequest.OID, string(fmt.Sprintf("%v", contactRequest.PostBody)))
 		_, _, getResponse, err := e.External.ContactPlugin(ctx, contactRequest, "error while installing license: ")
 		if err != nil {
 			errMsg := err.Error()
 			l.LogWithFields(ctx).Error(errMsg)
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil)
 		}
-		l.LogWithFields(ctx).Info("Install license response: ", getResponse)
+		l.LogWithFields(ctx).Debug("Install license response: ", getResponse)
 	}
 
 	resp.StatusCode = http.StatusNoContent
@@ -275,7 +277,7 @@ func (e *ExternalInterface) getDetailsFromAggregate(ctx context.Context, aggrega
 	if jerr != nil {
 		return nil, jerr
 	}
-	l.LogWithFields(ctx).Info("System URL's from agrregate: ", resource)
+	l.LogWithFields(ctx).Debug("System URL's from agrregate: ", resource)
 
 	for _, key := range resource.Elements {
 		res, err := e.getManagerURL(key.OdataID)
@@ -286,7 +288,7 @@ func (e *ExternalInterface) getDetailsFromAggregate(ctx context.Context, aggrega
 		}
 		links = append(links, res...)
 	}
-	l.LogWithFields(ctx).Info("manager links: ", links)
+	l.LogWithFields(ctx).Debug("manager links: ", links)
 	return links, nil
 }
 
@@ -307,6 +309,5 @@ func (e *ExternalInterface) getManagerURL(systemURI string) ([]string, error) {
 		managerLink = member.Oid
 	}
 	links = append(links, managerLink)
-
 	return links, nil
 }

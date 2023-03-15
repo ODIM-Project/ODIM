@@ -149,6 +149,7 @@ func (e *ExternalInterface) SetDefaultBootOrder(ctx context.Context, taskID stri
 		e.UpdateTask(ctx, task)
 		runtime.Goexit()
 	}
+	l.LogWithFields(ctx).Debugf("final response for set default boot order request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 
 }
@@ -223,6 +224,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(ctx context.Context, taskI
 			"Password": string(plugin.Password),
 		}
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 		_, token, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while logging in to plugin: ")
 		if err != nil {
 			subTaskChannel <- getResponse.StatusCode
@@ -245,6 +247,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(ctx context.Context, taskI
 	pluginContactRequest.DeviceInfo = target
 	pluginContactRequest.OID = "/ODIM/v1/Systems/" + systemID + "/Actions/ComputerSystem.SetDefaultBootOrder"
 	pluginContactRequest.HTTPMethodType = http.MethodPost
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 	_, _, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while setting the default boot order: ")
 	if err != nil {
 		subTaskChannel <- getResponse.StatusCode
@@ -263,6 +266,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(ctx context.Context, taskI
 		"Location": serverURI,
 	}
 	resp.StatusCode = getResponse.StatusCode
+	l.LogWithFields(ctx).Debugf("final reponse of collect and set default order : %s", string(fmt.Sprintf("%v", resp.Body)))
 	percentComplete = 100
 	subTaskChannel <- int32(getResponse.StatusCode)
 	var task = fillTaskData(subTaskID, serverURI, reqJSON, resp, common.Completed, common.OK, percentComplete, http.MethodPost)

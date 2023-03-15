@@ -241,6 +241,7 @@ func GenericSave(ctx context.Context, body []byte, table string, key string) err
 	return nil
 }
 
+// GetIDsFromURI will return the manager ID from server URI
 func GetIDsFromURI(uri string) (string, string, error) {
 	lastChar := uri[len(uri)-1:]
 	if lastChar == "/" {
@@ -254,6 +255,7 @@ func GetIDsFromURI(uri string) (string, string, error) {
 	return ids[0], ids[1], nil
 }
 
+// TrackConfigFileChanges monitors the config changes using fsnotfiy
 func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat

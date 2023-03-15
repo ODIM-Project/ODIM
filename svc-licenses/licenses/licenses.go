@@ -36,8 +36,8 @@ import (
 )
 
 var (
-	JsonUnMarshalFunc = json.Unmarshal
-	JsonMarshalFunc   = json.Marshal
+	jsonUnMarshalFunc = json.Unmarshal
+	jsonMarshalFunc   = json.Marshal
 )
 
 // GetLicenseService to get license service details
@@ -131,7 +131,7 @@ func (e *ExternalInterface) InstallLicenseService(ctx context.Context, req *lice
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI,
 		UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
 
-	genErr := JsonUnMarshalFunc(req.RequestBody, &installreq)
+	genErr := jsonUnMarshalFunc(req.RequestBody, &installreq)
 	if genErr != nil {
 		errMsg := "Unable to unmarshal the install license request" + genErr.Error()
 		l.LogWithFields(ctx).Error(errMsg)
@@ -180,7 +180,7 @@ func (e *ExternalInterface) InstallLicenseService(ctx context.Context, req *lice
 		var threadID int = 1
 		ctxt := context.WithValue(ctx, common.ThreadName, common.SendRequest)
 		ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
-		go e.SendRequest(ctx, uuid, sessionUserName, taskID, serverURI, reqBody, subTaskChannel)
+		go e.sendRequest(ctx, uuid, sessionUserName, taskID, serverURI, reqBody, subTaskChannel)
 		threadID++
 	}
 
@@ -299,7 +299,8 @@ func (e *ExternalInterface) getManagerLinksMap(ctx context.Context, links []*dmt
 	return linksMap, errStatusCode, nil
 }
 
-func (e *ExternalInterface) SendRequest(ctx context.Context, uuid, sessionUserName, taskID, serverURI string, requestBody []byte,
+// sendRequest request the plugin to install license and handles the response from plugin
+func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, sessionUserName, taskID, serverURI string, requestBody []byte,
 	subTaskChannel chan<- int32) {
 
 	var percentComplete int32
@@ -430,11 +431,11 @@ func (e *ExternalInterface) getDetailsFromAggregate(ctx context.Context, aggrega
 	if err != nil {
 		return nil, err
 	}
-	jsonStr, jerr := JsonMarshalFunc(respData)
+	jsonStr, jerr := jsonMarshalFunc(respData)
 	if jerr != nil {
 		return nil, jerr
 	}
-	jerr = JsonUnMarshalFunc([]byte(jsonStr), &resource)
+	jerr = jsonUnMarshalFunc([]byte(jsonStr), &resource)
 	if jerr != nil {
 		return nil, jerr
 	}
@@ -461,7 +462,7 @@ func (e *ExternalInterface) getManagerURL(systemURI string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	jerr := JsonUnMarshalFunc([]byte(respData.(string)), &resource)
+	jerr := jsonUnMarshalFunc([]byte(respData.(string)), &resource)
 	if jerr != nil {
 		return nil, jerr
 	}

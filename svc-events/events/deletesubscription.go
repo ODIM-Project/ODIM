@@ -373,7 +373,7 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 	}
 	postBody, err := json.Marshal(subscriptionPost)
 	if err != nil {
-		return fmt.Errorf("Error while marshalling subscription details: %s", err)
+		return fmt.Errorf("error while marshalling subscription details: %s", err)
 	}
 	target.PostBody = postBody
 	_, err = e.DeleteSubscriptions(ctx, origin, "", plugin, target)
@@ -531,7 +531,7 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(ctx context.Context,
 			return err
 		}
 		// if deleteflag is true then only one document is there
-		// so dont re subscribe again
+		// so don't re subscribe again
 		if deleteflag {
 			return nil
 		}
@@ -559,7 +559,7 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(ctx context.Context,
 		}
 		postBody, _ := json.Marshal(subscriptionPost)
 		var reqData string
-		//replacing the reruest url with south bound translation URL
+		//replacing the request url with south bound translation URL
 		for key, value := range config.Data.URLTranslation.SouthBoundURL {
 			reqData = strings.Replace(string(postBody), key, value, -1)
 		}
@@ -568,6 +568,9 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(ctx context.Context,
 		contactRequest.URL = "/ODIM/v1/Subscriptions"
 		contactRequest.HTTPMethodType = http.MethodPost
 		err = json.Unmarshal([]byte(reqData), &contactRequest.PostBody)
+		if err != nil {
+			return err
+		}
 		l.LogWithFields(ctx).Info("Resubscribe request" + reqData)
 		response, loc, _, err := e.PluginCall(ctx, contactRequest)
 		if err != nil {
@@ -681,12 +684,12 @@ func (e *ExternalInterfaces) DeleteAggregateSubscriptions(ctx context.Context, r
 				return err
 			}
 		}
-
 	}
 	return nil
 }
 
-func getAggregateList(origin string, sessionToken string) ([]model.Link, error) {
+// getAggregateSystemList return  list of system to corresponding aggregate
+func getAggregateSystemList(origin string, sessionToken string) ([]model.Link, error) {
 	conn, err := services.ODIMService.Client(services.Aggregator)
 	if err != nil {
 		return nil, err
@@ -707,11 +710,13 @@ func getAggregateList(origin string, sessionToken string) ([]model.Link, error) 
 	}
 	defer conn.Close()
 	return data.Elements, nil
-
 }
+
+// resubscribeAggregateSubscription method subscribe event for
+// aggregate system members
 func (e *ExternalInterfaces) resubscribeAggregateSubscription(ctx context.Context, subscriptionPost model.EventDestination, origin string, deleteflag bool, sessionToken string) error {
 	originResource := origin
-	systems, err := getAggregateList(originResource, sessionToken)
+	systems, err := getAggregateSystemList(originResource, sessionToken)
 	if err != nil {
 		return nil
 	}

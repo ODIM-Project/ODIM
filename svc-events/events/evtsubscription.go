@@ -81,17 +81,11 @@ func (e *ExternalInterfaces) ValidateRequest(ctx context.Context, req *eventspro
 // CreateEventSubscription is a API to create event subscription
 func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID string, sessionUserName string, req *eventsproto.EventSubRequest) errResponse.RPC {
 	var (
-		err                  error
-		resp                 errResponse.RPC
-		postRequest          model.EventDestination
-		percentComplete      int32 = 100
-		targetURI                  = "/redfish/v1/EventService/Subscriptions"
-		wg, taskCollectionWG sync.WaitGroup
-		result               = &evresponse.MutexLock{
-			Response: make(map[string]evresponse.EventResponse),
-			Hosts:    make(map[string]string),
-			Lock:     &sync.Mutex{},
-		}
+		err             error
+		resp            errResponse.RPC
+		postRequest     model.EventDestination
+		percentComplete int32 = 100
+		targetURI             = "/redfish/v1/EventService/Subscriptions"
 	)
 	if err = json.Unmarshal(req.PostBody, &postRequest); err != nil {
 		l.LogWithFields(ctx).Error(err.Error())
@@ -112,6 +106,12 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 	// Get the target device  details from the origin resources
 	// Loop through all origin list and form individual event subscription request,
 	// Which will then forward to plugin to make subscription with target device
+	var wg, taskCollectionWG sync.WaitGroup
+	var result = &evresponse.MutexLock{
+		Response: make(map[string]evresponse.EventResponse),
+		Hosts:    make(map[string]string),
+		Lock:     &sync.Mutex{},
+	}
 
 	// remove odataid in the origin resources
 	originResources := removeOdataIDfromOriginResources(postRequest.OriginResources)
@@ -184,29 +184,11 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 	var (
 		locationHeader             string
 		successfulSubscriptionList = make([]model.Link, 0)
-		successfulResponses        = make(map[string]evresponse.EventResponse)
 	)
 
 	result.Lock.Lock()
 	originResourceProcessedCount := len(result.Response)
-	var resourceID string
-	i := 0
-	for originResource, evtResponse := range result.Response {
-		OriginResource := strings.SplitAfter(originResource, "/")
-		originResourceID := OriginResource[len(OriginResource)-1]
-		if i == 0 {
-			resourceID = originResourceID
-		}
-		if originResourceID == resourceID && i > 0 {
-			successfulSubscriptionList = append(successfulSubscriptionList, model.Link{Oid: originResource})
-		}
-		if evtResponse.StatusCode == http.StatusCreated {
-			successfulSubscriptionList = append(successfulSubscriptionList, model.Link{Oid: originResource})
-			successfulResponses[originResource] = evtResponse
-		}
-		i++
-	}
-	result.Response = successfulResponses
+	successfulSubscriptionList, result.Response = getSuccessfulResponse(result.Response)
 
 	result.Lock.Unlock()
 	// remove the underlying resource uri's from successfulSubscriptionList
@@ -1063,7 +1045,6 @@ func (e *ExternalInterfaces) createFabricSubscription(ctx context.Context, postR
 			return "", resp
 		}
 	}
-
 	l.LogWithFields(ctx).Debug("Subscription Response Status Code: " + string(rune(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(response.Body)
@@ -1096,7 +1077,6 @@ func (e *ExternalInterfaces) createFabricSubscription(ctx context.Context, postR
 		EventHostIP:    deviceIPAddress,
 		OriginResource: origin,
 	}
-
 	evtSubscription.Location = response.Header.Get("location")
 	err = e.saveDeviceSubscriptionDetails(evtSubscription)
 	if err != nil {
@@ -1170,7 +1150,6 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(ctx context.Context, req *
 		return "", resp
 	}
 	return e.SaveSubscriptionOnDevice(ctx, req.SystemID, target, plugin, contactRequest, subscriptionPost)
-
 }
 
 // GetAggregateSubscriptionList return list of subscription corresponding to host
@@ -1194,6 +1173,29 @@ func (e *ExternalInterfaces) GetAggregateSubscriptionList(ctx context.Context, h
 			continue
 		}
 		data = append(data, aggregateSubscriptionDetails...)
+	}
+	return
+}
+
+// getSuccessfulResponse return successful subscription list
+func getSuccessfulResponse(response map[string]evresponse.EventResponse) (successfulSubscriptionList []model.Link, successfulResponses map[string]evresponse.EventResponse) {
+	var resourceID string
+	successfulResponses = make(map[string]evresponse.EventResponse)
+	i := 0
+	for originResource, evtResponse := range response {
+		OriginResource := strings.SplitAfter(originResource, "/")
+		originResourceID := OriginResource[len(OriginResource)-1]
+		if i == 0 {
+			resourceID = originResourceID
+		}
+		if originResourceID == resourceID && i > 0 {
+			successfulSubscriptionList = append(successfulSubscriptionList, model.Link{Oid: originResource})
+		}
+		if evtResponse.StatusCode == http.StatusCreated {
+			successfulSubscriptionList = append(successfulSubscriptionList, model.Link{Oid: originResource})
+			successfulResponses[originResource] = evtResponse
+		}
+		i++
 	}
 	return
 }

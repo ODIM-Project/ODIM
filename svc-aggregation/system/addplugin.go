@@ -75,7 +75,7 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, []interface{}{}, taskInfo), "", nil
 	}
 
-	pluginNameArray, err := agmodel.GetAllKeysFromTable("Plugin")
+	pluginNameArray, err := agmodel.GetAllKeysFromTable(ctx, "Plugin")
 	if err == nil {
 		for _, ID := range pluginNameArray {
 
@@ -125,6 +125,7 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 			"Password": string(plugin.Password),
 		}
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 		_, token, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while creating the session: ")
 		if err != nil {
 			errMsg := err.Error()
@@ -141,6 +142,7 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	// Getting all managers info from plugin
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 	pluginContactRequest.OID = "/ODIM/v1/Managers"
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 	body, _, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err != nil {
 		errMsg := err.Error()
@@ -161,6 +163,7 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	// Getting the indivitual managers response
 	for _, object := range managerMembers.([]interface{}) {
 		pluginContactRequest.OID = object.(map[string]interface{})["@odata.id"].(string)
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 		body, _, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 		if err != nil {
 			errMsg := err.Error()
@@ -313,6 +316,6 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	phc.DupPluginConf()
 	_, topics := phc.GetPluginStatus(ctx, plugin)
 	PublishPluginStatusOKEvent(ctx, plugin.ID, topics)
-
+	l.LogWithFields(ctx).Debugf("final response for add plugin data request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp, managerUUID, ciphertext
 }

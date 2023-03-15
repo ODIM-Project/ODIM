@@ -70,7 +70,6 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 	var percentComplete int32
 	targetURI := "/redfish/v1/AggregationService/Actions/AggregationService.Reset/" // this will removed later and passed as input param in req struct
 	percentComplete = 0
-
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	var resetRequest AggregationResetRequest
@@ -79,6 +78,7 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, taskInfo)
 	}
+	l.LogWithFields(ctx).Debugf("reset request fields sent for validation: %s", string(req.RequestBody))
 	missedProperty, err := resetRequest.validateResetRequestFields(req.RequestBody)
 	if err != nil {
 		errMsg := "Unable to validate request fields: " + err.Error()
@@ -98,6 +98,7 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
 		return resp
 	}
+	l.LogWithFields(ctx).Debug("reset request data: ", resetRequest)
 	// subTaskChan is a buffered channel with buffer size equal to total number of resources.
 	// this also helps while cancelling the task. even if the reader is not available for reading
 	// the channel buffer will collect them and allows gracefull exit for already spanned goroutines.

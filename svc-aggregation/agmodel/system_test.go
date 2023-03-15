@@ -112,7 +112,7 @@ func TestGetResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := GetResource(tt.args.Table, tt.args.key)
+			got, got1 := GetResource(context.TODO(), tt.args.Table, tt.args.key)
 			if got != tt.want {
 				t.Errorf("GetResource() got = %v, want %v", got, tt.want)
 			}
@@ -885,7 +885,7 @@ func TestGetResourceDetails(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := GetResourceDetails(tt.args.key)
+			got, got1 := GetResourceDetails(context.TODO(), tt.args.key)
 			if got != tt.want {
 				t.Errorf("GetResourceDetails() got = %v, want %v", got, tt.want)
 			}
@@ -957,11 +957,11 @@ func TestSystemOperation(t *testing.T) {
 	assert.Nil(t, err, "err should be nil")
 
 	// testing the get system operation
-	data, err := GetSystemOperationInfo(systemURI)
+	data, err := GetSystemOperationInfo(context.TODO(), systemURI)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, "Rediscovery", data.Operation)
 
-	_, err = GetSystemOperationInfo("systemURI")
+	_, err = GetSystemOperationInfo(context.TODO(), "systemURI")
 	assert.NotNil(t, err, "Error Should not be nil")
 
 	//testing the delete operation
@@ -990,11 +990,11 @@ func TestSystemReset(t *testing.T) {
 	assert.Nil(t, err, "err should be nil")
 
 	// testing the get system operation
-	data, err := GetSystemResetInfo(systemURI)
+	data, err := GetSystemResetInfo(context.TODO(), systemURI)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, "ForceRestart", data["ResetType"])
 
-	_, err = GetSystemResetInfo("systemURI")
+	_, err = GetSystemResetInfo(context.TODO(), "systemURI")
 	assert.NotNil(t, err, "Error Should not be nil")
 
 	//testing the delete operation
@@ -1032,20 +1032,20 @@ func TestAggregationSource(t *testing.T) {
 	assert.Nil(t, err, "err should be nil")
 	err = AddAggregationSource(req, aggregationSourceURI)
 	assert.NotNil(t, err, "Error Should not be nil")
-	keys, dbErr := GetAllKeysFromTable("AggregationSource")
+	keys, dbErr := GetAllKeysFromTable(context.TODO(), "AggregationSource")
 	assert.Nil(t, dbErr, "err should be nil")
 	assert.Equal(t, 1, len(keys), "length should be matching")
-	data, err := GetAggregationSourceInfo(aggregationSourceURI)
+	data, err := GetAggregationSourceInfo(context.TODO(), aggregationSourceURI)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, data.HostName, req.HostName)
 	assert.Equal(t, data.UserName, req.UserName)
-	_, err = GetAggregationSourceInfo("/redfish/v1/AggregationService/AggregationSources/12345677651245-123433")
+	_, err = GetAggregationSourceInfo(context.TODO(), "/redfish/v1/AggregationService/AggregationSources/12345677651245-123433")
 	assert.NotNil(t, err, "Error Should not be nil")
 	err = UpdateAggregtionSource(req, aggregationSourceURI)
 	assert.Nil(t, err, "err should be nil")
 	err = UpdateAggregtionSource(req, "/redfish/v1/AggregationService/AggregationSources/12345677651245-123433")
 	assert.NotNil(t, err, "Error Should not be nil")
-	data, err = GetAggregationSourceInfo(aggregationSourceURI)
+	data, err = GetAggregationSourceInfo(context.TODO(), aggregationSourceURI)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, data.HostName, req.HostName)
 	assert.Equal(t, data.UserName, req.UserName)
@@ -1192,7 +1192,7 @@ func TestGetAllKeysFromTable(t *testing.T) {
 	key := "/redfish/v1/AggregationService/Aggregates/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"
 	mockSystemResourceData([]byte(reqData), table, key)
 
-	resp, err := GetAllKeysFromTable(table)
+	resp, err := GetAllKeysFromTable(context.TODO(), table)
 	assert.Nil(t, err, "Error Should be nil")
 	assert.Equal(t, 1, len(resp), "response should be same as reqData")
 }
@@ -1322,7 +1322,7 @@ func TestConnectionMethod(t *testing.T) {
 	assert.Nil(t, err, "err should be nil")
 	err = AddConnectionMethod(req, connectionMethodURI)
 	assert.NotNil(t, err, "Error Should not be nil")
-	got, err := GetConnectionMethod(connectionMethodURI)
+	got, err := GetConnectionMethod(context.TODO(), connectionMethodURI)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, 2, len(got.Links.AggregationSources), "there should be two element")
 	updateErr := UpdateConnectionMethod(req, "xyz")
@@ -1526,6 +1526,6 @@ func TestGetDeviceSubscriptions(t *testing.T) {
 	}()
 	hostIP := "10.24.0.0"
 	mockData(t, common.OnDisk, "ComputerSystem", hostIP, hostIP)
-	_, err := GetDeviceSubscriptions(hostIP)
+	_, err := GetDeviceSubscriptions(context.TODO(), hostIP)
 	assert.NotNil(t, err, "There should be error")
 }

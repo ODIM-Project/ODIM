@@ -115,7 +115,7 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 	for i := 0; i < len(targetList); i++ {
 		select {
 		case statusCode := <-subTaskChannel:
-			if statusCode != http.StatusOK && statusCode != http.StatusAccepted {
+			if statusCode != http.StatusOK {
 				partialResultFlag = true
 				if resp.StatusCode < statusCode {
 					resp.StatusCode = statusCode
@@ -136,13 +136,13 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 	}
 
 	taskStatus := common.OK
+	if resp.StatusCode == http.StatusAccepted {
+		return
+	}
 	if partialResultFlag {
 		taskStatus = common.Warning
 	}
 	percentComplete = 100
-	if resp.StatusCode == http.StatusAccepted {
-		return
-	}
 	if resp.StatusCode != http.StatusOK {
 		errMsg := "One or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
 		l.LogWithFields(ctx).Warn(errMsg)

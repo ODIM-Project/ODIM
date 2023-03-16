@@ -16,19 +16,19 @@
 // and also have functionality to create error response
 package evresponse
 
-//ErrorResopnse struct is response Error struct
-type ErrorResopnse struct {
+// ErrorResponse struct is response Error struct
+type ErrorResponse struct {
 	Error Error `json:"Error"`
 }
 
-//Error struct is standard response struct
+// Error struct is standard response struct
 type Error struct {
 	Code                string            `json:"Code"`
 	Message             string            `json:"Message"`
 	MessageExtendedInfo []MsgExtendedInfo `json:"@Message.ExtendedInfo"`
 }
 
-//MsgExtendedInfo struct definition
+// MsgExtendedInfo struct definition
 type MsgExtendedInfo struct {
 	MessageID   string   `json:"MessageId,omitempty"`
 	Message     string   `json:"Message,omitempty"`
@@ -39,13 +39,13 @@ type MsgExtendedInfo struct {
 }
 
 // CreateErrorResponse will accrpts the message string and create standard error resopnse
-func CreateErrorResponse(message string) ErrorResopnse {
-	var err = ErrorResopnse{
+func CreateErrorResponse(message string) ErrorResponse {
+	var err = ErrorResponse{
 		Error{
 			Code:    "Base.1.13.0.ExtendedInfo",
 			Message: "See @Message.ExtendedInfo for more information.",
 			MessageExtendedInfo: []MsgExtendedInfo{
-				MsgExtendedInfo{
+				{
 					MessageID: "Base.1.13.0." + message,
 				},
 			},

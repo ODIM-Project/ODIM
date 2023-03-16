@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
@@ -42,6 +43,7 @@ var (
 	aggregateIdToSubscriptionsMapTemp map[string]map[string]bool
 	collectionToSubscriptionsMapTemp  map[string]map[string]bool
 	reAttemptInQueue                  = make(map[string]int)
+	reattemptLock                     sync.Mutex
 )
 
 // eventForwardingChanel channel is used for communicate

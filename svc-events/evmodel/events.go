@@ -357,7 +357,7 @@ func getSliceFromString(sliceString string) []string {
 	return strings.Split(slice, " ")
 }
 
-// SaveEventSubscription is to save event subscription details
+// SaveEventSubscription is to save event subscription details in db
 func SaveEventSubscription(evtSubscription SubscriptionResource) error {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {

@@ -36,7 +36,7 @@ import (
 )
 
 func TestDeleteEventSubscription(t *testing.T) {
-	// Intializing plugin token
+	// Initializing plugin token
 	evcommon.Token.Tokens = map[string]string{
 		"ILO": "token",
 	}

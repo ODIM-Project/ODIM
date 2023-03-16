@@ -1088,7 +1088,6 @@ func fillMethodNotAllowedErrorResponse(ctx iris.Context) {
 	}
 	common.SetResponseHeader(ctx, nil)
 	ctx.JSON(errArgs.CreateGenericErrorResponse())
-	return
 }
 
 // AsMethodNotAllowed holds Method to throw 405 Method not allowed on Account Service URLs
@@ -1108,7 +1107,6 @@ func AsMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // SsMethodNotAllowed holds builds reponse for the unallowed http operation on Session Service URLs and returns 405 error.
@@ -1128,7 +1126,6 @@ func SsMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // SystemsMethodNotAllowed holds builds reponse for the unallowed http operation on Systems URLs and returns 405 error.
@@ -1162,7 +1159,6 @@ func SystemsMethodNotAllowed(ctx iris.Context) {
 	}
 
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // SystemsMethodInvalidURI holds builds reponse for the invalid url operation on Systems URLs and returns 404 error.
@@ -1181,7 +1177,6 @@ func SystemsMethodInvalidURI(ctx iris.Context) {
 	}
 	common.SetResponseHeader(ctx, nil)
 	ctx.JSON(errArgs.CreateGenericErrorResponse())
-	return
 }
 
 // CompositionServiceMethodNotAllowed holds builds reponse for the unallowed http operation on Systems URLs and returns 405 error.
@@ -1210,7 +1205,6 @@ func CompositionServiceMethodNotAllowed(ctx iris.Context) {
 	}
 
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // LicenseMethodNotAllowed holds builds reponse for the unallowed http operation on License URLs and returns 405 error.
@@ -1228,7 +1222,6 @@ func LicenseMethodNotAllowed(ctx iris.Context) {
 	}
 
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // ManagersMethodNotAllowed holds builds reponse for the unallowed http operation on Managers URLs and returns 405 error.
@@ -1254,7 +1247,6 @@ func ManagersMethodNotAllowed(ctx iris.Context) {
 	}
 
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // TsMethodNotAllowed holds builds reponse for the unallowed http operation on Task Service URLs and returns 405 error.
@@ -1262,7 +1254,6 @@ func TsMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // UpdateServiceMethodNotAllowed holds builds reponse for the unallowed http operation on Update Service URLs and returns 405 error.
@@ -1270,13 +1261,12 @@ func UpdateServiceMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
+
 func MethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // ChassisMethodNotAllowed holds builds reponse for the unallowed http operation on Chassis URLs and returns 405 error.
@@ -1284,7 +1274,6 @@ func ChassisMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // RegMethodNotAllowed holds builds reponse for the unallowed http operation on Registries URLs and returns 405 error.
@@ -1292,7 +1281,6 @@ func RegMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // EvtMethodNotAllowed holds builds reponse for the unallowed http operation on Events URLs and returns 405 error.
@@ -1311,7 +1299,6 @@ func EvtMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
 	}
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // AggMethodNotAllowed holds builds reponse for the unallowed http operation on Aggregation Service URLs and returns 405 error.
@@ -1339,7 +1326,6 @@ func AggMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // FabricsMethodNotAllowed holds builds reponse for the unallowed http operation on Fabrics URLs and returns 405 error.
@@ -1347,7 +1333,6 @@ func FabricsMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // AggregateMethodNotAllowed holds builds reponse for the unallowed http operation on Aggregate URLs and returns 405 error.
@@ -1372,7 +1357,6 @@ func AggregateMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
 	}
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // SRMethodNotAllowed holds builds response for the unallowed http operation on service root URLs and returns 405 error.
@@ -1380,7 +1364,6 @@ func SRMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }
 
 // RoleMethodNotAllowed holds builds response for the unallowed http operation on Role URLs and returns 405 error.
@@ -1396,5 +1379,4 @@ func RoleMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
 	}
 	fillMethodNotAllowedErrorResponse(ctx)
-	return
 }

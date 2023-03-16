@@ -229,7 +229,7 @@ func (e *ExternalInterface) InstallLicenseService(ctx context.Context, req *lice
 				"Password": string(plugin.Password),
 			}
 			contactRequest.OID = "/ODIM/v1/Sessions"
-			l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",contactRequest.OID, string(fmt.Sprintf("%v", contactRequest.PostBody)))
+			l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", contactRequest.OID, string(reqBody))
 			_, token, getResponse, err := lcommon.ContactPlugin(ctx, contactRequest, "error while logging in to plugin: ")
 			if err != nil {
 				errMsg := err.Error()
@@ -248,7 +248,7 @@ func (e *ExternalInterface) InstallLicenseService(ctx context.Context, req *lice
 		contactRequest.DeviceInfo = target
 		contactRequest.OID = "/ODIM/v1/LicenseService/Licenses"
 		contactRequest.PostBody = reqBody
-		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s",contactRequest.OID, string(fmt.Sprintf("%v", contactRequest.PostBody)))
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", contactRequest.OID, string(reqBody))
 		_, _, getResponse, err := e.External.ContactPlugin(ctx, contactRequest, "error while installing license: ")
 		if err != nil {
 			errMsg := err.Error()

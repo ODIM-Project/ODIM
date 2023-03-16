@@ -305,10 +305,18 @@ func sendEvent(destination string, event []byte) (*http.Response, error) {
 	return httpClient.Do(req)
 }
 func (e *ExternalInterfaces) reAttemptEvents(eventMessage evmodel.EventPost) {
+	reattemptLock.Lock()
 	reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] + 1
+	reattemptLock.Unlock()
 	var resp *http.Response
 	var err error
 	count := config.Data.EventConf.DeliveryRetryAttempts
+
+	defer func() {
+		reattemptLock.Lock()
+		reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] - 1
+		reattemptLock.Unlock()
+	}()
 	for i := 0; i < count; i++ {
 		logging.Info("Retry event forwarding on destination: ")
 		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
@@ -316,14 +324,12 @@ func (e *ExternalInterfaces) reAttemptEvents(eventMessage evmodel.EventPost) {
 		eventString, err := e.GetUndeliveredEvents(eventMessage.UndeliveredEventID)
 		if err != nil || len(eventString) < 1 {
 			l.Log.Info("Event is forwarded to destination")
-			reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] - 1
 			return
 		}
 		resp, err = SendEventFunc(eventMessage.Destination, eventMessage.Message)
 		if err == nil {
 			resp.Body.Close()
 			logging.Info("Event is successfully forwarded after reattempt ", count)
-			reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] - 1
 			err = e.DeleteUndeliveredEvents(eventMessage.UndeliveredEventID)
 			if err != nil {
 				l.Log.Error("error while deleting undelivered events: ", err.Error())
@@ -334,7 +340,7 @@ func (e *ExternalInterfaces) reAttemptEvents(eventMessage evmodel.EventPost) {
 	if err != nil {
 		logging.Error("error while make https call to send the event: ", err.Error())
 	}
-	reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] - 1
+
 }
 
 // rediscoverSystemInventory will be triggered when ever the System Restart or Power On

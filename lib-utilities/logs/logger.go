@@ -147,16 +147,12 @@ func findSysLogPriorityNumeric(entry *logrus.Entry, level string) int8 {
 }
 
 func formatPriorityFields(entry *logrus.Entry, msg string) string {
-	present := true
 	for _, v := range priorityLogFields {
 		if val, ok := entry.Data[v]; ok {
-			present = false
-			msg = fmt.Sprintf("%s %v ", msg, val)
+			msg = fmt.Sprintf("%s %v", msg, val)
 		}
 	}
-	if !present {
-		msg = msg[:len(msg)-1]
-	}
+
 	return msg
 }
 

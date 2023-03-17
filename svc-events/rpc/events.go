@@ -36,12 +36,12 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 )
 
-//Events struct helps to register service
+// Events struct helps to register service
 type Events struct {
 	Connector *events.ExternalInterfaces
 }
 
-var podName = os.Getenv("POD_NAME")
+var podName = os.Getenv(common.ENV_POD_NAME)
 var (
 	//JSONMarshal ...
 	JSONMarshal = json.Marshal
@@ -99,7 +99,7 @@ func generateResponse(ctx context.Context, input interface{}) []byte {
 	return bytes
 }
 
-//GetEventService handles the RPC to get EventService details.
+// GetEventService handles the RPC to get EventService details.
 func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
 	var resp eventsproto.EventSubResponse
 	ctx = common.GetContextData(ctx)
@@ -205,7 +205,7 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 	return &resp, nil
 }
 
-//CreateEventSubscription defines the operations which handles the RPC request response
+// CreateEventSubscription defines the operations which handles the RPC request response
 // for the Create event subscription RPC call to events micro service.
 // The functionality is to create the subscrription with Resource provided in origin resources.
 func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
@@ -265,7 +265,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 	return &resp, nil
 }
 
-//SubmitTestEvent defines the operations which handles the RPC request response
+// SubmitTestEvent defines the operations which handles the RPC request response
 // for the SubmitTestEvent RPC call to events micro service.
 // The functionality is to submit a test event.
 func (e *Events) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
@@ -288,7 +288,7 @@ func (e *Events) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubR
 	return &resp, nil
 }
 
-//GetEventSubscriptionsCollection defines the operations which handles the RPC request response
+// GetEventSubscriptionsCollection defines the operations which handles the RPC request response
 // for the get event subscriptions collection RPC call to events micro service.
 // The functionality is to get the collection of subscrription details.
 func (e *Events) GetEventSubscriptionsCollection(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
@@ -369,7 +369,7 @@ func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.E
 	return &resp, nil
 }
 
-//CreateDefaultEventSubscription defines the operations which handles the RPC request response
+// CreateDefaultEventSubscription defines the operations which handles the RPC request response
 // after computer system restarts ,This will  triggered from   aggregation service whenever a computer system is added
 func (e *Events) CreateDefaultEventSubscription(ctx context.Context, req *eventsproto.DefaultEventSubRequest) (*eventsproto.DefaultEventSubResponse, error) {
 	var resp eventsproto.DefaultEventSubResponse
@@ -379,7 +379,7 @@ func (e *Events) CreateDefaultEventSubscription(ctx context.Context, req *events
 	return &resp, nil
 }
 
-//SubsribeEMB defines the operations which handles the RPC request response
+// SubsribeEMB defines the operations which handles the RPC request response
 // it subscribe to the given event message bus queues
 func (e *Events) SubsribeEMB(ctx context.Context, req *eventsproto.SubscribeEMBRequest) (*eventsproto.SubscribeEMBResponse, error) {
 	var resp eventsproto.SubscribeEMBResponse
@@ -406,7 +406,7 @@ func generateTaskRespone(ctx context.Context, taskID, taskURI string, resp *even
 	resp.Body = generateResponse(ctx, commonResponse)
 }
 
-//RemoveEventSubscriptionsRPC defines the operations which handles the RPC request response
+// RemoveEventSubscriptionsRPC defines the operations which handles the RPC request response
 // it subscribe to the given event message bus queues
 func (e *Events) RemoveEventSubscriptionsRPC(ctx context.Context, req *eventsproto.EventUpdateRequest) (*eventsproto.SubscribeEMBResponse, error) {
 	var resp eventsproto.SubscribeEMBResponse
@@ -417,7 +417,7 @@ func (e *Events) RemoveEventSubscriptionsRPC(ctx context.Context, req *eventspro
 	return &resp, nil
 }
 
-//UpdateEventSubscriptionsRPC defines the operations which handles the RPC request response
+// UpdateEventSubscriptionsRPC defines the operations which handles the RPC request response
 // it subscribe to the given event message bus queues
 func (e *Events) UpdateEventSubscriptionsRPC(ctx context.Context, req *eventsproto.EventUpdateRequest) (*eventsproto.SubscribeEMBResponse, error) {
 	var resp eventsproto.SubscribeEMBResponse
@@ -428,7 +428,7 @@ func (e *Events) UpdateEventSubscriptionsRPC(ctx context.Context, req *eventspro
 	return &resp, nil
 }
 
-//IsAggregateHaveSubscription defines the operations which handles the RPC request response
+// IsAggregateHaveSubscription defines the operations which handles the RPC request response
 func (e *Events) IsAggregateHaveSubscription(ctx context.Context, req *eventsproto.EventUpdateRequest) (*eventsproto.SubscribeEMBResponse, error) {
 	var resp eventsproto.SubscribeEMBResponse
 	ctx = common.GetContextData(ctx)
@@ -438,7 +438,7 @@ func (e *Events) IsAggregateHaveSubscription(ctx context.Context, req *eventspro
 	return &resp, nil
 }
 
-//DeleteAggregateSubscriptionsRPC defines the operations which handles the RPC request response
+// DeleteAggregateSubscriptionsRPC defines the operations which handles the RPC request response
 // it remove subscription details
 func (e *Events) DeleteAggregateSubscriptionsRPC(ctx context.Context, req *eventsproto.EventUpdateRequest) (*eventsproto.SubscribeEMBResponse, error) {
 	var resp eventsproto.SubscribeEMBResponse

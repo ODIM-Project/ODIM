@@ -59,9 +59,9 @@ type ResourceInfoRequest struct {
 	DevicePassword      func([]byte) ([]byte, error)
 	GetPluginStatus     func(context.Context, tmodel.Plugin) bool
 	ResourceName        string
-	GetAllKeysFromTable func(context.Context,string, common.DbType) ([]string, error)
+	GetAllKeysFromTable func(context.Context, string, common.DbType) ([]string, error)
 	GetPluginData       func(string) (tmodel.Plugin, *errors.Error)
-	GetResource         func(context.Context,string, string, common.DbType) (string, *errors.Error)
+	GetResource         func(context.Context, string, string, common.DbType) (string, *errors.Error)
 	GenericSave         func(context.Context, []byte, string, string) error
 }
 
@@ -73,7 +73,7 @@ var (
 // GetResourceInfoFromDevice will contact to the southbound client and gets the Particual resource info from device
 func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) ([]byte, error) {
 	var metricReportData dmtf.MetricReports
-	plugins, err := req.GetAllKeysFromTable(ctx,"Plugin", common.OnDisk)
+	plugins, err := req.GetAllKeysFromTable(ctx, "Plugin", common.OnDisk)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -212,7 +212,7 @@ func GetPluginStatus(ctx context.Context, plugin tmodel.Plugin) bool {
 		PluginPort:              plugin.Port,
 		PluginUsername:          plugin.Username,
 		PluginUserPassword:      string(plugin.Password),
-		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		PluginPreferredAuthType: plugin.PreferredAuthType,
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
@@ -238,7 +238,7 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 
 func removeNonExistingID(ctx context.Context, req ResourceInfoRequest) {
 	collectionURL := "/redfish/v1/TelemetryService/MetricReports"
-	data, err := req.GetResource(ctx,"MetricReportsCollection", collectionURL, common.InMemory)
+	data, err := req.GetResource(ctx, "MetricReportsCollection", collectionURL, common.InMemory)
 	if err != nil {
 		return
 	}

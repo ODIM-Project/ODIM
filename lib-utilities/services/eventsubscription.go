@@ -29,7 +29,7 @@ func SubscribeToEMB(pluginID string, queueList []string) error {
 	}
 	defer conn.Close()
 	events := eventsproto.NewEventsClient(conn)
-	_, err := events.SubsribeEMB(context.TODO(), &eventsproto.SubscribeEMBRequest{
+	_, err := events.SubscribeEMB(context.TODO(), &eventsproto.SubscribeEMBRequest{
 		PluginID:     pluginID,
 		EMBQueueName: queueList,
 	})

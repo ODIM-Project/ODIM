@@ -36,7 +36,7 @@ func PostEventFunctionForTesting(ctx context.Context, s []string, name string) {
 func GetPluginStatusForTesting(ctx context.Context, plugin agmodel.Plugin) bool {
 	return true
 }
-func mockSubscribeEMB(pluginID string, list []string) error {
+func mockSubscribeEMB(ctx context.Context, pluginID string, list []string) error {
 	return nil
 }
 

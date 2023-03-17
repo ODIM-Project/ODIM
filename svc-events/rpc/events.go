@@ -113,7 +113,7 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 	//Else send 401 Unautherised
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := e.Connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := e.Connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		if err != nil {
@@ -216,7 +216,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 	ctx = common.ModifyContext(ctx, common.EventService, podName)
 
 	// Athorize the request here
-	authResp, err := e.Connector.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Connector.Auth(ctx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		if err != nil {
@@ -227,7 +227,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		resp.StatusCode = authResp.StatusCode
 		return &resp, nil
 	}
-	sessionUserName, err := e.Connector.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := e.Connector.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errorMessage := "error while trying to get the session username: " + err.Error()
 		resp.Body = generateResponse(ctx, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil))

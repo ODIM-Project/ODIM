@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package thandle ...
+// Package thandle ...
 package thandle
 
 import (
@@ -48,8 +48,8 @@ var podName = os.Getenv("POD_NAME")
 // AuthenticationRPC is used to authorize user and privileges
 // GetTaskStatusModel get task status
 type TasksRPC struct {
-	AuthenticationRPC                func(sessionToken string, privileges []string) (response.RPC, error)
-	GetSessionUserNameRPC            func(sessionToken string) (string, error)
+	AuthenticationRPC                func(ctx context.Context, sessionToken string, privileges []string) (response.RPC, error)
+	GetSessionUserNameRPC            func(ctx context.Context, sessionToken string) (string, error)
 	GetTaskStatusModel               func(ctx context.Context, taskID string, db common.DbType) (*tmodel.Task, error)
 	GetAllTaskKeysModel              func(ctx context.Context) ([]string, error)
 	TransactionModel                 func(ctx context.Context, key string, cb func(context.Context, string) error) error
@@ -62,7 +62,7 @@ type TasksRPC struct {
 	PublishToMessageBus              func(ctx context.Context, taskURI string, taskEvenMessageID string, eventType string, taskMessage string)
 }
 
-//TaskCollectionData ....
+// TaskCollectionData ....
 type TaskCollectionData struct {
 	TaskCollection map[string]int32
 	Lock           sync.Mutex
@@ -89,7 +89,7 @@ var (
 	TaskCollection TaskCollectionData
 )
 
-//CreateTask is a rpc handler which intern call actual CreatTask to create new task
+// CreateTask is a rpc handler which intern call actual CreatTask to create new task
 func (ts *TasksRPC) CreateTask(ctx context.Context, req *taskproto.CreateTaskRequest) (*taskproto.CreateTaskResponse, error) {
 	var rsp taskproto.CreateTaskResponse
 	// Check for completed task if there are any, get the oldest Completed
@@ -131,7 +131,7 @@ func (ts *TasksRPC) deleteCompletedTask(ctx context.Context, taskID string) erro
 	return nil
 }
 
-//CreateChildTask is a rpc handler which intern call actual CreateChildTask to create sub task under parent task.
+// CreateChildTask is a rpc handler which intern call actual CreateChildTask to create sub task under parent task.
 func (ts *TasksRPC) CreateChildTask(ctx context.Context, req *taskproto.CreateTaskRequest) (*taskproto.CreateTaskResponse, error) {
 	var rsp taskproto.CreateTaskResponse
 	ctx = common.GetContextData(ctx)
@@ -146,7 +146,7 @@ func (ts *TasksRPC) CreateChildTask(ctx context.Context, req *taskproto.CreateTa
 	return &rsp, err
 }
 
-//UpdateTask is a rpc handler which interr call actual CreatTask to create new task
+// UpdateTask is a rpc handler which interr call actual CreatTask to create new task
 func (ts *TasksRPC) UpdateTask(ctx context.Context, req *taskproto.UpdateTaskRequest) (*taskproto.UpdateTaskResponse, error) {
 	var rsp taskproto.UpdateTaskResponse
 	ctx = common.GetContextData(ctx)
@@ -164,7 +164,7 @@ func (ts *TasksRPC) UpdateTask(ctx context.Context, req *taskproto.UpdateTaskReq
 	return &rsp, err
 }
 
-//DeleteTask is an API end point to delete the given task.
+// DeleteTask is an API end point to delete the given task.
 func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
 	ctx = common.GetContextData(ctx)
@@ -177,7 +177,7 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 		return &rsp, nil
 	}
 	privileges := []string{common.PrivilegeConfigureManager}
-	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf(logPrefix+"Error while authorizing the session token : %s", err.Error())
@@ -288,7 +288,7 @@ func constructCommonResponseHeader(rsp *taskproto.TaskResponse) {
 
 func (ts *TasksRPC) validateAndAuthorize(ctx context.Context, req *taskproto.GetTaskRequest, rsp *taskproto.TaskResponse) (*tmodel.Task, error) {
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -297,7 +297,7 @@ func (ts *TasksRPC) validateAndAuthorize(ctx context.Context, req *taskproto.Get
 		l.LogWithFields(ctx).Error(authErrorMessage)
 		return nil, fmt.Errorf(authErrorMessage)
 	}
-	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
+	sessionUserName, err := ts.GetSessionUserNameRPC(ctx, req.SessionToken)
 	if err != nil {
 		// handle the error case with appropriate response body
 		fillProtoResponse(ctx, rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
@@ -317,7 +317,7 @@ func (ts *TasksRPC) validateAndAuthorize(ctx context.Context, req *taskproto.Get
 	//is an Admin(PrivilegeConfigureUsers). If he is admin then proceed.
 	if sessionUserName != task.UserName {
 		privileges := []string{common.PrivilegeConfigureUsers}
-		authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+		authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 		if authResp.StatusCode != http.StatusOK {
 			if err != nil {
 				l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -406,7 +406,7 @@ func (ts *TasksRPC) asyncTaskDelete(ctx context.Context, taskID string) {
 	return
 }
 
-//GetSubTasks is an API end point to get all available tasks
+// GetSubTasks is an API end point to get all available tasks
 func (ts *TasksRPC) GetSubTasks(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
 	ctx = common.GetContextData(ctx)
@@ -451,7 +451,7 @@ func (ts *TasksRPC) GetSubTasks(ctx context.Context, req *taskproto.GetTaskReque
 	return &rsp, nil
 }
 
-//GetSubTask is an API end point to get the subtask details
+// GetSubTask is an API end point to get the subtask details
 func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
 	ctx = common.GetContextData(ctx)
@@ -459,7 +459,7 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 	constructCommonResponseHeader(&rsp)
 	l.LogWithFields(ctx).Debugf("Incoming request to get subtask %v", req.SubTaskID)
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -467,7 +467,7 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 		fillProtoResponse(ctx, &rsp, authResp)
 		return &rsp, nil
 	}
-	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
+	sessionUserName, err := ts.GetSessionUserNameRPC(ctx, req.SessionToken)
 	if err != nil {
 		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		l.LogWithFields(ctx).Error(authErrorMessage)
@@ -484,7 +484,7 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 	//Compare the task username with requesting session user name
 	if sessionUserName != task.UserName {
 		privileges := []string{common.PrivilegeConfigureUsers}
-		authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+		authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 		if authResp.StatusCode != http.StatusOK {
 			if err != nil {
 				l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -567,7 +567,7 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 	return &rsp, nil
 }
 
-//TaskCollection is an API end point to get all available tasks
+// TaskCollection is an API end point to get all available tasks
 func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
 	ctx = common.GetContextData(ctx)
@@ -581,7 +581,7 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 	}
 	constructCommonResponseHeader(&rsp)
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -597,11 +597,11 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 		l.LogWithFields(ctx).Error(errorMessage)
 		return &rsp, nil
 	}
-	statusConfigureUsers, err := ts.AuthenticationRPC(req.SessionToken, []string{common.PrivilegeConfigureUsers})
+	statusConfigureUsers, err := ts.AuthenticationRPC(ctx, req.SessionToken, []string{common.PrivilegeConfigureUsers})
 	if err != nil {
 		l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 	}
-	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
+	sessionUserName, err := ts.GetSessionUserNameRPC(ctx, req.SessionToken)
 	if err != nil {
 		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		l.LogWithFields(ctx).Error(authErrorMessage)
@@ -650,14 +650,14 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 	return &rsp, nil
 }
 
-//GetTasks is an API end point to get the task status and response body.
+// GetTasks is an API end point to get the task status and response body.
 // Takes X-Auth-Token and authorize the request.
-//If X-Auth-Token is empty or invalid then it returns "StatusUnauthorized".
+// If X-Auth-Token is empty or invalid then it returns "StatusUnauthorized".
 // If the TaskID is not found then it return "StatusNotFound".
 // If the task is still not completed or cancelled or killed then it return with 202
 // with empty response body, else it return with "200 OK" with full task info in the
 // response body.
-//If the Username doesnot match with the task username then it returns with
+// If the Username doesnot match with the task username then it returns with
 // StatusForbidden.
 func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
@@ -745,9 +745,12 @@ func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest)
 }
 
 // GetTaskService is an API handler to get Task service details
-//Takes:
+// Takes:
+//
 //	taskproto.GetTaskRequest(exctracts SessionToken from it)
-//Returns:
+//
+// Returns:
+//
 //	401 Unauthorized or 200 OK with respective response body and response header.
 func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
@@ -761,7 +764,7 @@ func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRe
 	// Validate the token, if user has ConfigureUsers privelege then proceed.
 	//Else send 401 Unautherised
 	privileges := []string{common.PrivilegeConfigureUsers}
-	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -833,8 +836,11 @@ func fillProtoResponse(ctx context.Context, resp *taskproto.TaskResponse, data r
 
 // CreateTaskUtil Create the New Task and persist in in-memory DB and return task ID and error
 // Takes :
+//
 //	username : Is a Username of type string
-//Returns:
+//
+// Returns:
+//
 //	New Task URI of Type string
 //	err of type error
 func (ts *TasksRPC) CreateTaskUtil(ctx context.Context, userName string) (string, error) {
@@ -872,10 +878,13 @@ func (ts *TasksRPC) CreateTaskUtil(ctx context.Context, userName string) (string
 	return "/redfish/v1/TaskService/Tasks/" + task.ID, err
 }
 
-//CreateChildTaskUtil Creates the child task and attaches to the parent task provided.
+// CreateChildTaskUtil Creates the child task and attaches to the parent task provided.
 // Taskes:
+//
 //	parentTaskID of type string - Contains Parent task ID for Child task yet to be created
+//
 // Returns:
+//
 //	err of type error
 //	nil - On Success
 //	Non nil - On Failure
@@ -923,11 +932,14 @@ func (ts *TasksRPC) CreateChildTaskUtil(ctx context.Context, userName string, pa
 // updateTaskUtil is a function to update the existing task and/or to create sub-task under a parent task.
 // This function is to set task status, task end time along with task state based on the task state.
 // Takes:
+//
 //	taskID - Is of type string, containes task ID of the task to updated
 //	taskState - Is of type string, containes new sate of the task
 //	taskStatus - Is of type string, containes new status of the task
 //	endTime    - Is of type time.Time, containses the endtime of the task
+//
 // Retruns:
+//
 //	err of type error
 //	nil - On Success
 //	Non nil - On Failure

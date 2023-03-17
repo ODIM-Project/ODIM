@@ -40,7 +40,7 @@ var (
 
 // NewChassisRPC returns an instance of ChassisRPC
 func NewChassisRPC(
-	authWrapper func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error),
+	authWrapper func(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error),
 	createHandler *chassis.Create,
 	getCollectionHandler *chassis.GetCollection,
 	deleteHandler *chassis.Delete,
@@ -59,7 +59,7 @@ func NewChassisRPC(
 
 // ChassisRPC struct helps to register service
 type ChassisRPC struct {
-	IsAuthorizedRPC      func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
+	IsAuthorizedRPC      func(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
 	GetCollectionHandler *chassis.GetCollection
 	GetHandler           *chassis.Get
 	DeleteHandler        *chassis.Delete
@@ -139,7 +139,7 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 	l.LogWithFields(ctx).Debugf("incoming getchassisResource request with %s", req.URL)
 	var resp chassisproto.GetChassisResponse
 	sessionToken := req.SessionToken
-	authResp, err := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := cha.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())

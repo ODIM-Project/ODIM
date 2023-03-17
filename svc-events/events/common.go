@@ -47,7 +47,7 @@ var (
 // External struct to inject the contact external function into the handlers
 type External struct {
 	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth            func(string, []string, []string) (response.RPC, error)
+	Auth            func(context.Context, string, []string, []string) (response.RPC, error)
 	CreateTask      func(context.Context, string) (string, error)
 	UpdateTask      func(context.Context, common.TaskData) error
 	CreateChildTask func(context.Context, string, string) (string, error)
@@ -55,7 +55,7 @@ type External struct {
 
 // DB struct to inject the contact DB function into the handlers
 type DB struct {
-	GetSessionUserName               func(sessionToken string) (string, error)
+	GetSessionUserName               func(ctx context.Context, sessionToken string) (string, error)
 	GetEvtSubscriptions              func(string) ([]evmodel.SubscriptionResource, error)
 	SaveEventSubscription            func(evmodel.SubscriptionResource) error
 	GetPluginData                    func(string) (*common.Plugin, *errors.Error)

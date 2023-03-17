@@ -95,7 +95,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response of request to create an account: %s", string(body))
+	l.LogWithFields(ctx).Debug("outgoing response of request to create an account: %s", string(body))
 	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage

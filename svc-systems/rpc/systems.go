@@ -416,9 +416,40 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
+	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+	// Task Service using RPC and get the taskID
+	taskURI, err := s.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	fillSystemProtoResponse(ctx, &resp, rpcResp)
+	var pc = systems.PluginContact{
+		ContactClient:  pmbhandle.ContactPlugin,
+		DevicePassword: common.DecryptWithPrivateKey,
+		UpdateTask:     s.UpdateTask,
+	}
 
-	data := s.EI.DeleteVolume(ctx, req)
-	fillSystemProtoResponse(ctx, &resp, data)
+	go s.EI.DeleteVolume(ctx, req, &pc, taskID)
+	// fillSystemProtoResponse(ctx, &resp, data)
 	l.LogWithFields(ctx).Debugf("outgoing response DeleteVolume: %s", string(resp.Body))
 	return &resp, nil
 }

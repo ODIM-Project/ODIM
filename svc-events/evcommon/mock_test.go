@@ -155,7 +155,7 @@ func TestMockContactClient(t *testing.T) {
 			name: "Positive Test ",
 			args: args{url: "https://localhost:1234/ODIM/v1/Subscriptions",
 				method: http.MethodDelete,
-				body:   evmodel.Target{},
+				body:   common.Target{},
 			},
 			want: &http.Response{StatusCode: http.StatusNoContent},
 		},
@@ -163,7 +163,7 @@ func TestMockContactClient(t *testing.T) {
 			name: "Positive Test ",
 			args: args{url: "https://localhost:1234/ODIM/v1/Subscriptions",
 				method: http.MethodPost,
-				body: &evmodel.Target{
+				body: &common.Target{
 					DeviceUUID: "d72dade0-c35a-984c-4859-1108132d72da",
 				},
 			},
@@ -173,7 +173,7 @@ func TestMockContactClient(t *testing.T) {
 			name: "Positive Test ",
 			args: args{url: "https://localhost:1234/ODIM/v1/Subscriptions",
 				method: http.MethodPost,
-				body: &evmodel.Target{
+				body: &common.Target{
 					DeviceUUID: "d72dade0-c35a-984c-4859-1108132d72daa",
 				},
 			},
@@ -183,7 +183,7 @@ func TestMockContactClient(t *testing.T) {
 			name: "Positive Test ",
 			args: args{url: "https://localhost:1234/ODIM/v1/Sessions",
 				method: http.MethodPost,
-				body: &evmodel.Target{
+				body: &common.Target{
 					DeviceUUID: "d72dade0-c35a-984c-4859-1108132d72daa",
 				},
 			},
@@ -193,7 +193,7 @@ func TestMockContactClient(t *testing.T) {
 			name: "Positive Test ",
 			args: args{url: "https://10.10.10.23:4321/ODIM/v1/Sessions",
 				method: http.MethodPost,
-				body: &evmodel.Target{
+				body: &common.Target{
 					DeviceUUID: "d72dade0-c35a-984c-4859-1108132d72daa",
 				},
 			},
@@ -203,7 +203,7 @@ func TestMockContactClient(t *testing.T) {
 			name: "Positive Test ",
 			args: args{url: "https://10.10.10.23:4321/ODIM/v1/Subscriptions",
 				method: http.MethodPost,
-				body: &evmodel.Target{
+				body: &common.Target{
 					DeviceUUID: "d72dade0-c35a-984c-4859-1108132d72daa",
 				},
 			},
@@ -213,7 +213,7 @@ func TestMockContactClient(t *testing.T) {
 			name: "Positive Test ",
 			args: args{url: "https://odim.controller.com:1234/ODIM/v1/Subscriptions/123",
 				method: http.MethodPost,
-				body: &evmodel.Target{
+				body: &common.Target{
 					DeviceUUID: "d72dade0-c35a-984c-4859-1108132d72daa",
 				},
 			},
@@ -223,7 +223,7 @@ func TestMockContactClient(t *testing.T) {
 			name: "Positive Test ",
 			args: args{url: "https://localhost:1234/ODIM/v1/Subscriptions/12345",
 				method: http.MethodPost,
-				body: &evmodel.Target{
+				body: &common.Target{
 					DeviceUUID: "d72dade0-c35a-984c-4859-1108132d72daa",
 				},
 			},
@@ -234,7 +234,7 @@ func TestMockContactClient(t *testing.T) {
 			name: "Positive Test ",
 			args: args{url: "https://10.10.1.6:4321/ODIM/v1/Subscriptions",
 				method: http.MethodPost,
-				body: &evmodel.Target{
+				body: &common.Target{
 					DeviceUUID: "d72dade0-c35a-984c-4859-1108132d72daa",
 				},
 			},
@@ -245,7 +245,7 @@ func TestMockContactClient(t *testing.T) {
 			name: "Positive Test ",
 			args: args{url: "https://10.10.1.6:4321/ODIM/v1/Subscriptions/12345",
 				method: http.MethodPost,
-				body: &evmodel.Target{
+				body: &common.Target{
 					DeviceUUID: "d72dade0-c35a-984c-4859-1108132d72daa",
 				},
 			},
@@ -255,7 +255,7 @@ func TestMockContactClient(t *testing.T) {
 			name: "Invalid",
 			args: args{url: "Invalid",
 				method: http.MethodPost,
-				body: &evmodel.Target{
+				body: &common.Target{
 					DeviceUUID: "d72dade0-c35a-984c-4859-1108132d72daa",
 				},
 			},
@@ -284,27 +284,27 @@ func TestMockGetPluginData(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *evmodel.Plugin
+		want *common.Plugin
 	}{
 		{
 			name: "GRF plugin",
 			args: args{pluginID: "GRF"},
-			want: &evmodel.Plugin{ID: "GRF"},
+			want: &common.Plugin{ID: "GRF"},
 		},
 		{
 			name: "ILO plugin",
 			args: args{pluginID: "ILO"},
-			want: &evmodel.Plugin{ID: "ILO"},
+			want: &common.Plugin{ID: "ILO"},
 		},
 		{
 			name: "CFM plugin",
 			args: args{pluginID: "CFM"},
-			want: &evmodel.Plugin{ID: "CFM"},
+			want: &common.Plugin{ID: "CFM"},
 		},
 		{
 			name: "CFMPlugin plugin",
 			args: args{pluginID: "CFMPlugin"},
-			want: &evmodel.Plugin{ID: "CFMPlugin"},
+			want: &common.Plugin{ID: "CFMPlugin"},
 		},
 	}
 	for _, tt := range tests {
@@ -606,10 +606,10 @@ func TestMockGetDeviceSubscriptions(t *testing.T) {
 	}
 }
 func TestFunc(t *testing.T) {
-	err := MockSaveEventSubscription(evmodel.Subscription{})
+	err := MockSaveEventSubscription(evmodel.SubscriptionResource{})
 	assert.Nil(t, err)
 
-	err = MockUpdateEventSubscription(evmodel.Subscription{})
+	err = MockUpdateEventSubscription(evmodel.SubscriptionResource{})
 	assert.Nil(t, err)
 
 	err = MockDeleteEvtSubscription("")
@@ -617,7 +617,7 @@ func TestFunc(t *testing.T) {
 
 	err = MockDeleteDeviceSubscription("")
 	assert.Nil(t, err)
-	err = MockUpdateDeviceSubscriptionLocation(evmodel.DeviceSubscription{})
+	err = MockUpdateDeviceSubscriptionLocation(common.DeviceSubscription{})
 	assert.Nil(t, err)
 	_, err = MockGetAllKeysFromTable("")
 	assert.Nil(t, err)
@@ -633,7 +633,7 @@ func TestFunc(t *testing.T) {
 	err = MockSaveUndeliveredEvents("", []byte{})
 	assert.Nil(t, err)
 
-	err = MockSaveDeviceSubscription(evmodel.DeviceSubscription{})
+	err = MockSaveDeviceSubscription(common.DeviceSubscription{})
 	assert.Nil(t, err)
 
 	_, err = MockGetUndeliveredEvents("")

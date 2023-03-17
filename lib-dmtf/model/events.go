@@ -48,6 +48,11 @@ type SyslogFacility string
 // that will be forwarded. The service shall forward all messages
 // equal to or greater than the value in this property.  The value
 // `All` shall indicate all severities.
+
+//DeliveryRetryPolicy - The subscription delivery retry policy for events,
+// where the subscription type is RedfishEvent.
+type DeliveryRetryPolicy string
+
 type SyslogSeverity string
 
 // This property shall contain the authentication method for the SMTP server.
@@ -246,6 +251,26 @@ const (
 	// A Warning.
 	SyslogSeverityWarning SyslogSeverity = "Warning"
 
+	// DeliveryRetryPolicy for events. Currently ODIM only support subscriptions
+	// of type RetryForever.
+	// DeliveryRetryForever - The subscription is not suspended or terminated,
+	// and attempts at delivery of future events shall continue regardless of
+	// the number of retries.
+	DeliveryRetryForever DeliveryRetryPolicy = "RetryForever"
+
+	// DeliveryRetryForeverWithBackoff - The subscription is not suspended or
+	// terminated, and attempts at delivery of future events shall continue
+	// regardless of the number of retries, but issued over time according to
+	// a service-defined backoff algorithm
+	DeliveryRetryForeverWithBackoff DeliveryRetryPolicy = "RetryForeverWithBackoff"
+
+	// DeliverySuspendRetries - The subscription is suspended after the maximum
+	// number of retries is reached
+	DeliverySuspendRetries DeliveryRetryPolicy = "SuspendRetries"
+
+	// DeliveryTerminateAfterRetries : The subscription is terminated after the
+	// maximum number of retries is reached.
+	DeliveryTerminateAfterRetries DeliveryRetryPolicy = "TerminateAfterRetries"
 	//SMTP Authentcation method Auto-detect
 	SMTPAuthenticationAutoDetect SMTPAuthentication = "AutoDetect"
 
@@ -317,44 +342,111 @@ type EventRecord struct {
 // in the Event payload.
 // Reference	                : EventDestination.v1_12_0.json
 type EventDestination struct {
-	ODataContext                 string           `json:"@odata.context,omitempty"`
-	ODataEtag                    string           `json:"@odata.etag,omitempty"`
-	ODataId                      string           `json:"@odata.id"`
-	ODataType                    string           `json:"@odata.type"`
-	Actions                      *Actions         `json:"Actions,omitempty"`
-	Certificates                 *Link            `json:"Certificates,omitempty"`
-	ClientCertificates           *Link            `json:"ClientCertificates,omitempty"`
-	Context                      string           `json:"Context"`
-	DeliveryRetryPolicy          string           `json:"DeliveryRetryPolicy,omitempty"`
-	Description                  string           `json:"Description,omitempty"`
-	Destination                  string           `json:"Destination"`
-	EventFormatType              string           `json:"EventFormatType,omitempty"`
-	EventTypes                   []string         `json:"EventTypes,omitempty"`
-	ExcludeMessageIds            []string         `json:"ExcludeMessageIds,omitempty"`
-	ExcludeRegistryPrefixes      []string         `json:"ExcludeRegistryPrefixes,omitempty"`
-	HeartbeatIntervalMins        int              `json:"HeartbeatIntervalMinutes,omitempty"`
-	HttpHeaders                  []string         `json:"HttpHeaders,omitempty"`
-	ID                           string           `json:"Id"`
-	IncludeOriginOfCondition     bool             `json:"IncludeOriginOfCondition,omitempty"`
-	MessageIds                   []string         `json:"MessageIds,omitempty"`
-	MetricReportDefinitions      *Link            `json:"MetricReportDefinitions,omitempty"`
-	MetricReportDefinitionsCount int              `json:MetricReportDefinitions@odata.count,omitempty`
-	Name                         string           `json:"Name"`
-	OEMProtocol                  string           `json:"OEMProtocol,omitempty"`
-	OEMSubscriptionType          string           `json:"OEMSubscriptionType"`
-	Oem                          interface{}      `json:"Oem,omitempty"`
-	OriginResources              []string         `json:"OriginResources,omitempty"`
-	OriginResourcesCount         int              `json:MetricReportDefinitions@odata.count,omitempty`
-	Protocol                     string           `json:"Protocol"`
-	RegistryPrefixes             []string         `json:"RegistryPrefixes,omitempty"`
-	ResourceTypes                []string         `json:"ResourceTypes,omitempty"`
-	SNMP                         SNMPSettings     `json:"SNMP,omitempty"`
-	SendHeartbeat                bool             `json:"SendHeartbeat,omitempty"`
-	Status                       Status           `json:"Status,omitempty"`
-	SubordinateResources         bool             `json:"SubordinateResources,omitempty"`
-	SubscriptionType             SubscriptionType `json:"SubscriptionType,omitempty"`
-	SyslogFilters                SyslogFilter     `json:"SyslogFilters,omitempty"`
-	VerifyCertificate            bool             `json:"VerifyCertificate,omitempty"`
+	ODataContext                 string              `json:"@odata.context,omitempty"`
+	ODataEtag                    string              `json:"@odata.etag,omitempty"`
+	ODataId                      string              `json:"@odata.id"`
+	ODataType                    string              `json:"@odata.type"`
+	Actions                      *Actions            `json:"Actions,omitempty"`
+	Certificates                 *Link               `json:"Certificates,omitempty"`
+	ClientCertificates           *Link               `json:"ClientCertificates,omitempty"`
+	Context                      string              `json:"Context"`
+	DeliveryRetryPolicy          DeliveryRetryPolicy `json:"DeliveryRetryPolicy,omitempty"`
+	Description                  string              `json:"Description,omitempty"`
+	Destination                  string              `json:"Destination"`
+	EventFormatType              string              `json:"EventFormatType,omitempty"`
+	EventTypes                   []string            `json:"EventTypes,omitempty"`
+	ExcludeMessageIds            []string            `json:"ExcludeMessageIds,omitempty"`
+	ExcludeRegistryPrefixes      []string            `json:"ExcludeRegistryPrefixes,omitempty"`
+	HeartbeatIntervalMins        int                 `json:"HeartbeatIntervalMinutes,omitempty"`
+	HttpHeaders                  []string            `json:"HttpHeaders,omitempty"`
+	ID                           string              `json:"Id"`
+	IncludeOriginOfCondition     bool                `json:"IncludeOriginOfCondition,omitempty"`
+	MessageIds                   []string            `json:"MessageIds,omitempty"`
+	MetricReportDefinitions      *Link               `json:"MetricReportDefinitions,omitempty"`
+	MetricReportDefinitionsCount int                 `json:MetricReportDefinitions@odata.count,omitempty`
+	Name                         string              `json:"Name"`
+	OEMProtocol                  string              `json:"OEMProtocol,omitempty"`
+	OEMSubscriptionType          string              `json:"OEMSubscriptionType"`
+	Oem                          interface{}         `json:"Oem,omitempty"`
+	OriginResources              []Link              `json:"OriginResources,omitempty"`
+	OriginResourcesCount         int                 `json:OriginResources@odata.count,omitempty`
+	Protocol                     string              `json:"Protocol"`
+	RegistryPrefixes             []string            `json:"RegistryPrefixes,omitempty"`
+	ResourceTypes                []string            `json:"ResourceTypes,omitempty"`
+	SNMP                         *SNMPSettings       `json:"SNMP,omitempty"`
+	SendHeartbeat                bool                `json:"SendHeartbeat,omitempty"`
+	Status                       *Status             `json:"Status,omitempty"`
+	SubordinateResources         bool                `json:"SubordinateResources,omitempty"`
+	SubscriptionType             SubscriptionType    `json:"SubscriptionType,omitempty"`
+	SyslogFilters                *SyslogFilter       `json:"SyslogFilters,omitempty"`
+	VerifyCertificate            bool                `json:"VerifyCertificate,omitempty"`
+}
+
+//IsValidSubscriptionType validate subscription type is valid,
+func (subscriptionType SubscriptionType) IsValidSubscriptionType() bool {
+	switch subscriptionType {
+	case SubscriptionTypeRedFishEvent, SubscriptionTypeOEM,
+		SubscriptionTypeSNMPInform, SubscriptionTypeSNMPTrap,
+		SubscriptionTypeSyslog, SubscriptionTySubscriptionTypeSSE:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsSubscriptionTypeSupported method return true if subscription type is RedfishEvent
+func (subscriptionType SubscriptionType) IsSubscriptionTypeSupported() bool {
+	switch subscriptionType {
+	case SubscriptionTypeRedFishEvent:
+		return true
+	default:
+		return false
+	}
+}
+func (subscriptionType SubscriptionType) ToString() string {
+	return string(subscriptionType)
+}
+
+func (deliveryRetryPolicy DeliveryRetryPolicy) ToString() string {
+	return string(deliveryRetryPolicy)
+}
+
+func (eventType EventType) ToString() string {
+	return string(eventType)
+}
+
+//IsValidEventType return true if event type is valid
+func (eventType EventType) IsValidEventType() bool {
+	switch eventType {
+	case EventTypeAlert, EventTypeMetricReport, EventTypeOther,
+		EventTypeResourceRemoved, EventTypeResourceAdded,
+		EventTypeResourceUpdated, EventTypeStatusChange:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsValidDeliveryRetryPolicyType is validate DeliveryRetryPolicy value valid or not
+func (deliveryRetryPolicy DeliveryRetryPolicy) IsValidDeliveryRetryPolicyType() bool {
+	switch deliveryRetryPolicy {
+	case DeliveryRetryForever, DeliverySuspendRetries,
+		DeliveryTerminateAfterRetries, DeliveryRetryForeverWithBackoff:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsDeliveryRetryPolicyTypeSupported is return true if DeliveryRetryPolicy
+// is RetryForever. Currently ODIM support RetryForever value
+func (deliveryRetryPolicy DeliveryRetryPolicy) IsDeliveryRetryPolicyTypeSupported() bool {
+	switch deliveryRetryPolicy {
+	case DeliveryRetryForever:
+		return true
+	default:
+		return false
+	}
 }
 
 // EventDestinationAction contain the available

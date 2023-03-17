@@ -64,8 +64,8 @@ const (
 	DefaultRetryIntervalInMins = 3
 	// DefaultResponseTimeoutInSecs - default ResponseTimeoutInSecs value
 	DefaultResponseTimeoutInSecs = 3
-	// DefaultStartUpResouceBatchSize - default StartUpResouceBatchSize value
-	DefaultStartUpResouceBatchSize = 10
+	// DefaultStartUpResourceBatchSize - default StartUpResourceBatchSize value
+	DefaultStartUpResourceBatchSize = 10
 	// DefaultMinResetPriority - default MinResetPriority value
 	DefaultMinResetPriority = 1
 	// DefaultMaxResetDelay - maximum delay in seconds a reset action can wait
@@ -94,6 +94,10 @@ const (
 	DefaultDeliveryRetryAttempts = 3
 	// DefaultDeliveryRetryIntervalSeconds - default DeliveryRetryIntervalSeconds value
 	DefaultDeliveryRetryIntervalSeconds = 60
+	// DefaultEventForwardingWorkerPoolCount - default EventForwardingWorkerPoolCount value
+	DefaultEventForwardingWorkerPoolCount = 1000
+	//DefaultEventSaveWorkerPoolCount - default EventSaveWorkerPoolCount value
+	DefaultEventSaveWorkerPoolCount = 10
 )
 
 var (

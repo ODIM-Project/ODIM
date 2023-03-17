@@ -14,6 +14,7 @@
 package common
 
 import (
+	"context"
 	"sync"
 	"testing"
 	"time"
@@ -21,7 +22,7 @@ import (
 
 var testCounter counter
 
-func process(_ interface{}) bool {
+func process(ctx context.Context, _ interface{}) bool {
 	testCounter.lock.Lock()
 	testCounter.count++
 	testCounter.lock.Unlock()
@@ -37,8 +38,9 @@ func getTestCounter() int {
 func TestRunReadWorkers(t *testing.T) {
 	in, out := CreateJobQueue(1)
 	defer close(in)
-
-	RunReadWorkers(out, process, 5)
+	// should be removed when context from svc-api is passed to this function
+	var ctx = context.TODO()
+	RunReadWorkers(ctx, out, process, 5)
 
 	var writeWG sync.WaitGroup
 

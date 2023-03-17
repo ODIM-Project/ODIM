@@ -244,7 +244,7 @@ func (phc *PluginHealthCheckInterface) DupPluginConf() {
 	phc.PluginConfig.MaxRetryAttempt = config.Data.PluginStatusPolling.MaxRetryAttempt
 	phc.PluginConfig.RetryIntervalInMins = config.Data.PluginStatusPolling.RetryIntervalInMins
 	phc.PluginConfig.ResponseTimeoutInSecs = config.Data.PluginStatusPolling.ResponseTimeoutInSecs
-	phc.PluginConfig.StartUpResouceBatchSize = config.Data.PluginStatusPolling.StartUpResouceBatchSize
+	phc.PluginConfig.StartUpResourceBatchSize = config.Data.PluginStatusPolling.StartUpResourceBatchSize
 	phc.RootCA = make([]byte, len(config.Data.KeyCertConf.RootCACertificate))
 	copy(phc.RootCA, config.Data.KeyCertConf.RootCACertificate)
 	return

@@ -14,6 +14,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"net"
 	"net/http"
@@ -68,7 +69,11 @@ func main() {
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as Publish method after reading the data from the channel.
-	go common.RunReadWorkers(rfphandler.Out, rfpmessagebus.Publish, 5)
+
+	// should be removed when context from svc-api is passed to this function
+	ctx := context.TODO()
+
+	go common.RunReadWorkers(ctx, rfphandler.Out, rfpmessagebus.Publish, 5)
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
 	if configFilePath == "" {

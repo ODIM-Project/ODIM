@@ -20,23 +20,25 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // SubscriptionResponse is used to return response to end user
 type SubscriptionResponse struct {
 	response.Response
-	Destination             string       `json:"Destination,omitempty"`
-	Context                 string       `json:"Context,omitempty"`
-	Protocol                string       `json:"Protocol,omitempty"`
-	EventTypes              []string     `json:"EventTypes,omitempty"`
-	SubscriptionType        string       `json:"SubscriptionType,omitempty"`
-	MessageIds              []string     `json:"MessageIds,omitempty"`
-	ResourceTypes           []string     `json:"ResourceTypes,omitempty"`
-	OriginResources         []ListMember `json:"OriginResources,omitempty"`
-	ExcludeMessageIds       []string     `json:"ExcludeMessageIds,omitempty"`
-	ExcludeRegistryPrefixes []string     `json:"ExcludeRegistryPrefixes,omitempty"`
-	DeliveryRetryPolicy     string       `json:"DeliveryRetryPolicy,omitempty"`
+	Destination             string                   `json:"Destination,omitempty"`
+	Context                 string                   `json:"Context,omitempty"`
+	Protocol                string                   `json:"Protocol,omitempty"`
+	EventTypes              []string                 `json:"EventTypes,omitempty"`
+	SubscriptionType        dmtf.SubscriptionType    `json:"SubscriptionType,omitempty"`
+	MessageIds              []string                 `json:"MessageIds,omitempty"`
+	ResourceTypes           []string                 `json:"ResourceTypes,omitempty"`
+	OriginResources         []model.Link             `json:"OriginResources,omitempty"`
+	ExcludeMessageIds       []string                 `json:"ExcludeMessageIds,omitempty"`
+	ExcludeRegistryPrefixes []string                 `json:"ExcludeRegistryPrefixes,omitempty"`
+	DeliveryRetryPolicy     dmtf.DeliveryRetryPolicy `json:"DeliveryRetryPolicy,omitempty"`
 }
 
 // ListResponse define list for odimra
@@ -48,12 +50,7 @@ type ListResponse struct {
 	Name         string       `json:"Name,omitempty"`
 	Description  string       `json:"Description,omitempty"`
 	MembersCount int          `json:"Members@odata.count"`
-	Members      []ListMember `json:"Members"`
-}
-
-// ListMember containes link to a resource
-type ListMember struct {
-	OdataID string `json:"@odata.id"`
+	Members      []model.Link `json:"Members"`
 }
 
 // EventServiceResponse is struct for event service response

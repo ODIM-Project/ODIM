@@ -31,13 +31,12 @@ import (
 
 func mockContext() context.Context {
 	ctx := context.Background()
-	// adding common.Key to avoid golint issues
-	ctx = context.WithValue(ctx, common.Key(common.TransactionID), "xyz")
-	ctx = context.WithValue(ctx, common.Key(common.ActionID), "001")
-	ctx = context.WithValue(ctx, common.Key(common.ActionName), "xyz")
-	ctx = context.WithValue(ctx, common.Key(common.ThreadID), "0")
-	ctx = context.WithValue(ctx, common.Key(common.ThreadName), "xyz")
-	ctx = context.WithValue(ctx, common.Key(common.ProcessName), "xyz")
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	return ctx
 }
 func getEncryptedKey(t *testing.T, key []byte) []byte {

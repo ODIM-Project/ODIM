@@ -17,6 +17,7 @@ package common
 
 import (
 	"fmt"
+
 	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
@@ -34,6 +35,7 @@ const (
 // GetDBConnection is for maintaining and supplying DB connection pool for InMemory and OnDisk DB's
 // Takes dbFlag of type DbType/int32
 // dbFlag:
+//
 //	InMemory:	returns In-Memory DB connection pool
 //	OnDsik:  	returns On-Disk DB connection pool
 func GetDBConnection(dbFlag DbType) (*persistencemgr.ConnPool, *errors.Error) {
@@ -51,9 +53,10 @@ func GetDBConnection(dbFlag DbType) (*persistencemgr.ConnPool, *errors.Error) {
 
 // TruncateDB will clear DB. It will be useful for test cases
 // Takes DbFlag of type DbType/int32 to choose Inmemory or OnDisk db to truncate
-//dbFlag:
-//    InMemory: Truncates InMemory DB
-//    OnDisk: Truncates OnDisk DB
+// dbFlag:
+//
+//	InMemory: Truncates InMemory DB
+//	OnDisk: Truncates OnDisk DB
 func TruncateDB(dbFlag DbType) *errors.Error {
 	conn, err := GetDBConnection(dbFlag)
 	if err != nil {

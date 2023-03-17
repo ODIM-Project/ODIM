@@ -121,7 +121,7 @@ data:
     		"MaxRetryAttempt": 3,
     		"RetryIntervalInMins": 2,
     		"ResponseTimeoutInSecs": 30,
-    		"StartUpResouceBatchSize": 10
+    		"StartUpResourceBatchSize": 10
     	},
     	"ExecPriorityDelayConf": {
     		"MinResetPriority": 1,
@@ -154,5 +154,7 @@ data:
       "ImageRegistryAddress": {{ .Values.odimra.imageRegistryAddress | quote }},
       "RequestLimitCountPerSession": {{ .Values.odimra.requestLimitPerSession | default 0 }},
       "SessionLimitCountPerUser": {{ .Values.odimra.sessionLimitPerUser | default 0 }},
-      "KeyExpiryInterval": {{ .Values.odimra.keyExpiryInterval | default 86400 }}
+      "KeyExpiryInterval": {{ .Values.odimra.keyExpiryInterval | default 86400 }},
+      "EventForwardingWorkerPoolCount": {{ .Values.odimra.eventForwardingWorkerPoolCount | default 1000 }},
+      "EventSaveWorkerPoolCount": {{ .Values.odimra.eventSaveWorkerPoolCount | default 10 }}
     }

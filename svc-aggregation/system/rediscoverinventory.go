@@ -212,8 +212,8 @@ func (e *ExternalInterface) RediscoverResources() error {
 		serverBatchSize = 1
 	}
 	threadID := 1
-	ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.RediscoverSystemInventory)
-	ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
+	ctxt := context.WithValue(ctx, common.ThreadName, common.RediscoverSystemInventory)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	threadID++
 	var semaphoreChan = make(chan int, serverBatchSize)
 	for index := range targets {

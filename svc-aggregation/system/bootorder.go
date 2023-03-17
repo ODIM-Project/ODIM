@@ -86,8 +86,8 @@ func (e *ExternalInterface) SetDefaultBootOrder(ctx context.Context, taskID stri
 	subTaskChannel := make(chan int32, len(setOrderReq.Systems))
 	for _, serverURI := range setOrderReq.Systems {
 		threadID := 1
-		ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.CollectAndSetDefaultBootOrder)
-		ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
+		ctxt := context.WithValue(ctx, common.ThreadName, common.CollectAndSetDefaultBootOrder)
+		ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 		go e.collectAndSetDefaultOrder(ctxt, taskID, serverURI.OdataID, string(req.RequestBody), subTaskChannel, sessionUserName)
 		threadID++
 	}

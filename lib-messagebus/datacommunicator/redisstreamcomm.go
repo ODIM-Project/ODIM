@@ -110,6 +110,7 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 	if err != nil {
 		return err
 	}
+	// create a unique consumer id for the  instance
 	var id = uuid.NewV4().String()
 	rerr := redisClient.XGroupCreateMkStream(context.Background(),
 		rp.pipe, EVENTREADERGROUPNAME, "$").Err()
@@ -122,15 +123,14 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 		}
 
 	}
-
-	// create a unique consumer id for the  instance
+	// errChan to hold the errors faced in the  below go-rotines
 	errChan := make(chan error)
-	defer close(errChan)
 	go rp.checkUnacknowledgedEvents(fn, id, errChan)
 	err = <-errChan
 	if err != nil {
 		return err
 	}
+
 	go func() {
 		for {
 			events, err := redisClient.XReadGroup(context.Background(),
@@ -166,6 +166,8 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 			}
 		}
 	}()
+
+	// channel to handle the errors occured during go routines
 	err = <-errChan
 	if err != nil {
 		return err
@@ -193,6 +195,7 @@ func (rp *RedisStreamsPacket) Remove() error {
 func (rp *RedisStreamsPacket) Close() error {
 	return nil
 }
+
 func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string, errChan chan<- error) {
 	redisClient, err := getDBConnection()
 	if err != nil {
@@ -229,6 +232,8 @@ func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string
 			fn(evt)
 			redisClient.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
 		}
+		// Pass the nil to errChan when no error encountered
+		errChan <- nil
 		time.Sleep(time.Minute * 10)
 	}
 }

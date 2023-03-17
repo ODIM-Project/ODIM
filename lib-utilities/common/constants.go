@@ -18,9 +18,6 @@ package common
 // EventConst constant
 type EventConst int
 
-// key type
-type Key string
-
 const (
 	// RedfishEvent constant
 	RedfishEvent EventConst = iota
@@ -173,6 +170,7 @@ const (
 	UpdateService      = "svc-update"
 	TaskService        = "svc-task"
 	AggregationService = "svc-aggregation"
+	EventService       = "svc-event"
 	TelemetryService   = "svc-telemetry"
 	LicenseService     = "svc-licenses"
 	FabricService      = "svc-fabrics"
@@ -630,6 +628,7 @@ type DeviceSubscription struct {
 	EventHostIP     string   `json:"EventHostIP,omitempty"`
 	OriginResources []string `json:"OriginResources"`
 	Location        string   `json:"location,omitempty"`
+	OriginResource  string   `json:"OriginResource"`
 }
 
 // URIWithNoAuth contains the list of URI's which does not require authentication
@@ -642,3 +641,25 @@ var URIWithNoAuth = []string{
 }
 
 var SessionURI = "/redfish/v1/SessionService/Sessions"
+
+//Target is for sending the request to south bound/plugin
+type Target struct {
+	ManagerAddress string `json:"ManagerAddress"`
+	Password       []byte `json:"Password"`
+	UserName       string `json:"UserName"`
+	PostBody       []byte `json:"PostBody"`
+	DeviceUUID     string `json:"DeviceUUID"`
+	PluginID       string `json:"PluginID"`
+	Location       string `json:"Location"`
+}
+
+// Plugin is the model for plugin information
+type Plugin struct {
+	IP                string
+	Port              string
+	Username          string
+	Password          []byte
+	ID                string
+	PluginType        string
+	PreferredAuthType string
+}

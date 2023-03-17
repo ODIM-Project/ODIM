@@ -50,8 +50,8 @@ type PluginStatus struct {
 	PluginUsername string
 	//PluginUserPassword
 	PluginUserPassword string
-	//PluginPrefferedAuthType
-	PluginPrefferedAuthType string
+	//PluginPreferredAuthType
+	PluginPreferredAuthType string
 	//CACertificate to use while making HTTP queries
 	CACertificate *[]byte
 }
@@ -85,13 +85,13 @@ type PluginResponseStatus struct {
 	TimeStamp string `json:"TimeStamp"`
 }
 
-//EventMessageBus holds the  information of  EMB Broker type and EMBQueue information
+// EventMessageBus holds the  information of  EMB Broker type and EMBQueue information
 type EventMessageBus struct {
 	EmbType  string     `json:"EmbType"`
 	EmbQueue []EmbQueue `json:"EmbQueue"`
 }
 
-//EmbQueue holds the  information of Queue Name and Queue Description
+// EmbQueue holds the  information of Queue Name and Queue Description
 type EmbQueue struct {
 	QueueName string `json:"EmbQueueName"`
 	QueueDesc string `json:"EmbQueueDesc"`
@@ -160,7 +160,7 @@ func (p *PluginStatus) getStatus(requestBody *bytes.Buffer, statusChan chan bool
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	if strings.EqualFold(p.PluginPrefferedAuthType, "XAuthToken") {
+	if strings.EqualFold(p.PluginPreferredAuthType, "XAuthToken") {
 		if err := p.login(); err != nil {
 			errChan <- err
 			statusChan <- false

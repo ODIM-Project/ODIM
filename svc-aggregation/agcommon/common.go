@@ -335,7 +335,7 @@ func (phc *PluginHealthCheckInterface) GetPluginStatus(ctx context.Context, plug
 		PluginPort:              plugin.Port,
 		PluginUsername:          plugin.Username,
 		PluginUserPassword:      string(plugin.Password),
-		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		PluginPreferredAuthType: plugin.PreferredAuthType,
 		CACertificate:           &phc.RootCA,
 	}
 	status, _, topics, err := pluginStatus.CheckStatus()

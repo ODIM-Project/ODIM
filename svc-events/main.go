@@ -84,9 +84,9 @@ func main() {
 	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	ctx = context.WithValue(ctx, common.ThreadName, common.EventService)
 	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
-	// Intializing the TopicsList
+	// Initializing the TopicsList
 	evcommon.EMBTopics.TopicsList = make(map[string]bool)
-	// Intializing plugin token
+	// Initializing plugin token
 	evcommon.Token.Tokens = make(map[string]string)
 
 	// register handlers
@@ -122,7 +122,7 @@ func main() {
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go evcommon.TrackConfigFileChanges(ctx, errChan)
 
-	// Subscribe to intercomm messagebus queue
+	// Subscribe to inter communication message bus queue
 	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.OdimControlMessageQueue)
 
 	// Subscribe to EMBs of all the available plugins

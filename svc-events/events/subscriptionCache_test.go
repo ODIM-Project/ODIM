@@ -96,38 +96,73 @@ func mockData() error {
 	if err != nil {
 		return err
 	}
-	cErr := connPool.CreateDeviceSubscriptionIndex(evmodel.DeviceSubscriptionIndex, "10.10.10.10", "https://odim.2.com/EventService/Subscriptions/1", []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"})
+	cErr := connPool.CreateDeviceSubscriptionIndex(evmodel.DeviceSubscriptionIndex,
+		"10.10.10.10", "https://odim.2.com/EventService/Subscriptions/1",
+		[]string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"})
 	if cErr != nil {
 		return fmt.Errorf("error while trying to save device subscription of device %v", cErr.Error())
 	}
-	cErr = connPool.CreateDeviceSubscriptionIndex(evmodel.DeviceSubscriptionIndex, "100.100.100.100", "https://odim.2.com/EventService/Subscriptions/1", []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f.1"})
+	cErr = connPool.CreateDeviceSubscriptionIndex(evmodel.DeviceSubscriptionIndex,
+		"100.100.100.100", "https://odim.2.com/EventService/Subscriptions/1",
+		[]string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f.1"})
 	if cErr != nil {
 		return fmt.Errorf("error while trying to save device subscription of device %v", cErr.Error())
 	}
-	cErr = connPool.CreateDeviceSubscriptionIndex(evmodel.DeviceSubscriptionIndex, "10.10.1.3", "https://odim.2.com/EventService/Subscriptions/1", []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g.1"})
+	cErr = connPool.CreateDeviceSubscriptionIndex(evmodel.DeviceSubscriptionIndex, "10.10.1.3",
+		"https://odim.2.com/EventService/Subscriptions/1",
+		[]string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g.1"})
 	if cErr != nil {
 		return fmt.Errorf("error while trying to save device subscription of device %v", cErr.Error())
 	}
-	cErr = connPool.CreateEvtSubscriptionIndex(evmodel.SubscriptionIndex, "{\"EventDestination\":{\"Context\":\"ABCDEFGHJLKJ\",\"EventTypes\":[\"Alert\"],\"EventFormatType\":\"Event\",\"DeliveryRetryPolicy\":\"RetryForever\",\"Destination\":\"https://node.odim.com:8080/Destination\",\"MessageIds\":[],\"Name\":\"Bruce\",\"OriginResources\":[\"/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1\"],\"Protocol\":\"Redfish\",\"ResourceTypes\":[],\"SubscriptionType\":\"RedfishEvent\",\"SubordinateResources\":true},\"Hosts\":[\"10.10.10.10\"],\"SubscriptionID\":\"3ce177bf-42a4-4335-b1c1-41540a4b65d7\",\"UserName\":\"admin\"}")
+	cErr = connPool.CreateEvtSubscriptionIndex(
+		evmodel.SubscriptionIndex,
+		"{\"EventDestination\":{\"Context\":\"ABCDEFGHJLKJ\",\"EventTypes\":[\"Alert\"],"+
+			"\"EventFormatType\":\"Event\",\"DeliveryRetryPolicy\":\"RetryForever\","+
+			"\"Destination\":\"https://node.odim.com:8080/Destination\",\"MessageIds\":[],"+
+			"\"Name\":\"Bruce\",\"OriginResources\":[\"/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1\"],"+
+			"\"Protocol\":\"Redfish\",\"ResourceTypes\":[],\"SubscriptionType\":\"RedfishEvent\",\"SubordinateResources\":true},"+
+			"\"Hosts\":[\"10.10.10.10\"],\"SubscriptionID\":\"3ce177bf-42a4-4335-b1c1-41540a4b65d7\",\"UserName\":\"admin\"}")
 	if cErr != nil {
 		return fmt.Errorf("error while trying to save subscription of device %v", cErr.Error())
 	}
-	cErr = connPool.CreateEvtSubscriptionIndex(evmodel.SubscriptionIndex, "{\"EventDestination\":{\"Context\":\"ABCDEFGHJLKJ\",\"EventTypes\":[\"Alert\"],\"EventFormatType\":\"Event\",\"DeliveryRetryPolicy\":\"RetryForever\",\"Destination\":\"https://node.odim.com:8081/Destination\",\"MessageIds\":[],\"Name\":\"Bruce\",\"OriginResources\":[\"/redfish/v1/Systems\"],\"Protocol\":\"Redfish\",\"ResourceTypes\":[],\"SubscriptionType\":\"RedfishEvent\",\"SubordinateResources\":true},\"Hosts\":[\"SystemsCollection\"],\"SubscriptionID\":\"fb496acb-7948-463b-a3d2-2206cd1f0b85\",\"UserName\":\"admin\"}")
+	cErr = connPool.CreateEvtSubscriptionIndex(evmodel.SubscriptionIndex,
+		"{\"EventDestination\":{\"Context\":\"ABCDEFGHJLKJ\","+
+			"\"EventTypes\":[\"Alert\"],\"EventFormatType\":\"Event\",\"DeliveryRetryPolicy\":\"RetryForever\","+
+			"\"Destination\":\"https://node.odim.com:8081/Destination\",\"MessageIds\":[],\"Name\":\"Bruce\","+
+			"\"OriginResources\":[\"/redfish/v1/Systems\"],\"Protocol\":\"Redfish\",\"ResourceTypes\":[],"+
+			"\"SubscriptionType\":\"RedfishEvent\",\"SubordinateResources\":true},\"Hosts\":[\"SystemsCollection\"],"+
+			"\"SubscriptionID\":\"fb496acb-7948-463b-a3d2-2206cd1f0b85\",\"UserName\":\"admin\"}")
 
 	if cErr != nil {
 		return fmt.Errorf("error while trying to save subscription of device %v", cErr.Error())
 	}
 
-	cErr = connPool.CreateEvtSubscriptionIndex(evmodel.SubscriptionIndex, "{\"EventDestination\":{\"Context\":\"ABCDEFGHJLKJ\",\"EventTypes\":[\"Alert\"],\"EventFormatType\":\"Event\",\"DeliveryRetryPolicy\":\"RetryForever\",\"Destination\":\"https://node.odim.com:8082/Destination\",\"MessageIds\":[],\"Name\":\"Bruce\",\"OriginResources\":[],\"Protocol\":\"Redfish\",\"ResourceTypes\":[],\"SubscriptionType\":\"RedfishEvent\",\"SubordinateResources\":true},\"Hosts\":[],\"SubscriptionID\":\"df3f3450-bda7-4e3d-bde1-4c338be59cc7\",\"UserName\":\"admin\"}")
+	cErr = connPool.CreateEvtSubscriptionIndex(evmodel.SubscriptionIndex,
+		"{\"EventDestination\":{\"Context\":\"ABCDEFGHJLKJ\",\"EventTypes\":[\"Alert\"],\"EventFormatType\":\"Event\","+
+			"\"DeliveryRetryPolicy\":\"RetryForever\",\"Destination\":\"https://node.odim.com:8082/Destination\",\"MessageIds\":[]"+
+			",\"Name\":\"Bruce\",\"OriginResources\":[],\"Protocol\":\"Redfish\",\"ResourceTypes\":[],"+
+			"\"SubscriptionType\":\"RedfishEvent\",\"SubordinateResources\":true},\"Hosts\":[],"+
+			"\"SubscriptionID\":\"df3f3450-bda7-4e3d-bde1-4c338be59cc7\",\"UserName\":\"admin\"}")
 	if cErr != nil {
 		return fmt.Errorf("error while trying to save subscription of device %v", cErr.Error())
 	}
 
-	cErr = connPool.CreateEvtSubscriptionIndex(evmodel.SubscriptionIndex, "{\"EventDestination\":{\"Context\":\"ABCDEFGHJLKJ\",\"EventTypes\":[\"Alert\"],\"EventFormatType\":\"Event\",\"DeliveryRetryPolicy\":\"RetryForever\",\"Destination\":\"https://node.odim.com:8084/Destination\",\"MessageIds\":[],\"Name\":\"Bruce\",\"OriginResources\":[\"/redfish/v1/AggregationService/Aggregates/b98ab95b-9187-442a-817f-b9ec60046575\"],\"Protocol\":\"Redfish\",\"ResourceTypes\":[],\"SubscriptionType\":\"RedfishEvent\",\"SubordinateResources\":true},\"Hosts\":[\"b98ab95b-9187-442a-817f-b9ec60046575\"],\"SubscriptionID\":\"f2916a4d-f142-4179-a16c-8efd15ee6d7f\",\"UserName\":\"admin\"}")
+	cErr = connPool.CreateEvtSubscriptionIndex(evmodel.SubscriptionIndex,
+		"{\"EventDestination\":{\"Context\":\"ABCDEFGHJLKJ\",\"EventTypes\":[\"Alert\"],\"EventFormatType\":\"Event\","+
+			"\"DeliveryRetryPolicy\":\"RetryForever\",\"Destination\":\"https://node.odim.com:8084/Destination\","+
+			"\"MessageIds\":[],\"Name\":\"Bruce\","+
+			"\"OriginResources\":[\"/redfish/v1/AggregationService/Aggregates/b98ab95b-9187-442a-817f-b9ec60046575\"]"+
+			",\"Protocol\":\"Redfish\",\"ResourceTypes\":[],\"SubscriptionType\":\"RedfishEvent\",\"SubordinateResources\":true},"+
+			"\"Hosts\":[\"b98ab95b-9187-442a-817f-b9ec60046575\"],\"SubscriptionID\":\"f2916a4d-f142-4179-a16c-8efd15ee6d7f\","+
+			"\"UserName\":\"admin\"}")
 	if cErr != nil {
 		return fmt.Errorf("error while trying to save subscription of device %v", cErr.Error())
 	}
-	cErr = connPool.CreateEvtSubscriptionIndex(evmodel.SubscriptionIndex, "{\"UserName\":\"\",\"SubscriptionID\":\"0\",\"Hosts\":[],\"EventDestination\":{\"DeliveryRetryPolicy\":\"RetryForever\",\"Destination\":\"\",\"Name\":\"default\",\"Context\":\"\",\"EventTypes\":[\"Alert\"],\"MessageIds\":[],\"Protocol\":\"Redfish\",\"SubscriptionType\":\"RedfishEvent\",\"EventFormatType\":\"\",\"SubordinateResources\":true,\"ResourceTypes\":[],\"OriginResources\":[]}}")
+	cErr = connPool.CreateEvtSubscriptionIndex(evmodel.SubscriptionIndex,
+		"{\"UserName\":\"\",\"SubscriptionID\":\"0\",\"Hosts\":[],\"EventDestination\":{\"DeliveryRetryPolicy\":\"RetryForever\","+
+			"\"Destination\":\"\",\"Name\":\"default\",\"Context\":\"\",\"EventTypes\":[\"Alert\"],\"MessageIds\":[],"+
+			"\"Protocol\":\"Redfish\",\"SubscriptionType\":\"RedfishEvent\",\"EventFormatType\":\"\",\"SubordinateResources\":true,"+
+			"\"ResourceTypes\":[],\"OriginResources\":[]}}")
 	if cErr != nil {
 		return fmt.Errorf("error while trying to save subscription of device %v", cErr.Error())
 	}
@@ -138,7 +173,8 @@ func mockData() error {
 			},
 		},
 	}
-	err = connPool.Create("Aggregate", "/redfish/v1/AggregationService/Aggregates/b98ab95b-9187-442a-817f-b9ec60046575", aggregateData)
+	err = connPool.Create("Aggregate", "/redfish/v1/AggregationService/Aggregates/b98ab95b-9187-442a-817f-b9ec60046575",
+		aggregateData)
 	if err != nil {
 		return fmt.Errorf("error while trying to save Aggregate %v", err.Error())
 	}
@@ -251,7 +287,8 @@ func Test_getSubscriptions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotSubs := getSubscriptions(tt.args.originOfCondition, tt.args.systemId, tt.args.hostIp); len(gotSubs) == tt.numberOfSubscription {
+			if gotSubs := getSubscriptions(tt.args.originOfCondition,
+				tt.args.systemId, tt.args.hostIp); len(gotSubs) == tt.numberOfSubscription {
 				t.Errorf("getSubscriptions() = %v, want %v", gotSubs, tt.numberOfSubscription)
 			}
 		})

@@ -110,7 +110,8 @@ func UpdateTaskData(ctx context.Context, taskData common.TaskData) error {
 		ResponseBody:  respBody,
 	}
 
-	err := UpdateTaskService(ctx, taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	err := UpdateTaskService(ctx, taskData.TaskID, taskData.TaskState, taskData.TaskStatus,
+		taskData.PercentComplete, payLoad, time.Now())
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
@@ -233,7 +234,10 @@ func validateFields(request *model.EventDestination) (int32, string, []interface
 	if request.EventFormatType == "" {
 		request.EventFormatType = "Event"
 	}
-
+	// if Subscription Name is empty then use default name
+	if request.Name == "" {
+		request.Name = evmodel.SubscriptionName
+	}
 	if _, ok := validEventFormatTypes[request.EventFormatType]; !ok {
 		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.EventFormatType, "EventFormatType"}, fmt.Errorf("Invalid EventFormatType")
 	}

@@ -55,6 +55,7 @@ type AggregatorRPCs struct {
 func (a *AggregatorRPCs) GetAggregationService(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
+	l.LogWithFields(ctxt).Debugf("Incoming request received for get aggregation service")
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -81,6 +82,7 @@ func (a *AggregatorRPCs) GetAggregationService(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+	l.LogWithFields(ctxt).Debugf("outgoing response for get aggregation service is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 
 }
 
@@ -90,6 +92,7 @@ func (a *AggregatorRPCs) GetAggregationService(ctx iris.Context) {
 func (a *AggregatorRPCs) Reset(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
+	l.LogWithFields(ctxt).Debugf("Incoming request received for Resetting compute system")
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
@@ -103,7 +106,6 @@ func (a *AggregatorRPCs) Reset(ctx iris.Context) {
 	}
 
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
-
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -144,6 +146,7 @@ func (a *AggregatorRPCs) Reset(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+	l.LogWithFields(ctxt).Debugf("outgoing response for resetting compute system is %s and response code %d", string(resp.Body), int(resp.StatusCode))
 }
 
 // SetDefaultBootOrder is the handler to set default boot order
@@ -152,6 +155,7 @@ func (a *AggregatorRPCs) Reset(ctx iris.Context) {
 func (a *AggregatorRPCs) SetDefaultBootOrder(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
+	l.LogWithFields(ctxt).Debugf("Incoming request received for setting default boot order")
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
@@ -163,7 +167,6 @@ func (a *AggregatorRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 
 	if sessionToken == "" {
@@ -213,6 +216,7 @@ func (a *AggregatorRPCs) AddAggregationSource(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	var req interface{}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for Adding aggregationsource")
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
@@ -263,6 +267,7 @@ func (a *AggregatorRPCs) AddAggregationSource(ctx iris.Context) {
 func (a *AggregatorRPCs) GetAllAggregationSource(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting all aggregationsources")
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -284,11 +289,11 @@ func (a *AggregatorRPCs) GetAllAggregationSource(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
 	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+	l.LogWithFields(ctxt).Debugf("Outgoing response for setting default boot order is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 }
 
 // GetAggregationSource is the handler for getting  AggregationSource details
@@ -299,6 +304,7 @@ func (a *AggregatorRPCs) GetAggregationSource(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting aggregationsource with uri %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -321,6 +327,7 @@ func (a *AggregatorRPCs) GetAggregationSource(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting aggregation source is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 }
 
 // UpdateAggregationSource is the handler for updating  AggregationSource details
@@ -359,6 +366,7 @@ func (a *AggregatorRPCs) UpdateAggregationSource(ctx iris.Context) {
 		RequestBody:  request,
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for updating aggregationsource with uri %s", updateRequest.URL)
 	resp, err := a.UpdateAggregationSourceRPC(ctxt, updateRequest)
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
@@ -373,6 +381,7 @@ func (a *AggregatorRPCs) UpdateAggregationSource(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+	l.LogWithFields(ctxt).Debugf("Outgoing response for updating aggregation source is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 
 }
 
@@ -384,6 +393,7 @@ func (a *AggregatorRPCs) DeleteAggregationSource(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for deleting aggregationsource with uri %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -402,7 +412,7 @@ func (a *AggregatorRPCs) DeleteAggregationSource(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for deleting aggregation source is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -437,7 +447,7 @@ func (a *AggregatorRPCs) CreateAggregate(ctx iris.Context) {
 
 	// marshalling the req to make aggregator create request
 	request, err := json.Marshal(req)
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for creating aggregate with request body %s", string(request))
 	createRequest := aggregatorproto.AggregatorRequest{
 		SessionToken: sessionToken,
 		RequestBody:  request,
@@ -452,16 +462,18 @@ func (a *AggregatorRPCs) CreateAggregate(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for creating aggregate is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+
 }
 
 // GetAggregateCollection is the handler for getting collection of aggregates
 func (a *AggregatorRPCs) GetAggregateCollection(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
+	l.LogWithFields(ctxt).Debug("Incoming request received for getting all aggregate collections")
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -483,10 +495,12 @@ func (a *AggregatorRPCs) GetAggregateCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting all aggregate collections is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+
 }
 
 // GetAggregate is the handler for getting an aggregate
@@ -497,6 +511,7 @@ func (a *AggregatorRPCs) GetAggregate(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting aggregate with request uri %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -515,6 +530,7 @@ func (a *AggregatorRPCs) GetAggregate(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting aggregate is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -529,6 +545,7 @@ func (a *AggregatorRPCs) DeleteAggregate(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for deleting aggregate with request uri %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -547,7 +564,7 @@ func (a *AggregatorRPCs) DeleteAggregate(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for deleting aggregate is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -588,6 +605,7 @@ func (a *AggregatorRPCs) AddElementsToAggregate(ctx iris.Context) {
 		URL:          ctx.Request().RequestURI,
 		RequestBody:  request,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for adding element with uri %s to the aggregation collections with request body %s", addRequest.URL, string(addRequest.RequestBody))
 
 	resp, err := a.AddElementsToAggregateRPC(ctxt, addRequest)
 	if err != nil {
@@ -599,7 +617,7 @@ func (a *AggregatorRPCs) AddElementsToAggregate(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for adding an element to an aggregate is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -640,7 +658,7 @@ func (a *AggregatorRPCs) RemoveElementsFromAggregate(ctx iris.Context) {
 		URL:          ctx.Request().RequestURI,
 		RequestBody:  request,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for deleting element with uri %s from the aggregation collections with request body %s", removeRequest.URL, string(removeRequest.RequestBody))
 	resp, err := a.RemoveElementsFromAggregateRPC(ctxt, removeRequest)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
@@ -651,7 +669,7 @@ func (a *AggregatorRPCs) RemoveElementsFromAggregate(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for removing an element from an aggregate is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -692,7 +710,7 @@ func (a *AggregatorRPCs) ResetAggregateElements(ctx iris.Context) {
 		URL:          ctx.Request().RequestURI,
 		RequestBody:  request,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for resetting aggregate elements with uri %s with request body %s", resetRequest.URL, string(resetRequest.RequestBody))
 	resp, err := a.ResetAggregateElementsRPC(ctxt, resetRequest)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
@@ -703,7 +721,7 @@ func (a *AggregatorRPCs) ResetAggregateElements(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for resetting aggregate elements is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -727,7 +745,7 @@ func (a *AggregatorRPCs) SetDefaultBootOrderAggregateElements(ctx iris.Context) 
 		SessionToken: sessionToken,
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for setting default boot order for all the element of an aggregate with uri and request body %s", bootOrderRequest.URL, string(bootOrderRequest.RequestBody))
 	resp, err := a.SetDefaultBootOrderAggregateElementsRPC(ctxt, bootOrderRequest)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
@@ -738,7 +756,7 @@ func (a *AggregatorRPCs) SetDefaultBootOrderAggregateElements(ctx iris.Context) 
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for setting default boot order for all the elements of an aggregate is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -748,6 +766,7 @@ func (a *AggregatorRPCs) SetDefaultBootOrderAggregateElements(ctx iris.Context) 
 func (a *AggregatorRPCs) GetAllConnectionMethods(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting all the connection methods")
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -759,6 +778,7 @@ func (a *AggregatorRPCs) GetAllConnectionMethods(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+
 	resp, err := a.GetAllConnectionMethodsRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
@@ -769,7 +789,7 @@ func (a *AggregatorRPCs) GetAllConnectionMethods(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting all the connection methods is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -784,6 +804,7 @@ func (a *AggregatorRPCs) GetConnectionMethod(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting the connection methods with the request URL %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -802,7 +823,7 @@ func (a *AggregatorRPCs) GetConnectionMethod(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting a collection method is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -813,6 +834,7 @@ func (a *AggregatorRPCs) GetConnectionMethod(ctx iris.Context) {
 func (a *AggregatorRPCs) GetResetActionInfoService(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting reset action info")
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -834,7 +856,7 @@ func (a *AggregatorRPCs) GetResetActionInfoService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting a reset action information is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -846,6 +868,7 @@ func (a *AggregatorRPCs) GetResetActionInfoService(ctx iris.Context) {
 func (a *AggregatorRPCs) GetSetDefaultBootOrderActionInfo(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting the action info for set default boot order")
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -867,7 +890,7 @@ func (a *AggregatorRPCs) GetSetDefaultBootOrderActionInfo(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting a set default boot order action information is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))

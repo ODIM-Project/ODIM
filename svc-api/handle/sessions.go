@@ -85,7 +85,7 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 	if resp.StatusCode == http.StatusCreated {
 		resp.Header["Location"] = ctx.Request().Host + "/redfish/v1/SessionService/Sessions/" + resp.SessionId
 	}
-	l.LogWithFields(ctxt).Debug("response code for creating a session is %d", resp.StatusCode)
+	l.LogWithFields(ctxt).Debugf("response code for creating a session is %d", resp.StatusCode)
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -119,7 +119,7 @@ func (s *SessionRPCs) DeleteSession(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("response code for deleting a session is %d", resp.StatusCode)
+	l.LogWithFields(ctxt).Debugf("response code for deleting a session is %d", resp.StatusCode)
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -149,7 +149,7 @@ func (s *SessionRPCs) GetSession(ctx iris.Context) {
 	if resp.StatusCode == http.StatusOK {
 		resp.Header["Location"] = ctx.Request().Host + "/redfish/v1/SessionService/Sessions/" + sessionID
 	}
-	l.LogWithFields(ctxt).Debug("response code for getting a session details is %d", resp.StatusCode)
+	l.LogWithFields(ctxt).Debugf("fresponse code for getting a session details is %d", resp.StatusCode)
 	ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -176,7 +176,7 @@ func (s *SessionRPCs) GetAllActiveSessions(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("response code for getting all active sessions is %d", resp.StatusCode)
+	l.LogWithFields(ctxt).Debugf("response code for getting all active sessions is %d", resp.StatusCode)
 	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -198,7 +198,7 @@ func (s *SessionRPCs) GetSessionService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for getting a session service is %s with status code %d", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting a session service is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))

@@ -59,12 +59,10 @@ func (task *TaskRPCs) DeleteTask(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for deleting task is %s with status code %d", string(response.Body), int(response.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for deleting task is %s with status code %d", string(response.Body), int(response.StatusCode))
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)
-
-	return
 }
 
 // GetTaskStatus fetches task status
@@ -89,7 +87,7 @@ func (task *TaskRPCs) GetTaskStatus(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for getting task is %s with status code %d", string(response.Body), int(response.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting task is %s with status code %d", string(response.Body), int(response.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
@@ -117,7 +115,7 @@ func (task *TaskRPCs) GetSubTasks(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for getting sub tasks is %s with status code %d", string(response.Body), int(response.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting sub tasks is %s with status code %d", string(response.Body), int(response.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
@@ -147,7 +145,7 @@ func (task *TaskRPCs) GetSubTask(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for getting sub task information is %s with status code %d", string(response.Body), int(response.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting sub task information is %s with status code %d", string(response.Body), int(response.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
@@ -176,7 +174,7 @@ func (task *TaskRPCs) GetTaskMonitor(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for getting task monitoring information is %s with status code %d", string(response.Body), int(response.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting task monitoring information is %s with status code %d", string(response.Body), int(response.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
@@ -192,7 +190,7 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 	req := &taskproto.GetTaskRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
-	l.LogWithFields(ctxt).Debug("Incoming request received for getting task all the available tasks collection")
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting task all the available tasks collection")
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
@@ -212,7 +210,7 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for getting task collections is %s with status code %d", string(response.Body), int(response.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting task collections is %s with status code %d", string(response.Body), int(response.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))

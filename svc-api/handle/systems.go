@@ -68,7 +68,7 @@ func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for getting systems collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting systems collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -104,7 +104,7 @@ func (sys *SystemRPCs) GetSystem(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for getting system details is %s with status code %d", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting system details is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -155,7 +155,7 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 	default:
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for getting systems resources is %s with status code %d", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting systems resources is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -205,7 +205,7 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for computer system reset is %s with status code %d", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for computer system reset is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -239,7 +239,7 @@ func (sys *SystemRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for setting default boot order is %s with status code %d", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for setting default boot order is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -297,7 +297,7 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for changing bios setting is %s with status code %d", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for changing bios setting is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -355,7 +355,7 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for getting changing boot order setting is %s with status code %d", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting changing boot order setting is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -414,7 +414,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for creating a volume is %s with status code %d", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for creating a volume is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -465,7 +465,7 @@ func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for deleting a volume is %s with status code %d", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for deleting a volume is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

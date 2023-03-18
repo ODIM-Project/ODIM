@@ -216,7 +216,6 @@ func Router() *iris.Application {
 	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		ctx := r.Context()
-		l.LogWithFields(ctx).Info("Inside router function")
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {

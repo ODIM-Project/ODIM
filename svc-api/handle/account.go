@@ -186,7 +186,7 @@ func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		AccountID:    ctx.Params().Get("id"),
 	}
-	l.LogWithFields(ctxt).Debug("Incoming request for get account info received for %s", req.AccountID)
+	l.LogWithFields(ctxt).Debugf("Incoming request for get account info received for %s", req.AccountID)
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		l.LogWithFields(ctxt).Error(errorMessage)

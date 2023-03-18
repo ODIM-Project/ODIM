@@ -152,7 +152,7 @@ func (a *UpdateRPCs) GetFirmwareInventory(ctx iris.Context) {
 		ResourceID:   ctx.Params().Get("firmwareInventory_id"),
 		URL:          ctx.Request().RequestURI,
 	}
-	l.LogWithFields(ctxt).Debug("Incoming request received for getting firmware inventory with url %s", req.URL)
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting firmware inventory with url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -188,7 +188,7 @@ func (a *UpdateRPCs) GetSoftwareInventory(ctx iris.Context) {
 		ResourceID:   ctx.Params().Get("softwareInventory_id"),
 		URL:          ctx.Request().RequestURI,
 	}
-	l.LogWithFields(ctxt).Debug("Incoming request received for getting software inventory with url %s", req.URL)
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting software inventory with url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -241,7 +241,7 @@ func (a *UpdateRPCs) SimpleUpdate(ctx iris.Context) {
 	}
 	// Marshalling the req to make reset request
 	request, err := json.Marshal(req)
-	l.LogWithFields(ctxt).Debug("Incoming request received for performing simple update with request body %s", string(request))
+	l.LogWithFields(ctxt).Debugf("Incoming request received for performing simple update with request body %s", string(request))
 	updateRequest := updateproto.UpdateRequest{
 		SessionToken: sessionToken,
 		RequestBody:  request,

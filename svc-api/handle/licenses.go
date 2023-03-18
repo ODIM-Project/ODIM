@@ -93,7 +93,7 @@ func (lcns *LicenseRPCs) GetLicenseCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debugf("Outgoing response for getting license collection is %s with status code %s", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting license collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -126,7 +126,7 @@ func (lcns *LicenseRPCs) GetLicenseResource(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debugf("Outgoing response for getting license resource is %s with status code %s", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting license resource is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -181,7 +181,7 @@ func (lcns *LicenseRPCs) InstallLicenseService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debugf("Outgoing response for installing license service is %s with status code %s", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for installing license service is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

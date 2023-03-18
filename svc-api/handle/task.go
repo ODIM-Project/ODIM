@@ -133,7 +133,7 @@ func (task *TaskRPCs) GetSubTask(ctx iris.Context) {
 		SubTaskID:    ctx.Params().Get("subTaskID"),
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
-	l.LogWithFields(ctxt).Debugf("Incoming request received for getting sub task information with taskid %s and subtaskid %d", req.TaskID, req.SubTaskID)
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting sub task information with taskid %s and subtaskid %s", req.TaskID, req.SubTaskID)
 	response, err := task.GetSubTaskRPC(ctxt, req)
 	common.SetResponseHeader(ctx, response.Header)
 
@@ -238,7 +238,7 @@ func (task *TaskRPCs) GetTaskService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	l.LogWithFields(ctxt).Debug("Outgoing response for getting task service is %s with status code %d", string(response.Body), int(response.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting task service is %s with status code %d", string(response.Body), int(response.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))

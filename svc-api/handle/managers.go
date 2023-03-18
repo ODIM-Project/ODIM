@@ -259,7 +259,7 @@ func (mgr *ManagersRPCs) GetRemoteAccountService(ctx iris.Context) {
 		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI,
 	}
-	l.LogWithFields(ctxt).Debugf("Incoming request received for the getting remote account service with id %s and request body %s", req.ManagerID)
+	l.LogWithFields(ctxt).Debugf("Incoming request received for the getting remote account service with id %s", req.ManagerID)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)

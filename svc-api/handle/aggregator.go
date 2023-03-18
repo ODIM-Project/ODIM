@@ -745,7 +745,7 @@ func (a *AggregatorRPCs) SetDefaultBootOrderAggregateElements(ctx iris.Context) 
 		SessionToken: sessionToken,
 		URL:          ctx.Request().RequestURI,
 	}
-	l.LogWithFields(ctxt).Debugf("Incoming request received for setting default boot order for all the element of an aggregate with uri and request body %s", bootOrderRequest.URL, string(bootOrderRequest.RequestBody))
+	l.LogWithFields(ctxt).Debugf("Incoming request received for setting default boot order for all the element of an aggregate with uri %s and request body %s", bootOrderRequest.URL, string(bootOrderRequest.RequestBody))
 	resp, err := a.SetDefaultBootOrderAggregateElementsRPC(ctxt, bootOrderRequest)
 	if err != nil {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()

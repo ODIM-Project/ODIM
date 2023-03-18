@@ -68,12 +68,12 @@ func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctx).Debugf("Outgoing response for Getting Account service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
-	l.LogWithFields(ctx).Debugf("Outgoing response for Getting Account service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
+
 }
 
 // CreateAccount defines the CreateAccount iris handler.

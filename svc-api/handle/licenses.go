@@ -42,6 +42,7 @@ func (lcns *LicenseRPCs) GetLicenseService(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debug("Incoming request received for the Get License service")
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -59,7 +60,7 @@ func (lcns *LicenseRPCs) GetLicenseService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctx).Debugf("Outgoing response for Getting License service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -74,6 +75,7 @@ func (lcns *LicenseRPCs) GetLicenseCollection(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting license collection with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -91,7 +93,7 @@ func (lcns *LicenseRPCs) GetLicenseCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting license collection is %s with status code %s", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -106,6 +108,7 @@ func (lcns *LicenseRPCs) GetLicenseResource(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting license resource with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -123,7 +126,7 @@ func (lcns *LicenseRPCs) GetLicenseResource(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting license resource is %s with status code %s", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -155,6 +158,7 @@ func (lcns *LicenseRPCs) InstallLicenseService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for installing license service with request body %s", string(request))
 	req := licenseproto.InstallLicenseRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -177,7 +181,7 @@ func (lcns *LicenseRPCs) InstallLicenseService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for installing license service is %s with status code %s", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

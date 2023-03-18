@@ -47,6 +47,7 @@ func (mgr *ManagersRPCs) GetManagersCollection(ctx iris.Context) {
 	req := managersproto.ManagerRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
+	l.LogWithFields(ctxt).Debug("Incoming request received for the getting all Managers collection")
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -65,6 +66,7 @@ func (mgr *ManagersRPCs) GetManagersCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctx).Debugf("Outgoing response for Getting Managers collection is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -80,6 +82,7 @@ func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
 		ManagerID:    ctx.Params().Get("id"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for the getting a Managers with id %s", req.ManagerID)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -98,6 +101,7 @@ func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctx).Debugf("Outgoing response for getting Manager is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -117,6 +121,7 @@ func (mgr *ManagersRPCs) GetManagersResource(ctx iris.Context) {
 		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for the getting a Managers resources with id %s and resource id %s", req.ManagerID, req.ResourceID)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -135,6 +140,7 @@ func (mgr *ManagersRPCs) GetManagersResource(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctx).Debugf("Outgoing response for getting Manager resource is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -177,6 +183,7 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 		URL:          ctx.Request().RequestURI,
 		RequestBody:  request,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for the virtual media insert with id %s and request body %s", req.ManagerID, string(request))
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -195,7 +202,7 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctx).Debugf("Outgoing response for virtual media insert is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -214,6 +221,7 @@ func (mgr *ManagersRPCs) VirtualMediaEject(ctx iris.Context) {
 		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for the virtual media eject with id %s", req.ManagerID)
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -232,7 +240,7 @@ func (mgr *ManagersRPCs) VirtualMediaEject(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctx).Debugf("Outgoing response for virtual media eject is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -251,6 +259,7 @@ func (mgr *ManagersRPCs) GetRemoteAccountService(ctx iris.Context) {
 		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for the getting remote account service with id %s and request body %s", req.ManagerID)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -278,6 +287,7 @@ func (mgr *ManagersRPCs) GetRemoteAccountService(ctx iris.Context) {
 	default:
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}
+	l.LogWithFields(ctx).Debugf("Outgoing response for getting remote account service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -319,6 +329,7 @@ func (mgr *ManagersRPCs) CreateRemoteAccountService(ctx iris.Context) {
 		URL:          ctx.Request().RequestURI,
 		RequestBody:  request,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for the creating remote account with id %s and request body %s", req.ManagerID, string(request))
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -337,6 +348,7 @@ func (mgr *ManagersRPCs) CreateRemoteAccountService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctx).Debugf("Outgoing response for getting remote account service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -378,6 +390,7 @@ func (mgr *ManagersRPCs) UpdateRemoteAccountService(ctx iris.Context) {
 		URL:          ctx.Request().RequestURI,
 		RequestBody:  request,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for the updating remote account service with id %s and request body %s", req.ManagerID, string(request))
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -396,6 +409,7 @@ func (mgr *ManagersRPCs) UpdateRemoteAccountService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctx).Debugf("Outgoing response for updating remote account service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -414,6 +428,7 @@ func (mgr *ManagersRPCs) DeleteRemoteAccountService(ctx iris.Context) {
 		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for the deleting remote account service with id %s", req.ManagerID)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -432,6 +447,7 @@ func (mgr *ManagersRPCs) DeleteRemoteAccountService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctx).Debugf("Outgoing response for deleting remote account service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

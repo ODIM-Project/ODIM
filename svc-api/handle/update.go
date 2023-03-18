@@ -48,6 +48,7 @@ func (a *UpdateRPCs) GetUpdateService(ctx iris.Context) {
 	req := updateproto.UpdateRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
+	l.LogWithFields(ctxt).Debug("Incoming request received for getting update service details")
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -66,7 +67,7 @@ func (a *UpdateRPCs) GetUpdateService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting update service is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -81,6 +82,7 @@ func (a *UpdateRPCs) GetFirmwareInventoryCollection(ctx iris.Context) {
 	req := updateproto.UpdateRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
+	l.LogWithFields(ctxt).Debug("Incoming request received for getting firmware inventory collection")
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -99,6 +101,7 @@ func (a *UpdateRPCs) GetFirmwareInventoryCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting firmware inventory collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -113,6 +116,7 @@ func (a *UpdateRPCs) GetSoftwareInventoryCollection(ctx iris.Context) {
 	req := updateproto.UpdateRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
+	l.LogWithFields(ctxt).Debug("Incoming request received for software inventory collection")
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -131,6 +135,7 @@ func (a *UpdateRPCs) GetSoftwareInventoryCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting software inventory collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -147,6 +152,7 @@ func (a *UpdateRPCs) GetFirmwareInventory(ctx iris.Context) {
 		ResourceID:   ctx.Params().Get("firmwareInventory_id"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debug("Incoming request received for getting firmware inventory with url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -165,6 +171,7 @@ func (a *UpdateRPCs) GetFirmwareInventory(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting firmware inventory details is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -181,6 +188,7 @@ func (a *UpdateRPCs) GetSoftwareInventory(ctx iris.Context) {
 		ResourceID:   ctx.Params().Get("softwareInventory_id"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debug("Incoming request received for getting software inventory with url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -199,6 +207,7 @@ func (a *UpdateRPCs) GetSoftwareInventory(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting software inventory details is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -232,6 +241,7 @@ func (a *UpdateRPCs) SimpleUpdate(ctx iris.Context) {
 	}
 	// Marshalling the req to make reset request
 	request, err := json.Marshal(req)
+	l.LogWithFields(ctxt).Debug("Incoming request received for performing simple update with request body %s", string(request))
 	updateRequest := updateproto.UpdateRequest{
 		SessionToken: sessionToken,
 		RequestBody:  request,
@@ -253,7 +263,7 @@ func (a *UpdateRPCs) SimpleUpdate(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for simple update action is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -308,6 +318,7 @@ func validateSimpleUpdateRequest(ctx context.Context, requestBody []byte) respon
 func (a *UpdateRPCs) StartUpdate(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
+	l.LogWithFields(ctxt).Debug("Incoming request received for start update action")
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -330,7 +341,7 @@ func (a *UpdateRPCs) StartUpdate(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for start update action is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

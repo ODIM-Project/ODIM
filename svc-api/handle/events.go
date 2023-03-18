@@ -41,6 +41,7 @@ type EventsRPCs struct {
 func (e *EventsRPCs) GetEventService(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
+	l.LogWithFields(ctxt).Debug("Incoming request received for the Get Event service")
 	req := eventsproto.EventSubRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -61,7 +62,7 @@ func (e *EventsRPCs) GetEventService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for Getting Event service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -85,7 +86,6 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
 	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
 
 	if req.SessionToken == "" {
@@ -97,7 +97,7 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 		return
 	}
 	req.PostBody, _ = json.Marshal(&SubscriptionReq)
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for creating event subscription with request body", string(req.PostBody))
 	resp, err := e.CreateEventSubscriptionRPC(ctxt, req)
 	if err != nil {
 		l.LogWithFields(ctxt).Error(err.Error())
@@ -107,7 +107,7 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for creating event subscription is %s with response code %s", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -142,7 +142,7 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 		return
 	}
 	req.PostBody, _ = json.Marshal(&SubmitTestEventReq)
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for submit test event with request body", string(req.PostBody))
 	resp, err := e.SubmitTestEventRPC(ctxt, req)
 	if err != nil {
 		l.LogWithFields(ctxt).Error(err.Error())
@@ -152,7 +152,7 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for submit test event is %s with response code %s", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -165,7 +165,7 @@ func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
 	var req eventsproto.EventRequest
 	req.EventSubscriptionID = ctx.Params().Get("id")
 	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting event subscription with id", req.EventSubscriptionID)
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -184,6 +184,7 @@ func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
 		ctx.JSON(&response)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting event subscription is %s with response code %s", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -197,7 +198,7 @@ func (e *EventsRPCs) DeleteEventSubscription(ctx iris.Context) {
 	var req eventsproto.EventRequest
 	req.EventSubscriptionID = ctx.Params().Get("id")
 	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for deleting event subscription with id", req.EventSubscriptionID)
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -216,7 +217,7 @@ func (e *EventsRPCs) DeleteEventSubscription(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for deleting event subscription is %s with response code %s", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -228,7 +229,7 @@ func (e *EventsRPCs) GetEventSubscriptionsCollection(ctx iris.Context) {
 	ctxt := ctx.Request().Context()
 	var req eventsproto.EventRequest
 	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting all the  event subscription collections")
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -247,7 +248,7 @@ func (e *EventsRPCs) GetEventSubscriptionsCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting event subscription collections is %s with response code %s", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))

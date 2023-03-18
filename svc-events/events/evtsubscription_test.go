@@ -543,15 +543,15 @@ func TestCheckCollectionSubscription(t *testing.T) {
 func TestExternalInterfaces_UpdateEventSubscriptions(t *testing.T) {
 	config.SetUpMockConfig(t)
 	pc := getMockMethods()
-	res := pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{}, false)
-	assert.Nil(t, res, "there shoud be an error ")
+	_, res := pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{}, false)
+	assert.NotNil(t, res, "there should be an error ")
 	pc.External.Auth = func(s1 string, s2, s3 []string) (response.RPC, error) { return response.RPC{StatusCode: 200}, nil }
-	res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
-	assert.Nil(t, res, "there shoud be an error ")
+	_, res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	assert.NotNil(t, res, "there should be an error ")
 
 	pc.DB.GetAggregateList = func(hostIP string) ([]string, error) { return []string{}, errors.New("") }
-	res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
-	assert.Nil(t, res, "there shoud be an error ")
+	_, res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	assert.NotNil(t, res, "there should be an error ")
 
 	pc.DB.GetAggregateList = func(hostIP string) ([]string, error) { return []string{"6d4a0a66-7efa-578e-83cf-44dc68d2874e"}, nil }
 	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
@@ -576,19 +576,19 @@ func TestExternalInterfaces_UpdateEventSubscriptions(t *testing.T) {
 			},
 		}, nil
 	}
-	res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
-	assert.Nil(t, res, "there shoud be an error ")
+	_, res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	assert.NotNil(t, res, "there should be an error ")
 
 	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
 		return []evmodel.SubscriptionResource{}, errors.New("error")
 	}
-	res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
-	assert.True(t, true, "there shoud be an error ")
+	_, res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	assert.NotNil(t, res, "there should be an error ")
 
 	pc = getMockMethods()
 	GetIPFromHostNameFunc = func(fqdn string) (string, string) { return "", "not Found " }
-	res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
-	assert.Nil(t, res, "there shoud be an error ")
+	_, res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
+	assert.NotNil(t, res, "there should be an error ")
 
 }
 

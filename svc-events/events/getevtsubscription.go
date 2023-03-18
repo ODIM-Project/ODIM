@@ -43,7 +43,8 @@ func (e *ExternalInterfaces) GetEventSubscriptionsDetails(ctx context.Context, r
 	var resp response.RPC
 	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v",
+			authResp.StatusCode, authResp.StatusMessage)
 		if err != nil {
 			errMsg = errMsg + ": " + err.Error()
 		}
@@ -55,17 +56,19 @@ func (e *ExternalInterfaces) GetEventSubscriptionsDetails(ctx context.Context, r
 	subscriptionDetails, err := e.GetEvtSubscriptions(req.EventSubscriptionID)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		errorMessage := err.Error()
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
+		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound,
+			errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
 	}
-	if len(subscriptionDetails) < 1 {
+	if len(subscriptionDetails) == 0 {
 		errorMessage := fmt.Sprintf("Subscription details not found for ID: %v", req.EventSubscriptionID)
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage,
+			[]interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
 	}
 
 	for _, evtSubscription := range subscriptionDetails {
 
 		// Since we are searching subscription id with pattern search
-		// we need to match the subscripton id
+		// we need to match the subscription id
 		if evtSubscription.SubscriptionID != req.EventSubscriptionID {
 			errorMessage := fmt.Sprintf("Subscription details not found for subscription id: %s", req.EventSubscriptionID)
 			l.LogWithFields(ctx).Info(errorMessage)
@@ -105,7 +108,8 @@ func (e *ExternalInterfaces) GetEventSubscriptionsCollection(ctx context.Context
 	var resp response.RPC
 	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v",
+			authResp.StatusCode, authResp.StatusMessage)
 		if err != nil {
 			errMsg = errMsg + ": " + err.Error()
 		}
@@ -117,9 +121,10 @@ func (e *ExternalInterfaces) GetEventSubscriptionsCollection(ctx context.Context
 
 	subscriptionDetails, err := e.GetEvtSubscriptions(searchKey)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
-		l.LogWithFields(ctx).Printf("error getting eventsubscription details : %v", err)
+		l.LogWithFields(ctx).Printf("error getting event subscription details : %v", err)
 		errorMessage := err.Error()
-		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil)
+		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection,
+			errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil)
 	}
 	for _, evtSubscription := range subscriptionDetails {
 		subscriptionID := evtSubscription.SubscriptionID
@@ -149,11 +154,12 @@ func (e *ExternalInterfaces) GetEventSubscriptionsCollection(ctx context.Context
 	return resp
 }
 
-// IsAggregateHaveSubscription collects all subscription details
+// IsAggregateHaveSubscription validate any subscription contain aggregate id, return status
 func (e *ExternalInterfaces) IsAggregateHaveSubscription(ctx context.Context, req *eventsproto.EventUpdateRequest) bool {
 	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v",
+			authResp.StatusCode, authResp.StatusMessage)
 		if err != nil {
 			errMsg = errMsg + ": " + err.Error()
 		}
@@ -166,5 +172,4 @@ func (e *ExternalInterfaces) IsAggregateHaveSubscription(ctx context.Context, re
 		return false
 	}
 	return len(subscriptionDetails) > 0
-
 }

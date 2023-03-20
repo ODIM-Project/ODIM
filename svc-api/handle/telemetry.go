@@ -47,6 +47,7 @@ func (a *TelemetryRPCs) GetTelemetryService(ctx iris.Context) {
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
+	l.LogWithFields(ctxt).Debug("Incoming request received for getting telemetry service details")
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -65,7 +66,7 @@ func (a *TelemetryRPCs) GetTelemetryService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting telemetry service is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -81,6 +82,7 @@ func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting metric definition collection details with request URI %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -99,7 +101,7 @@ func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting metric definition collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -115,6 +117,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting metric report definition collection details with request URI %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -133,7 +136,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting metric report definition collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -149,6 +152,7 @@ func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting metric report collection details with request URI %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -167,7 +171,7 @@ func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting metric report collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -183,6 +187,7 @@ func (a *TelemetryRPCs) GetTriggerCollection(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting trigger collection details with request URI %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -201,7 +206,7 @@ func (a *TelemetryRPCs) GetTriggerCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting trigger collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -217,6 +222,7 @@ func (a *TelemetryRPCs) GetMetricDefinition(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting metric definition details with request URI %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -235,6 +241,7 @@ func (a *TelemetryRPCs) GetMetricDefinition(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting metric definition is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -250,6 +257,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinition(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting metric report definition details with request URI %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -268,6 +276,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinition(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting metric report definition is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -283,6 +292,7 @@ func (a *TelemetryRPCs) GetMetricReport(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting metric report details with request URI %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -301,6 +311,7 @@ func (a *TelemetryRPCs) GetMetricReport(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting metric definition collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -324,6 +335,7 @@ func (a *TelemetryRPCs) GetTrigger(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting trigger details with request URI %s", req.URL)
 	resp, err := a.GetTriggerRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
@@ -334,6 +346,7 @@ func (a *TelemetryRPCs) GetTrigger(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting trigger details is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -348,6 +361,7 @@ func (a *TelemetryRPCs) UpdateTrigger(ctx iris.Context) {
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
+	l.LogWithFields(ctxt).Debug("Incoming request received for updating trigger")
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -366,7 +380,7 @@ func (a *TelemetryRPCs) UpdateTrigger(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for updating trigger is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

@@ -1010,6 +1010,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		}
 	}
 	regFileID = strings.Replace(regFileID, "#", "%23", -1)
+	l.LogWithFields(ctxt).Debugf("Retriveing message registry file with file id %s", regFileID)
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
@@ -1056,7 +1057,6 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		}
 	}
 	var data interface{}
-	l.LogWithFields(ctxt).Error("Before Unmarshalling Data")
 	err = json.Unmarshal(content, &data)
 	if err != nil {
 		//return fmt.Errorf("error while trying to unmarshal the config data: %v", err)

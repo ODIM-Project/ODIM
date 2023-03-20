@@ -111,6 +111,7 @@ func GetResource(ctx iris.Context) {
 	if strings.Contains(uri, "Systems") {
 		respData = strings.Replace(string(respData), "systems", "Systems", -1)
 		respData = strings.Replace(string(respData), "bios", "Bios", -1)
+		respData = strings.Replace(string(respData), "settings","Settings",-1)
 	}
 	//replacing the resposne with north bound translation URL
 	for key, value := range pluginConfig.Data.URLTranslation.NorthBoundURL {

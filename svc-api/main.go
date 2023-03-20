@@ -231,6 +231,8 @@ func createContext(r *http.Request, transactionID uuid.UUID, podName string) con
 	val := strings.Split(r.URL.Path, "/")
 	if len(val) >= 4 && val[2] != "" {
 		serviceName = val[3]
+	} else if val[1] == common.Taskmon {
+		serviceName = val[1]
 	} else {
 		serviceName = ""
 	}

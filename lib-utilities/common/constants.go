@@ -179,6 +179,8 @@ const (
 	// Invalid Action
 	InvalidActionID   = "000"
 	InvalidActionName = "MethodNotAllowed"
+	// Taskmon URI key
+	Taskmon = "taskmon"
 	// ThreadName
 	CheckAuth                              = "Check-Authentication"
 	CheckSessionCreation                   = "CheckSessionCreationCredentials"

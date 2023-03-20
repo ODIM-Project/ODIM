@@ -586,7 +586,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 }
 
 // CreateAggregate defines the operations which handles the RPC request response
-// for the CreateAggregate  service of aggregation micro service.
+// for the CreateAggregate service of aggregation micro service.
 // The functionality retrives the request and return backs the response to
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token

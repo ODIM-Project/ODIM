@@ -48,8 +48,7 @@ type Systems struct {
 func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
-	l.LogWithFields(ctx).Debugf("incoming GetSystemResource request with %s", req.URL)
-	l.LogWithFields(ctx).Info("Inside GetSystemResource function (RPC)")
+	l.LogWithFields(ctx).Debugf("incoming GetSystemResource request with %s", req.URL)	
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -78,8 +77,7 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SystemService)
-	l.LogWithFields(ctx).Debugf("incoming GetSystemsCollection request with %s", req.URL)
-	l.LogWithFields(ctx).Info("Inside GetSystemsCollection function (RPC)")
+	l.LogWithFields(ctx).Debugf("incoming GetSystemsCollection request with %s", req.URL)	
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})

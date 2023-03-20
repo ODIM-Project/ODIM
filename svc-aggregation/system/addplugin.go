@@ -284,7 +284,7 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	}
 
 	l.LogWithFields(ctx).Info("subscribing to EMB for plugin " + plugin.ID)
-	err = e.SubscribeToEMB(plugin.ID, queueList)
+	err = e.SubscribeToEMB(ctx, plugin.ID, queueList)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err)
 	}

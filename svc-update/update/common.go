@@ -65,7 +65,7 @@ type Plugin struct {
 // External struct holds the function pointers all outboud services
 type External struct {
 	ContactClient      func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth               func(string, []string, []string) (response.RPC, error)
+	Auth               func(context.Context, string, []string, []string) (response.RPC, error)
 	DevicePassword     func([]byte) ([]byte, error)
 	GetPluginData      func(string) (umodel.Plugin, *errors.Error)
 	ContactPlugin      func(context.Context, ucommon.PluginContactRequest, string) ([]byte, string, ucommon.ResponseStatus, error)
@@ -73,7 +73,7 @@ type External struct {
 	CreateChildTask    func(context.Context, string, string) (string, error)
 	CreateTask         func(context.Context, string) (string, error)
 	UpdateTask         func(context.Context, common.TaskData) error
-	GetSessionUserName func(string) (string, error)
+	GetSessionUserName func(context.Context, string) (string, error)
 	GenericSave        func(context.Context, []byte, string, string) error
 }
 

@@ -735,7 +735,7 @@ func TestSystems_DeleteVolume(t *testing.T) {
 		})
 	}
 }
-func getSessionUserNameForTesting(sessionToken string) (string, error) {
+func getSessionUserNameForTesting(ctx context.Context, sessionToken string) (string, error) {
 	if sessionToken == "noDetailsToken" {
 		return "", fmt.Errorf("no details")
 	} else if sessionToken == "noTaskToken" {

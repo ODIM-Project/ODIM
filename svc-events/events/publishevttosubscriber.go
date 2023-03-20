@@ -172,8 +172,8 @@ func filterEventsToBeForwarded(ctx context.Context, subscription dmtf.EventDesti
 	if (len(eventTypes) == 0 || isStringPresentInSlice(ctx, eventTypes, event.EventType, "event type")) &&
 		(len(messageIds) == 0 || isStringPresentInSlice(ctx, messageIds, event.MessageID, "message id")) &&
 		(len(resourceTypes) == 0 || isResourceTypeSubscribed(ctx, resourceTypes, event.OriginOfCondition.Oid, subscription.SubordinateResources)) {
-		// if SubordinateResources is true then check if originofresource is top level of originofcondition
-		// if SubordinateResources is flase then check originofresource is same as originofcondition
+		// if SubordinateResources is true then check if originOfresource is top level of originofcondition
+		// if SubordinateResources is false then check originofresource is same as originofcondition
 
 		if len(subscription.OriginResources) == 0 {
 			return true
@@ -194,7 +194,7 @@ func filterEventsToBeForwarded(ctx context.Context, subscription dmtf.EventDesti
 }
 
 // formatEvent will format the event string according to the odimra
-// add uuid:systemid/chassisid inplace of systemid/chassisid
+// add uuid:systemid/chassisid in place of systemid/chassisid
 func formatEvent(event common.MessageData, originResource, hostIP string) (common.MessageData, string) {
 	deviceUUID, _ := getUUID(originResource)
 	if !strings.Contains(hostIP, "Collection") {
@@ -227,7 +227,7 @@ func isResourceTypeSubscribed(ctx context.Context, resourceTypes []string, origi
 		res := common.ResourceTypes[resourceType]
 		if subordinateResources {
 
-			// if subordinateResources is true then first check the child resourcetype is present in db.
+			// if subordinateResources is true then first check the child resourceType is present in db.
 			// if its there then return true
 			// if its not then check collection resource type
 			// Ex : originofcondition:/redfish/v1/Systems/uuid:1/processors/1
@@ -305,10 +305,18 @@ func sendEvent(destination string, event []byte) (*http.Response, error) {
 	return httpClient.Do(req)
 }
 func (e *ExternalInterfaces) reAttemptEvents(eventMessage evmodel.EventPost) {
+	reattemptLock.Lock()
 	reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] + 1
+	reattemptLock.Unlock()
 	var resp *http.Response
 	var err error
 	count := config.Data.EventConf.DeliveryRetryAttempts
+
+	defer func() {
+		reattemptLock.Lock()
+		reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] - 1
+		reattemptLock.Unlock()
+	}()
 	for i := 0; i < count; i++ {
 		logging.Info("Retry event forwarding on destination: ")
 		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
@@ -316,14 +324,12 @@ func (e *ExternalInterfaces) reAttemptEvents(eventMessage evmodel.EventPost) {
 		eventString, err := e.GetUndeliveredEvents(eventMessage.UndeliveredEventID)
 		if err != nil || len(eventString) < 1 {
 			l.Log.Info("Event is forwarded to destination")
-			reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] - 1
 			return
 		}
 		resp, err = SendEventFunc(eventMessage.Destination, eventMessage.Message)
 		if err == nil {
 			resp.Body.Close()
 			logging.Info("Event is successfully forwarded after reattempt ", count)
-			reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] - 1
 			err = e.DeleteUndeliveredEvents(eventMessage.UndeliveredEventID)
 			if err != nil {
 				l.Log.Error("error while deleting undelivered events: ", err.Error())
@@ -334,7 +340,7 @@ func (e *ExternalInterfaces) reAttemptEvents(eventMessage evmodel.EventPost) {
 	if err != nil {
 		logging.Error("error while make https call to send the event: ", err.Error())
 	}
-	reAttemptInQueue[eventMessage.Destination] = reAttemptInQueue[eventMessage.Destination] - 1
+
 }
 
 // rediscoverSystemInventory will be triggered when ever the System Restart or Power On

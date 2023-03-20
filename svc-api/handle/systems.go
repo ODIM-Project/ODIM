@@ -42,8 +42,7 @@ type SystemRPCs struct {
 
 // GetSystemsCollection fetches all systems
 func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
-	ctxt := ctx.Request().Context()
-
+	ctxt := ctx.Request().Context()	
 	defer ctx.Next()
 	req := systemsproto.GetSystemsRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),

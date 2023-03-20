@@ -593,6 +593,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 // which is present in the request.
 func (a *Aggregator) CreateAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
 	*aggregatorproto.AggregatorResponse, error) {
+	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}

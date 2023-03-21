@@ -29,7 +29,7 @@ import (
 
 // Managers struct helps to register service
 type Managers struct {
-	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
+	IsAuthorizedRPC func(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
 	EI              *managers.ExternalInterface
 }
 
@@ -46,7 +46,7 @@ func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto
 	ctx = context.WithValue(ctx, common.ProcessName, podName)	
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
@@ -78,7 +78,7 @@ func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerReq
 	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -109,7 +109,7 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -138,7 +138,7 @@ func (m *Managers) VirtualMediaInsert(ctx context.Context, req *managersproto.Ma
 	ctx = context.WithValue(ctx, common.ProcessName, podName)	
 	sessionToken := req.SessionToken
 	resp := &managersproto.ManagerResponse{}
-	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
@@ -167,7 +167,7 @@ func (m *Managers) VirtualMediaEject(ctx context.Context, req *managersproto.Man
 	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	sessionToken := req.SessionToken
 	resp := &managersproto.ManagerResponse{}
-	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
@@ -206,7 +206,7 @@ func (m *Managers) GetRemoteAccountService(ctx context.Context, req *managerspro
 	ctx = context.WithValue(ctx, common.ProcessName, podName)	
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
@@ -237,7 +237,7 @@ func (m *Managers) CreateRemoteAccountService(ctx context.Context, req *managers
 	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
+	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
@@ -268,7 +268,7 @@ func (m *Managers) UpdateRemoteAccountService(ctx context.Context, req *managers
 	ctx = context.WithValue(ctx, common.ProcessName, podName)	
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
+	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
@@ -299,7 +299,7 @@ func (m *Managers) DeleteRemoteAccountService(ctx context.Context, req *managers
 	ctx = context.WithValue(ctx, common.ProcessName, podName)	
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp, err := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
+	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())

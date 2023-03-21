@@ -29,7 +29,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+func mockIsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken == "invalidToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
@@ -253,7 +253,7 @@ func TestGetSoftwareInventorywithValidtoken(t *testing.T) {
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
-func mockGetSessionUserNamefunc(sessionToken string) (string, error) {
+func mockGetSessionUserNamefunc(ctx context.Context, sessionToken string) (string, error) {
 	if sessionToken == "invalidSessionName" {
 		return "", fmt.Errorf("Invalid Error ")
 	}

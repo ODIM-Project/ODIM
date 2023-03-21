@@ -37,12 +37,12 @@ type ExternalInterface struct {
 // External struct holds the function pointers all outboud services
 type External struct {
 	ContactClient      func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth               func(string, []string, []string) (response.RPC, error)
+	Auth               func(context.Context, string, []string, []string) (response.RPC, error)
 	DevicePassword     func([]byte) ([]byte, error)
 	GetPluginData      func(string) (*model.Plugin, *errors.Error)
 	ContactPlugin      func(context.Context, model.PluginContactRequest, string) ([]byte, string, model.ResponseStatus, error)
 	GetTarget          func(string) (*model.Target, *errors.Error)
-	GetSessionUserName func(string) (string, error)
+	GetSessionUserName func(context.Context, string) (string, error)
 	GenericSave        func(context.Context, []byte, string, string) error
 }
 

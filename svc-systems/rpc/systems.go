@@ -48,7 +48,7 @@ type Systems struct {
 func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
-	l.LogWithFields(ctx).Debugf("incoming GetSystemResource request with %s", req.URL)	
+	l.LogWithFields(ctx).Debugf("incoming GetSystemResource request with %s", req.URL)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -77,7 +77,7 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SystemService)
-	l.LogWithFields(ctx).Debugf("incoming GetSystemsCollection request with %s", req.URL)	
+	l.LogWithFields(ctx).Debugf("incoming GetSystemsCollection request with %s", req.URL)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -242,7 +242,7 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 		DevicePassword: common.DecryptWithPrivateKey,
 		UpdateTask:     s.UpdateTask,
 	}
-	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
@@ -293,7 +293,7 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
-	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
@@ -357,7 +357,7 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
-	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))

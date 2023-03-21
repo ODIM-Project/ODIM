@@ -53,7 +53,7 @@ func (e *ExternalInterfaces) ValidateRequest(ctx context.Context, req *eventspro
 		errMsg := "error while validating request parameters: " + err.Error()
 		return http.StatusInternalServerError, errResponse.InternalError, nil, fmt.Errorf(errMsg)
 	} else if invalidProperties != "" {
-		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in upper camel case "
 		return http.StatusBadRequest, errResponse.PropertyUnknown, []interface{}{invalidProperties}, fmt.Errorf(errorMessage)
 	}
 
@@ -222,7 +222,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 		}
 		locationHeader = resp.Header["Location"]
 	}
-	l.LogWithFields(ctx).Info("Process Count,", originResourceProcessedCount,
+	l.LogWithFields(ctx).Debug("Process Count,", originResourceProcessedCount,
 		" successOriginResourceCount ", len(successfulSubscriptionList))
 	percentComplete = 100
 	if originResourceProcessedCount == len(successfulSubscriptionList) {
@@ -271,7 +271,7 @@ func (e *ExternalInterfaces) SaveSubscription(ctx context.Context, sessionUserNa
 	return http.StatusOK, common.OK, []interface{}{}, nil
 }
 
-// eventSubscription method
+// eventSubscription method update subscription on device
 func (e *ExternalInterfaces) eventSubscription(ctx context.Context, postRequest model.EventDestination, origin, collectionName string, collectionFlag bool) (string, evresponse.EventResponse) {
 	var resp evresponse.EventResponse
 	var err error
@@ -523,7 +523,7 @@ func (e *ExternalInterfaces) IsEventsSubscribed(ctx context.Context, token, orig
 	originResource = origin
 	subscriptionDetails, err := e.GetEvtSubscriptions(searchKey)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
-		errorMessage := "Error while get subscription details: " + err.Error()
+		errorMessage := "error while get subscription details: " + err.Error()
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			[]interface{}{}, &resp)
 		l.LogWithFields(ctx).Error(errorMessage)
@@ -568,7 +568,7 @@ func (e *ExternalInterfaces) IsEventsSubscribed(ctx context.Context, token, orig
 		return resp, nil
 	}
 	if !collectionFlag {
-		l.LogWithFields(ctx).Info("Delete Subscription from device")
+		l.LogWithFields(ctx).Debug("Delete Subscription from device")
 		if strings.Contains(originResource, "Fabrics") {
 			resp, err = e.DeleteFabricsSubscription(ctx, originResource, plugin)
 			if err != nil {
@@ -591,8 +591,10 @@ func (e *ExternalInterfaces) IsEventsSubscribed(ctx context.Context, token, orig
 	return resp, nil
 }
 
-// CreateDefaultEventSubscription is creates the  subscription with event types which will be required to rediscover the inventory
-// after computer system restarts ,This will  triggered from   aggregation service whenever a computer system is added
+// CreateDefaultEventSubscription is creates the  subscription with event
+// types which will be required to rediscover the inventory after computer
+// system restarts ,This will  triggered from   aggregation service whenever
+// a computer system is added
 func (e *ExternalInterfaces) CreateDefaultEventSubscription(ctx context.Context, originResources, eventTypes, messageIDs, resourceTypes []string, protocol string) errResponse.RPC {
 	l.LogWithFields(ctx).Info("Creation of default subscriptions started for: " + strings.Join(originResources, "::"))
 	var resp errResponse.RPC
@@ -922,7 +924,7 @@ func (e *ExternalInterfaces) checkCollectionSubscription(ctx context.Context, or
 
 		err := e.UpdateDeviceSubscriptionLocation(newDevSubscription)
 		if err != nil {
-			l.LogWithFields(ctx).Error("Error while Updating Device subscription : " + err.Error())
+			l.LogWithFields(ctx).Error("error while updating device subscription : " + err.Error())
 		}
 	}
 }
@@ -1024,6 +1026,13 @@ func (e *ExternalInterfaces) createFabricSubscription(ctx context.Context, postR
 	contactRequest.URL = "/ODIM/v1/Subscriptions"
 	contactRequest.HTTPMethodType = http.MethodPost
 	err = json.Unmarshal([]byte(reqData), &contactRequest.PostBody)
+	if err != nil {
+		errorMessage := "error while unmarshal the body : " + err.Error()
+		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
+			&resp, []interface{}{})
+		l.LogWithFields(ctx).Error(errorMessage)
+		return "", resp
+	}
 
 	response, err := e.callPlugin(context.TODO(), contactRequest)
 	if err != nil {

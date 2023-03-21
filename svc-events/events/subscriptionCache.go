@@ -154,7 +154,7 @@ func getAllSubscriptions(ctx context.Context) error {
 func getAllDeviceSubscriptions(ctx context.Context) error {
 	deviceSubscriptionList, err := evmodel.GetAllDeviceSubscriptions()
 	if err != nil {
-		l.LogWithFields(ctx).Error("Error while reading all aggregate data ", err)
+		l.LogWithFields(ctx).Error("error while reading all aggregate data ", err)
 		return err
 	}
 	eventSourceToManagerIDMapTemp := make(map[string]string, len(deviceSubscriptionList))
@@ -300,7 +300,6 @@ func getAggregateSubscriptionList(systemId string) (subs []dmtf.EventDestination
 func getCollectionSubscriptionList(originOfCondition, hostIp string) (subs []dmtf.EventDestination) {
 	collectionsKey := getCollectionKey(originOfCondition, hostIp)
 	collectionSubscription, isExists := collectionToSubscriptionsMap[collectionsKey]
-
 	if isExists {
 		for subId := range collectionSubscription {
 			sub, isValidSubId := getSubscriptionDetails(subId)

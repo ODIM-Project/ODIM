@@ -318,21 +318,21 @@ func (e *ExternalInterfaces) reAttemptEvents(eventMessage evmodel.EventPost) {
 		reattemptLock.Unlock()
 	}()
 	for i := 0; i < count; i++ {
-		logging.Info("Retry event forwarding on destination: ")
+		logging.Debug("Retry event forwarding on destination: ")
 		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
 		// if undelivered event already published then ignore retrying
 		eventString, err := e.GetUndeliveredEvents(eventMessage.UndeliveredEventID)
 		if err != nil || len(eventString) < 1 {
-			l.Log.Info("Event is forwarded to destination")
+			l.Log.Debug("Event is forwarded to destination")
 			return
 		}
 		resp, err = SendEventFunc(eventMessage.Destination, eventMessage.Message)
 		if err == nil {
 			resp.Body.Close()
-			logging.Info("Event is successfully forwarded after reattempt ", count)
+			logging.Info("Event is successfully forwarded after reattempt ")
 			err = e.DeleteUndeliveredEvents(eventMessage.UndeliveredEventID)
 			if err != nil {
-				l.Log.Error("error while deleting undelivered events: ", err.Error())
+				logging.Error("error while deleting undelivered events: ", err.Error())
 			}
 			return
 		}
@@ -477,7 +477,7 @@ func callPluginStartUp(ctx context.Context, event common.Events) {
 		logging.Error("failed to send plugin startup data to " + event.IP + ": " + err.Error())
 		return
 	}
-	logging.Info("successfully sent plugin startup data to " + event.IP)
+	logging.Debug("successfully sent plugin startup data to " + event.IP)
 }
 
 func (e *ExternalInterfaces) checkUndeliveredEvents(destination string) {
@@ -523,7 +523,7 @@ func (e *ExternalInterfaces) checkUndeliveredEvents(destination string) {
 					time.Sleep(100 * time.Millisecond)
 					break
 				}
-				logging.Info("Event is successfully forwarded")
+				logging.Debug("Event is successfully forwarded")
 				err = e.DeleteUndeliveredEvents(dest)
 				if err != nil {
 					logging.Error("error while deleting undelivered events: ", err.Error())

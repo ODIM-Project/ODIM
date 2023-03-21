@@ -84,7 +84,7 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
 		return resp
 	}
-	l.LogWithFields(ctx).Info("Number of subscription present :", strconv.Itoa(len(subscriptionDetails)))
+	l.LogWithFields(ctx).Debug("Number of subscription present :", strconv.Itoa(len(subscriptionDetails)))
 	decryptedPasswordByte, err := DecryptWithPrivateKeyFunc(target.Password)
 	if err != nil {
 		// Frame the RPC response body and response Header below
@@ -502,7 +502,7 @@ func (e *ExternalInterfaces) DeleteFabricsSubscription(ctx context.Context, orig
 
 // resubscribeFabricsSubscription updates subscription fabric subscription details  by forming the super set of MessageIDs,EventTypes and ResourceTypes
 func (e *ExternalInterfaces) resubscribeFabricsSubscription(ctx context.Context, subscriptionPost model.EventDestination, origin string, deleteflag bool) error {
-	originResources := e.getSuboridanteResourcesFromCollection(origin)
+	originResources := e.getSubordinateResourcesFromCollection(origin)
 	for _, origin := range originResources {
 		originResource := origin
 		fabricID := getFabricID(originResource)
@@ -606,14 +606,16 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(ctx context.Context,
 	return nil
 }
 
-func (e *ExternalInterfaces) getSuboridanteResourcesFromCollection(originResources string) []string {
-	data, _, collectionPresentflag, _, _, _ := e.checkCollection(originResources)
-	if !collectionPresentflag {
+// getSubordinateResourcesFromCollection method return sub uri
+func (e *ExternalInterfaces) getSubordinateResourcesFromCollection(originResources string) []string {
+	data, _, collectionPresentFlag, _, _, _ := e.checkCollection(originResources)
+	if !collectionPresentFlag {
 		return []string{originResources}
 	}
 	return data
 }
 
+// getAllSubscriptions return list of subscription fabric resource
 func (e *ExternalInterfaces) getAllSubscriptions(origin string, subscriptionDetails []evmodel.SubscriptionResource) []evmodel.SubscriptionResource {
 	if origin == "/redfish/v1/Fabrics" {
 		return subscriptionDetails
@@ -646,14 +648,14 @@ func (e *ExternalInterfaces) getAllSubscriptions(origin string, subscriptionDeta
 // Takes string slice and length, and updates the same with new values
 func removeDuplicatesFromSubscription(subscriptions []evmodel.SubscriptionResource) []evmodel.SubscriptionResource {
 	uniqueElementsDs := make(map[string]bool)
-	var uniqueElemenstsList []evmodel.SubscriptionResource
+	var uniqueElementsList []evmodel.SubscriptionResource
 	for _, sub := range subscriptions {
 		if exist := uniqueElementsDs[sub.SubscriptionID]; !exist {
-			uniqueElemenstsList = append(uniqueElemenstsList, sub)
+			uniqueElementsList = append(uniqueElementsList, sub)
 			uniqueElementsDs[sub.SubscriptionID] = true
 		}
 	}
-	return uniqueElemenstsList
+	return uniqueElementsList
 }
 
 // DeleteAggregateSubscriptions it will add subscription for newly Added system in aggregate
@@ -662,7 +664,7 @@ func (e *ExternalInterfaces) DeleteAggregateSubscriptions(ctx context.Context, r
 	searchKeyAgg := evcommon.GetSearchKey(aggregateID, evmodel.SubscriptionIndex)
 	subscriptionList, err := e.GetEvtSubscriptions(searchKeyAgg)
 	if err != nil {
-		l.LogWithFields(ctx).Info("No Aggregate subscription Found ", err)
+		l.LogWithFields(ctx).Error("no aggregate subscription found ", err)
 		return err
 	}
 	for _, evtSubscription := range subscriptionList {
@@ -672,14 +674,14 @@ func (e *ExternalInterfaces) DeleteAggregateSubscriptions(ctx context.Context, r
 		if len(evtSubscription.EventDestination.OriginResources) == 0 {
 			err = e.DeleteEvtSubscription(evtSubscription.SubscriptionID)
 			if err != nil {
-				errorMessage := "Error while delete event subscription : " + err.Error()
+				errorMessage := "error while delete event subscription : " + err.Error()
 				l.LogWithFields(ctx).Error(errorMessage)
 				return err
 			}
 		} else {
 			err = e.UpdateEventSubscription(evtSubscription)
 			if err != nil {
-				errorMessage := "Error while Updating event subscription : " + err.Error()
+				errorMessage := "error while updating event subscription : " + err.Error()
 				l.LogWithFields(ctx).Error(errorMessage)
 				return err
 			}

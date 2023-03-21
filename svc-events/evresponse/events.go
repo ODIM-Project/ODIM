@@ -94,8 +94,8 @@ type SMTP struct {
 	Username           string `json:"Username,omitempty"`
 }
 
-//SSEFilterPropertiesSupported defines set propertis that are supported in the
-//$filter query parameter for the ServerSentEventUri
+// SSEFilterPropertiesSupported defines set propertis that are supported in the
+// $filter query parameter for the ServerSentEventUri
 type SSEFilterPropertiesSupported struct {
 	EventFormatType        bool `json:"EventFormatType"`
 	EventType              bool `json:"EventType"` //Deprecated v1.3
@@ -107,31 +107,31 @@ type SSEFilterPropertiesSupported struct {
 	SubordinateResources   bool `json:"SubordinateResources"`
 }
 
-//Subscriptions containes link to a resource
+// Subscriptions containes link to a resource
 type Subscriptions struct {
 	OdataID string `json:"@odata.id"`
 }
 
-//Status struct definition
+// Status struct definition
 type Status struct {
 	Health       string `json:"Health"`
 	HealthRollup string `json:"HealthRollup"`
 	State        string `json:"State"`
 }
 
-//Actions struct definition
+// Actions struct definition
 type Actions struct {
 	SubmitTestEvent Action `json:"#EventService.SubmitTestEvent"`
 	Oem             Oem    `json:"Oem"`
 }
 
-//Action struct definition
+// Action struct definition
 type Action struct {
 	Target          string   `json:"target"`
 	AllowableValues []string `json:"EventType@Redfish.AllowableValues"`
 }
 
-//Oem struct definition placeholder.
+// Oem struct definition placeholder.
 type Oem struct {
 }
 
@@ -158,7 +158,7 @@ func (r *MutexLock) ReadResponse(subscriptionID string) (response.RPC, []string)
 	r.Lock.Lock()
 	defer r.Lock.Unlock()
 	for _, resp := range r.Response {
-		// Sucessfully created subscription
+		// Successful created subscription
 		rpcResponse.StatusCode = int32(resp.StatusCode)
 		rpcResponse.Header = map[string]string{
 			"Location": "/redfish/v1/EventService/Subscriptions/" + subscriptionID, // TODO make it dynamic

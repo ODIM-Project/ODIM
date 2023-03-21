@@ -1256,12 +1256,12 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 // The function will find out the ODIM task corresponding to the plugin task ID
 // and task progress from the events
 // Then the function update the ODIM task with the task progress received
-func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
+func (ts *TasksRPC) ProcessTaskEvents(ctx context.Context, data interface{}) bool {
 	event := data.(dmtf.EventRecord)
 	var taskID string
 
 	if len(event.MessageArgs) == 0 {
-		l.Log.Error("task id is not present in the task event." +
+		l.LogWithFields(ctx).Error("task id is not present in the task event." +
 			"skipping the task update")
 		return false
 	}
@@ -1271,7 +1271,7 @@ func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
 	// plugin IP, and plugin task ID
 	pluginTask, err := tmodel.GetPluginTaskInfo(taskID)
 	if err != nil {
-		l.Log.Error("error while processing task event :", err.Error())
+		l.LogWithFields(ctx).Error("error while processing task event :", err.Error())
 		return false
 	}
 
@@ -1283,7 +1283,7 @@ func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
 	}
 
 	if message == "" {
-		l.Log.Errorf("Got invalid messageID for task event with task ID %s",
+		l.LogWithFields(ctx).Errorf("Got invalid messageID for task event with task ID %s",
 			taskID)
 		return false
 	}
@@ -1298,7 +1298,7 @@ func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
 	case dmtf.TaskStateRunning:
 		pc, err := strconv.ParseInt(event.MessageArgs[1], 10, 64)
 		if err != nil {
-			l.Log.Errorf("Invalid percent complete received from task event: %v", event.MessageArgs[1])
+			l.LogWithFields(ctx).Errorf("Invalid percent complete received from task event: %v", event.MessageArgs[1])
 			return false
 		}
 		percentComplete = int32(pc)
@@ -1311,7 +1311,7 @@ func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
 	sc := event.MessageArgs[len(event.MessageArgs)-1]
 	statusCode, err := strconv.ParseInt(sc, 10, 64)
 	if err != nil {
-		l.Log.Errorf("Invalid status code received from task event: %v", event.MessageArgs[1])
+		l.LogWithFields(ctx).Errorf("Invalid status code received from task event: %v", event.MessageArgs[1])
 		return false
 	}
 	timestamp, err := time.Parse(time.RFC3339, event.EventTimestamp)
@@ -1328,7 +1328,7 @@ func (ts *TasksRPC) ProcessTaskEvents(data interface{}) bool {
 		ResponseBody: body,
 	}
 
-	l.Log.Debugf("Received task event from plugin for odim task %s, "+
+	l.LogWithFields(ctx).Debugf("Received task event from plugin for odim task %s, "+
 		"plugin taskID: %s, taskState: %s, taskStatus: %s, percentComplete: %d, "+
 		"status code: %d: response body: %s, end time: %v",
 		pluginTask.OdimTaskID, taskID, taskState, taskStatus,

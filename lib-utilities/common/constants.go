@@ -210,6 +210,7 @@ const (
 	UpdateRemoteAccountService             = "UpdateRemoteAccountService"
 	DeleteRemoteAccountService             = "DeleteRemoteAccountService"
 	InstallLicenseService                  = "InstallLicenseService"
+	ProcessTaskEvents                      = "ProcessTaskEvents"
 	// constants for log
 	SessionToken            = "sessiontoken"
 	SessionUserID           = "sessionuserid"

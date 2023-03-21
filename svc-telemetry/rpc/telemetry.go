@@ -41,7 +41,7 @@ func (a *Telemetry) GetMetricDefinitionCollection(ctx context.Context, req *tele
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.TelemetryService, podName)
 	resp := &teleproto.TelemetryResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -49,7 +49,7 @@ func (a *Telemetry) GetMetricDefinitionCollection(ctx context.Context, req *tele
 		fillProtoResponse(ctx, resp, authResp)
 		return resp, nil
 	}
-	fillProtoResponse(ctx, resp, a.connector.GetMetricDefinitionCollection(ctx,req))
+	fillProtoResponse(ctx, resp, a.connector.GetMetricDefinitionCollection(ctx, req))
 	l.LogWithFields(ctx).Debugf("final response for get metric definition collection request: %s", string(resp.Body))
 	return resp, nil
 }
@@ -59,7 +59,7 @@ func (a *Telemetry) GetMetricReportDefinitionCollection(ctx context.Context, req
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.TelemetryService, podName)
 	resp := &teleproto.TelemetryResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -67,7 +67,7 @@ func (a *Telemetry) GetMetricReportDefinitionCollection(ctx context.Context, req
 		fillProtoResponse(ctx, resp, authResp)
 		return resp, nil
 	}
-	fillProtoResponse(ctx, resp, a.connector.GetMetricReportDefinitionCollection(ctx,req))
+	fillProtoResponse(ctx, resp, a.connector.GetMetricReportDefinitionCollection(ctx, req))
 	l.LogWithFields(ctx).Debugf("final response for get metric report definition collection request: %s", string(resp.Body))
 	return resp, nil
 }
@@ -77,7 +77,7 @@ func (a *Telemetry) GetMetricReportCollection(ctx context.Context, req *teleprot
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.TelemetryService, podName)
 	resp := &teleproto.TelemetryResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -85,7 +85,7 @@ func (a *Telemetry) GetMetricReportCollection(ctx context.Context, req *teleprot
 		fillProtoResponse(ctx, resp, authResp)
 		return resp, nil
 	}
-	fillProtoResponse(ctx, resp, a.connector.GetMetricReportCollection(ctx,req))
+	fillProtoResponse(ctx, resp, a.connector.GetMetricReportCollection(ctx, req))
 	l.LogWithFields(ctx).Debugf("final response for get metric report collection request: %s", string(resp.Body))
 	return resp, nil
 }
@@ -95,7 +95,7 @@ func (a *Telemetry) GetTriggerCollection(ctx context.Context, req *teleproto.Tel
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.TelemetryService, podName)
 	resp := &teleproto.TelemetryResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -103,7 +103,7 @@ func (a *Telemetry) GetTriggerCollection(ctx context.Context, req *teleproto.Tel
 		fillProtoResponse(ctx, resp, authResp)
 		return resp, nil
 	}
-	fillProtoResponse(ctx, resp, a.connector.GetTriggerCollection(ctx,req))
+	fillProtoResponse(ctx, resp, a.connector.GetTriggerCollection(ctx, req))
 	l.LogWithFields(ctx).Debugf("final response for get trigger collection request: %s", string(resp.Body))
 	return resp, nil
 }
@@ -113,7 +113,7 @@ func (a *Telemetry) GetMetricDefinition(ctx context.Context, req *teleproto.Tele
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.TelemetryService, podName)
 	resp := &teleproto.TelemetryResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -131,7 +131,7 @@ func (a *Telemetry) GetMetricReportDefinition(ctx context.Context, req *teleprot
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.TelemetryService, podName)
 	resp := &teleproto.TelemetryResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -149,7 +149,7 @@ func (a *Telemetry) GetMetricReport(ctx context.Context, req *teleproto.Telemetr
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.TelemetryService, podName)
 	resp := &teleproto.TelemetryResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -167,7 +167,7 @@ func (a *Telemetry) GetTrigger(ctx context.Context, req *teleproto.TelemetryRequ
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.TelemetryService, podName)
 	resp := &teleproto.TelemetryResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -185,7 +185,7 @@ func (a *Telemetry) UpdateTrigger(ctx context.Context, req *teleproto.TelemetryR
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.TelemetryService, podName)
 	resp := &teleproto.TelemetryResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())

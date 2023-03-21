@@ -215,8 +215,7 @@ func Router() *iris.Application {
 	// Parses the URL and performs URL decoding for path
 	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		ctx := r.Context()
-		l.LogWithFields(ctx).Info("Inside router function")
+		ctx := r.Context()		
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {

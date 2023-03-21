@@ -49,8 +49,7 @@ var (
 func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCreateRequest) (*sessionproto.SessionCreateResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
-	l.LogWithFields(ctx).Info("Inside CreateSession function (svc-account-session)")
+	ctx = context.WithValue(ctx, common.ProcessName, podName)	
 	var err error
 	var resp sessionproto.SessionCreateResponse
 	response, sessionID := CreateNewSessionFunc(ctx, req)
@@ -77,8 +76,7 @@ func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCr
 func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
-	l.LogWithFields(ctx).Info("Inside DeleteSession function (svc-account-session)")
+	ctx = context.WithValue(ctx, common.ProcessName, podName)	
 	response := DeleteSessionFunc(ctx, req)
 	var resp sessionproto.SessionResponse
 	body, err := MarshalFunc(response.Body)
@@ -103,8 +101,7 @@ func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRe
 func (s *Session) GetSession(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
-	l.LogWithFields(ctx).Info("Inside GetSession function (svc-account-session)")
+	ctx = context.WithValue(ctx, common.ProcessName, podName)	
 	var resp sessionproto.SessionResponse
 	response := GetSessionFunc(ctx, req)
 	body, err := MarshalFunc(response.Body)
@@ -148,8 +145,7 @@ func (s *Session) GetSessionUserRoleID(ctx context.Context, req *sessionproto.Se
 func (s *Session) GetAllActiveSessions(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
-	l.LogWithFields(ctx).Info("Inside GetAllActiveSessions function (svc-account-session)")
+	ctx = context.WithValue(ctx, common.ProcessName, podName)	
 	var resp sessionproto.SessionResponse
 	response := GetAllActiveSessionsFunc(ctx, req)
 	body, err := MarshalFunc(response.Body)
@@ -174,8 +170,7 @@ func (s *Session) GetAllActiveSessions(ctx context.Context, req *sessionproto.Se
 func (s *Session) GetSessionService(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
-	l.LogWithFields(ctx).Info("Inside GetSessionService function (svc-account-session)")
+	ctx = context.WithValue(ctx, common.ProcessName, podName)	
 	var resp sessionproto.SessionResponse
 	response := GetSessionServiceFunc(ctx, req)
 	body, err := MarshalFunc(response.Body)

@@ -119,7 +119,7 @@ func mockGetPluginData(id string) (*model.Plugin, *errors.Error) {
 	return &plugin, nil
 }
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+func mockIsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken != "validToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}

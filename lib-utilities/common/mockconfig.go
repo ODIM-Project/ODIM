@@ -103,10 +103,10 @@ func SetUpMockConfig() error {
 		MaxResetDelayInSecs: 36000,
 	}
 	config.Data.PluginStatusPolling = &config.PluginStatusPolling{
-		MaxRetryAttempt:         1,
-		RetryIntervalInMins:     1,
-		ResponseTimeoutInSecs:   30,
-		StartUpResouceBatchSize: 10,
+		MaxRetryAttempt:          1,
+		RetryIntervalInMins:      1,
+		ResponseTimeoutInSecs:    30,
+		StartUpResourceBatchSize: 10,
 	}
 	config.Data.AddComputeSkipResources = &config.AddComputeSkipResources{
 		SkipResourceListUnderOthers: []string{"Power", "Thermal", "SmartStorage", "LogServices"},

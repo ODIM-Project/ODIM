@@ -21,6 +21,7 @@
 package events
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -70,6 +71,7 @@ func getMockMethods() ExternalInterfaces {
 			GetAggregateHosts:                evcommon.MockGetAggregateHosts,
 			UpdateAggregateHosts:             evcommon.MockSaveAggregateSubscription,
 			GetAggregateList:                 evcommon.MockGetAggregateHosts,
+			GetUndeliveredEventsKeyList:      evcommon.MockGetUndeliveredEventsKeyList,
 		},
 	}
 }
@@ -81,7 +83,7 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 	}
 
 	// positive test case
-	resp := pc.GetEventSubscriptionsCollection(req)
+	resp := pc.GetEventSubscriptionsCollection(evcommon.MockContext(), req)
 	data := resp.Body.(evresponse.ListResponse)
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status Code should be StatusOK")
 	assert.Equal(t, 1, data.MembersCount, "MembersCount should be 1")
@@ -91,13 +93,13 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 	req1 := &eventsproto.EventRequest{
 		SessionToken: "InValidToken",
 	}
-	resp = pc.GetEventSubscriptionsCollection(req1)
+	resp = pc.GetEventSubscriptionsCollection(evcommon.MockContext(), req1)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusUnauthorized")
 
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
-		return []evmodel.Subscription{}, errors.New("")
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
+		return []evmodel.SubscriptionResource{}, errors.New("")
 	}
-	resp = pc.GetEventSubscriptionsCollection(req)
+	resp = pc.GetEventSubscriptionsCollection(evcommon.MockContext(), req)
 
 }
 
@@ -110,19 +112,19 @@ func TestGetEventSubscription(t *testing.T) {
 		SessionToken:        "validToken",
 		EventSubscriptionID: "81de0110-c35a-4859-984c-072d6c5a32d7",
 	}
-	resp := pc.GetEventSubscriptionsDetails(req)
+	resp := pc.GetEventSubscriptionsDetails(evcommon.MockContext(), req)
 	data := resp.Body.(*evresponse.SubscriptionResponse)
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status Code should be StatusOK")
 	assert.Equal(t, "81de0110-c35a-4859-984c-072d6c5a32d7", data.Response.ID, "ID should be 1")
 	assert.Equal(t, "Subscription", data.Response.Name, "Name should be Subscription")
-	assert.Equal(t, "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", data.OriginResources[0].OdataID, " OdataID should be same /redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
+	assert.Equal(t, "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", data.OriginResources[0].Oid, " OdataID should be same /redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
 
 	// Negative test cases
 	// Invalid token
 	req1 := &eventsproto.EventRequest{
 		SessionToken: "InValidToken",
 	}
-	resp = pc.GetEventSubscriptionsDetails(req1)
+	resp = pc.GetEventSubscriptionsDetails(evcommon.MockContext(), req1)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusUnauthorized")
 
 	// invalid subscription id
@@ -130,19 +132,19 @@ func TestGetEventSubscription(t *testing.T) {
 		SessionToken:        "validToken",
 		EventSubscriptionID: "1234",
 	}
-	resp = pc.GetEventSubscriptionsDetails(req)
+	resp = pc.GetEventSubscriptionsDetails(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusNotFound")
 
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
-		return []evmodel.Subscription{}, errors.New("")
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
+		return []evmodel.SubscriptionResource{}, errors.New("")
 	}
-	resp = pc.GetEventSubscriptionsDetails(req)
+	resp = pc.GetEventSubscriptionsDetails(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusOK")
 
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
-		return []evmodel.Subscription{{UserName: "Admin", SubscriptionID: "test"}}, nil
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
+		return []evmodel.SubscriptionResource{{UserName: "Admin", SubscriptionID: "test"}}, nil
 	}
-	resp = pc.GetEventSubscriptionsDetails(req)
+	resp = pc.GetEventSubscriptionsDetails(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusOK")
 
 }
@@ -150,20 +152,20 @@ func TestGetEventSubscription(t *testing.T) {
 func TestExternalInterfaces_IsAggregateHaveSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
 	pc := getMockMethods()
-	pc.Auth = func(s1 string, s2, s3 []string) (response.RPC, error) {
+	pc.Auth = func(ctx context.Context, s1 string, s2, s3 []string) (response.RPC, error) {
 		return response.RPC{
 			StatusCode: 400,
 		}, nil
 	}
-	pc.IsAggregateHaveSubscription(&eventsproto.EventUpdateRequest{})
-	pc.Auth = func(s1 string, s2, s3 []string) (response.RPC, error) {
+	pc.IsAggregateHaveSubscription(evcommon.MockContext(), &eventsproto.EventUpdateRequest{})
+	pc.Auth = func(ctx context.Context, s1 string, s2, s3 []string) (response.RPC, error) {
 		return response.RPC{
 			StatusCode: 200,
 		}, nil
 	}
-	pc.IsAggregateHaveSubscription(&eventsproto.EventUpdateRequest{})
-	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
-		return []evmodel.Subscription{{UserName: "admin"}}, nil
+	pc.IsAggregateHaveSubscription(evcommon.MockContext(), &eventsproto.EventUpdateRequest{})
+	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
+		return []evmodel.SubscriptionResource{{UserName: "admin"}}, nil
 	}
-	pc.IsAggregateHaveSubscription(&eventsproto.EventUpdateRequest{})
+	pc.IsAggregateHaveSubscription(evcommon.MockContext(), &eventsproto.EventUpdateRequest{})
 }

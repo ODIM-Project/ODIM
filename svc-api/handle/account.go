@@ -47,7 +47,7 @@ func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
 	req := accountproto.AccountRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
-
+	l.LogWithFields(ctx).Debug("Incoming request received for the Get Account service")
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -68,11 +68,12 @@ func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctx).Debugf("Outgoing response for Getting Account service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+
 }
 
 // CreateAccount defines the CreateAccount iris handler.
@@ -84,7 +85,6 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	var req interface{}
-
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the account create request body: " + err.Error()
@@ -95,7 +95,7 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debug("Incoming request for create account received")
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 
 	if sessionToken == "" {
@@ -130,6 +130,7 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+	l.LogWithFields(ctxt).Debugf("Outgoing response for create account is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 
 }
 
@@ -143,7 +144,7 @@ func (a *AccountRPCs) GetAllAccounts(ctx iris.Context) {
 	req := accountproto.AccountRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
-
+	l.LogWithFields(ctxt).Debug("Incoming request for get all accounts received")
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -169,6 +170,7 @@ func (a *AccountRPCs) GetAllAccounts(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+	l.LogWithFields(ctxt).Debugf("outgoing response for get all accounts is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 
 }
 
@@ -184,7 +186,7 @@ func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		AccountID:    ctx.Params().Get("id"),
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request for get account info received for %s", req.AccountID)
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -210,6 +212,7 @@ func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+	l.LogWithFields(ctxt).Debugf("outgoing response for get account is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 
 }
 
@@ -224,6 +227,7 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 	ctxt := ctx.Request().Context()
 
 	err := ctx.ReadJSON(&req)
+
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the account update request body: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -236,7 +240,7 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	accountID := ctx.Params().Get("id")
-
+	l.LogWithFields(ctxt).Debugf("Incoming request for updating account received for %s", accountID)
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -270,6 +274,7 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+	l.LogWithFields(ctxt).Debugf("outgoing response for updating account is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 
 }
 
@@ -285,7 +290,7 @@ func (a *AccountRPCs) DeleteAccount(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		AccountID:    ctx.Params().Get("id"),
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request for deleting account received with %s", req.AccountID)
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -310,5 +315,6 @@ func (a *AccountRPCs) DeleteAccount(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+	l.LogWithFields(ctxt).Debugf("outgoing response for deleting account with %s and response status %d", req.AccountID, int(resp.StatusCode))
 
 }

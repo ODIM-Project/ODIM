@@ -45,7 +45,7 @@ func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updat
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
 	resp := &updateproto.UpdateResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -63,7 +63,7 @@ func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.Upd
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
 	resp := &updateproto.UpdateResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -81,7 +81,7 @@ func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updat
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
 	resp := &updateproto.UpdateResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -99,7 +99,7 @@ func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.Upd
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
 	resp := &updateproto.UpdateResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -117,7 +117,7 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
 	resp := &updateproto.UpdateResponse{}
-	authResp, err := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -125,7 +125,7 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 		fillProtoResponse(ctx, resp, authResp)
 		return resp, nil
 	}
-	sessionUserName, err := a.connector.External.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := a.connector.External.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "error while trying to get the session username: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
@@ -183,7 +183,7 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 	ctx = common.ModifyContext(ctx, common.UpdateService, podName)
 	resp := &updateproto.UpdateResponse{}
 	sessionToken := req.SessionToken
-	authResp, err := a.connector.External.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := a.connector.External.Auth(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -191,7 +191,7 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 		fillProtoResponse(ctx, resp, authResp)
 		return resp, nil
 	}
-	sessionUserName, err := a.connector.External.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := a.connector.External.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "error while trying to get the session username: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)

@@ -49,8 +49,8 @@ var podName = os.Getenv("POD_NAME")
 // AuthenticationRPC is used to authorize user and privileges
 // GetTaskStatusModel get task status
 type TasksRPC struct {
-	AuthenticationRPC                func(sessionToken string, privileges []string) (response.RPC, error)
-	GetSessionUserNameRPC            func(sessionToken string) (string, error)
+	AuthenticationRPC                func(ctx context.Context, sessionToken string, privileges []string) (response.RPC, error)
+	GetSessionUserNameRPC            func(ctx context.Context, sessionToken string) (string, error)
 	GetTaskStatusModel               func(ctx context.Context, taskID string, db common.DbType) (*tmodel.Task, error)
 	GetMultipleTaskKeysModel         func(ctx context.Context, taskIDs []interface{}, db common.DbType) (*[]tmodel.Task, error)
 	GetAllTaskKeysModel              func(ctx context.Context) ([]string, error)
@@ -179,7 +179,7 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 		return &rsp, nil
 	}
 	privileges := []string{common.PrivilegeConfigureManager}
-	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf(logPrefix+"Error while authorizing the session token : %s", err.Error())
@@ -290,7 +290,7 @@ func constructCommonResponseHeader(rsp *taskproto.TaskResponse) {
 
 func (ts *TasksRPC) validateAndAuthorize(ctx context.Context, req *taskproto.GetTaskRequest, rsp *taskproto.TaskResponse) (*tmodel.Task, error) {
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -299,7 +299,7 @@ func (ts *TasksRPC) validateAndAuthorize(ctx context.Context, req *taskproto.Get
 		l.LogWithFields(ctx).Error(authErrorMessage)
 		return nil, fmt.Errorf(authErrorMessage)
 	}
-	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
+	sessionUserName, err := ts.GetSessionUserNameRPC(ctx, req.SessionToken)
 	if err != nil {
 		// handle the error case with appropriate response body
 		fillProtoResponse(ctx, rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
@@ -319,7 +319,7 @@ func (ts *TasksRPC) validateAndAuthorize(ctx context.Context, req *taskproto.Get
 	//is an Admin(PrivilegeConfigureUsers). If he is admin then proceed.
 	if sessionUserName != task.UserName {
 		privileges := []string{common.PrivilegeConfigureUsers}
-		authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+		authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 		if authResp.StatusCode != http.StatusOK {
 			if err != nil {
 				l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -461,7 +461,7 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 	constructCommonResponseHeader(&rsp)
 	l.LogWithFields(ctx).Debugf("Incoming request to get subtask %v", req.SubTaskID)
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -469,7 +469,7 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 		fillProtoResponse(ctx, &rsp, authResp)
 		return &rsp, nil
 	}
-	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
+	sessionUserName, err := ts.GetSessionUserNameRPC(ctx, req.SessionToken)
 	if err != nil {
 		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		l.LogWithFields(ctx).Error(authErrorMessage)
@@ -486,7 +486,7 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 	//Compare the task username with requesting session user name
 	if sessionUserName != task.UserName {
 		privileges := []string{common.PrivilegeConfigureUsers}
-		authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+		authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 		if authResp.StatusCode != http.StatusOK {
 			if err != nil {
 				l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -583,7 +583,7 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 	}
 	constructCommonResponseHeader(&rsp)
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -599,11 +599,11 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 		l.LogWithFields(ctx).Error(errorMessage)
 		return &rsp, nil
 	}
-	statusConfigureUsers, err := ts.AuthenticationRPC(req.SessionToken, []string{common.PrivilegeConfigureUsers})
+	statusConfigureUsers, err := ts.AuthenticationRPC(ctx, req.SessionToken, []string{common.PrivilegeConfigureUsers})
 	if err != nil {
 		l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
 	}
-	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
+	sessionUserName, err := ts.GetSessionUserNameRPC(ctx, req.SessionToken)
 	if err != nil {
 		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		l.LogWithFields(ctx).Error(authErrorMessage)
@@ -766,7 +766,7 @@ func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRe
 	// Validate the token, if user has ConfigureUsers privelege then proceed.
 	//Else send 401 Unautherised
 	privileges := []string{common.PrivilegeConfigureUsers}
-	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())

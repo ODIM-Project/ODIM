@@ -22,6 +22,7 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -29,10 +30,12 @@ import (
 
 	uuid "github.com/satori/go.uuid"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 )
 
 var (
@@ -43,29 +46,29 @@ var (
 )
 
 // SubmitTestEvent is a helper method to handle the submit test event request.
-func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) response.RPC {
+func (e *ExternalInterfaces) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubRequest) response.RPC {
 	var resp response.RPC
-	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Auth(ctx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		if err != nil {
 			errMsg = errMsg + ": " + err.Error()
 		}
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return authResp
 	}
 	// First get the UserName from SessionToken
-	sessionUserName, err := e.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := e.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		// handle the error case with appropriate response body
 		errMsg := "error while trying to authenticate session: " + err.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil)
 	}
 
 	testEvent, statusMessage, errMsg, msgArgs := validAndGenSubTestReq(req.PostBody)
 	if statusMessage != response.Success {
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, statusMessage, errMsg, msgArgs, nil)
 	}
 
@@ -74,7 +77,7 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 	err = JSONUnmarshal(req.PostBody, &eventObj)
 	if err != nil {
 		errMsg := "unable to parse the event request" + err.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
@@ -82,11 +85,11 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 	invalidProperties, err := RequestParamsCaseValidatorFunc(req.PostBody, eventObj)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
 	}
@@ -96,7 +99,7 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 	if err != nil {
 		// Internall error
 		errMsg := "error while trying to find the event destination"
-		l.Log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	// we need common.MessageData to find the correct destination to send test event
@@ -106,11 +109,14 @@ func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) r
 	eventUniqueID := uuid.NewV4().String()
 	for _, sub := range subscriptions {
 
-		for _, origin := range sub.OriginResources {
-			if sub.Destination != "" {
-				if filterEventsToBeForwarded(sub, message.Events[0], []string{origin}) {
-					l.Log.Info("Destination: " + sub.Destination)
-					go e.postEvent(sub.Destination, eventUniqueID, messageBytes)
+		for _, origin := range sub.EventDestination.OriginResources {
+			if sub.EventDestination.Destination != "" {
+				subscription := *sub.EventDestination
+				subscription.ID = sub.SubscriptionID
+
+				if filterEventsToBeForwarded(ctx, subscription, message.Events[0], []model.Link{{Oid: origin.Oid}}) {
+					l.LogWithFields(ctx).Info("Destination: " + sub.EventDestination.Destination)
+					go e.postEvent(evmodel.EventPost{Destination: sub.EventDestination.Destination, EventID: eventUniqueID, Message: messageBytes})
 				}
 			}
 		}

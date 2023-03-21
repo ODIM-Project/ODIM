@@ -54,7 +54,7 @@ func mockGetExternalInterface() *licenseService.ExternalInterface {
 	}
 }
 
-func mockGetSessionUserName(token string) (string, error) {
+func mockGetSessionUserName(ctx context.Context, token string) (string, error) {
 	if token == "notValidToken" {
 		return "", fmt.Errorf("invalidToken")
 	}

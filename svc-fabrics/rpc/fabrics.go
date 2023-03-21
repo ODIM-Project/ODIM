@@ -33,7 +33,7 @@ var podName = os.Getenv("POD_NAME")
 
 // Fabrics struct helps to register service
 type Fabrics struct {
-	IsAuthorizedRPC  func(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error)
+	IsAuthorizedRPC  func(ctx context.Context, sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error)
 	ContactClientRPC func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 

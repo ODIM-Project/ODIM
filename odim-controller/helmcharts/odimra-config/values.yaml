@@ -8,3 +8,5 @@ odimra:
   logLevel:
   logFormat:
   keyExpiryInterval:
+  eventForwardingWorkerPoolCount:
+  eventSaveWorkerPoolCount:

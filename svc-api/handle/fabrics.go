@@ -43,7 +43,7 @@ func (f *FabricRPCs) GetFabricCollection(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting fabric collection with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -66,6 +66,7 @@ func (f *FabricRPCs) GetFabricCollection(ctx iris.Context) {
 	resp.Header = map[string]string{
 		"Allow": `"GET"`,
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting all fabric collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -80,7 +81,7 @@ func (f *FabricRPCs) GetFabric(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for creating fabric with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -103,6 +104,7 @@ func (f *FabricRPCs) GetFabric(ctx iris.Context) {
 	resp.Header = map[string]string{
 		"Allow": `"GET"`,
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for creating fabric is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -117,7 +119,7 @@ func (f *FabricRPCs) GetFabricSwitchCollection(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting fabric switch collection with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -140,6 +142,7 @@ func (f *FabricRPCs) GetFabricSwitchCollection(ctx iris.Context) {
 	resp.Header = map[string]string{
 		"Allow": `"GET"`,
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting all fabric switch collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -154,7 +157,7 @@ func (f *FabricRPCs) GetFabricSwitch(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for creating fabric switch with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -177,6 +180,7 @@ func (f *FabricRPCs) GetFabricSwitch(ctx iris.Context) {
 	resp.Header = map[string]string{
 		"Allow": `"GET"`,
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for creating fabric switch is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -191,7 +195,7 @@ func (f *FabricRPCs) GetSwitchPortCollection(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting switch port collection with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -214,6 +218,7 @@ func (f *FabricRPCs) GetSwitchPortCollection(ctx iris.Context) {
 	resp.Header = map[string]string{
 		"Allow": `"GET"`,
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting switch port collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -228,7 +233,7 @@ func (f *FabricRPCs) GetSwitchPort(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting switch port with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -251,6 +256,7 @@ func (f *FabricRPCs) GetSwitchPort(ctx iris.Context) {
 	resp.Header = map[string]string{
 		"Allow": `"GET", "PATCH"`,
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting switch port is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -265,7 +271,7 @@ func (f *FabricRPCs) GetFabricZoneCollection(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting fabric zone collection with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -288,6 +294,7 @@ func (f *FabricRPCs) GetFabricZoneCollection(ctx iris.Context) {
 	resp.Header = map[string]string{
 		"Allow": `"GET", "POST"`,
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting fabric zone collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -302,7 +309,7 @@ func (f *FabricRPCs) GetFabricZone(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting fabric zone with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -325,6 +332,7 @@ func (f *FabricRPCs) GetFabricZone(ctx iris.Context) {
 	resp.Header = map[string]string{
 		"Allow": `"GET", "PUT", "PATCH", "DELETE"`,
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting fabric zone is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -339,7 +347,7 @@ func (f *FabricRPCs) GetFabricEndPointCollection(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting fabric endpoint collection with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -362,6 +370,7 @@ func (f *FabricRPCs) GetFabricEndPointCollection(ctx iris.Context) {
 	resp.Header = map[string]string{
 		"Allow": `"GET", "POST"`,
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting fabric endpoint collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -376,7 +385,7 @@ func (f *FabricRPCs) GetFabricEndPoints(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting fabric endpoint with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -399,6 +408,7 @@ func (f *FabricRPCs) GetFabricEndPoints(ctx iris.Context) {
 	resp.Header = map[string]string{
 		"Allow": `"GET", "PUT", "PATCH", "DELETE"`,
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting fabric endpoint is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -413,7 +423,7 @@ func (f *FabricRPCs) GetFabricAddressPoolCollection(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting fabric address pool collection with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -436,6 +446,7 @@ func (f *FabricRPCs) GetFabricAddressPoolCollection(ctx iris.Context) {
 	resp.Header = map[string]string{
 		"Allow": `"GET",  "POST"`,
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting fabric address pool collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -450,7 +461,7 @@ func (f *FabricRPCs) GetFabricAddressPool(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting fabric address pool with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -473,6 +484,7 @@ func (f *FabricRPCs) GetFabricAddressPool(ctx iris.Context) {
 	resp.Header = map[string]string{
 		"Allow": `"GET", "PUT", "PATCH", "DELETE"`,
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting fabric address pool is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -521,6 +533,7 @@ func (f *FabricRPCs) UpdateFabricResource(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for updating fabric resources with request url %s and request body %s", req.URL, string(request))
 	req.RequestBody = request
 	resp, err := f.UpdateFabricResourceRPC(ctxt, req)
 	if err != nil && resp == nil {
@@ -532,7 +545,7 @@ func (f *FabricRPCs) UpdateFabricResource(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for updating fabric resource is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -547,7 +560,7 @@ func (f *FabricRPCs) DeleteFabricResource(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for deleting fabric resources with request url %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -567,7 +580,7 @@ func (f *FabricRPCs) DeleteFabricResource(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for deleting fabric resource is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

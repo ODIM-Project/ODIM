@@ -25,7 +25,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 )
 
-//CreateTask function is to contact the svc-task through the rpc call
+// CreateTask function is to contact the svc-task through the rpc call
 func CreateTask(ctx context.Context, sessionUserName string) (string, error) {
 	conn, errConn := ODIMService.Client(Tasks)
 	if errConn != nil {
@@ -68,17 +68,17 @@ func CreateChildTask(ctx context.Context, sessionUserName string, parentTaskID s
 	return response.TaskURI, err
 }
 
-//UpdateTask function is to contact the svc-task through the rpc call
+// UpdateTask function is to contact the svc-task through the rpc call
 func UpdateTask(ctx context.Context, taskID string, taskState string, taskStatus string,
 	percentComplete int32, payLoad *taskproto.Payload, endTime time.Time) error {
 
 	tspb, err := ptypes.TimestampProto(endTime)
 	if err != nil {
-		return fmt.Errorf("Failed to convert the time to protobuff timestamp: %s", err.Error())
+		return fmt.Errorf("failed to convert the time to proto buff timestamp: %s", err.Error())
 	}
 	conn, errConn := ODIMService.Client(Tasks)
 	if errConn != nil {
-		return fmt.Errorf("Failed to create client connection: %s", errConn.Error())
+		return fmt.Errorf("failed to create client connection: %s", errConn.Error())
 	}
 	defer conn.Close()
 	reqCtx := common.CreateNewRequestContext(ctx)

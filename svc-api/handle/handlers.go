@@ -16,6 +16,7 @@
 package handle
 
 import (
+	"context"
 	"encoding/json"
 	"encoding/xml"
 	"io/ioutil"
@@ -810,7 +811,7 @@ func GetMetadata(ctx iris.Context) {
 
 // Registry defines Auth which helps with authorization
 type Registry struct {
-	Auth func(string, []string, []string) (errResponse.RPC, error)
+	Auth func(context.Context, string, []string, []string) (errResponse.RPC, error)
 }
 
 // GetRegistryFileCollection is show available collection of registry files.
@@ -827,7 +828,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	authResp, err := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := r.Auth(ctxt, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := "error while trying to authenticate session"
 		if err != nil {
@@ -918,7 +919,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	authResp, err := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := r.Auth(ctxt, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := "error while trying to authenticate session"
 		if err != nil {
@@ -1009,6 +1010,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		}
 	}
 	regFileID = strings.Replace(regFileID, "#", "%23", -1)
+	l.LogWithFields(ctxt).Debugf("Retriveing message registry file with file id %s", regFileID)
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
@@ -1017,7 +1019,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	authResp, err := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := r.Auth(ctxt, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := "error while trying to authenticate session"
 		if err != nil {
@@ -1055,7 +1057,6 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		}
 	}
 	var data interface{}
-	l.LogWithFields(ctxt).Error("Before Unmarshalling Data")
 	err = json.Unmarshal(content, &data)
 	if err != nil {
 		//return fmt.Errorf("error while trying to unmarshal the config data: %v", err)

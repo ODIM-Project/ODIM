@@ -16,6 +16,7 @@
 package rfpmessagebus
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -31,7 +32,7 @@ import (
 
 // Publish function will handle events request in two originofcondition format
 // originofcondition can be with or without @odata.id
-func Publish(data interface{}) bool {
+func Publish(ctx context.Context, data interface{}) bool {
 	if data == nil {
 		log.Error("Nil data passed to event publisher")
 		return false

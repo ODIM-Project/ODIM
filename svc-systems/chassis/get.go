@@ -47,8 +47,7 @@ var (
 // There will be two return values for the function. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (h *Get) Handle(ctx context.Context, req *chassisproto.GetChassisRequest) response.RPC {
-	//managed chassis lookup
-	l.LogWithFields(ctx).Debugln("Inside GetChassisRequest Handle")
+	//managed chassis lookup	
 	managedChassis := new(dmtf.Chassis)
 	e := h.findInMemoryDB("Chassis", req.URL, managedChassis)
 	managedChassis.ID = req.RequestParam

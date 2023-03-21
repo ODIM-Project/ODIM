@@ -30,7 +30,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 )
 
-func mockIsAuthorized(sessionToken string, privileges []string) (response.RPC, error) {
+func mockIsAuthorized(ctx context.Context, sessionToken string, privileges []string) (response.RPC, error) {
 	switch sessionToken {
 	case "validToken":
 		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
@@ -51,7 +51,7 @@ func mockIsAuthorized(sessionToken string, privileges []string) (response.RPC, e
 
 	}
 }
-func mockGetSessionUserName(sessionToken string) (string, error) {
+func mockGetSessionUserName(ctx context.Context, sessionToken string) (string, error) {
 	var user string
 	switch sessionToken {
 	case "validToken":

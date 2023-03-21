@@ -103,7 +103,6 @@ func Consume(topicName string) {
 		l.Log.Error(err.Error())
 		return
 	}
-	return
 }
 
 // SubscribeCtrlMsgQueue creates a consumer for the kafka topic
@@ -123,7 +122,6 @@ func SubscribeCtrlMsgQueue(topicName string) {
 		l.Log.Error(err.Error())
 		return
 	}
-	return
 }
 
 // consumeCtrlMsg consume control messages
@@ -137,15 +135,12 @@ func consumeCtrlMsg(event interface{}) {
 		writeEventToJobQueue(redfishEvent)
 	} else {
 		if err := json.Unmarshal(data, &ctrlMessage); err != nil {
-			l.Log.Error("error while unmarshaling the event" + err.Error())
+			l.Log.Error("error while unmarshal the event" + err.Error())
 			return
 		}
 	}
 	msg := []interface{}{ctrlMessage}
 	go common.RunWriteWorkers(CtrlMsgRecvQueue, msg, 1, done)
-	// range on the channel done, on receiving data on this
-	// which indicates write was completed, break the loop
-	// and close the channel
 	for range done {
 		break
 	}

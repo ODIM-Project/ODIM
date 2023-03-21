@@ -15,6 +15,7 @@
 package rpc
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -24,7 +25,7 @@ import (
 
 func Test_auth(t *testing.T) {
 	ctx := mockContext()
-	authFunc := func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+	authFunc := func(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 		return response.RPC{}, nil
 	}
 	callback := func() response.RPC { return response.RPC{} }

@@ -16,6 +16,7 @@
 package common
 
 import (
+	"context"
 	"sync"
 )
 
@@ -26,11 +27,11 @@ import (
 // 1) jobChannel - an out channel of type interface on which the data is passed
 // 2) process - a function which will do some logical tasks by taking data from jobChan
 // 3) workerCount - number of workers required for doing the process
-func RunReadWorkers(jobChannel <-chan interface{}, jobProcess func(interface{}) bool, workerCount int) {
+func RunReadWorkers(ctx context.Context, jobChannel <-chan interface{}, jobProcess func(context.Context, interface{}) bool, workerCount int) {
 	for w := 0; w < workerCount; w++ {
 		go func() {
 			for j := range jobChannel {
-				jobProcess(j)
+				jobProcess(ctx, j)
 			}
 		}()
 	}

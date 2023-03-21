@@ -14,7 +14,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-telemetry/tmodel"
 )
 
-func MockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+func MockIsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken == "InvalidToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
@@ -48,14 +48,14 @@ func MockContactClient(ctx context.Context, url, method, token string, odataID s
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
-func MockGetResource(ctx context.Context,table, key string, dbType common.DbType) (string, *errors.Error) {
+func MockGetResource(ctx context.Context, table, key string, dbType common.DbType) (string, *errors.Error) {
 	if key == "error" {
 		return "", &errors.Error{}
 	}
 	return "body", nil
 }
 
-func MockGetAllKeysFromTable(ctx context.Context,table string, dbType common.DbType) ([]string, error) {
+func MockGetAllKeysFromTable(ctx context.Context, table string, dbType common.DbType) ([]string, error) {
 	if table == "Plugin" {
 		return []string{"ILO", "GRF"}, nil
 	}

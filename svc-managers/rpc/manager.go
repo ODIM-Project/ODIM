@@ -32,7 +32,7 @@ import (
 
 // Managers struct helps to register service
 type Managers struct {
-	GetSessionUserName func(string) (string, error)
+	GetSessionUserName func(context.Context, string) (string, error)
 	CreateTask         func(ctx context.Context, sessionUserName string) (string, error)
 	SavePluginTaskInfo func(ctx context.Context, pluginIP, pluginServerName, odimTaskID, pluginTaskMonURL string) error
 	EI                 *managers.ExternalInterface

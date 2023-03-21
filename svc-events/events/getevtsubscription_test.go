@@ -21,6 +21,7 @@
 package events
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -151,13 +152,13 @@ func TestGetEventSubscription(t *testing.T) {
 func TestExternalInterfaces_IsAggregateHaveSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
 	pc := getMockMethods()
-	pc.Auth = func(s1 string, s2, s3 []string) (response.RPC, error) {
+	pc.Auth = func(ctx context.Context, s1 string, s2, s3 []string) (response.RPC, error) {
 		return response.RPC{
 			StatusCode: 400,
 		}, nil
 	}
 	pc.IsAggregateHaveSubscription(evcommon.MockContext(), &eventsproto.EventUpdateRequest{})
-	pc.Auth = func(s1 string, s2, s3 []string) (response.RPC, error) {
+	pc.Auth = func(ctx context.Context, s1 string, s2, s3 []string) (response.RPC, error) {
 		return response.RPC{
 			StatusCode: 200,
 		}, nil

@@ -48,7 +48,7 @@ var (
 // SubmitTestEvent is a helper method to handle the submit test event request.
 func (e *ExternalInterfaces) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubRequest) response.RPC {
 	var resp response.RPC
-	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Auth(ctx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		if err != nil {
@@ -58,7 +58,7 @@ func (e *ExternalInterfaces) SubmitTestEvent(ctx context.Context, req *eventspro
 		return authResp
 	}
 	// First get the UserName from SessionToken
-	sessionUserName, err := e.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := e.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		// handle the error case with appropriate response body
 		errMsg := "error while trying to authenticate session: " + err.Error()

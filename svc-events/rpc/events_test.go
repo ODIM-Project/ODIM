@@ -136,7 +136,7 @@ func TestCreateEventSubscription(t *testing.T) {
 
 	esRespTest2, _ := events.CreateEventSubscription(evcommon.MockContext(), req)
 	assert.Equal(t, int(esRespTest2.StatusCode), http.StatusInternalServerError, "Status code should be StatusUnauthorized.")
-	events.Connector.GetSessionUserName = func(sessionToken string) (string, error) {
+	events.Connector.GetSessionUserName = func(ctx context.Context, sessionToken string) (string, error) {
 		return "", fmt.Errorf("")
 	}
 	esRespTest3, _ := events.CreateEventSubscription(evcommon.MockContext(), req)

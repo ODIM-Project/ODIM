@@ -29,10 +29,10 @@ import (
 
 // RoleRPCs defines all the RPC methods in role
 type RoleRPCs struct {
-	GetAllRolesRPC func(context.Context,roleproto.GetRoleRequest) (*roleproto.RoleResponse, error)
-	GetRoleRPC     func(context.Context,roleproto.GetRoleRequest) (*roleproto.RoleResponse, error)
-	UpdateRoleRPC  func(context.Context,roleproto.UpdateRoleRequest) (*roleproto.RoleResponse, error)
-	DeleteRoleRPC  func(context.Context,roleproto.DeleteRoleRequest) (*roleproto.RoleResponse, error)
+	GetAllRolesRPC func(context.Context, roleproto.GetRoleRequest) (*roleproto.RoleResponse, error)
+	GetRoleRPC     func(context.Context, roleproto.GetRoleRequest) (*roleproto.RoleResponse, error)
+	UpdateRoleRPC  func(context.Context, roleproto.UpdateRoleRequest) (*roleproto.RoleResponse, error)
+	DeleteRoleRPC  func(context.Context, roleproto.DeleteRoleRequest) (*roleproto.RoleResponse, error)
 }
 
 // GetAllRoles defines the GetAllRoles iris handler.
@@ -42,6 +42,7 @@ type RoleRPCs struct {
 func (r *RoleRPCs) GetAllRoles(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
+	l.LogWithFields(ctxt).Debug("Incoming request received for the getting all roles")
 	req := roleproto.GetRoleRequest{SessionToken: ctx.Request().Header.Get("X-Auth-Token")}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -52,7 +53,7 @@ func (r *RoleRPCs) GetAllRoles(ctx iris.Context) {
 		return
 	}
 
-	resp, err := r.GetAllRolesRPC(ctxt,req)
+	resp, err := r.GetAllRolesRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -62,7 +63,7 @@ func (r *RoleRPCs) GetAllRoles(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctx).Debugf("Outgoing response for Getting all roles is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -87,8 +88,8 @@ func (r *RoleRPCs) GetRole(ctx iris.Context) {
 		return
 	}
 	req.Id = ctx.Params().Get("id")
-
-	resp, err := r.GetRoleRPC(ctxt,req)
+	l.LogWithFields(ctxt).Debugf("Incoming request received for the getting a role with id %s", req.Id)
+	resp, err := r.GetRoleRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -103,6 +104,7 @@ func (r *RoleRPCs) GetRole(ctx iris.Context) {
 	} else {
 		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
 	}
+	l.LogWithFields(ctx).Debugf("Outgoing response for Getting a role is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -141,8 +143,9 @@ func (r *RoleRPCs) UpdateRole(ctx iris.Context) {
 		return
 	}
 	req.Id = ctx.Params().Get("id")
+	l.LogWithFields(ctxt).Debugf("Incoming request received for the updating a role with id %s", req.Id)
 	req.UpdateRequest, _ = json.Marshal(&roleReq)
-	resp, err := r.UpdateRoleRPC(ctxt,req)
+	resp, err := r.UpdateRoleRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -152,7 +155,7 @@ func (r *RoleRPCs) UpdateRole(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctx).Debugf("Outgoing response for updating a role is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -174,8 +177,8 @@ func (r *RoleRPCs) DeleteRole(ctx iris.Context) {
 		return
 	}
 	req.ID = ctx.Params().Get("id")
-
-	resp, err := r.DeleteRoleRPC(ctxt,req)
+	l.LogWithFields(ctxt).Debugf("Incoming request received for the deleting a role with id %s", req.ID)
+	resp, err := r.DeleteRoleRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -185,7 +188,7 @@ func (r *RoleRPCs) DeleteRole(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctx).Debugf("Outgoing response for deleting a role is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

@@ -41,7 +41,7 @@ import (
 // GetEventSubscriptionsDetails collects subscription data against given subscription id
 func (e *ExternalInterfaces) GetEventSubscriptionsDetails(ctx context.Context, req *eventsproto.EventRequest) response.RPC {
 	var resp response.RPC
-	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Auth(ctx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v",
 			authResp.StatusCode, authResp.StatusMessage)
@@ -106,7 +106,7 @@ func (e *ExternalInterfaces) GetEventSubscriptionsDetails(ctx context.Context, r
 // GetEventSubscriptionsCollection collects all subscription details
 func (e *ExternalInterfaces) GetEventSubscriptionsCollection(ctx context.Context, req *eventsproto.EventRequest) response.RPC {
 	var resp response.RPC
-	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Auth(ctx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v",
 			authResp.StatusCode, authResp.StatusMessage)
@@ -156,7 +156,7 @@ func (e *ExternalInterfaces) GetEventSubscriptionsCollection(ctx context.Context
 
 // IsAggregateHaveSubscription validate any subscription contain aggregate id, return status
 func (e *ExternalInterfaces) IsAggregateHaveSubscription(ctx context.Context, req *eventsproto.EventUpdateRequest) bool {
-	authResp, err := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Auth(ctx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v",
 			authResp.StatusCode, authResp.StatusMessage)

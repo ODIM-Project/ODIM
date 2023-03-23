@@ -32,7 +32,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabrics"
 )
 
-func mockAuth(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error) {
+func mockAuth(ctx context.Context, sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken == "valid" {
 		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 	} else if sessionToken == "invalid" {

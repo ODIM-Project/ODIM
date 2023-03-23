@@ -32,8 +32,8 @@ import (
 
 // Systems struct helps to register service
 type Systems struct {
-	IsAuthorizedRPC    func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
-	GetSessionUserName func(string) (string, error)
+	IsAuthorizedRPC    func(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
+	GetSessionUserName func(context.Context, string) (string, error)
 	CreateTask         func(ctx context.Context, sessionUserName string) (string, error)
 	UpdateTask         func(ctx context.Context, task common.TaskData) error
 	EI                 *systems.ExternalInterface
@@ -49,10 +49,9 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	l.LogWithFields(ctx).Debugf("incoming GetSystemResource request with %s", req.URL)
-	l.LogWithFields(ctx).Info("Inside GetSystemResource function (RPC)")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -79,10 +78,9 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SystemService)
 	l.LogWithFields(ctx).Debugf("incoming GetSystemsCollection request with %s", req.URL)
-	l.LogWithFields(ctx).Info("Inside GetSystemsCollection function (RPC)")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -108,7 +106,7 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 	l.LogWithFields(ctx).Debugf("incoming GetSystems request with %s", req.URL)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -139,7 +137,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	l.LogWithFields(ctx).Debugln("incoming ComputerSystemReset request")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -147,7 +145,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
-	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
@@ -201,7 +199,7 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 	l.LogWithFields(ctx).Debugf("incoming SetDefaultBootOrder request")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -231,7 +229,7 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 	l.LogWithFields(ctx).Debugf("incoming ChangeBiosSettings request")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -244,7 +242,7 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 		DevicePassword: common.DecryptWithPrivateKey,
 		UpdateTask:     s.UpdateTask,
 	}
-	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
@@ -287,7 +285,7 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 	l.LogWithFields(ctx).Debugf("incoming ChangeBootOrderSettings request for SystemID: %s", req.SystemID)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -295,7 +293,7 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
-	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
@@ -351,7 +349,7 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	l.LogWithFields(ctx).Debugf("incoming CreateVolume request")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -359,7 +357,7 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
-	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
@@ -408,7 +406,7 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	l.LogWithFields(ctx).Debugf("incoming DeleteVolume request")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())

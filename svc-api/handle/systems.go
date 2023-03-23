@@ -42,13 +42,13 @@ type SystemRPCs struct {
 
 // GetSystemsCollection fetches all systems
 func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
-	ctxt := ctx.Request().Context()
-	l.LogWithFields(ctxt).Info("Inside GetSystemCollection function (handler)")
+	ctxt := ctx.Request().Context()	
 	defer ctx.Next()
 	req := systemsproto.GetSystemsRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting systems collection %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -67,6 +67,7 @@ func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting systems collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -83,6 +84,7 @@ func (sys *SystemRPCs) GetSystem(ctx iris.Context) {
 		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting system with URL %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -101,7 +103,7 @@ func (sys *SystemRPCs) GetSystem(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting system details is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -121,6 +123,7 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting system resources with URL %s", req.URL)
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -151,6 +154,7 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 	default:
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting systems resources is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -189,7 +193,7 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 		SystemID:     systemID,
 		RequestBody:  request,
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for computer system reset with request body %s", string(request))
 	resp, err := sys.SystemResetRPC(ctxt, resetRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
@@ -200,7 +204,7 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for computer system reset is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -223,6 +227,7 @@ func (sys *SystemRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for setting default boot order with request id %s", req.SystemID)
 	resp, err := sys.SetDefaultBootOrderRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
@@ -233,7 +238,7 @@ func (sys *SystemRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for setting default boot order is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -266,7 +271,7 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for changing bios setting with request body %s", string(request))
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -291,7 +296,7 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for changing bios setting is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -324,7 +329,7 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for changing boot order setting with request body %s", string(request))
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -349,7 +354,7 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting changing boot order setting is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -382,7 +387,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for creating volume with request body %s", string(request))
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -408,7 +413,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for creating a volume is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -432,7 +437,7 @@ func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for deleting volume with request body %s", string(request))
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -459,7 +464,7 @@ func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for deleting a volume is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

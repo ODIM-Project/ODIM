@@ -70,7 +70,7 @@ func generateRPCResponse(rpcResp response.RPC, licenseResp *licenseproto.GetLice
 // the RPC call to task service and it will prepare custom task response to the user
 // The function returns the ID of created task back.
 func CreateTaskAndResponse(ctx context.Context, l *Licenses, sessionToken string, resp *licenseproto.GetLicenseResponse) (string, string, error) {
-	sessionUserName, err := l.connector.External.GetSessionUserName(sessionToken)
+	sessionUserName, err := l.connector.External.GetSessionUserName(ctx, sessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		fillProtoResponse(ctx, resp, common.GeneralError(http.StatusUnauthorized,

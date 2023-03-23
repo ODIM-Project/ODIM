@@ -86,7 +86,7 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 	var resp response.RPC
 	var targetURI = "/redfish/v1/Systems/" + req.SystemID + "/Storage/" + req.StorageInstance + "/Volumes"
 	//create task
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI,
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI,
 		UpdateTask: pc.UpdateTask, TaskRequest: string(req.RequestBody)}
 	// spliting the uuid and system id
 	requestData := strings.SplitN(req.SystemID, ".", 2)

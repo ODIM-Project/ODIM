@@ -16,6 +16,8 @@
 package auth
 
 import (
+	"context"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/sirupsen/logrus"
@@ -24,12 +26,12 @@ import (
 var log = logrus.New()
 
 // Authentication is used to authenticate using session token from svc-account-session
-func Authentication(sessionToken string, privileges []string) (response.RPC, error) {
+func Authentication(ctx context.Context, sessionToken string, privileges []string) (response.RPC, error) {
 	oemprivileges := []string{}
-	return srv.IsAuthorized(sessionToken, privileges, oemprivileges)
+	return srv.IsAuthorized(ctx, sessionToken, privileges, oemprivileges)
 }
 
 // GetSessionUserName is used to authenticate using session token from svc-account-session
-func GetSessionUserName(sessionToken string) (string, error) {
-	return srv.GetSessionUserName(sessionToken)
+func GetSessionUserName(ctx context.Context, sessionToken string) (string, error) {
+	return srv.GetSessionUserName(ctx, sessionToken)
 }

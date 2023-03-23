@@ -32,7 +32,7 @@ func (l *Licenses) GetLicenseService(ctx context.Context, req *licenseproto.GetL
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.LicenseService, podName)
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
@@ -49,7 +49,7 @@ func (l *Licenses) GetLicenseCollection(ctx context.Context, req *licenseproto.G
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.LicenseService, podName)
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
@@ -66,7 +66,7 @@ func (l *Licenses) GetLicenseResource(ctx context.Context, req *licenseproto.Get
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.LicenseService, podName)
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
@@ -83,7 +83,7 @@ func (l *Licenses) InstallLicenseService(ctx context.Context, req *licenseproto.
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.LicenseService, podName)
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())

@@ -14,6 +14,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"sync"
@@ -110,7 +111,11 @@ func main() {
 	// TODO: configure the job queue size
 	jobQueueSize := 10
 	tmb.TaskEventRecvQueue, tmb.TaskEventProcQueue = common.CreateJobQueue(jobQueueSize)
-	common.RunReadWorkers(tmb.TaskEventProcQueue, task.ProcessTaskEvents, 5)
+
+	ctx := context.TODO()
+	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
+	ctx = context.WithValue(ctx, common.ThreadName, common.ProcessTaskEvents)
+	common.RunReadWorkers(ctx, tmb.TaskEventProcQueue, task.ProcessTaskEvents, 5)
 	go tmb.SubscribeTaskEventsQueue(config.Data.MessageBusConf.OdimTaskEventsQueue)
 
 	tick := &tmodel.Tick{

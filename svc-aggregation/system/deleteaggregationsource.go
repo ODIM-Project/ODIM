@@ -416,7 +416,7 @@ func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index
 		}
 	}()
 	// Delete Subscription on odimra and also on device
-	subResponse, err := e.DeleteEventSubscription(key)
+	subResponse, err := e.DeleteEventSubscription(ctx, key)
 	if err != nil && subResponse == nil {
 		errMsg := fmt.Sprintf("error while trying to delete subscriptions: %v", err)
 		l.LogWithFields(ctx).Error(errMsg)

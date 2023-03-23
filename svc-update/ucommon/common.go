@@ -286,7 +286,7 @@ func getPluginStatus(ctx context.Context, plugin umodel.Plugin) bool {
 		PluginPort:              plugin.Port,
 		PluginUsername:          plugin.Username,
 		PluginUserPassword:      string(plugin.Password),
-		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		PluginPreferredAuthType: plugin.PreferredAuthType,
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 	}
 	status, _, _, err := pluginStatus.CheckStatus()

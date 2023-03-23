@@ -22,7 +22,7 @@ service Events {
     rpc DeleteEventSubscription(EventRequest) returns (EventSubResponse) {}
     rpc CreateDefaultEventSubscription(DefaultEventSubRequest) returns (DefaultEventSubResponse) {}
     rpc GetEventSubscriptionsCollection(EventRequest) returns (EventSubResponse) {}
-    rpc SubsribeEMB(SubscribeEMBRequest) returns (SubscribeEMBResponse){}
+    rpc SubscribeEMB(SubscribeEMBRequest) returns (SubscribeEMBResponse){}
     rpc UpdateEventSubscriptionsRPC(EventUpdateRequest) returns (SubscribeEMBResponse){}
     rpc RemoveEventSubscriptionsRPC(EventUpdateRequest) returns (SubscribeEMBResponse){}
     rpc IsAggregateHaveSubscription(EventUpdateRequest) returns (SubscribeEMBResponse){}

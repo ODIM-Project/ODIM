@@ -80,7 +80,6 @@ func (e *ExternalInterfaces) SubmitTestEvent(ctx context.Context, req *eventspro
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
-
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := RequestParamsCaseValidatorFunc(req.PostBody, eventObj)
 	if err != nil {
@@ -88,16 +87,15 @@ func (e *ExternalInterfaces) SubmitTestEvent(ctx context.Context, req *eventspro
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
-		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in upper camel case "
 		l.LogWithFields(ctx).Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
 	}
-
 	// Find out all the subscription destinations of the requesting user
 	subscriptions, err := e.GetEvtSubscriptions(sessionUserName)
 	if err != nil {
-		// Internall error
+		// Internal error
 		errMsg := "error while trying to find the event destination"
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
@@ -108,7 +106,6 @@ func (e *ExternalInterfaces) SubmitTestEvent(ctx context.Context, req *eventspro
 	messageBytes, _ := json.Marshal(message)
 	eventUniqueID := uuid.NewV4().String()
 	for _, sub := range subscriptions {
-
 		for _, origin := range sub.EventDestination.OriginResources {
 			if sub.EventDestination.Destination != "" {
 				subscription := *sub.EventDestination
@@ -116,7 +113,8 @@ func (e *ExternalInterfaces) SubmitTestEvent(ctx context.Context, req *eventspro
 
 				if filterEventsToBeForwarded(ctx, subscription, message.Events[0], []model.Link{{Oid: origin.Oid}}) {
 					l.LogWithFields(ctx).Info("Destination: " + sub.EventDestination.Destination)
-					go e.postEvent(evmodel.EventPost{Destination: sub.EventDestination.Destination, EventID: eventUniqueID, Message: messageBytes})
+					go e.postEvent(evmodel.EventPost{Destination: sub.EventDestination.Destination, EventID: eventUniqueID,
+						Message: messageBytes})
 				}
 			}
 		}
@@ -141,10 +139,13 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 		case string:
 			testEvent.MessageID = v
 		default:
-			return nil, response.PropertyValueTypeError, "error: required parameter MessageId must be of type string", []interface{}{fmt.Sprintf("%v", v), "MessageId"}
+			return nil, response.PropertyValueTypeError,
+				"error: required parameter MessageId must be of type string",
+				[]interface{}{fmt.Sprintf("%v", v), "MessageId"}
 		}
 	} else {
-		return nil, response.PropertyMissing, "error: MessageId is a required parameter", []interface{}{"MessageId"}
+		return nil, response.PropertyMissing, "error: MessageId is a required parameter",
+			[]interface{}{"MessageId"}
 	}
 
 	if val, ok := req["EventGroupId"]; ok {
@@ -154,7 +155,9 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 		case float64:
 			testEvent.EventGroupID = int(v)
 		default:
-			return nil, response.PropertyValueTypeError, "error: optional parameter EventGroupId must be of type integer", []interface{}{fmt.Sprintf("%v", v), "EventGroupId"}
+			return nil, response.PropertyValueTypeError,
+				"error: optional parameter EventGroupId must be of type integer",
+				[]interface{}{fmt.Sprintf("%v", v), "EventGroupId"}
 		}
 	}
 
@@ -163,7 +166,9 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 		case string:
 			testEvent.EventID = v
 		default:
-			return nil, response.PropertyValueTypeError, "error: optional parameter EventId must be of type string", []interface{}{fmt.Sprintf("%v", v), "EventId"}
+			return nil, response.PropertyValueTypeError,
+				"error: optional parameter EventId must be of type string",
+				[]interface{}{fmt.Sprintf("%v", v), "EventId"}
 		}
 	}
 
@@ -172,13 +177,17 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 		case string:
 			_, err := time.Parse(time.RFC3339, v)
 			if err != nil {
-				return nil, response.PropertyValueTypeError, "error: optional parameter EventTimestamp must be of valid date time format", []interface{}{fmt.Sprintf("%v", v), "EventTimestamp"}
+				return nil, response.PropertyValueTypeError,
+					"error: optional parameter EventTimestamp must be of valid date time format",
+					[]interface{}{fmt.Sprintf("%v", v), "EventTimestamp"}
 
 			}
 			testEvent.EventTimestamp = v
 
 		default:
-			return nil, response.PropertyValueTypeError, "error: optional parameter EventTimestamp must be of type string", []interface{}{fmt.Sprintf("%v", v), "EventTimestamp"}
+			return nil, response.PropertyValueTypeError,
+				"error: optional parameter EventTimestamp must be of type string",
+				[]interface{}{fmt.Sprintf("%v", v), "EventTimestamp"}
 		}
 	}
 
@@ -188,10 +197,14 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 			if ok = validEventType(v); ok {
 				testEvent.EventType = v
 			} else {
-				return nil, response.PropertyValueNotInList, "error: optional parameter EventType must have allowed value", []interface{}{fmt.Sprintf("%v", v), "EventType"}
+				return nil, response.PropertyValueNotInList,
+					"error: optional parameter EventType must have allowed value",
+					[]interface{}{fmt.Sprintf("%v", v), "EventType"}
 			}
 		default:
-			return nil, response.PropertyValueTypeError, "error: optional parameter EventType must be of type string", []interface{}{fmt.Sprintf("%v", v), "EventType"}
+			return nil, response.PropertyValueTypeError,
+				"error: optional parameter EventType must be of type string",
+				[]interface{}{fmt.Sprintf("%v", v), "EventType"}
 		}
 	}
 
@@ -200,7 +213,9 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 		case string:
 			testEvent.Message = v
 		default:
-			return nil, response.PropertyValueTypeError, "error: optional parameter Message must be of type string", []interface{}{fmt.Sprintf("%v", v), "Message"}
+			return nil, response.PropertyValueTypeError,
+				"error: optional parameter Message must be of type string",
+				[]interface{}{fmt.Sprintf("%v", v), "Message"}
 		}
 	}
 
@@ -214,19 +229,25 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 			json.Unmarshal(msg, &msgArgs)
 			testEvent.MessageArgs = msgArgs
 		default:
-			return nil, response.PropertyValueTypeError, "error: optional parameter MessageArgs must be of type array(string)", []interface{}{fmt.Sprintf("%v", v), "MessageArgs"}
+			return nil, response.PropertyValueTypeError,
+				"error: optional parameter MessageArgs must be of type array(string)",
+				[]interface{}{fmt.Sprintf("%v", v), "MessageArgs"}
 		}
 	}
 
 	if val, ok := req["OriginOfCondition"]; ok {
 		switch v := val.(type) {
 		case string:
-			// As per EventService spec in the SubmitTestEvent schema OriginOfCondition is a string. However we need to convert this to an object as the event publisher will drop these events.
+			// As per EventService spec in the SubmitTestEvent schema
+			// OriginOfCondition is a string. However we need to convert
+			// this to an object as the event publisher will drop these events.
 			testEvent.OriginOfCondition = &common.Link{
 				Oid: v,
 			}
 		default:
-			return nil, response.PropertyValueTypeError, "error: optional parameter OriginOfCondition must be of type string", []interface{}{fmt.Sprintf("%v", v), "OriginOfCondition"}
+			return nil, response.PropertyValueTypeError,
+				"error: optional parameter OriginOfCondition must be of type string",
+				[]interface{}{fmt.Sprintf("%v", v), "OriginOfCondition"}
 		}
 	}
 
@@ -236,10 +257,14 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 			if ok = validSeverity(v); ok {
 				testEvent.Severity = v
 			} else {
-				return nil, response.PropertyValueNotInList, "error: optional parameter Severity must have allowed value", []interface{}{fmt.Sprintf("%v", v), "Severity"}
+				return nil, response.PropertyValueNotInList,
+					"error: optional parameter Severity must have allowed value",
+					[]interface{}{fmt.Sprintf("%v", v), "Severity"}
 			}
 		default:
-			return nil, response.PropertyValueTypeError, "error: optional parameter Severity must be of type string", []interface{}{fmt.Sprintf("%v", v), "Severity"}
+			return nil, response.PropertyValueTypeError,
+				"error: optional parameter Severity must be of type string",
+				[]interface{}{fmt.Sprintf("%v", v), "Severity"}
 		}
 	}
 

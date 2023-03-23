@@ -384,7 +384,7 @@ func (e *ExternalInterfaces) retryEventSubscriptionOperation(ctx context.Context
 
 	response, err := e.callPlugin(ctx, req)
 	if err != nil {
-		errorMessage := "error while unmarshaling the body : " + err.Error()
+		errorMessage := "error while unmarshal the body : " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			&resp, []interface{}{})
 		l.LogWithFields(ctx).Error(errorMessage)
@@ -393,8 +393,8 @@ func (e *ExternalInterfaces) retryEventSubscriptionOperation(ctx context.Context
 	return response, resp, err
 }
 
-// isHostPresent will check if hostip present in the hosts slice
-func isHostPresent(hosts []string, hostip string) bool {
+// isHostPresent will check if hostIp present in the hosts slice
+func isHostPresent(hosts []string, hostIp string) bool {
 
 	if len(hosts) < 1 {
 		return false
@@ -403,7 +403,7 @@ func isHostPresent(hosts []string, hostip string) bool {
 	front := 0
 	rear := len(hosts) - 1
 	for front <= rear {
-		if hosts[front] == hostip || hosts[rear] == hostip {
+		if hosts[front] == hostIp || hosts[rear] == hostIp {
 			return true
 		}
 		front++
@@ -438,7 +438,7 @@ func (e *ExternalInterfaces) callPlugin(ctx context.Context, req evcommon.Plugin
 	return e.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
 }
 
-// checkCollection verifies if the given origin is collection and extracts all the suboridinate resources
+// checkCollection verifies if the given origin is collection and extracts all the subordinate resources
 func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, bool, string, bool, error) {
 	switch origin {
 	case "/redfish/v1/Systems":
@@ -447,7 +447,7 @@ func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, b
 	case "/redfish/v1/Chassis":
 		return []string{}, "ChassisCollection", true, "", false, nil
 	case "/redfish/v1/Managers":
-		//TODO:After Managers implemention need to get all Managers data
+		//TODO:After Managers implementation need to get all Managers data
 		return []string{}, "ManagerCollection", true, "", false, nil
 	case "/redfish/v1/Fabrics":
 		collection, err := e.GetAllFabrics()
@@ -471,8 +471,8 @@ func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, b
 	return []string{}, "", false, "", false, nil
 }
 
-// isHostPresentInEventForward will check if hostip present in the hosts slice
-func isHostPresentInEventForward(hosts []string, hostip string) bool {
+// isHostPresentInEventForward will check if hostIp present in the hosts slice
+func isHostPresentInEventForward(hosts []string, hostIp string) bool {
 
 	if len(hosts) == 0 {
 		return true
@@ -481,7 +481,7 @@ func isHostPresentInEventForward(hosts []string, hostip string) bool {
 	front := 0
 	rear := len(hosts) - 1
 	for front <= rear {
-		if hosts[front] == hostip || hosts[rear] == hostip || strings.Contains(hosts[rear], "Collection") || strings.Contains(hosts[front], "Collection") {
+		if hosts[front] == hostIp || hosts[rear] == hostIp || strings.Contains(hosts[rear], "Collection") || strings.Contains(hosts[front], "Collection") {
 			return true
 		}
 		front++

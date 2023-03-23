@@ -16,6 +16,7 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -41,6 +42,7 @@ func (l *Licenses) GetLicenseService(ctx context.Context, req *licenseproto.GetL
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, l.connector.GetLicenseService(req))
+	lgr.LogWithFields(ctx).Debugf("final response of get license service request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -58,6 +60,7 @@ func (l *Licenses) GetLicenseCollection(ctx context.Context, req *licenseproto.G
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, l.connector.GetLicenseCollection(ctx, req))
+	lgr.LogWithFields(ctx).Debugf("final response for get license collection request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -75,6 +78,7 @@ func (l *Licenses) GetLicenseResource(ctx context.Context, req *licenseproto.Get
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, l.connector.GetLicenseResource(ctx, req))
+	lgr.LogWithFields(ctx).Debugf("final response for get license resource request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -89,6 +93,7 @@ func (l *Licenses) InstallLicenseService(ctx context.Context, req *licenseproto.
 			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
 		}
 		fillProtoResponse(ctx, resp, authResp)
+		lgr.LogWithFields(ctx).Debugf("final response for install license service request: %s", string(fmt.Sprintf("%v", resp.Body)))
 		return resp, nil
 	}
 	sessionUserName, taskID, err := CreateTaskAndResponse(ctx, l, req.SessionToken, resp)
@@ -101,5 +106,6 @@ func (l *Licenses) InstallLicenseService(ctx context.Context, req *licenseproto.
 	ctxt := context.WithValue(ctx, common.ThreadName, common.InstallLicenseService)
 	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	go l.connector.InstallLicenseService(ctx, req, sessionUserName, taskID)
+	lgr.LogWithFields(ctx).Debugf("final response for install license service request: %s", string(resp.Body))
 	return resp, nil
 }

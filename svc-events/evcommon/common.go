@@ -51,7 +51,7 @@ var (
 // StartUpInterface Holds the function pointer of  external interface functions
 type StartUpInterface struct {
 	DecryptPassword                  func([]byte) ([]byte, error)
-	EMBConsume                       func(string)
+	EMBConsume                       func(context.Context, string)
 	GetAllPlugins                    func() ([]common.Plugin, *errors.Error)
 	GetAllSystems                    func() ([]string, error)
 	GetSingleSystem                  func(string) (string, error)
@@ -72,7 +72,7 @@ var (
 type EmbTopic struct {
 	TopicsList map[string]bool
 	lock       sync.RWMutex
-	EMBConsume func(string)
+	EMBConsume func(context.Context, string)
 }
 
 // SavedSystems holds the resource details of the saved system
@@ -126,11 +126,11 @@ func (p *PluginToken) GetToken(pluginID string) string {
 }
 
 // ConsumeTopic check the existing topic list if it is not present then it will add topic name to list and consume that topic
-func (e *EmbTopic) ConsumeTopic(topicName string) {
+func (e *EmbTopic) ConsumeTopic(ctx context.Context, topicName string) {
 	e.lock.RLock()
 	defer e.lock.RUnlock()
 	if ok := e.TopicsList[topicName]; !ok {
-		go consumer.Consume(topicName)
+		go consumer.Consume(ctx, topicName)
 		e.TopicsList[topicName] = true
 		//consume the topic
 	}
@@ -181,17 +181,17 @@ func (st *StartUpInterface) getPluginStatus(ctx context.Context, plugin common.P
 		PluginPort:              plugin.Port,
 		PluginUsername:          plugin.Username,
 		PluginUserPassword:      string(plugin.Password),
-		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		PluginPreferredAuthType: plugin.PreferredAuthType,
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 	}
 	config.TLSConfMutex.RUnlock()
 	status, _, topicsList, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
 		PluginStartUp = false
-		l.LogWithFields(ctx).Error("Error While getting the status for plugin " + plugin.ID + err.Error())
+		l.LogWithFields(ctx).Error("error While getting the status for plugin " + plugin.ID + err.Error())
 		return
 	}
-	l.LogWithFields(ctx).Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
+	l.LogWithFields(ctx).Debug("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
 	PluginsMap[plugin.ID] = status
 	var allServers []SavedSystems
 	for pluginID, status := range PluginsMap {
@@ -226,9 +226,8 @@ func (st *StartUpInterface) getPluginStatus(ctx context.Context, plugin common.P
 	EMBTopics.EMBConsume = st.EMBConsume
 	EMBTopics.lock.Unlock()
 	for j := 0; j < len(topicsList); j++ {
-		EMBTopics.ConsumeTopic(topicsList[j])
+		EMBTopics.ConsumeTopic(ctx, topicsList[j])
 	}
-	return
 }
 
 func (st *StartUpInterface) getAllServers(ctx context.Context, pluginID string) ([]SavedSystems, error) {
@@ -274,7 +273,7 @@ func GetPluginStatus(ctx context.Context, plugin *common.Plugin) bool {
 		PluginPort:              plugin.Port,
 		PluginUsername:          plugin.Username,
 		PluginUserPassword:      string(plugin.Password),
-		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		PluginPreferredAuthType: plugin.PreferredAuthType,
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
@@ -297,8 +296,8 @@ func (st *StartUpInterface) callPluginStartUp(ctx context.Context, servers []Sav
 		var err error
 		s.Location, s.EventTypes, err = st.getSubscribedEventsDetails(server.ManagerAddress)
 		if err != nil {
-			l.LogWithFields(ctx).Error("Error while retrieving the Subsction details from DB for device: " +
-				server.ManagerAddress + err.Error())
+			l.LogWithFields(ctx).Error("Error while retrieving the Subsection details from DB for device: " +
+				server.ManagerAddress + " " + err.Error())
 			continue
 		}
 		s.Device = server
@@ -531,7 +530,7 @@ func ProcessCtrlMsg(ctx context.Context, data interface{}) bool {
 			return false
 		}
 		for _, topic := range message.EMBQueues {
-			EMBTopics.ConsumeTopic(topic)
+			EMBTopics.ConsumeTopic(ctx, topic)
 		}
 	}
 	return true
@@ -570,7 +569,7 @@ func (st *StartUpInterface) getPluginEMB(ctx context.Context, plugin common.Plug
 		PluginPort:              plugin.Port,
 		PluginUsername:          plugin.Username,
 		PluginUserPassword:      string(plugin.Password),
-		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		PluginPreferredAuthType: plugin.PreferredAuthType,
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 	}
 	config.TLSConfMutex.RUnlock()
@@ -583,7 +582,7 @@ func (st *StartUpInterface) getPluginEMB(ctx context.Context, plugin common.Plug
 	EMBTopics.EMBConsume = st.EMBConsume
 	EMBTopics.lock.Unlock()
 	for j := 0; j < len(topicsList); j++ {
-		EMBTopics.ConsumeTopic(topicsList[j])
+		EMBTopics.ConsumeTopic(ctx, topicsList[j])
 	}
 }
 
@@ -599,13 +598,13 @@ func TrackConfigFileChanges(ctx context.Context, errChan chan error) {
 			ctx = context.WithValue(ctx, common.ActionName, "TrackConfigFileChanges")
 			l.LogWithFields(ctx).Info(info) // new data arrives through eventChan channel
 			if l.Log.Level != config.Data.LogLevel {
-				l.LogWithFields(ctx).Info("Log level is updated, new log level is ", config.Data.LogLevel)
+				l.LogWithFields(ctx).Debug("Log level is updated, new log level is ", config.Data.LogLevel)
 				l.LogWithFields(ctx).Logger.SetLevel(config.Data.LogLevel)
 			}
 			if format != config.Data.LogFormat {
 				l.SetFormatter(config.Data.LogFormat)
 				format = config.Data.LogFormat
-				l.LogWithFields(ctx).Info("Log format is updated, new log format is ", config.Data.LogFormat)
+				l.LogWithFields(ctx).Debug("Log format is updated, new log format is ", config.Data.LogFormat)
 			}
 		case err := <-errChan:
 			l.LogWithFields(ctx).Error(err)

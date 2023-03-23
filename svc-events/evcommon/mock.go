@@ -38,7 +38,7 @@ func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
 }
 
-func stubEMBConsume(topic string) {
+func stubEMBConsume(context.Context, string) {
 
 }
 

@@ -133,7 +133,7 @@ func TestMockCreateTask(t *testing.T) {
 			}
 		})
 	}
-	stubEMBConsume("")
+	stubEMBConsume(MockContext(), "")
 	GetEncryptedKey([]byte{11})
 }
 

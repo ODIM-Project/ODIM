@@ -18,6 +18,7 @@
 package consumer
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 
@@ -47,7 +48,7 @@ func EventSubscriber(event interface{}) {
 
 	err := json.Unmarshal(byteData, &message)
 	if err != nil {
-		l.Log.Error("error while unmarshaling the event" + err.Error())
+		l.Log.Error("error while unmarshal the event" + err.Error())
 		return
 	}
 	writeEventToJobQueue(message)
@@ -87,15 +88,15 @@ func writeEventToJobQueue(message common.Events) {
 
 // Consume create a consumer for message bus
 // the topic can be defined inside configuration file config.toml
-func Consume(topicName string) {
+func Consume(ctx context.Context, topicName string) {
 	config.TLSConfMutex.RLock()
 	MessageBusConfigFilePath := config.Data.MessageBusConf.MessageBusConfigFilePath
-	messagebusType := config.Data.MessageBusConf.MessageBusType
+	messageBusType := config.Data.MessageBusConf.MessageBusType
 	config.TLSConfMutex.RUnlock()
 	// connecting to kafka
-	k, err := dc.Communicator(messagebusType, MessageBusConfigFilePath, topicName)
+	k, err := dc.Communicator(messageBusType, MessageBusConfigFilePath, topicName)
 	if err != nil {
-		l.Log.Error("Unable to connect to kafka" + err.Error())
+		l.LogWithFields(ctx).Error("unable to connect to kafka" + err.Error())
 		return
 	}
 	// subscribe from message bus
@@ -109,10 +110,10 @@ func Consume(topicName string) {
 func SubscribeCtrlMsgQueue(topicName string) {
 	config.TLSConfMutex.RLock()
 	MessageBusConfigFilePath := config.Data.MessageBusConf.MessageBusConfigFilePath
-	messagebusType := config.Data.MessageBusConf.MessageBusType
+	messageBusType := config.Data.MessageBusConf.MessageBusType
 	config.TLSConfMutex.RUnlock()
-	// connecting to messagbus
-	k, err := dc.Communicator(messagebusType, MessageBusConfigFilePath, topicName)
+	// connecting to messageBus
+	k, err := dc.Communicator(messageBusType, MessageBusConfigFilePath, topicName)
 	if err != nil {
 		l.Log.Error("Unable to connect to kafka" + err.Error())
 		return

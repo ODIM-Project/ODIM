@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-// Package evmodel have the struct models and DB functionalties
+// Package evmodel have the struct models and DB functionalities
 package evmodel
 
 import (
@@ -27,10 +27,10 @@ import (
 )
 
 const (
-	// EventFormatType is set to Event (MetricReport is not supporting now)
+	// EventFormatType is set to Event (MetricReport is not supporting now
 	EventFormatType = "Event"
 
-	// SubscriptionType is set to RedfishEvent (make it as array of SubscritpionType)
+	// SubscriptionType is set to RedfishEvent (make it as array of SubscriptionType
 	SubscriptionType = "RedfishEvent"
 
 	// Context is set to default if its empty
@@ -149,7 +149,8 @@ func GetPluginData(pluginID string) (*common.Plugin, *errors.Error) {
 
 	bytepw, errs := common.DecryptWithPrivateKey([]byte(plugin.Password))
 	if errs != nil {
-		return nil, errors.PackError(errors.DecryptionFailed, "error: "+pluginID+" plugin password decryption failed: "+errs.Error())
+		return nil, errors.PackError(errors.DecryptionFailed, "error: "+pluginID+
+			" plugin password decryption failed: "+errs.Error())
 	}
 	plugin.Password = bytepw
 
@@ -180,7 +181,8 @@ func GetAllPlugins() ([]common.Plugin, *errors.Error) {
 
 		bytepw, errs := common.DecryptWithPrivateKey([]byte(plugin.Password))
 		if errs != nil {
-			return nil, errors.PackError(errors.DecryptionFailed, "error: "+plugin.ID+" plugin password decryption failed: "+errs.Error())
+			return nil, errors.PackError(errors.DecryptionFailed, "error: "+plugin.ID+
+				" plugin password decryption failed: "+errs.Error())
 		}
 		plugin.Password = bytepw
 
@@ -252,17 +254,17 @@ func GetFabricData(fabricID string) (Fabric, error) {
 }
 
 // GetAggregateData  will fetch aggregate details
-func GetAggregateData(aggreagetKey string) (Aggregate, error) {
+func GetAggregateData(aggregateKey string) (Aggregate, error) {
 	var aggregate Aggregate
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return aggregate, err
 	}
-	aggregatedata, err := conn.Read("Aggregate", aggreagetKey)
+	aggregateData, err := conn.Read("Aggregate", aggregateKey)
 	if err != nil {
 		return aggregate, fmt.Errorf("error while trying to get user: %v", err.Error())
 	}
-	if errs := json.Unmarshal([]byte(aggregatedata), &aggregate); errs != nil {
+	if errs := json.Unmarshal([]byte(aggregateData), &aggregate); errs != nil {
 		return aggregate, errs
 	}
 
@@ -312,9 +314,10 @@ func UpdateDeviceSubscriptionLocation(devSubscription common.DeviceSubscription)
 	if err != nil {
 		return err
 	}
-	uerr := conn.UpdateDeviceSubscription(DeviceSubscriptionIndex, devSubscription.EventHostIP, devSubscription.Location, devSubscription.OriginResources)
-	if uerr != nil {
-		return fmt.Errorf("error while trying to update subscription of device %v", uerr.Error())
+	updateErr := conn.UpdateDeviceSubscription(DeviceSubscriptionIndex, devSubscription.EventHostIP,
+		devSubscription.Location, devSubscription.OriginResources)
+	if updateErr != nil {
+		return fmt.Errorf("error while trying to update subscription of device %v", updateErr.Error())
 	}
 	return nil
 }
@@ -325,7 +328,8 @@ func SaveDeviceSubscription(devSubscription common.DeviceSubscription) error {
 	if err != nil {
 		return err
 	}
-	cerr := conn.CreateDeviceSubscriptionIndex(DeviceSubscriptionIndex, devSubscription.EventHostIP, devSubscription.Location, devSubscription.OriginResources)
+	cerr := conn.CreateDeviceSubscriptionIndex(DeviceSubscriptionIndex, devSubscription.EventHostIP,
+		devSubscription.Location, devSubscription.OriginResources)
 	if cerr != nil {
 		return fmt.Errorf("error while trying to save subscription of device %v", cerr.Error())
 	}
@@ -363,13 +367,13 @@ func SaveEventSubscription(evtSubscription SubscriptionResource) error {
 	if err != nil {
 		return err
 	}
-	subscription, merr := json.Marshal(evtSubscription)
-	if merr != nil {
-		return fmt.Errorf("error while trying marshall event subscriptions %v", merr.Error())
+	subscription, marshalErr := json.Marshal(evtSubscription)
+	if marshalErr != nil {
+		return fmt.Errorf("error while trying marshall event subscriptions %v", marshalErr.Error())
 	}
-	cerr := conn.CreateEvtSubscriptionIndex(SubscriptionIndex, string(subscription))
-	if cerr != nil {
-		return fmt.Errorf("error while trying to save event subscriptions %v", cerr.Error())
+	createErr := conn.CreateEvtSubscriptionIndex(SubscriptionIndex, string(subscription))
+	if createErr != nil {
+		return fmt.Errorf("error while trying to save event subscriptions %v", createErr.Error())
 	}
 	return nil
 }
@@ -426,7 +430,7 @@ func UpdateEventSubscription(evtSubscription SubscriptionResource) error {
 	return nil
 }
 
-// GetAllMatchingDetails accepts the table name ,pattern and DB type and return all the keys which mathces the pattern
+// GetAllMatchingDetails accepts the table name ,pattern and DB type and return all the keys which matches the pattern
 func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
 	conn, err := GetDbConnection(dbtype)
 	if err != nil {
@@ -435,7 +439,7 @@ func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]strin
 	return conn.GetAllMatchingDetails(table, pattern)
 }
 
-// SaveUndeliveredEvents accepts the undelivered event and destination with unique eventid and saves it
+// SaveUndeliveredEvents accepts the undelivered event and destination with unique eventId and saves it
 func SaveUndeliveredEvents(key string, event []byte) error {
 	connPool, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -626,7 +630,7 @@ func GetAllDeviceSubscriptions() ([]string, error) {
 
 // GetSliceFromString is to convert the string to array
 func GetSliceFromString(sliceString string) []string {
-	// EX : array stored in db in string("[alert statuschange]")
+	// EX : array stored in db in string("[alert statusChange]")
 	// to convert into an array removing "[" ,"]" and splitting
 	r := strings.NewReplacer(
 		"[", "",
@@ -650,8 +654,8 @@ func GetAllEvtSubscriptions() ([]string, error) {
 
 // GetUndeliveredEventsKeyList accepts the table name ,pattern ,cursor value
 // and DB type and return all the keys which matches the pattern
-func GetUndeliveredEventsKeyList(table, pattern string, dbtype common.DbType, nextCursor int) ([]string, int, *errors.Error) {
-	conn, err := GetDbConnection(dbtype)
+func GetUndeliveredEventsKeyList(table, pattern string, dbType common.DbType, nextCursor int) ([]string, int, *errors.Error) {
+	conn, err := GetDbConnection(dbType)
 	if err != nil {
 		return []string{}, 0, err
 	}

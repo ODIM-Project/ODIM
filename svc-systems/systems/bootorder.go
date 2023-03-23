@@ -115,7 +115,7 @@ func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsprot
 	var resp response.RPC
 	l.LogWithFields(ctx).Debugf("incoming ChangeBiosSettings request for SystemID: %s", req.SystemID)
 	var targetURI = "/redfish/v1/Systems/" + req.SystemID + "/Bios/Settings"
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI,
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI,
 		UpdateTask: p.UpdateTask, TaskRequest: string(req.RequestBody)}
 	// spliting the uuid and system id
 	requestData := strings.SplitN(req.SystemID, ".", 2)

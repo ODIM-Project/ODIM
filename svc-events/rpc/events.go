@@ -47,7 +47,7 @@ var (
 	JSONMarshal = json.Marshal
 )
 
-// GetPluginContactInitializer intializes all the required connection functions for the events execution
+// GetPluginContactInitializer initializes all the required connection functions for the events execution
 func GetPluginContactInitializer() *Events {
 	connector := &events.ExternalInterfaces{
 		External: events.External{
@@ -91,10 +91,12 @@ func GetPluginContactInitializer() *Events {
 		Connector: connector,
 	}
 }
+
+// generateResponse function takes input and return byte array
 func generateResponse(ctx context.Context, input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		l.LogWithFields(ctx).Error("error in unmarshalling response object from util-libs" + err.Error())
+		l.LogWithFields(ctx).Error("error in unmarshal response object from util-libs" + err.Error())
 	}
 	return bytes
 }
@@ -109,11 +111,11 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 	resp.Header = map[string]string{
 		"Link": "</redfish/v1/SchemaStore/en/EventService.json>; rel=describedby",
 	}
-	// Validate the token, if user has Login privelege then proceed.
-	//Else send 401 Unautherised
+	// Validate the token, if user has Login privileged then proceed.
+	//Else send 401 Unauthorized
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := e.Connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := e.Connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		if err != nil {
@@ -125,7 +127,7 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 		resp.StatusCode = authResp.StatusCode
 		return &resp, nil
 	}
-	// Check whether the Event Service is enbaled in configuration file.
+	// Check whether the Event Service is enabled in configuration file.
 	//If so set ServiceEnabled to true.
 	isServiceEnabled := false
 	serviceState := "Disabled"
@@ -207,7 +209,7 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 
 // CreateEventSubscription defines the operations which handles the RPC request response
 // for the Create event subscription RPC call to events micro service.
-// The functionality is to create the subscrription with Resource provided in origin resources.
+// The functionality is to create the subscription with Resource provided in origin resources.
 func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
 	var resp eventsproto.EventSubResponse
 	var err error
@@ -216,9 +218,10 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 	ctx = common.ModifyContext(ctx, common.EventService, podName)
 
 	// Athorize the request here
-	authResp, err := e.Connector.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := e.Connector.Auth(ctx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v",
+			authResp.StatusCode, authResp.StatusMessage)
 		if err != nil {
 			errMsg = errMsg + ": " + err.Error()
 		}
@@ -227,10 +230,11 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		resp.StatusCode = authResp.StatusCode
 		return &resp, nil
 	}
-	sessionUserName, err := e.Connector.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := e.Connector.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errorMessage := "error while trying to get the session username: " + err.Error()
-		resp.Body = generateResponse(ctx, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil))
+		resp.Body = generateResponse(ctx, common.GeneralError(http.StatusUnauthorized,
+			response.NoValidSession, errorMessage, nil, nil))
 		resp.StatusCode = http.StatusUnauthorized
 		l.LogWithFields(ctx).Error(errorMessage)
 		return &resp, err
@@ -243,7 +247,8 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		errorMessage := "error while trying to create the task: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
-		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
+		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError,
+			response.InternalError, errorMessage, nil, nil).Body)
 		l.LogWithFields(ctx).Error(errorMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
@@ -290,7 +295,7 @@ func (e *Events) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubR
 
 // GetEventSubscriptionsCollection defines the operations which handles the RPC request response
 // for the get event subscriptions collection RPC call to events micro service.
-// The functionality is to get the collection of subscrription details.
+// The functionality is to get the collection of subscription details.
 func (e *Events) GetEventSubscriptionsCollection(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
 	var resp eventsproto.EventSubResponse
 	var err error
@@ -299,7 +304,7 @@ func (e *Events) GetEventSubscriptionsCollection(ctx context.Context, req *event
 	data := e.Connector.GetEventSubscriptionsCollection(ctx, req)
 	resp.Body, err = JSONMarshal(data.Body)
 	if err != nil {
-		errorMessage := "error while trying marshal the response body for get event subsciption : " + err.Error()
+		errorMessage := "error while trying marshal the response body for get event subscription : " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
@@ -324,7 +329,7 @@ func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.Even
 	data := e.Connector.GetEventSubscriptionsDetails(ctx, req)
 	resp.Body, err = JSONMarshal(data.Body)
 	if err != nil {
-		errorMessage := "error while trying marshal the response body for get event subsciption : " + err.Error()
+		errorMessage := "error while trying marshal the response body for get event subscription : " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
@@ -379,15 +384,15 @@ func (e *Events) CreateDefaultEventSubscription(ctx context.Context, req *events
 	return &resp, nil
 }
 
-// SubsribeEMB defines the operations which handles the RPC request response
+// SubscribeEMB defines the operations which handles the RPC request response
 // it subscribe to the given event message bus queues
-func (e *Events) SubsribeEMB(ctx context.Context, req *eventsproto.SubscribeEMBRequest) (*eventsproto.SubscribeEMBResponse, error) {
+func (e *Events) SubscribeEMB(ctx context.Context, req *eventsproto.SubscribeEMBRequest) (*eventsproto.SubscribeEMBResponse, error) {
 	var resp eventsproto.SubscribeEMBResponse
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.EventService, podName)
 	l.LogWithFields(ctx).Info("Subscribing on emb for plugin " + req.PluginID)
 	for i := 0; i < len(req.EMBQueueName); i++ {
-		evcommon.EMBTopics.ConsumeTopic(req.EMBQueueName[i])
+		evcommon.EMBTopics.ConsumeTopic(ctx, req.EMBQueueName[i])
 	}
 	resp.Status = true
 	return &resp, nil

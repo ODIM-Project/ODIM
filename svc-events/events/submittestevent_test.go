@@ -21,6 +21,7 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -187,7 +188,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte(`{"MessageId": "123", "Severity": "123"}`),
 	}
-	p.DB.GetSessionUserName = func(sessionToken string) (string, error) { return "", errors.New("Invalid") }
+	p.DB.GetSessionUserName = func(ctx context.Context, sessionToken string) (string, error) { return "", errors.New("Invalid") }
 	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 

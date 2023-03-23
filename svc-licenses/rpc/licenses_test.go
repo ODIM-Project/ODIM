@@ -84,14 +84,14 @@ func mockGetPluginData(id string) (*model.Plugin, *errors.Error) {
 	return &plugin, nil
 }
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+func mockIsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken != "validToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
 	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
-func mockGetAllKeysFromTable(table string, dbtype persistencemgr.DbType) ([]string, error) {
+func mockGetAllKeysFromTable(ctx context.Context,table string, dbtype persistencemgr.DbType) ([]string, error) {
 	return []string{"/redfish/v1/LicenseService/Licenses/uuid.1.1", "/redfish/v1/LicenseService/Licenses/uuid.1.2"}, nil
 }
 

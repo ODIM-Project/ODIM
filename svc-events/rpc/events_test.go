@@ -136,7 +136,7 @@ func TestCreateEventSubscription(t *testing.T) {
 
 	esRespTest2, _ := events.CreateEventSubscription(evcommon.MockContext(), req)
 	assert.Equal(t, int(esRespTest2.StatusCode), http.StatusInternalServerError, "Status code should be StatusUnauthorized.")
-	events.Connector.GetSessionUserName = func(sessionToken string) (string, error) {
+	events.Connector.GetSessionUserName = func(ctx context.Context, sessionToken string) (string, error) {
 		return "", fmt.Errorf("")
 	}
 	esRespTest3, _ := events.CreateEventSubscription(evcommon.MockContext(), req)
@@ -198,7 +198,8 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 	JSONMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
 	resp, err = events.GetEventSubscriptionsCollection(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be an error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "Status code should be StatusInternalServerError.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError,
+		"Status code should be StatusInternalServerError.")
 	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
 }
 
@@ -217,7 +218,8 @@ func TestGetEventSubscriptions(t *testing.T) {
 
 	var evResp = &evresponse.SubscriptionResponse{}
 	json.Unmarshal(esResp.Body, evResp)
-	assert.Equal(t, "81de0110-c35a-4859-984c-072d6c5a32d7", evResp.Response.ID, "ID should be 81de0110-c35a-4859-984c-072d6c5a32d7")
+	assert.Equal(t, "81de0110-c35a-4859-984c-072d6c5a32d7", evResp.Response.ID,
+		"ID should be 81de0110-c35a-4859-984c-072d6c5a32d7")
 
 	req.EventSubscriptionID = "81de0110"
 	//resp := &eventsproto.EventSubResponse{}
@@ -301,7 +303,7 @@ func TestSubscribeEMB(t *testing.T) {
 		EMBQueueName: []string{"topic"},
 	}
 
-	resp, err := events.SubsribeEMB(evcommon.MockContext(), req)
+	resp, err := events.SubscribeEMB(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be no error")
 	assert.True(t, resp.Status, "status should be true")
 }

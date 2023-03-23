@@ -76,8 +76,8 @@ type Device struct {
 // ExternalInterface struct holds the function pointers all outboud services
 type ExternalInterface struct {
 	ContactClient            func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth                     func(string, []string, []string) (response.RPC, error)
-	GetSessionUserName       func(string) (string, error)
+	Auth                     func(context.Context, string, []string, []string) (response.RPC, error)
+	GetSessionUserName       func(context.Context, string) (string, error)
 	CreateChildTask          func(context.Context, string, string) (string, error)
 	CreateTask               func(context.Context, string) (string, error)
 	UpdateTask               func(context.Context, common.TaskData) error
@@ -85,7 +85,7 @@ type ExternalInterface struct {
 	PublishEvent             func(context.Context, []string, string)
 	PublishEventMB           func(context.Context, string, string, string)
 	GetPluginStatus          func(context.Context, agmodel.Plugin) bool
-	SubscribeToEMB           func(string, []string) error
+	SubscribeToEMB           func(context.Context, string, []string) error
 	EncryptPassword          func([]byte) ([]byte, error)
 	DecryptPassword          func([]byte) ([]byte, error)
 	DeleteComputeSystem      func(int, string) *errors.Error

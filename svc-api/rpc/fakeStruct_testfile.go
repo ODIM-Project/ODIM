@@ -233,7 +233,7 @@ func (fakeStruct) GetEventSubscriptionsCollection(ctx context.Context, in *event
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct) SubsribeEMB(ctx context.Context, in *eventsproto.SubscribeEMBRequest, opts ...grpc.CallOption) (*eventsproto.SubscribeEMBResponse, error) {
+func (fakeStruct) SubscribeEMB(ctx context.Context, in *eventsproto.SubscribeEMBRequest, opts ...grpc.CallOption) (*eventsproto.SubscribeEMBResponse, error) {
 	return nil, errors.New("fakeError")
 }
 

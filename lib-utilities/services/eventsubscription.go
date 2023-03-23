@@ -22,14 +22,14 @@ import (
 )
 
 // SubscribeToEMB method will subscribe to respective  event queue of the plugin
-func SubscribeToEMB(pluginID string, queueList []string) error {
+func SubscribeToEMB(ctx context.Context, pluginID string, queueList []string) error {
 	conn, errConn := ODIMService.Client(Events)
 	if errConn != nil {
 		return fmt.Errorf("Failed to create client connection: %s", errConn.Error())
 	}
 	defer conn.Close()
 	events := eventsproto.NewEventsClient(conn)
-	_, err := events.SubsribeEMB(context.TODO(), &eventsproto.SubscribeEMBRequest{
+	_, err := events.SubscribeEMB(ctx, &eventsproto.SubscribeEMBRequest{
 		PluginID:     pluginID,
 		EMBQueueName: queueList,
 	})

@@ -38,7 +38,7 @@ var (
 )
 
 // GetAllKeysFromTable fetches all keys in a given table
-func GetAllKeysFromTable(table string, dbtype persistencemgr.DbType) ([]string, error) {
+func GetAllKeysFromTable(ctx context.Context,table string, dbtype persistencemgr.DbType) ([]string, error) {
 	conn, err := persistencemgr.GetDBConnection(dbtype)
 	if err != nil {
 		return nil, err
@@ -47,6 +47,7 @@ func GetAllKeysFromTable(table string, dbtype persistencemgr.DbType) ([]string, 
 	if err != nil {
 		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
 	}
+	l.LogWithFields(ctx).Debug("all keys from table:",keysArray)
 	return keysArray, nil
 }
 
@@ -159,6 +160,7 @@ func ContactPlugin(ctx context.Context, req model.PluginContactRequest, errorMes
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}
+	l.LogWithFields(ctx).Debugf("plugin response: %s",data)
 	return []byte(data), pluginResponse.Header.Get("X-Auth-Token"), resp, nil
 }
 
@@ -176,7 +178,7 @@ func getPluginStatus(ctx context.Context, plugin model.Plugin) bool {
 		PluginPort:              plugin.Port,
 		PluginUsername:          plugin.Username,
 		PluginUserPassword:      string(plugin.Password),
-		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		PluginPreferredAuthType: plugin.PreferredAuthType,
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 	}
 	status, _, _, err := pluginStatus.CheckStatus()

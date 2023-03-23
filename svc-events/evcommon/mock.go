@@ -38,12 +38,12 @@ func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
 }
 
-func stubEMBConsume(topic string) {
+func stubEMBConsume(context.Context, string) {
 
 }
 
 // MockIsAuthorized is for mocking up of authorization
-func MockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+func MockIsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken != "validToken" && sessionToken != "token" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil), nil
 	}
@@ -51,7 +51,7 @@ func MockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (
 }
 
 // MockGetSessionUserName is for mocking up of session user name
-func MockGetSessionUserName(sessionToken string) (string, error) {
+func MockGetSessionUserName(ctx context.Context, sessionToken string) (string, error) {
 	if sessionToken == "validToken" {
 		return "admin", nil
 	} else if sessionToken == "token" {

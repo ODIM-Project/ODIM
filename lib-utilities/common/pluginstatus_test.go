@@ -44,7 +44,7 @@ func TestCheckPluginStatus(t *testing.T) {
 		PluginPort:              "45100",
 		PluginUsername:          "admin",
 		PluginUserPassword:      "admin",
-		PluginPrefferedAuthType: "BasicAuth",
+		PluginPreferredAuthType: "BasicAuth",
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 		Method:                  http.MethodGet,
 		RequestBody: StatusRequest{
@@ -77,7 +77,7 @@ func TestCheckPluginStatus(t *testing.T) {
 		{
 			name: "positive case auth token",
 			exec: func(pluginStatus *PluginStatus) {
-				pluginStatus.PluginPrefferedAuthType = "XAuthToken"
+				pluginStatus.PluginPreferredAuthType = "XAuthToken"
 			},
 			p:       pluginStatus,
 			want:    true,
@@ -100,7 +100,7 @@ func TestCheckPluginStatus(t *testing.T) {
 			name: "negative case auth token",
 			exec: func(pluginStatus *PluginStatus) {
 				pluginStatus.PluginUserPassword = "password"
-				pluginStatus.PluginPrefferedAuthType = "XAuthToken"
+				pluginStatus.PluginPreferredAuthType = "XAuthToken"
 			},
 			p:       pluginStatus,
 			want:    false,
@@ -123,7 +123,7 @@ func TestCheckPluginStatus(t *testing.T) {
 			name: "negative case invalid server auth token",
 			exec: func(pluginStatus *PluginStatus) {
 				pluginStatus.PluginPort = "8888"
-				pluginStatus.PluginPrefferedAuthType = "XAuthToken"
+				pluginStatus.PluginPreferredAuthType = "XAuthToken"
 			},
 			p:       pluginStatus,
 			want:    false,

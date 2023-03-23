@@ -59,7 +59,7 @@ func TestMockIsAuthorized(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, _ := MockIsAuthorized(tt.args.sessionToken, tt.args.privileges, tt.args.oemPrivileges); got.StatusCode != tt.want.StatusCode {
+			if got, _ := MockIsAuthorized(context.TODO(), tt.args.sessionToken, tt.args.privileges, tt.args.oemPrivileges); got.StatusCode != tt.want.StatusCode {
 				t.Errorf("MockIsAuthorized() = %v, want %v", got, tt.want)
 			}
 		})
@@ -93,7 +93,7 @@ func TestMockGetSessionUserName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := MockGetSessionUserName(tt.args.sessionToken)
+			got, _ := MockGetSessionUserName(context.TODO(), tt.args.sessionToken)
 
 			if got != tt.want {
 				t.Errorf("MockGetSessionUserName() = %v, want %v", got, tt.want)
@@ -133,7 +133,7 @@ func TestMockCreateTask(t *testing.T) {
 			}
 		})
 	}
-	stubEMBConsume("")
+	stubEMBConsume(MockContext(), "")
 	GetEncryptedKey([]byte{11})
 }
 

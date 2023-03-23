@@ -167,14 +167,14 @@ func GetPluginStatusForTesting(ctx context.Context, plugin agmodel.Plugin) bool 
 	return true
 }
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+func mockIsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken == "invalidToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil), nil
 	}
 	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
-func getSessionUserNameForTesting(sessionToken string) (string, error) {
+func getSessionUserNameForTesting(ctx context.Context, sessionToken string) (string, error) {
 	if sessionToken == "noDetailsToken" {
 		return "", fmt.Errorf("no details")
 	} else if sessionToken == "noTaskToken" {
@@ -194,7 +194,7 @@ func createTaskForTesting(ctx context.Context, sessionUserName string) (string, 
 	return "some/Task", nil
 }
 
-func mockSubscribeEMB(pluginID string, list []string) error {
+func mockSubscribeEMB(ctx context.Context, pluginID string, list []string) error {
 	return nil
 }
 

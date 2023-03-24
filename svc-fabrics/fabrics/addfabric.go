@@ -29,7 +29,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
 )
 
-// AddFabric holds the logic for Adding fabric
+// AddFabric holds the logic for Adding fabric 
 // It accepts post body and store the fabric details in DB
 func AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) response.RPC {
 	var resp response.RPC
@@ -37,7 +37,7 @@ func AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) response
 	address := req.Address
 	uuid := origin[strings.LastIndexByte(origin, '/')+1:]
 
-	pluginDetails, err := GetAllFabricPluginDetailsFunc()
+	pluginDetails, err := GetAllFabricPluginDetailsFunc(ctx)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
@@ -85,7 +85,7 @@ func AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) response
 		PluginID:   pluginID,
 	}
 
-	err = fab.AddFabricData(uuid)
+	err = fab.AddFabricData(ctx, uuid)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),

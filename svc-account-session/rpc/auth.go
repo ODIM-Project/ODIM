@@ -36,8 +36,7 @@ var (
 func (a *Auth) IsAuthorized(ctx context.Context, req *authproto.AuthRequest) (*authproto.AuthResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
-	l.LogWithFields(ctx).Info("Inside IsAuthorized function (svc-account-session)")
+	ctx = context.WithValue(ctx, common.ProcessName, podName)	
 	var resp authproto.AuthResponse
 	l.LogWithFields(ctx).Info("Validating if the session is authorized")
 	statusCode, errorMessage := AuthFunc(ctx, req)

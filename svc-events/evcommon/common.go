@@ -36,19 +36,29 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/consumer"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
+	"github.com/google/uuid"
 )
 
-// StartUpInteraface Holds the function pointer of  external interface functions
-type StartUpInteraface struct {
+var (
+	DefaultSubscriptionID        = "0"
+	SubscriptionChannelKey       = "__key*__:Subscription"
+	DeviceSubscriptionChannelKey = "__key*__:DeviceSubscription"
+	AggregateToHostChannelKey    = "__key*__:AggregateToHost"
+	RedisNotifierType            = "notify-keyspace-events"
+	RedisNotifierFilterKey       = "Kz"
+)
+
+// StartUpInterface Holds the function pointer of  external interface functions
+type StartUpInterface struct {
 	DecryptPassword                  func([]byte) ([]byte, error)
-	EMBConsume                       func(string)
-	GetAllPlugins                    func() ([]evmodel.Plugin, *errors.Error)
+	EMBConsume                       func(context.Context, string)
+	GetAllPlugins                    func() ([]common.Plugin, *errors.Error)
 	GetAllSystems                    func() ([]string, error)
 	GetSingleSystem                  func(string) (string, error)
-	GetPluginData                    func(string) (*evmodel.Plugin, *errors.Error)
-	GetEvtSubscriptions              func(string) ([]evmodel.Subscription, error)
-	GetDeviceSubscriptions           func(string) (*evmodel.DeviceSubscription, error)
-	UpdateDeviceSubscriptionLocation func(evmodel.DeviceSubscription) error
+	GetPluginData                    func(string) (*common.Plugin, *errors.Error)
+	GetEvtSubscriptions              func(string) ([]evmodel.SubscriptionResource, error)
+	GetDeviceSubscriptions           func(string) (*common.DeviceSubscription, error)
+	UpdateDeviceSubscriptionLocation func(common.DeviceSubscription) error
 }
 
 var (
@@ -62,7 +72,7 @@ var (
 type EmbTopic struct {
 	TopicsList map[string]bool
 	lock       sync.RWMutex
-	EMBConsume func(string)
+	EMBConsume func(context.Context, string)
 }
 
 // SavedSystems holds the resource details of the saved system
@@ -82,7 +92,7 @@ type PluginContactRequest struct {
 	PostBody        interface{}
 	LoginCredential map[string]string
 	Token           string
-	Plugin          *evmodel.Plugin
+	Plugin          *common.Plugin
 }
 
 // StartUpMap holds required data for plugin startup
@@ -116,11 +126,11 @@ func (p *PluginToken) GetToken(pluginID string) string {
 }
 
 // ConsumeTopic check the existing topic list if it is not present then it will add topic name to list and consume that topic
-func (e *EmbTopic) ConsumeTopic(topicName string) {
+func (e *EmbTopic) ConsumeTopic(ctx context.Context, topicName string) {
 	e.lock.RLock()
 	defer e.lock.RUnlock()
 	if ok := e.TopicsList[topicName]; !ok {
-		go consumer.Consume(topicName)
+		go consumer.Consume(ctx, topicName)
 		e.TopicsList[topicName] = true
 		//consume the topic
 	}
@@ -133,15 +143,18 @@ var EMBTopics EmbTopic
 var PluginStartUp = false
 
 // GetAllPluginStatus ...
-func (st *StartUpInteraface) GetAllPluginStatus() {
+func (st *StartUpInterface) GetAllPluginStatus(ctx context.Context) {
 	for {
 		pluginList, err := evmodel.GetAllPlugins()
 		if err != nil {
-			l.Log.Error(err.Error())
+			l.LogWithFields(ctx).Error(err.Error())
 			return
 		}
+		var threadID int = 1
 		for i := 0; i < len(pluginList); i++ {
-			go st.getPluginStatus(context.TODO(), pluginList[i]) //TODO: Pass context
+			ctx = context.WithValue(ctx, common.ThreadID, strconv.Itoa(threadID))
+			go st.getPluginStatus(ctx, pluginList[i])
+			threadID++
 		}
 		var pollingTime int
 		config.TLSConfMutex.RLock()
@@ -152,9 +165,9 @@ func (st *StartUpInteraface) GetAllPluginStatus() {
 
 }
 
-func (st *StartUpInteraface) getPluginStatus(ctx context.Context, plugin evmodel.Plugin) {
+func (st *StartUpInterface) getPluginStatus(ctx context.Context, plugin common.Plugin) {
 	PluginsMap := make(map[string]bool)
-	StartUpResourceBatchSize := config.Data.PluginStatusPolling.StartUpResouceBatchSize
+	StartUpResourceBatchSize := config.Data.PluginStatusPolling.StartUpResourceBatchSize
 	config.TLSConfMutex.RLock()
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
@@ -168,31 +181,31 @@ func (st *StartUpInteraface) getPluginStatus(ctx context.Context, plugin evmodel
 		PluginPort:              plugin.Port,
 		PluginUsername:          plugin.Username,
 		PluginUserPassword:      string(plugin.Password),
-		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		PluginPreferredAuthType: plugin.PreferredAuthType,
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 	}
 	config.TLSConfMutex.RUnlock()
 	status, _, topicsList, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
 		PluginStartUp = false
-		l.Log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
+		l.LogWithFields(ctx).Error("error While getting the status for plugin " + plugin.ID + err.Error())
 		return
 	}
-	l.Log.Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
+	l.LogWithFields(ctx).Debug("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
 	PluginsMap[plugin.ID] = status
 	var allServers []SavedSystems
 	for pluginID, status := range PluginsMap {
 		if status && !PluginStartUp {
-			allServers, err = st.getAllServers(pluginID)
+			allServers, err = st.getAllServers(ctx, pluginID)
 			if err != nil {
-				l.Log.Error("Error While getting the servers" + pluginID + err.Error())
+				l.LogWithFields(ctx).Error("Error While getting the servers" + pluginID + err.Error())
 				continue
 			}
 			for {
 				if len(allServers) < StartUpResourceBatchSize {
 					err = st.callPluginStartUp(ctx, allServers, pluginID)
 					if err != nil {
-						l.Log.Error("Error While trying call plugin startup" +
+						l.LogWithFields(ctx).Error("Error While trying call plugin startup" +
 							pluginID + err.Error())
 					}
 					break
@@ -200,7 +213,7 @@ func (st *StartUpInteraface) getPluginStatus(ctx context.Context, plugin evmodel
 				batchServers := allServers[:StartUpResourceBatchSize]
 				err = st.callPluginStartUp(ctx, batchServers, pluginID)
 				if err != nil {
-					l.Log.Error("Error While trying call plugin startup" + pluginID + err.Error())
+					l.LogWithFields(ctx).Error("Error While trying call plugin startup" + pluginID + err.Error())
 					continue
 				}
 				allServers = allServers[StartUpResourceBatchSize:]
@@ -213,12 +226,11 @@ func (st *StartUpInteraface) getPluginStatus(ctx context.Context, plugin evmodel
 	EMBTopics.EMBConsume = st.EMBConsume
 	EMBTopics.lock.Unlock()
 	for j := 0; j < len(topicsList); j++ {
-		EMBTopics.ConsumeTopic(topicsList[j])
+		EMBTopics.ConsumeTopic(ctx, topicsList[j])
 	}
-	return
 }
 
-func (st *StartUpInteraface) getAllServers(pluginID string) ([]SavedSystems, error) {
+func (st *StartUpInterface) getAllServers(ctx context.Context, pluginID string) ([]SavedSystems, error) {
 	var matchedServers []SavedSystems
 	allServers, err := st.GetAllSystems()
 	if err != nil {
@@ -237,7 +249,7 @@ func (st *StartUpInteraface) getAllServers(pluginID string) ([]SavedSystems, err
 			if err != nil {
 				// Frame the RPC response body and response Header below
 				errorMessage := "error while trying to decrypt device password for the host: " + s.ManagerAddress + ":" + err.Error()
-				l.Log.Error(errorMessage)
+				l.LogWithFields(ctx).Error(errorMessage)
 				continue
 			}
 			s.Password = decryptedPasswordByte
@@ -248,7 +260,7 @@ func (st *StartUpInteraface) getAllServers(pluginID string) ([]SavedSystems, err
 }
 
 // GetPluginStatus checks the status of given plugin in configured interval
-func GetPluginStatus(plugin *evmodel.Plugin) bool {
+func GetPluginStatus(ctx context.Context, plugin *common.Plugin) bool {
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{
@@ -261,19 +273,19 @@ func GetPluginStatus(plugin *evmodel.Plugin) bool {
 		PluginPort:              plugin.Port,
 		PluginUsername:          plugin.Username,
 		PluginUserPassword:      string(plugin.Password),
-		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		PluginPreferredAuthType: plugin.PreferredAuthType,
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		l.Log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
+		l.LogWithFields(ctx).Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	l.Log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	l.LogWithFields(ctx).Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
-func (st *StartUpInteraface) callPluginStartUp(ctx context.Context, servers []SavedSystems, pluginID string) error {
+func (st *StartUpInterface) callPluginStartUp(ctx context.Context, servers []SavedSystems, pluginID string) error {
 	var startUpMap []StartUpMap
 	plugin, errs := st.GetPluginData(pluginID)
 	if errs != nil {
@@ -284,8 +296,8 @@ func (st *StartUpInteraface) callPluginStartUp(ctx context.Context, servers []Sa
 		var err error
 		s.Location, s.EventTypes, err = st.getSubscribedEventsDetails(server.ManagerAddress)
 		if err != nil {
-			l.Log.Error("Error while retrieving the Subsction details from DB for device: " +
-				server.ManagerAddress + err.Error())
+			l.LogWithFields(ctx).Error("Error while retrieving the Subsection details from DB for device: " +
+				server.ManagerAddress + " " + err.Error())
 			continue
 		}
 		s.Device = server
@@ -325,12 +337,12 @@ func (st *StartUpInteraface) callPluginStartUp(ctx context.Context, servers []Sa
 	//return updateDeviceSubscriptionLocation(startUpMap[0].Device.ManagerAddress, response.Header.Get("location"))
 	bodyBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctx).Error(err.Error())
 		return err
 	}
 	var r map[string]string
 	json.Unmarshal(bodyBytes, &r)
-	return updateDeviceSubscriptionLocation(r)
+	return updateDeviceSubscriptionLocation(ctx, r)
 }
 
 func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, error) {
@@ -345,7 +357,7 @@ func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, 
 
 }
 
-func (st *StartUpInteraface) getSubscribedEventsDetails(serverAddress string) (string, []string, error) {
+func (st *StartUpInterface) getSubscribedEventsDetails(serverAddress string) (string, []string, error) {
 	var location string
 	var eventTypes []string
 	var emptyListFlag bool
@@ -367,10 +379,10 @@ func (st *StartUpInteraface) getSubscribedEventsDetails(serverAddress string) (s
 		return "", nil, err
 	}
 	for i := 0; i < len(subscriptionDetails); i++ {
-		if len(subscriptionDetails[i].EventTypes) == 0 {
+		if len(subscriptionDetails[i].EventDestination.EventTypes) == 0 {
 			emptyListFlag = true
 		} else {
-			eventTypes = append(eventTypes, subscriptionDetails[i].EventTypes...)
+			eventTypes = append(eventTypes, subscriptionDetails[i].EventDestination.EventTypes...)
 		}
 	}
 	if emptyListFlag {
@@ -407,7 +419,7 @@ func getTypes(subscription string) []string {
 	return strings.Split(events, " ")
 }
 
-func updateDeviceSubscriptionLocation(r map[string]string) error {
+func updateDeviceSubscriptionLocation(ctx context.Context, r map[string]string) error {
 	for serverAddress, location := range r {
 		if location != "" {
 			deviceIPAddress, errorMessage := GetIPFromHostName(serverAddress)
@@ -417,18 +429,18 @@ func updateDeviceSubscriptionLocation(r map[string]string) error {
 			searchKey := GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
 			deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
 			if err != nil {
-				l.Log.Error("Error getting the device event subscription from DB " +
+				l.LogWithFields(ctx).Error("Error getting the device event subscription from DB " +
 					" for server address : " + serverAddress + err.Error())
 				continue
 			}
-			var updatedDeviceSubscription evmodel.DeviceSubscription
+			var updatedDeviceSubscription common.DeviceSubscription
 
 			updatedDeviceSubscription.Location = location
 			updatedDeviceSubscription.EventHostIP = deviceSubscription.EventHostIP
 			updatedDeviceSubscription.OriginResources = deviceSubscription.OriginResources
 			err = evmodel.UpdateDeviceSubscriptionLocation(updatedDeviceSubscription)
 			if err != nil {
-				l.Log.Error("Error updating the subscription location in to DB for " +
+				l.LogWithFields(ctx).Error("Error updating the subscription location in to DB for " +
 					"server address : " + serverAddress + err.Error())
 				continue
 			}
@@ -445,7 +457,7 @@ func GenErrorResponse(errorMessage string, statusMessage string, httpStatusCode 
 		Code:    response.GeneralError,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
+			{
 				StatusMessage: statusMessage,
 				ErrorMessage:  errorMessage,
 				MessageArgs:   msgArgs,
@@ -462,7 +474,7 @@ func GenEventErrorResponse(errorMessage string, StatusMessage string, httpStatus
 		Code:    response.GeneralError,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
+			{
 				StatusMessage: StatusMessage,
 				ErrorMessage:  errorMessage,
 				MessageArgs:   argsParams,
@@ -504,40 +516,46 @@ func GetSearchKey(key, index string) string {
 
 // ProcessCtrlMsg is for processing the ODIM control message
 // and to perform required action
-func ProcessCtrlMsg(data interface{}) bool {
+func ProcessCtrlMsg(ctx context.Context, data interface{}) bool {
 	if data == nil {
-		l.Log.Warn("received control message event with empty data")
+		l.LogWithFields(ctx).Warn("received control message event with empty data")
 		return false
 	}
 	event := data.(common.ControlMessageData)
 	msg, _ := json.Marshal(event.Data)
-	l.Log.Info("received control message event of type:", event.MessageType)
+	l.LogWithFields(ctx).Info("received control message event of type:", event.MessageType)
 	if event.MessageType == common.SubscribeEMB {
 		var message common.SubscribeEMBData
 		if err := json.Unmarshal([]byte(msg), &message); err != nil {
 			return false
 		}
 		for _, topic := range message.EMBQueues {
-			EMBTopics.ConsumeTopic(topic)
+			EMBTopics.ConsumeTopic(ctx, topic)
 		}
 	}
 	return true
 }
 
 // SubscribePluginEMB is for subscribing to plugin EMB
-func (st *StartUpInteraface) SubscribePluginEMB() {
+func (st *StartUpInterface) SubscribePluginEMB(ctx context.Context) {
 	time.Sleep(time.Second * 2)
+	transactionID := uuid.New()
+	ctx = context.WithValue(ctx, common.TransactionID, transactionID.String())
+	ctx = context.WithValue(ctx, common.ActionName, "SubscribePluginEMB")
 	pluginList, err := GetAllPluginsFunc()
 	if err != nil {
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctx).Error(err.Error())
 		return
 	}
+	threadID := 1
 	for i := 0; i < len(pluginList); i++ {
-		go st.getPluginEMB(pluginList[i])
+		ctx = context.WithValue(ctx, common.ThreadID, strconv.Itoa(threadID))
+		go st.getPluginEMB(ctx, pluginList[i])
+		threadID++
 	}
 }
 
-func (st *StartUpInteraface) getPluginEMB(plugin evmodel.Plugin) {
+func (st *StartUpInterface) getPluginEMB(ctx context.Context, plugin common.Plugin) {
 	config.TLSConfMutex.RLock()
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
@@ -551,43 +569,45 @@ func (st *StartUpInteraface) getPluginEMB(plugin evmodel.Plugin) {
 		PluginPort:              plugin.Port,
 		PluginUsername:          plugin.Username,
 		PluginUserPassword:      string(plugin.Password),
-		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		PluginPreferredAuthType: plugin.PreferredAuthType,
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 	}
 	config.TLSConfMutex.RUnlock()
 	status, _, topicsList, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		l.Log.Error("status check of plugin " + plugin.ID + " failed: " + err.Error())
+		l.LogWithFields(ctx).Error("status check of plugin " + plugin.ID + " failed: " + err.Error())
 		return
 	}
 	EMBTopics.lock.Lock()
 	EMBTopics.EMBConsume = st.EMBConsume
 	EMBTopics.lock.Unlock()
 	for j := 0; j < len(topicsList); j++ {
-		EMBTopics.ConsumeTopic(topicsList[j])
+		EMBTopics.ConsumeTopic(ctx, topicsList[j])
 	}
-	return
 }
 
-func TrackConfigFileChanges(errChan chan error) {
+func TrackConfigFileChanges(ctx context.Context, errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat
 	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, errChan)
 	for {
 		select {
 		case info := <-eventChan:
-			l.Log.Info(info) // new data arrives through eventChan channel
+			transactionID := uuid.New()
+			ctx = context.WithValue(ctx, common.TransactionID, transactionID.String())
+			ctx = context.WithValue(ctx, common.ActionName, "TrackConfigFileChanges")
+			l.LogWithFields(ctx).Info(info) // new data arrives through eventChan channel
 			if l.Log.Level != config.Data.LogLevel {
-				l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
-				l.Log.Logger.SetLevel(config.Data.LogLevel)
+				l.LogWithFields(ctx).Debug("Log level is updated, new log level is ", config.Data.LogLevel)
+				l.LogWithFields(ctx).Logger.SetLevel(config.Data.LogLevel)
 			}
 			if format != config.Data.LogFormat {
 				l.SetFormatter(config.Data.LogFormat)
 				format = config.Data.LogFormat
-				l.Log.Info("Log format is updated, new log format is ", config.Data.LogFormat)
+				l.LogWithFields(ctx).Debug("Log format is updated, new log format is ", config.Data.LogFormat)
 			}
 		case err := <-errChan:
-			l.Log.Error(err)
+			l.LogWithFields(ctx).Error(err)
 		}
 	}
 }

@@ -16,7 +16,7 @@
 // and also have functionality to create error response
 package evresponse
 
-// EventResponse is resopnse struct
+// EventResponse is response struct
 type EventResponse struct {
 	StatusCode int         `json:"StatusCode"`
 	Location   string      `json:"Location"`

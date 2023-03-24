@@ -21,6 +21,7 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -29,6 +30,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/stretchr/testify/assert"
 )
@@ -58,7 +60,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     message,
 	}
-	resp := p.SubmitTestEvent(req)
+	resp := p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status Code should be StatusOK")
 
 	// Negative - with invalid request body
@@ -66,7 +68,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte{},
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// Invalid token
@@ -74,7 +76,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "invalidtoken",
 		PostBody:     message,
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusUnauthorized")
 
 	// test case for get session user name
@@ -82,7 +84,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "InvalidToken",
 		PostBody:     message,
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusUnauthorized")
 
 	// test case for invalid user name
@@ -90,7 +92,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     message,
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status Code should be StatusInternalServerError")
 
 	// with invalid messageId type
@@ -98,7 +100,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte(`{"MessageId": 123}`),
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// with invalid EventGroupId type
@@ -106,7 +108,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte(`{"MessageId": "123", "EventGroupId": "aasdd"}`),
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// with invalid EventId type
@@ -114,7 +116,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte(`{"MessageId": "123", "EventId": 123}`),
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// with invalid EventTimestamp type
@@ -122,7 +124,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte(`{"MessageId": "123", "EventTimestamp": 123}`),
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// with invalid EventType type
@@ -130,7 +132,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte(`{"MessageId": "123", "EventType": 123}`),
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// with invalid EventType data
@@ -138,7 +140,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte(`{"MessageId": "123", "EventType": "123"}`),
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// with invalid Message type
@@ -146,7 +148,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte(`{"MessageId": "123", "Message": 123}`),
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// with invalid MessageArgs type
@@ -154,7 +156,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte(`{"MessageId": "123", "MessageArgs": "123"}`),
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// with invalid OriginOfCondition type
@@ -162,7 +164,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte(`{"MessageId": "123", "OriginOfCondition": 123}`),
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// with invalid Severity type
@@ -170,7 +172,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte(`{"MessageId": "123", "Severity": 123}`),
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// with invalid Severity value
@@ -178,7 +180,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte(`{"MessageId": "123", "Severity": "123"}`),
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// with invalid session Name
@@ -186,8 +188,8 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     []byte(`{"MessageId": "123", "Severity": "123"}`),
 	}
-	p.DB.GetSessionUserName = func(sessionToken string) (string, error) { return "", errors.New("Invalid") }
-	resp = p.SubmitTestEvent(req)
+	p.DB.GetSessionUserName = func(ctx context.Context, sessionToken string) (string, error) { return "", errors.New("Invalid") }
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	// Invalid JSON
@@ -197,7 +199,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     message,
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status Code should be StatusInternalServerError")
 	JSONUnmarshal = func(data []byte, v interface{}) error { return json.Unmarshal(data, v) }
 
@@ -207,21 +209,21 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     message,
 	}
-	p.DB.GetEvtSubscriptions = func(s string) ([]evmodel.Subscription, error) {
+	p.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
 		return nil, errors.New("")
 	}
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status Code should be StatusInternalServerError")
 
 	// Invalid Case
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) { return "dummy", nil }
 	p = getMockMethods()
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) { return "", errors.New("") }
 	p = getMockMethods()
-	resp = p.SubmitTestEvent(req)
+	resp = p.SubmitTestEvent(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status Code should be StatusInternalServerError")
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)

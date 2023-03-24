@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -30,7 +31,7 @@ import (
 // As parameters session token, privileges and oem privileges are passed.
 // A RPC call is made with these parameters to the Account-Session service
 // to check whether the session is valid and have all the privileges which are passed to it.
-func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) (errResponse.RPC, error) {
+func IsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (errResponse.RPC, error) {
 	conn, err := ODIMService.Client(AccountSession)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to create client connection: %v", err)
@@ -38,8 +39,10 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) (errR
 	}
 	defer conn.Close()
 	asService := authproto.NewAuthorizationClient(conn)
+	ctxt := common.CreateNewRequestContext(ctx)
+	ctxt = common.CreateMetadata(ctxt)
 	response, err := asService.IsAuthorized(
-		context.TODO(),
+		ctxt,
 		&authproto.AuthRequest{
 			SessionToken:  sessionToken,
 			Privileges:    privileges,
@@ -58,15 +61,17 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) (errR
 }
 
 // GetSessionUserName will get user name from the session token by rpc call to account-session service
-func GetSessionUserName(sessionToken string) (string, error) {
+func GetSessionUserName(ctx context.Context, sessionToken string) (string, error) {
 	conn, err := ODIMService.Client(AccountSession)
 	if err != nil {
 		return "", fmt.Errorf("Failed to create client connection: %v", err)
 	}
 	defer conn.Close()
 	asService := sessionproto.NewSessionClient(conn)
+	ctxt := common.CreateNewRequestContext(ctx)
+	ctxt = common.CreateMetadata(ctxt)
 	response, err := asService.GetSessionUserName(
-		context.TODO(),
+		ctxt,
 		&sessionproto.SessionRequest{
 			SessionToken: sessionToken,
 		},
@@ -78,15 +83,17 @@ func GetSessionUserName(sessionToken string) (string, error) {
 }
 
 // GetSessionUserRoleID will get user name from the session token by rpc call to account-session service
-func GetSessionUserRoleID(sessionToken string) (string, error) {
+func GetSessionUserRoleID(ctx context.Context, sessionToken string) (string, error) {
 	conn, err := ODIMService.Client(AccountSession)
 	if err != nil {
 		return "", fmt.Errorf("Failed to create client connection: %v", err)
 	}
 	defer conn.Close()
 	asService := sessionproto.NewSessionClient(conn)
+	ctxt := common.CreateNewRequestContext(ctx)
+	ctxt = common.CreateMetadata(ctxt)
 	response, err := asService.GetSessionUserRoleID(
-		context.TODO(),
+		ctxt,
 		&sessionproto.SessionRequest{
 			SessionToken: sessionToken,
 		},

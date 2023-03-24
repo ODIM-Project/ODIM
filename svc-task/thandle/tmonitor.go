@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package thandle ...
+// Package thandle ...
 package thandle
 
 import (
@@ -28,9 +28,9 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-task/tresponse"
 )
 
-//GetTaskMonitor is an API end point to get the task details and response body.
+// GetTaskMonitor is an API end point to get the task details and response body.
 // Takes X-Auth-Token and authorize the request.
-//If X-Auth-Token is empty or invalid then it returns "StatusUnauthorized".
+// If X-Auth-Token is empty or invalid then it returns "StatusUnauthorized".
 // If the TaskID is not found then it return "StatusNotFound".
 // If the task is still not completed or cancelled or killed then it return with 202
 // with empty response body, else it return with "200 OK" with full task info in the
@@ -45,7 +45,7 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		"Date": time.Now().Format(http.TimeFormat),
 	}
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := ts.AuthenticationRPC(req.SessionToken, privileges)
+	authResp, err := ts.AuthenticationRPC(ctx, req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -53,7 +53,7 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		fillProtoResponse(ctx, &rsp, authResp)
 		return &rsp, nil
 	}
-	_, err = ts.GetSessionUserNameRPC(req.SessionToken)
+	_, err = ts.GetSessionUserNameRPC(ctx, req.SessionToken)
 	if err != nil {
 		l.LogWithFields(ctx).Printf(authErrorMessage)
 		fillProtoResponse(ctx, &rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))

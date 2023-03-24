@@ -721,8 +721,7 @@ func rediscoverStorageInventory(ctx context.Context, systemID, systemURL string)
 
 // GetSystemsCollection is to fetch all the Systems uri's and retruns with created collection
 // of systems data from odimra
-func GetSystemsCollection(ctx context.Context, req *systemsproto.GetSystemsRequest) response.RPC {
-	l.LogWithFields(ctx).Info("Inside GetSystemsCollection function (GetResource)")
+func GetSystemsCollection(ctx context.Context, req *systemsproto.GetSystemsRequest) response.RPC {	
 	allowed := make(map[string]map[string]bool)
 	allowed["searchKeys"] = make(map[string]bool)
 	allowed["conditionKeys"] = make(map[string]bool)

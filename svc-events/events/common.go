@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
@@ -46,7 +47,7 @@ var (
 // External struct to inject the contact external function into the handlers
 type External struct {
 	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth            func(string, []string, []string) (response.RPC, error)
+	Auth            func(context.Context, string, []string, []string) (response.RPC, error)
 	CreateTask      func(context.Context, string) (string, error)
 	UpdateTask      func(context.Context, common.TaskData) error
 	CreateChildTask func(context.Context, string, string) (string, error)
@@ -54,22 +55,22 @@ type External struct {
 
 // DB struct to inject the contact DB function into the handlers
 type DB struct {
-	GetSessionUserName               func(sessionToken string) (string, error)
-	GetEvtSubscriptions              func(string) ([]evmodel.Subscription, error)
-	SaveEventSubscription            func(evmodel.Subscription) error
-	GetPluginData                    func(string) (*evmodel.Plugin, *errors.Error)
-	GetDeviceSubscriptions           func(string) (*evmodel.DeviceSubscription, error)
-	GetTarget                        func(string) (*evmodel.Target, error)
+	GetSessionUserName               func(ctx context.Context, sessionToken string) (string, error)
+	GetEvtSubscriptions              func(string) ([]evmodel.SubscriptionResource, error)
+	SaveEventSubscription            func(evmodel.SubscriptionResource) error
+	GetPluginData                    func(string) (*common.Plugin, *errors.Error)
+	GetDeviceSubscriptions           func(string) (*common.DeviceSubscription, error)
+	GetTarget                        func(string) (*common.Target, error)
 	GetAllKeysFromTable              func(string) ([]string, error)
 	GetAllFabrics                    func() ([]string, error)
 	GetAllMatchingDetails            func(string, string, common.DbType) ([]string, *errors.Error)
-	UpdateDeviceSubscriptionLocation func(evmodel.DeviceSubscription) error
+	UpdateDeviceSubscriptionLocation func(common.DeviceSubscription) error
 	GetFabricData                    func(string) (evmodel.Fabric, error)
 	DeleteEvtSubscription            func(string) error
 	DeleteDeviceSubscription         func(hostIP string) error
-	UpdateEventSubscription          func(evmodel.Subscription) error
+	UpdateEventSubscription          func(evmodel.SubscriptionResource) error
 	SaveUndeliveredEvents            func(string, []byte) error
-	SaveDeviceSubscription           func(evmodel.DeviceSubscription) error
+	SaveDeviceSubscription           func(common.DeviceSubscription) error
 	GetUndeliveredEvents             func(string) (string, error)
 	DeleteUndeliveredEvents          func(string) error
 	GetUndeliveredEventsFlag         func(string) (bool, error)
@@ -80,6 +81,7 @@ type DB struct {
 	GetAggregateHosts                func(aggregateIP string) ([]string, error)
 	UpdateAggregateHosts             func(aggregateId string, hostIP []string) error
 	GetAggregateList                 func(hostIP string) ([]string, error)
+	GetUndeliveredEventsKeyList      func(string, string, common.DbType, int) ([]string, int, *errors.Error)
 }
 
 // fillTaskData is to fill task information in TaskData struct
@@ -108,7 +110,8 @@ func UpdateTaskData(ctx context.Context, taskData common.TaskData) error {
 		ResponseBody:  respBody,
 	}
 
-	err := UpdateTaskService(ctx, taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
+	err := UpdateTaskService(ctx, taskData.TaskID, taskData.TaskState, taskData.TaskStatus,
+		taskData.PercentComplete, payLoad, time.Now())
 	if err != nil && (err.Error() == common.Cancelling) {
 		// We cant do anything here as the task has done it work completely, we cant reverse it.
 		//Unless if we can do opposite/reverse action for delete server which is add server.
@@ -116,25 +119,26 @@ func UpdateTaskData(ctx context.Context, taskData common.TaskData) error {
 		if taskData.PercentComplete == 0 {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}
-		l.Log.Error("error: task update for " + taskData.TaskID + " failed with err: " + err.Error())
+		l.LogWithFields(ctx).Error("error: task update for " + taskData.TaskID + " failed with err: " + err.Error())
 		runtime.Goexit()
 	}
 	return nil
 }
 
 // this function is for to create array of originofresources without odata id
-func removeOdataIDfromOriginResources(originResources []evmodel.OdataIDLink) []string {
+func removeOdataIDfromOriginResources(originResources []model.Link) []string {
 	var originRes []string
 	for _, origin := range originResources {
-		originRes = append(originRes, origin.OdataID)
+		originRes = append(originRes, origin.Oid)
 	}
 	return originRes
 }
 
 // remove duplicate elements in string slice.
 // Takes string slice and length, and updates the same with new values
-func removeDuplicatesFromSlice(slc *[]string, slcLen *int) {
-	if *slcLen > 1 {
+func removeDuplicatesFromSlice(slc *[]string) {
+
+	if len(*slc) > 1 {
 		uniqueElementsDs := make(map[string]bool)
 		var uniqueElementsList []string
 		for _, element := range *slc {
@@ -145,12 +149,10 @@ func removeDuplicatesFromSlice(slc *[]string, slcLen *int) {
 		}
 		// length of uniqueElementsList will be less than passed string slice,
 		// only if duplicates existed, so will assign slc with modified list and update length
-		if len(uniqueElementsList) < *slcLen {
+		if len(uniqueElementsList) < len(*slc) {
 			*slc = uniqueElementsList
-			*slcLen = len(*slc)
 		}
 	}
-	return
 }
 
 // removeElement will remove the element from the slice return
@@ -165,20 +167,32 @@ func removeElement(slice []string, element string) []string {
 	return elements
 }
 
+// removeElement will remove the element from the slice return
+// slice of remaining elements
+func removeLinks(slice []model.Link, element string) []model.Link {
+	var elements []model.Link
+	for _, val := range slice {
+		if val.Oid != element {
+			elements = append(elements, val)
+		}
+	}
+	return elements
+}
+
 // PluginCall method is to call to given url and method
 // and validate the response and return
-func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
+func (e *ExternalInterfaces) PluginCall(ctx context.Context, req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
 	var resp errResponse.RPC
-	response, err := e.callPlugin(context.TODO(), req)
+	response, err := e.callPlugin(ctx, req)
 	if err != nil {
-		if evcommon.GetPluginStatus(req.Plugin) {
-			response, err = e.callPlugin(context.TODO(), req)
+		if evcommon.GetPluginStatus(ctx, req.Plugin) {
+			response, err = e.callPlugin(ctx, req)
 		}
 		if err != nil {
 			errorMessage := "Error : " + err.Error()
 			evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				[]interface{}{}, &resp)
-			l.Log.Error(errorMessage)
+			l.LogWithFields(ctx).Error(errorMessage)
 			return resp, "", "", err
 		}
 	}
@@ -188,7 +202,7 @@ func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errR
 		errorMessage := "error while trying to read response body: " + err.Error()
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			[]interface{}{}, &resp)
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return resp, "", "", err
 	}
 	if !(response.StatusCode == http.StatusCreated || response.StatusCode == http.StatusOK) {
@@ -204,7 +218,7 @@ func (e *ExternalInterfaces) PluginCall(req evcommon.PluginContactRequest) (errR
 }
 
 // validateFields is for validating subscription parameters
-func validateFields(request *evmodel.RequestBody) (int32, string, []interface{}, error) {
+func validateFields(request *model.EventDestination) (int32, string, []interface{}, error) {
 	validEventFormatTypes := map[string]bool{"Event": true, "MetricReport": true}
 	validEventTypes := map[string]bool{"Alert": true, "MetricReport": true, "ResourceAdded": true, "ResourceRemoved": true, "ResourceUpdated": true, "StatusChange": true, "Other": true}
 
@@ -220,7 +234,10 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 	if request.EventFormatType == "" {
 		request.EventFormatType = "Event"
 	}
-
+	// if Subscription Name is empty then use default name
+	if request.Name == "" {
+		request.Name = evmodel.SubscriptionName
+	}
 	if _, ok := validEventFormatTypes[request.EventFormatType]; !ok {
 		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.EventFormatType, "EventFormatType"}, fmt.Errorf("Invalid EventFormatType")
 	}
@@ -231,7 +248,7 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 
 	for _, eventType := range request.EventTypes {
 		if _, ok := validEventTypes[eventType]; !ok {
-			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{eventType, "EventTypes"}, fmt.Errorf("Invalid EventTypes")
+			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{eventType, "EventTypes"}, fmt.Errorf("invalid EventTypes")
 		}
 	}
 
@@ -244,12 +261,11 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 		}
 	}
 
-	if request.SubscriptionType == "" {
-		request.SubscriptionType = evmodel.SubscriptionType
-	} else if request.SubscriptionType == "SSE" || request.SubscriptionType == "SNMPTrap" || request.SubscriptionType == "SNMPInform" {
-		return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"SubscriptionType"}, fmt.Errorf("Unsupported SubscriptionType")
-	} else if request.SubscriptionType != evmodel.SubscriptionType {
-		return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"SubscriptionType"}, fmt.Errorf("Invalid SubscriptionType")
+	if !request.SubscriptionType.IsValidSubscriptionType() {
+		return http.StatusBadRequest, errResponse.PropertyUnknown, []interface{}{"SubscriptionType"}, fmt.Errorf("invalid SubscriptionType")
+	}
+	if !request.SubscriptionType.IsSubscriptionTypeSupported() {
+		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.SubscriptionType.ToString(), "SubscriptionType"}, fmt.Errorf("unsupported SubscriptionType")
 	}
 
 	if request.Context == "" {
@@ -258,12 +274,14 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 
 	if request.DeliveryRetryPolicy == "" {
 		request.DeliveryRetryPolicy = evmodel.DeliveryRetryPolicy
-	} else if request.DeliveryRetryPolicy == "TerminateAfterRetries" || request.DeliveryRetryPolicy == "SuspendRetries" || request.DeliveryRetryPolicy == "RetryForeverWithBackoff" {
-		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.DeliveryRetryPolicy, "DeliveryRetryPolicy"}, fmt.Errorf("Unsupported DeliveryRetryPolicy")
-	} else if request.DeliveryRetryPolicy != evmodel.DeliveryRetryPolicy {
-		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.DeliveryRetryPolicy, "DeliveryRetryPolicy"}, fmt.Errorf("Invalid DeliveryRetryPolicy")
+	} else {
+		if !request.DeliveryRetryPolicy.IsValidDeliveryRetryPolicyType() {
+			return http.StatusBadRequest, errResponse.PropertyUnknown, []interface{}{"DeliveryRetryPolicy"}, fmt.Errorf("invalid deliveryRetryPolicy")
+		}
+		if !request.DeliveryRetryPolicy.IsDeliveryRetryPolicyTypeSupported() {
+			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.DeliveryRetryPolicy.ToString(), "deliveryRetryPolicy"}, fmt.Errorf("unsupported DeliveryRetryPolicy")
+		}
 	}
-
 	availableProtocols := []string{"Redfish"}
 	var validProtocol bool
 	validProtocol = false
@@ -273,13 +291,13 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 		}
 	}
 	if !validProtocol {
-		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.Protocol, "Protocol"}, fmt.Errorf("Protocol %v is invalid", request.Protocol)
+		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.Protocol, "Protocol"}, fmt.Errorf("protocol %v is invalid", request.Protocol)
 	}
 
 	// check the All ResourceTypes are supported
 	for _, resourceType := range request.ResourceTypes {
 		if _, ok := common.ResourceTypes[resourceType]; !ok {
-			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{resourceType, "ResourceType"}, fmt.Errorf("Unsupported ResourceType")
+			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{resourceType, "ResourceType"}, fmt.Errorf("unsupported ResourceType")
 		}
 	}
 
@@ -311,15 +329,15 @@ func createEventSubscriptionResponse() interface{} {
 }
 
 // getPluginToken will verify the if any token present to the plugin else it will create token for the new plugin
-func (e *ExternalInterfaces) getPluginToken(plugin *evmodel.Plugin) string {
+func (e *ExternalInterfaces) getPluginToken(ctx context.Context, plugin *common.Plugin) string {
 	authToken := evcommon.Token.GetToken(plugin.ID)
 	if authToken == "" {
-		return e.createToken(plugin)
+		return e.createToken(ctx, plugin)
 	}
 	return authToken
 }
 
-func (e *ExternalInterfaces) createToken(plugin *evmodel.Plugin) string {
+func (e *ExternalInterfaces) createToken(ctx context.Context, plugin *common.Plugin) string {
 	var contactRequest evcommon.PluginContactRequest
 
 	contactRequest.Plugin = plugin
@@ -329,9 +347,9 @@ func (e *ExternalInterfaces) createToken(plugin *evmodel.Plugin) string {
 		"Password": string(plugin.Password),
 	}
 	contactRequest.URL = "/ODIM/v1/Sessions"
-	_, _, token, err := e.PluginCall(contactRequest)
+	_, _, token, err := e.PluginCall(ctx, contactRequest)
 	if err != nil {
-		l.Log.Error(err.Error())
+		l.LogWithFields(ctx).Error(err.Error())
 	}
 	pluginToken := evcommon.PluginToken{
 		Tokens: make(map[string]string),
@@ -342,21 +360,21 @@ func (e *ExternalInterfaces) createToken(plugin *evmodel.Plugin) string {
 	return token
 }
 
-func (e *ExternalInterfaces) retryEventOperation(req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
+func (e *ExternalInterfaces) retryEventOperation(ctx context.Context, req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
 	var resp errResponse.RPC
-	var token = e.createToken(req.Plugin)
+	var token = e.createToken(ctx, req.Plugin)
 	if token == "" {
 		evcommon.GenErrorResponse("error: Unable to create session with plugin "+req.Plugin.ID, errResponse.NoValidSession, http.StatusUnauthorized,
 			[]interface{}{}, &resp)
 		return resp, "", "", fmt.Errorf("error: Unable to create session with plugin")
 	}
 	req.Token = token
-	return e.PluginCall(req)
+	return e.PluginCall(ctx, req)
 }
 
-func (e *ExternalInterfaces) retryEventSubscriptionOperation(req evcommon.PluginContactRequest) (*http.Response, evresponse.EventResponse, error) {
+func (e *ExternalInterfaces) retryEventSubscriptionOperation(ctx context.Context, req evcommon.PluginContactRequest) (*http.Response, evresponse.EventResponse, error) {
 	var resp evresponse.EventResponse
-	var token = e.createToken(req.Plugin)
+	var token = e.createToken(ctx, req.Plugin)
 	if token == "" {
 		evcommon.GenEventErrorResponse("error: Unable to create session with plugin "+req.Plugin.ID, errResponse.NoValidSession, http.StatusUnauthorized,
 			&resp, []interface{}{})
@@ -364,19 +382,19 @@ func (e *ExternalInterfaces) retryEventSubscriptionOperation(req evcommon.Plugin
 	}
 	req.Token = token
 
-	response, err := e.callPlugin(context.TODO(), req) // TODO: Pass context
+	response, err := e.callPlugin(ctx, req)
 	if err != nil {
-		errorMessage := "error while unmarshaling the body : " + err.Error()
+		errorMessage := "error while unmarshal the body : " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			&resp, []interface{}{})
-		l.Log.Error(errorMessage)
+		l.LogWithFields(ctx).Error(errorMessage)
 		return nil, resp, err
 	}
 	return response, resp, err
 }
 
-// isHostPresent will check if hostip present in the hosts slice
-func isHostPresent(hosts []string, hostip string) bool {
+// isHostPresent will check if hostIp present in the hosts slice
+func isHostPresent(hosts []string, hostIp string) bool {
 
 	if len(hosts) < 1 {
 		return false
@@ -385,7 +403,7 @@ func isHostPresent(hosts []string, hostip string) bool {
 	front := 0
 	rear := len(hosts) - 1
 	for front <= rear {
-		if hosts[front] == hostip || hosts[rear] == hostip {
+		if hosts[front] == hostIp || hosts[rear] == hostIp {
 			return true
 		}
 		front++
@@ -420,7 +438,7 @@ func (e *ExternalInterfaces) callPlugin(ctx context.Context, req evcommon.Plugin
 	return e.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, nil)
 }
 
-// checkCollection verifies if the given origin is collection and extracts all the suboridinate resources
+// checkCollection verifies if the given origin is collection and extracts all the subordinate resources
 func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, bool, string, bool, error) {
 	switch origin {
 	case "/redfish/v1/Systems":
@@ -429,7 +447,7 @@ func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, b
 	case "/redfish/v1/Chassis":
 		return []string{}, "ChassisCollection", true, "", false, nil
 	case "/redfish/v1/Managers":
-		//TODO:After Managers implemention need to get all Managers data
+		//TODO:After Managers implementation need to get all Managers data
 		return []string{}, "ManagerCollection", true, "", false, nil
 	case "/redfish/v1/Fabrics":
 		collection, err := e.GetAllFabrics()
@@ -444,7 +462,7 @@ func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, b
 		}
 		var collection []string = []string{}
 		for _, system := range aggregateCollection.Elements {
-			var systemID string = system.OdataID
+			var systemID string = system.Oid
 			collection = append(collection, systemID)
 		}
 		return collection, "AggregateCollections", true, origin, true, err
@@ -453,8 +471,8 @@ func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, b
 	return []string{}, "", false, "", false, nil
 }
 
-// isHostPresentInEventForward will check if hostip present in the hosts slice
-func isHostPresentInEventForward(hosts []string, hostip string) bool {
+// isHostPresentInEventForward will check if hostIp present in the hosts slice
+func isHostPresentInEventForward(hosts []string, hostIp string) bool {
 
 	if len(hosts) == 0 {
 		return true
@@ -463,20 +481,11 @@ func isHostPresentInEventForward(hosts []string, hostip string) bool {
 	front := 0
 	rear := len(hosts) - 1
 	for front <= rear {
-		if hosts[front] == hostip || hosts[rear] == hostip || strings.Contains(hosts[rear], "Collection") || strings.Contains(hosts[front], "Collection") {
+		if hosts[front] == hostIp || hosts[rear] == hostIp || strings.Contains(hosts[rear], "Collection") || strings.Contains(hosts[front], "Collection") {
 			return true
 		}
 		front++
 		rear--
 	}
 	return false
-}
-
-// updateOriginResourceswithOdataID is for to create array of odata id
-func updateOriginResourceswithOdataID(originResources []string) []evresponse.ListMember {
-	var originRes []evresponse.ListMember
-	for _, origin := range originResources {
-		originRes = append(originRes, evresponse.ListMember{OdataID: origin})
-	}
-	return originRes
 }

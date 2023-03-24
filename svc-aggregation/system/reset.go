@@ -70,7 +70,6 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 	var percentComplete int32
 	targetURI := "/redfish/v1/AggregationService/Actions/AggregationService.Reset/" // this will removed later and passed as input param in req struct
 	percentComplete = 0
-
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	var resetRequest AggregationResetRequest
@@ -108,8 +107,8 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 	var cancelled, partialResultFlag bool
 	var wg, writeWG sync.WaitGroup
 	threadID := 1
-	ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.ResetAggregate)
-	ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
+	ctxt := context.WithValue(ctx, common.ThreadName, common.ResetAggregate)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	threadID++
 	go func() {
 
@@ -152,8 +151,8 @@ func (e *ExternalInterface) Reset(ctx context.Context, taskID string, sessionUse
 				e.aggregateSystems(ctx, resetRequest.ResetType, resource, taskID, string(req.RequestBody), subTaskChan, sessionUserName, resource, resetRequest.ResetType, &wg)
 			} else {
 				threadID := 1
-				resetCtx := context.WithValue(ctxt, common.Key(common.ThreadName), common.ResetAggregate)
-				resetCtx = context.WithValue(resetCtx, common.Key(common.ThreadID), strconv.Itoa(threadID))
+				resetCtx := context.WithValue(ctxt, common.ThreadName, common.ResetAggregate)
+				resetCtx = context.WithValue(resetCtx, common.ThreadID, strconv.Itoa(threadID))
 				go e.resetSystem(resetCtx, taskID, string(req.RequestBody), subTaskChan, sessionUserName, resource, resetRequest.ResetType, &wg)
 				threadID++
 			}
@@ -240,8 +239,8 @@ func (e *ExternalInterface) aggregateSystems(ctx context.Context, requestType, u
 	var cancelled, partialResultFlag bool
 
 	threadID := 1
-	ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.SubTaskStatusUpdate)
-	ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
+	ctxt := context.WithValue(ctx, common.ThreadName, common.SubTaskStatusUpdate)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	threadID++
 	var wg1, writeWG sync.WaitGroup
 	go func() {
@@ -275,8 +274,8 @@ func (e *ExternalInterface) aggregateSystems(ctx context.Context, requestType, u
 		wg1.Add(1)
 		writeWG.Add(1)
 		threadID := 1
-		resetCtxt := context.WithValue(ctxt, common.Key(common.ThreadName), common.ResetSystem)
-		resetCtxt = context.WithValue(resetCtxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
+		resetCtxt := context.WithValue(ctxt, common.ThreadName, common.ResetSystem)
+		resetCtxt = context.WithValue(resetCtxt, common.ThreadID, strconv.Itoa(threadID))
 		go e.resetSystem(resetCtxt, subTaskID, reqBody, subTaskChan1, sessionUserName, element.OdataID, requestType, &wg1)
 		threadID++
 	}

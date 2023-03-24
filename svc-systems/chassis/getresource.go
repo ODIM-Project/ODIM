@@ -44,8 +44,7 @@ type PluginContact struct {
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (p *PluginContact) GetChassisResource(ctx context.Context, req *chassisproto.GetChassisRequest) (response.RPC, error) {
-	var resp response.RPC
-	l.LogWithFields(ctx).Debugln("Inside GetChassisResource")
+	var resp response.RPC	
 	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"

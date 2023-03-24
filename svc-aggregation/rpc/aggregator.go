@@ -51,7 +51,7 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 	//Else send 401 Unauthorised
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -140,7 +140,7 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 	// Verfy the credentials here
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -149,7 +149,7 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
-	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := a.connector.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
@@ -166,8 +166,8 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 		return resp, nil
 	}
 	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
-	ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.ResetAggregate)
-	ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
+	ctxt := context.WithValue(ctx, common.ThreadName, common.ResetAggregate)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	go a.reset(ctxt, taskID, sessionUserName, req)
 	threadID++
 	// return 202 Accepted
@@ -227,7 +227,7 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -236,7 +236,7 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
-	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := a.connector.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
@@ -269,8 +269,8 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 		// print error as we are unable to communicate with svc-task and then return
 		l.LogWithFields(ctx).Error("Unable to contact task-service with UpdateTask RPC : " + err.Error())
 	}
-	ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.SetBootOrder)
-	ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
+	ctxt := context.WithValue(ctx, common.ThreadName, common.SetBootOrder)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	go a.connector.SetDefaultBootOrder(ctxt, taskID, sessionUserName, req)
 	threadID++
 	// return 202 Accepted
@@ -297,7 +297,7 @@ func (a *Aggregator) RediscoverSystemInventory(ctx context.Context, req *aggrega
 	var threadID int = 1
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
-	ctx = context.WithValue(ctx, common.Key(common.ThreadID), threadID)
+	ctx = context.WithValue(ctx, common.ThreadID, threadID)
 	go a.connector.RediscoverSystemInventory(ctx, req.SystemID, req.SystemURL, true)
 	threadID++
 	return resp, nil
@@ -324,7 +324,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	var taskID string
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -333,7 +333,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
-	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := a.connector.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
@@ -383,8 +383,8 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	}
 	// spawn the thread here to process the action asynchronously
 	threadID := 1
-	ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.AddAggregationSource)
-	ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
+	ctxt := context.WithValue(ctx, common.ThreadName, common.AddAggregationSource)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	go a.connector.AddAggregationSource(ctxt, taskID, sessionUserName, req)
 	threadID++
 
@@ -442,7 +442,7 @@ func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregato
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -472,7 +472,7 @@ func (a *Aggregator) GetAggregationSource(ctx context.Context, req *aggregatorpr
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -502,7 +502,7 @@ func (a *Aggregator) UpdateAggregationSource(ctx context.Context, req *aggregato
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -534,7 +534,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	// Task Service using RPC and get the taskID
 	targetURI := req.URL
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -543,7 +543,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
-	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := a.connector.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
@@ -567,8 +567,8 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 		taskID = strArray[len(strArray)-1]
 	}
 	var threadID int = 1
-	ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.DeleteAggregationSource)
-	ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
+	ctxt := context.WithValue(ctx, common.ThreadName, common.DeleteAggregationSource)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	go a.connector.DeleteAggregationSources(ctxt, taskID, targetURI, req)
 	threadID++
 	// return 202 Accepted
@@ -596,7 +596,7 @@ func (a *Aggregator) CreateAggregate(ctx context.Context, req *aggregatorproto.A
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -623,7 +623,7 @@ func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -650,7 +650,7 @@ func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.Aggr
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -677,7 +677,7 @@ func (a *Aggregator) DeleteAggregate(ctx context.Context, req *aggregatorproto.A
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -704,7 +704,7 @@ func (a *Aggregator) AddElementsToAggregate(ctx context.Context, req *aggregator
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -731,7 +731,7 @@ func (a *Aggregator) RemoveElementsFromAggregate(ctx context.Context, req *aggre
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -759,7 +759,7 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 	// Verfy the credentials here
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -768,7 +768,7 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
-	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := a.connector.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
@@ -787,8 +787,8 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
 
 	threadID := 1
-	ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.ResetSystem)
-	ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
+	ctxt := context.WithValue(ctx, common.ThreadName, common.ResetSystem)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	go a.resetElements(ctxt, taskID, sessionUserName, req)
 	threadID++
 	// return 202 Accepted
@@ -844,7 +844,7 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -853,7 +853,7 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
-	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := a.connector.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
@@ -888,8 +888,8 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 	}
 
 	threadID := 1
-	ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.SetDefaultBootOrderElementsOfAggregate)
-	ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
+	ctxt := context.WithValue(ctx, common.ThreadName, common.SetDefaultBootOrderElementsOfAggregate)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	go a.connector.SetDefaultBootOrderElementsOfAggregate(ctxt, taskID, sessionUserName, req)
 	threadID++
 	// return 202 Accepted
@@ -918,7 +918,7 @@ func (a *Aggregator) GetAllConnectionMethods(ctx context.Context, req *aggregato
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -945,7 +945,7 @@ func (a *Aggregator) GetConnectionMethod(ctx context.Context, req *aggregatorpro
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
@@ -993,7 +993,7 @@ func (a *Aggregator) GetResetActionInfoService(ctx context.Context, req *aggrega
 	//Else send 401 Unauthorised
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -1049,7 +1049,7 @@ func (a *Aggregator) GetSetDefaultBootOrderActionInfo(ctx context.Context, req *
 	//Else send 401 Unauthorised
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authResp, err := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	authResp, err := a.connector.Auth(ctx, req.SessionToken, privileges, oemprivileges)
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())

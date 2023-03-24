@@ -106,7 +106,7 @@
 	   "MaxRetryAttempt": 3,
 	   "RetryIntervalInMins": 2,
 	   "ResponseTimeoutInSecs": 30,
-	   "StartUpResouceBatchSize": 10
+	   "StartUpResourceBatchSize": 10
 	},
 	"ExecPriorityDelayConf": {
 	   "MinResetPriority": 1,
@@ -151,5 +151,7 @@
   "SessionLimitPerUser":0,
   "LogLevel":"warn",
   "ImageRegistryAddress":"",
-  "KeyExpiryInterval":86400
+  "KeyExpiryInterval":86400,
+  "EventForwardingWorkerPoolCount":1000,
+  "EventSaveWorkerPoolCount":10
 }

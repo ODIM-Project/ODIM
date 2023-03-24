@@ -16,7 +16,9 @@
 package dpmessagebus
 
 import (
+	"context"
 	"encoding/json"
+
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
@@ -24,7 +26,7 @@ import (
 )
 
 // Publish ...
-func Publish(data interface{}) bool {
+func Publish(ctx context.Context, data interface{}) bool {
 	if data == nil {
 		log.Error("Invalid data on publishing events")
 		return false

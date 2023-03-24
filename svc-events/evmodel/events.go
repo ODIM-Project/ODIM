@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-// Package evmodel have the struct models and DB functionalties
+// Package evmodel have the struct models and DB functionalities
 package evmodel
 
 import (
@@ -20,16 +20,17 @@ import (
 	"fmt"
 	"strings"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 )
 
 const (
-	// EventFormatType is set to Event (MetricReport is not supporting now)
+	// EventFormatType is set to Event (MetricReport is not supporting now
 	EventFormatType = "Event"
 
-	// SubscriptionType is set to RedfishEvent (make it as array of SubscritpionType)
+	// SubscriptionType is set to RedfishEvent (make it as array of SubscriptionType
 	SubscriptionType = "RedfishEvent"
 
 	// Context is set to default if its empty
@@ -48,8 +49,8 @@ const (
 	// UndeliveredEvents holds table for UndeliveredEvent
 	UndeliveredEvents = "UndeliveredEvents"
 
-	// ReadInProgres holds table for ReadInProgres
-	ReadInProgres = "ReadInProgres"
+	// ReadInProgress holds table for ReadInProgress
+	ReadInProgress = "ReadInProgress"
 	// DeliveryRetryPolicy is set to default value incase if its empty
 	DeliveryRetryPolicy = "RetryForever"
 
@@ -59,104 +60,18 @@ const (
 )
 
 var (
-	//GetDbConnection alies for common.GetDBConnection
+	//GetDbConnection alias for common.GetDBConnection
 	GetDbConnection = common.GetDBConnection
 )
 
-// OdataIDLink containes link to a resource
-type OdataIDLink struct {
-	OdataID string `json:"@odata.id"`
-}
-
-//RequestBody is required to receive the post request payload
-type RequestBody struct {
-	Name                 string        `json:"Name"`
-	Destination          string        `json:"Destination" validate:"required"`
-	EventTypes           []string      `json:"EventTypes,omitempty"`
-	MessageIds           []string      `json:"MessageIds,omitempty"`
-	ResourceTypes        []string      `json:"ResourceTypes,omitempty"`
-	Context              string        `json:"Context"`
-	Protocol             string        `json:"Protocol" validate:"required"`
-	SubscriptionType     string        `json:"SubscriptionType"`
-	EventFormatType      string        `json:"EventFormatType"`
-	SubordinateResources bool          `json:"SubordinateResources"`
-	OriginResources      []OdataIDLink `json:"OriginResources"`
-	DeliveryRetryPolicy  string        `json:"DeliveryRetryPolicy"`
-}
-
-//Subscription is a model to store the subscription details
-type Subscription struct {
-	UserName             string   `json:"UserName"`
-	SubscriptionID       string   `json:"SubscriptionID"`
-	Destination          string   `json:"Destination"`
-	Name                 string   `json:"Name"`
-	Context              string   `json:"Context"`
-	EventTypes           []string `json:"EventTypes"`
-	MessageIds           []string `json:"MessageIds"`
-	Protocol             string   `json:"Protocol"`
-	SubscriptionType     string   `json:"SubscriptionType"`
-	EventFormatType      string   `json:"EventFormatType"`
-	SubordinateResources bool     `json:"SubordinateResources"`
-	ResourceTypes        []string `json:"ResourceTypes"`
-	// To store origin resource
-	OriginResource string `json:"OriginResource,omitempty"`
-	// To store multiple origin resource
-	OriginResources []string `json:"OriginResources"`
-	// To store all Device address
-	Hosts []string `json:"Hosts"`
-	// Remove Location and EventHostIP
-	Location                string   `json:"location,omitempty"`
-	EventHostIP             string   `json:"EventHostIP,omitempty"`
-	ExcludeMessageIds       []string `json:"ExcludeMessageIds,omitempty"`
-	ExcludeRegistryPrefixes []string `json:"ExcludeRegistryPrefixes,omitempty"`
-	DeliveryRetryPolicy     string   `json:"DeliveryRetryPolicy"`
-}
-
-//DeviceSubscription is a model to store the subscription details of a device
-type DeviceSubscription common.DeviceSubscription
-
-//EvtSubPost is required to frame the post payload for the target device (South Bound)
-type EvtSubPost struct {
-	Name                 string        `json:"Name"`
-	Destination          string        `json:"Destination"`
-	EventTypes           []string      `json:"EventTypes,omitempty"`
-	MessageIds           []string      `json:"MessageIds,omitempty"`
-	ResourceTypes        []string      `json:"ResourceTypes,omitempty"`
-	Protocol             string        `json:"Protocol"`
-	EventFormatType      string        `json:"EventFormatType"`
-	SubscriptionType     string        `json:"SubscriptionType"`
-	SubordinateResources bool          `json:"SubordinateResources"`
-	HTTPHeaders          []HTTPHeaders `json:"HttpHeaders"`
-	Context              string        `json:"Context"`
-	OriginResources      []OdataIDLink `json:"OriginResources"`
-	DeliveryRetryPolicy  string        `json:"DeliveryRetryPolicy,omitempty"`
-}
-
-//HTTPHeaders required for the subscribing for events
-type HTTPHeaders struct {
-	ContentType string `json:"Content-Type"`
-}
-
-//Target is for sending the request to south bound/plugin
-type Target struct {
-	ManagerAddress string `json:"ManagerAddress"`
-	Password       []byte `json:"Password"`
-	UserName       string `json:"UserName"`
-	PostBody       []byte `json:"PostBody"`
-	DeviceUUID     string `json:"DeviceUUID"`
-	PluginID       string `json:"PluginID"`
-	Location       string `json:"Location"`
-}
-
-// Plugin is the model for plugin information
-type Plugin struct {
-	IP                string
-	Port              string
-	Username          string
-	Password          []byte
-	ID                string
-	PluginType        string
-	PreferredAuthType string
+// SubscriptionResource is a model to store the subscription details
+type SubscriptionResource struct {
+	EventDestination *dmtf.EventDestination `json:"EventDestination"`
+	EventHostIP      string                 `json:"EventHostIP,omitempty"`
+	Hosts            []string               `json:"Hosts"`
+	SubscriptionID   string                 `json:"SubscriptionID"`
+	UserName         string                 `json:"UserName"`
+	Location         string                 `json:"location,omitempty"`
 }
 
 // Fabric is the model for fabrics information
@@ -165,12 +80,20 @@ type Fabric struct {
 	PluginID   string
 }
 
-//Aggregate is the model for Aggregate information
-type Aggregate struct {
-	Elements []OdataIDLink `json:"Elements"`
+// EventPost is the model for post data to client
+type EventPost struct {
+	Destination        string
+	EventID            string
+	UndeliveredEventID string
+	Message            []byte
 }
 
-//GetResource fetches a resource from database using table and key
+// Aggregate is the model for Aggregate information
+type Aggregate struct {
+	Elements []dmtf.Link `json:"Elements"`
+}
+
+// GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
 	conn, err := GetDbConnection(common.InMemory)
 	if err != nil {
@@ -187,9 +110,9 @@ func GetResource(Table, key string) (string, *errors.Error) {
 	return resource, nil
 }
 
-//GetTarget fetches the System(Target Device Credentials) table details
-func GetTarget(deviceUUID string) (*Target, error) {
-	var target Target
+// GetTarget fetches the System(Target Device Credentials) table details
+func GetTarget(deviceUUID string) (*common.Target, error) {
+	var target common.Target
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -206,9 +129,9 @@ func GetTarget(deviceUUID string) (*Target, error) {
 
 }
 
-//GetPluginData will fetch plugin details
-func GetPluginData(pluginID string) (*Plugin, *errors.Error) {
-	var plugin Plugin
+// GetPluginData will fetch plugin details
+func GetPluginData(pluginID string) (*common.Plugin, *errors.Error) {
+	var plugin common.Plugin
 
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -226,15 +149,16 @@ func GetPluginData(pluginID string) (*Plugin, *errors.Error) {
 
 	bytepw, errs := common.DecryptWithPrivateKey([]byte(plugin.Password))
 	if errs != nil {
-		return nil, errors.PackError(errors.DecryptionFailed, "error: "+pluginID+" plugin password decryption failed: "+errs.Error())
+		return nil, errors.PackError(errors.DecryptionFailed, "error: "+pluginID+
+			" plugin password decryption failed: "+errs.Error())
 	}
 	plugin.Password = bytepw
 
 	return &plugin, nil
 }
 
-//GetAllPlugins gets all the Plugin from the db
-func GetAllPlugins() ([]Plugin, *errors.Error) {
+// GetAllPlugins gets all the Plugin from the db
+func GetAllPlugins() ([]common.Plugin, *errors.Error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -243,9 +167,9 @@ func GetAllPlugins() ([]Plugin, *errors.Error) {
 	if err != nil {
 		return nil, err
 	}
-	var plugins []Plugin
+	var plugins []common.Plugin
 	for _, key := range keys {
-		var plugin Plugin
+		var plugin common.Plugin
 		plugindata, err := conn.Read("Plugin", key)
 		if err != nil {
 			return nil, errors.PackError(err.ErrNo(), "error while trying to fetch plugin data: ", err.Error())
@@ -257,7 +181,8 @@ func GetAllPlugins() ([]Plugin, *errors.Error) {
 
 		bytepw, errs := common.DecryptWithPrivateKey([]byte(plugin.Password))
 		if errs != nil {
-			return nil, errors.PackError(errors.DecryptionFailed, "error: "+plugin.ID+" plugin password decryption failed: "+errs.Error())
+			return nil, errors.PackError(errors.DecryptionFailed, "error: "+plugin.ID+
+				" plugin password decryption failed: "+errs.Error())
 		}
 		plugin.Password = bytepw
 
@@ -267,7 +192,7 @@ func GetAllPlugins() ([]Plugin, *errors.Error) {
 	return plugins, nil
 }
 
-//GetAllKeysFromTable return all matching data give table name
+// GetAllKeysFromTable return all matching data give table name
 func GetAllKeysFromTable(table string) ([]string, error) {
 	conn, err := GetDbConnection(common.InMemory)
 	if err != nil {
@@ -280,7 +205,7 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 	return keysArray, nil
 }
 
-//GetAllSystems retrieves all the compute systems in odimra
+// GetAllSystems retrieves all the compute systems in odimra
 func GetAllSystems() ([]string, error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -293,7 +218,7 @@ func GetAllSystems() ([]string, error) {
 	return keysArray, nil
 }
 
-//GetSingleSystem retrieves specific compute system in odimra based on the ID
+// GetSingleSystem retrieves specific compute system in odimra based on the ID
 func GetSingleSystem(id string) (string, error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -329,24 +254,24 @@ func GetFabricData(fabricID string) (Fabric, error) {
 }
 
 // GetAggregateData  will fetch aggregate details
-func GetAggregateData(aggreagetKey string) (Aggregate, error) {
+func GetAggregateData(aggregateKey string) (Aggregate, error) {
 	var aggregate Aggregate
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return aggregate, err
 	}
-	aggregatedata, err := conn.Read("Aggregate", aggreagetKey)
+	aggregateData, err := conn.Read("Aggregate", aggregateKey)
 	if err != nil {
 		return aggregate, fmt.Errorf("error while trying to get user: %v", err.Error())
 	}
-	if errs := json.Unmarshal([]byte(aggregatedata), &aggregate); errs != nil {
+	if errs := json.Unmarshal([]byte(aggregateData), &aggregate); errs != nil {
 		return aggregate, errs
 	}
 
 	return aggregate, nil
 }
 
-//GetAllFabrics return all Fabrics
+// GetAllFabrics return all Fabrics
 func GetAllFabrics() ([]string, error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -363,7 +288,7 @@ func GetAllFabrics() ([]string, error) {
 }
 
 // GetDeviceSubscriptions is to get subscription details of device
-func GetDeviceSubscriptions(hostIP string) (*DeviceSubscription, error) {
+func GetDeviceSubscriptions(hostIP string) (*common.DeviceSubscription, error) {
 
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
@@ -374,7 +299,7 @@ func GetDeviceSubscriptions(hostIP string) (*DeviceSubscription, error) {
 		return nil, fmt.Errorf("error while trying to get subscription of device %v", gerr.Error())
 	}
 	devSub := strings.Split(devSubscription[0], "||")
-	var deviceSubscription = &DeviceSubscription{
+	var deviceSubscription = &common.DeviceSubscription{
 		EventHostIP:     devSub[0],
 		Location:        devSub[1],
 		OriginResources: getSliceFromString(devSub[2]),
@@ -384,25 +309,27 @@ func GetDeviceSubscriptions(hostIP string) (*DeviceSubscription, error) {
 }
 
 // UpdateDeviceSubscriptionLocation is to update subscription details of device
-func UpdateDeviceSubscriptionLocation(devSubscription DeviceSubscription) error {
+func UpdateDeviceSubscriptionLocation(devSubscription common.DeviceSubscription) error {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
-	uerr := conn.UpdateDeviceSubscription(DeviceSubscriptionIndex, devSubscription.EventHostIP, devSubscription.Location, devSubscription.OriginResources)
-	if uerr != nil {
-		return fmt.Errorf("error while trying to update subscription of device %v", uerr.Error())
+	updateErr := conn.UpdateDeviceSubscription(DeviceSubscriptionIndex, devSubscription.EventHostIP,
+		devSubscription.Location, devSubscription.OriginResources)
+	if updateErr != nil {
+		return fmt.Errorf("error while trying to update subscription of device %v", updateErr.Error())
 	}
 	return nil
 }
 
 // SaveDeviceSubscription is to save subscription details of device
-func SaveDeviceSubscription(devSubscription DeviceSubscription) error {
+func SaveDeviceSubscription(devSubscription common.DeviceSubscription) error {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
-	cerr := conn.CreateDeviceSubscriptionIndex(DeviceSubscriptionIndex, devSubscription.EventHostIP, devSubscription.Location, devSubscription.OriginResources)
+	cerr := conn.CreateDeviceSubscriptionIndex(DeviceSubscriptionIndex, devSubscription.EventHostIP,
+		devSubscription.Location, devSubscription.OriginResources)
 	if cerr != nil {
 		return fmt.Errorf("error while trying to save subscription of device %v", cerr.Error())
 	}
@@ -434,25 +361,25 @@ func getSliceFromString(sliceString string) []string {
 	return strings.Split(slice, " ")
 }
 
-// SaveEventSubscription is to save event subscription details
-func SaveEventSubscription(evtSubscription Subscription) error {
+// SaveEventSubscription is to save event subscription details in db
+func SaveEventSubscription(evtSubscription SubscriptionResource) error {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
-	subscription, merr := json.Marshal(evtSubscription)
-	if merr != nil {
-		return fmt.Errorf("error while trying marshall event subscriptions %v", merr.Error())
+	subscription, marshalErr := json.Marshal(evtSubscription)
+	if marshalErr != nil {
+		return fmt.Errorf("error while trying marshall event subscriptions %v", marshalErr.Error())
 	}
-	cerr := conn.CreateEvtSubscriptionIndex(SubscriptionIndex, string(subscription))
-	if cerr != nil {
-		return fmt.Errorf("error while trying to save event subscriptions %v", cerr.Error())
+	createErr := conn.CreateEvtSubscriptionIndex(SubscriptionIndex, string(subscription))
+	if createErr != nil {
+		return fmt.Errorf("error while trying to save event subscriptions %v", createErr.Error())
 	}
 	return nil
 }
 
 // GetEvtSubscriptions is to get event subscription details
-func GetEvtSubscriptions(searchKey string) ([]Subscription, error) {
+func GetEvtSubscriptions(searchKey string) ([]SubscriptionResource, error) {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -461,9 +388,9 @@ func GetEvtSubscriptions(searchKey string) ([]Subscription, error) {
 	if gerr != nil {
 		return nil, fmt.Errorf("error while trying to get subscription of device %v", gerr.Error())
 	}
-	var eventSubscriptions []Subscription
+	var eventSubscriptions []SubscriptionResource
 	for _, value := range evtSub {
-		var eventSub Subscription
+		var eventSub SubscriptionResource
 		if err := json.Unmarshal([]byte(value), &eventSub); err != nil {
 			return nil, fmt.Errorf("error while unmarshalling event subscriptions: %v", err.Error())
 		}
@@ -487,7 +414,7 @@ func DeleteEvtSubscription(key string) error {
 }
 
 // UpdateEventSubscription is to update event subscription details
-func UpdateEventSubscription(evtSubscription Subscription) error {
+func UpdateEventSubscription(evtSubscription SubscriptionResource) error {
 	conn, err := GetDbConnection(common.OnDisk)
 	if err != nil {
 		return err
@@ -503,7 +430,7 @@ func UpdateEventSubscription(evtSubscription Subscription) error {
 	return nil
 }
 
-//GetAllMatchingDetails accepts the table name ,pattern and DB type and return all the keys which mathces the pattern
+// GetAllMatchingDetails accepts the table name ,pattern and DB type and return all the keys which matches the pattern
 func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
 	conn, err := GetDbConnection(dbtype)
 	if err != nil {
@@ -512,15 +439,13 @@ func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]strin
 	return conn.GetAllMatchingDetails(table, pattern)
 }
 
-// SaveUndeliveredEvents accepts the undelivered event and destination with unique eventid and saves it
+// SaveUndeliveredEvents accepts the undelivered event and destination with unique eventId and saves it
 func SaveUndeliveredEvents(key string, event []byte) error {
 	connPool, err := GetDbConnection(common.OnDisk)
 	if err != nil {
-		l.Log.Error("While trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 	if err = connPool.AddResourceData(UndeliveredEvents, key, string(event)); err != nil {
-		l.Log.Error(" while trying to add Undelivered Events to DB: " + err.Error())
 		return fmt.Errorf("error while trying to add Undelivered Events to DB: %v", err.Error())
 	}
 	return nil
@@ -533,7 +458,7 @@ func GetUndeliveredEvents(destination string) (string, error) {
 		return "", fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
 
-	eventData, err := conn.Read(UndeliveredEvents, destination)
+	eventData, err := conn.GetKeyValue(destination)
 	if err != nil {
 		return "", fmt.Errorf("error: while trying to fetch details: %v", err.Error())
 	}
@@ -547,7 +472,7 @@ func DeleteUndeliveredEvents(destination string) error {
 	if err != nil {
 		return fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
-	if err := conn.Delete(UndeliveredEvents, destination); err != nil {
+	if err := conn.DeleteKey(destination); err != nil {
 		return fmt.Errorf("%v", err.Error())
 	}
 	return nil
@@ -560,12 +485,12 @@ func SetUndeliveredEventsFlag(destination string) error {
 	if err != nil {
 		return fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
-	if err = conn.AddResourceData(ReadInProgres, destination, "true"); err != nil {
-		return fmt.Errorf("error while trying to create new %v resource: %v", ReadInProgres, err.Error())
+	if err = conn.AddResourceData(ReadInProgress, destination, "true"); err != nil {
+		return fmt.Errorf("error while trying to create new %v resource: %v", ReadInProgress, err.Error())
 	}
-	_, err = conn.Read(ReadInProgres, destination)
+	_, err = conn.Read(ReadInProgress, destination)
 	if err != nil {
-		l.Log.Error(err)
+		return err
 	}
 	return nil
 }
@@ -577,7 +502,7 @@ func GetUndeliveredEventsFlag(destination string) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
-	_, err = conn.Read(ReadInProgres, destination)
+	_, err = conn.Read(ReadInProgress, destination)
 	if err != nil {
 		return false, err
 	}
@@ -590,7 +515,7 @@ func DeleteUndeliveredEventsFlag(destination string) error {
 	if err != nil {
 		return fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
-	if err := conn.Delete(ReadInProgres, destination); err != nil {
+	if err := conn.Delete(ReadInProgress, destination); err != nil {
 		return fmt.Errorf("%v", err.Error())
 	}
 	return nil
@@ -657,4 +582,82 @@ func GetAggregateList(hostIP string) ([]string, error) {
 		aggregates = append(aggregates, devSub[0])
 	}
 	return aggregates, nil
+}
+
+// GetAggregate fetches the aggregate info for the given aggregateURI
+func GetAggregate(aggregateURI string) (Aggregate, *errors.Error) {
+	var aggregate Aggregate
+	conn, err := GetDbConnection(common.OnDisk)
+	if err != nil {
+		return aggregate, err
+	}
+	const table string = "Aggregate"
+	data, err := conn.Read(table, aggregateURI)
+	if err != nil {
+		return aggregate, errors.PackError(err.ErrNo(), "error: while trying to fetch connection method data: ", err.Error())
+	}
+	if err := json.Unmarshal([]byte(data), &aggregate); err != nil {
+		return aggregate, errors.PackError(errors.JSONUnmarshalFailed, err)
+	}
+	return aggregate, nil
+}
+
+// GetAllAggregates return all aggregate url added in DB
+func GetAllAggregates() ([]string, error) {
+	conn, err := GetDbConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	keysArray, err := conn.GetAllDetails("Aggregate")
+	if err != nil {
+		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", "Aggregate", err.Error())
+	}
+	return keysArray, nil
+}
+
+// GetAllDeviceSubscriptions is to get subscription details of device
+func GetAllDeviceSubscriptions() ([]string, error) {
+	conn, err := GetDbConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	devSubscription, gerr := conn.GetAllDataByIndex(DeviceSubscriptionIndex)
+	if gerr != nil {
+		return nil, fmt.Errorf("error while trying to get subscription of device %v", gerr.Error())
+	}
+	return devSubscription, nil
+}
+
+// GetSliceFromString is to convert the string to array
+func GetSliceFromString(sliceString string) []string {
+	// EX : array stored in db in string("[alert statusChange]")
+	// to convert into an array removing "[" ,"]" and splitting
+	r := strings.NewReplacer(
+		"[", "",
+		"]", "",
+	)
+	return strings.Split(r.Replace(sliceString), " ")
+}
+
+// GetAllEvtSubscriptions is to get all event subscription details
+func GetAllEvtSubscriptions() ([]string, error) {
+	conn, err := GetDbConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	evtSub, gerr := conn.GetAllDataByIndex(SubscriptionIndex)
+	if gerr != nil {
+		return nil, fmt.Errorf("error while trying to get subscription of device %v", gerr.Error())
+	}
+	return evtSub, nil
+}
+
+// GetUndeliveredEventsKeyList accepts the table name ,pattern ,cursor value
+// and DB type and return all the keys which matches the pattern
+func GetUndeliveredEventsKeyList(table, pattern string, dbType common.DbType, nextCursor int) ([]string, int, *errors.Error) {
+	conn, err := GetDbConnection(dbType)
+	if err != nil {
+		return []string{}, 0, err
+	}
+	return conn.GetAllKeysFromDb(table, pattern, nextCursor)
 }

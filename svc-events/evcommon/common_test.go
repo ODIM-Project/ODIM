@@ -283,12 +283,12 @@ func TestGenErrorResponse(t *testing.T) {
 
 func TestGetAllServers(t *testing.T) {
 	config.SetUpMockConfig(t)
-	st := StartUpInteraface{
+	st := StartUpInterface{
 		DecryptPassword: stubDevicePassword,
 		GetAllSystems:   MockGetAllSystems,
 		GetSingleSystem: MockGetSingleSystem,
 	}
-	servers, err := st.getAllServers("ILO")
+	servers, err := st.getAllServers(MockContext(), "ILO")
 	assert.Nil(t, err, "Error Should be nil")
 	assert.Equal(t, 2, len(servers), "there should be 2 server")
 
@@ -309,7 +309,7 @@ func TestCallPluginStartUp(t *testing.T) {
 			PluginID:       "ILO",
 		},
 	}
-	st := StartUpInteraface{
+	st := StartUpInterface{
 		DecryptPassword:                  stubDevicePassword,
 		EMBConsume:                       stubEMBConsume,
 		GetAllSystems:                    MockGetAllSystems,
@@ -344,7 +344,7 @@ func TestGetPluginStatus(t *testing.T) {
 	ts.StartTLS()
 	defer ts.Close()
 	password, _ := GetEncryptedKey([]byte("Password"))
-	result := GetPluginStatus(&evmodel.Plugin{
+	result := GetPluginStatus(MockContext(), &common.Plugin{
 		IP:                "localhost",
 		Port:              "1234",
 		Password:          password,
@@ -372,7 +372,7 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 	defer ts.Close()
 	// Intializing the TopicsList
 	EMBTopics.TopicsList = make(map[string]bool)
-	st := StartUpInteraface{
+	st := StartUpInterface{
 		DecryptPassword:                  stubDevicePassword,
 		EMBConsume:                       stubEMBConsume,
 		GetAllSystems:                    MockGetAllSystems,
@@ -383,7 +383,7 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 		UpdateDeviceSubscriptionLocation: MockUpdateDeviceSubscriptionLocation,
 	}
 	password, _ := GetEncryptedKey([]byte("Password"))
-	st.getPluginStatus(context.TODO(), evmodel.Plugin{
+	st.getPluginStatus(context.TODO(), common.Plugin{
 		IP:                "localhost",
 		Port:              "1234",
 		Password:          password,
@@ -401,18 +401,18 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 }
 
 func TestStartUpInteraface_SubscribePluginEMB(t *testing.T) {
-	pc := StartUpInteraface{}
-	GetAllPluginsFunc = func() ([]evmodel.Plugin, *errors.Error) { return nil, &errors.Error{} }
-	pc.SubscribePluginEMB()
+	pc := StartUpInterface{}
+	GetAllPluginsFunc = func() ([]common.Plugin, *errors.Error) { return nil, &errors.Error{} }
+	pc.SubscribePluginEMB(MockContext())
 
-	GetAllPluginsFunc = func() ([]evmodel.Plugin, *errors.Error) {
-		return []evmodel.Plugin{{IP: ""}}, nil
+	GetAllPluginsFunc = func() ([]common.Plugin, *errors.Error) {
+		return []common.Plugin{{IP: ""}}, nil
 	}
-	pc.SubscribePluginEMB()
+	pc.SubscribePluginEMB(MockContext())
 	getTypes("[alert statuschange]")
 	getTypes("[]")
 
-	callPlugin(context.TODO(), PluginContactRequest{Plugin: &evmodel.Plugin{PreferredAuthType: "BasicAuth"}})
+	callPlugin(context.TODO(), PluginContactRequest{Plugin: &common.Plugin{PreferredAuthType: "BasicAuth"}})
 
 	common.SetUpMockConfig()
 	defer func() {
@@ -422,7 +422,7 @@ func TestStartUpInteraface_SubscribePluginEMB(t *testing.T) {
 		}
 	}()
 
-	var devSubscription = evmodel.DeviceSubscription{
+	var devSubscription = common.DeviceSubscription{
 		EventHostIP:     "10.10.0.1",
 		Location:        "https://10.10.10.23/redfish/v1/EventService/Subscriptions/123",
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
@@ -431,9 +431,9 @@ func TestStartUpInteraface_SubscribePluginEMB(t *testing.T) {
 		t.Errorf("Error while saving device suscription: %v\n", cerr.Error())
 	}
 
-	err := updateDeviceSubscriptionLocation(map[string]string{"10.10.0.1": "Test"})
+	err := updateDeviceSubscriptionLocation(MockContext(), map[string]string{"10.10.0.1": "Test"})
 	assert.Nil(t, err)
-	err = updateDeviceSubscriptionLocation(map[string]string{"location": "Test"})
+	err = updateDeviceSubscriptionLocation(MockContext(), map[string]string{"location": "Test"})
 	assert.Nil(t, err)
 
 }
@@ -469,7 +469,7 @@ func TestProcessCtrlMsg(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ProcessCtrlMsg(tt.args.data); got != tt.want {
+			if got := ProcessCtrlMsg(MockContext(), tt.args.data); got != tt.want {
 				t.Errorf("ProcessCtrlMsg() = %v, want %v", got, tt.want)
 			}
 		})

@@ -36,12 +36,12 @@ import (
 
 func mockContext() context.Context {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.Key(common.TransactionID), "xyz")
-	ctx = context.WithValue(ctx, common.Key(common.ActionID), "001")
-	ctx = context.WithValue(ctx, common.Key(common.ActionName), "xyz")
-	ctx = context.WithValue(ctx, common.Key(common.ThreadID), "0")
-	ctx = context.WithValue(ctx, common.Key(common.ThreadName), "xyz")
-	ctx = context.WithValue(ctx, common.Key(common.ProcessName), "xyz")
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	return ctx
 }
 
@@ -828,10 +828,10 @@ func MockInvalidGetAllSystems() ([]string, error) {
 
 func TestCreateContext(t *testing.T) {
 	ctx := CreateContext("123", "001", "TestAction", "0", "Test-svc-aggregation", "TestCreateContext")
-	assert.Equal(t, ctx.Value(common.Key("transactionid")), "123", "Context id  is not the same")
-	assert.Equal(t, ctx.Value(common.Key("actionid")), "001", "Context  actionId is not the same")
-	assert.Equal(t, ctx.Value(common.Key("actionname")), "TestAction", "Context actionName is not the same")
-	assert.Equal(t, ctx.Value(common.Key("threadid")), "0", "Context threadId is not the same")
-	assert.Equal(t, ctx.Value(common.Key("threadname")), "Test-svc-aggregation", "Context threadName is not the same")
-	assert.Equal(t, ctx.Value(common.Key("processname")), "TestCreateContext", "Context processName is not the same")
+	assert.Equal(t, ctx.Value("transactionid"), "123", "Context id  is not the same")
+	assert.Equal(t, ctx.Value("actionid"), "001", "Context  actionId is not the same")
+	assert.Equal(t, ctx.Value("actionname"), "TestAction", "Context actionName is not the same")
+	assert.Equal(t, ctx.Value("threadid"), "0", "Context threadId is not the same")
+	assert.Equal(t, ctx.Value("threadname"), "Test-svc-aggregation", "Context threadName is not the same")
+	assert.Equal(t, ctx.Value("processname"), "TestCreateContext", "Context processName is not the same")
 }

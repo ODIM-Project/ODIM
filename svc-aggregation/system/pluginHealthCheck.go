@@ -108,8 +108,8 @@ func PerformPluginHealthCheck() {
 		} else {
 			for _, plugin := range pluginList {
 				threadID := 1
-				ctxt := context.WithValue(ctx, common.Key(common.ThreadName), common.CheckPluginStatus)
-				ctxt = context.WithValue(ctxt, common.Key(common.ThreadID), strconv.Itoa(threadID))
+				ctxt := context.WithValue(ctx, common.ThreadName, common.CheckPluginStatus)
+				ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 				go checkPluginStatus(ctxt, &phc, plugin)
 				threadID++
 			}
@@ -173,13 +173,13 @@ func sharePluginInventory(ctx context.Context, plugin agmodel.Plugin, resyncSubs
 	startIndex := 0
 	for startIndex < managedServersCount {
 		var batchedServersData []agmodel.Target
-		endIndex := startIndex + phc.PluginConfig.StartUpResouceBatchSize
+		endIndex := startIndex + phc.PluginConfig.StartUpResourceBatchSize
 		if endIndex > managedServersCount {
 			endIndex = managedServersCount
 		}
 		batchedServersData = append(batchedServersData, managedServers[startIndex:endIndex]...)
-		startIndex += phc.PluginConfig.StartUpResouceBatchSize
-		pluginStartUpData.Devices = make(map[string]agmodel.DeviceData, phc.PluginConfig.StartUpResouceBatchSize)
+		startIndex += phc.PluginConfig.StartUpResourceBatchSize
+		pluginStartUpData.Devices = make(map[string]agmodel.DeviceData, phc.PluginConfig.StartUpResourceBatchSize)
 		for _, server := range batchedServersData {
 			evtSubsInfo := &agmodel.EventSubscriptionInfo{}
 			subsID, evtTypes, err := agcommon.GetDeviceSubscriptionDetails(ctx, server.ManagerAddress)

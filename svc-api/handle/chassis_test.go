@@ -218,24 +218,8 @@ func TestChassisRPCs_CreateChassis(t *testing.T) {
 func TestChassisRPCs_CreateChassisWithMalformedBody(t *testing.T) {
 	expectedRPCResponse := chassisproto.GetChassisResponse{
 		StatusCode: http.StatusBadRequest,
-		Body: []byte(`{
-  "error": {
-    "code": "` + response.GeneralError + `",
-    "message": "An error has occurred. See ExtendedInfo for more information.",
-    "@Message.ExtendedInfo": [
-      {
-        "@odata.type": "#Message.v1_1_2.Message",
-        "MessageId": "` + errorResponse.MalformedJSON + `",
-        "Message": "The request body submitted was malformed JSON and could not be parsed by the receiving service.error while trying to read obligatory json body: invalid character '[' looking for beginning of object key string",
-        "Severity": "Critical",
-        "Resolution": "Ensure that the request body is valid JSON and resubmit the request."
-      }
-    ]
-  }
-}
-`),
+		Body:       []byte(`{"error":{"code":"` + response.GeneralError + `","message":"An error has occurred. See ExtendedInfo for more information.","@Message.ExtendedInfo":[{"@odata.type":"#Message.v1_1_2.Message","MessageId":"` + errorResponse.MalformedJSON + `","Message":"The request body submitted was malformed JSON and could not be parsed by the receiving service.error while trying to read obligatory json body: invalid character '[' looking for beginning of object key string","Severity":"Critical","Resolution":"Ensure that the request body is valid JSON and resubmit the request."}]}}`),
 	}
-
 	sut := ChassisRPCs{
 		CreateChassisRPC: func(ctx context.Context, req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 			return &expectedRPCResponse, nil

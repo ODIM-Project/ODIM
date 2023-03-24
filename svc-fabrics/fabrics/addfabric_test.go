@@ -40,6 +40,8 @@ func mockContext() context.Context {
 	return ctx
 }
 
+var mockCtx = mockContext()
+
 func TestAddFabric(t *testing.T) {
 	ctx := mockContext()
 	config.SetUpMockConfig(t)
@@ -91,14 +93,14 @@ func TestAddFabricInvalidPluginID(t *testing.T) {
 	resp = AddFabric(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "should be same")
 
-	GetAllFabricPluginDetailsFunc = func() ([]string, error) { return []string{}, fmt.Errorf("") }
+	GetAllFabricPluginDetailsFunc = func(ctx context.Context) ([]string, error) { return []string{}, fmt.Errorf("") }
 	resp = AddFabric(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "should be same")
 
-	GetAllFabricPluginDetailsFunc = func() ([]string, error) { return []string{"dummy"}, nil }
+	GetAllFabricPluginDetailsFunc = func(ctx context.Context) ([]string, error) { return []string{"dummy"}, nil }
 	resp = AddFabric(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "should be same")
-	GetAllFabricPluginDetailsFunc = func() ([]string, error) { return fabmodel.GetAllFabricPluginDetails() }
+	GetAllFabricPluginDetailsFunc = func(ctx context.Context) ([]string, error) { return fabmodel.GetAllFabricPluginDetails(mockCtx) }
 
 }
 

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -38,8 +39,10 @@ func IsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivi
 	}
 	defer conn.Close()
 	asService := authproto.NewAuthorizationClient(conn)
+	ctxt := common.CreateNewRequestContext(ctx)
+	ctxt = common.CreateMetadata(ctxt)
 	response, err := asService.IsAuthorized(
-		ctx,
+		ctxt,
 		&authproto.AuthRequest{
 			SessionToken:  sessionToken,
 			Privileges:    privileges,
@@ -65,8 +68,10 @@ func GetSessionUserName(ctx context.Context, sessionToken string) (string, error
 	}
 	defer conn.Close()
 	asService := sessionproto.NewSessionClient(conn)
+	ctxt := common.CreateNewRequestContext(ctx)
+	ctxt = common.CreateMetadata(ctxt)
 	response, err := asService.GetSessionUserName(
-		ctx,
+		ctxt,
 		&sessionproto.SessionRequest{
 			SessionToken: sessionToken,
 		},
@@ -85,8 +90,10 @@ func GetSessionUserRoleID(ctx context.Context, sessionToken string) (string, err
 	}
 	defer conn.Close()
 	asService := sessionproto.NewSessionClient(conn)
+	ctxt := common.CreateNewRequestContext(ctx)
+	ctxt = common.CreateMetadata(ctxt)
 	response, err := asService.GetSessionUserRoleID(
-		ctx,
+		ctxt,
 		&sessionproto.SessionRequest{
 			SessionToken: sessionToken,
 		},

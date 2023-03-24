@@ -380,7 +380,9 @@ func (e *ExternalInterfaces) addFabricRPCCall(ctx context.Context, origin, addre
 	}
 	defer conn.Close()
 	fab := fabricproto.NewFabricsClient(conn)
-	_, err = fab.AddFabric(context.TODO(), &fabricproto.AddFabricRequest{
+	ctxt := common.CreateNewRequestContext(ctx)
+	ctxt = common.CreateMetadata(ctxt)
+	_, err = fab.AddFabric(ctxt, &fabricproto.AddFabricRequest{
 		OriginResource: origin,
 		Address:        address,
 	})
@@ -402,7 +404,9 @@ func (e *ExternalInterfaces) removeFabricRPCCall(ctx context.Context, origin, ad
 	}
 	defer conn.Close()
 	fab := fabricproto.NewFabricsClient(conn)
-	_, err = fab.RemoveFabric(context.TODO(), &fabricproto.AddFabricRequest{
+	ctxt := common.CreateNewRequestContext(ctx)
+	ctxt = common.CreateMetadata(ctxt)
+	_, err = fab.RemoveFabric(ctxt, &fabricproto.AddFabricRequest{
 		OriginResource: origin,
 		Address:        address,
 	})

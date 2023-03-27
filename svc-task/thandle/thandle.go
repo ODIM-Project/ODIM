@@ -1220,6 +1220,11 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 		l.LogWithFields(ctx).Debugf("All tasks are completed !")
 		return nil
 	}
+
+	return ts.validateChildTasksAndUpdateParentTask(ctx, childIDs, taskID, parentTask)
+}
+
+func (ts *TasksRPC) validateChildTasksAndUpdateParentTask(ctx context.Context, childIDs []string, taskID string, parentTask *tmodel.Task) error {
 	s := make([]interface{}, len(childIDs))
 	for i, v := range childIDs {
 		if v != taskID {
@@ -1229,9 +1234,7 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 	data, _ := ts.GetMultipleTaskKeysModel(ctx, s, common.InMemory)
 	var isRunning bool
 	for _, subtask := range *data {
-		if subtask.TaskState == common.Running || subtask.TaskState == common.New || subtask.TaskState == common.Pending ||
-			subtask.TaskState == common.Starting || subtask.TaskState == common.Suspended || subtask.TaskState == common.Interrupted ||
-			subtask.TaskState == common.Cancelling {
+		if isActiveTask(subtask) {
 			isRunning = true
 			break
 		}
@@ -1250,6 +1253,15 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 	}
 
 	return nil
+}
+
+func isActiveTask(task tmodel.Task) bool {
+	if task.TaskState == common.Running || task.TaskState == common.New || task.TaskState == common.Pending ||
+		task.TaskState == common.Starting || task.TaskState == common.Suspended || task.TaskState == common.Interrupted ||
+		task.TaskState == common.Cancelling {
+		return true
+	}
+	return false
 }
 
 // ProcessTaskEvents receive the task event from plugins

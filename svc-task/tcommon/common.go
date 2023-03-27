@@ -45,29 +45,29 @@ func GetStatusCode(taskState dmtf.TaskState, taskStatus string) int {
 }
 
 // GetTaskResponse return status task response using status code and message
-func GetTaskResponse(statusCode int, message string) response.RPC {
+func GetTaskResponse(statusCode int32, message string) response.RPC {
 	var resp response.RPC
 
 	if statusCode == http.StatusNoContent {
-		resp.StatusCode = int32(statusCode)
+		resp.StatusCode = statusCode
 		resp.StatusMessage = response.ResourceRemoved
 		return resp
 	}
 
 	err := json.Unmarshal([]byte(message), &resp.Body)
 	if err == nil {
-		resp.StatusCode = int32(statusCode)
+		resp.StatusCode = statusCode
 		resp.StatusMessage = response.ExtendedInfo
 		return resp
 	}
 
 	switch statusCode {
 	case http.StatusOK:
-		resp = common.GeneralError(int32(statusCode), response.Success, message, nil, nil)
+		resp = common.GeneralError(statusCode, response.Success, message, nil, nil)
 	case http.StatusInternalServerError:
-		resp = common.GeneralError(int32(statusCode), response.InternalError, message, nil, nil)
+		resp = common.GeneralError(statusCode, response.InternalError, message, nil, nil)
 	default:
-		resp.StatusCode = int32(statusCode)
+		resp.StatusCode = statusCode
 		resp.StatusMessage = response.ExtendedInfo
 		resp.Body = response.CommonError{
 			Error: response.ErrorClass{

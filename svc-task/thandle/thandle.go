@@ -1296,7 +1296,7 @@ func (ts *TasksRPC) ProcessTaskEvents(ctx context.Context, data interface{}) boo
 	case dmtf.TaskStateStarting:
 		percentComplete = 0
 	case dmtf.TaskStateRunning:
-		pc, err := strconv.ParseInt(event.MessageArgs[1], 10, 64)
+		pc, err := strconv.ParseInt(event.MessageArgs[1], 10, 32)
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Invalid percent complete received from task event: %v", event.MessageArgs[1])
 			return false
@@ -1309,7 +1309,7 @@ func (ts *TasksRPC) ProcessTaskEvents(ctx context.Context, data interface{}) boo
 	}
 
 	sc := event.MessageArgs[len(event.MessageArgs)-1]
-	statusCode, err := strconv.ParseInt(sc, 10, 64)
+	statusCode, err := strconv.ParseInt(sc, 10, 32)
 	if err != nil {
 		l.LogWithFields(ctx).Errorf("Invalid status code received from task event: %v", event.MessageArgs[1])
 		return false
@@ -1320,7 +1320,7 @@ func (ts *TasksRPC) ProcessTaskEvents(ctx context.Context, data interface{}) boo
 	}
 
 	responseMessage := event.MessageArgs[len(event.MessageArgs)-2]
-	resp := tcommon.GetTaskResponse(int(statusCode), responseMessage)
+	resp := tcommon.GetTaskResponse(int32(statusCode), responseMessage)
 	body, _ := json.Marshal(resp.Body)
 
 	payLoad := &taskproto.Payload{

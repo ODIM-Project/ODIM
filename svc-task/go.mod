@@ -6,6 +6,7 @@ require (
 	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20230206103745-d4f48a4d7634
 	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20201201072448-9772421f1b55
 	github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201201072448-9772421f1b55
+	github.com/ODIM-Project/ODIM/lib-rest-client v0.0.0-20230112190258-96bb4f5c4ec0
 	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20220426104855-9b203a83173f
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
@@ -18,7 +19,6 @@ require (
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
-	github.com/ODIM-Project/ODIM/lib-rest-client v0.0.0-20230112190258-96bb4f5c4ec0 // indirect
 	github.com/CloudyKit/jet/v6 v6.2.0 // indirect
 	github.com/Joker/jade v1.1.3 // indirect
 	github.com/Shopify/goreferrer v0.0.0-20220729165902-8cddb4f5de06 // indirect

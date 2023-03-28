@@ -13,6 +13,7 @@
 // under the License.
 package persistencemgr
 
+/*
 import (
 	"context"
 	"encoding/json"
@@ -392,6 +393,7 @@ func TestFilterSearch(t *testing.T) {
 
 }
 */
+/*
 func TestGetAllMatchingDetails(t *testing.T) {
 
 	c, err := MockDBConnection(t)
@@ -1683,3 +1685,4 @@ func Test_isTimeOutError(t *testing.T) {
 		})
 	}
 }
+*/

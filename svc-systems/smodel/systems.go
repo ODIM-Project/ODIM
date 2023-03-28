@@ -26,8 +26,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
-
-	"github.com/gomodule/redigo/redis"
 )
 
 // Target is for sending the requst to south bound/plugin
@@ -158,17 +156,15 @@ func FindAll(table, key string) ([][]byte, error) {
 	if len(affectedKeys) == 0 {
 		return [][]byte{}, nil
 	}
+	s := make([]string, len(affectedKeys))
+	for i, v := range affectedKeys {
+		s[i] = fmt.Sprint(v)
+	}
 
-	conn := cp.ReadPool.Get()
-	defer conn.Close()
-
-	return redis.ByteSlices(conn.Do("MGET", affectedKeys...))
+	return persistencemgr.ByteSlices(cp.RedisClient.MGet(s...).Result())
 }
 
 func scan(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {
-	conn := cp.ReadPool.Get()
-	defer conn.Close()
-
 	var (
 		cursor int64
 		items  []interface{}
@@ -177,17 +173,21 @@ func scan(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {
 	results := make([]interface{}, 0)
 
 	for {
-		values, err := redis.Values(conn.Do("SCAN", cursor, "MATCH", key))
+		values, cursor, err := cp.RedisClient.Scan(uint64(cursor), key, 0).Result()
 		if err != nil {
 			return nil, err
 		}
-
-		_, err = redis.Scan(values, &cursor, &items)
+		val := make([]interface{}, len(values))
+		for i, s := range values {
+			val[i] = s
+		}
+		_, err = persistencemgr.Scan(val, &cursor, &items)
 		if err != nil {
 			return nil, err
 		}
-		results = append(results, items...)
-
+		for _, s := range values {
+			results = append(results, s)
+		}
 		if cursor == 0 {
 			break
 		}

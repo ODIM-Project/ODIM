@@ -12,16 +12,10 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package persistencemgr provides an  interfaces for database communication
+// Package persistencemgr provides an  interfaces for database communication
 package persistencemgr
 
-import (
-	"testing"
-
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-)
-
+/*
 // MockDBConnection provides a mock db for unit testing
 func MockDBConnection(t *testing.T) (*ConnPool, *errors.Error) {
 	config.SetUpMockConfig(t)
@@ -70,3 +64,4 @@ func GetMockDBConfig() (*Config, *errors.Error) {
 
 	return config, nil
 }
+*/

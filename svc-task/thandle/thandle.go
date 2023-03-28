@@ -1257,9 +1257,9 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 // and task progress from the events
 // Then the function update the ODIM task with the task progress received
 func (ts *TasksRPC) ProcessTaskEvents(ctx context.Context, data interface{}) bool {
+	fmt.Printf("Message Received ********* %+v \n", data)
 	event := data.(dmtf.EventRecord)
 	var taskID string
-
 	if len(event.MessageArgs) == 0 {
 		l.LogWithFields(ctx).Error("task id is not present in the task event." +
 			"skipping the task update")
@@ -1322,6 +1322,16 @@ func (ts *TasksRPC) ProcessTaskEvents(ctx context.Context, data interface{}) boo
 	responseMessage := event.MessageArgs[len(event.MessageArgs)-2]
 	resp := tcommon.GetTaskResponse(int(statusCode), responseMessage)
 	body, _ := json.Marshal(resp.Body)
+
+	if strings.Contains(responseMessage, "location") && strings.Contains(responseMessage, "host") {
+		var data tmodel.SubscriptionCreate
+		err := json.Unmarshal([]byte(responseMessage), &data)
+		if err != nil {
+			fmt.Println("Error occurred ", err)
+		}
+		go tcommon.UpdateSubscriptionLocation(ctx, data.Location, data.Host)
+		body, _ = json.Marshal(data.Body)
+	}
 
 	payLoad := &taskproto.Payload{
 		StatusCode:   int32(statusCode),

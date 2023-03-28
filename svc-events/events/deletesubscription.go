@@ -51,6 +51,7 @@ var (
 
 // DeleteEventSubscriptions delete subscription data against given URL
 func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *eventsproto.EventRequest) response.RPC {
+	fmt.Println("Func 2 ")
 	var resp response.RPC
 	originResource := req.UUID
 	uuid, err := getUUID(originResource)
@@ -174,6 +175,7 @@ func (e *ExternalInterfaces) deleteSubscription(ctx context.Context, target *com
 
 // DeleteEventSubscriptionsDetails delete subscription data against given subscription id
 func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(ctx context.Context, req *eventsproto.EventRequest) response.RPC {
+	fmt.Println("Func 1 ********** ")
 	var resp response.RPC
 	authResp, err := e.Auth(ctx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {

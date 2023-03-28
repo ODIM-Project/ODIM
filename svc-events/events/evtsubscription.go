@@ -26,7 +26,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -39,6 +38,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
@@ -272,7 +272,7 @@ func (e *ExternalInterfaces) SaveSubscription(ctx context.Context, sessionUserNa
 }
 
 // eventSubscription method update subscription on device
-func (e *ExternalInterfaces) eventSubscription(ctx context.Context, postRequest model.EventDestination, origin, collectionName string, collectionFlag bool) (string, evresponse.EventResponse) {
+func (e *ExternalInterfaces) eventSubscription(ctx context.Context, postRequest model.EventDestination, origin, collectionName string, collectionFlag bool, subTaskId string) (string, evresponse.EventResponse) {
 	var resp evresponse.EventResponse
 	var err error
 	var plugin *common.Plugin
@@ -357,13 +357,15 @@ func (e *ExternalInterfaces) eventSubscription(ctx context.Context, postRequest 
 		resp.Response = createEventSubscriptionResponse()
 		return collectionName, resp
 	}
-	return e.SaveSubscriptionOnDevice(ctx, origin, target, plugin, contactRequest, subscriptionPost)
+	return e.SaveSubscriptionOnDevice(ctx, origin, target, plugin, contactRequest, subscriptionPost, subTaskId)
 }
 
 // SaveSubscriptionOnDevice method update subscription on device
-func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origin string, target *common.Target, plugin *common.Plugin, contactRequest evcommon.PluginContactRequest, subscriptionPost model.EventDestination) (string, evresponse.EventResponse) {
+func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origin string, target *common.Target,
+	plugin *common.Plugin, contactRequest evcommon.PluginContactRequest,
+	subscriptionPost model.EventDestination, subTaskId string) (string, evresponse.EventResponse) {
 	var resp evresponse.EventResponse
-
+	var pluginTaskInfo evmodel.PluginTaskInfo
 	postBody, err := json.Marshal(subscriptionPost)
 	if err != nil {
 		errorMessage := "error while marshaling: " + err.Error()
@@ -400,7 +402,14 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 	}
 	defer response.Body.Close()
 	l.LogWithFields(ctx).Debug("Subscription Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
-	if response.StatusCode != http.StatusCreated {
+	if response.StatusCode == http.StatusAccepted {
+		pluginTaskInfo.Location = response.Header.Get("Location")
+		pluginTaskInfo.PluginIP = response.Header.Get(common.XForwardedFor)
+		fmt.Println("Location is ", response.Header.Get("Location"))
+		fmt.Println("Plugin Ip ", response.Header.Get(common.XForwardedFor))
+		services.SavePluginTaskInfo(ctx, pluginTaskInfo.PluginIP, plugin.IP,
+			subTaskId, pluginTaskInfo.Location)
+	} else if response.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
 			errorMessage := "error while trying to read response body: " + err.Error()
@@ -435,6 +444,10 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 		l.LogWithFields(ctx).Error(errorMessage)
 		return "", resp
 	}
+	// if status is 202 location will contain the task url
+	if response.StatusCode == http.StatusAccepted {
+		locationHdr = ""
+	}
 	// get the ip address from the host name
 	deviceIPAddress, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
 	if errorMessage != "" {
@@ -443,6 +456,7 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 		l.LogWithFields(ctx).Error(errorMessage)
 		return "", resp
 	}
+	fmt.Println("Location is ***** ", locationHdr)
 	l.LogWithFields(ctx).Debug("Saving device subscription details : ", deviceIPAddress)
 	evtSubscription := common.DeviceSubscription{
 		Location:       locationHdr,
@@ -450,13 +464,13 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 		OriginResource: origin,
 	}
 
-	host, _, err := net.SplitHostPort(target.ManagerAddress)
-	if err != nil {
-		host = target.ManagerAddress
-	}
-	if !(strings.Contains(locationHdr, host)) {
-		evtSubscription.Location = "https://" + target.ManagerAddress + locationHdr
-	}
+	// host, _, err := net.SplitHostPort(target.ManagerAddress)
+	// if err != nil {
+	// 	host = target.ManagerAddress
+	// }
+	// if !(strings.Contains(locationHdr, host)) {
+	// 	evtSubscription.Location = "https://" + target.ManagerAddress + locationHdr
+	// }
 	err = e.saveDeviceSubscriptionDetails(evtSubscription)
 	if err != nil {
 		errorMessage := "error while trying to save event subscription of device data: " + err.Error()
@@ -613,7 +627,9 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(ctx context.Context,
 	postRequest.Protocol = protocol
 	postRequest.SubscriptionType = evmodel.SubscriptionType
 	postRequest.SubordinateResources = true
-	_, response = e.eventSubscription(ctx, postRequest, originResources[0], "", false)
+
+	//dummy subtaskId
+	_, response = e.eventSubscription(ctx, postRequest, originResources[0], "", false, "")
 	e.checkCollectionSubscription(ctx, originResources[0], protocol)
 	if response.StatusCode != http.StatusCreated {
 		partialResultFlag = true
@@ -667,6 +683,7 @@ func (e *ExternalInterfaces) saveDeviceSubscriptionDetails(evtSubscription commo
 	if save {
 		return e.SaveDeviceSubscription(newDevSubscription)
 	}
+
 	return nil
 }
 
@@ -793,7 +810,7 @@ func (e *ExternalInterfaces) createEventSubscription(ctx context.Context, taskID
 		e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Running, common.OK, percentComplete, http.MethodPost))
 	}
 
-	host, response := e.eventSubscription(ctx, request, originResource, collectionName, collectionFlag)
+	host, response := e.eventSubscription(ctx, request, originResource, collectionName, collectionFlag, subTaskID)
 	resp.Body = response.Response
 	resp.StatusCode = int32(response.StatusCode)
 	if isAggregateCollection {
@@ -902,7 +919,8 @@ func (e *ExternalInterfaces) checkCollectionSubscription(ctx context.Context, or
 	}
 
 	// Subscribing newly added server with collated event list
-	host, response := e.eventSubscription(ctx, subscriptionPost, origin, "", false)
+	// dummy subTaskId  remove in PR
+	host, response := e.eventSubscription(ctx, subscriptionPost, origin, "", false, "")
 	if response.StatusCode != http.StatusCreated {
 		return
 	}
@@ -1158,7 +1176,7 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(ctx context.Context, req *
 		resp.StatusCode = int(res.StatusCode)
 		return "", resp
 	}
-	return e.SaveSubscriptionOnDevice(ctx, req.SystemID, target, plugin, contactRequest, subscriptionPost)
+	return e.SaveSubscriptionOnDevice(ctx, req.SystemID, target, plugin, contactRequest, subscriptionPost, "Subtask")
 }
 
 // GetAggregateSubscriptionList return list of subscription corresponding to host
@@ -1200,11 +1218,30 @@ func getSuccessfulResponse(response map[string]evresponse.EventResponse) (succes
 		if originResourceID == resourceID && i > 0 {
 			successfulSubscriptionList = append(successfulSubscriptionList, model.Link{Oid: originResource})
 		}
-		if evtResponse.StatusCode == http.StatusCreated {
+		if evtResponse.StatusCode == http.StatusAccepted {
 			successfulSubscriptionList = append(successfulSubscriptionList, model.Link{Oid: originResource})
 			successfulResponses[originResource] = evtResponse
 		}
 		i++
 	}
 	return
+}
+
+// UpdateSubscriptionLocation method location and host takes as input and
+// update subscription location in DeviceSubscription table to corresponding host
+func (e *ExternalInterfaces) UpdateSubscriptionLocation(ctx context.Context, location, host string) bool {
+	searchKey := evcommon.GetSearchKey(host, evmodel.DeviceSubscriptionIndex)
+	deviceSubscription, err := e.GetDeviceSubscriptions(searchKey)
+	if err != nil {
+		l.LogWithFields(ctx).Error(err)
+		return false
+	}
+	if deviceSubscription != nil {
+		deviceSubscription.Location = location
+		err := e.UpdateDeviceSubscriptionLocation(*deviceSubscription)
+		if err == nil {
+			return true
+		}
+	}
+	return false
 }

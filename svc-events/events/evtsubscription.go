@@ -405,8 +405,6 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 	if response.StatusCode == http.StatusAccepted {
 		pluginTaskInfo.Location = response.Header.Get("Location")
 		pluginTaskInfo.PluginIP = response.Header.Get(common.XForwardedFor)
-		fmt.Println("Location is ", response.Header.Get("Location"))
-		fmt.Println("Plugin Ip ", response.Header.Get(common.XForwardedFor))
 		services.SavePluginTaskInfo(ctx, pluginTaskInfo.PluginIP, plugin.IP,
 			subTaskId, pluginTaskInfo.Location)
 	} else if response.StatusCode != http.StatusCreated {
@@ -456,7 +454,6 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 		l.LogWithFields(ctx).Error(errorMessage)
 		return "", resp
 	}
-	fmt.Println("Location is ***** ", locationHdr)
 	l.LogWithFields(ctx).Debug("Saving device subscription details : ", deviceIPAddress)
 	evtSubscription := common.DeviceSubscription{
 		Location:       locationHdr,
@@ -464,13 +461,6 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 		OriginResource: origin,
 	}
 
-	// host, _, err := net.SplitHostPort(target.ManagerAddress)
-	// if err != nil {
-	// 	host = target.ManagerAddress
-	// }
-	// if !(strings.Contains(locationHdr, host)) {
-	// 	evtSubscription.Location = "https://" + target.ManagerAddress + locationHdr
-	// }
 	err = e.saveDeviceSubscriptionDetails(evtSubscription)
 	if err != nil {
 		errorMessage := "error while trying to save event subscription of device data: " + err.Error()
@@ -733,7 +723,6 @@ func (e *ExternalInterfaces) DeleteSubscriptions(ctx context.Context, originReso
 	}
 	searchKey := evcommon.GetSearchKey(addr, evmodel.DeviceSubscriptionIndex)
 	deviceSubscription, err = e.GetDeviceSubscriptions(searchKey)
-
 	if err != nil {
 		// if its first subscription then no need to check events subscribed
 		if strings.Contains(err.Error(), "No data found for the key") {
@@ -772,8 +761,7 @@ func (e *ExternalInterfaces) DeleteSubscriptions(ctx context.Context, originReso
 	contactRequest.URL = "/ODIM/v1/Subscriptions"
 	contactRequest.HTTPMethodType = http.MethodDelete
 	contactRequest.PostBody = target
-
-	resp, _, _, err = e.PluginCall(ctx, contactRequest)
+	resp, _, _, _, err = e.PluginCall(ctx, contactRequest)
 	if err != nil {
 		return resp, err
 	}

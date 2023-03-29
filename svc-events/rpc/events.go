@@ -351,7 +351,6 @@ func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.E
 	ctx = common.ModifyContext(ctx, common.EventService, podName)
 	var resp eventsproto.EventSubResponse
 	var err error
-	var data response.RPC
 	var taskID string
 
 	sessionUserName, err := e.Connector.GetSessionUserName(ctx, req.SessionToken)
@@ -382,13 +381,12 @@ func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.E
 	} else {
 		taskID = strArray[len(strArray)-1]
 	}
-
 	if req.UUID == "" {
 		// Delete Event Subscription when admin requested
-		go e.Connector.DeleteEventSubscriptionsDetails(ctx, req)
+		go e.Connector.DeleteEventSubscriptionsDetails(ctx, req, taskID)
 	} else {
 		// Delete Event Subscription to Device when Server get Deleted
-		go e.Connector.DeleteEventSubscriptions(ctx, req)
+		go e.Connector.DeleteEventSubscriptions(ctx, req, taskID)
 	}
 	resp.StatusCode = http.StatusAccepted
 	resp.Header = map[string]string{

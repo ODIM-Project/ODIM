@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"reflect"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -61,6 +60,7 @@ func mockUpdateErrorTask(ctx context.Context, task common.TaskData) error {
 
 func TestSimpleUpdate(t *testing.T) {
 	ctx := mockContext()
+	config.SetUpMockConfig(t)
 	errMsg := []string{"/redfish/v1/Systems/uuid./target1"}
 	errArg1 := response.Args{
 		Code:    response.GeneralError,
@@ -176,12 +176,11 @@ func TestSimpleUpdate(t *testing.T) {
 	e := mockGetExternalInterface()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := e.SimpleUpdate(ctx, tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
-				t.Errorf("SimpleUpdate() = %v, want %v", got, tt.want)
-			}
+			e.SimpleUpdate(ctx, tt.args.taskID, tt.args.sessionUserName, tt.args.req)
 		})
 	}
 }
+
 func Test_SimpleUpdate(t *testing.T) {
 	ctx := mockContext()
 	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid.1/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
@@ -257,10 +256,4 @@ func TestExternalInterface_sendRequestPreferedAuthType(t *testing.T) {
 	e.sendRequest(ctx, "uuid", "someID", "/redfish/v1/Systems/uuid", string(request3), "OnStartUpdateRequest", subTaskChannel, "someUser")
 	assert.True(t, true, "There should not be error")
 
-	for i := 0; i < 7; i++ {
-		select {
-		case statusCode := <-subTaskChannel:
-			fmt.Println(statusCode)
-		}
-	}
 }

@@ -16,9 +16,7 @@ package update
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
-	"reflect"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -30,6 +28,7 @@ import (
 
 func TestStartUpdate(t *testing.T) {
 	ctx := mockContext()
+	config.SetUpMockConfig(t)
 	var respArgs response.Args
 	respArgs = response.Args{
 		Code:    response.Success,
@@ -59,9 +58,7 @@ func TestStartUpdate(t *testing.T) {
 	e := mockGetExternalInterface()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := e.StartUpdate(ctx, tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("StartUpdate() = %v, want %v", got, tt.want)
-			}
+			e.StartUpdate(ctx, tt.args.taskID, tt.args.sessionUserName, tt.args.req)
 		})
 	}
 }
@@ -116,14 +113,6 @@ func TestExternalInterface_startRequest(t *testing.T) {
 	e.External.UpdateTask = mockUpdateTask
 	e.startRequest(ctx, "uuid", "someID", string(request3), subTaskChannel, "someUser")
 	assert.True(t, true, "There should not be error")
-
-	for i := 0; i < 8; i++ {
-		select {
-		case statusCode := <-subTaskChannel:
-			fmt.Println(statusCode)
-		}
-	}
-
 }
 
 func TestExternalInterface_StartUpdate(t *testing.T) {

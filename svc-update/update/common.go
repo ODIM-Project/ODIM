@@ -68,7 +68,7 @@ type External struct {
 	Auth               func(context.Context, string, []string, []string) (response.RPC, error)
 	DevicePassword     func([]byte) ([]byte, error)
 	GetPluginData      func(string) (umodel.Plugin, *errors.Error)
-	ContactPlugin      func(context.Context, ucommon.PluginContactRequest, string) ([]byte, string, ucommon.ResponseStatus, error)
+	ContactPlugin      func(context.Context, ucommon.PluginContactRequest, string) ([]byte, string, string, ucommon.ResponseStatus, error)
 	GetTarget          func(string) (*umodel.Target, *errors.Error)
 	CreateChildTask    func(context.Context, string, string) (string, error)
 	CreateTask         func(context.Context, string) (string, error)
@@ -195,7 +195,7 @@ func (e *ExternalInterface) monitorPluginTask(ctx context.Context, subTaskChanne
 		monitorTaskData.pluginRequest.OID = monitorTaskData.location
 		monitorTaskData.pluginRequest.HTTPMethodType = http.MethodGet
 		l.LogWithFields(ctx).Debugf("monitor task data payload: %s", string(monitorTaskData.respBody))
-		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = e.External.ContactPlugin(ctx, monitorTaskData.pluginRequest, "error while performing simple update action: ")
+		monitorTaskData.respBody, _, _, monitorTaskData.getResponse, err = e.External.ContactPlugin(ctx, monitorTaskData.pluginRequest, "error while performing simple update action: ")
 		if err != nil {
 			subTaskChannel <- monitorTaskData.getResponse.StatusCode
 			errMsg := err.Error()

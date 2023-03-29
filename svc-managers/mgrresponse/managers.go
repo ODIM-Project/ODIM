@@ -12,14 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package mgrresponse ...
+// Package mgrresponse ...
 package mgrresponse
 
 import (
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 )
 
-//ManagersCollection for odimra
+// ManagersCollection for odimra
 type ManagersCollection struct {
 	OdataContext    string      `json:"@odata.context"`
 	Etag            string      `json:"@odata.etag,omitempty"`

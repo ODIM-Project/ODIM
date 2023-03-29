@@ -516,6 +516,9 @@ func TestSystems_ChangeBiosSettings(t *testing.T) {
 	}()
 	sys := new(Systems)
 	sys.IsAuthorizedRPC = mockIsAuthorized
+	sys.GetSessionUserName = getSessionUserNameForTesting
+	sys.CreateTask = createTaskForTesting
+	sys.UpdateTask = mockUpdateTask
 
 	type args struct {
 		ctx  context.Context
@@ -577,6 +580,9 @@ func TestSystems_ChangeBootOrderSettings(t *testing.T) {
 	}()
 	sys := new(Systems)
 	sys.IsAuthorizedRPC = mockIsAuthorized
+	sys.GetSessionUserName = getSessionUserNameForTesting
+	sys.CreateTask = createTaskForTesting
+	sys.UpdateTask = mockUpdateTask
 
 	type args struct {
 		ctx  context.Context
@@ -628,6 +634,9 @@ func TestSystems_CreateVolume(t *testing.T) {
 	common.SetUpMockConfig()
 	sys := new(Systems)
 	sys.IsAuthorizedRPC = mockIsAuthorized
+	sys.GetSessionUserName = getSessionUserNameForTesting
+	sys.CreateTask = createTaskForTesting
+	sys.UpdateTask = mockUpdateTask
 	sys.EI = mockGetExternalInterface()
 
 	type args struct {

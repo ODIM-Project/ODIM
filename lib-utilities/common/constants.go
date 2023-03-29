@@ -15,6 +15,8 @@
 // Package common ...
 package common
 
+import "time"
+
 // EventConst constant
 type EventConst int
 
@@ -203,12 +205,19 @@ const (
 	RediscoverSystemInventory              = "RediscoverSystemInventory"
 	CheckPluginStatus                      = "CheckPluginStatus"
 	GetTelemetryResource                   = "GetTelemetryResource"
+	PollPlugin                             = "PollPlugin"
+	CreateRemoteAccountService             = "CreateRemoteAccountService"
+	UpdateRemoteAccountService             = "UpdateRemoteAccountService"
+	DeleteRemoteAccountService             = "DeleteRemoteAccountService"
+	InstallLicenseService                  = "InstallLicenseService"
+	ProcessTaskEvents                      = "ProcessTaskEvents"
 	// constants for log
 	SessionToken            = "sessiontoken"
 	SessionUserID           = "sessionuserid"
 	SessionRoleID           = "sessionroleid"
 	StatusCode              = "statuscode"
 	ComputerSystemReset     = "ComputerSystemReset"
+	ChangeBootOrderSettings = "ChangeBootOrderSettings"
 	GetFabricManagerChassis = "GetFabricManagerChassis"
 	CollectChassisResource  = "CollectChassisResource"
 	UpdateChassisResource   = "UpdateChassisResource"
@@ -460,6 +469,7 @@ var Actions = map[ActionKey]ActionType{
 	{"LicenseService", "Licenses/{id}", "GET"}:  {"214", "GetLicenseResource"},
 	{"LicenseService", "Licenses", "POST"}:      {"215", "InstallLicenseService"},
 	// 216 and 217 operations are svc-aggregation internal operations pluginhealthcheck and RediscoverSystem
+	// 218 is an internal operation in svc-task
 }
 
 var Types = map[string]string{
@@ -597,6 +607,28 @@ type Events struct {
 	EventType string `json:"eventType"`
 }
 
+// TaskEvent contains the task progress data sent form plugin to PMB
+type TaskEvent struct {
+	TaskID          string    `json:"TaskID"`
+	TaskState       string    `json:"TaskState"`
+	TaskStatus      string    `json:"TaskStatus"`
+	PercentComplete int32     `json:"PercentComplete"`
+	StatusCode      int32     `json:"StatusCode"`
+	ResponseBody    []byte    `json:"ResponseBody"`
+	EndTime         time.Time `json:"EndTime"`
+}
+
+// PluginTask contains the IP of the plugin instance that returns plugin taskmon,
+// task id created in odim, and taskmon url sent by plugin
+// it is used to map the odim task to plugin task and to know the IP
+// of plugin instance that handle the task
+type PluginTask struct {
+	IP               string `json:"IP"`
+	PluginServerName string `json:"PluginServerName"`
+	OdimTaskID       string `json:"OdimTaskID"`
+	PluginTaskMonURL string `json:"PluginTaskMonURL"`
+}
+
 // MessageData contains information of Events and message details including arguments
 // it will be used to pass to gob encoding/decoding which will register the type.
 // it will be send as byte stream on the wire to/from kafka
@@ -645,6 +677,11 @@ var URIWithNoAuth = []string{
 }
 
 var SessionURI = "/redfish/v1/SessionService/Sessions"
+
+// XForwardedFor holds the IP of plugin instance in response header
+var XForwardedFor = "X-Forwarded-For"
+
+var PluginTaskIndex = "PluginTaskIndex"
 
 // Target is for sending the request to south bound/plugin
 type Target struct {

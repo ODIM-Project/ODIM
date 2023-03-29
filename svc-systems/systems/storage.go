@@ -82,24 +82,30 @@ func GetExternalInterface() *ExternalInterface {
 }
 
 // CreateVolume defines the logic for creating a volume under storage
-func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequest) response.RPC {
+func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequest, pc *PluginContact, taskID string) {
 	var resp response.RPC
-
+	var targetURI = "/redfish/v1/Systems/" + req.SystemID + "/Storage/" + req.StorageInstance + "/Volumes"
+	//create task
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI,
+		UpdateTask: pc.UpdateTask, TaskRequest: string(req.RequestBody)}
 	// spliting the uuid and system id
 	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
+		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, taskInfo)
+		return
 	}
 	uuid := requestData[0]
 	target, gerr := e.DB.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, taskInfo)
+		return
 	}
 	// Validating the storage instance
 	if strings.TrimSpace(req.StorageInstance) == "" {
 		errorMessage := "error: Storage instance is not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Storage", req.StorageInstance}, nil)
+		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Storage", req.StorageInstance}, taskInfo)
+		return
 	}
 
 	var volume smodel.Volume
@@ -111,8 +117,8 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 			errorMessage = "Error processing create volume request: @odata.id key(s) is missing in Drives list"
 		}
 		l.LogWithFields(ctx).Error(errorMessage)
-		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
-		return resp
+		common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, taskInfo)
+		return
 	}
 
 	// Validating the request JSON properties for case sensitive
@@ -120,32 +126,35 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 	if err != nil {
 		errMsg := "error while validating request parameters for volume creation: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 		l.LogWithFields(ctx).Error(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
-		return response
+		common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
+		return
 	}
 	//fields validation
 	statuscode, statusMessage, messageArgs, err := e.validateProperties(ctx, &volume, req.SystemID)
 	if err != nil {
 		errorMessage := "error: request payload validation failed: " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
-		resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
-		return resp
+		common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, taskInfo)
+		return
 	}
 	decryptedPasswordByte, err := e.DevicePassword(target.Password)
 	if err != nil {
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
+		return
 	}
 	target.Password = decryptedPasswordByte
 	// Get the Plugin info
 	plugin, gerr := e.DB.GetPluginData(target.PluginID)
 	if gerr != nil {
 		errorMessage := "error while trying to get plugin details"
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
+		return
 	}
 	var contactRequest scommon.PluginContactRequest
 	contactRequest.ContactClient = e.ContactClient
@@ -160,10 +169,11 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
+		_, token, _, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
-			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
+			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, taskInfo)
+			return
 		}
 		contactRequest.Token = token
 	} else {
@@ -179,19 +189,30 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s/Storage/%s/Volumes", requestData[1], req.StorageInstance)
 
-	body, _, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating a volume: ")
+	body, location, pluginIP, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating a volume: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		return resp
+		errMsg := "error while creating volume: " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError,
+			errMsg, nil, taskInfo)
+		return
+	}
+	if getResponse.StatusCode == http.StatusAccepted {
+		scommon.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		return
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	err = JSONUnmarshalFunc(body, &resp.Body)
 	if err != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
+		return
 	}
-	return resp
+	task := fillTaskData(taskID, targetURI, string(req.RequestBody), resp,
+		common.Completed, common.OK, 100, http.MethodPost)
+	pc.UpdateTask(ctx, task)
 }
 
 // Validates all the input prorperties
@@ -443,7 +464,7 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
+		_, token, _, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -467,7 +488,7 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s/Storage/%s/Volumes/%s", requestData[1], req.StorageInstance, req.VolumeID)
 
-	body, _, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while deleting a volume: ")
+	body, _, _, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while deleting a volume: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)

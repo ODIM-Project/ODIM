@@ -63,6 +63,7 @@ type configModel struct {
 	ExecPriorityDelayConf          *ExecPriorityDelayConf   `json:"ExecPriorityDelayConf"`
 	TLSConf                        *TLSConf                 `json:"TLSConf"`
 	TaskQueueConf                  *TaskQueueConf           `json:"TaskQueueConf"`
+	PluginTasksConf                *PluginTasksConf         `json:"PluginTasksConf"`
 	SupportedPluginTypes           []string                 `json:"SupportedPluginTypes"`
 	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
 	EventConf                      *EventConf               `json:"EventConf"`
@@ -104,6 +105,7 @@ type MessageBusConf struct {
 	MessageBusConfigFilePath string `json:"MessageBusConfigFilePath"`
 	MessageBusType           string `json:"MessageBusType"`
 	OdimControlMessageQueue  string `json:"OdimControlMessageQueue"`
+	OdimTaskEventsQueue      string `json:"OdimTaskEventsQueue"`
 }
 
 // KeyCertConf is for holding all security oriented configuration
@@ -201,6 +203,13 @@ type EventConf struct {
 	DeliveryRetryIntervalSeconds int `json:"DeliveryRetryIntervalSeconds"` // holds value of retrying events posting in interval
 }
 
+// PluginTasksConf stores the information related to plugin tasks
+// and queueing and prioritization of requests to plugin
+type PluginTasksConf struct {
+	// holds value of duration in which polling to be initiated for monitoring plugin tasks, value will be in minutes
+	MonitorPluginTasksFrequencyInMins int `json:"MonitorPluginTasksFrequencyInMins"`
+}
+
 // SetConfiguration will extract the config data from file
 func SetConfiguration() (WarningList, error) {
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
@@ -253,6 +262,9 @@ func ValidateConfiguration() (WarningList, error) {
 		return *warningList, err
 	}
 	if err = checkTaskQueueConfiguration(); err != nil {
+		return *warningList, err
+	}
+	if err = checkPluginTaskConfiguration(); err != nil {
 		return *warningList, err
 	}
 	checkAuthConf(warningList)
@@ -400,6 +412,10 @@ func checkMessageBusConf(wl *WarningList) error {
 		if len(Data.MessageBusConf.OdimControlMessageQueue) <= 0 {
 			wl.add("No value set for MessageBusQueue, setting default value")
 			Data.MessageBusConf.OdimControlMessageQueue = "ODIM-CONTROL-MESSAGES"
+		}
+		if Data.MessageBusConf.OdimTaskEventsQueue == "" {
+			wl.add("No value set for OdimTaskEventsQueue, setting default value")
+			Data.MessageBusConf.OdimTaskEventsQueue = "TASK-EVENTS-TOPIC"
 		}
 	}
 	if !AllowedMessageBusTypes[Data.MessageBusConf.MessageBusType] {
@@ -709,6 +725,13 @@ func checkTaskQueueConfiguration() error {
 	}
 	if Data.TaskQueueConf.RetryInterval <= 0 {
 		return fmt.Errorf("retry interval should be greater than 0")
+	}
+	return nil
+}
+
+func checkPluginTaskConfiguration() error {
+	if Data.PluginTasksConf.MonitorPluginTasksFrequencyInMins <= 0 {
+		return fmt.Errorf("MonitorPluginTasksFrequencyInMins should be greater than 0")
 	}
 	return nil
 }

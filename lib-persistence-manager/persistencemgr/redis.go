@@ -461,6 +461,37 @@ func (p *ConnPool) Read(table, key string) (string, *errors.Error) {
 	return string(data), nil
 }
 
+// ReadMultipleKeys function is used to read data for multiple keys from DB
+func (p *ConnPool) ReadMultipleKeys(key []interface{}) ([]string, *errors.Error) {
+	readConn := p.ReadPool.Get()
+	defer readConn.Close()
+	var (
+		value interface{}
+		err   error
+	)
+	value, err = readConn.Do("MGET", key...)
+	if err != nil {
+
+		if err.Error() == "redigo: nil returned" {
+			return nil, errors.PackError(errors.DBKeyNotFound, "no data with the key ", key, " found")
+		}
+		if errs, aye := isDbConnectError(err); aye {
+			return nil, errs
+		}
+		return nil, errors.PackError(errors.DBKeyFetchFailed, errorCollectingData, err)
+	}
+
+	if value == nil {
+		return nil, errors.PackError(errors.DBKeyNotFound, "no data with the key ", key, " found")
+	}
+
+	data, err := redis.Strings(value, err)
+	if err != nil {
+		return nil, errors.PackError(errors.UndefinedErrorType, "error while trying to convert the data into string: ", err)
+	}
+	return data, nil
+}
+
 // FindOrNull is a wrapper for Read function. If requested asset doesn't exist errors.DBKeyNotFound error returned by Read is converted to nil
 func (p *ConnPool) FindOrNull(table, key string) (string, error) {
 	r, e := p.Read(table, key)
@@ -1017,6 +1048,73 @@ func (p *ConnPool) CreateTaskIndex(index string, value int64, key string) error 
 	if createErr != nil {
 		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
 		return createErr
+	}
+	return nil
+}
+
+/*
+ AddMemberToSet add a member to the redis set
+ /*Following are the input parameters for adding member to redis set:
+1. key - redis set name
+2. member - member id that to be added to the redis set
+*/
+
+func (p *ConnPool) AddMemberToSet(key string, member string) *errors.Error {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	errPrefix := fmt.Sprintf("error while adding member %s to the set %s: ", member, key)
+	if writePool == nil {
+		return errors.PackError(errors.DBConnFailed, errPrefix+"WritePool is nil")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+	createErr := writeConn.Send("SADD", key, member)
+	if createErr != nil {
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+		return errors.PackError(errors.DBUpdateFailed, errPrefix+createErr.Error())
+	}
+	return nil
+}
+
+/*
+ GetAllMembersInSet get all members in a redis set
+ /*Following are the input parameters to get embers from redis set:
+1. key - redis set name
+*/
+
+func (p *ConnPool) GetAllMembersInSet(key string) ([]string, *errors.Error) {
+	readConn := p.ReadPool.Get()
+	defer readConn.Close()
+
+	members, err := redis.Strings(readConn.Do("SMEMBERS", key))
+	if err != nil {
+		if errs, aye := isDbConnectError(err); aye {
+			return members, errs
+		}
+		return members, errors.PackError(errors.DBKeyFetchFailed, errorCollectingData, err)
+	}
+	return members, nil
+}
+
+/*
+ RemoveMemberFromSet removes a member from the redis set
+ /*Following are the input parameters for removing member from redis set:
+1. key - redis set name
+2. member - member id that to be added to the redis set
+*/
+
+func (p *ConnPool) RemoveMemberFromSet(key string, member string) *errors.Error {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	errPrefix := fmt.Sprintf("error while removing member %s to the set %s: ", member, key)
+
+	if writePool == nil {
+		return errors.PackError(errors.DBConnFailed, errPrefix+"WritePool is nil ")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+	deleteErr := writeConn.Send("SREM", key, member)
+	if deleteErr != nil {
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+		return errors.PackError(errors.DBUpdateFailed, errPrefix+deleteErr.Error())
 	}
 	return nil
 }

@@ -65,12 +65,14 @@ type ResourceInfoRequest struct {
 type CommonInterface struct {
 	GetTarget     func(string) (*umodel.Target, *errors.Error)
 	GetPluginData func(string) (umodel.Plugin, *errors.Error)
-	ContactPlugin func(context.Context, PluginContactRequest, string) ([]byte, string, ResponseStatus, error)
+	ContactPlugin func(context.Context, PluginContactRequest, string) ([]byte, string, string, ResponseStatus, error)
 }
 
 var (
 	// ConfigFilePath holds the value of odim config file path
 	ConfigFilePath string
+	// GetDBConnectionFunc  function pointer for the common.GetDBConnection
+	GetDBConnectionFunc = common.GetDBConnection
 )
 
 // GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
@@ -97,7 +99,7 @@ func (i *CommonInterface) GetResourceInfoFromDevice(ctx context.Context, req Res
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, _, err := i.ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
+		_, token, _, _, err := i.ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
 		if err != nil {
 
 			return "", err
@@ -125,7 +127,7 @@ func (i *CommonInterface) GetResourceInfoFromDevice(ctx context.Context, req Res
 	//replace the uuid:system id with the system to the @odata.id from request url
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+":"+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet
-	body, _, _, err := i.ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
+	body, _, _, _, err := i.ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
 	if err != nil {
 		return "", err
 	}
@@ -204,7 +206,7 @@ var (
 )
 
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
-func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
+func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, string, ResponseStatus, error) {
 	var resp ResponseStatus
 	var err error
 	pluginResponse, err := CallPluginFunc(ctx, req)
@@ -217,7 +219,7 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 			resp.StatusCode = http.StatusServiceUnavailable
 			resp.StatusMessage = response.CouldNotEstablishConnection
 			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
-			return nil, "", resp, fmt.Errorf(errorMessage)
+			return nil, "", "", resp, fmt.Errorf(errorMessage)
 		}
 	}
 	defer pluginResponse.Body.Close()
@@ -227,7 +229,7 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
 		l.LogWithFields(ctx).Warn(errorMessage)
-		return nil, "", resp, fmt.Errorf(errorMessage)
+		return nil, "", "", resp, fmt.Errorf(errorMessage)
 	}
 
 	if pluginResponse.StatusCode != http.StatusCreated && pluginResponse.StatusCode != http.StatusOK && pluginResponse.StatusCode != http.StatusAccepted {
@@ -237,26 +239,27 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 			resp.StatusMessage = response.ResourceAtURIUnauthorized
 			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
 			l.LogWithFields(ctx).Warn(errorMessage)
-			return nil, "", resp, fmt.Errorf(errorMessage)
+			return nil, "", "", resp, fmt.Errorf(errorMessage)
 		}
 		errorMessage += string(body)
 		resp.StatusCode = int32(pluginResponse.StatusCode)
 		resp.StatusMessage = response.InternalError
 		l.LogWithFields(ctx).Warn(errorMessage)
-		return body, "", resp, fmt.Errorf(errorMessage)
+		return body, "", "", resp, fmt.Errorf(errorMessage)
 	}
 
 	data := string(body)
+	resp.StatusCode = int32(pluginResponse.StatusCode)
 	//replacing the resposne with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}
 	// Get location from the header if status code is status accepted
 	if pluginResponse.StatusCode == http.StatusAccepted {
-		return []byte(data), pluginResponse.Header.Get("Location"), resp, nil
+		return []byte(data), pluginResponse.Header.Get("Location"), pluginResponse.Header.Get(common.XForwardedFor), resp, nil
 	}
 	l.LogWithFields(ctx).Debugf("final response for contact plugin request: %s", data)
-	return []byte(data), pluginResponse.Header.Get("X-Auth-Token"), resp, nil
+	return []byte(data), pluginResponse.Header.Get("X-Auth-Token"), "", resp, nil
 }
 
 func checkRetrievalInfo(oid string) bool {
@@ -307,6 +310,8 @@ func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, 
 	l.LogWithFields(ctx).Debugf("plugin request URL: %s", reqURL)
 	return req.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
+
+// TrackConfigFileChanges ...
 func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat

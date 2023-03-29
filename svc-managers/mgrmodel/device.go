@@ -21,7 +21,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
-//DeviceTarget is for sending the requst to south bound/plugin
+// DeviceTarget is for sending the requst to south bound/plugin
 type DeviceTarget struct {
 	ManagerAddress string `json:"ManagerAddress"`
 	Password       []byte `json:"Password"`
@@ -42,7 +42,7 @@ type Plugin struct {
 	PreferredAuthType string
 }
 
-//GetSystemByUUID fetches computer system details by UUID from database
+// GetSystemByUUID fetches computer system details by UUID from database
 func GetSystemByUUID(systemUUID string) (string, *errors.Error) {
 	var system string
 	conn, err := common.GetDBConnection(common.InMemory)
@@ -60,7 +60,7 @@ func GetSystemByUUID(systemUUID string) (string, *errors.Error) {
 	return system, nil
 }
 
-//GetPluginData will fetch plugin details
+// GetPluginData will fetch plugin details
 func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	var plugin Plugin
 
@@ -87,7 +87,7 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	return plugin, nil
 }
 
-//GetTarget fetches the System(Target Device Credentials) table details
+// GetTarget fetches the System(Target Device Credentials) table details
 func GetTarget(deviceUUID string) (*DeviceTarget, *errors.Error) {
 	var target DeviceTarget
 	conn, err := common.GetDBConnection(common.OnDisk)

@@ -14,6 +14,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"sync"
@@ -30,7 +31,7 @@ import (
 	auth "github.com/ODIM-Project/ODIM/svc-task/tauth"
 	"github.com/ODIM-Project/ODIM/svc-task/tcommon"
 	"github.com/ODIM-Project/ODIM/svc-task/thandle"
-	"github.com/ODIM-Project/ODIM/svc-task/tmessagebus"
+	tmb "github.com/ODIM-Project/ODIM/svc-task/tmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 	"github.com/ODIM-Project/ODIM/svc-task/tqueue"
 )
@@ -91,18 +92,31 @@ func main() {
 	task.GetSessionUserNameRPC = auth.GetSessionUserName
 	task.GetTaskStatusModel = tmodel.GetTaskStatus
 	task.GetAllTaskKeysModel = tmodel.GetAllTaskKeys
+	task.GetMultipleTaskKeysModel = tmodel.GetMultipleTaskKeys
 	task.TransactionModel = tmodel.Transaction
 	task.CreateTaskUtilHelper = task.CreateTaskUtil
 	task.DeleteTaskFromDBModel = tmodel.DeleteTaskFromDB
 	task.UpdateTaskQueue = tqueue.EnqueueTask
 	task.PersistTaskModel = tmodel.PersistTask
 	task.ValidateTaskUserNameModel = tmodel.ValidateTaskUserName
-	task.PublishToMessageBus = tmessagebus.Publish
+	task.PublishToMessageBus = tmb.Publish
 	thandle.TaskCollection = thandle.TaskCollectionData{
 		TaskCollection: make(map[string]int32),
 		Lock:           sync.Mutex{},
 	}
 	taskproto.RegisterGetTaskServiceServer(services.ODIMService.Server(), task)
+
+	go task.MonitorPluginTasks()
+
+	// TODO: configure the job queue size
+	jobQueueSize := 10
+	tmb.TaskEventRecvQueue, tmb.TaskEventProcQueue = common.CreateJobQueue(jobQueueSize)
+
+	ctx := context.TODO()
+	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
+	ctx = context.WithValue(ctx, common.ThreadName, common.ProcessTaskEvents)
+	common.RunReadWorkers(ctx, tmb.TaskEventProcQueue, task.ProcessTaskEvents, 5)
+	go tmb.SubscribeTaskEventsQueue(config.Data.MessageBusConf.OdimTaskEventsQueue)
 
 	tick := &tmodel.Tick{
 		Ticker: time.NewTicker(time.Duration(config.Data.TaskQueueConf.DBCommitInterval) * time.Microsecond),

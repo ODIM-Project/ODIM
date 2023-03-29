@@ -39,6 +39,20 @@ func mockIsAuthorized(ctx context.Context, sessionToken string, privileges, oemP
 	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
+func mockGetSessionUserName(ctx context.Context, sessionToken string) (string, error) {
+	if sessionToken == "InvalidToken" {
+		return "", fmt.Errorf("invalid token")
+	}
+	return "someUserName", nil
+}
+
+func mockCreateTask(ctx context.Context, sessionUserName string) (string, error) {
+	if sessionUserName == "InvalidUser" {
+		return "", fmt.Errorf("invalid user")
+	}
+	return "/redfish/v1/TaskService/Tasks/task12345", nil
+}
+
 func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	return nil, fmt.Errorf("InvalidRequest")
 }
@@ -117,6 +131,10 @@ func mockUpdateData(key string, updateData map[string]interface{}, table string)
 	return nil
 }
 
+func mockSavePluginTaskInfo(context.Context, string, string, string, string) error { return nil }
+
+func mockUpdateTask(context.Context, common.TaskData) error { return nil }
+
 func mockGetResource(table, key string) (string, *errors.Error) {
 	if key == "/redfish/v1/Managers/uuid1.1/Ethernet" {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
@@ -156,13 +174,13 @@ func mockGetDeviceInfo(ctx context.Context, req mgrcommon.ResourceInfoRequest) (
 	return string(dataByte), err
 }
 
-func mockDeviceRequest(ctx context.Context, req mgrcommon.ResourceInfoRequest) response.RPC {
+func mockDeviceRequest(ctx context.Context, req mgrcommon.ResourceInfoRequest) (mgrcommon.PluginTaskInfo, response.RPC) {
 	var resp response.RPC
 	resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 	if req.URL == "/redfish/v1/Managers/deviceAbsent.1" || req.URL == "/redfish/v1/Managers/uuid1.1/Virtual" {
 		resp.StatusCode = http.StatusNotFound
 		resp.StatusMessage = response.ResourceNotFound
-		return resp
+		return mgrcommon.PluginTaskInfo{}, resp
 	}
 	manager := mgrmodel.Manager{
 		Status: &mgrmodel.Status{
@@ -174,9 +192,9 @@ func mockDeviceRequest(ctx context.Context, req mgrcommon.ResourceInfoRequest) r
 	resp.StatusMessage = response.Success
 	err = json.Unmarshal(dataByte, &resp.Body)
 	if err != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return mgrcommon.PluginTaskInfo{}, common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
-	return resp
+	return mgrcommon.PluginTaskInfo{}, resp
 }
 
 func mockGetExternalInterface() *managers.ExternalInterface {
@@ -191,7 +209,11 @@ func mockGetExternalInterface() *managers.ExternalInterface {
 			GetManagerByURL:     mockGetManagerByURL,
 			GetPluginData:       mockGetPluginData,
 			UpdateData:          mockUpdateData,
+			SavePluginTaskInfo:  mockSavePluginTaskInfo,
 			GetResource:         mockGetResource,
+		},
+		RPC: managers.RPC{
+			UpdateTask: mockUpdateTask,
 		},
 	}
 }
@@ -321,6 +343,8 @@ func TestVirtualMediaEject(t *testing.T) {
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
+	mgr.GetSessionUserName = mockGetSessionUserName
+	mgr.CreateTask = mockCreateTask
 	req := &managersproto.ManagerRequest{
 		ManagerID:    "uuid.1",
 		SessionToken: "validToken",
@@ -331,7 +355,7 @@ func TestVirtualMediaEject(t *testing.T) {
 	resp, err := mgr.VirtualMediaEject(ctx, req)
 	fmt.Println(resp)
 	assert.Nil(t, err, "The two words should be the same.")
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusAccepted, "Status code should be StatusOK.")
 
 	// Invalid
 	req = &managersproto.ManagerRequest{
@@ -351,7 +375,8 @@ func TestVirtualMediaInsert(t *testing.T) {
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
-
+	mgr.GetSessionUserName = mockGetSessionUserName
+	mgr.CreateTask = mockCreateTask
 	req := &managersproto.ManagerRequest{
 		ManagerID:    "uuid.1",
 		SessionToken: "validToken",
@@ -365,7 +390,7 @@ func TestVirtualMediaInsert(t *testing.T) {
 	var resp = &managersproto.ManagerResponse{}
 	resp, err := mgr.VirtualMediaInsert(ctx, req)
 	assert.Nil(t, err, "The two words should be the same.")
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusAccepted, "Status code should be StatusOK.")
 
 	// Invalid
 	req = &managersproto.ManagerRequest{
@@ -415,6 +440,8 @@ func TestCreateRemoteAccountService(t *testing.T) {
 	ctx := mockContext()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
+	mgr.GetSessionUserName = mockGetSessionUserName
+	mgr.CreateTask = mockCreateTask
 	mgr.EI = mockGetExternalInterface()
 
 	req := &managersproto.ManagerRequest{
@@ -430,7 +457,7 @@ func TestCreateRemoteAccountService(t *testing.T) {
 	var resp = &managersproto.ManagerResponse{}
 	resp, err := mgr.CreateRemoteAccountService(ctx, req)
 	assert.Nil(t, err, "The two words should be the same.")
-	assert.Equal(t, int(resp.StatusCode), http.StatusCreated, "Status code should be StatusCreated.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusAccepted, "Status code should be StatusCreated.")
 
 	// Invalid
 	req = &managersproto.ManagerRequest{
@@ -452,6 +479,8 @@ func TestDeleteRemoteAccountService(t *testing.T) {
 	ctx := mockContext()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
+	mgr.GetSessionUserName = mockGetSessionUserName
+	mgr.CreateTask = mockCreateTask
 	mgr.EI = mockGetExternalInterface()
 
 	req := &managersproto.ManagerRequest{
@@ -463,7 +492,7 @@ func TestDeleteRemoteAccountService(t *testing.T) {
 	var resp = &managersproto.ManagerResponse{}
 	resp, err := mgr.DeleteRemoteAccountService(ctx, req)
 	assert.Nil(t, err, "The two words should be the same.")
-	assert.Equal(t, int(resp.StatusCode), http.StatusNoContent, "Status code should be StatusNoContent.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusAccepted, "Status code should be StatusNoContent.")
 
 	// Invalid
 	req = &managersproto.ManagerRequest{
@@ -482,6 +511,8 @@ func TestUpdateRemoteAccountService(t *testing.T) {
 	ctx := mockContext()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
+	mgr.GetSessionUserName = mockGetSessionUserName
+	mgr.CreateTask = mockCreateTask
 	mgr.EI = mockGetExternalInterface()
 
 	req := &managersproto.ManagerRequest{
@@ -497,7 +528,7 @@ func TestUpdateRemoteAccountService(t *testing.T) {
 	var resp = &managersproto.ManagerResponse{}
 	resp, err := mgr.UpdateRemoteAccountService(ctx, req)
 	assert.Nil(t, err, "The two words should be the same.")
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusAccepted, "Status code should be StatusOK.")
 
 	// Invalid
 	req = &managersproto.ManagerRequest{

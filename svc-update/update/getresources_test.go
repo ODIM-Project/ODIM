@@ -98,7 +98,7 @@ func mockContext() context.Context {
 	return ctx
 }
 
-func mockContactPlugin(ctx context.Context, req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, ucommon.ResponseStatus, error) {
+func mockContactPlugin(ctx context.Context, req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, string, ucommon.ResponseStatus, error) {
 	var responseStatus ucommon.ResponseStatus
 	if req.OID == "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate" {
 		encodedTaskData, _ := JSONMarshalFunc(common.TaskData{
@@ -108,7 +108,7 @@ func mockContactPlugin(ctx context.Context, req ucommon.PluginContactRequest, er
 			TaskStatus:      common.OK,
 		})
 		responseStatus.StatusCode = http.StatusAccepted
-		return encodedTaskData, "/taskmon/1234145125", responseStatus, nil
+		return encodedTaskData, "/taskmon/1234145125", "", responseStatus, nil
 	} else if req.OID == "ODIM/v1/UpdateService/Actions/UpdateService.StartUpdate" {
 		encodedTaskData, _ := JSONMarshalFunc(common.TaskData{
 			TaskID:          "1234145126",
@@ -117,19 +117,19 @@ func mockContactPlugin(ctx context.Context, req ucommon.PluginContactRequest, er
 			TaskStatus:      common.OK,
 		})
 		responseStatus.StatusCode = http.StatusAccepted
-		return encodedTaskData, "/taskmon/1234145126", responseStatus, nil
+		return encodedTaskData, "/taskmon/1234145126", "", responseStatus, nil
 	} else if req.OID == "/taskmon/1234145126" || req.OID == "/taskmon/1234145125" {
 		responseStatus.StatusCode = http.StatusOK
-		return []byte(`{"Attributes":"sample"}`), "token", responseStatus, nil
+		return []byte(`{"Attributes":"sample"}`), "token", "", responseStatus, nil
 	}
 
-	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, nil
+	return []byte(`{"Attributes":"sample"}`), "token", "", responseStatus, nil
 }
 
-func mockContactPluginError(ctx context.Context, req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, ucommon.ResponseStatus, error) {
+func mockContactPluginError(ctx context.Context, req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, string, ucommon.ResponseStatus, error) {
 	var responseStatus ucommon.ResponseStatus
 
-	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, &errors.Error{}
+	return []byte(`{"Attributes":"sample"}`), "token", "", responseStatus, &errors.Error{}
 }
 
 func stubDevicePassword(password []byte) ([]byte, error) {

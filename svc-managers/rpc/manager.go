@@ -17,8 +17,11 @@ package rpc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
@@ -29,8 +32,11 @@ import (
 
 // Managers struct helps to register service
 type Managers struct {
-	IsAuthorizedRPC func(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
-	EI              *managers.ExternalInterface
+	GetSessionUserName func(context.Context, string) (string, error)
+	CreateTask         func(ctx context.Context, sessionUserName string) (string, error)
+	SavePluginTaskInfo func(ctx context.Context, pluginIP, pluginServerName, odimTaskID, pluginTaskMonURL string) error
+	IsAuthorizedRPC    func(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
+	EI                 *managers.ExternalInterface
 }
 
 // podName defines the current name of process
@@ -43,7 +49,7 @@ var podName = os.Getenv("POD_NAME")
 func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.ManagerService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)	
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
 	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -135,7 +141,7 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 func (m *Managers) VirtualMediaInsert(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.ManagerService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)	
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	sessionToken := req.SessionToken
 	resp := &managersproto.ManagerResponse{}
 	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -149,11 +155,33 @@ func (m *Managers) VirtualMediaInsert(ctx context.Context, req *managersproto.Ma
 		resp.Header = authResp.Header
 		return resp, nil
 	}
-	data := m.EI.VirtualMediaActions(ctx, req)
-	resp.Header = data.Header
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(ctx, data.Body)
+	sessionUserName, err := m.GetSessionUserName(ctx, req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillManagersProtoResponse(ctx, resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return resp, nil
+	}
+	// Task Service using RPC and get the taskID
+	taskURI, err := m.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillManagersProtoResponse(ctx, resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskResponse(taskID, taskURI, &rpcResp)
+	fillManagersProtoResponse(ctx, resp, rpcResp)
+	go m.EI.VirtualMediaActions(ctx, req, taskID)
 	l.LogWithFields(ctx).Debugf("Outgoing virtual media response to northbound: %s", string(resp.Body))
 	return resp, nil
 }
@@ -178,11 +206,33 @@ func (m *Managers) VirtualMediaEject(ctx context.Context, req *managersproto.Man
 		resp.Header = authResp.Header
 		return resp, nil
 	}
-	data := m.EI.VirtualMediaActions(ctx, req)
-	resp.Header = data.Header
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(ctx, data.Body)
+	sessionUserName, err := m.GetSessionUserName(ctx, req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillManagersProtoResponse(ctx, resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return resp, nil
+	}
+	// Task Service using RPC and get the taskID
+	taskURI, err := m.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillManagersProtoResponse(ctx, resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskResponse(taskID, taskURI, &rpcResp)
+	fillManagersProtoResponse(ctx, resp, rpcResp)
+	go m.EI.VirtualMediaActions(ctx, req, taskID)
 	l.LogWithFields(ctx).Debugf("Outgoing virtual media eject response to northbound: %s", string(resp.Body))
 	return resp, nil
 }
@@ -203,7 +253,7 @@ func generateResponse(ctx context.Context, input interface{}) []byte {
 func (m *Managers) GetRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.ManagerService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)	
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
 	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -242,18 +292,22 @@ func (m *Managers) CreateRemoteAccountService(ctx context.Context, req *managers
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
 		}
-		resp.StatusCode = authResp.StatusCode
-		resp.StatusMessage = authResp.StatusMessage
-		resp.Body = generateResponse(ctx, authResp.Body)
-		resp.Header = authResp.Header
+		fillManagersProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
-	data := m.EI.CreateRemoteAccountService(ctx, req)
-	resp.Header = data.Header
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(ctx, data.Body)
-	l.LogWithFields(ctx).Debugf("Outgoing create remote account service response to northbound: %s", string(resp.Body))
+
+	taskID, err := CreateTaskAndResponse(ctx, m, req.SessionToken, &resp)
+	if err != nil {
+		l.LogWithFields(ctx).Error(err)
+		return &resp, nil
+	}
+
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.CreateRemoteAccountService)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go m.EI.CreateRemoteAccountService(ctxt, req, taskID)
+	l.LogWithFields(ctx).Debugf("Outgoing create remote account service response to northbound: %s ",
+		&resp.Body)
 	return &resp, nil
 }
 
@@ -265,7 +319,7 @@ func (m *Managers) CreateRemoteAccountService(ctx context.Context, req *managers
 func (m *Managers) UpdateRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.ManagerService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)	
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
 	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
@@ -273,17 +327,20 @@ func (m *Managers) UpdateRemoteAccountService(ctx context.Context, req *managers
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
 		}
-		resp.StatusCode = authResp.StatusCode
-		resp.StatusMessage = authResp.StatusMessage
-		resp.Body = generateResponse(ctx, authResp.Body)
-		resp.Header = authResp.Header
+		fillManagersProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
-	data := m.EI.UpdateRemoteAccountService(ctx, req)
-	resp.Header = data.Header
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(ctx, data.Body)
+
+	taskID, err := CreateTaskAndResponse(ctx, m, req.SessionToken, &resp)
+	if err != nil {
+		l.LogWithFields(ctx).Error(err)
+		return &resp, nil
+	}
+
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.UpdateRemoteAccountService)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go m.EI.UpdateRemoteAccountService(ctx, req, taskID)
 	l.LogWithFields(ctx).Debugf("Outgoing update remote account service response to northbound: %s", string(resp.Body))
 	return &resp, nil
 }
@@ -296,7 +353,7 @@ func (m *Managers) UpdateRemoteAccountService(ctx context.Context, req *managers
 func (m *Managers) DeleteRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.ManagerService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)	
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
 	authResp, err := m.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
@@ -304,17 +361,75 @@ func (m *Managers) DeleteRemoteAccountService(ctx context.Context, req *managers
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("error while authorizing the session token : %s", err.Error())
 		}
-		resp.StatusCode = authResp.StatusCode
-		resp.StatusMessage = authResp.StatusMessage
-		resp.Body = generateResponse(ctx, authResp.Body)
-		resp.Header = authResp.Header
+		fillManagersProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
-	data := m.EI.DeleteRemoteAccountService(ctx, req)
-	resp.Header = data.Header
+	taskID, err := CreateTaskAndResponse(ctx, m, req.SessionToken, &resp)
+	if err != nil {
+		l.LogWithFields(ctx).Error(err)
+		return &resp, nil
+	}
+
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.DeleteRemoteAccountService)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go m.EI.DeleteRemoteAccountService(ctx, req, taskID)
+	l.LogWithFields(ctx).Debugf("Outgoing delete remote account service response to northbound: %s", string(resp.Body))
+	return &resp, nil
+}
+
+// CreateTaskAndResponse will create the task for corresponding request using
+// the RPC call to task service and it will prepare custom task response to the user
+// The function returns the ID of created task back.
+func CreateTaskAndResponse(ctx context.Context, m *Managers, sessionToken string, resp *managersproto.ManagerResponse) (string, error) {
+	sessionUserName, err := m.GetSessionUserName(ctx, sessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillManagersProtoResponse(ctx, resp, common.GeneralError(http.StatusUnauthorized,
+			response.NoValidSession, errMsg, nil, nil))
+		return "", fmt.Errorf(errMsg)
+	}
+
+	// Task Service using RPC and get the taskID
+	taskURI, err := m.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillManagersProtoResponse(ctx, resp, common.GeneralError(http.StatusInternalServerError,
+			response.InternalError, errMsg, nil, nil))
+		return "", fmt.Errorf(errMsg)
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+
+	generateTaskResponse(taskID, taskURI, &rpcResp)
+	fillManagersProtoResponse(ctx, resp, rpcResp)
+	return taskID, nil
+}
+
+func fillManagersProtoResponse(ctx context.Context, resp *managersproto.ManagerResponse, data response.RPC) {
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
-	l.LogWithFields(ctx).Debugf("Outgoing delete remote account service response to northbound: %s", string(resp.Body))
-	return &resp, nil
+	resp.Header = data.Header
+}
+
+// generateTaskResponse is used to generate task response
+func generateTaskResponse(taskID, taskURI string, rpcResp *response.RPC) {
+	commonResponse := response.Response{
+		OdataType:    common.TaskType,
+		ID:           taskID,
+		Name:         "Task " + taskID,
+		OdataContext: "/redfish/v1/$metadata#Task.Task",
+		OdataID:      taskURI,
+	}
+	commonResponse.MessageArgs = []string{taskID}
+	commonResponse.CreateGenericResponse(rpcResp.StatusMessage)
+	rpcResp.Body = commonResponse
 }

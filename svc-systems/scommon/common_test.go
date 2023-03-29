@@ -17,7 +17,6 @@ package scommon
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -210,7 +209,7 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 		return ioutil.ReadAll(r)
 	}
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
-		return errors.New("")
+		return fmt.Errorf("")
 	}
 	_, err = GetResourceInfoFromDevice(ctx, req, true)
 	assert.NotNil(t, err, "There should be error")
@@ -370,7 +369,7 @@ func TestContactPlugin(t *testing.T) {
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
 	contactRequest.GetPluginStatus = mockPluginStatus
-	_, _, _, err = ContactPlugin(ctx, contactRequest, "")
+	_, _, _, _, err = ContactPlugin(ctx, contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }
 
@@ -501,6 +500,39 @@ func Test_keyFormation(t *testing.T) {
 			if got := keyFormation(tt.args.oid, tt.args.systemID, tt.args.DeviceUUID); got != tt.want {
 				t.Errorf("keyFormation() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestSavePluginTaskInfo(t *testing.T) {
+	config.SetUpMockConfig(t)
+	odimTaskID := "task3b7a2fc0-40aa-4788-961f-d201ee6ced4d"
+	pluginTaskID := "task3a7a2fc0-40aa-4788-961f-d201ee6ced4c"
+	type args struct {
+		ctx              context.Context
+		pluginIP         string
+		pluginServerName string
+		odimTaskID       string
+		pluginTaskMonURL string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "save plugin task info in db",
+			args: args{
+				ctx:              context.TODO(),
+				pluginIP:         "127.0.0.1",
+				pluginServerName: "iloplugin",
+				odimTaskID:       odimTaskID,
+				pluginTaskMonURL: "/taskmon/" + pluginTaskID,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SavePluginTaskInfo(tt.args.ctx, tt.args.pluginIP, tt.args.odimTaskID, tt.args.pluginServerName, tt.args.pluginTaskMonURL)
 		})
 	}
 }

@@ -22,6 +22,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 )
@@ -30,12 +31,13 @@ import (
 type ExternalInterface struct {
 	Device Device
 	DB     DB
+	RPC    RPC
 }
 
 // Device struct to inject the contact device function into the handlers
 type Device struct {
 	GetDeviceInfo         func(context.Context, mgrcommon.ResourceInfoRequest) (string, error)
-	DeviceRequest         func(context.Context, mgrcommon.ResourceInfoRequest) response.RPC
+	DeviceRequest         func(context.Context, mgrcommon.ResourceInfoRequest) (mgrcommon.PluginTaskInfo, response.RPC)
 	ContactClient         func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DecryptDevicePassword func([]byte) ([]byte, error)
 }
@@ -46,7 +48,13 @@ type DB struct {
 	GetManagerByURL     func(string) (string, *errors.Error)
 	GetPluginData       func(string) (mgrmodel.Plugin, *errors.Error)
 	UpdateData          func(string, map[string]interface{}, string) error
+	SavePluginTaskInfo  func(context.Context, string, string, string, string) error
 	GetResource         func(string, string) (string, *errors.Error)
+}
+
+// RPC struct to inject the rpc call to other services
+type RPC struct {
+	UpdateTask func(context.Context, common.TaskData) error
 }
 
 // GetExternalInterface retrieves all the external connections managers package functions uses
@@ -63,7 +71,24 @@ func GetExternalInterface() *ExternalInterface {
 			GetManagerByURL:     mgrmodel.GetManagerByURL,
 			GetPluginData:       mgrmodel.GetPluginData,
 			UpdateData:          mgrmodel.UpdateData,
+			SavePluginTaskInfo:  services.SavePluginTaskInfo,
 			GetResource:         mgrmodel.GetResource,
 		},
+		RPC: RPC{
+			UpdateTask: mgrcommon.UpdateTask,
+		},
+	}
+}
+
+func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskState string, taskStatus string, percentComplete int32, httpMethod string) common.TaskData {
+	return common.TaskData{
+		TaskID:          taskID,
+		TargetURI:       targetURI,
+		TaskRequest:     request,
+		Response:        resp,
+		TaskState:       taskState,
+		TaskStatus:      taskStatus,
+		PercentComplete: percentComplete,
+		HTTPMethod:      httpMethod,
 	}
 }

@@ -17,7 +17,11 @@ package rpc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"net/http"
+	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	licenseproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/licenses"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -60,4 +64,52 @@ func generateRPCResponse(rpcResp response.RPC, licenseResp *licenseproto.GetLice
 		Header:        rpcResp.Header,
 		Body:          bytes,
 	}
+}
+
+// CreateTaskAndResponse will create the task for corresponding request using
+// the RPC call to task service and it will prepare custom task response to the user
+// The function returns the ID of created task back.
+func CreateTaskAndResponse(ctx context.Context, l *Licenses, sessionToken string, resp *licenseproto.GetLicenseResponse) (string, string, error) {
+	sessionUserName, err := l.connector.External.GetSessionUserName(ctx, sessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillProtoResponse(ctx, resp, common.GeneralError(http.StatusUnauthorized,
+			response.NoValidSession, errMsg, nil, nil))
+		return "", "", fmt.Errorf(errMsg)
+	}
+
+	// Task Service using RPC and get the taskID
+	taskURI, err := l.connector.External.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillProtoResponse(ctx, resp, common.GeneralError(http.StatusInternalServerError,
+			response.InternalError, errMsg, nil, nil))
+		return "", "", fmt.Errorf(errMsg)
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	fillProtoResponse(ctx, resp, rpcResp)
+	return sessionUserName, taskID, nil
+}
+
+func generateTaskRespone(taskID, taskURI string, rpcResp *response.RPC) {
+	commonResponse := response.Response{
+		OdataType:    common.TaskType,
+		ID:           taskID,
+		Name:         "Task " + taskID,
+		OdataContext: "/redfish/v1/$metadata#Task.Task",
+		OdataID:      taskURI,
+	}
+	commonResponse.MessageArgs = []string{taskID}
+	commonResponse.CreateGenericResponse(rpcResp.StatusMessage)
+	rpcResp.Body = commonResponse
 }

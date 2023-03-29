@@ -56,6 +56,9 @@
 		"DBCommitInterval": 1000,
 		"RetryInterval": 5000
 	},
+	"PluginTasksConf" : {
+        "MonitorPluginTasksFrequencyInMins": 60
+    },
 	"FirmwareVersion": "1.0",
 	"SouthBoundRequestTimeoutInSecs": 300,
 	"ServerRediscoveryBatchSize": 30,

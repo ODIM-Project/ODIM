@@ -228,13 +228,13 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 	_, err = GetResourceInfoFromDevice(ctx, req)
 	assert.Nil(t, err, "There should be no error getting data")
 
-	GetPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
+	getPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
 		err = &errors.Error{}
 		return
 	}
 	_, err = GetResourceInfoFromDevice(ctx, req)
 	assert.NotNil(t, err, "There should be no error getting data")
-	GetPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
+	getPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
 		return mgrmodel.GetPluginData(pluginID)
 	}
 }
@@ -357,7 +357,7 @@ func TestDeviceCommunication(t *testing.T) {
 		HTTPMethod:            http.MethodPost,
 		RequestBody:           []byte(`{"Image":"http://10.1.1.1/ISO"}`),
 	}
-	response := DeviceCommunication(ctx, req)
+	_, response := DeviceCommunication(ctx, req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
 	req = ResourceInfoRequest{
@@ -369,47 +369,48 @@ func TestDeviceCommunication(t *testing.T) {
 		HTTPMethod:            http.MethodPost,
 		RequestBody:           []byte(`{"Image":"http://10.1.1.1/ISO"}`),
 	}
-	response = DeviceCommunication(ctx, req)
+	_, response = DeviceCommunication(ctx, req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
-	GetPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
+	getPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
 		err = &errors.Error{}
 		return data, &errors.Error{}
 	}
-	response = DeviceCommunication(ctx, req)
+	_, response = DeviceCommunication(ctx, req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
 
-	GetPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
+	getPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
 
 		return mgrmodel.GetPluginData(pluginID)
 	}
 
-	GetPluginTokenFunc = func(ctx context.Context, req PluginContactRequest) string {
+	getPluginTokenFunc = func(ctx context.Context, req PluginContactRequest) string {
 		return ""
 	}
-	response = DeviceCommunication(ctx, req)
+	_, response = DeviceCommunication(ctx, req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
 
-	StringEqualFold = func(s, t string) bool {
+	stringEqualFold = func(s, t string) bool {
 		return false
 	}
-	response = DeviceCommunication(ctx, req)
+	_, response = DeviceCommunication(ctx, req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
-	ContactPluginFunc = func(ctx context.Context, req PluginContactRequest, errorMessage string) (data []byte, data1 string, data2 ResponseStatus, err error) {
+	contactPluginFunc = func(ctx context.Context, req PluginContactRequest, errorMessage string) (data []byte, data1 string,
+		data2 PluginTaskInfo, data3 ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
-	response = DeviceCommunication(ctx, req)
+	_, response = DeviceCommunication(ctx, req)
 	assert.NotNil(t, "There should get  error")
 
-	JSON_UnmarshalFunc = func(data []byte, v interface{}) error {
+	jsonUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
-	response = DeviceCommunication(ctx, req)
+	_, response = DeviceCommunication(ctx, req)
 	assert.NotNil(t, "There should get error")
 
-	GetPluginTokenFunc = func(ctx context.Context, req PluginContactRequest) string {
+	getPluginTokenFunc = func(ctx context.Context, req PluginContactRequest) string {
 		return GetPluginToken(ctx, req)
 	}
 	req = ResourceInfoRequest{
@@ -421,6 +422,6 @@ func TestDeviceCommunication(t *testing.T) {
 		HTTPMethod:            http.MethodPost,
 		RequestBody:           []byte(`{"Image":"http://10.1.1.1/ISO"}`),
 	}
-	response = DeviceCommunication(ctx, req)
+	_, response = DeviceCommunication(ctx, req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
 }

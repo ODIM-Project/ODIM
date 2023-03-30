@@ -185,12 +185,12 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 		locationHeader             string
 		successfulSubscriptionList = make([]model.Link, 0)
 	)
-
 	result.Lock.Lock()
 	originResourceProcessedCount := len(result.Response)
 	successfulSubscriptionList, result.Response = getSuccessfulResponse(result.Response)
 
 	result.Lock.Unlock()
+
 	// remove the underlying resource uri's from successfulSubscriptionList
 	for i := 0; i < len(collectionList); i++ {
 		for j := 0; j < len(successfulSubscriptionList); j++ {
@@ -201,7 +201,6 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			}
 		}
 	}
-
 	if len(successfulSubscriptionList) > 0 {
 		subscriptionID := uuid.New().String()
 		var hosts []string
@@ -1206,7 +1205,7 @@ func getSuccessfulResponse(response map[string]evresponse.EventResponse) (succes
 		if originResourceID == resourceID && i > 0 {
 			successfulSubscriptionList = append(successfulSubscriptionList, model.Link{Oid: originResource})
 		}
-		if evtResponse.StatusCode == http.StatusAccepted {
+		if evtResponse.StatusCode == http.StatusAccepted || evtResponse.StatusCode == http.StatusCreated {
 			successfulSubscriptionList = append(successfulSubscriptionList, model.Link{Oid: originResource})
 			successfulResponses[originResource] = evtResponse
 		}

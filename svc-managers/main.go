@@ -100,6 +100,9 @@ func registerHandlers() {
 	manager := new(rpc.Managers)
 
 	manager.IsAuthorizedRPC = services.IsAuthorized
+	manager.GetSessionUserName = services.GetSessionUserName
+	manager.CreateTask = services.CreateTask
+	manager.SavePluginTaskInfo = services.SavePluginTaskInfo
 	manager.EI = managers.GetExternalInterface()
 
 	managersproto.RegisterManagersServer(services.ODIMService.Server(), manager)

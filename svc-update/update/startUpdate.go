@@ -31,6 +31,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 )
@@ -41,7 +42,7 @@ var (
 )
 
 // StartUpdate function handler for on start update process
-func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sessionUserName string, req *updateproto.UpdateRequest) response.RPC {
+func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sessionUserName string, req *updateproto.UpdateRequest) {
 	var resp response.RPC
 	var percentComplete int32
 	targetURI := "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate"
@@ -49,11 +50,12 @@ func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sess
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
 	l.LogWithFields(ctx).Debug("task info payload: ", taskInfo)
 	// Read all the requests from database
-	targetList, err := GetAllKeysFromTableFunc(ctx,"SimpleUpdate", common.OnDisk)
+	targetList, err := GetAllKeysFromTableFunc(ctx, "SimpleUpdate", common.OnDisk)
 	if err != nil {
 		errMsg := "Unable to read SimpleUpdate requests from database: " + err.Error()
 		l.LogWithFields(ctx).Warn(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return
 	}
 	partialResultFlag := false
 	subTaskChannel := make(chan int32, len(targetList))
@@ -74,14 +76,15 @@ func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sess
 			e.External.UpdateTask(ctx, task)
 			runtime.Goexit()
 		}
-		return resp
+		return
 	}
 	for _, target := range targetList {
-		data, gerr := e.DB.GetResource(ctx,"SimpleUpdate", target, common.OnDisk)
+		data, gerr := e.DB.GetResource(ctx, "SimpleUpdate", target, common.OnDisk)
 		if gerr != nil {
 			errMsg := "Unable to retrive the start update request" + gerr.Error()
 			l.LogWithFields(ctx).Warn(errMsg)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+			return
 		}
 		var threadID int = 1
 		ctxt := context.WithValue(ctx, common.ThreadName, common.StartRequest)
@@ -112,7 +115,9 @@ func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sess
 			}
 		}
 	}
-
+	if resp.StatusCode == http.StatusAccepted {
+		return
+	}
 	if partialResultFlag {
 		taskStatus = common.Warning
 	}
@@ -122,13 +127,17 @@ func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sess
 		l.LogWithFields(ctx).Warn(errMsg)
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
-			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{fmt.Sprintf("%v", targetList)}, taskInfo)
+			common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{fmt.Sprintf("%v", targetList)}, taskInfo)
+			return
 		case http.StatusNotFound:
-			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"option", "SimpleUpdate"}, taskInfo)
+			common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"option", "SimpleUpdate"}, taskInfo)
+			return
 		case http.StatusBadRequest:
-			return common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errMsg, []interface{}{"UpdateService.SimpleUpdate"}, taskInfo)
+			common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errMsg, []interface{}{"UpdateService.SimpleUpdate"}, taskInfo)
+			return
 		default:
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+			return
 		}
 	}
 
@@ -150,7 +159,6 @@ func (e *ExternalInterface) StartUpdate(ctx context.Context, taskID string, sess
 	}
 	respBody := fmt.Sprintf("%v", resp.Body)
 	l.LogWithFields(ctx).Debugf("final response for start update request: %s", string(respBody))
-	return resp
 }
 
 func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data string, subTaskChannel chan<- int32, sessionUserName string) {
@@ -216,7 +224,7 @@ func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := e.External.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
+		_, token, _, getResponse, err := e.External.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			subTaskChannel <- getResponse.StatusCode
@@ -239,7 +247,7 @@ func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.StartUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost
-	respBody, location, getResponse, contactErr := e.External.ContactPlugin(ctx, contactRequest, "error while performing simple update action: ")
+	_, location, pluginIP, getResponse, contactErr := e.External.ContactPlugin(ctx, contactRequest, "error while performing simple update action: ")
 	if contactErr != nil {
 		subTaskChannel <- getResponse.StatusCode
 		errMsg := contactErr.Error()
@@ -248,20 +256,9 @@ func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
-		getResponse, err = e.monitorPluginTask(ctx, subTaskChannel, &monitorTaskRequest{
-			subTaskID:         subTaskID,
-			serverURI:         uuid,
-			updateRequestBody: data,
-			respBody:          respBody,
-			getResponse:       getResponse,
-			taskInfo:          taskInfo,
-			location:          location,
-			pluginRequest:     contactRequest,
-			resp:              resp,
-		})
-		if err != nil {
-			return
-		}
+		services.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, subTaskID, location)
+		subTaskChannel <- int32(getResponse.StatusCode)
+		return
 	}
 
 	resp.StatusCode = http.StatusOK
@@ -273,5 +270,4 @@ func (e *ExternalInterface) startRequest(ctx context.Context, uuid, taskID, data
 		var task = fillTaskData(subTaskID, uuid, data, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		e.External.UpdateTask(ctx, task)
 	}
-	return
 }

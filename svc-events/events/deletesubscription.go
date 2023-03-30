@@ -307,16 +307,6 @@ func (e *ExternalInterfaces) deleteAndReSubscribeToEvents(ctx context.Context, e
 		if err != nil {
 			return err
 		}
-		//add default Subscription
-		subscriptionDetails = append([]evmodel.SubscriptionResource{{
-			EventDestination: &model.EventDestination{
-				EventTypes: []string{"Alert"},
-				Protocol:   "Redfish",
-				Context:    "Creating the Default Event Subscription",
-			},
-		},
-		}, subscriptionDetails...)
-
 		// if origin contains fabrics then get all the collection and individual subscription details
 		// for Systems need to add same later
 		subscriptionDetails = e.getAllSubscriptions(origin.Oid, subscriptionDetails)
@@ -329,14 +319,11 @@ func (e *ExternalInterfaces) deleteAndReSubscribeToEvents(ctx context.Context, e
 		} else if len(subscriptionDetails) == 1 {
 			deleteFlag = true
 		}
-		fmt.Println("Delete flag is ", deleteFlag, len(subscriptionDetails))
 		var context, protocol, destination, name string
 		var eventTypes, messageIDs, resourceTypes []string
 
 		for index, evtSub := range subscriptionDetails {
-			fmt.Println(" Subscription Details 111 ", evtSubscription.SubscriptionID, evtSub.SubscriptionID, evtSubscription.SubscriptionID != evtSub.SubscriptionID)
 			if evtSubscription.SubscriptionID != evtSub.SubscriptionID {
-				fmt.Println(" Subscription Details 222 ", evtSubscription.SubscriptionID, evtSub.SubscriptionID)
 				if len(evtSub.EventDestination.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
 					eventTypes = append(eventTypes, evtSub.EventDestination.EventTypes...)
 				} else {
@@ -467,8 +454,6 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 	contactRequest.URL = "/ODIM/v1/Subscriptions"
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.PostBody = target
-	fmt.Println("Data is ", string(target.PostBody))
-	fmt.Println("Data is111  ", target.Location)
 	createResponse, loc, _, pluginIp, err := e.PluginCall(ctx, contactRequest)
 	if err != nil {
 		return err

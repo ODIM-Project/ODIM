@@ -538,7 +538,6 @@ func mockPlugins(t *testing.T) {
 	if err != nil {
 		t.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
-
 	password := getEncryptedKey(t, []byte("Password"))
 	pluginArr := []agmodel.Plugin{
 		{

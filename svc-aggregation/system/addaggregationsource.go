@@ -160,10 +160,12 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 		resp, aggregationSourceUUID, cipherText = e.addPluginData(ctx, addResourceRequest, taskID, targetURI, pluginContactRequest, queueList, cmVariants)
 	} else if statusCode == http.StatusNotFound {
 		resp, aggregationSourceUUID, cipherText = e.addCompute(ctx, taskID, targetURI, cmVariants.PluginID, percentComplete, addResourceRequest, pluginContactRequest)
+		l.LogWithFields(ctx).Info("response in if ", resp, "aggID", aggregationSourceUUID, "cipher", cipherText)
 	} else {
 		return statusResp
 	}
 	if resp.StatusMessage != "" {
+		l.LogWithFields(ctx).Info("returned inside resp")
 		return resp
 	}
 	// Adding Aggregation Source to db

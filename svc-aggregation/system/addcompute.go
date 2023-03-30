@@ -395,5 +395,6 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 			nil, nil), "", nil
 	}
 	l.LogWithFields(ctx).Debugf("final response for add compute request: %s", string(fmt.Sprintf("%v", resp.Body)))
+	l.LogWithFields(ctx).Info("response in compute", resp, "response status", resp.StatusMessage)
 	return resp, aggregationSourceID, ciphertext
 }

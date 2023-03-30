@@ -351,41 +351,60 @@ func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.E
 	ctx = common.ModifyContext(ctx, common.EventService, podName)
 	var resp eventsproto.EventSubResponse
 	var err error
-	var taskID string
-
-	sessionUserName, err := e.Connector.GetSessionUserName(ctx, req.SessionToken)
-	if err != nil {
-		errorMessage := "error while trying to get the session username: " + err.Error()
-		resp.Body = generateResponse(ctx, common.GeneralError(http.StatusUnauthorized,
-			response.NoValidSession, errorMessage, nil, nil))
-		resp.StatusCode = http.StatusUnauthorized
-		l.LogWithFields(ctx).Error(errorMessage)
-		return &resp, err
-	}
-	// Create the task and get the taskID
-	// Contact Task Service using RPC and get the taskID
-	taskURI, err := e.Connector.CreateTask(ctx, sessionUserName)
-	if err != nil {
-		// print err here as we are unbale to contact svc-task service
-		errorMessage := "error while trying to create the task: " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError,
-			response.InternalError, errorMessage, nil, nil).Body)
-		l.LogWithFields(ctx).Error(errorMessage)
-		return &resp, fmt.Errorf(resp.StatusMessage)
-	}
-	strArray := strings.Split(taskURI, "/")
-	if strings.HasSuffix(taskURI, "/") {
-		taskID = strArray[len(strArray)-2]
-	} else {
-		taskID = strArray[len(strArray)-1]
-	}
+	var taskID, taskURI string
 	if req.UUID == "" {
+		sessionUserName, err := e.Connector.GetSessionUserName(ctx, req.SessionToken)
+		if err != nil {
+			errorMessage := "error while trying to get the session username: " + err.Error()
+			resp.Body = generateResponse(ctx, common.GeneralError(http.StatusUnauthorized,
+				response.NoValidSession, errorMessage, nil, nil))
+			resp.StatusCode = http.StatusUnauthorized
+			l.LogWithFields(ctx).Error(errorMessage)
+			return &resp, err
+		}
+		// Create the task and get the taskID
+		// Contact Task Service using RPC and get the taskID
+		taskURI, err = e.Connector.CreateTask(ctx, sessionUserName)
+		if err != nil {
+			// print err here as we are unable to contact svc-task service
+			errorMessage := "error while trying to create the task: " + err.Error()
+			resp.StatusCode = http.StatusInternalServerError
+			resp.StatusMessage = response.InternalError
+			resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError,
+				response.InternalError, errorMessage, nil, nil).Body)
+			l.LogWithFields(ctx).Error(errorMessage)
+			return &resp, fmt.Errorf(resp.StatusMessage)
+		}
+		strArray := strings.Split(taskURI, "/")
+		if strings.HasSuffix(taskURI, "/") {
+			taskID = strArray[len(strArray)-2]
+		} else {
+			taskID = strArray[len(strArray)-1]
+		}
+
 		// Delete Event Subscription when admin requested
 		go e.Connector.DeleteEventSubscriptionsDetails(ctx, req, taskID)
 	} else {
 		// Delete Event Subscription to Device when Server get Deleted
+		// Create the task and get the taskID
+		// Contact Task Service using RPC and get the taskID
+		taskURI, err = e.Connector.CreateTask(ctx, req.SessionToken)
+		if err != nil {
+			// print err here as we are unable to contact svc-task service
+			errorMessage := "error while trying to create the task: " + err.Error()
+			resp.StatusCode = http.StatusInternalServerError
+			resp.StatusMessage = response.InternalError
+			resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError,
+				response.InternalError, errorMessage, nil, nil).Body)
+			l.LogWithFields(ctx).Error(errorMessage)
+			return &resp, fmt.Errorf(resp.StatusMessage)
+		}
+		strArray := strings.Split(taskURI, "/")
+		if strings.HasSuffix(taskURI, "/") {
+			taskID = strArray[len(strArray)-2]
+		} else {
+			taskID = strArray[len(strArray)-1]
+		}
 		go e.Connector.DeleteEventSubscriptions(ctx, req, taskID)
 	}
 	resp.StatusCode = http.StatusAccepted

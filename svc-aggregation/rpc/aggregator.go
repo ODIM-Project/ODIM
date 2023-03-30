@@ -543,6 +543,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
+	fmt.Println("Session Token is ", req.SessionToken)
 	sessionUserName, err := a.connector.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
@@ -569,7 +570,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	var threadID int = 1
 	ctxt := context.WithValue(ctx, common.ThreadName, common.DeleteAggregationSource)
 	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
-	go a.connector.DeleteAggregationSources(ctxt, taskID, targetURI, req)
+	go a.connector.DeleteAggregationSources(ctxt, taskID, targetURI, req, sessionUserName)
 	threadID++
 	// return 202 Accepted
 	var rpcResp = response.RPC{

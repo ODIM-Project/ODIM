@@ -90,7 +90,7 @@ type ExternalInterface struct {
 	DecryptPassword          func([]byte) ([]byte, error)
 	DeleteComputeSystem      func(int, string) *errors.Error
 	DeleteSystem             func(string) *errors.Error
-	DeleteEventSubscription  func(string) (*eventsproto.EventSubResponse, error)
+	DeleteEventSubscription  func(string, string) (*eventsproto.EventSubResponse, error)
 	EventNotification        func(context.Context, string, string, string)
 	GetAllKeysFromTable      func(context.Context, string) ([]string, error)
 	GetConnectionMethod      func(context.Context, string) (agmodel.ConnectionMethod, *errors.Error)

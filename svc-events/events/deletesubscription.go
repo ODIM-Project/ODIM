@@ -203,18 +203,19 @@ func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(ctx context.Context
 		percentComplete int32 = 100
 		targetURI             = "/redfish/v1/EventService/Subscriptions"
 	)
-	// authResp, err := e.Auth(ctx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
-	// if authResp.StatusCode != http.StatusOK {
-	// 	errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
-	// 	if err != nil {
-	// 		errMsg = errMsg + ": " + err.Error()
-	// 	}
-	// 	l.LogWithFields(ctx).Error(errMsg)
-	// 	e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
-	// 		common.Critical, percentComplete, http.MethodDelete))
-
-	// 	return authResp
-	// }
+	reqCtx := common.CreateNewRequestContext(ctx)
+	reqCtx = common.CreateMetadata(reqCtx)
+	authResp, err := e.Auth(reqCtx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		if err != nil {
+			errMsg = errMsg + ": " + err.Error()
+		}
+		l.LogWithFields(ctx).Error(errMsg)
+		e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+			common.Critical, percentComplete, http.MethodDelete))
+		return authResp
+	}
 	subscriptionDetails, err := e.GetEvtSubscriptions(req.EventSubscriptionID)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		l.LogWithFields(ctx).Error("error while deleting event subscription details : " + err.Error())
@@ -306,6 +307,16 @@ func (e *ExternalInterfaces) deleteAndReSubscribeToEvents(ctx context.Context, e
 		if err != nil {
 			return err
 		}
+		//add default Subscription
+		subscriptionDetails = append([]evmodel.SubscriptionResource{{
+			EventDestination: &model.EventDestination{
+				EventTypes: []string{"Alert"},
+				Protocol:   "Redfish",
+				Context:    "Creating the Default Event Subscription",
+			},
+		},
+		}, subscriptionDetails...)
+
 		// if origin contains fabrics then get all the collection and individual subscription details
 		// for Systems need to add same later
 		subscriptionDetails = e.getAllSubscriptions(origin.Oid, subscriptionDetails)
@@ -318,12 +329,14 @@ func (e *ExternalInterfaces) deleteAndReSubscribeToEvents(ctx context.Context, e
 		} else if len(subscriptionDetails) == 1 {
 			deleteFlag = true
 		}
-
+		fmt.Println("Delete flag is ", deleteFlag, len(subscriptionDetails))
 		var context, protocol, destination, name string
 		var eventTypes, messageIDs, resourceTypes []string
 
 		for index, evtSub := range subscriptionDetails {
+			fmt.Println(" Subscription Details 111 ", evtSubscription.SubscriptionID, evtSub.SubscriptionID, evtSubscription.SubscriptionID != evtSub.SubscriptionID)
 			if evtSubscription.SubscriptionID != evtSub.SubscriptionID {
+				fmt.Println(" Subscription Details 222 ", evtSubscription.SubscriptionID, evtSub.SubscriptionID)
 				if len(evtSub.EventDestination.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
 					eventTypes = append(eventTypes, evtSub.EventDestination.EventTypes...)
 				} else {
@@ -454,6 +467,8 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 	contactRequest.URL = "/ODIM/v1/Subscriptions"
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.PostBody = target
+	fmt.Println("Data is ", string(target.PostBody))
+	fmt.Println("Data is111  ", target.Location)
 	createResponse, loc, _, pluginIp, err := e.PluginCall(ctx, contactRequest)
 	if err != nil {
 		return err
@@ -461,6 +476,7 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 	if createResponse.StatusCode == http.StatusAccepted {
 		services.SavePluginTaskInfo(ctx, pluginIp, plugin.IP,
 			taskId, loc)
+		return nil
 	}
 
 	// Update Location to all destination of device if already subscribed to the device

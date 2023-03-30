@@ -543,7 +543,6 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
-	fmt.Println("Session Token is ", req.SessionToken)
 	sessionUserName, err := a.connector.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()

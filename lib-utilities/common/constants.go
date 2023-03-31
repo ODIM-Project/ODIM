@@ -155,20 +155,29 @@ const (
 	// AggregateSubscriptionIndex is a index name which required for indexing
 	// subscription of aggregate
 	AggregateSubscriptionIndex = "AggregateToHost"
-	// Below fields are Process Name for logging
-	TransactionID = "transactionid"
-	ThreadID      = "threadid"
-	ThreadName    = "threadname"
-	ActionName    = "actionname"
-	ActionID      = "actionid"
-	ProcessName   = "processname"
-	RequestBody   = "requestbody"
-	// Below fields define Service Name
+)
+
+// ContextKey is a custom type which used to declare the keys used in contexts
+type ContextKey string
+
+// Below fields are Process Name for logging
+const (
+	TransactionID ContextKey = "transactionid"
+	ThreadID      ContextKey = "threadid"
+	ThreadName    ContextKey = "threadname"
+	ActionName    ContextKey = "actionname"
+	ActionID      ContextKey = "actionid"
+	ProcessName   ContextKey = "processname"
+	RequestBody   ContextKey = "requestbody"
+)
+
+// Below fields are service names for logging
+const (
 	ManagerService     = "svc-managers"
 	AccountService     = "svc-account"
 	SystemService      = "svc-systems"
 	SessionService     = "svc-account-session"
-	ApiService         = "svc-api"
+	APIService         = "svc-api"
 	UpdateService      = "svc-update"
 	TaskService        = "svc-task"
 	AggregationService = "svc-aggregation"
@@ -176,14 +185,19 @@ const (
 	TelemetryService   = "svc-telemetry"
 	LicenseService     = "svc-licenses"
 	FabricService      = "svc-fabrics"
+)
+
+// Below fields are thread IDs for logging
+const (
 	// DefaultThreadID to be used for apis
 	DefaultThreadID = "0"
 	// Invalid Action
-	InvalidActionID   = "000"
-	InvalidActionName = "MethodNotAllowed"
-	// Taskmon URI key
-	Taskmon = "taskmon"
-	// ThreadName
+	InvalidActionID = "000"
+)
+
+// Below fields are thread names for logging
+const (
+	InvalidActionName                      = "MethodNotAllowed"
 	CheckAuth                              = "Check-Authentication"
 	CheckSessionCreation                   = "CheckSessionCreationCredentials"
 	CheckSessionTimeout                    = "CheckSessionTimeOut"
@@ -211,18 +225,22 @@ const (
 	DeleteRemoteAccountService             = "DeleteRemoteAccountService"
 	InstallLicenseService                  = "InstallLicenseService"
 	ProcessTaskEvents                      = "ProcessTaskEvents"
-	// constants for log
-	SessionToken            = "sessiontoken"
-	SessionUserID           = "sessionuserid"
-	SessionRoleID           = "sessionroleid"
-	StatusCode              = "statuscode"
-	ComputerSystemReset     = "ComputerSystemReset"
-	ChangeBootOrderSettings = "ChangeBootOrderSettings"
-	GetFabricManagerChassis = "GetFabricManagerChassis"
-	CollectChassisResource  = "CollectChassisResource"
-	UpdateChassisResource   = "UpdateChassisResource"
+	SessionToken                           = "sessiontoken"
+	SessionUserID                          = "sessionuserid"
+	SessionRoleID                          = "sessionroleid"
+	StatusCode                             = "statuscode"
+	ComputerSystemReset                    = "ComputerSystemReset"
+	ChangeBootOrderSettings                = "ChangeBootOrderSettings"
+	GetFabricManagerChassis                = "GetFabricManagerChassis"
+	CollectChassisResource                 = "CollectChassisResource"
+	UpdateChassisResource                  = "UpdateChassisResource"
+)
 
-	ENV_POD_NAME = "POD_NAME"
+const (
+	// Taskmon URI key
+	Taskmon = "taskmon"
+	// EnvPodName is a key name to get the pod name from environment
+	EnvPodName = "POD_NAME"
 )
 
 // ActionType defines type of action
@@ -231,10 +249,10 @@ type ActionType struct {
 	ActionName string
 }
 
-// ActionURL defines type of service, uri and its method
+// ActionKey defines type of service, uri and its method
 type ActionKey struct {
 	Service string
-	Uri     string
+	URI     string
 	Method  string
 }
 
@@ -472,6 +490,7 @@ var Actions = map[ActionKey]ActionType{
 	// 218 is an internal operation in svc-task
 }
 
+// Types contains schema versions to be returned
 var Types = map[string]string{
 	"EthernetInterfaces": "#EthernetInterface.v1_8_0.EthernetInterface",
 }
@@ -676,11 +695,13 @@ var URIWithNoAuth = []string{
 	"/redfish/v1/SessionService/Sessions",
 }
 
+// SessionURI is redfish URI for sessions
 var SessionURI = "/redfish/v1/SessionService/Sessions"
 
 // XForwardedFor holds the IP of plugin instance in response header
 var XForwardedFor = "X-Forwarded-For"
 
+// PluginTaskIndex is name for SET in redis to store plugin task IDs
 var PluginTaskIndex = "PluginTaskIndex"
 
 // Target is for sending the request to south bound/plugin

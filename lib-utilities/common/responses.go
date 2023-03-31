@@ -34,6 +34,16 @@ var commonHeaders = map[string]string{
 	"Transfer-Encoding":      "chunked",
 }
 
+const (
+	transactionID = string(TransactionID)
+	threadID      = string(ThreadID)
+	threadName    = string(ThreadName)
+	actionName    = string(ActionName)
+	actionID      = string(ActionID)
+	processName   = string(ProcessName)
+	requestBody   = string(RequestBody)
+)
+
 // SetResponseHeader will add the params to the response header
 func SetResponseHeader(ctx iris.Context, params map[string]string) {
 	SetCommonHeaders(ctx.ResponseWriter())
@@ -53,13 +63,13 @@ func SetCommonHeaders(w http.ResponseWriter) {
 func GetContextData(ctx context.Context) context.Context {
 	md, _ := metadata.FromIncomingContext(ctx)
 	ctx = metadata.NewIncomingContext(ctx, md)
-	if len(md[TransactionID]) > 0 {
-		ctx = context.WithValue(ctx, ProcessName, md[ProcessName][0])
-		ctx = context.WithValue(ctx, TransactionID, md[TransactionID][0])
-		ctx = context.WithValue(ctx, ActionID, md[ActionID][0])
-		ctx = context.WithValue(ctx, ActionName, md[ActionName][0])
-		ctx = context.WithValue(ctx, ThreadID, md[ThreadID][0])
-		ctx = context.WithValue(ctx, ThreadName, md[ThreadName][0])
+	if len(md[transactionID]) > 0 {
+		ctx = context.WithValue(ctx, ProcessName, md[processName][0])
+		ctx = context.WithValue(ctx, TransactionID, md[transactionID][0])
+		ctx = context.WithValue(ctx, ActionID, md[actionID][0])
+		ctx = context.WithValue(ctx, ActionName, md[actionName][0])
+		ctx = context.WithValue(ctx, ThreadID, md[threadID][0])
+		ctx = context.WithValue(ctx, ThreadName, md[threadName][0])
 	}
 
 	return ctx
@@ -69,12 +79,12 @@ func GetContextData(ctx context.Context) context.Context {
 func CreateMetadata(ctx context.Context) context.Context {
 	if ctx.Value(TransactionID) != nil {
 		md := metadata.New(map[string]string{
-			ProcessName:   ctx.Value(ProcessName).(string),
-			TransactionID: ctx.Value(TransactionID).(string),
-			ActionName:    ctx.Value(ActionName).(string),
-			ActionID:      ctx.Value(ActionID).(string),
-			ThreadID:      ctx.Value(ThreadID).(string),
-			ThreadName:    ctx.Value(ThreadName).(string),
+			processName:   ctx.Value(ProcessName).(string),
+			transactionID: ctx.Value(TransactionID).(string),
+			actionName:    ctx.Value(ActionName).(string),
+			actionID:      ctx.Value(ActionID).(string),
+			threadID:      ctx.Value(ThreadID).(string),
+			threadName:    ctx.Value(ThreadName).(string),
 		})
 		ctx = metadata.NewOutgoingContext(ctx, md)
 	}
@@ -82,11 +92,14 @@ func CreateMetadata(ctx context.Context) context.Context {
 	return ctx
 }
 
+// ModifyContext modify the values in the context
 func ModifyContext(ctx context.Context, threadName, podName string) context.Context {
 	ctx = context.WithValue(ctx, ThreadName, threadName)
 	ctx = context.WithValue(ctx, ProcessName, podName)
 	return ctx
 }
+
+// CreateNewRequestContext creates a new context with the values from a context passed
 func CreateNewRequestContext(ctx context.Context) context.Context {
 	reqCtx := context.Background()
 	processName, _ := ctx.Value(ProcessName).(string)
@@ -105,12 +118,12 @@ func CreateNewRequestContext(ctx context.Context) context.Context {
 }
 
 // CreateContext will create and returns a new context with the values passed
-func CreateContext(transactionId, actionId, actionName, threadId, threadName, processName string) context.Context {
+func CreateContext(transactionID, actionID, actionName, threadID, threadName, processName string) context.Context {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, TransactionID, transactionId)
-	ctx = context.WithValue(ctx, ActionID, actionId)
+	ctx = context.WithValue(ctx, TransactionID, transactionID)
+	ctx = context.WithValue(ctx, ActionID, actionID)
 	ctx = context.WithValue(ctx, ActionName, actionName)
-	ctx = context.WithValue(ctx, ThreadID, threadId)
+	ctx = context.WithValue(ctx, ThreadID, threadID)
 	ctx = context.WithValue(ctx, ThreadName, threadName)
 	ctx = context.WithValue(ctx, ProcessName, processName)
 	return ctx

@@ -107,7 +107,6 @@ func GetSessionUserRoleID(ctx context.Context, sessionToken string) (string, err
 // GeneralError will create the error response
 // This function can be used only if the expected response have only
 // one extended info object. Error code for the response will be GeneralError
-
 func GeneralError(statusCode int32, statusMsg, errMsg string, msgArgs []interface{}) response.RPC {
 	var resp response.RPC
 	resp.StatusCode = statusCode

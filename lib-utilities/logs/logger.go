@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/sirupsen/logrus"
 )
 
@@ -60,24 +61,29 @@ var logFields = map[string][]string{
 // SysLogFormatter implements logrus Format interface. It provides a formatter for odim in syslog format
 type SysLogFormatter struct{}
 
+// Log is an instance of logrus.Entry.
+// This instance should be initialized at the start of the each service
+// and will be used for logging
 var Log *logrus.Entry
 
+// LogFormat is custom type created for the log formats supported by ODIM
 type LogFormat uint32
 
+// log formats supported by ODIM
 const (
 	SyslogFormat LogFormat = iota
-	JsonFormat
+	JSONFormat
 )
 
 func getProcessLogDetails(ctx context.Context) logrus.Fields {
 	var fields = make(map[string]interface{})
-	TransactionId := strings.Replace(fmt.Sprintf("%v", ctx.Value("transactionid")), "\n", "", -1)
-	ProcessName := strings.Replace(fmt.Sprintf("%v", ctx.Value("processname")), "\n", "", -1)
-	ThreadID := strings.Replace(fmt.Sprintf("%v", ctx.Value("threadid")), "\n", "", -1)
-	ActionName := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionname")), "\n", "", -1)
-	ThreadName := strings.Replace(fmt.Sprintf("%v", ctx.Value("threadname")), "\n", "", -1)
-	ActionID := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionid")), "\n", "", -1)
-	fields["transactionid"] = TransactionId
+	TransactionID := strings.Replace(fmt.Sprintf("%v", ctx.Value(common.TransactionID)), "\n", "", -1)
+	ProcessName := strings.Replace(fmt.Sprintf("%v", ctx.Value(common.ProcessName)), "\n", "", -1)
+	ThreadID := strings.Replace(fmt.Sprintf("%v", ctx.Value(common.ThreadID)), "\n", "", -1)
+	ActionName := strings.Replace(fmt.Sprintf("%v", ctx.Value(common.ActionName)), "\n", "", -1)
+	ThreadName := strings.Replace(fmt.Sprintf("%v", ctx.Value(common.ThreadName)), "\n", "", -1)
+	ActionID := strings.Replace(fmt.Sprintf("%v", ctx.Value(common.ActionID)), "\n", "", -1)
+	fields["transactionid"] = TransactionID
 	fields["processname"] = ProcessName
 	fields["threadid"] = ThreadID
 	fields["actionname"] = ActionName
@@ -253,7 +259,7 @@ func ParseLogFormat(format string) (LogFormat, error) {
 	case "syslog":
 		return SyslogFormat, nil
 	case "json":
-		return JsonFormat, nil
+		return JSONFormat, nil
 	}
 
 	var lf LogFormat
@@ -276,7 +282,7 @@ func (format LogFormat) MarshalText() ([]byte, error) {
 	switch format {
 	case SyslogFormat:
 		return []byte("syslog"), nil
-	case JsonFormat:
+	case JSONFormat:
 		return []byte("json"), nil
 	}
 
@@ -288,7 +294,7 @@ func SetFormatter(format LogFormat) {
 	switch format {
 	case SyslogFormat:
 		Log.Logger.SetFormatter(&SysLogFormatter{})
-	case JsonFormat:
+	case JSONFormat:
 		Log.Logger.SetFormatter(&logrus.JSONFormatter{})
 	default:
 		Log.Logger.SetFormatter(&SysLogFormatter{})

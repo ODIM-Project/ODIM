@@ -157,18 +157,15 @@ const (
 	AggregateSubscriptionIndex = "AggregateToHost"
 )
 
-// ContextKey is a custom type which used to declare the keys used in contexts
-type ContextKey string
-
 // Below fields are Process Name for logging
 const (
-	TransactionID ContextKey = "transactionid"
-	ThreadID      ContextKey = "threadid"
-	ThreadName    ContextKey = "threadname"
-	ActionName    ContextKey = "actionname"
-	ActionID      ContextKey = "actionid"
-	ProcessName   ContextKey = "processname"
-	RequestBody   ContextKey = "requestbody"
+	TransactionID = "transactionid"
+	ThreadID      = "threadid"
+	ThreadName    = "threadname"
+	ActionName    = "actionname"
+	ActionID      = "actionid"
+	ProcessName   = "processname"
+	RequestBody   = "requestbody"
 )
 
 // Below fields are service names for logging

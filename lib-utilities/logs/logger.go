@@ -21,7 +21,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/sirupsen/logrus"
 )
 
@@ -77,12 +76,12 @@ const (
 
 func getProcessLogDetails(ctx context.Context) logrus.Fields {
 	var fields = make(map[string]interface{})
-	TransactionID := strings.Replace(fmt.Sprintf("%v", ctx.Value(common.TransactionID)), "\n", "", -1)
-	ProcessName := strings.Replace(fmt.Sprintf("%v", ctx.Value(common.ProcessName)), "\n", "", -1)
-	ThreadID := strings.Replace(fmt.Sprintf("%v", ctx.Value(common.ThreadID)), "\n", "", -1)
-	ActionName := strings.Replace(fmt.Sprintf("%v", ctx.Value(common.ActionName)), "\n", "", -1)
-	ThreadName := strings.Replace(fmt.Sprintf("%v", ctx.Value(common.ThreadName)), "\n", "", -1)
-	ActionID := strings.Replace(fmt.Sprintf("%v", ctx.Value(common.ActionID)), "\n", "", -1)
+	TransactionID := strings.Replace(fmt.Sprintf("%v", ctx.Value("transactionid")), "\n", "", -1)
+	ProcessName := strings.Replace(fmt.Sprintf("%v", ctx.Value("processname")), "\n", "", -1)
+	ThreadID := strings.Replace(fmt.Sprintf("%v", ctx.Value("threadid")), "\n", "", -1)
+	ActionName := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionname")), "\n", "", -1)
+	ThreadName := strings.Replace(fmt.Sprintf("%v", ctx.Value("threadname")), "\n", "", -1)
+	ActionID := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionid")), "\n", "", -1)
 	fields["transactionid"] = TransactionID
 	fields["processname"] = ProcessName
 	fields["threadid"] = ThreadID

@@ -34,16 +34,6 @@ var commonHeaders = map[string]string{
 	"Transfer-Encoding":      "chunked",
 }
 
-const (
-	transactionID = string(TransactionID)
-	threadID      = string(ThreadID)
-	threadName    = string(ThreadName)
-	actionName    = string(ActionName)
-	actionID      = string(ActionID)
-	processName   = string(ProcessName)
-	requestBody   = string(RequestBody)
-)
-
 // SetResponseHeader will add the params to the response header
 func SetResponseHeader(ctx iris.Context, params map[string]string) {
 	SetCommonHeaders(ctx.ResponseWriter())
@@ -63,13 +53,13 @@ func SetCommonHeaders(w http.ResponseWriter) {
 func GetContextData(ctx context.Context) context.Context {
 	md, _ := metadata.FromIncomingContext(ctx)
 	ctx = metadata.NewIncomingContext(ctx, md)
-	if len(md[transactionID]) > 0 {
-		ctx = context.WithValue(ctx, ProcessName, md[processName][0])
-		ctx = context.WithValue(ctx, TransactionID, md[transactionID][0])
-		ctx = context.WithValue(ctx, ActionID, md[actionID][0])
-		ctx = context.WithValue(ctx, ActionName, md[actionName][0])
-		ctx = context.WithValue(ctx, ThreadID, md[threadID][0])
-		ctx = context.WithValue(ctx, ThreadName, md[threadName][0])
+	if len(md[TransactionID]) > 0 {
+		ctx = context.WithValue(ctx, ProcessName, md[ProcessName][0])
+		ctx = context.WithValue(ctx, TransactionID, md[TransactionID][0])
+		ctx = context.WithValue(ctx, ActionID, md[ActionID][0])
+		ctx = context.WithValue(ctx, ActionName, md[ActionName][0])
+		ctx = context.WithValue(ctx, ThreadID, md[ThreadID][0])
+		ctx = context.WithValue(ctx, ThreadName, md[ThreadName][0])
 	}
 
 	return ctx
@@ -79,12 +69,12 @@ func GetContextData(ctx context.Context) context.Context {
 func CreateMetadata(ctx context.Context) context.Context {
 	if ctx.Value(TransactionID) != nil {
 		md := metadata.New(map[string]string{
-			processName:   ctx.Value(ProcessName).(string),
-			transactionID: ctx.Value(TransactionID).(string),
-			actionName:    ctx.Value(ActionName).(string),
-			actionID:      ctx.Value(ActionID).(string),
-			threadID:      ctx.Value(ThreadID).(string),
-			threadName:    ctx.Value(ThreadName).(string),
+			ProcessName:   ctx.Value(ProcessName).(string),
+			TransactionID: ctx.Value(TransactionID).(string),
+			ActionName:    ctx.Value(ActionName).(string),
+			ActionID:      ctx.Value(ActionID).(string),
+			ThreadID:      ctx.Value(ThreadID).(string),
+			ThreadName:    ctx.Value(ThreadName).(string),
 		})
 		ctx = metadata.NewOutgoingContext(ctx, md)
 	}

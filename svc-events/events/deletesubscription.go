@@ -257,6 +257,14 @@ func (e *ExternalInterfaces) deleteAndReSubscribeToEvents(ctx context.Context, e
 		if err != nil {
 			return err
 		}
+		subscriptionDetails = append([]evmodel.SubscriptionResource{{
+			EventDestination: &model.EventDestination{
+				EventTypes: []string{"Alert"},
+				Protocol:   "Redfish",
+				Context:    "Creating the Default Event Subscription",
+			},
+		},
+		}, subscriptionDetails...)
 		// if origin contains fabrics then get all the collection and individual subscription details
 		// for Systems need to add same later
 		subscriptionDetails = e.getAllSubscriptions(origin.Oid, subscriptionDetails)

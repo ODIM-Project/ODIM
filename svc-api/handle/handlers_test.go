@@ -35,7 +35,7 @@ func TestGetVersion(t *testing.T) {
 	e := httptest.New(t, router)
 
 	//Expected reponse body decalration and initilaization to string
-	expectedBody := "{\n  \"v1\": \"/redfish/v1/\"\n}\n"
+	expectedBody := "{\"v1\":\"/redfish/v1/\"}\n"
 
 	//Check for status code 200 which is StatusOK
 	e.GET("/redfish").Expect().Status(http.StatusOK)

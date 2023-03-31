@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 )
 
@@ -29,7 +30,9 @@ func SubscribeToEMB(ctx context.Context, pluginID string, queueList []string) er
 	}
 	defer conn.Close()
 	events := eventsproto.NewEventsClient(conn)
-	_, err := events.SubscribeEMB(ctx, &eventsproto.SubscribeEMBRequest{
+	ctxt := common.CreateNewRequestContext(ctx)
+	ctxt = common.CreateMetadata(ctxt)
+	_, err := events.SubscribeEMB(ctxt, &eventsproto.SubscribeEMBRequest{
 		PluginID:     pluginID,
 		EMBQueueName: queueList,
 	})
@@ -40,7 +43,7 @@ func SubscribeToEMB(ctx context.Context, pluginID string, queueList []string) er
 }
 
 // DeleteSubscription  calls the event service and delete all subscription realated to that server
-func DeleteSubscription(uuid string, sessionToken string) (*eventsproto.EventSubResponse, error) {
+func DeleteSubscription(ctx context.Context, uuid string, sessionToken string) (*eventsproto.EventSubResponse, error) {
 	var resp eventsproto.EventSubResponse
 	req := eventsproto.EventRequest{
 		UUID:         uuid,
@@ -52,6 +55,7 @@ func DeleteSubscription(uuid string, sessionToken string) (*eventsproto.EventSub
 	}
 	defer conn.Close()
 	events := eventsproto.NewEventsClient(conn)
-
-	return events.DeleteEventSubscription(context.TODO(), &req)
+	ctxt := common.CreateNewRequestContext(ctx)
+	ctxt = common.CreateMetadata(ctxt)
+	return events.DeleteEventSubscription(ctxt, &req)
 }

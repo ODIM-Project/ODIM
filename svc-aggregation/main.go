@@ -20,14 +20,12 @@ import (
 	"github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
-	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
-	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/rpc"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/system"
@@ -98,17 +96,17 @@ func main() {
 
 	// Rediscover the Resources by looking in OnDisk DB, populate the resources in InMemory DB
 	//This happens only if the InMemory DB lost it contents due to DB reboot or host VM reboot.
-	p := system.ExternalInterface{
-		ContactClient:   pmbhandle.ContactPlugin,
-		Auth:            services.IsAuthorized,
-		PublishEventMB:  agmessagebus.Publish,
-		GetPluginStatus: agcommon.GetPluginStatus,
-		SubscribeToEMB:  services.SubscribeToEMB,
-		DecryptPassword: common.DecryptWithPrivateKey,
-		UpdateTask:      system.UpdateTaskData,
-	}
+	// p := system.ExternalInterface{
+	// 	ContactClient:   pmbhandle.ContactPlugin,
+	// 	Auth:            services.IsAuthorized,
+	// 	PublishEventMB:  agmessagebus.Publish,
+	// 	GetPluginStatus: agcommon.GetPluginStatus,
+	// 	SubscribeToEMB:  services.SubscribeToEMB,
+	// 	DecryptPassword: common.DecryptWithPrivateKey,
+	// 	UpdateTask:      system.UpdateTaskData,
+	// }
 
-	go p.RediscoverResources()
+	// go p.RediscoverResources()
 
 	agcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
 	if agcommon.ConfigFilePath == "" {

@@ -90,7 +90,7 @@ type ExternalInterface struct {
 	DecryptPassword          func([]byte) ([]byte, error)
 	DeleteComputeSystem      func(int, string) *errors.Error
 	DeleteSystem             func(string) *errors.Error
-	DeleteEventSubscription  func(string, string) (*eventsproto.EventSubResponse, error)
+	DeleteEventSubscription  func(context.Context, string, string) (*eventsproto.EventSubResponse, error)
 	EventNotification        func(context.Context, string, string, string)
 	GetAllKeysFromTable      func(context.Context, string) ([]string, error)
 	GetConnectionMethod      func(context.Context, string) (agmodel.ConnectionMethod, *errors.Error)
@@ -339,6 +339,7 @@ func contactPlugin(ctx context.Context, req getResourceRequest, errorMessage str
 	}
 
 	data := string(body)
+	resp.StatusCode = int32(pluginResp.StatusCode)
 	//replacing the resposne with north bound translation URL
 	for key, value := range getTranslationURL(northBoundURL) {
 		data = strings.Replace(data, key, value, -1)
@@ -348,7 +349,6 @@ func contactPlugin(ctx context.Context, req getResourceRequest, errorMessage str
 		return []byte(data), pluginResp.Header.Get("Location"), resp, nil
 	}
 
-	resp.StatusCode = int32(pluginResp.StatusCode)
 	return []byte(data), pluginResp.Header.Get("X-Auth-Token"), resp, nil
 }
 

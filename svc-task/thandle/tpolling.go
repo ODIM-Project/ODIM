@@ -108,7 +108,7 @@ and it will remove the plugin task from the active plugin tasks set in DB
 func updateFailedPluginTasks(ctx context.Context, ts *TasksRPC, pluginTaskID string, task *common.PluginTask) {
 	statusCode := http.StatusServiceUnavailable
 	message := errors.InternalError
-	resp := tcommon.GetTaskResponse(statusCode, message)
+	resp := tcommon.GetTaskResponse(int32(statusCode), message)
 	body, _ := json.Marshal(resp.Body)
 
 	payLoad := &taskproto.Payload{

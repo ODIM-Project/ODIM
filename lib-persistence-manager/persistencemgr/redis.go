@@ -850,7 +850,7 @@ func (c *Conn) SetExpiryTimeForKeys(taskKeys map[string]int64, keyExpiryInterval
 	return nil
 }
 
-// ShouldRetry checks fi the redis db operation can be retried or not by validating the error returned by redis
+// IsRetriable checks fi the redis db operation can be retried or not by validating the error returned by redis
 func IsRetriable(err error) bool {
 	if err == nil {
 		return false
@@ -1053,12 +1053,11 @@ func (p *ConnPool) CreateTaskIndex(index string, value int64, key string) error 
 }
 
 /*
- AddMemberToSet add a member to the redis set
- /*Following are the input parameters for adding member to redis set:
+AddMemberToSet add a member to the redis set
+Following are the input parameters for adding member to redis set:
 1. key - redis set name
 2. member - member id that to be added to the redis set
 */
-
 func (p *ConnPool) AddMemberToSet(key string, member string) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	errPrefix := fmt.Sprintf("error while adding member %s to the set %s: ", member, key)
@@ -1076,11 +1075,10 @@ func (p *ConnPool) AddMemberToSet(key string, member string) *errors.Error {
 }
 
 /*
- GetAllMembersInSet get all members in a redis set
- /*Following are the input parameters to get embers from redis set:
+GetAllMembersInSet get all members in a redis set
+Following are the input parameters to get embers from redis set:
 1. key - redis set name
 */
-
 func (p *ConnPool) GetAllMembersInSet(key string) ([]string, *errors.Error) {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
@@ -1096,12 +1094,11 @@ func (p *ConnPool) GetAllMembersInSet(key string) ([]string, *errors.Error) {
 }
 
 /*
- RemoveMemberFromSet removes a member from the redis set
- /*Following are the input parameters for removing member from redis set:
+RemoveMemberFromSet removes a member from the redis set
+Following are the input parameters for removing member from redis set:
 1. key - redis set name
 2. member - member id that to be added to the redis set
 */
-
 func (p *ConnPool) RemoveMemberFromSet(key string, member string) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	errPrefix := fmt.Sprintf("error while removing member %s to the set %s: ", member, key)
@@ -1833,7 +1830,7 @@ func (p *ConnPool) DeleteAggregateHosts(index, aggregateID string) error {
 	return nil
 }
 
-// This function retrieves all data for a given index from sorted sets
+// GetAllDataByIndex - This function retrieves all data for a given index from sorted sets
 // This maybe used to get all event/device subscriptions and aggregate hosts
 func (p *ConnPool) GetAllDataByIndex(index string) ([]string, error) {
 	dList, size, ferror := p.getAllDataFromSortedList(index)

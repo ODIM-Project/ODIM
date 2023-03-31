@@ -147,7 +147,7 @@ func (r *MutexLock) AddResponse(origin, host string, response EventResponse) {
 	r.Lock.Lock()
 	defer r.Lock.Unlock()
 	r.Response[origin] = response
-	if response.StatusCode == 201 {
+	if response.StatusCode == 202 {
 		r.Hosts[host] = origin
 	}
 }

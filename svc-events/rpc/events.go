@@ -266,7 +266,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		"Location": "/taskmon/" + taskID,
 	}
 	resp.StatusMessage = response.TaskStarted
-	generateTaskRespone(ctx, taskID, taskURI, &resp)
+	generateTaskResponse(ctx, taskID, taskURI, &resp)
 	return &resp, nil
 }
 
@@ -351,26 +351,68 @@ func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.E
 	ctx = common.ModifyContext(ctx, common.EventService, podName)
 	var resp eventsproto.EventSubResponse
 	var err error
-	var data response.RPC
+	var taskID, taskURI string
 	if req.UUID == "" {
+		sessionUserName, err := e.Connector.GetSessionUserName(ctx, req.SessionToken)
+		if err != nil {
+			errorMessage := "error while trying to get the session username: " + err.Error()
+			resp.Body = generateResponse(ctx, common.GeneralError(http.StatusUnauthorized,
+				response.NoValidSession, errorMessage, nil, nil))
+			resp.StatusCode = http.StatusUnauthorized
+			l.LogWithFields(ctx).Error(errorMessage)
+			return &resp, err
+		}
+		// Create the task and get the taskID
+		// Contact Task Service using RPC and get the taskID
+		taskURI, err = e.Connector.CreateTask(ctx, sessionUserName)
+		if err != nil {
+			// print err here as we are unable to contact svc-task service
+			errorMessage := "error while trying to create the task: " + err.Error()
+			resp.StatusCode = http.StatusInternalServerError
+			resp.StatusMessage = response.InternalError
+			resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError,
+				response.InternalError, errorMessage, nil, nil).Body)
+			l.LogWithFields(ctx).Error(errorMessage)
+			return &resp, fmt.Errorf(resp.StatusMessage)
+		}
+		strArray := strings.Split(taskURI, "/")
+		if strings.HasSuffix(taskURI, "/") {
+			taskID = strArray[len(strArray)-2]
+		} else {
+			taskID = strArray[len(strArray)-1]
+		}
+
 		// Delete Event Subscription when admin requested
-		data = e.Connector.DeleteEventSubscriptionsDetails(ctx, req)
+		go e.Connector.DeleteEventSubscriptionsDetails(ctx, req, taskID)
 	} else {
 		// Delete Event Subscription to Device when Server get Deleted
-		data = e.Connector.DeleteEventSubscriptions(ctx, req)
+		// Create the task and get the taskID
+		// Contact Task Service using RPC and get the taskID
+		taskURI, err = e.Connector.CreateTask(ctx, req.SessionToken)
+		if err != nil {
+			// print err here as we are unable to contact svc-task service
+			errorMessage := "error while trying to create the task: " + err.Error()
+			resp.StatusCode = http.StatusInternalServerError
+			resp.StatusMessage = response.InternalError
+			resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError,
+				response.InternalError, errorMessage, nil, nil).Body)
+			l.LogWithFields(ctx).Error(errorMessage)
+			return &resp, fmt.Errorf(resp.StatusMessage)
+		}
+		strArray := strings.Split(taskURI, "/")
+		if strings.HasSuffix(taskURI, "/") {
+			taskID = strArray[len(strArray)-2]
+		} else {
+			taskID = strArray[len(strArray)-1]
+		}
+		go e.Connector.DeleteEventSubscriptions(ctx, req, taskID)
 	}
-	resp.Body, err = JSONMarshal(data.Body)
-	if err != nil {
-		errorMessage := "error while trying marshal the response body for delete event subsciption : " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		l.LogWithFields(ctx).Error(resp.StatusMessage)
-		return &resp, nil
+	resp.StatusCode = http.StatusAccepted
+	resp.Header = map[string]string{
+		"Location": "/taskmon/" + taskID,
 	}
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Header = data.Header
+	resp.StatusMessage = response.TaskStarted
+	generateTaskResponse(ctx, taskID, taskURI, &resp)
 	return &resp, nil
 }
 
@@ -398,7 +440,7 @@ func (e *Events) SubscribeEMB(ctx context.Context, req *eventsproto.SubscribeEMB
 	return &resp, nil
 }
 
-func generateTaskRespone(ctx context.Context, taskID, taskURI string, resp *eventsproto.EventSubResponse) {
+func generateTaskResponse(ctx context.Context, taskID, taskURI string, resp *eventsproto.EventSubResponse) {
 	commonResponse := response.Response{
 		OdataType:    common.TaskType,
 		ID:           taskID,
@@ -451,5 +493,12 @@ func (e *Events) DeleteAggregateSubscriptionsRPC(ctx context.Context, req *event
 	ctx = common.ModifyContext(ctx, common.EventService, podName)
 	e.Connector.DeleteAggregateSubscriptions(ctx, req, true)
 	resp.Status = true
+	return &resp, nil
+}
+
+func (e *Events) UpdateSubscriptionLocationRPC(ctx context.Context, in *eventsproto.UpdateSubscriptionLocation) (*eventsproto.SubscribeEMBResponse, error) {
+	var resp eventsproto.SubscribeEMBResponse
+	isUpdated := e.Connector.UpdateSubscriptionLocation(ctx, in.Location, in.Host)
+	resp.Status = isUpdated
 	return &resp, nil
 }

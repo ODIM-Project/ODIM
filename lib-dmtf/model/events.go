@@ -283,7 +283,7 @@ const (
 	// SMTPAuthenticationNone - SMTPAuthentication method None species no authentication
 	SMTPAuthenticationNone SMTPAuthentication = "None"
 
-	// SMTPConnectionProtocolAutoDetect - SMTPAuthenticationPlain - SMTPAuthentication method Plain
+	// SMTPAuthenticationPlain - SMTPAuthentication method Plain
 	SMTPAuthenticationPlain SMTPAuthentication = "Plain"
 
 	// SMTPConnectionProtocolAutoDetect - SMTPConnection protocol type Auto-detect
@@ -406,14 +406,18 @@ func (subscriptionType SubscriptionType) IsSubscriptionTypeSupported() bool {
 		return false
 	}
 }
+
+// ToString - converts SubscriptionType to string type
 func (subscriptionType SubscriptionType) ToString() string {
 	return string(subscriptionType)
 }
 
+// ToString - converts DeliveryRetryPolicy to string type
 func (deliveryRetryPolicy DeliveryRetryPolicy) ToString() string {
 	return string(deliveryRetryPolicy)
 }
 
+// ToString - converts EventType to string type
 func (eventType EventType) ToString() string {
 	return string(eventType)
 }

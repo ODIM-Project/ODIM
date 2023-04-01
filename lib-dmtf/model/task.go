@@ -224,7 +224,7 @@ type Conditions struct {
 	LogEntry          *Link    `json:"LogEntry,omitempty"`
 	Message           string   `json:"Message,omitempty"`
 	MessageArgs       []string `json:"MessageArgs,omitempty"`
-	MessageId         string   `json:"MessageId"`
+	MessageID         string   `json:"MessageId"`
 	OriginOfCondition *Link    `json:"OriginOfCondition,omitempty"`
 	Resolution        string   `json:"Resolution,omitempty"`
 	Severity          Health   `json:"Severity,omitempty"`

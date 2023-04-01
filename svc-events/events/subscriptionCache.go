@@ -18,7 +18,6 @@
 // - Get Event Subscription
 // - Post Event Subscription to destination
 // and corresponding unit test cases
-
 package events
 
 import (
@@ -45,23 +44,23 @@ import (
 var (
 	subscriptionsCache                    map[string]dmtf.EventDestination
 	systemToSubscriptionsMap              map[string]map[string]bool
-	aggregateIdToSubscriptionsMap         map[string]map[string]bool
+	aggregateIDToSubscriptionsMap         map[string]map[string]bool
 	collectionToSubscriptionsMap          map[string]map[string]bool
 	emptyOriginResourceToSubscriptionsMap map[string]bool
-	systemIdToAggregateIdsMap             map[string]map[string]bool
+	systemIDToAggregateIdsMap             map[string]map[string]bool
 	eventSourceToManagerIDMap             map[string]string
 	managerIDToSystemIDsMap               map[string][]string
 	managerIDToChassisIDsMap              map[string][]string
 
-	EventConsumerActionID   = "218"
-	EventConsumerActionName = "EventConsumer"
+	eventConsumerActionID   = "218"
+	eventConsumerActionName = "EventConsumer"
 	logging                 *logrus.Entry
 )
 
 // temporary variable hold data till reading process happening
 var (
 	systemToSubscriptionsMapTemp      map[string]map[string]bool
-	aggregateIdToSubscriptionsMapTemp map[string]map[string]bool
+	aggregateIDToSubscriptionsMapTemp map[string]map[string]bool
 	collectionToSubscriptionsMapTemp  map[string]map[string]bool
 	reAttemptInQueue                  = make(map[string]int)
 	reattemptLock                     sync.Mutex
@@ -79,10 +78,10 @@ var saveEventChanel = make(chan evmodel.EventPost)
 // Here we load Subscription, DeviceSubscription, AggregateToHost
 // table data into cache memory
 func (e *ExternalInterfaces) LoadSubscriptionData(ctx context.Context) error {
-	ctx = context.WithValue(ctx, common.ActionName, EventConsumerActionName)
-	ctx = context.WithValue(ctx, common.ActionID, EventConsumerActionID)
-	transactionId := uuid.NewV4().String()
-	ctx = context.WithValue(ctx, common.TransactionID, transactionId)
+	ctx = context.WithValue(ctx, common.ActionName, eventConsumerActionName)
+	ctx = context.WithValue(ctx, common.ActionID, eventConsumerActionID)
+	transactionID := uuid.NewV4().String()
+	ctx = context.WithValue(ctx, common.TransactionID, transactionID)
 	logging = l.LogWithFields(ctx)
 
 	logging.Debug("Event cache is initialized")
@@ -122,7 +121,7 @@ func getAllSubscriptions(ctx context.Context) error {
 		return err
 	}
 	systemToSubscriptionsMapTemp = make(map[string]map[string]bool)
-	aggregateIdToSubscriptionsMapTemp = make(map[string]map[string]bool)
+	aggregateIDToSubscriptionsMapTemp = make(map[string]map[string]bool)
 	collectionToSubscriptionsMapTemp = make(map[string]map[string]bool)
 	emptyOriginResourceToSubscriptionsMapTemp := make(map[string]bool)
 	subscriptionsCache = make(map[string]dmtf.EventDestination, len(subscriptions))
@@ -143,7 +142,7 @@ func getAllSubscriptions(ctx context.Context) error {
 	}
 	emptyOriginResourceToSubscriptionsMap = emptyOriginResourceToSubscriptionsMapTemp
 	systemToSubscriptionsMap = systemToSubscriptionsMapTemp
-	aggregateIdToSubscriptionsMap = aggregateIdToSubscriptionsMapTemp
+	aggregateIDToSubscriptionsMap = aggregateIDToSubscriptionsMapTemp
 	collectionToSubscriptionsMap = collectionToSubscriptionsMapTemp
 
 	logging.Debug("Subscriptions cache updated ")
@@ -169,8 +168,8 @@ func getAllDeviceSubscriptions(ctx context.Context) error {
 
 // updateCatchDeviceSubscriptionData update eventSourceToManagerMap for each key with their system IDs
 func updateCatchDeviceSubscriptionData(key string, originResources []string, cacheMap map[string]string) {
-	systemId := originResources[0][strings.LastIndexByte(originResources[0], '/')+1:]
-	cacheMap[key] = systemId
+	systemID := originResources[0][strings.LastIndexByte(originResources[0], '/')+1:]
+	cacheMap[key] = systemID
 }
 
 // loadSubscriptionCacheData update collectionToSubscriptionsMap,
@@ -183,52 +182,52 @@ func loadSubscriptionCacheData(id string, hosts []string) {
 
 // addSubscriptionCache add subscription in corresponding cache based on key type
 // collectionToSubscriptionsMap, aggregateIdToSubscriptionsMap, systemToSubscriptionsMap
-func addSubscriptionCache(key string, subscriptionId string) {
+func addSubscriptionCache(key string, subscriptionID string) {
 	if strings.Contains(key, "Collection") {
-		updateCacheMaps(key, subscriptionId, collectionToSubscriptionsMapTemp)
+		updateCacheMaps(key, subscriptionID, collectionToSubscriptionsMapTemp)
 		return
 	}
 	_, err := uuid.FromString(key)
 	if err == nil {
-		updateCacheMaps(key, subscriptionId, aggregateIdToSubscriptionsMapTemp)
+		updateCacheMaps(key, subscriptionID, aggregateIDToSubscriptionsMapTemp)
 		return
 	}
-	updateCacheMaps(key, subscriptionId, systemToSubscriptionsMapTemp)
+	updateCacheMaps(key, subscriptionID, systemToSubscriptionsMapTemp)
 
 }
 
 // getAllAggregates method will read all aggregate from db and
 // update systemIdToAggregateIdsMap to corresponding member in aggregate
 func getAllAggregates(ctx context.Context) error {
-	systemIdToAggregateIdsMapTemp := make(map[string]map[string]bool)
+	systemIDToAggregateIdsMapTemp := make(map[string]map[string]bool)
 	aggregateUrls, err := evmodel.GetAllAggregates()
 	if err != nil {
 		logging.Debug("error occurred while getting aggregate list ", err)
 		return err
 	}
-	for _, aggregateUrl := range aggregateUrls {
-		aggregate, err := evmodel.GetAggregate(aggregateUrl)
+	for _, aggregateURL := range aggregateUrls {
+		aggregate, err := evmodel.GetAggregate(aggregateURL)
 		if err != nil {
 			continue
 		}
-		aggregateId := aggregateUrl[strings.LastIndexByte(aggregateUrl, '/')+1:]
-		addSystemIdToAggregateCache(aggregateId, aggregate, systemIdToAggregateIdsMapTemp)
+		aggregateID := aggregateURL[strings.LastIndexByte(aggregateURL, '/')+1:]
+		addSystemIDToAggregateCache(aggregateID, aggregate, systemIDToAggregateIdsMapTemp)
 	}
-	systemIdToAggregateIdsMap = systemIdToAggregateIdsMapTemp
+	systemIDToAggregateIdsMap = systemIDToAggregateIdsMapTemp
 	logging.Debug("AggregateToHost cache updated ")
 	return nil
 }
 
-// addSystemIdToAggregateCache update cache for each aggregate member
-func addSystemIdToAggregateCache(aggregateId string, aggregate evmodel.Aggregate, cacheMap map[string]map[string]bool) {
+// addSystemIDToAggregateCache update cache for each aggregate member
+func addSystemIDToAggregateCache(aggregateID string, aggregate evmodel.Aggregate, cacheMap map[string]map[string]bool) {
 	for _, ids := range aggregate.Elements {
 		ids.Oid = ids.Oid[strings.LastIndexByte(strings.TrimSuffix(ids.Oid, "/"), '/')+1:]
-		updateCacheMaps(ids.Oid, aggregateId, cacheMap)
+		updateCacheMaps(ids.Oid, aggregateID, cacheMap)
 	}
 }
 
-// getSourceId function return system id corresponding host, if not found then return host
-func getSourceId(host string) (string, error) {
+// getSourceID function return system id corresponding host, if not found then return host
+func getSourceID(host string) (string, error) {
 	data, isExists := eventSourceToManagerIDMap[host]
 	if !isExists {
 		if strings.Contains(host, "Collection") {
@@ -251,21 +250,21 @@ func updateCacheMaps(key, value string, cacheData map[string]map[string]bool) {
 }
 
 // getSubscriptions return list of subscription from cache corresponding to originOfCondition
-func getSubscriptions(originOfCondition, systemId, hostIp string) (subs []dmtf.EventDestination) {
-	subs = append(subs, getSystemSubscriptionList(hostIp)...)
-	subs = append(subs, getAggregateSubscriptionList(systemId)...)
+func getSubscriptions(originOfCondition, systemID, hostIP string) (subs []dmtf.EventDestination) {
+	subs = append(subs, getSystemSubscriptionList(hostIP)...)
+	subs = append(subs, getAggregateSubscriptionList(systemID)...)
 	subs = append(subs, getEmptyOriginResourceSubscriptionList()...)
-	subs = append(subs, getCollectionSubscriptionList(originOfCondition, hostIp)...)
+	subs = append(subs, getCollectionSubscriptionList(originOfCondition, hostIP)...)
 	return
 }
 
 // getSystemSubscriptionList return list of subscription corresponding to host
-func getSystemSubscriptionList(hostIp string) (subs []dmtf.EventDestination) {
-	systemSubscription, isExists := systemToSubscriptionsMap[hostIp]
+func getSystemSubscriptionList(hostIP string) (subs []dmtf.EventDestination) {
+	systemSubscription, isExists := systemToSubscriptionsMap[hostIP]
 	if isExists {
-		for subId, _ := range systemSubscription {
-			sub, isValidSubId := getSubscriptionDetails(subId)
-			if isValidSubId {
+		for subID := range systemSubscription {
+			sub, isValidSubID := getSubscriptionDetails(subID)
+			if isValidSubID {
 				subs = append(subs, sub)
 			}
 
@@ -276,16 +275,16 @@ func getSystemSubscriptionList(hostIp string) (subs []dmtf.EventDestination) {
 
 // getAggregateSubscriptionList return list of subscription corresponding to system
 // is members of different aggregate
-func getAggregateSubscriptionList(systemId string) (subs []dmtf.EventDestination) {
-	aggregateList, isExists := systemIdToAggregateIdsMap[systemId]
+func getAggregateSubscriptionList(systemID string) (subs []dmtf.EventDestination) {
+	aggregateList, isExists := systemIDToAggregateIdsMap[systemID]
 	if isExists {
 		for aggregateID := range aggregateList {
-			subscriptions, isValidAggregateId := aggregateIdToSubscriptionsMap[aggregateID]
-			if isValidAggregateId {
-				for subId := range subscriptions {
-					sub, isValidSubId := getSubscriptionDetails(subId)
-					sub.OriginResources = append(sub.OriginResources, model.Link{Oid: "/redfish/v1/Systems/" + systemId})
-					if isValidSubId {
+			subscriptions, isValidAggregateID := aggregateIDToSubscriptionsMap[aggregateID]
+			if isValidAggregateID {
+				for subID := range subscriptions {
+					sub, isValidSubID := getSubscriptionDetails(subID)
+					sub.OriginResources = append(sub.OriginResources, model.Link{Oid: "/redfish/v1/Systems/" + systemID})
+					if isValidSubID {
 						subs = append(subs, sub)
 					}
 				}
@@ -297,13 +296,13 @@ func getAggregateSubscriptionList(systemId string) (subs []dmtf.EventDestination
 
 // getCollectionSubscriptionList return list of subscription against
 // originOfCondition type
-func getCollectionSubscriptionList(originOfCondition, hostIp string) (subs []dmtf.EventDestination) {
-	collectionsKey := getCollectionKey(originOfCondition, hostIp)
+func getCollectionSubscriptionList(originOfCondition, hostIP string) (subs []dmtf.EventDestination) {
+	collectionsKey := getCollectionKey(originOfCondition, hostIP)
 	collectionSubscription, isExists := collectionToSubscriptionsMap[collectionsKey]
 	if isExists {
-		for subId := range collectionSubscription {
-			sub, isValidSubId := getSubscriptionDetails(subId)
-			if isValidSubId {
+		for subID := range collectionSubscription {
+			sub, isValidSubID := getSubscriptionDetails(subID)
+			if isValidSubID {
 				subs = append(subs, sub)
 			}
 		}
@@ -314,9 +313,9 @@ func getCollectionSubscriptionList(originOfCondition, hostIp string) (subs []dmt
 // getEmptyOriginResourceSubscriptionList return list of subscription
 // whose originResources is empty
 func getEmptyOriginResourceSubscriptionList() (subs []dmtf.EventDestination) {
-	for subId := range emptyOriginResourceToSubscriptionsMap {
-		sub, isValidSubId := getSubscriptionDetails(subId)
-		if isValidSubId {
+	for subID := range emptyOriginResourceToSubscriptionsMap {
+		sub, isValidSubID := getSubscriptionDetails(subID)
+		if isValidSubID {
 			subs = append(subs, sub)
 		}
 	}

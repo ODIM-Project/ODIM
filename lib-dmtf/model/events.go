@@ -97,32 +97,32 @@ const (
 	// SNMPAuthenticationProtocolsCommunityString - authentication using SNMP community strings and the value of TrapCommunity.
 	SNMPAuthenticationProtocolsCommunityString SNMPAuthenticationProtocols = "CommunityString"
 
-	// SNMPAuthenticationProtocolsHMAC128_SHA224 - authentication for SNMPv3 access conforms to the RFC7860-defined usmHMAC128SHA224AuthProtocol.
-	SNMPAuthenticationProtocolsHMAC128_SHA224 SNMPAuthenticationProtocols = "HMAC128_SHA224"
+	// SNMPAuthenticationProtocolsHMAC128SHA224 - authentication for SNMPv3 access conforms to the RFC7860-defined usmHMAC128SHA224AuthProtocol.
+	SNMPAuthenticationProtocolsHMAC128SHA224 SNMPAuthenticationProtocols = "HMAC128_SHA224"
 
-	// SNMPAuthenticationProtocolsHMAC192_SHA256 - authentication for SNMPv3 access conforms to the RFC7860-defined usmHMAC192SHA256AuthProtocol.
-	SNMPAuthenticationProtocolsHMAC192_SHA256 SNMPAuthenticationProtocols = "HMAC192_SHA256"
+	// SNMPAuthenticationProtocolsHMAC192SHA256 - authentication for SNMPv3 access conforms to the RFC7860-defined usmHMAC192SHA256AuthProtocol.
+	SNMPAuthenticationProtocolsHMAC192SHA256 SNMPAuthenticationProtocols = "HMAC192_SHA256"
 
-	// SNMPAuthenticationProtocolsHMAC256_SHA384 - authentication for SNMPv3 access conforms to the RFC7860-defined usmHMAC256SHA384AuthProtocol.
-	SNMPAuthenticationProtocolsHMAC256_SHA384 SNMPAuthenticationProtocols = "HMAC256_SHA384"
+	// SNMPAuthenticationProtocolsHMAC256SHA384 - authentication for SNMPv3 access conforms to the RFC7860-defined usmHMAC256SHA384AuthProtocol.
+	SNMPAuthenticationProtocolsHMAC256SHA384 SNMPAuthenticationProtocols = "HMAC256_SHA384"
 
-	// SNMPAuthenticationProtocolsHMAC384_SHA512 - authentication for SNMPv3 access conforms to the RFC7860-defined usmHMAC384SHA512AuthProtocol.
-	SNMPAuthenticationProtocolsHMAC384_SHA512 SNMPAuthenticationProtocols = "HMAC384_SHA512"
+	// SNMPAuthenticationProtocolsHMAC384SHA512 - authentication for SNMPv3 access conforms to the RFC7860-defined usmHMAC384SHA512AuthProtocol.
+	SNMPAuthenticationProtocolsHMAC384SHA512 SNMPAuthenticationProtocols = "HMAC384_SHA512"
 
-	// SNMPAuthenticationProtocolsHMAC_MD5 - authentication conforms to the RFC1321-defined HMAC-MD5-96 authentication protocol.
-	SNMPAuthenticationProtocolsHMAC_MD5 SNMPAuthenticationProtocols = "HMAC_MD5"
+	// SNMPAuthenticationProtocolsHMACMD5 - authentication conforms to the RFC1321-defined HMAC-MD5-96 authentication protocol.
+	SNMPAuthenticationProtocolsHMACMD5 SNMPAuthenticationProtocols = "HMAC_MD5"
 
-	// SNMPAuthenticationProtocolsHMAC_SHA96 - authentication conforms to the RFC3414-defined HMAC-SHA-96 authentication protocol.
-	SNMPAuthenticationProtocolsHMAC_SHA96 SNMPAuthenticationProtocols = "HMAC_SHA96"
+	// SNMPAuthenticationProtocolsHMACSHA96 - authentication conforms to the RFC3414-defined HMAC-SHA-96 authentication protocol.
+	SNMPAuthenticationProtocolsHMACSHA96 SNMPAuthenticationProtocols = "HMAC_SHA96"
 
 	// SNMPAuthenticationProtocolsNone - authentication is not required.
 	SNMPAuthenticationProtocolsNone SNMPAuthenticationProtocols = "None"
 
-	// SNMPEncryptionProtocolsCBC_DES - encryption conforms to the RFC3414-defined CBC-DES encryption protocol.
-	SNMPEncryptionProtocolsCBC_DES SNMPEncryptionProtocols = "CBC_DES"
+	// SNMPEncryptionProtocolsCBCDES - encryption conforms to the RFC3414-defined CBC-DES encryption protocol.
+	SNMPEncryptionProtocolsCBCDES SNMPEncryptionProtocols = "CBC_DES"
 
-	// SNMPEncryptionProtocolsCFB128_AES128 - encryption conforms to the RFC3414-defined CFB128-AES-128 encryption protocol.
-	SNMPEncryptionProtocolsCFB128_AES128 SNMPEncryptionProtocols = "CFB128_AES128"
+	// SNMPEncryptionProtocolsCFB128AES128 - encryption conforms to the RFC3414-defined CFB128-AES-128 encryption protocol.
+	SNMPEncryptionProtocolsCFB128AES128 SNMPEncryptionProtocols = "CFB128_AES128"
 
 	// SNMPEncryptionProtocolsNone - there is no encryption.
 	SNMPEncryptionProtocolsNone SNMPEncryptionProtocols = "None"
@@ -277,8 +277,8 @@ const (
 	// SMTPAuthenticationAutoDetect - SMTP Authentcation method Auto-detect
 	SMTPAuthenticationAutoDetect SMTPAuthentication = "AutoDetect"
 
-	// SMTPAuthenticationCRAM_MD5 - SMTPAuthentication method CRAM_MD5
-	SMTPAuthenticationCRAM_MD5 SMTPAuthentication = "CRAM_MD5"
+	// SMTPAuthenticationCRAMMD5 - SMTPAuthentication method CRAM_MD5
+	SMTPAuthenticationCRAMMD5 SMTPAuthentication = "CRAM_MD5"
 
 	// SMTPAuthenticationNone - SMTPAuthentication method None species no authentication
 	SMTPAuthenticationNone SMTPAuthentication = "None"
@@ -295,8 +295,8 @@ const (
 	// SMTPConnectionProtocolStartTLS - SMTPConnection Protocol type start-TLS
 	SMTPConnectionProtocolStartTLS SMTPConnectionProtocol = "StartTLS"
 
-	// SMTPConnectionProtocolTLS_SSL - SMTPConnection Protocol type TLS_SSL
-	SMTPConnectionProtocolTLS_SSL SMTPConnectionProtocol = "TLS_SSL"
+	// SMTPConnectionProtocolTLSSSL - SMTPConnection Protocol type TLS_SSL
+	SMTPConnectionProtocolTLSSSL SMTPConnectionProtocol = "TLS_SSL"
 )
 
 // Event schema describes the JSON payload received by an event destination, which has
@@ -347,7 +347,7 @@ type EventRecord struct {
 type EventDestination struct {
 	ODataContext                 string              `json:"@odata.context,omitempty"`
 	ODataEtag                    string              `json:"@odata.etag,omitempty"`
-	ODataId                      string              `json:"@odata.id"`
+	ODataID                      string              `json:"@odata.id"`
 	ODataType                    string              `json:"@odata.type"`
 	Actions                      *Actions            `json:"Actions,omitempty"`
 	Certificates                 *Link               `json:"Certificates,omitempty"`
@@ -361,18 +361,18 @@ type EventDestination struct {
 	ExcludeMessageIds            []string            `json:"ExcludeMessageIds,omitempty"`
 	ExcludeRegistryPrefixes      []string            `json:"ExcludeRegistryPrefixes,omitempty"`
 	HeartbeatIntervalMins        int                 `json:"HeartbeatIntervalMinutes,omitempty"`
-	HttpHeaders                  []string            `json:"HttpHeaders,omitempty"`
+	HTTPHeaders                  []string            `json:"HttpHeaders,omitempty"`
 	ID                           string              `json:"Id"`
 	IncludeOriginOfCondition     bool                `json:"IncludeOriginOfCondition,omitempty"`
 	MessageIds                   []string            `json:"MessageIds,omitempty"`
 	MetricReportDefinitions      *Link               `json:"MetricReportDefinitions,omitempty"`
-	MetricReportDefinitionsCount int                 `json:MetricReportDefinitions@odata.count,omitempty`
+	MetricReportDefinitionsCount int                 `json:"MetricReportDefinitions@odata.count,omitempty"`
 	Name                         string              `json:"Name"`
 	OEMProtocol                  string              `json:"OEMProtocol,omitempty"`
 	OEMSubscriptionType          string              `json:"OEMSubscriptionType"`
 	Oem                          interface{}         `json:"Oem,omitempty"`
 	OriginResources              []Link              `json:"OriginResources,omitempty"`
-	OriginResourcesCount         int                 `json:OriginResources@odata.count,omitempty`
+	OriginResourcesCount         int                 `json:"OriginResources@odata.count,omitempty"`
 	Protocol                     string              `json:"Protocol"`
 	RegistryPrefixes             []string            `json:"RegistryPrefixes,omitempty"`
 	ResourceTypes                []string            `json:"ResourceTypes,omitempty"`
@@ -515,22 +515,22 @@ type SyslogFilter struct {
 type EventService struct {
 	ODataContext                      string                        `json:"@odata.context,omitempty"`
 	ODataEtag                         string                        `json:"@odata.etag,omitempty"`
-	ODataId                           string                        `json:"@odata.id"`
+	ODataID                           string                        `json:"@odata.id"`
 	ODataType                         string                        `json:"@odata.type"`
 	Actions                           *EventServiceActions          `json:"Actions,omitempty"`
-	Id                                string                        `json:"Id"`
+	ID                                string                        `json:"Id"`
 	Name                              string                        `json:"Name"`
 	DeliveryRetryAttempts             int                           `json:"DeliveryRetryAttempts,omitempty"`
 	DeliveryRetryIntervalSeconds      int                           `json:"DeliveryRetryIntervalSeconds,omitempty"`
 	Description                       string                        `json:"Description,omitempty"`
 	EventFormatTypes                  []string                      `json:"EventFormatTypes,omitempty"`
 	EventTypesForSubscription         []string                      `json:"EventTypesForSubscription,omitempty"`
-	ExcludeMessageId                  bool                          `json:"ExcludeMessageId,omitempty"`
+	ExcludeMessageID                  bool                          `json:"ExcludeMessageId,omitempty"`
 	ExcludeRegistryPrefix             bool                          `json:"ExcludeRegistryPrefix,omitempty"`
 	IncludeOriginOfConditionSupported bool                          `json:"IncludeOriginOfConditionSupported,omitempty"`
 	RegistryPrefixes                  []string                      `json:"RegistryPrefixes,omitempty"`
 	ResourceTypes                     []string                      `json:"ResourceTypes,omitempty"`
-	ServerSentEventUri                string                        `json:"ServerSentEventUri,omitempty"`
+	ServerSentEventURI                string                        `json:"ServerSentEventUri,omitempty"`
 	ServiceEnabled                    bool                          `json:"ServiceEnabled,omitempty"`
 	SMTP                              *SMTPSettings                 `json:"SMTP,omitempty"`
 	SSEFilterPropertiesSupported      *SSEFilterPropertiesSupported `json:"SSEFilterPropertiesSupported,omitempty"`
@@ -580,13 +580,13 @@ type EventServiceActions struct {
 // to any appropriate event destinations.
 // Reference                    : EventService.v1_8_0.json
 type SubmitTestEvent struct {
-	EventGroupId      int             `json:"EventGroupId,omitempty"`
-	EventId           string          `json:"EventId,omitempty"`
+	EventGroupID      int             `json:"EventGroupId,omitempty"`
+	EventID           string          `json:"EventId,omitempty"`
 	EventTimestamp    string          `json:"EventTimestamp,omitempty"`
 	EventType         EventType       `json:"EventType,omitempty"`
 	Message           string          `json:"Message,omitempty"`
 	MessageArgs       []string        `json:"MessageArgs,omitempty"`
-	MessageId         string          `json:"MessageId"`
+	MessageID         string          `json:"MessageId"`
 	OriginOfCondition string          `json:"OriginOfCondition,omitempty"`
 	Severity          MessageSeverity `json:"Severity,omitempty"`
 }

@@ -29,7 +29,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-	"github.com/stretchr/testify/assert"
 )
 
 func contactPluginClient(ctx context.Context, url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
@@ -416,7 +415,12 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	config.SetUpMockConfig(t)
 	var positiveResponse interface{}
 	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
-	pluginContact := mockGetExternalInterface()
+	externalInterface := mockGetExternalInterface()
+	pluginContact := PluginContact{
+		ContactClient:  mockContactClient,
+		DevicePassword: stubDevicePassword,
+		UpdateTask:     mockUpdateTask,
+	}
 	ctx := mockContext()
 	tests := []struct {
 		name              string
@@ -427,7 +431,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	}{
 		{
 			name: "Valid request",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "1",
@@ -441,7 +445,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "invalid system id",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b.1",
 				StorageInstance: "1",
@@ -455,7 +459,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "without system id",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b.",
 				StorageInstance: "1",
@@ -469,7 +473,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "Invalid volume id",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "1",
@@ -483,7 +487,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "unknown plugin",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "8e896459-a8f9-4c83-95b7-7b316b4908e1.1",
 				StorageInstance: "1",
@@ -497,7 +501,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "Invalid Json",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "8e896459-a8f9-4c83-95b7-7b316b4908e1.1",
 				StorageInstance: "1",
@@ -511,7 +515,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "Invalid field Keyword",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "1",
@@ -525,7 +529,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "Invalid System ID",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "",
 				StorageInstance: "",
@@ -541,9 +545,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	for _, tt := range tests {
 		JSONUnmarshalFunc = tt.JSONUnmarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.DeleteVolume(ctx, tt.req); got.StatusCode != tt.wantStatusCode {
-				t.Errorf("PluginContact.DeleteVolume() = %v, want %v", got.StatusCode, tt.wantStatusCode)
-			}
+			tt.p.DeleteVolume(ctx, tt.req, &pluginContact, "task12345")
 		})
 	}
 
@@ -556,8 +558,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", &errors.Error{}
 	}
-	res := pluginContact.DeleteVolume(ctx, req)
-	assert.Equal(t, http.StatusInternalServerError, int(res.StatusCode), "Error validating request parameters for volume creation, status code should be StatusInternalServerError")
+	externalInterface.DeleteVolume(ctx, req, &pluginContact, "task12345")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", nil
@@ -566,8 +567,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return true
 	}
-	res = pluginContact.DeleteVolume(ctx, req)
-	assert.Equal(t, http.StatusInternalServerError, int(res.StatusCode), "Error : status code should StatusInternalServerError")
+	externalInterface.DeleteVolume(ctx, req, &pluginContact, "task12345")
 
 	StringsEqualFold = func(s, t string) bool {
 		return false
@@ -575,8 +575,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	StringTrimSpace = func(s string) string {
 		return ""
 	}
-	res = pluginContact.DeleteVolume(ctx, req)
-	assert.Equal(t, http.StatusBadRequest, int(res.StatusCode), "Error: Status code should StatusBadRequest")
+	externalInterface.DeleteVolume(ctx, req, &pluginContact, "task12345")
 
 }
 

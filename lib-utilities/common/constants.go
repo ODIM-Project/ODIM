@@ -211,6 +211,8 @@ const (
 	DeleteRemoteAccountService             = "DeleteRemoteAccountService"
 	InstallLicenseService                  = "InstallLicenseService"
 	ProcessTaskEvents                      = "ProcessTaskEvents"
+	CreateVolume                           = "CreateVolume"
+	DeleteVolume                           = "DeleteVolume"
 	// constants for log
 	SessionToken            = "sessiontoken"
 	SessionUserID           = "sessionuserid"

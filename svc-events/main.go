@@ -31,8 +31,8 @@ import (
 )
 
 var (
-	ProcessControlActionId   = "219"
-	ProcessControlActionName = "ProcessControl"
+	processControlActionID   = "219"
+	processControlActionName = "ProcessControl"
 )
 
 func main() {
@@ -110,8 +110,8 @@ func main() {
 	consumer.CtrlMsgRecvQueue, consumer.CtrlMsgProcQueue = common.CreateJobQueue(ctrlMsgProcQueueSize)
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as ProcessCtrlMsg method after reading the data from the channel.
-	ctx = context.WithValue(ctx, common.ActionName, ProcessControlActionName)
-	ctx = context.WithValue(ctx, common.ActionID, ProcessControlActionId)
+	ctx = context.WithValue(ctx, common.ActionName, processControlActionName)
+	ctx = context.WithValue(ctx, common.ActionID, processControlActionID)
 	common.RunReadWorkers(ctx, consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 1)
 
 	evcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")

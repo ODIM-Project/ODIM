@@ -27,6 +27,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-api/ratelimiter"
 )
 
+// helper functions
 var (
 	NewSessionClientFunc = sessionproto.NewSessionClient
 )

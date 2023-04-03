@@ -26,6 +26,7 @@ import (
 )
 
 const (
+	// DefaultTLSMinVersion is default minimum version for tls
 	DefaultTLSMinVersion = tls.VersionTLS12
 )
 

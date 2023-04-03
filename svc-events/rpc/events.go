@@ -41,7 +41,7 @@ type Events struct {
 	Connector *events.ExternalInterfaces
 }
 
-var podName = os.Getenv(common.ENV_POD_NAME)
+var podName = os.Getenv(common.EnvPodName)
 var (
 	//JSONMarshal ...
 	JSONMarshal = json.Marshal

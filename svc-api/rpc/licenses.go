@@ -23,7 +23,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
-// GetLicenseCollection will do the rpc call to get License Service Information
+// GetLicenseService will do the rpc call to get License Service Information
 func GetLicenseService(ctx context.Context, req licenseproto.GetLicenseServiceRequest) (*licenseproto.GetLicenseResponse, error) {
 	ctx = common.CreateMetadata(ctx)
 	conn, err := services.ODIMService.Client(services.Licenses)

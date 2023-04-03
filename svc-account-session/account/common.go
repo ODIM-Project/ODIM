@@ -48,6 +48,8 @@ func GetExternalInterface() *ExternalInterface {
 		UpdateUserDetails:  asmodel.UpdateUserDetails,
 	}
 }
+
+// TrackConfigFileChanges monitors the host file using fsnotfiy
 func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat

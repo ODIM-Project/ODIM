@@ -14,6 +14,8 @@
 
 package model
 
+// LicenseCollection - This resource shall represent a resource collection of
+// License instances for a Redfish implementation.
 type LicenseCollection struct {
 	OdataContext string  `json:"@odata.context,omitempty"`
 	Etag         string  `json:"@odata.etag,omitempty"`
@@ -25,6 +27,7 @@ type LicenseCollection struct {
 	MembersCount int     `json:"Members@odata.count"`
 }
 
+// License - This resource shall represent a license for a Redfish implementation.
 type License struct {
 	OdataContext         string       `json:"@odata.context,omitempty"`
 	OdataID              string       `json:"@odata.id"`
@@ -35,7 +38,7 @@ type License struct {
 	AuthorizationScope   string       `json:"AuthorizationScope,omitempty"`
 	Contact              *Contact     `json:"Contact,omitempty"`
 	DownloadURI          string       `json:"DownloadURI,omitempty"`
-	EntitlementId        string       `json:"EntitlementId,omitempty"`
+	EntitlementID        string       `json:"EntitlementId,omitempty"`
 	ExpirationDate       string       `json:"ExpirationDate,omitempty"`
 	GracePeriodDays      int32        `json:"GracePeriodDays,omitempty"`
 	InstallDate          string       `json:"InstallDate,omitempty"`
@@ -55,17 +58,24 @@ type License struct {
 	Status               *Status      `json:"Status,omitempty"`
 }
 
+// Contact - This property shall contain an object containing information
+// about the contact of the license.
 type Contact struct {
 	ContactName  string `json:"ContactName,omitempty"`
 	EmailAddress string `json:"EmailAddress,omitempty"`
 	PhoneNumber  string `json:"PhoneNumber,omitempty"`
 }
 
+// LicenseLink - This property shall contain links to resources that are
+// related to but are not contained by, or subordinate to, this resource.
 type LicenseLink struct {
 	AuthorizedDevices []*Link `json:"AuthorizedDevices,omitempty"`
 	Oem               *Oem    `json:"Oem,omitempty"`
 }
 
+// LicenseService - The LicenseService schema describes the license service and the properties for the service
+// itself with a link to the collection of licenses.
+// The license service also provides methods for installing licenses in a Redfish service.
 type LicenseService struct {
 	OdataContext                 string      `json:"@odata.context,omitempty"`
 	Etag                         string      `json:"@odata.etag,omitempty"`
@@ -80,11 +90,16 @@ type LicenseService struct {
 	ServiceEnabled               bool        `json:"ServiceEnabled,omitempty"`
 }
 
+// LicenseInstallRequest - Request for install License
 type LicenseInstallRequest struct {
 	LicenseString string             `json:"LicenseString"`
 	Links         *AuthorizedDevices `json:"Links"`
 }
 
+// AuthorizedDevices - This property shall contain an array of links to devices that are authorized by the license.
+// Clients can provide this property when installing a license to apply the license to specific devices.
+// If not provided when installing a license, the service may determine the devices to which the license applies.
+// This property shall not be present if the AuthorizationScope property contains the value `Service`.
 type AuthorizedDevices struct {
 	Link []*Link `json:"AuthorizedDevices"`
 }

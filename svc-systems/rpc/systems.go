@@ -389,7 +389,12 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 		DevicePassword: common.DecryptWithPrivateKey,
 		UpdateTask:     s.UpdateTask,
 	}
+
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.CreateVolume)
+	ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	go s.EI.CreateVolume(ctx, req, &pc, taskID)
+	threadID++
 	l.LogWithFields(ctx).Debugf("outgoing response for CreateVolume: %s", string(resp.Body))
 	return &resp, nil
 }
@@ -414,9 +419,43 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+	// Task Service using RPC and get the taskID
+	taskURI, err := s.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	fillSystemProtoResponse(ctx, &resp, rpcResp)
+	var pc = systems.PluginContact{
+		ContactClient:  pmbhandle.ContactPlugin,
+		DevicePassword: common.DecryptWithPrivateKey,
+		UpdateTask:     s.UpdateTask,
+	}
 
-	data := s.EI.DeleteVolume(ctx, req)
-	fillSystemProtoResponse(ctx, &resp, data)
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.DeleteVolume)
+	ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go s.EI.DeleteVolume(ctx, req, &pc, taskID)
+	threadID++
 	l.LogWithFields(ctx).Debugf("outgoing response DeleteVolume: %s", string(resp.Body))
 	return &resp, nil
 }

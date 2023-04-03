@@ -375,34 +375,39 @@ func searchItem(slice []string, val string) bool {
 }
 
 // DeleteVolume defines the logic for deleting a volume under storage
-func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequest) response.RPC {
+func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequest, pc *PluginContact, taskID string) {
 	var resp response.RPC
+	var targetURI = "/redfish/v1/Systems/" + req.SystemID + "/Storage/" + req.StorageInstance + "/Volumes" + req.VolumeID
 
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI,
+		UpdateTask: pc.UpdateTask, TaskRequest: string(req.RequestBody)}
 	var volume smodel.Volume
-	// unmarshalling the volume
 	err := JSONUnmarshalFunc(req.RequestBody, &volume)
 	if err != nil {
 		errorMessage := "Error while unmarshaling the create volume request: " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
-		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
-		return resp
+		common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, taskInfo)
+		return
 	}
 
 	// spliting the uuid and system id
 	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) != 2 || requestData[1] == "" {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
+		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, taskInfo)
+		return
 	}
 	uuid := requestData[0]
 	target, gerr := e.DB.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, taskInfo)
+		return
 	}
 	// Validating the storage instance
 	if StringTrimSpace(req.VolumeID) == "" {
 		errorMessage := "error: Volume id is not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Volume", req.VolumeID}, nil)
+		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Volume", req.VolumeID}, taskInfo)
+		return
 	}
 
 	// Validating the request JSON properties for case sensitive
@@ -410,13 +415,15 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 	if err != nil {
 		errMsg := "error while validating request parameters for volume creation: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 		l.LogWithFields(ctx).Error(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
-		return response
+		common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
+		return
 	}
+
 	key := fmt.Sprintf("/redfish/v1/Systems/%s/Storage/%s/Volumes/%s", req.SystemID, req.StorageInstance, req.VolumeID)
 	_, dbErr := e.DB.GetResource(ctx, "Volumes", key)
 	if dbErr != nil {
@@ -433,25 +440,31 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 			}
 			var err error
 			if _, err = scommon.GetResourceInfoFromDevice(ctx, getDeviceInfoRequest, true); err != nil {
-				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Volumes", key}, nil)
+				common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Volumes", key}, taskInfo)
+				return
 			}
 
 		} else {
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
+			return
 		}
 	}
+
 	decryptedPasswordByte, err := e.DevicePassword(target.Password)
 	if err != nil {
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
+		return
 	}
 	target.Password = decryptedPasswordByte
 	// Get the Plugin info
 	plugin, gerr := e.DB.GetPluginData(target.PluginID)
 	if gerr != nil {
 		errorMessage := "error while trying to get plugin details"
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
+		return
 	}
+
 	var contactRequest scommon.PluginContactRequest
 	contactRequest.ContactClient = e.ContactClient
 	contactRequest.Plugin = plugin
@@ -467,7 +480,8 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 		_, token, _, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
-			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
+			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, taskInfo)
+			return
 		}
 		contactRequest.Token = token
 	} else {
@@ -488,11 +502,19 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s/Storage/%s/Volumes/%s", requestData[1], req.StorageInstance, req.VolumeID)
 
-	body, _, _, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while deleting a volume: ")
+	body, location, pluginIP, getResponse, err := scommon.ContactPlugin(ctx, contactRequest, "error while deleting a volume: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		return resp
+		errMsg := "error while deleting volume: " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError,
+			errMsg, nil, taskInfo)
+		return
+	}
+	if getResponse.StatusCode == http.StatusAccepted {
+		scommon.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		return
 	}
 
 	// delete a volume in db
@@ -500,9 +522,11 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 		errMsg := "error while trying to delete volume: " + derr.Error()
 		l.LogWithFields(ctx).Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
-			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Volumes", key}, nil)
+			common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Volumes", key}, taskInfo)
+			return
 		}
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return
 	}
 
 	// adding volume collection uri and deleted volume uri to the AddSystemResetInfo
@@ -513,5 +537,7 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 
 	resp.StatusCode = http.StatusNoContent
 	resp.StatusMessage = response.Success
-	return resp
+	task := fillTaskData(taskID, targetURI, string(req.RequestBody), resp,
+		common.Completed, common.OK, 100, http.MethodPost)
+	pc.UpdateTask(ctx, task)
 }

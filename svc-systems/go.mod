@@ -104,5 +104,6 @@ replace (
 	github.com/ODIM-Project/ODIM/lib-persistence-manager => ../lib-persistence-manager
 	github.com/ODIM-Project/ODIM/lib-rest-client => ../lib-rest-client
 	github.com/ODIM-Project/ODIM/lib-utilities => ../lib-utilities
+	github.com/leodido/go-urn v1.2.2 => github.com/leodido/go-urn v1.2.1
 	google.golang.org/grpc v1.41.0 => google.golang.org/grpc v1.26.0
 )

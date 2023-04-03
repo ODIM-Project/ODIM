@@ -222,6 +222,8 @@ const (
 	DeleteRemoteAccountService             = "DeleteRemoteAccountService"
 	InstallLicenseService                  = "InstallLicenseService"
 	ProcessTaskEvents                      = "ProcessTaskEvents"
+	CreateVolume                           = "CreateVolume"
+	DeleteVolume                           = "DeleteVolume"
 	SessionToken                           = "sessiontoken"
 	SessionUserID                          = "sessionuserid"
 	SessionRoleID                          = "sessionroleid"

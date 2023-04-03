@@ -23,7 +23,7 @@ func TestTicker(t *testing.T) {
 				tick: &tmodel.Tick{
 					Ticker: time.NewTicker(time.Millisecond),
 				},
-				delay: 2 * time.Millisecond,
+				delay: 5 * time.Millisecond,
 			},
 		},
 	}

@@ -163,7 +163,14 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 	} else {
 		return statusResp
 	}
+
+	// TODO: verify if this block is needed and remove if not
 	if resp.StatusMessage != "" {
+		l.LogWithFields(ctx).Debugf("response got while adding compute :- StatusCode: %d, StatusMessage: %s, Body : %v",
+			resp.StatusCode, resp.StatusMessage, resp.Body)
+		percentComplete = 100
+		task := fillTaskData(taskID, targetURI, reqBody, resp, common.Completed, common.Warning, percentComplete, http.MethodPost)
+		e.UpdateTask(ctx, task)
 		return resp
 	}
 	// Adding Aggregation Source to db

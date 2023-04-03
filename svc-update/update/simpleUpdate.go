@@ -33,6 +33,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 )
 
@@ -46,7 +47,7 @@ var (
 )
 
 // SimpleUpdate function handler for simpe update process
-func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, sessionUserName string, req *updateproto.UpdateRequest) response.RPC {
+func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, sessionUserName string, req *updateproto.UpdateRequest) {
 	var resp response.RPC
 	var percentComplete int32
 	targetURI := "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
@@ -58,12 +59,14 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 	if err != nil {
 		errMsg := "Unable to parse the simple update request" + err.Error()
 		l.LogWithFields(ctx).Warn(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return
 	}
 	if len(updateRequest.Targets) == 0 {
 		errMsg := "'Targets' parameter cannot be empty"
 		l.LogWithFields(ctx).Warn(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Targets"}, taskInfo)
+		common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Targets"}, taskInfo)
+		return
 	}
 
 	// Validating the request JSON properties for case sensitive
@@ -71,20 +74,21 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 	if err != nil {
 		errMsg := "Unable to validate request parameters: " + err.Error()
 		l.LogWithFields(ctx).Warn(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return
 	} else if invalidProperties != "" {
 		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 		l.LogWithFields(ctx).Warn(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
-		return response
+		common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
+		return
 	}
 
-	targetList := make(map[string][]string)
-	targetList, err = sortTargetList(ctx, updateRequest.Targets)
+	targetList, err := sortTargetList(ctx, updateRequest.Targets)
 	if err != nil {
 		errorMessage := "SystemUUID not found"
 		l.LogWithFields(ctx).Warn(errorMessage)
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", fmt.Sprintf("%v", updateRequest.Targets)}, taskInfo)
+		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", fmt.Sprintf("%v", updateRequest.Targets)}, taskInfo)
+		return
 	}
 	partialResultFlag := false
 	subTaskChannel := make(chan int32, len(targetList))
@@ -95,7 +99,8 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 		if err != nil {
 			errMsg := "Unable to parse the simple update request" + err.Error()
 			l.LogWithFields(ctx).Warn(errMsg)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+			return
 		}
 		updateRequestBody := string(marshalBody)
 		serverURI = "/redfish/v1/Systems/" + id
@@ -131,6 +136,9 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 	}
 
 	taskStatus := common.OK
+	if resp.StatusCode == http.StatusAccepted {
+		return
+	}
 	if partialResultFlag {
 		taskStatus = common.Warning
 	}
@@ -139,16 +147,18 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 		errMsg := "One or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
 		l.LogWithFields(ctx).Warn(errMsg)
 		switch resp.StatusCode {
-		case http.StatusAccepted:
-			return common.GeneralError(http.StatusAccepted, response.TaskStarted, errMsg, []interface{}{fmt.Sprintf("%v", targetList)}, taskInfo)
 		case http.StatusUnauthorized:
-			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{fmt.Sprintf("%v", targetList)}, taskInfo)
+			common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{fmt.Sprintf("%v", targetList)}, taskInfo)
+			return
 		case http.StatusNotFound:
-			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"option", "SimpleUpdate"}, taskInfo)
+			common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"option", "SimpleUpdate"}, taskInfo)
+			return
 		case http.StatusBadRequest:
-			return common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errMsg, []interface{}{"UpdateService.SimpleUpdate"}, taskInfo)
+			common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errMsg, []interface{}{"UpdateService.SimpleUpdate"}, taskInfo)
+			return
 		default:
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+			return
 		}
 	}
 
@@ -170,7 +180,6 @@ func (e *ExternalInterface) SimpleUpdate(ctx context.Context, taskID string, ses
 	}
 	respBody := fmt.Sprintf("%v", resp.Body)
 	l.LogWithFields(ctx).Debugf("final response for simple update request: %s", string(respBody))
-	return resp
 }
 
 func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serverURI, updateRequestBody string, applyTime string, subTaskChannel chan<- int32, sessionUserName string) {
@@ -196,7 +205,7 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 		subTaskChannel <- http.StatusBadRequest
 		errMsg := gerr.Error()
 		l.LogWithFields(ctx).Warn(errMsg)
-		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, taskInfo)
 		return
 	}
 	if applyTime == "OnStartUpdateRequest" {
@@ -205,7 +214,7 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 			subTaskChannel <- http.StatusInternalServerError
 			errMsg := "Unable to save the simple update request" + err.Error()
 			l.LogWithFields(ctx).Warn(errMsg)
-			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 			return
 		}
 	}
@@ -246,7 +255,7 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := e.External.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
+		_, token, _, getResponse, err := e.External.ContactPlugin(ctx, contactRequest, "error while creating session with the plugin: ")
 		if err != nil {
 			subTaskChannel <- getResponse.StatusCode
 			errMsg := err.Error()
@@ -269,7 +278,7 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost
-	respBody, location, getResponse, err := e.External.ContactPlugin(ctx, contactRequest, "error while performing simple update action: ")
+	_, location, pluginIP, getResponse, err := e.External.ContactPlugin(ctx, contactRequest, "error while performing simple update action: ")
 	if err != nil {
 		subTaskChannel <- getResponse.StatusCode
 		errMsg := err.Error()
@@ -278,21 +287,9 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
-		getResponse, err = e.monitorPluginTask(ctx, subTaskChannel, &monitorTaskRequest{
-			subTaskID:         subTaskID,
-			serverURI:         serverURI,
-			updateRequestBody: updateRequestBody,
-			respBody:          respBody,
-			getResponse:       getResponse,
-			taskInfo:          taskInfo,
-			location:          location,
-			pluginRequest:     contactRequest,
-			resp:              resp,
-		})
-
-		if err != nil {
-			return
-		}
+		services.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, subTaskID, location)
+		subTaskChannel <- int32(getResponse.StatusCode)
+		return
 	}
 	resp.StatusCode = http.StatusOK
 	percentComplete = 100
@@ -304,7 +301,6 @@ func (e *ExternalInterface) sendRequest(ctx context.Context, uuid, taskID, serve
 		var task = fillTaskData(subTaskID, serverURI, updateRequestBody, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		e.External.UpdateTask(ctx, task)
 	}
-	return
 }
 
 func sortTargetList(ctx context.Context, Targets []string) (map[string][]string, error) {

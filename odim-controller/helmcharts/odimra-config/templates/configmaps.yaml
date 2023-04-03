@@ -27,7 +27,8 @@ data:
        "MessageBusConf": {
          "MessageBusConfigFilePath": "/etc/odimra_config/platformconfig.toml",
          "MessageBusType": {{ .Values.odimra.messageBusType | quote }},
-         "OdimControlMessageQueue": "ODIM-CONTROL-MESSAGES"
+         "OdimControlMessageQueue": "ODIM-CONTROL-MESSAGES",
+         "OdimTaskEventsQueue": "TASK-EVENTS-TOPIC"
       },
     	"DBConf": {
                 "Protocol": "tcp",
@@ -70,6 +71,9 @@ data:
         "QueueSize": 20000,
         "DBCommitInterval": 1000,
         "RetryInterval": 5000
+      },
+      "PluginTasksConf" : {
+        "MonitorPluginTasksFrequencyInMins": 60
       },
     	"FirmwareVersion": "1.0",
     	"SouthBoundRequestTimeoutInSecs": 300,

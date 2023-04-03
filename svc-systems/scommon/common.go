@@ -106,7 +106,7 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest, sav
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, _, err := ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
+		_, token, _, _, err := ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
 		if err != nil {
 
 			return "", err
@@ -134,7 +134,7 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest, sav
 	//replace the uuid:system id with the system to the @odata.id from request url
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet
-	body, _, _, err := ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
+	body, _, _, _, err := ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
 	if err != nil {
 		return "", err
 	}
@@ -209,7 +209,7 @@ func getResourceName(oDataID string, memberFlag bool) string {
 }
 
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
-func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
+func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, string, ResponseStatus, error) {
 	l.LogWithFields(ctx).Debugf("incoming ContactPlugin request with token: %s, OID: %s", req.Token, req.OID)
 	var resp ResponseStatus
 	var response *http.Response
@@ -224,7 +224,7 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = errors.InternalError
 			l.LogWithFields(ctx).Error(errorMessage)
-			return nil, "", resp, fmt.Errorf(errorMessage)
+			return nil, "", "", resp, fmt.Errorf(errorMessage)
 		}
 	}
 	defer response.Body.Close()
@@ -234,14 +234,14 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
 		l.LogWithFields(ctx).Error(errorMessage)
-		return nil, "", resp, fmt.Errorf(errorMessage)
+		return nil, "", "", resp, fmt.Errorf(errorMessage)
 	}
 	l.LogWithFields(ctx).Info("response.StatusCode: " + fmt.Sprintf("%d", response.StatusCode))
 	resp.StatusCode = int32(response.StatusCode)
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted {
 		resp.StatusCode = int32(response.StatusCode)
 		l.LogWithFields(ctx).Println(errorMessage)
-		return body, "", resp, fmt.Errorf(errorMessage)
+		return body, "", "", resp, fmt.Errorf(errorMessage)
 	}
 
 	data := string(body)
@@ -249,10 +249,12 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}
+
 	if response.StatusCode == http.StatusAccepted {
-		return []byte(data), response.Header.Get("Location"), resp, nil
+		return []byte(data), response.Header.Get("Location"),
+			response.Header.Get(common.XForwardedFor), resp, nil
 	}
-	return []byte(data), response.Header.Get("X-Auth-Token"), resp, nil
+	return []byte(data), response.Header.Get("X-Auth-Token"), "", resp, nil
 }
 
 func checkRetrievalInfo(oid string) bool {
@@ -301,6 +303,27 @@ func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, 
 		return req.ContactClient(ctx, reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
 	return req.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+}
+
+// SavePluginTaskInfo saves the ip of plugin instance that handle the task,
+// task id of task which created in odim, and the taskmon URL returned
+// from plugin in DB
+func SavePluginTaskInfo(ctx context.Context, pluginIP, pluginServerName,
+	odimTaskID, pluginTaskMonURL string) {
+
+	pluginTaskID := strings.TrimPrefix(pluginTaskMonURL, "/taskmon/")
+	pluginTaskInfo := common.PluginTask{
+		IP:               pluginIP,
+		PluginServerName: pluginServerName,
+		OdimTaskID:       odimTaskID,
+		PluginTaskMonURL: pluginTaskMonURL,
+	}
+
+	err := smodel.CreatePluginTask(ctx, pluginTaskID, pluginTaskInfo)
+	if err != nil {
+		l.LogWithFields(ctx).Error("Error while saving plugin task info in DB",
+			err)
+	}
 }
 
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy

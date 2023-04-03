@@ -1,15 +1,15 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package mgrmodel
 
@@ -43,7 +43,7 @@ func TestGenericSave(t *testing.T) {
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, data, string(body), "should be same")
 
-	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	getDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
 	err = GenericSave(body, table, key)
@@ -63,7 +63,7 @@ func TestManager_Update(t *testing.T) {
 	body := []byte(`{"Status":{"State":"Enabled"}}`)
 	table := "Managers"
 	key := "xyz"
-	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	getDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
 	}
 	err := GenericSave(body, table, key)
@@ -74,7 +74,7 @@ func TestManager_Update(t *testing.T) {
 			"State": "Absent",
 		},
 	}
-	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	getDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
 	}
 	err = UpdateData(key, m, "Managers")
@@ -111,7 +111,7 @@ func TestGetResourceNegativeTestCases(t *testing.T) {
 	_, err = GetResource(table, key)
 	assert.NotNil(t, err, "There should be an error")
 
-	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	getDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
 	_, err = GetResource(table, key)
@@ -130,7 +130,7 @@ func TestGetAllkeysFromTable(t *testing.T) {
 	body := []byte(`body`)
 	table := "EthernetInterfaces"
 	key := "/redfish/v1/Managers/uuid.1/EthernetInterfaces/1"
-	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	getDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
 	}
 	err := GenericSave(body, table, key)
@@ -139,7 +139,7 @@ func TestGetAllkeysFromTable(t *testing.T) {
 	allKeys, err := GetAllKeysFromTable(table)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, len(allKeys), 1, "There should be one entry in DB")
-	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	getDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
 	_, err = GetAllKeysFromTable(table)
@@ -159,7 +159,7 @@ func TestGetManagerByURL(t *testing.T) {
 	body := []byte(`body`)
 	table := "Managers"
 	key := "/redfish/v1/Managers/uuid.1"
-	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	getDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
 	}
 	err := GenericSave(body, table, key)
@@ -169,7 +169,7 @@ func TestGetManagerByURL(t *testing.T) {
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, data, string(body), "should be same")
 
-	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	getDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
 	_, err1 := GetManagerByURL(key)
@@ -210,10 +210,10 @@ func TestAddManagertoDB(t *testing.T) {
 		UUID:            "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
 		State:           "Enabled",
 	}
-	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	getDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
 	}
-	MarshalFunc = func(v interface{}) ([]byte, error) {
+	marshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)
 	}
 
@@ -230,15 +230,15 @@ func TestAddManagertoDB(t *testing.T) {
 	assert.Equal(t, manager.ID, "3bd1f589-117a-4cf9-89f2-da44ee8e012b", "managerid should be 3bd1f589-117a-4cf9-89f2-da44ee8e012b")
 	assert.Equal(t, manager.UUID, "3bd1f589-117a-4cf9-89f2-da44ee8e012b", "uuid should be 3bd1f589-117a-4cf9-89f2-da44ee8e012b")
 	assert.Equal(t, manager.State, "Enabled", "state should be Enabled")
-	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	getDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
 	err = AddManagertoDB(mngr)
 	assert.NotNil(t, err, "unable to marshal data for updating: %v")
-	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	getDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return common.GetDBConnection(dbFlag)
 	}
-	MarshalFunc = func(v interface{}) ([]byte, error) {
+	marshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
 	err = AddManagertoDB(mngr)
@@ -265,7 +265,7 @@ func TestUpdateData(t *testing.T) {
 	err = UpdateData("test", m, "Managers")
 	assert.NotNil(t, err, "unable to marshal data for updating: %v")
 
-	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	getDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, &errors.Error{}
 	}
 	err = UpdateData("test", m, "Managers")
@@ -274,10 +274,10 @@ func TestUpdateData(t *testing.T) {
 }
 func Test_UpdateData(t *testing.T) {
 
-	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+	getDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
 		return nil, nil
 	}
-	MarshalFunc = func(v interface{}) ([]byte, error) {
+	marshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
 	m := map[string]interface{}{

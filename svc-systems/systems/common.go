@@ -138,7 +138,7 @@ func (e *PluginContact) monitorPluginTask(ctx context.Context, monitorTaskData *
 		time.Sleep(time.Second * 5)
 		monitorTaskData.pluginRequest.OID = monitorTaskData.location
 		monitorTaskData.pluginRequest.HTTPMethodType = http.MethodGet
-		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = ContactPluginFunc(ctx, monitorTaskData.pluginRequest, "error while reseting the computer system: ")
+		monitorTaskData.respBody, _, _, monitorTaskData.getResponse, err = ContactPluginFunc(ctx, monitorTaskData.pluginRequest, "error while reseting the computer system: ")
 		if err != nil {
 			errMsg := err.Error()
 			l.LogWithFields(ctx).Warn(errMsg)

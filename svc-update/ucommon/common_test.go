@@ -62,7 +62,7 @@ func mockGetPluginBasicData(id string) (umodel.Plugin, *errors.Error) {
 	return plugin, nil
 }
 
-func mockContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
+func mockContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, string, ResponseStatus, error) {
 	var resp ResponseStatus
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
@@ -72,7 +72,7 @@ func mockContactPlugin(ctx context.Context, req PluginContactRequest, errorMessa
 		Body:       ioutil.NopCloser(bytes.NewBufferString("{\"abc\":\"abc\"}")),
 	}
 	body, _ := ioutil.ReadAll(reqBody.Body)
-	return body, "1234", resp, nil
+	return body, "1234", "", resp, nil
 }
 
 func mockInterface() *CommonInterface {
@@ -198,23 +198,23 @@ func TestContactPlugin(t *testing.T) {
 		return &http.Response{Status: "Save", StatusCode: 204, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
 	}
 
-	_, _, _, err := ContactPlugin(ctx, PluginContactRequest{}, "Dumyy")
+	_, _, _, _, err := ContactPlugin(ctx, PluginContactRequest{}, "Dumyy")
 	assert.NotNil(t, err, "There should be error")
 	CallPluginFunc = func(ctx context.Context, req PluginContactRequest) (*http.Response, error) {
 		return &http.Response{Status: "Save", StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
 	}
-	_, _, _, err = ContactPlugin(ctx, PluginContactRequest{}, "Dumyy")
+	_, _, _, _, err = ContactPlugin(ctx, PluginContactRequest{}, "Dumyy")
 	assert.Nil(t, err, "There should be no error")
 	CallPluginFunc = func(ctx context.Context, req PluginContactRequest) (*http.Response, error) {
 		return &http.Response{Status: "Save", StatusCode: 202, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
 	}
 
-	_, _, _, err = ContactPlugin(ctx, PluginContactRequest{}, "Dumyy")
+	_, _, _, _, err = ContactPlugin(ctx, PluginContactRequest{}, "Dumyy")
 	assert.Nil(t, err, "There should be error")
 	CallPluginFunc = func(ctx context.Context, req PluginContactRequest) (*http.Response, error) {
 		return &http.Response{Status: "Save", StatusCode: 401, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
 	}
-	_, _, _, err = ContactPlugin(ctx, PluginContactRequest{}, "Dumyy")
+	_, _, _, _, err = ContactPlugin(ctx, PluginContactRequest{}, "Dumyy")
 	assert.NotNil(t, err, "There should be error")
 	IOUtilReadAllFunc = func(r io.Reader) ([]byte, error) {
 		return nil, &errors.Error{}
@@ -223,12 +223,12 @@ func TestContactPlugin(t *testing.T) {
 		return &http.Response{Status: "Save", StatusCode: 401, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, nil
 	}
 
-	_, _, _, err = ContactPlugin(ctx, PluginContactRequest{}, "Dumyy")
+	_, _, _, _, err = ContactPlugin(ctx, PluginContactRequest{}, "Dumyy")
 	assert.NotNil(t, err, "There should be error")
 	CallPluginFunc = func(ctx context.Context, req PluginContactRequest) (*http.Response, error) {
 		return &http.Response{Status: "Save", StatusCode: 401, Body: ioutil.NopCloser(bytes.NewBufferString("Dummy"))}, &errors.Error{}
 	}
-	_, _, _, err = ContactPlugin(ctx, PluginContactRequest{}, "Dumyy")
+	_, _, _, _, err = ContactPlugin(ctx, PluginContactRequest{}, "Dumyy")
 	assert.NotNil(t, err, "There should be error")
 }
 

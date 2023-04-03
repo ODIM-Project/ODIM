@@ -61,7 +61,11 @@ func mockGetExternalInterface() *ExternalInterface {
 			GetManagerByURL:     mockGetManagerByURL,
 			GetPluginData:       mockGetPluginData,
 			UpdateData:          mockUpdateData,
+			SavePluginTaskInfo:  mockSavePluginTaskInfo,
 			GetResource:         mockGetResource,
+		},
+		RPC: RPC{
+			UpdateTask: mockUpdateTask,
 		},
 	}
 }
@@ -146,6 +150,10 @@ func mockUpdateData(key string, updateData map[string]interface{}, table string)
 	return nil
 }
 
+func mockSavePluginTaskInfo(context.Context, string, string, string, string) error { return nil }
+
+func mockUpdateTask(context.Context, common.TaskData) error { return nil }
+
 func mockGetResource(table, key string) (string, *errors.Error) {
 	if key == "/redfish/v1/Managers/uuid1.1/Ethernet" {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
@@ -184,14 +192,14 @@ func mockGetDeviceInfo(ctx context.Context, req mgrcommon.ResourceInfoRequest) (
 	return string(dataByte), err
 }
 
-func mockDeviceRequest(ctx context.Context, req mgrcommon.ResourceInfoRequest) response.RPC {
+func mockDeviceRequest(ctx context.Context, req mgrcommon.ResourceInfoRequest) (mgrcommon.PluginTaskInfo, response.RPC) {
 	var resp response.RPC
 	resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 	if req.URL == "/redfish/v1/Managers/deviceAbsent.1" || req.URL == "/redfish/v1/Managers/uuid1.1/Virtual" || req.URL == "/redfish/v1/Managers/uuid.1/Logservice" {
 
 		resp.StatusCode = http.StatusNotFound
 		resp.StatusMessage = response.ResourceNotFound
-		return resp
+		return mgrcommon.PluginTaskInfo{}, resp
 	}
 	manager := mgrmodel.Manager{
 		Status: &mgrmodel.Status{
@@ -203,9 +211,9 @@ func mockDeviceRequest(ctx context.Context, req mgrcommon.ResourceInfoRequest) r
 	resp.StatusMessage = response.Success
 	err = json.Unmarshal(dataByte, &resp.Body)
 	if err != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return mgrcommon.PluginTaskInfo{}, common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
-	return resp
+	return mgrcommon.PluginTaskInfo{}, resp
 }
 
 func mockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {

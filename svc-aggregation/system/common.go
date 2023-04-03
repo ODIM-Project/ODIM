@@ -339,6 +339,7 @@ func contactPlugin(ctx context.Context, req getResourceRequest, errorMessage str
 	}
 
 	data := string(body)
+	resp.StatusCode = int32(pluginResp.StatusCode)
 	//replacing the resposne with north bound translation URL
 	for key, value := range getTranslationURL(northBoundURL) {
 		data = strings.Replace(data, key, value, -1)
@@ -348,7 +349,6 @@ func contactPlugin(ctx context.Context, req getResourceRequest, errorMessage str
 		return []byte(data), pluginResp.Header.Get("Location"), resp, nil
 	}
 
-	resp.StatusCode = int32(pluginResp.StatusCode)
 	return []byte(data), pluginResp.Header.Get("X-Auth-Token"), resp, nil
 }
 

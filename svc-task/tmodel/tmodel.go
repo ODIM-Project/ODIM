@@ -208,6 +208,29 @@ func GetTaskStatus(ctx context.Context, taskID string, db common.DbType) (*Task,
 	return task, nil
 }
 
+// GetMultipleTaskKeys is used to get multiple keys
+func GetMultipleTaskKeys(ctx context.Context, taskIDs []interface{}, db common.DbType) (*[]Task, error) {
+	var task []Task
+	subtask := new(Task)
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		l.LogWithFields(ctx).Error("GetTaskStatus : error while trying to get DB Connection : " + err.Error())
+		return &task, fmt.Errorf("error while trying to connnect to DB: %v", err.Error())
+	}
+	taskData, err := connPool.ReadMultipleKeys(taskIDs)
+	if err != nil {
+		l.LogWithFields(ctx).Error("GetTaskStatus : Unable to read taskdata from DB: " + err.Error())
+		return &task, fmt.Errorf("error while trying to read from DB: %v", err.Error())
+	}
+	for _, data := range taskData {
+		if errs := json.Unmarshal([]byte(data), subtask); errs != nil {
+			return &task, fmt.Errorf("error while trying to unmarshal task data: %v", errs)
+		}
+		task = append(task, *subtask)
+	}
+	return &task, nil
+}
+
 // GetAllTaskKeys will collect all task keys available in the DB
 // Takes:
 //
@@ -231,6 +254,29 @@ func GetAllTaskKeys(ctx context.Context) ([]string, error) {
 	return taskKeys, nil
 }
 
+// GetPluginTaskInfo receives the plugin task ID and
+// get the plugin task information  from DB
+func GetPluginTaskInfo(taskID string) (*common.PluginTask, error) {
+	errPrefix := "error while trying to get plugin task info"
+	pluginTask := new(common.PluginTask)
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return nil, fmt.Errorf(errPrefix+
+			": error while trying to get DB connection: %v", err.Error())
+	}
+
+	taskData, err := connPool.Read("PluginTask", taskID)
+	if err != nil {
+		return nil, fmt.Errorf(errPrefix+
+			": error while trying to read from DB: %v", err.Error())
+	}
+
+	if errs := json.Unmarshal([]byte(taskData), pluginTask); errs != nil {
+		return nil, fmt.Errorf(errPrefix+": %v", errs)
+	}
+	return pluginTask, nil
+}
+
 // Transaction - is for performing atomic oprations using optimitic locking
 func Transaction(ctx context.Context, key string, cb func(context.Context, string) error) error {
 	connPool, err := common.GetDBConnection(common.InMemory)
@@ -239,6 +285,46 @@ func Transaction(ctx context.Context, key string, cb func(context.Context, strin
 	}
 	if err = connPool.Transaction(ctx, key, cb); err != nil {
 		return fmt.Errorf("error while performing transaction: %v", err.Error())
+	}
+	return nil
+}
+
+// GetAllActivePluginTaskIDs get all plugin task IDs from DB those are not completed
+func GetAllActivePluginTaskIDs(ctx context.Context) ([]string, error) {
+	var pluginTaskIDs []string
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return pluginTaskIDs, fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	pluginTaskIDs, err = connPool.GetAllMembersInSet(common.PluginTaskIndex)
+	if err != nil {
+		return pluginTaskIDs, fmt.Errorf("error while getting plugin tasks from DB: %v", err.Error())
+	}
+	return pluginTaskIDs, nil
+}
+
+// GetAllKeysFromTable return all data from table
+func GetAllKeysFromTable(table string) ([]string, error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	keysArray, err := conn.GetAllDetails(table)
+	if err != nil {
+		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
+	}
+	return keysArray, nil
+}
+
+// RemovePluginTaskID will remove the plugin task from set
+func RemovePluginTaskID(ctx context.Context, pluginTaskID string) error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	err = connPool.RemoveMemberFromSet(common.PluginTaskIndex, pluginTaskID)
+	if err != nil {
+		return fmt.Errorf("error while trying to remove the plugin task from set - %v", err.Error())
 	}
 	return nil
 }
@@ -299,7 +385,15 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 
 		if task != nil {
 			saveID := Table + ":" + task.ID
-			tasks[saveID] = task
+			if data, ok := tasks[saveID]; ok {
+				t := data.(*Task)
+				if t.PercentComplete < task.PercentComplete {
+					tasks[saveID] = task
+				}
+			} else {
+				tasks[saveID] = task
+			}
+
 			if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
 				completedTasks[saveID] = 1
 			}

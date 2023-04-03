@@ -27,6 +27,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	licenseproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/licenses"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	lcommon "github.com/ODIM-Project/ODIM/svc-licenses/lcommon"
 	licenseService "github.com/ODIM-Project/ODIM/svc-licenses/licenses"
 	"github.com/ODIM-Project/ODIM/svc-licenses/model"
 )
@@ -34,13 +35,17 @@ import (
 func mockGetExternalInterface() *licenseService.ExternalInterface {
 	return &licenseService.ExternalInterface{
 		External: licenseService.External{
-			Auth:           mockIsAuthorized,
-			ContactClient:  mockContactClient,
-			GetTarget:      mockGetTarget,
-			GetPluginData:  mockGetPluginData,
-			ContactPlugin:  mockContactPlugin,
-			DevicePassword: stubDevicePassword,
-			GenericSave:    stubGenericSave,
+			Auth:               mockIsAuthorized,
+			ContactClient:      mockContactClient,
+			GetTarget:          mockGetTarget,
+			GetPluginData:      mockGetPluginData,
+			ContactPlugin:      mockContactPlugin,
+			DevicePassword:     stubDevicePassword,
+			CreateTask:         mockCreateTask,
+			GetSessionUserName: mockGetSessionUserName,
+			CreateChildTask:    mockCreateChildTask,
+			UpdateTask:         mockUpdateTask,
+			GenericSave:        stubGenericSave,
 		},
 		DB: licenseService.DB{
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
@@ -49,10 +54,40 @@ func mockGetExternalInterface() *licenseService.ExternalInterface {
 	}
 }
 
-func mockContactPlugin(ctx context.Context, req model.PluginContactRequest, errorMessage string) ([]byte, string, model.ResponseStatus, error) {
+func mockGetSessionUserName(ctx context.Context, token string) (string, error) {
+	if token == "notValidToken" {
+		return "", fmt.Errorf("invalidToken")
+	}
+	return "user", nil
+}
+
+func mockCreateTask(ctx context.Context, sessionID string) (string, error) {
+	return "task12345", nil
+}
+
+func mockCreateChildTask(ctx context.Context, sessionID, taskID string) (string, error) {
+	switch taskID {
+	case "taskWithoutChild":
+		return "", fmt.Errorf("subtask cannot created")
+	case "subTaskWithSlash":
+		return "someSubTaskID/", nil
+	default:
+		return "someSubTaskID", nil
+	}
+}
+
+func mockUpdateTask(ctx context.Context, task common.TaskData) error {
+	if task.TaskID == "invalid" {
+		return fmt.Errorf("task with this ID not found")
+	}
+	return nil
+}
+
+func mockContactPlugin(ctx context.Context, req model.PluginContactRequest,
+	errorMessage string) ([]byte, string, lcommon.PluginTaskInfo, model.ResponseStatus, error) {
 	var responseStatus model.ResponseStatus
 
-	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, nil
+	return []byte(`{"Attributes":"sample"}`), "token", lcommon.PluginTaskInfo{}, responseStatus, nil
 }
 
 func stubGenericSave(ctx context.Context, reqBody []byte, table string, uuid string) error {

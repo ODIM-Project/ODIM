@@ -26,6 +26,7 @@ import (
 	"sync"
 	"time"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
@@ -51,6 +52,7 @@ type TasksRPC struct {
 	AuthenticationRPC                func(ctx context.Context, sessionToken string, privileges []string) (response.RPC, error)
 	GetSessionUserNameRPC            func(ctx context.Context, sessionToken string) (string, error)
 	GetTaskStatusModel               func(ctx context.Context, taskID string, db common.DbType) (*tmodel.Task, error)
+	GetMultipleTaskKeysModel         func(ctx context.Context, taskIDs []interface{}, db common.DbType) (*[]tmodel.Task, error)
 	GetAllTaskKeysModel              func(ctx context.Context) ([]string, error)
 	TransactionModel                 func(ctx context.Context, key string, cb func(context.Context, string) error) error
 	OverWriteCompletedTaskUtilHelper func(ctx context.Context, userName string) error
@@ -929,6 +931,15 @@ func (ts *TasksRPC) CreateChildTaskUtil(ctx context.Context, userName string, pa
 	return "/redfish/v1/TaskService/Tasks/" + childTaskID, err
 }
 
+// getAllChildTasks is used to get All child task ID's associated with parent task
+func (ts *TasksRPC) getAllChildTasks(ctx context.Context, parentID string) ([]string, error) {
+	task, err := ts.GetTaskStatusModel(ctx, parentID, common.InMemory)
+	if err != nil {
+		return nil, fmt.Errorf("error while retrieving the task details from db: " + err.Error())
+	}
+	return task.ChildTaskIDs, nil
+}
+
 // updateTaskUtil is a function to update the existing task and/or to create sub-task under a parent task.
 // This function is to set task status, task end time along with task state based on the task state.
 // Takes:
@@ -953,6 +964,13 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 	if err != nil {
 		return fmt.Errorf("error while retrieving the task details from db: " + err.Error())
 	}
+
+	if task.PercentComplete > percentComplete {
+		return fmt.Errorf("The task with id %s is already updated with %d percent complete."+
+			"skipping the update request with the percent complete %d", taskID,
+			task.PercentComplete, percentComplete)
+	}
+
 	//If the task is already in cancelled state, then updates are not allowed to it.
 	if task.TaskState == common.Cancelled {
 		return fmt.Errorf(common.Cancelled)
@@ -1029,6 +1047,7 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 		task.PercentComplete = percentComplete
 		if payLoad != nil {
 			task.StatusCode = payLoad.StatusCode
+			task.TaskResponse = payLoad.ResponseBody
 		}
 		task.EndTime = endTime
 		// Constuct the appropriate messageID for task status change nitification
@@ -1156,5 +1175,189 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 	if !TaskCollection.getTaskFromCollectionData(taskID, int(percentComplete)) {
 		ts.PublishToMessageBus(ctx, task.URI, taskEvenMessageID, eventType, taskMessage)
 	}
+
+	if task.ParentID != "" && (taskState == common.Completed || taskState == common.Exception ||
+		taskState == common.Killed || taskState == common.Cancelled || taskState == common.New) {
+		err = ts.updateParentTask(ctx, taskID, taskStatus, taskState, task, payLoad)
+		if err != nil {
+			return err
+		}
+	}
 	return err
+}
+
+// updateParentTask is used to update the status of parent task according to the status of child task
+func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, taskState string, task *tmodel.Task, payLoad *taskproto.Payload) error {
+	parentTask, err := ts.GetTaskStatusModel(ctx, task.ParentID, common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while retrieving the task details from db: " + err.Error())
+	}
+	if taskState != common.Completed && taskState != common.New {
+		errMsg := "One or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + task.ParentID
+		parentTask.TaskState = taskState
+		parentTask.PercentComplete = 100
+		parentTask.StatusCode = payLoad.StatusCode
+		parentTask.Messages = []*tmodel.Message{{MessageID: response.Failure, Message: errMsg}}
+		parentTask.TaskResponse = payLoad.ResponseBody
+		ts.UpdateTaskQueue(parentTask)
+		return fmt.Errorf(errMsg)
+	}
+	childIDs, err := ts.getAllChildTasks(ctx, task.ParentID)
+	if err != nil {
+		return err
+	}
+	l.LogWithFields(ctx).Debugf("Child ID's associated with parent task %s: %v", task.ParentID, childIDs)
+	if len(childIDs) < 1 || (len(childIDs) == 1 && taskState == common.Completed && payLoad.StatusCode < http.StatusAccepted) {
+		parentTask.TaskState = common.Completed
+		parentTask.PercentComplete = 100
+		parentTask.StatusCode = http.StatusOK
+		parentTask.TaskStatus = common.OK
+		parentTask.StatusCode = http.StatusOK
+		resp := tcommon.GetTaskResponse(http.StatusOK, response.Success)
+		body, _ := json.Marshal(resp.Body)
+		parentTask.TaskResponse = body
+		ts.UpdateTaskQueue(parentTask)
+		l.LogWithFields(ctx).Debugf("All tasks are completed !")
+		return nil
+	}
+
+	return ts.validateChildTasksAndUpdateParentTask(ctx, childIDs, taskID, parentTask)
+}
+
+func (ts *TasksRPC) validateChildTasksAndUpdateParentTask(ctx context.Context, childIDs []string, taskID string, parentTask *tmodel.Task) error {
+	s := make([]interface{}, len(childIDs))
+	for i, v := range childIDs {
+		if v != taskID {
+			s[i] = "task:" + v
+		}
+	}
+	data, _ := ts.GetMultipleTaskKeysModel(ctx, s, common.InMemory)
+	var isRunning bool
+	for _, subtask := range *data {
+		if isActiveTask(subtask) {
+			isRunning = true
+			break
+		}
+
+	}
+	if !isRunning {
+		l.LogWithFields(ctx).Debugf("All tasks are completed !")
+		parentTask.TaskState = common.Completed
+		parentTask.TaskStatus = common.OK
+		parentTask.PercentComplete = 100
+		parentTask.StatusCode = http.StatusOK
+		resp := tcommon.GetTaskResponse(http.StatusOK, response.Success)
+		body, _ := json.Marshal(resp.Body)
+		parentTask.TaskResponse = body
+		ts.UpdateTaskQueue(parentTask)
+	}
+
+	return nil
+}
+
+func isActiveTask(task tmodel.Task) bool {
+	if task.TaskState == common.Running || task.TaskState == common.New || task.TaskState == common.Pending ||
+		task.TaskState == common.Starting || task.TaskState == common.Suspended || task.TaskState == common.Interrupted ||
+		task.TaskState == common.Cancelling {
+		return true
+	}
+	return false
+}
+
+// ProcessTaskEvents receive the task event from plugins
+// The function will find out the ODIM task corresponding to the plugin task ID
+// and task progress from the events
+// Then the function update the ODIM task with the task progress received
+func (ts *TasksRPC) ProcessTaskEvents(ctx context.Context, data interface{}) bool {
+	event := data.(dmtf.EventRecord)
+	var taskID string
+
+	if len(event.MessageArgs) == 0 {
+		l.LogWithFields(ctx).Error("task id is not present in the task event." +
+			"skipping the task update")
+		return false
+	}
+
+	taskID = event.MessageArgs[0]
+	// get the plugin task information from DB which including ODIM task ID
+	// plugin IP, and plugin task ID
+	pluginTask, err := tmodel.GetPluginTaskInfo(taskID)
+	if err != nil {
+		l.LogWithFields(ctx).Error("error while processing task event :", err.Error())
+		return false
+	}
+
+	messageID := event.MessageID
+	var message string
+	if strings.HasPrefix(messageID, common.TaskEventType) {
+		res := strings.Split(messageID, common.TaskEventType+".")
+		message = res[1]
+	}
+
+	if message == "" {
+		l.LogWithFields(ctx).Errorf("Got invalid messageID for task event with task ID %s",
+			taskID)
+		return false
+	}
+
+	taskState := tcommon.TaskStatusMap[message]
+	taskStatus := event.Severity
+
+	var percentComplete int32
+	switch taskState {
+	case dmtf.TaskStateStarting:
+		percentComplete = 0
+	case dmtf.TaskStateRunning:
+		pc, err := strconv.ParseInt(event.MessageArgs[1], 10, 32)
+		if err != nil {
+			l.LogWithFields(ctx).Errorf("Invalid percent complete received from task event: %v", event.MessageArgs[1])
+			return false
+		}
+		percentComplete = int32(pc)
+	case dmtf.TaskStateCompleted, dmtf.TaskStateCancelled,
+		dmtf.TaskStateSuspended, dmtf.TaskStateInterrupted,
+		dmtf.TaskStateKilled, dmtf.TaskStateException:
+		percentComplete = 100
+	}
+
+	sc := event.MessageArgs[len(event.MessageArgs)-1]
+	statusCode, err := strconv.ParseInt(sc, 10, 32)
+	if err != nil {
+		l.LogWithFields(ctx).Errorf("Invalid status code received from task event: %v", event.MessageArgs[1])
+		return false
+	}
+	timestamp, err := time.Parse(time.RFC3339, event.EventTimestamp)
+	if err != nil {
+		timestamp = time.Now()
+	}
+
+	responseMessage := event.MessageArgs[len(event.MessageArgs)-2]
+	resp := tcommon.GetTaskResponse(int32(statusCode), responseMessage)
+	body, _ := json.Marshal(resp.Body)
+
+	payLoad := &taskproto.Payload{
+		StatusCode:   int32(statusCode),
+		ResponseBody: body,
+	}
+
+	l.LogWithFields(ctx).Debugf("Received task event from plugin for odim task %s, "+
+		"plugin taskID: %s, taskState: %s, taskStatus: %s, percentComplete: %d, "+
+		"status code: %d: response body: %s, end time: %v",
+		pluginTask.OdimTaskID, taskID, taskState, taskStatus,
+		percentComplete, statusCode, string(body), timestamp)
+
+	err = ts.updateTaskUtil(context.TODO(), pluginTask.OdimTaskID,
+		string(taskState), taskStatus, percentComplete,
+		payLoad, timestamp)
+	if err != nil {
+		l.Log.Error("failed to update task: error while updating task: " +
+			err.Error())
+		return false
+	}
+
+	if percentComplete == 100 {
+		tmodel.RemovePluginTaskID(context.TODO(), taskID)
+	}
+
+	return false
 }

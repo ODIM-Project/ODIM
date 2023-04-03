@@ -25,7 +25,7 @@ type NetworkPort struct {
 	ActiveLinkTechnology          string                      `json:"ActiveLinkTechnology,omitempty"`
 	AssociatedNetworkAddresses    []string                    `json:"AssociatedNetworkAddresses,omitempty"`
 	CurrentLinkSpeedMbps          int                         `json:"CurrentLinkSpeedMbps,omitempty"`
-	Description                   string                      `json:"Description,omitempty`
+	Description                   string                      `json:"Description,omitempty"`
 	EEEEnabled                    *bool                       `json:"EEEEnabled,omitempty"`
 	FCFabricName                  string                      `json:"FCFabricName,omitempty"`
 	FCPortConnectionType          string                      `json:"FCPortConnectionType,omitempty"`

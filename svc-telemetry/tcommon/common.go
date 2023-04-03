@@ -266,6 +266,7 @@ func removeNonExistingID(ctx context.Context, req ResourceInfoRequest) {
 	}
 }
 
+// TrackConfigFileChanges monitors the host file using fsnotfiy
 func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat

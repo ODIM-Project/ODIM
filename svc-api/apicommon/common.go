@@ -11,6 +11,7 @@ var (
 	ConfigFilePath string
 )
 
+// TrackConfigFileChanges monitors the config changes using fsnotfiy
 func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat

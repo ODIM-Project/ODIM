@@ -394,7 +394,7 @@ func (e *ExternalInterfaces) retryEventSubscriptionOperation(ctx context.Context
 }
 
 // isHostPresent will check if hostIp present in the hosts slice
-func isHostPresent(hosts []string, hostIp string) bool {
+func isHostPresent(hosts []string, hostIP string) bool {
 
 	if len(hosts) < 1 {
 		return false
@@ -403,7 +403,7 @@ func isHostPresent(hosts []string, hostIp string) bool {
 	front := 0
 	rear := len(hosts) - 1
 	for front <= rear {
-		if hosts[front] == hostIp || hosts[rear] == hostIp {
+		if hosts[front] == hostIP || hosts[rear] == hostIP {
 			return true
 		}
 		front++
@@ -472,7 +472,7 @@ func (e *ExternalInterfaces) checkCollection(origin string) ([]string, string, b
 }
 
 // isHostPresentInEventForward will check if hostIp present in the hosts slice
-func isHostPresentInEventForward(hosts []string, hostIp string) bool {
+func isHostPresentInEventForward(hosts []string, hostIP string) bool {
 
 	if len(hosts) == 0 {
 		return true
@@ -481,7 +481,7 @@ func isHostPresentInEventForward(hosts []string, hostIp string) bool {
 	front := 0
 	rear := len(hosts) - 1
 	for front <= rear {
-		if hosts[front] == hostIp || hosts[rear] == hostIp || strings.Contains(hosts[rear], "Collection") || strings.Contains(hosts[front], "Collection") {
+		if hosts[front] == hostIP || hosts[rear] == hostIP || strings.Contains(hosts[rear], "Collection") || strings.Contains(hosts[front], "Collection") {
 			return true
 		}
 		front++

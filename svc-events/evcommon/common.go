@@ -39,6 +39,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// global variables
 var (
 	DefaultSubscriptionID        = "0"
 	SubscriptionChannelKey       = "__key*__:Subscription"
@@ -586,6 +587,7 @@ func (st *StartUpInterface) getPluginEMB(ctx context.Context, plugin common.Plug
 	}
 }
 
+// TrackConfigFileChanges monitors the config changes using fsnotfiy
 func TrackConfigFileChanges(ctx context.Context, errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat

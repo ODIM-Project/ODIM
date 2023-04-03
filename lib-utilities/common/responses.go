@@ -82,11 +82,14 @@ func CreateMetadata(ctx context.Context) context.Context {
 	return ctx
 }
 
+// ModifyContext modify the values in the context
 func ModifyContext(ctx context.Context, threadName, podName string) context.Context {
 	ctx = context.WithValue(ctx, ThreadName, threadName)
 	ctx = context.WithValue(ctx, ProcessName, podName)
 	return ctx
 }
+
+// CreateNewRequestContext creates a new context with the values from a context passed
 func CreateNewRequestContext(ctx context.Context) context.Context {
 	reqCtx := context.Background()
 	processName, _ := ctx.Value(ProcessName).(string)
@@ -105,12 +108,12 @@ func CreateNewRequestContext(ctx context.Context) context.Context {
 }
 
 // CreateContext will create and returns a new context with the values passed
-func CreateContext(transactionId, actionId, actionName, threadId, threadName, processName string) context.Context {
+func CreateContext(transactionID, actionID, actionName, threadID, threadName, processName string) context.Context {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, TransactionID, transactionId)
-	ctx = context.WithValue(ctx, ActionID, actionId)
+	ctx = context.WithValue(ctx, TransactionID, transactionID)
+	ctx = context.WithValue(ctx, ActionID, actionID)
 	ctx = context.WithValue(ctx, ActionName, actionName)
-	ctx = context.WithValue(ctx, ThreadID, threadId)
+	ctx = context.WithValue(ctx, ThreadID, threadID)
 	ctx = context.WithValue(ctx, ThreadName, threadName)
 	ctx = context.WithValue(ctx, ProcessName, processName)
 	return ctx

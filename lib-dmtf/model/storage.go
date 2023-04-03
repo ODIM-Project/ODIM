@@ -42,7 +42,7 @@ type Storage struct {
 	StorageControllersCount int                   `json:"StorageControllers@odata.count,omitempty"`
 }
 
-//StorageControllers redfish structure
+// StorageControllers redfish structure
 type StorageControllers struct {
 	Oid                          string                    `json:"@odata.id"`
 	ODataContext                 string                    `json:"@odata.context,omitempty"`
@@ -78,7 +78,7 @@ type StorageControllers struct {
 	Measurements                 []*Link                   `json:"Measurements,omitempty"` // Deprecated in version v1.5.0
 }
 
-//Actions redfish structure
+// Actions redfish structure
 type Actions struct {
 }
 
@@ -243,16 +243,25 @@ type FirmwareVersion struct {
 type Current struct {
 	VersionString string `json:"VersionString,omitempty"`
 }
+
+// CollectionCapabilities - This type shall describe any capabilities of a resource collection
+// in terms of how a client can create resources within the resource collection.
 type CollectionCapabilities struct {
 	OdataType    string          `json:"@odata.type"`
 	Capabilities []*Capabilities `json:"Capabilities,omitempty"`
 }
 
+// Capabilities - This property shall contain an array of objects that
+// describe the capabilities of this resource collection.
 type Capabilities struct {
 	CapabilitiesObject *Link    `json:"CapabilitiesObject,omitempty"`
 	Links              CapLinks `json:"Links,omitempty"`
 	UseCase            string   `json:"UseCase,omitempty"`
 }
+
+// CapabilitiesObject - The value of this property shall be a reference to a Resource
+// that matches the type for the given collection and shall contain annotations
+// that describe the properties allowed in the POST request.
 type CapabilitiesObject struct {
 	ODataID           string     `json:"@odata.id"`
 	ODataType         string     `json:"@odata.type"`
@@ -262,20 +271,28 @@ type CapabilitiesObject struct {
 	RAIDType          bool       `json:"RAIDType@Redfish.RequiredOnCreate"`
 	RAIDTypeValues    []string   `json:"RAIDType@Redfish.AllowableValues"`
 	Name              string     `json:"Name"`
-	Id                string     `json:"Id"`
+	ID                string     `json:"Id"`
 	StripSizeBytes    bool       `json:"StripSizeBytes@Redfish.OptionalOnCreate,omitempty"`
 	ReadCachePolicy   bool       `json:"ReadCachePolicy@Redfish.OptionalOnCreate,omitempty"`
 	WriteCachePolicy  bool       `json:"WriteCachePolicy,omitempty"`
 	Links             bool       `json:"Links@Redfish.RequiredOnCreate"`
 	LinkValues        LinkValues `json:"Links"`
 }
+
+// LinkValues - Contains references to other resources that are related to this resource.
 type LinkValues struct {
 	DedicatedSpareDrives bool `json:"DedicatedSpareDrives@Redfish.OptionalOnCreate,omitempty"`
 	Drives               bool `json:"Drives@Redfish.RequiredOnCreate"`
 }
+
+// CapLinks - This property shall contain links to resources that are
+// related to but are not contained by, or subordinate to, the resource Capabilities.
 type CapLinks struct {
 	TargetCollection *Link `json:"TargetCollection,omitempty"`
 }
+
+// VolumeCollection - This collection shall contain references to all Volume resource
+// instances sharing the same parent resource.
 type VolumeCollection struct {
 	ODataContext           string                 `json:"@odata.context,omitempty"`
 	ODataEtag              string                 `json:"@odata.etag,omitempty"`

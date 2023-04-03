@@ -317,7 +317,7 @@ func mockCacheData() {
 	subscriptionsCache["11081de0-4859-984c-c35a-6c50732d7"] = model.EventDestination{
 		Destination: "https://10.10.10.10:8080/Destination",
 	}
-	aggregateIdToSubscriptionsMap = make(map[string]map[string]bool)
+	aggregateIDToSubscriptionsMap = make(map[string]map[string]bool)
 	emptyOriginResourceToSubscriptionsMap = make(map[string]bool, 0)
 	emptyOriginResourceToSubscriptionsMap["11081de0-4859-984c-c35a-6c50732d7"] = true
 

@@ -26,6 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Logging contains method signatures of helper functions for logging
 type Logging struct {
 	GetUserDetails func(context.Context, string) (string, string, error)
 }

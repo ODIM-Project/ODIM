@@ -234,7 +234,7 @@ func Test_getSourceId(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := getSourceId(tt.args.host)
+			got, _ := getSourceID(tt.args.host)
 			if got != tt.want {
 				t.Errorf("getSourceId() = %v, want %v", got, tt.want)
 			}
@@ -260,8 +260,8 @@ func Test_getSubscriptions(t *testing.T) {
 	}()
 	type args struct {
 		originOfCondition string
-		systemId          string
-		hostIp            string
+		systemID          string
+		hostIP            string
 	}
 	tests := []struct {
 		name                 string
@@ -272,8 +272,8 @@ func Test_getSubscriptions(t *testing.T) {
 			name: "Positive case ",
 			args: args{
 				originOfCondition: "/redfish/v1/Systems/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
-				systemId:          "e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
-				hostIp:            "10.10.10.10",
+				systemID:          "e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				hostIP:            "10.10.10.10",
 			},
 			numberOfSubscription: 5,
 		},
@@ -281,8 +281,8 @@ func Test_getSubscriptions(t *testing.T) {
 			name: "Positive case - ManagerCollection",
 			args: args{
 				originOfCondition: "/redfish/v1/Managers/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
-				systemId:          "e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
-				hostIp:            "10.10.10.10",
+				systemID:          "e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				hostIP:            "10.10.10.10",
 			},
 			numberOfSubscription: 5,
 		},
@@ -290,8 +290,8 @@ func Test_getSubscriptions(t *testing.T) {
 			name: "Positive case - ChassisCollection",
 			args: args{
 				originOfCondition: "/redfish/v1/Chassis/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
-				systemId:          "e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
-				hostIp:            "10.10.10.10",
+				systemID:          "e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				hostIP:            "10.10.10.10",
 			},
 			numberOfSubscription: 5,
 		},
@@ -299,8 +299,8 @@ func Test_getSubscriptions(t *testing.T) {
 			name: "Positive case - FabricsCollection",
 			args: args{
 				originOfCondition: "/redfish/v1/Fabrics/e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
-				systemId:          "e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
-				hostIp:            "10.10.10.10",
+				systemID:          "e2616735-aa1f-49d9-9e03-bb1823b3100e.1",
+				hostIP:            "10.10.10.10",
 			},
 			numberOfSubscription: 5,
 		},
@@ -308,7 +308,7 @@ func Test_getSubscriptions(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if gotSubs := getSubscriptions(tt.args.originOfCondition,
-				tt.args.systemId, tt.args.hostIp); len(gotSubs) == tt.numberOfSubscription {
+				tt.args.systemID, tt.args.hostIP); len(gotSubs) == tt.numberOfSubscription {
 				t.Errorf("getSubscriptions() = %v, want %v", gotSubs, tt.numberOfSubscription)
 			}
 		})
@@ -400,7 +400,7 @@ func Test_addSubscriptionCache(t *testing.T) {
 
 	type args struct {
 		key            string
-		subscriptionId string
+		subscriptionID string
 	}
 	tests := []struct {
 		name string
@@ -410,25 +410,25 @@ func Test_addSubscriptionCache(t *testing.T) {
 			name: "Positive test - Collection",
 			args: args{
 				key:            "SystemsCollection",
-				subscriptionId: "SystemsCollection",
+				subscriptionID: "SystemsCollection",
 			},
 		}, {
 			name: "Positive test - UUID",
 			args: args{
 				key:            "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
-				subscriptionId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
+				subscriptionID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
 			},
 		}, {
 			name: "Positive test - Host",
 			args: args{
 				key:            "10.10.10.10",
-				subscriptionId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
+				subscriptionID: "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			addSubscriptionCache(tt.args.key, tt.args.subscriptionId)
+			addSubscriptionCache(tt.args.key, tt.args.subscriptionID)
 		})
 	}
 }
@@ -440,7 +440,7 @@ func Test_getSystemSubscriptionList(t *testing.T) {
 	pc.LoadSubscriptionData(mockContext())
 	mockCacheData()
 	type args struct {
-		hostIp string
+		hostIP string
 	}
 	tests := []struct {
 		name     string
@@ -450,7 +450,7 @@ func Test_getSystemSubscriptionList(t *testing.T) {
 		{
 			name: "Positive case",
 			args: args{
-				hostIp: "100.100.100.100",
+				hostIP: "100.100.100.100",
 			},
 			wantSubs: []dmtf.EventDestination{model.EventDestination{
 				Destination: "https://10.10.10.10:8080/Destination",
@@ -459,7 +459,7 @@ func Test_getSystemSubscriptionList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotSubs := getSystemSubscriptionList(tt.args.hostIp); !reflect.DeepEqual(gotSubs, tt.wantSubs) {
+			if gotSubs := getSystemSubscriptionList(tt.args.hostIP); !reflect.DeepEqual(gotSubs, tt.wantSubs) {
 				t.Errorf("getSystemSubscriptionList() = %v, want %v", gotSubs, tt.wantSubs)
 			}
 		})

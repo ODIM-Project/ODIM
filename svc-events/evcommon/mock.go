@@ -692,6 +692,8 @@ func MockDeleteUndeliveredEventsFlag(destination string) error {
 func MockDeleteUndeliveredEvents(destination string) error {
 	return nil
 }
+
+// MockContext creates a context for unit test
 func MockContext() context.Context {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, common.TransactionID, "xyz")

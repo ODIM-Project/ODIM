@@ -31,8 +31,11 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+// TLSConfig is a custom type created for for function declaration
 type TLSConfig func(*config.PluginConfig) (*tls.Config, error)
 
+// GetTLSConfig gets the plugin configuration and returns the tls client configuration
+// for redis server authentication
 var GetTLSConfig TLSConfig = func(c *config.PluginConfig) (*tls.Config, error) {
 	caCert, err := ioutil.ReadFile(c.PKIRootCAPath)
 	if err != nil {

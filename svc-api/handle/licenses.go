@@ -35,6 +35,7 @@ type LicenseRPCs struct {
 	InstallLicenseServiceRPC func(ctx context.Context, req licenseproto.InstallLicenseRequest) (*licenseproto.GetLicenseResponse, error)
 }
 
+// GetLicenseService returns license service response
 func (lcns *LicenseRPCs) GetLicenseService(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()

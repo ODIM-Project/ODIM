@@ -34,6 +34,7 @@ import (
 type Role struct {
 }
 
+// helper functions
 var (
 	CheckSessionTimeOutFunc = auth.CheckSessionTimeOut
 	UpdateLastUsedTimeFunc  = session.UpdateLastUsedTime
@@ -290,7 +291,7 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest) (*roleproto.RoleResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)	
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{

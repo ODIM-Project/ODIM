@@ -24,6 +24,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
+// helper functions
 var (
 	ClientFunc           = services.ODIMService.Client
 	NewAccountClientFunc = accountproto.NewAccountClient

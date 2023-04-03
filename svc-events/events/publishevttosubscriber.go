@@ -97,16 +97,16 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 		logging.Error("failed to unmarshal the incoming event: ", requestData, " with the error: ", err.Error())
 		return false
 	}
-	systemId, err := getSourceId(host)
+	systemID, err := getSourceID(host)
 	if err != nil {
 		logging.Info("no origin resources found in device subscriptions")
 		return false
 	}
-	message, deviceUUID = formatEvent(rawMessage, systemId, host)
+	message, deviceUUID = formatEvent(rawMessage, systemID, host)
 	eventMap := make(map[string][]common.Event)
 
 	for index, inEvent := range message.Events {
-		subscriptions := getSubscriptions(inEvent.OriginOfCondition.Oid, systemId, host)
+		subscriptions := getSubscriptions(inEvent.OriginOfCondition.Oid, systemID, host)
 		for _, sub := range subscriptions {
 			if filterEventsToBeForwarded(ctx, sub, inEvent, sub.OriginResources) {
 				eventMap[sub.Destination] = append(eventMap[sub.Destination], inEvent)

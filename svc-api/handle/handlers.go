@@ -1273,6 +1273,8 @@ func UpdateServiceMethodNotAllowed(ctx iris.Context) {
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
 }
+
+// MethodNotAllowed fills status code and status message for MethodNotAllowed responses
 func MethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")

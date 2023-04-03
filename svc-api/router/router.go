@@ -27,9 +27,9 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	loggingService "github.com/ODIM-Project/ODIM/lib-utilities/logService"
 	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	loggingService "github.com/ODIM-Project/ODIM/lib-utilities/logservice"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
@@ -215,7 +215,7 @@ func Router() *iris.Application {
 	// Parses the URL and performs URL decoding for path
 	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		ctx := r.Context()		
+		ctx := r.Context()
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {

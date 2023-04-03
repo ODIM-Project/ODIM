@@ -27,6 +27,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
+// helper functions
 var (
 	NewGetTaskServiceClientFunc = taskproto.NewGetTaskServiceClient
 )

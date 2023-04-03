@@ -27,6 +27,7 @@ import (
 // Auth struct helps to register service
 type Auth struct{}
 
+// helper functions
 var (
 	AuthFunc = auth.Auth
 )
@@ -36,7 +37,7 @@ var (
 func (a *Auth) IsAuthorized(ctx context.Context, req *authproto.AuthRequest) (*authproto.AuthResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)	
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
 	var resp authproto.AuthResponse
 	l.LogWithFields(ctx).Info("Validating if the session is authorized")
 	statusCode, errorMessage := AuthFunc(ctx, req)

@@ -226,13 +226,13 @@ func addSystemIDToAggregateCache(aggregateID string, aggregate evmodel.Aggregate
 	}
 }
 
-// getSourceID function return system id corresponding host, if not found then return host
-func getSourceID(host string) (string, error) {
+// getSourceId function return system id corresponding host, if not found then return host
+func getSourceId(host string) (string, error) {
+	if strings.Contains(host, "Collection") {
+		return host, nil
+	}
 	data, isExists := eventSourceToManagerIDMap[host]
 	if !isExists {
-		if strings.Contains(host, "Collection") {
-			return host, nil
-		}
 		return "", fmt.Errorf("invalid source")
 	}
 	return data, nil
@@ -340,6 +340,9 @@ func getCollectionKey(oid, host string) (key string) {
 		key = "ManagerCollection"
 	} else if strings.Contains(oid, "Fabrics") && host != "FabricsCollection" {
 		key = "FabricsCollection"
+	}
+	if strings.Contains(host, "Collection") {
+		key = host
 	}
 	return
 }

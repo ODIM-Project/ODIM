@@ -27,6 +27,7 @@ service Events {
     rpc RemoveEventSubscriptionsRPC(EventUpdateRequest) returns (SubscribeEMBResponse){}
     rpc IsAggregateHaveSubscription(EventUpdateRequest) returns (SubscribeEMBResponse){}
     rpc DeleteAggregateSubscriptionsRPC(EventUpdateRequest) returns (SubscribeEMBResponse){}
+    rpc UpdateSubscriptionLocationRPC(UpdateSubscriptionLocation) returns (SubscribeEMBResponse) {}
 }
 
 message EventSubRequest {
@@ -71,4 +72,9 @@ message SubscribeEMBRequest{
 
 message SubscribeEMBResponse{
     bool Status=1;
+}
+
+message UpdateSubscriptionLocation{
+    string Location=1;
+    string Host=2;
 }

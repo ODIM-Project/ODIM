@@ -97,7 +97,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 		logging.Error("failed to unmarshal the incoming event: ", requestData, " with the error: ", err.Error())
 		return false
 	}
-	systemID, err := getSourceID(host)
+	systemID, err := getSourceId(host)
 	if err != nil {
 		logging.Info("no origin resources found in device subscriptions")
 		return false

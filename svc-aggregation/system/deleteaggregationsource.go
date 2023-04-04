@@ -33,7 +33,8 @@ import (
 )
 
 // DeleteAggregationSources is used to delete aggregation sources
-func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID string, targetURI string, req *aggregatorproto.AggregatorRequest) error {
+func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID string, targetURI string,
+	req *aggregatorproto.AggregatorRequest, sessionName string) error {
 	var task = common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       targetURI,
@@ -57,7 +58,7 @@ func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID
 		go runtime.Goexit()
 	}
 	l.LogWithFields(ctx).Debugf("request data for delete aggregation source: %s", string(req.RequestBody))
-	data := e.DeleteAggregationSource(ctx, req)
+	data := e.DeleteAggregationSource(ctx, req, sessionName)
 	err = e.UpdateTask(ctx, common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       targetURI,
@@ -82,7 +83,7 @@ func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID
 }
 
 // DeleteAggregationSource is the handler for removing  bmc or manager
-func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {
+func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, sessionName string) response.RPC {
 	var resp response.RPC
 
 	aggregationSource, dbErr := agmodel.GetAggregationSourceInfo(ctx, req.URL)
@@ -141,7 +142,7 @@ func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *ag
 		}
 		for _, systemURI := range systemList {
 			index := strings.LastIndexAny(systemURI, "/")
-			resp = e.deleteCompute(ctx, systemURI, index, target.PluginID)
+			resp = e.deleteCompute(ctx, systemURI, index, target.PluginID, sessionName)
 		}
 		removeAggregationSourceFromAggregates(ctx, systemList)
 	}
@@ -363,7 +364,7 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 	return resp
 }
 
-func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index int, pluginID string) response.RPC {
+func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index int, pluginID string, sessionToken string) response.RPC {
 	var resp response.RPC
 	// check whether the any system operation is under progress
 	systemOperation, dbErr := agmodel.GetSystemOperationInfo(ctx, strings.TrimSuffix(key, "/"))
@@ -416,7 +417,7 @@ func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index
 		}
 	}()
 	// Delete Subscription on odimra and also on device
-	subResponse, err := e.DeleteEventSubscription(ctx, key)
+	subResponse, err := e.DeleteEventSubscription(ctx, key, sessionToken)
 	if err != nil && subResponse == nil {
 		errMsg := fmt.Sprintf("error while trying to delete subscriptions: %v", err)
 		l.LogWithFields(ctx).Error(errMsg)

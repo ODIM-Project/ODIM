@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -40,8 +41,10 @@ const (
 	RediscoverResourcesActionName = "RediscoverResources"
 )
 
+var mutex sync.Mutex
+
 // RediscoverSystemInventory  is the handler for redicovering system whenever the restrat event detected in event service
-//It deletes old data and  Discovers Computersystem & Chassis and its top level odata.ID links and store them in inmemory db.
+// It deletes old data and  Discovers Computersystem & Chassis and its top level odata.ID links and store them in inmemory db.
 func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, deviceUUID, systemURL string, updateFlag bool) {
 	l.LogWithFields(ctx).Info("Rediscovery of the BMC with ID " + deviceUUID + " is started.")
 
@@ -183,14 +186,14 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 	l.LogWithFields(ctx).Info("Rediscovery of the BMC with ID " + deviceUUID + " is now complete.")
 }
 
-//RediscoverResources is a function to rediscover the server inventory,
+// RediscoverResources is a function to rediscover the server inventory,
 // in the event of InMemory DB crashed and/or rebooted all of the content/inventory
 // in the Inmemory DB is gone. So to repopulate the inventory of all the added server,
 // this function can be used.
-//Takes: None
-//Returns: error
+// Takes: None
+// Returns: error
 // On success nil
-//On Failure Non nil
+// On Failure Non nil
 func (e *ExternalInterface) RediscoverResources() error {
 	// First check if the redicovery requires.
 	// InMemory DB is just fine most of the times.
@@ -367,6 +370,8 @@ func deleteResourceResetInfo(ctx context.Context, pattern string) {
 func deleteSubordinateResource(ctx context.Context, deviceUUID string) {
 	l.LogWithFields(ctx).Info("Initiated removal of subordinate resource for the BMC with ID " +
 		deviceUUID + " from the in-memory DB")
+	mutex.Lock()
+	defer mutex.Unlock()
 	keys, err := agmodel.GetAllMatchingDetails("*", deviceUUID, common.InMemory)
 	if err != nil {
 		l.LogWithFields(ctx).Error("Unable to fetch all matching keys from system reset table: " + err.Error())

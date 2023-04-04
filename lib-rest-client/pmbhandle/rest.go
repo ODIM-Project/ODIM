@@ -64,7 +64,7 @@ func ContactPlugin(ctx context.Context, url, method, token string, odataID strin
 		l.Log.Error(err.Error())
 		return nil, err
 	}
-	req = CreateHeader(req, ctx)
+	req = CreateHeader(ctx, req)
 	// indicate to close the request created
 	req.Close = true
 
@@ -126,18 +126,18 @@ func ContactPluginWithAuth(ctx context.Context, req PluginContactRequest, server
 }
 
 // CreateHeader is used to get data from context and set it to header for http request call
-func CreateHeader(req *http.Request, ctx context.Context) *http.Request {
+func CreateHeader(ctx context.Context, req *http.Request) *http.Request {
 	if ctx.Value("transactionid") != nil {
-		transactionId := ctx.Value("transactionid").(string)
-		actionId := ctx.Value("actionid").(string)
+		transactionID := ctx.Value("transactionid").(string)
+		actionID := ctx.Value("actionid").(string)
 		actionName := ctx.Value("actionname").(string)
-		threadId := ctx.Value("threadid").(string)
+		threadID := ctx.Value("threadid").(string)
 		threadName := ctx.Value("threadname").(string)
 		processName := ctx.Value("processname").(string)
-		req.Header.Set(common.TransactionID, transactionId)
-		req.Header.Set(common.ActionID, actionId)
+		req.Header.Set(common.TransactionID, transactionID)
+		req.Header.Set(common.ActionID, actionID)
 		req.Header.Set(common.ActionName, actionName)
-		req.Header.Set(common.ThreadID, threadId)
+		req.Header.Set(common.ThreadID, threadID)
 		req.Header.Set(common.ThreadName, threadName)
 		req.Header.Set(common.ProcessName, processName)
 	}

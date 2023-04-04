@@ -31,6 +31,7 @@ type OverWritePolicy string
 // This property shall indicate whether and why this component is available.
 type State string
 
+// The below constants are the states that a task can have
 const (
 	// This value shall represent that the task is newly created,
 	// but has not started.
@@ -71,6 +72,7 @@ const (
 	TaskStateCancelled TaskState = "Cancelled"
 )
 
+// Below constants represents the health conditions that a resource can have
 const (
 	// Health is Normal.
 	HealthOK Health = "OK"
@@ -80,6 +82,7 @@ const (
 	HealthCritical Health = "Critical"
 )
 
+// Below constants represents the overwrite policies
 const (
 	// Completed tasks are not automatically overwritten.
 	OverWritePolicyManual OverWritePolicy = "Manual"
@@ -87,6 +90,7 @@ const (
 	OverWritePolicyOldest OverWritePolicy = "Oldest"
 )
 
+// Below constants represents the states that a resource can have
 const (
 	// This function or resource is enabled.
 	StateEnabled State = "Enabled"
@@ -220,7 +224,7 @@ type Conditions struct {
 	LogEntry          *Link    `json:"LogEntry,omitempty"`
 	Message           string   `json:"Message,omitempty"`
 	MessageArgs       []string `json:"MessageArgs,omitempty"`
-	MessageId         string   `json:"MessageId"`
+	MessageID         string   `json:"MessageId"`
 	OriginOfCondition *Link    `json:"OriginOfCondition,omitempty"`
 	Resolution        string   `json:"Resolution,omitempty"`
 	Severity          Health   `json:"Severity,omitempty"`

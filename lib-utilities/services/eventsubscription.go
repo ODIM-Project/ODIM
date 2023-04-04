@@ -43,10 +43,11 @@ func SubscribeToEMB(ctx context.Context, pluginID string, queueList []string) er
 }
 
 // DeleteSubscription  calls the event service and delete all subscription realated to that server
-func DeleteSubscription(ctx context.Context, uuid string) (*eventsproto.EventSubResponse, error) {
+func DeleteSubscription(ctx context.Context, uuid string, sessionToken string) (*eventsproto.EventSubResponse, error) {
 	var resp eventsproto.EventSubResponse
 	req := eventsproto.EventRequest{
-		UUID: uuid,
+		UUID:         uuid,
+		SessionToken: sessionToken,
 	}
 	conn, errConn := ODIMService.Client(Events)
 	if errConn != nil {

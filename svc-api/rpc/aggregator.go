@@ -24,6 +24,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
+// helper functions
 var (
 	NewAggregatorClientFunc = aggregatorproto.NewAggregatorClient
 )

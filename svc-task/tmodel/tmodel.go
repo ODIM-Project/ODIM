@@ -458,3 +458,9 @@ func dequeueTask(queue *chan *Task) *Task {
 	}
 	return <-*queue
 }
+
+type SubscriptionCreate struct {
+	Location string      `json:"location"`
+	Host     string      `json:"host"`
+	Body     interface{} `json:"body"`
+}

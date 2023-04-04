@@ -104,7 +104,6 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 	}
 	message, deviceUUID = formatEvent(rawMessage, systemID, host)
 	eventMap := make(map[string][]common.Event)
-
 	for index, inEvent := range message.Events {
 		subscriptions := getSubscriptions(inEvent.OriginOfCondition.Oid, systemID, host)
 		for _, sub := range subscriptions {

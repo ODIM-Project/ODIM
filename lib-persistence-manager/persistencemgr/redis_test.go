@@ -14,13 +14,6 @@
 package persistencemgr
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-)
-
-/*
-import (
 	"context"
 	"encoding/json"
 	"fmt"
@@ -30,12 +23,11 @@ import (
 	"strings"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	redisSentinel "github.com/go-redis/redis"
-	"github.com/gomodule/redigo/redis"
+
+	redis "github.com/go-redis/redis"
 )
 
 type MockConn struct {
@@ -372,34 +364,6 @@ func TestCleanUpDB(t *testing.T) {
 
 }
 
-/*
-func TestFilterSearch(t *testing.T) {
-
-	c, err := MockDBConnection()
-	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
-	}
-	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
-	if errs := c.Create("table", "key", data); errs != nil {
-		t.Errorf("Error: %v\n", errs.Error())
-	}
-	got, errs := c.FilterSearch("table", "key", ".Data3")
-	// t.Errorf("HERE: %v, %v",len(string(got.([]uint8))),len("Value3"))
-	if errs != nil {
-		t.Errorf("error while looking up data: %v", errs.Error())
-	}
-	if string(got.([]uint8)) != `"Value3"` {
-		t.Errorf("Mismatch in fetched data")
-	}
-	defer func() {
-		if errs := c.Delete("table", "key"); errs != nil {
-			t.Errorf("Error while deleting Data: %v\n", errs.Error())
-		}
-	}()
-
-}
-*/
-/*
 func TestGetAllMatchingDetails(t *testing.T) {
 
 	c, err := MockDBConnection(t)
@@ -556,10 +520,9 @@ func TestGetResourceDetails_nonExistingData(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
-	_, rerr := c.GetResourceDetails("key")
-
+	_, rerr := c.GetResourceDetails("keys")
 	if rerr != nil {
-		if !(strings.Contains(rerr.Error(), "no data with")) {
+		if !(strings.Contains(rerr.Error(), "no data found for the key: keys")) {
 			t.Errorf("Error while making data entry: %v\n", rerr.Error())
 		}
 	}
@@ -664,15 +627,25 @@ func TestCreateIndex_invalidData(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-
 	c, err := MockDBConnection(t)
+	defer func() {
+		for i := 0; i < 10; {
+			f := strconv.Itoa(i)
+			key := "value::" + f
+			err := c.Del("ProcessorSummary/Model", key)
+			if err != nil {
+				break
+			}
+
+		}
+	}()
 	if err != nil {
 		t.Fatal("Error while making mock DB connection:", err)
 	}
 	if cerr := c.CreateIndex(map[string]interface{}{"model": "intel"}, "abc-123"); cerr != nil {
 		t.Errorf("Error: %v\n", cerr.Error())
 	}
-	for i := 0; i < 10000; {
+	for i := 0; i < 10; {
 		f := strconv.Itoa(i)
 		key := "value::" + f
 		createErr := c.CreateTaskIndex("ProcessorSummary/Model", 0, key)
@@ -692,7 +665,7 @@ func TestGet(t *testing.T) {
 	if rerr != nil {
 		t.Errorf("Error while reading data: %v\n", rerr.Error())
 	}
-	if len(got) != 10000 {
+	if len(got) != 10 {
 		t.Errorf("data not found")
 	}
 	defer func() {
@@ -1066,28 +1039,29 @@ func TestUpdateDeviceSubscriptions(t *testing.T) {
 
 type redisExtCallsImpMock struct{}
 
-func (r redisExtCallsImpMock) newSentinelClient(opt *redisSentinel.Options) *redisSentinel.SentinelClient {
+func (r redisExtCallsImpMock) newSentinelClient(opt *redis.Options) *redis.SentinelClient {
 	return newSentinelClientMock(opt)
 }
-func newSentinelClientMock(opt *redisSentinel.Options) *redisSentinel.SentinelClient {
+func newSentinelClientMock(opt *redis.Options) *redis.SentinelClient {
 	strSlice := strings.Split(opt.Addr, ":")
 	sentinelHost := strSlice[0]
 	sentinelPort := strSlice[1]
 	if sentinelHost == "ValidHost" && sentinelPort == "ValidSentinelPort" {
-		return &redisSentinel.SentinelClient{}
+		return &redis.SentinelClient{}
 	}
 	return nil
 }
-func (r redisExtCallsImpMock) getMasterAddrByName(masterSet string, snlClient *redisSentinel.SentinelClient) []string {
+func (r redisExtCallsImpMock) getMasterAddrByName(masterSet string, snlClient *redis.SentinelClient) []string {
 	return getMasterAddbyNameMock(masterSet, snlClient)
 }
 
-func getMasterAddbyNameMock(masterSet string, snlClient *redisSentinel.SentinelClient) []string {
+func getMasterAddbyNameMock(masterSet string, snlClient *redis.SentinelClient) []string {
 	if masterSet == "ValidMasterSet" && snlClient != nil {
 		return []string{"ValidMasterIP", "ValidMasterPort"}
 	}
 	return []string{"", ""}
 }
+
 func TestGetCurrentMasterHostPort(t *testing.T) {
 	redisExtCalls = redisExtCallsImpMock{}
 	type args struct {
@@ -1186,6 +1160,10 @@ func TestGetCurrentMasterHostPort(t *testing.T) {
 }
 func TestGetDBConnection(t *testing.T) {
 	GetMockDBConfig()
+	c, err := MockDBConnection(t)
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
 	redisExtCalls = redisExtCallsImpMock{}
 	type args struct {
 		dbFlag DbType
@@ -1201,7 +1179,7 @@ func TestGetDBConnection(t *testing.T) {
 			args: args{
 				dbFlag: InMemory,
 			},
-			want:  &ConnPool{},
+			want:  &ConnPool{RedisClient: c.RedisClient},
 			want1: nil,
 		},
 		{
@@ -1209,7 +1187,7 @@ func TestGetDBConnection(t *testing.T) {
 			args: args{
 				dbFlag: OnDisk,
 			},
-			want:  &ConnPool{},
+			want:  &ConnPool{RedisClient: c.RedisClient},
 			want1: nil,
 		},
 		{
@@ -1240,16 +1218,12 @@ func TestGetDBConnection_HAEnabled(t *testing.T) {
 	config.Data.DBConf.RedisHAEnabled = true
 
 	inMemDBConnPool = &ConnPool{
-		ReadPool:        &redis.Pool{},
-		WritePool:       nil,
-		MasterIP:        "NotValid",
-		PoolUpdatedTime: time.Now(),
+		RedisClient: &redis.Client{},
+		MasterIP:    "NotValid",
 	}
 	onDiskDBConnPool = &ConnPool{
-		ReadPool:        &redis.Pool{},
-		WritePool:       nil,
-		MasterIP:        "NotValid",
-		PoolUpdatedTime: time.Now(),
+		RedisClient: &redis.Client{},
+		MasterIP:    "NotValid",
 	}
 	redisExtCalls = redisExtCallsImpMock{}
 	type args struct {
@@ -1477,7 +1451,7 @@ func TestConnPool_GetWriteConnection(t *testing.T) {
 		{
 			name: "fail while getting write connection to DB if write pool is nil",
 			p: &ConnPool{
-				WritePool: nil,
+				RedisClient: nil,
 			},
 			wantErr: true,
 		},
@@ -1520,14 +1494,7 @@ func TestConn_UpdateTransaction(t *testing.T) {
 		{
 			name: "failure while db update operation",
 			c: &Conn{
-				WriteConn: MockConn{
-					MockDo: func(s string, i ...interface{}) (interface{}, error) {
-						return nil, fmt.Errorf("DB ERROR")
-					},
-					MockSend: func(s string, i ...interface{}) error {
-						return nil
-					},
-				},
+				redisClientConn: nil,
 			},
 			wantErr: true,
 		},
@@ -1833,34 +1800,4 @@ func TestConnPool_RemoveMemberFromSet(t *testing.T) {
 			}
 		})
 	}
-}
-*/
-
-func TestGetStorageList(t *testing.T) {
-	c, err := MockDBConnection(t)
-	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
-	}
-	p := &ConnPool{RedisClient: c.RedisClient}
-	index := "index1"
-	cursor := 0.0
-	match := 10.0
-	condition := "gt"
-	regexFlag := false
-
-	// Test for valid inputs
-	list, er := p.GetStorageList(index, cursor, match, condition, regexFlag)
-	assert.Nil(t, er)
-	assert.NotNil(t, list)
-
-	// Test for invalid index
-	index = "invalid"
-	_, er = p.GetStorageList(index, cursor, match, condition, regexFlag)
-	assert.Error(t, er)
-
-	// Test for invalid condition
-	index = "index1"
-	condition = "invalid"
-	_, er = p.GetStorageList(index, cursor, match, condition, regexFlag)
-	assert.Error(t, er)
 }

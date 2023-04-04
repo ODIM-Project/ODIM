@@ -52,7 +52,7 @@ type TasksRPC struct {
 	AuthenticationRPC                func(ctx context.Context, sessionToken string, privileges []string) (response.RPC, error)
 	GetSessionUserNameRPC            func(ctx context.Context, sessionToken string) (string, error)
 	GetTaskStatusModel               func(ctx context.Context, taskID string, db common.DbType) (*tmodel.Task, error)
-	GetMultipleTaskKeysModel         func(ctx context.Context, taskIDs []interface{}, db common.DbType) (*[]tmodel.Task, error)
+	GetMultipleTaskKeysModel         func(ctx context.Context, taskIDs []string, db common.DbType) (*[]tmodel.Task, error)
 	GetAllTaskKeysModel              func(ctx context.Context) ([]string, error)
 	TransactionModel                 func(ctx context.Context, key string, cb func(context.Context, string) error) error
 	OverWriteCompletedTaskUtilHelper func(ctx context.Context, userName string) error
@@ -1225,7 +1225,7 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 }
 
 func (ts *TasksRPC) validateChildTasksAndUpdateParentTask(ctx context.Context, childIDs []string, taskID string, parentTask *tmodel.Task) error {
-	s := make([]interface{}, len(childIDs))
+	s := make([]string, len(childIDs))
 	for i, v := range childIDs {
 		if v != taskID {
 			s[i] = "task:" + v

@@ -13,7 +13,6 @@
 // under the License.
 package persistencemgr
 
-/*
 import (
 	"testing"
 )
@@ -28,4 +27,3 @@ func TestGetMockDBConfig(t *testing.T) {
 	}
 
 }
-*/

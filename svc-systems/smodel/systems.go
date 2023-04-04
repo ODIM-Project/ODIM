@@ -167,21 +167,12 @@ func FindAll(table, key string) ([][]byte, error) {
 func scan(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {
 	var (
 		cursor int64
-		items  []interface{}
 	)
 
 	results := make([]interface{}, 0)
 
 	for {
 		values, cursor, err := cp.RedisClient.Scan(uint64(cursor), key, 0).Result()
-		if err != nil {
-			return nil, err
-		}
-		val := make([]interface{}, len(values))
-		for i, s := range values {
-			val[i] = s
-		}
-		_, err = persistencemgr.Scan(val, &cursor, &items)
 		if err != nil {
 			return nil, err
 		}

@@ -15,7 +15,13 @@
 // Package persistencemgr provides an  interfaces for database communication
 package persistencemgr
 
-/*
+import (
+	"testing"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+)
+
 // MockDBConnection provides a mock db for unit testing
 func MockDBConnection(t *testing.T) (*ConnPool, *errors.Error) {
 	config.SetUpMockConfig(t)
@@ -23,7 +29,9 @@ func MockDBConnection(t *testing.T) (*ConnPool, *errors.Error) {
 	if err != nil {
 		return nil, errors.PackError(errors.UndefinedErrorType, "error while trying to initiate mock db: ", err)
 	}
-	return cfg.Connection()
+	client, _ := goRedisNewClient(cfg)
+
+	return &ConnPool{RedisClient: client}, nil
 }
 
 // MockDBWriteConnection provides a mock db write connection for unit testing
@@ -54,6 +62,7 @@ func GetMockDBConfig() (*Config, *errors.Error) {
 		MaxIdleConns:          config.DefaultDBMaxIdleConns,
 		MaxActiveConns:        config.DefaultDBMaxActiveConns,
 		RedisInMemoryPassword: []byte("redis_password"),
+		RedisOnDiskPassword:   []byte("redis_password"),
 	}
 	config := &Config{
 		Port:     config.Data.DBConf.InMemoryPort,
@@ -64,4 +73,3 @@ func GetMockDBConfig() (*Config, *errors.Error) {
 
 	return config, nil
 }
-*/

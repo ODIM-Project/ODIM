@@ -116,17 +116,6 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string, error) {
 	return masterIP, masterPort, nil
 }
 
-func retryForMasterIP(pool *ConnPool, config *Config) (currentMasterIP, currentMasterPort string) {
-	for i := 0; i < 120; i++ {
-		currentMasterIP, currentMasterPort, _ = GetCurrentMasterHostPort(config)
-		if currentMasterIP != "" {
-			break
-		}
-		time.Sleep(1 * time.Second)
-	}
-	return
-}
-
 func getInMemoryDBConfig() *Config {
 	return &Config{
 		Port:         config.Data.DBConf.InMemoryPort,
@@ -212,9 +201,12 @@ func goRedisNewClient(dbConfig *Config) (*redis.Client, error) {
 
 // GetWriteConnection retrieve a write connection from the connection pool
 func (p *ConnPool) GetWriteConnection() (*Conn, *errors.Error) {
-	return &Conn{
-		redisClientConn: p.RedisClient,
-	}, nil
+	if p.RedisClient != nil {
+		return &Conn{
+			redisClientConn: p.RedisClient,
+		}, nil
+	}
+	return nil, errors.PackError(errors.DBConnFailed)
 }
 
 func getTLSConfig() (*tls.Config, error) {
@@ -324,34 +316,27 @@ func (p *ConnPool) Read(table, key string) (string, *errors.Error) {
 }
 
 // ReadMultipleKeys function is used to read data for multiple keys from DB
-func (p *ConnPool) ReadMultipleKeys(key []interface{}) ([]string, *errors.Error) {
-	readConn := p.ReadPool.Get()
-	defer readConn.Close()
-	var (
-		value interface{}
-		err   error
-	)
-	value, err = readConn.Do("MGET", key...)
+func (p *ConnPool) ReadMultipleKeys(key []string) ([]string, *errors.Error) {
+	value, err := p.RedisClient.MGet(key...).Result()
 	if err != nil {
-
-		if err.Error() == "redigo: nil returned" {
-			return nil, errors.PackError(errors.DBKeyNotFound, "no data with the key ", key, " found")
-		}
 		if errs, aye := isDbConnectError(err); aye {
 			return nil, errs
 		}
 		return nil, errors.PackError(errors.DBKeyFetchFailed, errorCollectingData, err)
 	}
 
-	if value == nil {
+	if len(value) < 1 {
 		return nil, errors.PackError(errors.DBKeyNotFound, "no data with the key ", key, " found")
 	}
+	strArr := make([]string, len(value))
 
-	data, err := redis.Strings(value, err)
-	if err != nil {
-		return nil, errors.PackError(errors.UndefinedErrorType, "error while trying to convert the data into string: ", err)
+	for i, v := range value {
+		if s, ok := v.(string); ok {
+			strArr[i] = s
+		}
 	}
-	return data, nil
+
+	return strArr, nil
 }
 
 // FindOrNull is a wrapper for Read function. If requested asset doesn't exist errors.DBKeyNotFound error returned by Read is converted to nil
@@ -461,18 +446,14 @@ func (p *ConnPool) GetAllMatchingDetails(table, pattern string) ([]string, *erro
 
 // Transaction is to do a atomic operation using optimistic lock
 func (p *ConnPool) Transaction(ctx context.Context, key string, cb func(context.Context, string) error) *errors.Error {
-	err := p.RedisClient.Watch(func(tx *redis.Tx) error {
-		n, err := tx.Get(key).Int64()
-		if err != nil && err != redis.Nil {
-			return err
-		}
-
-		_, err = tx.TxPipelined(func(pipe redis.Pipeliner) error {
-			pipe.Set(key, strconv.FormatInt(n+1, 10), 0)
-			return nil
-		})
-		return err
-	}, key)
+	pipe := p.RedisClient.TxPipeline()
+	_, erre := pipe.Get(key).Result()
+	if erre != nil {
+	}
+	if err := cb(ctx, key); err != nil {
+		return errors.PackError(errors.UndefinedErrorType, err)
+	}
+	_, err := pipe.Exec()
 	if err != nil {
 		return errors.PackError(errors.UndefinedErrorType, err)
 	}
@@ -551,6 +532,9 @@ func getSortedMapKeys(m interface{}) []string {
 key of map should be the key in database.
 */
 func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
+	if c.redisClientConn == nil {
+		return errors.PackError(errors.DBConnFailed)
+	}
 	tx := c.redisClientConn.TxPipeline()
 	var partialFailure bool = false
 	keys := getSortedMapKeys(data)
@@ -689,7 +673,9 @@ func (p *ConnPool) GetResourceDetails(key string) (string, *errors.Error) {
 	for iter.Next() {
 		ID = strings.SplitN(iter.Val(), ":", 2)
 	}
-
+	if len(ID) < 1 {
+		return "", errors.PackError(errors.DBKeyNotFound, "no data found for the key: ", key)
+	}
 	return p.Read(ID[0], ID[1])
 }
 
@@ -841,17 +827,9 @@ func (p *ConnPool) CreateTaskIndex(index string, value int64, key string) error 
 */
 
 func (p *ConnPool) AddMemberToSet(key string, member string) *errors.Error {
-	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
-	errPrefix := fmt.Sprintf("error while adding member %s to the set %s: ", member, key)
-	if writePool == nil {
-		return errors.PackError(errors.DBConnFailed, errPrefix+"WritePool is nil")
-	}
-	writeConn := writePool.Get()
-	defer writeConn.Close()
-	createErr := writeConn.Send("SADD", key, member)
+	createErr := p.RedisClient.SAdd(key, member).Err()
 	if createErr != nil {
-		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
-		return errors.PackError(errors.DBUpdateFailed, errPrefix+createErr.Error())
+		return errors.PackError(errors.DBUpdateFailed, createErr.Error())
 	}
 	return nil
 }
@@ -863,10 +841,7 @@ func (p *ConnPool) AddMemberToSet(key string, member string) *errors.Error {
 */
 
 func (p *ConnPool) GetAllMembersInSet(key string) ([]string, *errors.Error) {
-	readConn := p.ReadPool.Get()
-	defer readConn.Close()
-
-	members, err := redis.Strings(readConn.Do("SMEMBERS", key))
+	members, err := p.RedisClient.SMembers(key).Result()
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
 			return members, errs
@@ -884,18 +859,9 @@ func (p *ConnPool) GetAllMembersInSet(key string) ([]string, *errors.Error) {
 */
 
 func (p *ConnPool) RemoveMemberFromSet(key string, member string) *errors.Error {
-	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
-	errPrefix := fmt.Sprintf("error while removing member %s to the set %s: ", member, key)
-
-	if writePool == nil {
-		return errors.PackError(errors.DBConnFailed, errPrefix+"WritePool is nil ")
-	}
-	writeConn := writePool.Get()
-	defer writeConn.Close()
-	deleteErr := writeConn.Send("SREM", key, member)
+	deleteErr := p.RedisClient.SRem(key, member).Err()
 	if deleteErr != nil {
-		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
-		return errors.PackError(errors.DBUpdateFailed, errPrefix+deleteErr.Error())
+		return errors.PackError(errors.DBUpdateFailed, deleteErr.Error())
 	}
 	return nil
 }
@@ -1065,8 +1031,12 @@ func (p *ConnPool) Del(index string, k string) error {
 		if getErr != nil {
 			return fmt.Errorf("error while trying to get data: " + getErr.Error())
 		}
-		if len(data) > 1 {
-			for _, resource := range data {
+		if len(data) < 1 {
+			return fmt.Errorf("no data with ID found")
+		}
+
+		for _, resource := range data {
+			if resource != "0" {
 				if delErr := p.RedisClient.ZRem(index, resource).Err(); delErr != nil {
 					if errs, aye := isDbConnectError(delErr); aye {
 						return errs
@@ -1345,7 +1315,7 @@ func (p *ConnPool) SetExpire(table, key string, data interface{}, expiretime int
 	if err != nil {
 		return errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
 	}
-	createErr := p.RedisClient.Set(saveID, jsondata, time.Duration(expiretime)).Err()
+	createErr := p.RedisClient.Set(saveID, jsondata, time.Duration(expiretime)*time.Second).Err()
 	if createErr != nil {
 		return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
 	}
@@ -1358,7 +1328,6 @@ func (p *ConnPool) SetExpire(table, key string, data interface{}, expiretime int
 func (p *ConnPool) TTL(table, key string) (int, *errors.Error) {
 	value, err := p.RedisClient.TTL(table + ":" + key).Result()
 	if err != nil {
-
 		if err.Error() == "redis: nil" {
 			return 0, errors.PackError(errors.DBKeyNotFound, "no data with the with key ", key, " found")
 		}
@@ -1403,7 +1372,7 @@ func (p *ConnPool) GetAggregateHosts(index string, match string) ([]string, erro
 		if getErr != nil {
 			return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
 		}
-		if len(data) > 1 {
+		if len(data) < 1 {
 			return []string{}, fmt.Errorf("no data found for the key: %v", match)
 
 		}

@@ -25,7 +25,7 @@ data:
     RedisAddress: redis-ondisk:6379
     {{ else }}
     # RedisAddress here is a SentinelAddress used when HA deployment is enabled
-    RedisAddress: redis-ha-ondisk.{{ .Values.odimra.namespace }}.svc.cluster.local:26379
+    RedisAddress: redis-ha-ondisk-sentinel.{{ .Values.odimra.namespace }}.svc.cluster.local:26379
     SentinelMasterName: {{ .Values.urplugin.sentinelMasterName }}
     {{ end }}
     TLSConf:

@@ -446,15 +446,20 @@ func (p *ConnPool) GetAllMatchingDetails(table, pattern string) ([]string, *erro
 
 // Transaction is to do a atomic operation using optimistic lock
 func (p *ConnPool) Transaction(ctx context.Context, key string, cb func(context.Context, string) error) *errors.Error {
-	pipe := p.RedisClient.TxPipeline()
-	_, erre := pipe.Get(key).Result()
-	if erre != nil {
-		return errors.PackError(errors.UndefinedErrorType, erre)
-	}
-	if err := cb(ctx, key); err != nil {
-		return errors.PackError(errors.UndefinedErrorType, err)
-	}
-	_, err := pipe.Exec()
+	err := p.RedisClient.Watch(func(tx *redis.Tx) error {
+		_, err := tx.Get(key).Result()
+		if err != nil && err != redis.Nil {
+			return err
+		}
+
+		_, err = tx.TxPipelined(func(pipe redis.Pipeliner) error {
+			if err := cb(ctx, key); err != nil {
+				return errors.PackError(errors.UndefinedErrorType, err)
+			}
+			return nil
+		})
+		return err
+	}, key)
 	if err != nil {
 		return errors.PackError(errors.UndefinedErrorType, err)
 	}
@@ -1092,7 +1097,7 @@ func (p *ConnPool) GetEvtSubscriptions(index, searchKey string) ([]string, error
 	}
 	if len(d) > 1 {
 		for i := 0; i < len(d); i++ {
-			if d[i] != "" {
+			if d[i] != "0" {
 				getList = append(getList, d[i])
 			}
 		}
@@ -1362,11 +1367,12 @@ func (p *ConnPool) CreateAggregateHostIndex(index, aggregateID string, hostIP []
 // TODO : Handle cursor
 func (p *ConnPool) GetAggregateHosts(index string, match string) ([]string, error) {
 	var data []string
-	const cursor float64 = 0
+	var (
+		cursor uint64
+	)
 
-	currentCursor := cursor
 	for {
-		data, cursorVal, getErr := p.RedisClient.ZScan(index, uint64(currentCursor), match, count).Result()
+		data, cursorVal, getErr := p.RedisClient.ZScan(index, uint64(cursor), match, count).Result()
 		if getErr != nil {
 			return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
 		}
@@ -1374,11 +1380,15 @@ func (p *ConnPool) GetAggregateHosts(index string, match string) ([]string, erro
 			return []string{}, fmt.Errorf("no data found for the key: %v", match)
 
 		}
+		if len(data) > 1 {
+			return data, nil
+		}
 
 		// stop when the cursor is 0
 		if cursorVal == 0 {
 			break
 		}
+		cursor = cursorVal
 	}
 	return data, nil
 }

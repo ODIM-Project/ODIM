@@ -190,17 +190,19 @@ func scan(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {
 	)
 
 	results := make([]interface{}, 0)
-
-	for {
-		values, cursor, err := cp.RedisClient.Scan(uint64(cursor), key, 0).Result()
-		if err != nil {
-			return nil, err
-		}
-		for _, s := range values {
-			results = append(results, s)
-		}
-		if cursor == 0 {
-			break
+	if key != "" {
+		for {
+			values, nxtcursor, err := cp.RedisClient.Scan(uint64(cursor), key, 0).Result()
+			if err != nil {
+				return nil, err
+			}
+			for _, s := range values {
+				results = append(results, s)
+			}
+			if nxtcursor == 0 {
+				break
+			}
+			cursor = int64(nxtcursor)
 		}
 	}
 

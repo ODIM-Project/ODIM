@@ -41,7 +41,7 @@ run_forever()
 start_dellplugin()
 {
 	export PLUGIN_CONFIG_FILE_PATH=/etc/dellplugin_config/config.json
-	nohup /bin/plugin-dell >> /var/log/dellplugin_logs/dellplugin.log 2>&1 &
+	/bin/plugin-dell  2>&1 | tee /var/log/dellplugin_logs/dellplugin.log
 	PID=$!
 	sleep 3
 

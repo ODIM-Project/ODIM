@@ -55,7 +55,7 @@ const (
 
 // Conn contains the write connection instance retrieved from the connection pool
 type Conn struct {
-	redisClientConn *redis.Client
+	RedisClientConn *redis.Client
 }
 
 // RedisExternalCalls containes the methods to make calls to external client libraries of Redis DB
@@ -203,7 +203,7 @@ func goRedisNewClient(dbConfig *Config) (*redis.Client, error) {
 func (p *ConnPool) GetWriteConnection() (*Conn, *errors.Error) {
 	if p.RedisClient != nil {
 		return &Conn{
-			redisClientConn: p.RedisClient,
+			RedisClientConn: p.RedisClient,
 		}, nil
 	}
 	return nil, errors.PackError(errors.DBConnFailed)
@@ -449,6 +449,7 @@ func (p *ConnPool) Transaction(ctx context.Context, key string, cb func(context.
 	pipe := p.RedisClient.TxPipeline()
 	_, erre := pipe.Get(key).Result()
 	if erre != nil {
+		return errors.PackError(errors.UndefinedErrorType, erre)
 	}
 	if err := cb(ctx, key); err != nil {
 		return errors.PackError(errors.UndefinedErrorType, err)
@@ -493,14 +494,14 @@ func (p *ConnPool) SaveBMCInventory(data map[string]interface{}) *errors.Error {
 
 // Close closes the write connection retrieved from the connection pool
 func (c *Conn) Close() {
-	if c.redisClientConn != nil {
-		c.redisClientConn.Close()
+	if c.RedisClientConn != nil {
+		c.RedisClientConn.Close()
 	}
 }
 
 // IsBadConn checks if the connection to DB is active or not
 func (c *Conn) IsBadConn() bool {
-	if err := c.redisClientConn.Ping(); err != nil {
+	if err := c.RedisClientConn.Ping(); err != nil {
 		return false
 	}
 	return true
@@ -532,10 +533,10 @@ func getSortedMapKeys(m interface{}) []string {
 key of map should be the key in database.
 */
 func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
-	if c.redisClientConn == nil {
+	if c.RedisClientConn == nil {
 		return errors.PackError(errors.DBConnFailed)
 	}
-	tx := c.redisClientConn.TxPipeline()
+	tx := c.RedisClientConn.TxPipeline()
 	var partialFailure bool = false
 	keys := getSortedMapKeys(data)
 	for _, key := range keys {
@@ -563,7 +564,7 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 	}
 
 	for _, key := range keys {
-		_, err := c.redisClientConn.Get(key).Result()
+		_, err := c.RedisClientConn.Get(key).Result()
 		if err != nil {
 			partialFailure = true
 		} else {
@@ -581,7 +582,7 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 /* SetExpiryTimeForKeys takes the taskID  as input:
  */
 func (c *Conn) SetExpiryTimeForKeys(taskKeys map[string]int64, keyExpiryInterval int) *errors.Error {
-	tx := c.redisClientConn.TxPipeline()
+	tx := c.RedisClientConn.TxPipeline()
 	var partialFailure bool = false
 	members := getSortedMapKeys(taskKeys)
 	duration := time.Duration(keyExpiryInterval) * time.Second

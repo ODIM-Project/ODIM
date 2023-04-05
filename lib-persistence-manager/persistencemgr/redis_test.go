@@ -1494,7 +1494,7 @@ func TestConn_UpdateTransaction(t *testing.T) {
 		{
 			name: "failure while db update operation",
 			c: &Conn{
-				redisClientConn: nil,
+				RedisClientConn: nil,
 			},
 			wantErr: true,
 		},

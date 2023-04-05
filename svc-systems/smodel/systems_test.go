@@ -601,7 +601,7 @@ func TestFindAll(t *testing.T) {
 	assert.NotNil(t, err, "should be an error ")
 
 	scanFunc = func(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {
-		return []interface{}{"dummy"}, nil
+		return []interface{}{}, nil
 	}
 	_, err = FindAll("Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1")
 	assert.Nil(t, err, "should be no error ")

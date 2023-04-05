@@ -160,8 +160,28 @@ func FindAll(table, key string) ([][]byte, error) {
 	for i, v := range affectedKeys {
 		s[i] = fmt.Sprint(v)
 	}
+	val, errs := cp.RedisClient.MGet(s...).Result()
+	if errs != nil {
+		return nil, errs
+	}
 
-	return persistencemgr.ByteSlices(cp.RedisClient.MGet(s...).Result())
+	return interfaceSliceToByteSlice(val)
+}
+
+// interfaceSliceToByteSlice function is used to convert array of interface to byte of slice for specific type
+func interfaceSliceToByteSlice(interfaceSlice []interface{}) ([][]byte, error) {
+	byteSlice := make([][]byte, len(interfaceSlice))
+	for i, v := range interfaceSlice {
+		switch vv := v.(type) {
+		case []byte:
+			byteSlice[i] = vv
+		case string:
+			byteSlice[i] = []byte(vv)
+		default:
+			return nil, fmt.Errorf("unsupported type %T at index %d", v, i)
+		}
+	}
+	return byteSlice, nil
 }
 
 func scan(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {

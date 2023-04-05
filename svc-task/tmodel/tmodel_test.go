@@ -122,6 +122,10 @@ func TestPersistTask(t *testing.T) {
 }
 
 func TestProcessTaskQueue(t *testing.T) {
+	c, er := db.MockDBConnection(t)
+	if er != nil {
+		t.Fatal(er)
+	}
 	queue := make(chan *Task, 10)
 	config.SetUpMockConfig(t)
 	defer flushDB(t)
@@ -161,18 +165,8 @@ func TestProcessTaskQueue(t *testing.T) {
 			name: "success case",
 			args: args{
 				tasks: make(map[string]interface{}),
-				conn:  &db.Conn{
-					// WriteConn: &MockRedisConn{
-					// 	MockClose: func() error {
-					// 		return nil
-					// 	},
-					// 	MockSend: func(s string, i ...interface{}) error {
-					// 		return nil
-					// 	},
-					// 	MockDo: func(s string, i ...interface{}) (interface{}, error) {
-					// 		return []interface{}{"OK"}, nil
-					// 	},
-					// },
+				conn: &db.Conn{
+					RedisClientConn: c.RedisClient,
 				},
 			},
 		},
@@ -180,18 +174,8 @@ func TestProcessTaskQueue(t *testing.T) {
 			name: "error case 1: no retry",
 			args: args{
 				tasks: make(map[string]interface{}),
-				conn:  &db.Conn{
-					// WriteConn: &MockRedisConn{
-					// 	MockClose: func() error {
-					// 		return nil
-					// 	},
-					// 	MockSend: func(s string, i ...interface{}) error {
-					// 		return fmt.Errorf("DB ERROR")
-					// 	},
-					// 	MockDo: func(s string, i ...interface{}) (interface{}, error) {
-					// 		return nil, nil
-					// 	},
-					// },
+				conn: &db.Conn{
+					RedisClientConn: c.RedisClient,
 				},
 			},
 		},
@@ -199,18 +183,8 @@ func TestProcessTaskQueue(t *testing.T) {
 			name: "error case 2 : retry",
 			args: args{
 				tasks: make(map[string]interface{}),
-				conn:  &db.Conn{
-					// WriteConn: &MockRedisConn{
-					// 	MockClose: func() error {
-					// 		return nil
-					// 	},
-					// 	MockSend: func(s string, i ...interface{}) error {
-					// 		return fmt.Errorf("LOADING error")
-					// 	},
-					// 	MockDo: func(s string, i ...interface{}) (interface{}, error) {
-					// 		return nil, nil
-					// 	},
-					// },
+				conn: &db.Conn{
+					RedisClientConn: c.RedisClient,
 				},
 			},
 		},
@@ -218,18 +192,8 @@ func TestProcessTaskQueue(t *testing.T) {
 			name: "error case 3 : bad connection",
 			args: args{
 				tasks: make(map[string]interface{}),
-				conn:  &db.Conn{
-					// WriteConn: &MockRedisConn{
-					// 	MockClose: func() error {
-					// 		return nil
-					// 	},
-					// 	MockSend: func(s string, i ...interface{}) error {
-					// 		return nil
-					// 	},
-					// 	MockDo: func(s string, i ...interface{}) (interface{}, error) {
-					// 		return nil, fmt.Errorf("bad connection")
-					// 	},
-					// },
+				conn: &db.Conn{
+					RedisClientConn: c.RedisClient,
 				},
 			},
 		},

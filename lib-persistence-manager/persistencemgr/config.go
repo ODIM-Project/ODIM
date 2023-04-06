@@ -12,14 +12,13 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package persistencemgr provides an  interfaces for database communication
+// Package persistencemgr provides an  interfaces for database communication
 package persistencemgr
 
 import (
 	"sync"
-	"time"
 
-	"github.com/gomodule/redigo/redis"
+	redis "github.com/go-redis/redis"
 )
 
 // Config is the configuration for db which is set by the wrapper package.
@@ -40,9 +39,7 @@ type Config struct {
 
 // ConnPool is the established connection
 type ConnPool struct {
-	ReadPool        *redis.Pool
-	WritePool       *redis.Pool
-	MasterIP        string
-	PoolUpdatedTime time.Time
-	Mux             sync.Mutex
+	RedisClient *redis.Client
+	MasterIP    string
+	Mux         sync.Mutex
 }

@@ -26,8 +26,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
-
-	"github.com/gomodule/redigo/redis"
 )
 
 // Target is for sending the requst to south bound/plugin
@@ -158,38 +156,53 @@ func FindAll(table, key string) ([][]byte, error) {
 	if len(affectedKeys) == 0 {
 		return [][]byte{}, nil
 	}
+	s := make([]string, len(affectedKeys))
+	for i, v := range affectedKeys {
+		s[i] = fmt.Sprint(v)
+	}
+	val, errs := cp.RedisClient.MGet(s...).Result()
+	if errs != nil {
+		return nil, errs
+	}
 
-	conn := cp.ReadPool.Get()
-	defer conn.Close()
+	return interfaceSliceToByteSlice(val)
+}
 
-	return redis.ByteSlices(conn.Do("MGET", affectedKeys...))
+// interfaceSliceToByteSlice function is used to convert array of interface to byte of slice for specific type
+func interfaceSliceToByteSlice(interfaceSlice []interface{}) ([][]byte, error) {
+	byteSlice := make([][]byte, len(interfaceSlice))
+	for i, v := range interfaceSlice {
+		switch vv := v.(type) {
+		case []byte:
+			byteSlice[i] = vv
+		case string:
+			byteSlice[i] = []byte(vv)
+		default:
+			return nil, fmt.Errorf("unsupported type %T at index %d", v, i)
+		}
+	}
+	return byteSlice, nil
 }
 
 func scan(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {
-	conn := cp.ReadPool.Get()
-	defer conn.Close()
-
 	var (
 		cursor int64
-		items  []interface{}
 	)
 
 	results := make([]interface{}, 0)
-
-	for {
-		values, err := redis.Values(conn.Do("SCAN", cursor, "MATCH", key))
-		if err != nil {
-			return nil, err
-		}
-
-		_, err = redis.Scan(values, &cursor, &items)
-		if err != nil {
-			return nil, err
-		}
-		results = append(results, items...)
-
-		if cursor == 0 {
-			break
+	if key != "" {
+		for {
+			values, nxtcursor, err := cp.RedisClient.Scan(uint64(cursor), key, 0).Result()
+			if err != nil {
+				return nil, err
+			}
+			for _, s := range values {
+				results = append(results, s)
+			}
+			if nxtcursor == 0 {
+				break
+			}
+			cursor = int64(nxtcursor)
 		}
 	}
 

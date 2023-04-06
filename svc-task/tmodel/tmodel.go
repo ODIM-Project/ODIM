@@ -209,7 +209,7 @@ func GetTaskStatus(ctx context.Context, taskID string, db common.DbType) (*Task,
 }
 
 // GetMultipleTaskKeys is used to get multiple keys
-func GetMultipleTaskKeys(ctx context.Context, taskIDs []interface{}, db common.DbType) (*[]Task, error) {
+func GetMultipleTaskKeys(ctx context.Context, taskIDs []string, db common.DbType) (*[]Task, error) {
 	var task []Task
 	subtask := new(Task)
 	connPool, err := common.GetDBConnection(common.InMemory)

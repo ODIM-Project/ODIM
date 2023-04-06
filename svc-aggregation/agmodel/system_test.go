@@ -880,7 +880,7 @@ func TestGetResourceDetails(t *testing.T) {
 			name:  "not found",
 			args:  args{key: "someOtherKey"},
 			want:  "",
-			want1: errors.PackError(errors.DBKeyNotFound, "error while trying to get resource details: no data with the with key someOtherKey found"),
+			want1: errors.PackError(errors.DBKeyNotFound, "error while trying to get resource details: no data found for the key: someOtherKey"),
 		},
 	}
 	for _, tt := range tests {

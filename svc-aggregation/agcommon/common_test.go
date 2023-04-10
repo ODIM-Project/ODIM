@@ -506,25 +506,6 @@ func mockGetPluginStatus(plugin agmodel.Plugin) bool {
 	return true
 }
 
-// func TestGetAllPlugins(t *testing.T) {
-// 	config.SetUpMockConfig(t)
-// 	defer func() {
-// 		err := common.TruncateDB(common.InMemory)
-// 		if err != nil {
-// 			t.Fatalf("error: %v", err)
-// 		}
-// 		err = common.TruncateDB(common.OnDisk)
-// 		if err != nil {
-// 			t.Fatalf("error: %v", err)
-// 		}
-// 	}()
-// 	mockPlugins(t)
-// 	ctx := mockContext()
-// 	plugins, err := GetAllPlugins(ctx)
-// 	assert.Nil(t, err, "Error Should be nil")
-// 	assert.Equal(t, 3, len(plugins), "should be only 3 plugins")
-// }
-
 func getEncryptedKey(t *testing.T, key []byte) []byte {
 	cryptedKey, err := common.EncryptWithPublicKey(key)
 	if err != nil {
@@ -632,61 +613,6 @@ func mockGetAllKeys(context.Context, string) ([]string, error) {
 	return []string{"GRF", "ILO", "CFM"}, nil
 
 }
-
-// type MockRedisDB struct{}
-
-// func (m *MockRedisDB) Create(table, key string, data interface{}) error {
-// 	return nil
-// }
-
-// func (m *MockRedisDB) GetAllKeysFromTableFunc(ctx context.Context, table string) ([]string, error) {
-// 	return []string{"GRF", "ILO", "CFM"}, nil
-// }
-
-// func mockPlugins(t *testing.T) {
-// 	connPool, err := common.GetDBConnection(common.OnDisk)
-// 	if err != nil {
-// 		t.Errorf("error while trying to connecting to DB: %v", err.Error())
-// 	}
-
-// 	password := getEncryptedKey(t, []byte("Password"))
-// 	pluginArr := []agmodel.Plugin{
-// 		{
-// 			IP:                "localhost",
-// 			Port:              "1234",
-// 			Password:          password,
-// 			Username:          "admin",
-// 			ID:                "GRF",
-// 			PreferredAuthType: "BasicAuth",
-// 			PluginType:        "GRF",
-// 		},
-// 		{
-// 			IP:                "localhost",
-// 			Port:              "1234",
-// 			Password:          password,
-// 			Username:          "admin",
-// 			ID:                "ILO",
-// 			PreferredAuthType: "XAuthToken",
-// 			PluginType:        "ILO",
-// 		},
-// 		{
-// 			IP:                "localhost",
-// 			Port:              "1234",
-// 			Password:          password,
-// 			Username:          "admin",
-// 			ID:                "CFM",
-// 			PreferredAuthType: "XAuthToken",
-// 			PluginType:        "CFM",
-// 		},
-// 	}
-// 	for _, plugin := range pluginArr {
-// 		pl := "Plugin"
-// 		//Save data into Database
-// 		if err := connPool.Create(pl, plugin.ID, &plugin); err != nil {
-// 			t.Fatalf("error: %v", err)
-// 		}
-// 	}
-// }
 
 func TestContactPlugin(t *testing.T) {
 

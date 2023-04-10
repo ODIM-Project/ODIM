@@ -27,6 +27,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+<<<<<<< HEAD
 type MQBusCommunicator struct {
 	Communicator func(string, string, string) (dc.MQBus, error)
 }
@@ -40,6 +41,10 @@ func InitMQSCom() MQBusCommunicator {
 
 // Publish will takes the system id,Event type and publishes the data to message bus
 func Publish(ctx context.Context, systemID, eventType, collectionType string, MQ MQBusCommunicator) error {
+=======
+// Publish will takes the system id,Event type and publishes the data to message bus
+func Publish(ctx context.Context, systemID, eventType, collectionType string) {
+>>>>>>> 04ae70e0 (Fixing the aggregate UT Bugs)
 	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
 	//k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	k, err := MQ.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)

@@ -41,7 +41,7 @@ var connector = &system.ExternalInterface{
 	UpdateTask:               mockUpdateTask,
 	DecryptPassword:          stubDevicePassword,
 	GetPluginStatus:          GetPluginStatusForTesting,
-	CreateSubcription:        EventFunctionsForTesting,
+	CreateSubscription:       EventFunctionsForTesting,
 	PublishEvent:             PostEventFunctionForTesting,
 	EncryptPassword:          stubDevicePassword,
 	DeleteComputeSystem:      deleteComputeforTest,

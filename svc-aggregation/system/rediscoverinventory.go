@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -39,6 +40,8 @@ const (
 	// RediscoverResourcesActionName action name
 	RediscoverResourcesActionName = "RediscoverResources"
 )
+
+var mutex sync.Mutex
 
 // RediscoverSystemInventory  is the handler for redicovering system whenever the restrat event detected in event service
 // It deletes old data and  Discovers Computersystem & Chassis and its top level odata.ID links and store them in inmemory db.
@@ -373,6 +376,8 @@ func deleteResourceResetInfo(ctx context.Context, pattern string) {
 func deleteSubordinateResource(ctx context.Context, deviceUUID string) {
 	l.LogWithFields(ctx).Info("Initiated removal of subordinate resource for the BMC with ID " +
 		deviceUUID + " from the in-memory DB")
+	mutex.Lock()
+	defer mutex.Unlock()
 	keys, err := agmodel.GetAllMatchingDetails("*", deviceUUID, common.InMemory)
 	if err != nil {
 		l.LogWithFields(ctx).Error("Unable to fetch all matching keys from system reset table: " + err.Error())

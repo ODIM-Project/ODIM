@@ -103,7 +103,11 @@ func PerformPluginHealthCheck() {
 	}
 	for {
 		phc.DupPluginConf()
-		if pluginList, err := GetAllPluginfunc(ctx); err != nil {
+		DB4 := agcommon.DB2Interface{
+			GetAllKeysFromTableFunc: agcommon.GetAllKeysFromTableFunc,
+			GetPluginData:           agmodel.GetPluginData,
+		}
+		if pluginList, err := GetAllPluginfunc(ctx, DB4); err != nil {
 			l.LogWithFields(ctx).Error("failed to get list of all plugins:", err.Error())
 		} else {
 			for _, plugin := range pluginList {

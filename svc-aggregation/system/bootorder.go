@@ -201,7 +201,10 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(ctx context.Context, taskI
 	target.Password = decryptedPasswordByte
 
 	// Get the Plugin info
-	plugin, errs := agmodel.GetPluginData(target.PluginID)
+	a := agmodel.A{
+		Newclient: agmodel.New,
+	}
+	plugin, errs := agmodel.GetPluginData(target.PluginID, a)
 	if errs != nil {
 		subTaskChannel <- http.StatusNotFound
 		errMsg := "error while getting plugin data: " + errs.Error()

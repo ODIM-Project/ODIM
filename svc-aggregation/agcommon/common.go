@@ -42,6 +42,11 @@ type DBInterface struct {
 	AddConnectionMethodInterface func(agmodel.ConnectionMethod, string) *errors.Error
 	DeleteInterface              func(string, string, common.DbType) *errors.Error
 }
+type DB2Interface struct {
+	GetAllKeysFromTableFunc func(context.Context, string) ([]string, error)
+	GetPluginData           func(string, agmodel.A) (agmodel.Plugin, *errors.Error)
+	PluginDa                func(PluginID string) (string, *errors.Error)
+}
 
 // PluginHealthCheckInterface holds the methods required for plugin healthcheck
 type PluginHealthCheckInterface struct {
@@ -123,8 +128,8 @@ func GetStorageResources(ctx context.Context, oid string) map[string]interface{}
 func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) error {
 	aggTransactionID := uuid.New()
 	podName := os.Getenv("POD_NAME")
-	actionID := common.Actions[common.ActionKey{Service: "AddConnectionMethods", URI: "ConnectionMethod", Method: "POST-TO-DB"}].ActionID
-	actionName := common.Actions[common.ActionKey{Service: "AddConnectionMethods", URI: "ConnectionMethod", Method: "POST-TO-DB"}].ActionName
+	actionID := common.Actions[common.ActionKey{Service: "AddConnectionMethods", Uri: "ConnectionMethod", Method: "POST-TO-DB"}].ActionID
+	actionName := common.Actions[common.ActionKey{Service: "AddConnectionMethods", Uri: "ConnectionMethod", Method: "POST-TO-DB"}].ActionName
 	ctx := CreateContext(aggTransactionID.String(), actionID, actionName, "1", common.AggregationService, podName)
 	connectionMethodsKeys, err := e.GetAllKeysFromTableInterface(ctx, "ConnectionMethod")
 	if err != nil {
@@ -202,8 +207,8 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 func TrackConfigFileChanges(dbInterface DBInterface, errChan chan error) {
 	trackTransactionID := uuid.New()
 	podName := os.Getenv("POD_NAME")
-	actionID := common.Actions[common.ActionKey{Service: "TrackConfigFileChanges", URI: "TrackFile", Method: "GET"}].ActionID
-	actionName := common.Actions[common.ActionKey{Service: "TrackConfigFileChanges", URI: "TrackFile", Method: "GET"}].ActionName
+	actionID := common.Actions[common.ActionKey{Service: "TrackConfigFileChanges", Uri: "TrackFile", Method: "GET"}].ActionID
+	actionName := common.Actions[common.ActionKey{Service: "TrackConfigFileChanges", Uri: "TrackFile", Method: "GET"}].ActionName
 	ctx := CreateContext(trackTransactionID.String(), actionID, actionName, "1", common.AggregationService, podName)
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat
@@ -284,7 +289,12 @@ func LookupHost(addr string) (ip, host, port string, err error) {
 func LookupPlugin(ctx context.Context, addr string) (agmodel.Plugin, error) {
 	phc := &PluginHealthCheckInterface{}
 	phc.DupPluginConf()
-	plugins, errs := GetAllPlugins(ctx)
+	DB3 := DB2Interface{
+		GetAllKeysFromTableFunc: GetAllKeysFromTableFunc,
+		GetPluginData:           agmodel.GetPluginData,
+		PluginDa:                agmodel.New,
+	}
+	plugins, errs := GetAllPlugins(ctx, DB3)
 	if errs != nil {
 		return agmodel.Plugin{}, errs
 	}
@@ -304,14 +314,19 @@ func LookupPlugin(ctx context.Context, addr string) (agmodel.Plugin, error) {
 }
 
 // GetAllPlugins is for fetching all the plugins added andn stored in db.
-func GetAllPlugins(ctx context.Context) ([]agmodel.Plugin, error) {
-	keys, err := GetAllKeysFromTableFunc(ctx, "Plugin")
+func GetAllPlugins(ctx context.Context, a DB2Interface) ([]agmodel.Plugin, error) {
+	// keys, err := GetAllKeysFromTableFunc(ctx, "Plugin")
+	keys, err := a.GetAllKeysFromTableFunc(ctx, "Plugin")
 	if err != nil {
 		return nil, err
 	}
 	var plugins []agmodel.Plugin
 	for _, key := range keys {
-		plugin, err := agmodel.GetPluginData(key)
+		// plugin, err := agmodel.GetPluginData(key)
+		den := agmodel.A{
+			Newclient: agmodel.New,
+		}
+		plugin, err := a.GetPluginData(key, den)
 		if err != nil {
 			l.LogWithFields(ctx).Error("failed to get details of " + key + " plugin: " + err.Error())
 			continue

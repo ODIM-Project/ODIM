@@ -132,7 +132,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 	var collectionList = make([]string, 0)
 	subTaskChan := make(chan int32, len(originResources))
 	taskCollectionWG.Add(1)
-	bubbleUpStatusCode := int32(http.StatusCreated)
+	bubbleUpStatusCode := int32(http.StatusOK)
 	go func() {
 		// Collect the channels and update percentComplete in Task
 		for i := 1; ; i++ {
@@ -230,9 +230,6 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 		}
 		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost))
 	} else {
-		if resp.StatusCode == http.StatusAccepted {
-			resp.StatusCode = http.StatusOK
-		}
 		args := errResponse.Args{
 			Code:    errResponse.GeneralError,
 			Message: "event subscription for one or more origin resource(s) failed, check sub tasks for more info.",

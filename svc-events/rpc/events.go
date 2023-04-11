@@ -381,7 +381,6 @@ func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.E
 		} else {
 			taskID = strArray[len(strArray)-1]
 		}
-
 		// Delete Event Subscription when admin requested
 		go e.Connector.DeleteEventSubscriptionsDetails(ctx, req, taskID)
 	} else {

@@ -182,7 +182,6 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 	taskCollectionWG.Wait()
 
 	var (
-		locationHeader             string
 		successfulSubscriptionList = make([]model.Link, 0)
 	)
 	result.Lock.Lock()
@@ -219,25 +218,9 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 				resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 			return resp
 		}
-		locationHeader = resp.Header["Location"]
 	}
 	l.LogWithFields(ctx).Debug("Process Count,", originResourceProcessedCount,
 		" successOriginResourceCount ", len(successfulSubscriptionList))
-	percentComplete = 100
-	if originResourceProcessedCount == len(successfulSubscriptionList) {
-		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost))
-	} else {
-		args := errResponse.Args{
-			Code:    errResponse.GeneralError,
-			Message: "event subscription for one or more origin resource(s) failed, check sub tasks for more info.",
-		}
-		resp.Body = args.CreateGenericErrorResponse()
-		resp.StatusCode = bubbleUpStatusCode
-		if locationHeader != "" {
-			resp.Header["Location"] = locationHeader
-		}
-		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
-	}
 	return resp
 }
 
@@ -793,6 +776,7 @@ func (e *ExternalInterfaces) createEventSubscription(ctx context.Context, taskID
 		}
 		trimmedURI := strings.TrimSuffix(subTaskURI, "/")
 		subTaskID = trimmedURI[strings.LastIndex(trimmedURI, "/")+1:]
+
 		resp.StatusCode = http.StatusAccepted
 		e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Running, common.OK, percentComplete, http.MethodPost))
 	}
@@ -810,10 +794,12 @@ func (e *ExternalInterfaces) createEventSubscription(ctx context.Context, taskID
 	}
 	percentComplete = 100
 	if subTaskID != "" {
-		if response.StatusCode != http.StatusCreated {
-			e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		if response.StatusCode == http.StatusAccepted || response.StatusCode == http.StatusCreated {
+			if collectionFlag {
+				e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Completed, common.OK, percentComplete, http.MethodPost))
+			}
 		} else {
-			e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Completed, common.OK, percentComplete, http.MethodPost))
+			e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		}
 		subTaskChan <- int32(response.StatusCode)
 	}

@@ -357,7 +357,7 @@ START:
 		l.Log.Error("error while getDbConnection  ", errDbConn)
 		goto START
 	}
-	readConn := conn.ReadPool.Get()
+	readConn := conn.WritePool.Get()
 	defer readConn.Close()
 	err := conn.EnableKeySpaceNotifier(evcommon.RedisNotifierType, evcommon.RedisNotifierFilterKey)
 	if err != nil {
@@ -433,7 +433,6 @@ func (e *ExternalInterfaces) saveEventWorkers() {
 		return
 	}
 	for job := range saveEventChanel {
-
 		err := conn.SaveUndeliveredEvents(evmodel.UndeliveredEvents, job.UndeliveredEventID, job.Message, writePool)
 		if err != nil {
 			logging.Error("error while save undelivered event ", err)

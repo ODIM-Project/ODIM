@@ -890,8 +890,8 @@ func (ts *TasksRPC) CreateTaskUtil(ctx context.Context, userName string) (string
 //	err of type error
 //	nil - On Success
 //	Non nil - On Failure
-func (ts *TasksRPC) CreateChildTaskUtil(ctx context.Context, userName string, parentTaskID string) (string, error) {
 
+func (ts *TasksRPC) CreateChildTaskUtil(ctx context.Context, userName string, parentTaskID string) (string, error) {
 	var parentTask *tmodel.Task
 	var childTask *tmodel.Task
 	var taskURI string
@@ -1175,7 +1175,6 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 	if !TaskCollection.getTaskFromCollectionData(taskID, int(percentComplete)) {
 		ts.PublishToMessageBus(ctx, task.URI, taskEvenMessageID, eventType, taskMessage)
 	}
-
 	if task.ParentID != "" && (taskState == common.Completed || taskState == common.Exception ||
 		taskState == common.Killed || taskState == common.Cancelled || taskState == common.New) {
 		err = ts.updateParentTask(ctx, taskID, taskStatus, taskState, task, payLoad)
@@ -1347,7 +1346,6 @@ func (ts *TasksRPC) ProcessTaskEvents(ctx context.Context, data interface{}) boo
 		StatusCode:   int32(statusCode),
 		ResponseBody: body,
 	}
-
 	l.LogWithFields(ctx).Debugf("Received task event from plugin for odim task %s, "+
 		"plugin taskID: %s, taskState: %s, taskStatus: %s, percentComplete: %d, "+
 		"status code: %d: response body: %s, end time: %v",

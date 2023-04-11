@@ -457,11 +457,13 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 	contactRequest.URL = "/ODIM/v1/Subscriptions"
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.PostBody = target
-	createResponse, loc, _, _, err := e.PluginCall(ctx, contactRequest)
+	createResponse, loc, _, pluginIp, err := e.PluginCall(ctx, contactRequest)
 	if err != nil {
 		return err
 	}
 	if createResponse.StatusCode == http.StatusAccepted {
+		services.SavePluginTaskInfo(ctx, pluginIp, plugin.IP,
+			taskId, loc)
 		return nil
 	}
 

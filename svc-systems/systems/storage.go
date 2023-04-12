@@ -541,3 +541,8 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 		common.Completed, common.OK, 100, http.MethodPost)
 	pc.UpdateTask(ctx, task)
 }
+
+// UpdateSecureBoot defines the logic for updating SecureBoot
+func (e *ExternalInterface) UpdateSecureBoot(ctx context.Context, req *systemsproto.SecureBootRequest, pc *PluginContact, taskID string) {
+	l.Log.Info("Secure boot is updated")
+}

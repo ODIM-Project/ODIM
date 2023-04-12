@@ -109,6 +109,7 @@ func Router() *iris.Application {
 		ChangeBootOrderSettingsRPC: rpc.ChangeBootOrderSettings,
 		CreateVolumeRPC:            rpc.CreateVolume,
 		DeleteVolumeRPC:            rpc.DeleteVolume,
+		UpdateSecureBootRPC:        rpc.UpdateSecureBoot,
 	}
 
 	cha := handle.ChassisRPCs{
@@ -376,6 +377,7 @@ func Router() *iris.Application {
 	systems.Get("/{id}/EthernetInterfaces/{id2}/VLANS", system.GetSystemResource)
 	systems.Get("/{id}/EthernetInterfaces/{id2}/VLANS/{rid}", system.GetSystemResource)
 	systems.Get("/{id}/SecureBoot", system.GetSystemResource)
+	systems.Patch("/{id}/SecureBoot", system.UpdateSecureBoot)
 	systems.Get("/{id}/BootOptions", system.GetSystemResource)
 	systems.Get("/{id}/BootOptions/{rid}", system.GetSystemResource)
 	systems.Get("/{id}/LogServices", system.GetSystemResource)

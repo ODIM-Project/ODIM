@@ -81,7 +81,7 @@ type ExternalInterface struct {
 	CreateChildTask          func(context.Context, string, string) (string, error)
 	CreateTask               func(context.Context, string) (string, error)
 	UpdateTask               func(context.Context, common.TaskData) error
-	CreateSubscription       func(context.Context, []string)
+	CreateSubcription        func(context.Context, []string)
 	PublishEvent             func(context.Context, []string, string)
 	PublishEventMB           func(context.Context, string, string, string)
 	GetPluginStatus          func(context.Context, agmodel.Plugin) bool
@@ -90,7 +90,7 @@ type ExternalInterface struct {
 	DecryptPassword          func([]byte) ([]byte, error)
 	DeleteComputeSystem      func(int, string) *errors.Error
 	DeleteSystem             func(string) *errors.Error
-	DeleteEventSubscription  func(context.Context, string, string) (*eventsproto.EventSubResponse, error)
+	DeleteEventSubscription  func(context.Context, string) (*eventsproto.EventSubResponse, error)
 	EventNotification        func(context.Context, string, string, string)
 	GetAllKeysFromTable      func(context.Context, string) ([]string, error)
 	GetConnectionMethod      func(context.Context, string) (agmodel.ConnectionMethod, *errors.Error)
@@ -114,29 +114,29 @@ type responseStatus struct {
 }
 
 type getResourceRequest struct {
-	Data               []byte
-	Username           string
-	Password           string
-	SystemID           string
-	DeviceUUID         string
-	DeviceInfo         interface{}
-	LoginCredentials   map[string]string
-	ParentOID          string
-	OID                string
-	ContactClient      func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	OemFlag            bool
-	Plugin             agmodel.Plugin
-	TaskRequest        string
-	HTTPMethodType     string
-	Token              string
-	StatusPoll         bool
-	CreateSubscription func(context.Context, []string)
-	PublishEvent       func(context.Context, []string, string)
-	GetPluginStatus    func(context.Context, agmodel.Plugin) bool
-	UpdateFlag         bool
-	TargetURI          string
-	UpdateTask         func(context.Context, common.TaskData) error
-	BMCAddress         string
+	Data              []byte
+	Username          string
+	Password          string
+	SystemID          string
+	DeviceUUID        string
+	DeviceInfo        interface{}
+	LoginCredentials  map[string]string
+	ParentOID         string
+	OID               string
+	ContactClient     func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	OemFlag           bool
+	Plugin            agmodel.Plugin
+	TaskRequest       string
+	HTTPMethodType    string
+	Token             string
+	StatusPoll        bool
+	CreateSubcription func(context.Context, []string)
+	PublishEvent      func(context.Context, []string, string)
+	GetPluginStatus   func(context.Context, agmodel.Plugin) bool
+	UpdateFlag        bool
+	TargetURI         string
+	UpdateTask        func(context.Context, common.TaskData) error
+	BMCAddress        string
 }
 
 type respHolder struct {

@@ -65,7 +65,7 @@ func deleteSystemforTest(key string) *errors.Error {
 	return nil
 }
 
-func mockDeleteSubscription(ctx context.Context, uuid string, sessionToken string) (*eventsproto.EventSubResponse, error) {
+func mockDeleteSubscription(ctx context.Context, uuid string) (*eventsproto.EventSubResponse, error) {
 	if uuid == "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832.1" {
 		return nil, fmt.Errorf("error while trying to delete event subcription")
 	} else if uuid == "/redfish/v1/Systems/unexpected-statuscode.1" {
@@ -232,7 +232,7 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := d.DeleteAggregationSource(ctx, tt.args.req, "admin")
+			got := d.DeleteAggregationSource(ctx, tt.args.req)
 			if got.StatusCode != tt.want {
 				t.Errorf("DeleteAggregationSource() = %v, want %v", got, tt.want)
 			}
@@ -387,7 +387,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := d.DeleteAggregationSource(ctx, tt.args.req, "admin")
+			got := d.DeleteAggregationSource(ctx, tt.args.req)
 			if got.StatusCode != tt.want {
 				t.Errorf("DeleteAggregationSource() = %v, want %v", got, tt.want)
 			}
@@ -507,7 +507,7 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := d.DeleteAggregationSource(ctx, tt.args.req, "admin")
+			got := d.DeleteAggregationSource(ctx, tt.args.req)
 			if got.StatusCode != tt.want {
 				t.Errorf("DeleteAggregationSource() = %v, want %v", got, tt.want)
 			}

@@ -34,7 +34,7 @@ import (
 
 // AddCompute is the handler for adding system
 // Discovers Computersystem, Manager & Chassis and its top level odata.ID links and store them in inmemory db.
-// Upon successful operation this api returns Systems root UUID in the response body with 200 OK.
+// Upon successfull operation this api returns Systems root UUID in the response body with 200 OK.
 func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, pluginID string, percentComplete int32, addResourceRequest AddResourceRequest, pluginContactRequest getResourceRequest) (response.RPC, string, []byte) {
 	var resp response.RPC
 	l.LogWithFields(ctx).Info("started adding system with manager address " + addResourceRequest.ManagerAddress +
@@ -120,7 +120,7 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	pluginContactRequest.OID = "/redfish/v1/Systems"
 	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
 	pluginContactRequest.HTTPMethodType = http.MethodGet
-	pluginContactRequest.CreateSubscription = e.CreateSubscription
+	pluginContactRequest.CreateSubcription = e.CreateSubcription
 	pluginContactRequest.PublishEvent = e.PublishEvent
 	pluginContactRequest.BMCAddress = saveSystem.ManagerAddress
 
@@ -299,7 +299,7 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	urlList := h.SystemURL
 	urlList = append(urlList, chassisList...)
 	urlList = append(urlList, managersList...)
-	pluginContactRequest.CreateSubscription(ctx, urlList)
+	pluginContactRequest.CreateSubcription(ctx, urlList)
 
 	pluginContactRequest.PublishEvent(ctx, h.SystemURL, "SystemsCollection")
 

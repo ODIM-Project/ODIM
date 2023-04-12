@@ -938,7 +938,7 @@ func getMockExternalInterface() *ExternalInterface {
 		Auth:                    mockIsAuthorized,
 		CreateChildTask:         mockCreateChildTask,
 		UpdateTask:              mockUpdateTask,
-		CreateSubscription:      EventFunctionsForTesting,
+		CreateSubcription:       EventFunctionsForTesting,
 		PublishEvent:            PostEventFunctionForTesting,
 		GetPluginStatus:         GetPluginStatusForTesting,
 		PublishEventMB:          mockPublishEventMB,

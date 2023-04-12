@@ -538,11 +538,11 @@ func getSortedMapKeys(m interface{}) []string {
 key of map should be the key in database.
 */
 func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
+	var partialFailure bool = false
 	if c.RedisClientConn == nil {
 		return errors.PackError(errors.DBConnFailed)
 	}
 	tx := c.RedisClientConn.TxPipeline()
-	var partialFailure bool = false
 	keys := getSortedMapKeys(data)
 	for _, key := range keys {
 		jsondata, err := json.Marshal(data[key])
@@ -559,8 +559,7 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 		}
 	}
 
-	keys = getSortedMapKeys(data)
-	_, err := tx.Exec()
+	cmd, err := tx.Exec()
 	if err != nil {
 		if isTimeOutError(err) {
 			return errors.PackError(errors.TimeoutError, err.Error())
@@ -568,9 +567,8 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 		return errors.PackError(errors.DBUpdateFailed, err.Error())
 	}
 
-	for _, key := range keys {
-		_, err := c.RedisClientConn.Get(key).Result()
-		if err != nil {
+	for i, key := range keys {
+		if cmd[i].Err() != nil {
 			partialFailure = true
 		} else {
 			delete(data, key)
@@ -580,6 +578,7 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 	if partialFailure {
 		return errors.PackError(errors.TransactionPartiallyFailed, "TransactionPartiallyFailed : All keys in transaction are not updated in DB")
 	}
+
 	return nil
 }
 
@@ -602,7 +601,6 @@ func (c *Conn) SetExpiryTimeForKeys(taskKeys map[string]int64, keyExpiryInterval
 	}
 
 	cmd, err := tx.Exec()
-	fmt.Println("SetExpiryTimeForKeys.....", err)
 	if err != nil {
 		if isTimeOutError(err) {
 			return errors.PackError(errors.TimeoutError, err.Error())

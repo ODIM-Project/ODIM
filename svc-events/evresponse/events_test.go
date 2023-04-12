@@ -32,7 +32,7 @@ func TestResponse(t *testing.T) {
 		"37646c88-a7d7-468c-af58-49e8a0adbbb2.1",
 	}
 	var hosts = []string{"10.10.10.10", "10.10.10.11", "10.10.10.12"}
-	var responses = []EventResponse{{StatusCode: 202}, {StatusCode: 400}, {StatusCode: 202}}
+	var responses = []EventResponse{{StatusCode: 201}, {StatusCode: 400}, {StatusCode: 201}}
 	var result = &MutexLock{
 		Response: make(map[string]EventResponse),
 		Lock:     &sync.Mutex{},

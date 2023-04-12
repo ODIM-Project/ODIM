@@ -1,18 +1,14 @@
 package tcommon
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
-
-	eventproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
 var (
@@ -105,23 +101,4 @@ func TrackConfigFileChanges(errChan chan error) {
 			l.Log.Error(err)
 		}
 	}
-}
-
-func UpdateSubscriptionLocation(ctx context.Context, location, host string) {
-	conn, err := services.ODIMService.Client(services.Events)
-	if err != nil {
-		l.LogWithFields(ctx).Error("Error while Event ", err.Error())
-		return
-	}
-	defer conn.Close()
-	event := eventproto.NewEventsClient(conn)
-	isUpdated, err := event.UpdateSubscriptionLocationRPC(ctx, &eventproto.UpdateSubscriptionLocation{
-		Location: location,
-		Host:     host,
-	})
-	if err != nil {
-		l.LogWithFields(ctx).Info("Error while updating subscription location", err)
-		return
-	}
-	l.LogWithFields(ctx).Debug("Location update status ", isUpdated)
 }

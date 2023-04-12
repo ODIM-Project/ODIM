@@ -244,17 +244,17 @@ func TestDeleteEventSubscription(t *testing.T) {
 
 	resp, err := events.DeleteEventSubscription(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusAccepted, "Status code should be StatusAccepted.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
 
 	req.EventSubscriptionID = "81de0110"
 
 	delResp, _ := events.DeleteEventSubscription(evcommon.MockContext(), req)
-	assert.Equal(t, int(delResp.StatusCode), http.StatusAccepted, "Status code should be StatusAccepted.")
+	assert.Equal(t, int(delResp.StatusCode), http.StatusNotFound, "Status code should be StatusNotFound.")
 
 	JSONMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
 	resp, err = events.DeleteEventSubscription(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be an error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusAccepted, "Status code should be StatusAccepted.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "Status code should be StatusInternalServerError.")
 	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
 
 }
@@ -270,12 +270,12 @@ func TestDeleteEventSubscriptionwithUUID(t *testing.T) {
 
 	resp, err := events.DeleteEventSubscription(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusAccepted, "Status code should be StatusAccepted.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusNoContent, "Status code should be StatusNoContent.")
 
 	req.UUID = "81de0110"
 
 	delResp, _ := events.DeleteEventSubscription(evcommon.MockContext(), req)
-	assert.Equal(t, int(delResp.StatusCode), http.StatusAccepted, "Status code should be StatusAccepted.")
+	assert.Equal(t, int(delResp.StatusCode), http.StatusBadRequest, "Status code should be StatusBadRequest.")
 }
 
 func TestCreateDefaultSubscriptions(t *testing.T) {

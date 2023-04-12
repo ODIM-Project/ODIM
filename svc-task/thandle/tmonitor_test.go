@@ -38,10 +38,11 @@ func mockIsAuthorized(ctx context.Context, sessionToken string, privileges []str
 		// this session user does not have ConfigureUses Privilege
 		for _, privilege := range privileges {
 			if privilege == common.PrivilegeConfigureUsers {
+				fmt.Printf("UnAuthorized %v", privileges)
 				return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 			}
 		}
-
+		fmt.Printf("Autherized %v", privileges)
 		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 	case "NotTaskUserButAdminToken":
 		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil

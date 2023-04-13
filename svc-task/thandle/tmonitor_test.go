@@ -139,11 +139,11 @@ func mockGetMultipleTaskKeysModel(ctx context.Context, taskID []string, db commo
 	case "RunningTaskID":
 		task.TaskState = "Running"
 		task.TaskStatus = "OK"
-		task.ChildTaskIDs = []string{"CompletedSubTaskID", "RunningSubTaskID"}
-	case "CompletedTaskID":
+		task.ChildTaskIDs = []string{"task:CompletedSubTaskID", "task:RunningSubTaskID"}
+	case "task:CompletedTaskID":
 		task.TaskState = "Completed"
 		task.TaskStatus = "OK"
-		task.ChildTaskIDs = []string{"CompletedSubTaskID"}
+		task.ChildTaskIDs = []string{"task:CompletedSubTaskID"}
 		task.StatusCode = http.StatusOK
 		task.EndTime = time.Now()
 	case "ExceptionTaskID":
@@ -155,7 +155,7 @@ func mockGetMultipleTaskKeysModel(ctx context.Context, taskID []string, db commo
 	case "RunningSubTaskID":
 		task.TaskState = "Running"
 		task.TaskStatus = "OK"
-	case "CompletedSubTaskID":
+	case "task:CompletedSubTaskID":
 		task.TaskState = "Completed"
 		task.TaskStatus = "OK"
 		task.StatusCode = http.StatusOK

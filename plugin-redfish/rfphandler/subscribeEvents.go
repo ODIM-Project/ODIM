@@ -12,25 +12,26 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rfphandler ...
+// Package rfphandler ...
 package rfphandler
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	evtConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
-//CreateEventSubscription : Subscribes for events
+// CreateEventSubscription : Subscribes for events
 func CreateEventSubscription(ctx iris.Context) {
 
 	device, deviceDetails, err := getDeviceDetails(ctx)
@@ -58,12 +59,10 @@ func CreateEventSubscription(ctx iris.Context) {
 	// remove the mesaageids, resourcestypes and originresources from the request and post it to device
 	// since some of device doesnt support these
 	req := rfpmodel.EvtSubPost{
-		Destination:     "https://" + evtConfig.Data.LoadBalancerConf.Host + ":" + evtConfig.Data.LoadBalancerConf.Port + evtConfig.Data.EventConf.DestURI,
-		EventTypes:      reqPostBody.EventTypes,
-		Context:         reqPostBody.Context,
-		HTTPHeaders:     reqPostBody.HTTPHeaders,
-		Protocol:        reqPostBody.Protocol,
-		EventFormatType: reqPostBody.EventFormatType,
+		Destination: "https://" + evtConfig.Data.LoadBalancerConf.Host + ":" + evtConfig.Data.LoadBalancerConf.Port + evtConfig.Data.EventConf.DestURI,
+		Context:     reqPostBody.Context,
+		HTTPHeaders: reqPostBody.HTTPHeaders,
+		Protocol:    reqPostBody.Protocol,
 	}
 	device.PostBody, err = json.Marshal(req)
 	if err != nil {
@@ -71,7 +70,6 @@ func CreateEventSubscription(ctx iris.Context) {
 		ctx.WriteString(err.Error())
 		return
 	}
-
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
 		errMsg := "Internal processing error: " + err.Error()
@@ -183,7 +181,7 @@ func isOurSubscription(device *rfputilities.RedfishDevice) bool {
 	return true
 }
 
-//DeleteEventSubscription : Delete subscription
+// DeleteEventSubscription : Delete subscription
 func DeleteEventSubscription(ctx iris.Context) {
 	device, _, err := getDeviceDetails(ctx)
 	if err != nil {

@@ -88,6 +88,11 @@ func mockDeleteTaskFromDBModel(ctx context.Context, task *tmodel.Task) error {
 	return nil
 }
 
+func mockDeleteMultipleTaskFromDBModel(ctx context.Context, task []string) error {
+
+	return nil
+}
+
 func mockUpdateTaskStatusModel(task *tmodel.Task) {
 }
 
@@ -1599,9 +1604,11 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 		{
 			name: "Positive case: All is well",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				UpdateTaskQueue:       mockUpdateTaskStatusModel,
-				DeleteTaskFromDBModel: mockDeleteTaskFromDBModel,
+				GetTaskStatusModel:            mockGetTaskStatusModel,
+				UpdateTaskQueue:               mockUpdateTaskStatusModel,
+				DeleteTaskFromDBModel:         mockDeleteTaskFromDBModel,
+				GetMultipleTaskKeysModel:      mockGetMultipleTaskKeysModel,
+				DeleteMultipleTaskFromDBModel: mockDeleteMultipleTaskFromDBModel,
 			},
 			args: args{
 				taskID: "validTaskID",
@@ -1611,9 +1618,11 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 		{
 			name: "Positive case: All is well, But task state is Completed",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				UpdateTaskQueue:       mockUpdateTaskStatusModel,
-				DeleteTaskFromDBModel: mockDeleteTaskFromDBModel,
+				GetTaskStatusModel:            mockGetTaskStatusModel,
+				UpdateTaskQueue:               mockUpdateTaskStatusModel,
+				DeleteTaskFromDBModel:         mockDeleteTaskFromDBModel,
+				GetMultipleTaskKeysModel:      mockGetMultipleTaskKeysModel,
+				DeleteMultipleTaskFromDBModel: mockDeleteMultipleTaskFromDBModel,
 			},
 			args: args{
 				taskID: "CompletedTaskID",
@@ -1623,9 +1632,11 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 		{
 			name: "Positive case: All is well, But task state is Running",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				UpdateTaskQueue:       mockUpdateTaskStatusModel,
-				DeleteTaskFromDBModel: mockDeleteTaskFromDBModel,
+				GetTaskStatusModel:            mockGetTaskStatusModel,
+				UpdateTaskQueue:               mockUpdateTaskStatusModel,
+				DeleteTaskFromDBModel:         mockDeleteTaskFromDBModel,
+				GetMultipleTaskKeysModel:      mockGetMultipleTaskKeysModel,
+				DeleteMultipleTaskFromDBModel: mockDeleteMultipleTaskFromDBModel,
 			},
 			args: args{
 				taskID: "RunningTaskID",
@@ -1635,9 +1646,11 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 		{
 			name: "Negative case: InvalidTaskID",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				UpdateTaskQueue:       mockUpdateTaskStatusModel,
-				DeleteTaskFromDBModel: mockDeleteTaskFromDBModel,
+				GetTaskStatusModel:            mockGetTaskStatusModel,
+				UpdateTaskQueue:               mockUpdateTaskStatusModel,
+				DeleteTaskFromDBModel:         mockDeleteTaskFromDBModel,
+				GetMultipleTaskKeysModel:      mockGetMultipleTaskKeysModel,
+				DeleteMultipleTaskFromDBModel: mockDeleteMultipleTaskFromDBModel,
 			},
 			args: args{
 				taskID: "InvalidTaskID",

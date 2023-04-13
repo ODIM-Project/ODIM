@@ -181,7 +181,7 @@ func removeLinks(slice []model.Link, element string) []model.Link {
 
 // PluginCall method is to call to given url and method
 // and validate the response and return
-func (e *ExternalInterfaces) PluginCall(ctx context.Context, req evcommon.PluginContactRequest) (errResponse.RPC, string, string, string, error) {
+func (e *ExternalInterfaces) PluginCall(ctx context.Context, req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
 	var resp errResponse.RPC
 	response, err := e.callPlugin(ctx, req)
 	if err != nil {
@@ -193,7 +193,7 @@ func (e *ExternalInterfaces) PluginCall(ctx context.Context, req evcommon.Plugin
 			evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				[]interface{}{}, &resp)
 			l.LogWithFields(ctx).Error(errorMessage)
-			return resp, "", "", "", err
+			return resp, "", "", err
 		}
 	}
 	defer response.Body.Close()
@@ -203,24 +203,18 @@ func (e *ExternalInterfaces) PluginCall(ctx context.Context, req evcommon.Plugin
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			[]interface{}{}, &resp)
 		l.LogWithFields(ctx).Error(errorMessage)
-		return resp, "", "", "", err
-	}
-	if response.StatusCode == http.StatusAccepted {
-
-		resp.StatusCode = int32(response.StatusCode)
-		resp.Body = string(body)
-		return resp, response.Header.Get("Location"), response.Header.Get("X-Auth-Token"), response.Header.Get(common.XForwardedFor), nil
+		return resp, "", "", err
 	}
 	if !(response.StatusCode == http.StatusCreated || response.StatusCode == http.StatusOK) {
 		resp.StatusCode = int32(response.StatusCode)
 		resp.Body = string(body)
-		return resp, "", "", "", err
+		return resp, "", "", err
 	}
 	var outBody interface{}
 	json.Unmarshal(body, &outBody)
 	resp.StatusCode = int32(response.StatusCode)
 	resp.Body = outBody
-	return resp, response.Header.Get("location"), response.Header.Get("X-Auth-Token"), response.Header.Get(common.XForwardedFor), nil
+	return resp, response.Header.Get("location"), response.Header.Get("X-Auth-Token"), nil
 }
 
 // validateFields is for validating subscription parameters
@@ -353,7 +347,7 @@ func (e *ExternalInterfaces) createToken(ctx context.Context, plugin *common.Plu
 		"Password": string(plugin.Password),
 	}
 	contactRequest.URL = "/ODIM/v1/Sessions"
-	_, _, token, _, err := e.PluginCall(ctx, contactRequest)
+	_, _, token, err := e.PluginCall(ctx, contactRequest)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err.Error())
 	}
@@ -366,13 +360,13 @@ func (e *ExternalInterfaces) createToken(ctx context.Context, plugin *common.Plu
 	return token
 }
 
-func (e *ExternalInterfaces) retryEventOperation(ctx context.Context, req evcommon.PluginContactRequest) (errResponse.RPC, string, string, string, error) {
+func (e *ExternalInterfaces) retryEventOperation(ctx context.Context, req evcommon.PluginContactRequest) (errResponse.RPC, string, string, error) {
 	var resp errResponse.RPC
 	var token = e.createToken(ctx, req.Plugin)
 	if token == "" {
 		evcommon.GenErrorResponse("error: Unable to create session with plugin "+req.Plugin.ID, errResponse.NoValidSession, http.StatusUnauthorized,
 			[]interface{}{}, &resp)
-		return resp, "", "", "", fmt.Errorf("error: Unable to create session with plugin")
+		return resp, "", "", fmt.Errorf("error: Unable to create session with plugin")
 	}
 	req.Token = token
 	return e.PluginCall(ctx, req)

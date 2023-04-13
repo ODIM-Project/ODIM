@@ -17,7 +17,6 @@
 package evresponse
 
 import (
-	"net/http"
 	"strings"
 	"sync"
 
@@ -148,7 +147,7 @@ func (r *MutexLock) AddResponse(origin, host string, response EventResponse) {
 	r.Lock.Lock()
 	defer r.Lock.Unlock()
 	r.Response[origin] = response
-	if response.StatusCode == http.StatusAccepted || response.StatusCode == http.StatusCreated {
+	if response.StatusCode == 201 {
 		r.Hosts[host] = origin
 	}
 }

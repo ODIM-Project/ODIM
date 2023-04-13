@@ -51,6 +51,25 @@ var (
 	ServiceDiscoveryFunc = services.ODIMService.Client
 )
 
+// addFabric will add the new fabric resource to db when an event is ResourceAdded and
+// originofcondition has fabrics odataid.
+func (e *ExternalInterfaces) addFabric(ctx context.Context, message common.MessageData, host string) {
+	for _, inEvent := range message.Events {
+		if inEvent.OriginOfCondition == nil || len(inEvent.OriginOfCondition.Oid) < 1 {
+			l.Log.Info("event not forwarded : Originofcondition is empty in incoming event")
+			continue
+		}
+		if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
+			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
+			e.addFabricRPCCall(ctx, inEvent.OriginOfCondition.Oid, host)
+		}
+		if strings.EqualFold(inEvent.EventType, "ResourceRemoved") &&
+			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
+			e.removeFabricRPCCall(ctx, inEvent.OriginOfCondition.Oid, host)
+		}
+	}
+}
+
 // PublishEventsToDestination This method sends the event/alert to subscriber's destination
 // Takes:
 //
@@ -97,6 +116,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 		logging.Error("failed to unmarshal the incoming event: ", requestData, " with the error: ", err.Error())
 		return false
 	}
+	e.addFabric(ctx, rawMessage, host)
 	systemID, err := getSourceID(host)
 	if err != nil {
 		logging.Info("no origin resources found in device subscriptions")
@@ -128,14 +148,6 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 				storageURI := fmt.Sprintf("/%s/%s/%s/%s/%s/", s[1], s[2], s[3], s[4], s[5])
 				go rediscoverSystemInventory(ctx, deviceUUID, storageURI)
 				flag = true
-			}
-			if strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
-				if strings.EqualFold(inEvent.EventType, "ResourceAdded") {
-					e.addFabricRPCCall(ctx, rawMessage.Events[index].OriginOfCondition.Oid, host)
-				}
-				if strings.EqualFold(inEvent.EventType, "ResourceRemoved") {
-					e.removeFabricRPCCall(ctx, rawMessage.Events[index].OriginOfCondition.Oid, host)
-				}
 			}
 		}
 	}

@@ -190,6 +190,20 @@ func GetResource(ctx context.Context, Table, key string) (string, *errors.Error)
 	return resource, nil
 }
 
+// GetMultipleResources is used to read multiple keys from DB
+func GetMultipleResources(ctx context.Context, keys []string) ([]string, *errors.Error) {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return nil, errors.PackError(err.ErrNo(), err)
+	}
+	resourceData, err := conn.ReadMultipleKeys(keys)
+	if err != nil {
+		return nil, errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
+	}
+
+	return resourceData, nil
+}
+
 // Create connects to the persistencemgr and creates a system in db
 func (system *SaveSystem) Create(ctx context.Context, systemID string) *errors.Error {
 
@@ -349,19 +363,21 @@ func DeleteComputeSystem(index int, key string) *errors.Error {
 		return errors.PackError(err.ErrNo(), "error while trying to get ComputerSystem details: ", err.Error())
 	}
 	if len(computeData) == 1 {
+		var deleteItems []string
 		if inventoryData, err = connPool.GetAllMatchingDetails("FirmwareInventory", systemID); err != nil {
 			return errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
 		}
 		for _, value := range inventoryData {
-			if err = connPool.Delete("FirmwareInventory", value); err != nil {
-				return errors.PackError(err.ErrNo(), "error while trying to delete compute details: ", err.Error())
-			}
+			deleteItems = append(deleteItems, "FirmwareInventory:"+value)
 		}
 		if inventoryData, err = connPool.GetAllMatchingDetails("SoftwareInventory", systemID); err != nil {
 			return errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
 		}
 		for _, value := range inventoryData {
-			if err = connPool.Delete("SoftwareInventory", value); err != nil {
+			deleteItems = append(deleteItems, "SoftwareInventory:"+value)
+		}
+		if len(deleteItems) > 1 {
+			if err = connPool.DeleteMultipleKeys(deleteItems); err != nil {
 				return errors.PackError(err.ErrNo(), "error while trying to delete compute details: ", err.Error())
 			}
 		}
@@ -1015,6 +1031,18 @@ func Delete(table, key string, dbtype common.DbType) *errors.Error {
 		return err
 	}
 	if err = conn.Delete(table, key); err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeleteMultipleKeys is used to delete multiple keys from DB using pipeline
+func DeleteMultipleKeys(keys []string, dbtype common.DbType) *errors.Error {
+	conn, err := common.GetDBConnection(dbtype)
+	if err != nil {
+		return err
+	}
+	if err = conn.DeleteMultipleKeys(keys); err != nil {
 		return err
 	}
 	return nil

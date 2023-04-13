@@ -331,6 +331,9 @@ func (p *ConnPool) ReadMultipleKeys(key []string) ([]string, *errors.Error) {
 	strArr := make([]string, len(value))
 
 	for i, v := range value {
+		if v == nil {
+			continue
+		}
 		if s, ok := v.(string); ok {
 			strArr[i] = s
 		}
@@ -388,6 +391,18 @@ func (p *ConnPool) Delete(table, key string) *errors.Error {
 			return errors.PackError(errors.DBKeyNotFound, errs.Error())
 		}
 		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: ", doErr)
+	}
+
+	return nil
+}
+
+// DeleteMultipleKeys data entry takes "keys" array of sting as input to delete data from DB at once
+func (p *ConnPool) DeleteMultipleKeys(keys []string) *errors.Error {
+	tx := p.RedisClient.TxPipeline()
+	tx.Del(keys...)
+	_, err := tx.Exec()
+	if err != nil {
+		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data", err.Error())
 	}
 
 	return nil

@@ -266,21 +266,22 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
 	}
+	mapData := make(map[string]interface{})
 	// saving all plugin manager data
 	var listMembers = make([]agresponse.ListMember, 0)
 	for oid, data := range managersData {
-
-		dbErr := agmodel.SavePluginManagerInfo(updateManagerName(data, plugin.ID), "Managers", oid)
-		if dbErr != nil {
-			errMsg := dbErr.Error()
-			l.LogWithFields(ctx).Error(errMsg)
-
-			return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
-		}
+		mapData["Managers:"+oid] = updateManagerName(data, plugin.ID)
 		listMembers = append(listMembers, agresponse.ListMember{
 			OdataID: oid,
 		})
 
+	}
+	dbEr = agmodel.SaveBMCInventory(mapData)
+	if dbEr != nil {
+		errMsg := dbEr.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
 	}
 
 	l.LogWithFields(ctx).Info("subscribing to EMB for plugin " + plugin.ID)

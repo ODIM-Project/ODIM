@@ -75,7 +75,7 @@ type Volume struct {
 type SecureBoot struct {
 	SecureBootCurrentBoot string `json:"SecureBootCurrentBoot,omitempty"`
 	SecureBootEnable      string `json:"SecureBootEnable,omitempty"`
-	SecureBootMode        string `json:"WriteCachePolicy,omitempty"`
+	SecureBootMode        string `json:"SecureBootMode,omitempty"`
 }
 
 // Links contains Drives resoruces info

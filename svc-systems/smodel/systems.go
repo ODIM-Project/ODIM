@@ -72,6 +72,12 @@ type Volume struct {
 	IOPerfModeEnabled  bool   `json:"IOPerfModeEnabled,omitempty"`
 }
 
+type SecureBoot struct {
+	SecureBootCurrentBoot string `json:"SecureBootCurrentBoot,omitempty"`
+	SecureBootEnable      string `json:"SecureBootEnable,omitempty"`
+	SecureBootMode        string `json:"WriteCachePolicy,omitempty"`
+}
+
 // Links contains Drives resoruces info
 type Links struct {
 	Drives               []OdataIDLink `json:"Drives"`

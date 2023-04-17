@@ -306,10 +306,21 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
-
 	//deleting logservice empty collection
-	if resource[LogServices] != nil {
-		lkey := oid + "/LogServices"
+	lkey := oid + "/LogServices"
+	var isLogServicePresent bool
+	if resource[LogServices] == nil {
+		data, err := agmodel.GetResource(ctx, LogServiceCollection, lkey)
+		if err != nil {
+			errMsg := "error while getting LogService data: " + err.Error()
+			l.LogWithFields(ctx).Error(errMsg)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		}
+		if data != "" {
+			isLogServicePresent = true
+		}
+	}
+	if resource[LogServices] != nil || isLogServicePresent {
 		dberr = agmodel.DeleteManagersData(lkey, LogServiceCollection)
 		if dberr != nil {
 			errMsg := derr.Error()

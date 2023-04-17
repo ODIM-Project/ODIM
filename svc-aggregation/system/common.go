@@ -91,11 +91,11 @@ type ExternalInterface struct {
 	DeleteComputeSystem      func(int, string) *errors.Error
 	DeleteSystem             func(string) *errors.Error
 	DeleteEventSubscription  func(context.Context, string) (*eventsproto.EventSubResponse, error)
-	EventNotification        func(context.Context, string, string, string)
+	EventNotification        func(context.Context, string, string, string, agmessagebus.MQBusCommunicator) error
 	GetAllKeysFromTable      func(context.Context, string) ([]string, error)
 	GetConnectionMethod      func(context.Context, string) (agmodel.ConnectionMethod, *errors.Error)
 	UpdateConnectionMethod   func(agmodel.ConnectionMethod, string) *errors.Error
-	GetPluginMgrAddr         func(string) (agmodel.Plugin, *errors.Error)
+	GetPluginMgrAddr         func(string, agmodel.A) (agmodel.Plugin, *errors.Error)
 	GetAggregationSourceInfo func(context.Context, string) (agmodel.AggregationSource, *errors.Error)
 	GenericSave              func([]byte, string, string) error
 	CheckActiveRequest       func(string) (bool, *errors.Error)
@@ -340,6 +340,7 @@ func contactPlugin(ctx context.Context, req getResourceRequest, errorMessage str
 
 	data := string(body)
 	resp.StatusCode = int32(pluginResp.StatusCode)
+	resp.StatusMessage = response.ExtendedInfo
 	//replacing the resposne with north bound translation URL
 	for key, value := range getTranslationURL(northBoundURL) {
 		data = strings.Replace(data, key, value, -1)
@@ -1178,7 +1179,8 @@ func CreateDefaultEventSubscription(ctx context.Context, systemID []string) {
 // PublishEvent will publish default events
 func PublishEvent(ctx context.Context, systemIDs []string, collectionName string) {
 	for i := 0; i < len(systemIDs); i++ {
-		agmessagebus.Publish(ctx, systemIDs[i], "ResourceAdded", collectionName)
+		MQ := agmessagebus.InitMQSCom()
+		agmessagebus.Publish(ctx, systemIDs[i], "ResourceAdded", collectionName, MQ)
 	}
 }
 
@@ -1189,7 +1191,8 @@ func PublishPluginStatusOKEvent(ctx context.Context, plugin string, msgQueues []
 		PluginID:  plugin,
 		EMBQueues: msgQueues,
 	}
-	if err := agmessagebus.PublishCtrlMsg(common.SubscribeEMB, data); err != nil {
+	MQ := agmessagebus.InitMQSCom()
+	if err := agmessagebus.PublishCtrlMsg(common.SubscribeEMB, data, MQ); err != nil {
 		l.LogWithFields(ctx).Error("failed to publish resubscribe to " + plugin + " EMB event: " + err.Error())
 		return
 	}

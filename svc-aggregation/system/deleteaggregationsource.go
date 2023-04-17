@@ -121,10 +121,7 @@ func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *ag
 			return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
 		}
 		// Get the plugin
-		a := agmodel.A{
-			Newclient: agmodel.New,
-		}
-		plugin, errs := agmodel.GetPluginData(cmVariants.PluginID, a)
+		plugin, errs := agmodel.GetPluginData(cmVariants.PluginID)
 		if errs != nil {
 			errMsg := errs.Error()
 			l.LogWithFields(ctx).Error(errMsg)
@@ -154,10 +151,7 @@ func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *ag
 	}
 
 	if target != nil {
-		a := agmodel.A{
-			Newclient: agmodel.New,
-		}
-		plugin, errs := agmodel.GetPluginData(target.PluginID, a)
+		plugin, errs := agmodel.GetPluginData(target.PluginID)
 		if errs != nil {
 			l.LogWithFields(ctx).Error("failed to get " + target.PluginID + " plugin info: " + errs.Error())
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errs.Error(), []interface{}{"plugin", target.PluginID}, nil)
@@ -391,10 +385,7 @@ func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index
 	}
 	// Get the plugin
 	var managerData map[string]interface{}
-	a := agmodel.A{
-		Newclient: agmodel.New,
-	}
-	plugin, errs := agmodel.GetPluginData(pluginID, a)
+	plugin, errs := agmodel.GetPluginData(pluginID)
 	if errs != nil {
 		errMsg := errs.Error()
 		l.LogWithFields(ctx).Error(errMsg)

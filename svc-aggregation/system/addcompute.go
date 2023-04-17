@@ -17,6 +17,7 @@ package system
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -346,8 +347,14 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil), "", nil
 	}
-
-	err = json.Unmarshal([]byte(data), &managerData)
+	res, err := base64.StdEncoding.DecodeString(data)
+	if err != nil {
+		errorMessage := "error while decoding manager details: " + err.Error()
+		l.LogWithFields(ctx).Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil), "", nil
+	}
+	err = json.Unmarshal([]byte(res), &managerData)
 	if err != nil {
 		errorMessage := "error unmarshalling manager details: " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)

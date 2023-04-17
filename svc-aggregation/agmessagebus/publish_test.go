@@ -12,10 +12,6 @@ import (
 )
 
 // Define an interface for MQBusCommunicator
-//
-//	type MQBusCommunicator interface {
-//		Communicator(bt string, messageQueueConfigPath string, pipe string) (datacommunicator.MQBus, error)
-//	}
 func mockContext() context.Context {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
@@ -43,13 +39,11 @@ func (m *MockMQBus) Distribute(event interface{}) error {
 		return fmt.Errorf("Error while posting the message to message bus")
 
 	}
-	fmt.Println("coming test 1")
 	return nil
 }
 
 func (m *MockMQBus) Accept(process dc.MsgProcess) error {
-	// Do nothing for now
-	fmt.Println("coming test 2")
+	// Do nothing for now)
 	return nil
 }
 func (m *MockMQBus) Close() error {
@@ -84,13 +78,6 @@ func TestPublish(t *testing.T) {
 	systemID := "systemID"
 	eventType := "ResourceAdded"
 	collectionType := "collectionType"
-
-	//ctx := context.Context
-	// type args struct {
-	// 	ctx context.Context
-	// }
-	// ctx := context.TODO()
-	// ctx := mockContext()
 	config.SetUpMockConfig(t)
 	tests := []struct {
 		name            string

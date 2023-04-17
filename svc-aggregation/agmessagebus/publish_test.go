@@ -34,7 +34,6 @@ type MockMQBus struct {
 }
 
 func (m *MockMQBus) Distribute(event interface{}) error {
-	// Do nothing for now
 	if distributeerror {
 		return fmt.Errorf("Error while posting the message to message bus")
 
@@ -43,19 +42,15 @@ func (m *MockMQBus) Distribute(event interface{}) error {
 }
 
 func (m *MockMQBus) Accept(process dc.MsgProcess) error {
-	// Do nothing for now)
 	return nil
 }
 func (m *MockMQBus) Close() error {
-	// Do nothing for now
 	return nil
 }
 func (m *MockMQBus) Get(key string, value interface{}) interface{} {
-	// Do nothing for now
 	return value
 }
 func (m *MockMQBus) Remove() error {
-	// Do nothing for now
 	return nil
 }
 
@@ -131,7 +126,6 @@ func TestPublish(t *testing.T) {
 
 }
 
-// ////////////////////////////////
 func TestPublishCtrlMsg(t *testing.T) {
 	communicateerror = false
 	distributeerror = false

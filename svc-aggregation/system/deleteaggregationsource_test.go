@@ -41,6 +41,7 @@ import (
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
@@ -78,8 +79,8 @@ func mockDeleteSubscription(ctx context.Context, uuid string) (*eventsproto.Even
 	}, nil
 }
 
-func mockEventNotification(ctx context.Context, systemID, eventType, collectionType string) {
-	return
+func mockEventNotification(ctx context.Context, systemID, eventType, collectionType string, MQ agmessagebus.MQBusCommunicator) error {
+	return nil
 }
 func mockManagersData(id string, data map[string]interface{}) error {
 	reqData, _ := json.Marshal(data)

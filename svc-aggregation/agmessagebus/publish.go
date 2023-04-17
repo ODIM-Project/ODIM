@@ -27,14 +27,31 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-//Publish will takes the system id,Event type and publishes the data to message bus
-func Publish(ctx context.Context, systemID, eventType, collectionType string) {
+type MQBusCommunicator struct {
+	Communicator func(string, string, string) (dc.MQBus, error)
+}
+
+func InitMQSCom() MQBusCommunicator {
+	return MQBusCommunicator{
+		Communicator: dc.Communicator,
+	}
+}
+
+// func InitMQSCom(abc func(string, string, string) (dc.MQBus, error)) *MQBusCommunicator {
+// 	return &MQBusCommunicator{Communicator: abc}
+// }
+
+// Publish will takes the system id,Event type and publishes the data to message bus
+func Publish(ctx context.Context, systemID, eventType, collectionType string, MQ MQBusCommunicator) error {
+	fmt.Println("coming here 1")
 	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
-	k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
+	//k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
+	k, err := MQ.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
 		l.LogWithFields(ctx).Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
-		return
+		return err
 	}
+	fmt.Println("coming here 2")
 
 	var message string
 	switch eventType {
@@ -67,19 +84,23 @@ func Publish(ctx context.Context, systemID, eventType, collectionType string) {
 		IP:      collectionType,
 		Request: data,
 	}
+	fmt.Println("coming here 3")
 
 	if err := k.Distribute(mbevent); err != nil {
 		l.LogWithFields(ctx).Error("Unable Publish events to kafka" + err.Error())
-		return
+		return err
 	}
+	fmt.Println("coming here 4")
 	l.LogWithFields(ctx).Info("Event Published")
+	return nil
 
 }
 
 // PublishCtrlMsg publishes ODIM control messages to the message bus
-func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
+func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}, MQ MQBusCommunicator) error {
+	fmt.Println("coming here 9")
 	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
-	conn, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
+	conn, err := MQ.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
 		return fmt.Errorf("failed to get kafka connection: %s", err.Error())
 	}
@@ -92,6 +113,7 @@ func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
 		MessageType: msgType,
 		Data:        data,
 	}
+	fmt.Println("coming here 10")
 	if err := conn.Distribute(ctrlMsg); err != nil {
 		return fmt.Errorf("failed to write data to kafka: %s", err.Error())
 	}

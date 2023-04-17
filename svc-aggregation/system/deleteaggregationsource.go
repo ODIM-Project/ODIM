@@ -29,6 +29,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
@@ -120,7 +121,10 @@ func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *ag
 			return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
 		}
 		// Get the plugin
-		plugin, errs := agmodel.GetPluginData(cmVariants.PluginID)
+		a := agmodel.A{
+			Newclient: agmodel.New,
+		}
+		plugin, errs := agmodel.GetPluginData(cmVariants.PluginID, a)
 		if errs != nil {
 			errMsg := errs.Error()
 			l.LogWithFields(ctx).Error(errMsg)
@@ -150,7 +154,10 @@ func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *ag
 	}
 
 	if target != nil {
-		plugin, errs := agmodel.GetPluginData(target.PluginID)
+		a := agmodel.A{
+			Newclient: agmodel.New,
+		}
+		plugin, errs := agmodel.GetPluginData(target.PluginID, a)
 		if errs != nil {
 			l.LogWithFields(ctx).Error("failed to get " + target.PluginID + " plugin info: " + errs.Error())
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errs.Error(), []interface{}{"plugin", target.PluginID}, nil)
@@ -247,7 +254,10 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)
 	var pluginID = resource["Name"].(string)
-	plugin, errs := agmodel.GetPluginData(pluginID)
+	a := agmodel.A{
+		Newclient: agmodel.New,
+	}
+	plugin, errs := agmodel.GetPluginData(pluginID, a)
 	if errs != nil {
 		errMsg := "error while getting plugin data: " + errs.Error()
 		l.LogWithFields(ctx).Error(errMsg)
@@ -350,7 +360,8 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
-	e.EventNotification(ctx, oid, "ResourceRemoved", "ManagerCollection")
+	MQ := agmessagebus.InitMQSCom()
+	e.EventNotification(ctx, oid, "ResourceRemoved", "ManagerCollection", MQ)
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.ResourceRemoved
 
@@ -380,7 +391,10 @@ func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index
 	}
 	// Get the plugin
 	var managerData map[string]interface{}
-	plugin, errs := agmodel.GetPluginData(pluginID)
+	a := agmodel.A{
+		Newclient: agmodel.New,
+	}
+	plugin, errs := agmodel.GetPluginData(pluginID, a)
 	if errs != nil {
 		errMsg := errs.Error()
 		l.LogWithFields(ctx).Error(errMsg)
@@ -483,12 +497,15 @@ func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index
 	e.deleteWildCardValues(ctx, key[index+1:])
 
 	for _, manager := range managersList {
-		e.EventNotification(ctx, manager, "ResourceRemoved", "ManagerCollection")
+		MQ := agmessagebus.InitMQSCom()
+		e.EventNotification(ctx, manager, "ResourceRemoved", "ManagerCollection", MQ)
 	}
 	for _, chassis := range chassisList {
-		e.EventNotification(ctx, chassis, "ResourceRemoved", "ChassisCollection")
+		MQ := agmessagebus.InitMQSCom()
+		e.EventNotification(ctx, chassis, "ResourceRemoved", "ChassisCollection", MQ)
 	}
-	e.EventNotification(ctx, key, "ResourceRemoved", "SystemsCollection")
+	MQ := agmessagebus.InitMQSCom()
+	e.EventNotification(ctx, key, "ResourceRemoved", "SystemsCollection", MQ)
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.ResourceRemoved
 	args := response.Args{

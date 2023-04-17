@@ -27,13 +27,25 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+type MQBusCommunicator struct {
+	Communicator func(string, string, string) (dc.MQBus, error)
+}
+
+func InitMQSCom() MQBusCommunicator {
+	return MQBusCommunicator{
+		Communicator: dc.Communicator,
+	}
+}
+
+
 // Publish will takes the system id,Event type and publishes the data to message bus
-func Publish(ctx context.Context, systemID, eventType, collectionType string) {
+func Publish(ctx context.Context, systemID, eventType, collectionType string, MQ MQBusCommunicator) error {
 	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
-	k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
+	//k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
+	k, err := MQ.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
 		l.LogWithFields(ctx).Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
-		return
+		return err
 	}
 
 	var message string
@@ -70,16 +82,17 @@ func Publish(ctx context.Context, systemID, eventType, collectionType string) {
 
 	if err := k.Distribute(mbevent); err != nil {
 		l.LogWithFields(ctx).Error("Unable Publish events to kafka" + err.Error())
-		return
+		return err
 	}
 	l.LogWithFields(ctx).Info("Event Published")
+	return nil
 
 }
 
 // PublishCtrlMsg publishes ODIM control messages to the message bus
-func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
+func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}, MQ MQBusCommunicator) error {
 	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
-	conn, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
+	conn, err := MQ.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
 		return fmt.Errorf("failed to get kafka connection: %s", err.Error())
 	}

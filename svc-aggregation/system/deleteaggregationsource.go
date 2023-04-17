@@ -29,6 +29,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
@@ -359,7 +360,8 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
-	e.EventNotification(ctx, oid, "ResourceRemoved", "ManagerCollection")
+	MQ := agmessagebus.InitMQSCom()
+	e.EventNotification(ctx, oid, "ResourceRemoved", "ManagerCollection", MQ)
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.ResourceRemoved
 
@@ -495,12 +497,15 @@ func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index
 	e.deleteWildCardValues(ctx, key[index+1:])
 
 	for _, manager := range managersList {
-		e.EventNotification(ctx, manager, "ResourceRemoved", "ManagerCollection")
+		MQ := agmessagebus.InitMQSCom()
+		e.EventNotification(ctx, manager, "ResourceRemoved", "ManagerCollection", MQ)
 	}
 	for _, chassis := range chassisList {
-		e.EventNotification(ctx, chassis, "ResourceRemoved", "ChassisCollection")
+		MQ := agmessagebus.InitMQSCom()
+		e.EventNotification(ctx, chassis, "ResourceRemoved", "ChassisCollection", MQ)
 	}
-	e.EventNotification(ctx, key, "ResourceRemoved", "SystemsCollection")
+	MQ := agmessagebus.InitMQSCom()
+	e.EventNotification(ctx, key, "ResourceRemoved", "SystemsCollection", MQ)
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.ResourceRemoved
 	args := response.Args{

@@ -248,10 +248,7 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)
 	var pluginID = resource["Name"].(string)
-	a := agmodel.A{
-		Newclient: agmodel.New,
-	}
-	plugin, errs := agmodel.GetPluginData(pluginID, a)
+	plugin, errs := agmodel.GetPluginData(pluginID)
 	if errs != nil {
 		errMsg := "error while getting plugin data: " + errs.Error()
 		l.LogWithFields(ctx).Error(errMsg)

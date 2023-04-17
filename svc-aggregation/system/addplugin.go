@@ -316,6 +316,6 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	phc.DupPluginConf()
 	_, topics := phc.GetPluginStatus(ctx, plugin)
 	PublishPluginStatusOKEvent(ctx, plugin.ID, topics)
-	l.LogWithFields(ctx).Debugf("final response for add plugin data request: %s", string(fmt.Sprintf("%v", resp.Body)))
+	l.LogWithFields(ctx).Debugf("final response code for add plugin data request: %d", resp.StatusCode)
 	return resp, managerUUID, ciphertext
 }

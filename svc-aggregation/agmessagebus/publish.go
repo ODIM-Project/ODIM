@@ -43,7 +43,6 @@ func InitMQSCom() MQBusCommunicator {
 
 // Publish will takes the system id,Event type and publishes the data to message bus
 func Publish(ctx context.Context, systemID, eventType, collectionType string, MQ MQBusCommunicator) error {
-	fmt.Println("coming here 1")
 	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
 	//k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	k, err := MQ.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
@@ -51,7 +50,6 @@ func Publish(ctx context.Context, systemID, eventType, collectionType string, MQ
 		l.LogWithFields(ctx).Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
 		return err
 	}
-	fmt.Println("coming here 2")
 
 	var message string
 	switch eventType {
@@ -84,13 +82,11 @@ func Publish(ctx context.Context, systemID, eventType, collectionType string, MQ
 		IP:      collectionType,
 		Request: data,
 	}
-	fmt.Println("coming here 3")
 
 	if err := k.Distribute(mbevent); err != nil {
 		l.LogWithFields(ctx).Error("Unable Publish events to kafka" + err.Error())
 		return err
 	}
-	fmt.Println("coming here 4")
 	l.LogWithFields(ctx).Info("Event Published")
 	return nil
 
@@ -98,7 +94,6 @@ func Publish(ctx context.Context, systemID, eventType, collectionType string, MQ
 
 // PublishCtrlMsg publishes ODIM control messages to the message bus
 func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}, MQ MQBusCommunicator) error {
-	fmt.Println("coming here 9")
 	topicName := config.Data.MessageBusConf.OdimControlMessageQueue
 	conn, err := MQ.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
@@ -113,7 +108,6 @@ func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}, MQ MQBusComm
 		MessageType: msgType,
 		Data:        data,
 	}
-	fmt.Println("coming here 10")
 	if err := conn.Distribute(ctrlMsg); err != nil {
 		return fmt.Errorf("failed to write data to kafka: %s", err.Error())
 	}

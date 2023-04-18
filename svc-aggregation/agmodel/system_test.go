@@ -107,7 +107,7 @@ func TestGetResource(t *testing.T) {
 				key:   "successID",
 			},
 			want:  "",
-			want1: errors.PackError(errors.DBKeyNotFound, "error while trying to get resource details: no data with the with key successID found"),
+			want1: errors.PackError(errors.DBKeyNotFound, "error while trying to get resource details: no data with the key successID found"),
 		},
 	}
 	for _, tt := range tests {

@@ -180,10 +180,6 @@ func GetResource(ctx context.Context, Table, key string) (string, *errors.Error)
 	}
 	resourceData, err := conn.Read(Table, key)
 	if err != nil {
-		l.LogWithFields(ctx).Debugf("error while trying to get resource details: %s", err.Error())
-		if err.ErrNo() == errors.DBKeyNotFound {
-			return "", errors.PackError(errors.DBKeyNotFound, fmt.Sprintf("error while trying to get resource details: no data with the key %s found", key))
-		}
 		return "", errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
 	}
 	var resource string

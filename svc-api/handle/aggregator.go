@@ -293,7 +293,7 @@ func (a *AggregatorRPCs) GetAllAggregationSource(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
-	l.LogWithFields(ctxt).Debugf("Outgoing response for setting default boot order is %s with response code %d", string(resp.Body), int(resp.StatusCode))
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting all aggregation sources is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 }
 
 // GetAggregationSource is the handler for getting  AggregationSource details

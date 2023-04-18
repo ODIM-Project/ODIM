@@ -661,10 +661,3 @@ func GetUndeliveredEventsKeyList(table, pattern string, dbType common.DbType, ne
 	}
 	return conn.GetAllKeysFromDb(table, pattern, nextCursor)
 }
-
-// PluginTaskInfo hold the task information from plugin
-type PluginTaskInfo struct {
-	Location         string
-	PluginIP         string
-	PluginServerName string
-}

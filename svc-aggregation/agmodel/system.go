@@ -192,6 +192,7 @@ func GetResource(ctx context.Context, Table, key string) (string, *errors.Error)
 
 // GetMultipleResources is used to read multiple keys from DB
 func GetMultipleResources(ctx context.Context, keys []string) ([]string, *errors.Error) {
+	var resource []string
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return nil, errors.PackError(err.ErrNo(), err)
@@ -199,6 +200,13 @@ func GetMultipleResources(ctx context.Context, keys []string) ([]string, *errors
 	resourceData, err := conn.ReadMultipleKeys(keys)
 	if err != nil {
 		return nil, errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
+	}
+	jsonString, jerr := json.Marshal(resourceData)
+	if jerr != nil {
+		return nil, errors.PackError(errors.UndefinedErrorType, jerr)
+	}
+	if errs := json.Unmarshal([]byte(jsonString), &resource); errs != nil {
+		return nil, errors.PackError(errors.UndefinedErrorType, errs)
 	}
 
 	return resourceData, nil

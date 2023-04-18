@@ -311,7 +311,7 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 	var isLogServicePresent bool
 	if resource[LogServices] == nil {
 		data, err := agmodel.GetResource(ctx, LogServiceCollection, lkey)
-		if err != nil {
+		if err != nil && errors.DBKeyNotFound != err.ErrNo() {
 			errMsg := "error while getting LogService data: " + err.Error()
 			l.LogWithFields(ctx).Error(errMsg)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)

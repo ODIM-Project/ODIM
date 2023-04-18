@@ -331,9 +331,6 @@ func (p *ConnPool) ReadMultipleKeys(key []string) ([]string, *errors.Error) {
 	strArr := make([]string, len(value))
 
 	for i, v := range value {
-		if v == nil {
-			continue
-		}
 		if s, ok := v.(string); ok {
 			strArr[i] = s
 		}

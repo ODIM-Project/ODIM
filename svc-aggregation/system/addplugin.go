@@ -270,7 +270,7 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	// saving all plugin manager data
 	var listMembers = make([]agresponse.ListMember, 0)
 	for oid, data := range managersData {
-		mapData["Managers:"+oid] = updateManagerName(data, plugin.ID)
+		mapData["Managers:"+oid] = string(updateManagerName(data, plugin.ID))
 		listMembers = append(listMembers, agresponse.ListMember{
 			OdataID: oid,
 		})

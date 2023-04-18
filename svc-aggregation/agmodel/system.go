@@ -190,28 +190,6 @@ func GetResource(ctx context.Context, Table, key string) (string, *errors.Error)
 	return resource, nil
 }
 
-// GetMultipleResources is used to read multiple keys from DB
-func GetMultipleResources(ctx context.Context, keys []string) ([]string, *errors.Error) {
-	var resource []string
-	conn, err := common.GetDBConnection(common.InMemory)
-	if err != nil {
-		return nil, errors.PackError(err.ErrNo(), err)
-	}
-	resourceData, err := conn.ReadMultipleKeys(keys)
-	if err != nil {
-		return nil, errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
-	}
-	jsonString, jerr := json.Marshal(resourceData)
-	if jerr != nil {
-		return nil, errors.PackError(errors.UndefinedErrorType, jerr)
-	}
-	if errs := json.Unmarshal([]byte(jsonString), &resource); errs != nil {
-		return nil, errors.PackError(errors.UndefinedErrorType, errs)
-	}
-
-	return resourceData, nil
-}
-
 // Create connects to the persistencemgr and creates a system in db
 func (system *SaveSystem) Create(ctx context.Context, systemID string) *errors.Error {
 
@@ -1104,7 +1082,7 @@ func SavePluginManagerInfo(body []byte, table string, key string) error {
 
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
-		return fmt.Errorf("Unable to save the plugin data with SavePluginManagerInfo: %v", err.Error())
+		return fmt.Errorf("unable to save the plugin data with SavePluginManagerInfo: %v", err.Error())
 	}
 	if err := conn.Create(table, key, string(body)); err != nil {
 		return errors.PackError(err.ErrNo(), "Unable to save the plugin data with SavePluginManagerInfo:  duplicate UUID: ", err.Error())

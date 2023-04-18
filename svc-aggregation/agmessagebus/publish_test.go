@@ -29,6 +29,12 @@ var (
 	distributeerror  bool
 )
 
+func resetMockVariable() {
+	communicateerror = false
+	distributeerror = false
+
+}
+
 type MockMQBus struct {
 	Name string
 }
@@ -71,7 +77,6 @@ func MockCommunicator(bt string, messageQueueConfigPath string, pipe string) (dc
 func TestPublish(t *testing.T) {
 	// Set up test data
 	systemID := "systemID"
-	eventType := "ResourceAdded"
 	collectionType := "collectionType"
 	config.SetUpMockConfig(t)
 	tests := []struct {
@@ -79,24 +84,35 @@ func TestPublish(t *testing.T) {
 		wantErr         bool
 		communicatorErr bool
 		distributedErr  bool
+		eventType       string
 	}{
 		{
-			name:            "Positive Case",
+			name:            "Positive Case Resource Added",
 			wantErr:         false,
 			communicatorErr: false,
 			distributedErr:  false,
+			eventType:       "ResourceAdded",
+		},
+		{
+			name:            "Positive Case Resource Removed",
+			wantErr:         false,
+			communicatorErr: false,
+			distributedErr:  false,
+			eventType:       "ResourceRemoved",
 		},
 		{
 			name:            "Kafka COnnection Failure",
 			wantErr:         true,
 			communicatorErr: true,
 			distributedErr:  false,
+			eventType:       "ResourceAdded",
 		},
 		{
 			name:            "Failure While passing message to message bus",
 			wantErr:         true,
 			communicatorErr: false,
 			distributedErr:  true,
+			eventType:       "ResourceAdded",
 		},
 	}
 	for _, tt := range tests {
@@ -104,6 +120,7 @@ func TestPublish(t *testing.T) {
 			MQBusCommunicatorMock := MQBusCommunicator{
 				Communicator: MockCommunicator,
 			}
+
 			if tt.distributedErr {
 				distributeerror = true
 
@@ -112,14 +129,16 @@ func TestPublish(t *testing.T) {
 				communicateerror = true
 			}
 			ctx := mockContext()
-			err := Publish(ctx, systemID, eventType, collectionType, MQBusCommunicatorMock)
+			err := Publish(ctx, systemID, tt.eventType, collectionType, MQBusCommunicatorMock)
 			if tt.wantErr {
 				assert.NotEqual(t, nil, err, "Error should not be Nil for this scenario")
 
 			} else {
+				fmt.Println(err)
 				assert.Equal(t, nil, err, "Error should be Nil for this scenario")
 
 			}
+			resetMockVariable()
 
 		})
 	}
@@ -179,6 +198,7 @@ func TestPublishCtrlMsg(t *testing.T) {
 			}
 
 		})
+		resetMockVariable()
 	}
 
 }

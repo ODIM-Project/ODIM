@@ -393,6 +393,18 @@ func (p *ConnPool) Delete(table, key string) *errors.Error {
 	return nil
 }
 
+// DeleteMultipleKeys data entry takes "keys" array of sting as input to delete data from DB at once
+func (p *ConnPool) DeleteMultipleKeys(keys []string) *errors.Error {
+	tx := p.RedisClient.TxPipeline()
+	tx.Del(keys...)
+	_, err := tx.Exec()
+	if err != nil {
+		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data", err.Error())
+	}
+
+	return nil
+}
+
 // CleanUpDB will delete all database entries
 // The flush command will be executed without warnings please be cautious in using this
 func (p *ConnPool) CleanUpDB() *errors.Error {

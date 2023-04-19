@@ -177,6 +177,18 @@ func DeleteTaskFromDB(ctx context.Context, t *Task) error {
 	return nil
 }
 
+// DeleteMultipleTaskFromDB is used to delete multiple tasks from DB using pipeline
+func DeleteMultipleTaskFromDB(ctx context.Context, t []string) error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.DeleteMultipleKeys(t); err != nil {
+		return fmt.Errorf("error while trying to delete the task: %v", err.Error())
+	}
+	return nil
+}
+
 // GetTaskStatus is to retrieve the task data already present in db
 // Takes:
 //

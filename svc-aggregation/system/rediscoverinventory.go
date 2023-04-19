@@ -357,17 +357,22 @@ func (e *ExternalInterface) publishResourceUpdatedEvent(ctx context.Context, sys
 }
 
 func deleteResourceResetInfo(ctx context.Context, pattern string) {
+	var deleteKeys []string
 	keys, err := agmodel.GetAllMatchingDetails("SystemReset", pattern, common.InMemory)
 	if err != nil {
 		l.LogWithFields(ctx).Error("Unable to fetch all matching keys from system reset table: " + err.Error())
 	}
 	for _, key := range keys {
-		agmodel.DeleteSystemResetInfo(key)
+		deleteKeys = append(deleteKeys, "SystemReset:"+key)
+	}
+	if len(deleteKeys) >= 1 {
+		agmodel.DeleteMultipleKeys(deleteKeys, common.InMemory)
 	}
 }
 
 // deleteSubordinateResource will delete all the subordinate resources assosiated with the pattern
 func deleteSubordinateResource(ctx context.Context, deviceUUID string) {
+	var deleteKeys []string
 	l.LogWithFields(ctx).Info("Initiated removal of subordinate resource for the BMC with ID " +
 		deviceUUID + " from the in-memory DB")
 	mutex.Lock()
@@ -383,10 +388,14 @@ func deleteSubordinateResource(ctx context.Context, deviceUUID string) {
 		case "ComputerSystem", "SystemReset", "SystemOperation", "Chassis", "Managers", "FirmwareInventory", "SoftwareInventory":
 			continue
 		default:
-			if err = agmodel.Delete(resourceDetails[0], resourceDetails[1], common.InMemory); err != nil {
-				l.LogWithFields(ctx).Error("Delete of " + resourceDetails[1] + " from " + resourceDetails[0] + " in " +
-					string(common.InMemory) + " DB failed due to the error: " + err.Error())
-			}
+			key := resourceDetails[0] + ":" + resourceDetails[1]
+			deleteKeys = append(deleteKeys, key)
+		}
+	}
+	if len(deleteKeys) >= 1 {
+		if err = agmodel.DeleteMultipleKeys(deleteKeys, common.InMemory); err != nil {
+			l.LogWithFields(ctx).Error("error while deleting keys : " + err.Error())
+			return
 		}
 	}
 	l.LogWithFields(ctx).Info("Removal of subordinate resources for the BMC with ID " + deviceUUID + " from the in-memory DB is now complete.")

@@ -58,6 +58,7 @@ type TasksRPC struct {
 	OverWriteCompletedTaskUtilHelper func(ctx context.Context, userName string) error
 	CreateTaskUtilHelper             func(ctx context.Context, userName string) (string, error)
 	DeleteTaskFromDBModel            func(ctx context.Context, t *tmodel.Task) error
+	DeleteMultipleTaskFromDBModel    func(ctx context.Context, t []string) error
 	UpdateTaskQueue                  func(t *tmodel.Task)
 	PersistTaskModel                 func(ctx context.Context, t *tmodel.Task, db common.DbType) error
 	ValidateTaskUserNameModel        func(ctx context.Context, userName string) error
@@ -114,16 +115,21 @@ func (ts *TasksRPC) deleteCompletedTask(ctx context.Context, taskID string) erro
 	if err != nil {
 		return fmt.Errorf("error getting taskID - " + taskID + " status : " + err.Error())
 	}
-	for _, subTaskID := range task.ChildTaskIDs {
-		subTask, err := ts.GetTaskStatusModel(ctx, subTaskID, common.InMemory)
-		if err != nil {
-			l.LogWithFields(ctx).Errorf("error getting status of subtask %s: %s", subTaskID, err.Error())
-			continue
-		}
-		err = ts.DeleteTaskFromDBModel(ctx, subTask)
-		if err != nil {
-			l.LogWithFields(ctx).Errorf("error while deleting subtask %s: %s", subTaskID, err.Error())
-		}
+	var getChildTask []string
+	for _, childkey := range task.ChildTaskIDs {
+		getChildTask = append(getChildTask, "task:"+childkey)
+	}
+	subtasks, err := ts.GetMultipleTaskKeysModel(ctx, getChildTask, common.InMemory)
+	if err != nil {
+		l.LogWithFields(ctx).Errorf("error getting status of subtask: %s", err.Error())
+	}
+	var taskStrings []string
+	for _, t := range *subtasks {
+		taskStrings = append(taskStrings, "task:"+t.ID)
+	}
+	err = ts.DeleteMultipleTaskFromDBModel(ctx, taskStrings)
+	if err != nil {
+		l.LogWithFields(ctx).Errorf("error while deleting subtask: %s", err.Error())
 	}
 	err = ts.DeleteTaskFromDBModel(ctx, task)
 	if err != nil {
@@ -338,16 +344,24 @@ func (ts *TasksRPC) taskCancelCallBack(ctx context.Context, taskID string) error
 		return nil
 	}
 	if task.TaskState == common.Completed || task.TaskState == common.Exception || task.TaskState == common.Pending {
+		var getChildTask []string
 		// check if this task has any child tasks, if so delete them.
-		for _, subTaskID := range task.ChildTaskIDs {
-			subTask, err := ts.GetTaskStatusModel(ctx, subTaskID, common.InMemory)
-			if err != nil {
-				l.LogWithFields(ctx).Error("error getting task status : " + err.Error())
-				continue
-			}
-			ts.DeleteTaskFromDBModel(ctx, subTask)
+		for _, childkey := range task.ChildTaskIDs {
+			getChildTask = append(getChildTask, "task:"+childkey)
 		}
-		err = ts.DeleteTaskFromDBModel(ctx, task)
+		subtasks, err := ts.GetMultipleTaskKeysModel(ctx, getChildTask, common.InMemory)
+		if err != nil {
+			l.LogWithFields(ctx).Errorf("error getting status of subtask: %s", err.Error())
+		}
+		var taskStrings []string
+		for _, t := range *subtasks {
+			taskStrings = append(taskStrings, "task:"+t.ID)
+		}
+		err = ts.DeleteMultipleTaskFromDBModel(ctx, taskStrings)
+		if err != nil {
+			l.LogWithFields(ctx).Errorf("error while deleting subtask: %s", err.Error())
+		}
+		ts.DeleteTaskFromDBModel(ctx, task)
 		return nil
 	}
 	threadID := ctx.Value(tcommon.IterationCount).(*int)

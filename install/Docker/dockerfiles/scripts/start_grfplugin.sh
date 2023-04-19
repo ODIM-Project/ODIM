@@ -41,7 +41,7 @@ run_forever()
 start_grfplugin()
 {
 	export PLUGIN_CONFIG_FILE_PATH=/etc/grfplugin_config/config.json
-	/bin/plugin-redfish 2>&1 | tee /var/log/grfplugin_logs/grfplugin.log 
+	nohup /bin/plugin-redfish >> /var/log/grfplugin_logs/grfplugin.log 2>&1 &
 	PID=$!
 	sleep 3
 

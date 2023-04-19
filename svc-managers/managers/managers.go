@@ -160,6 +160,7 @@ func (e *ExternalInterface) GetManagers(ctx context.Context, req *managersproto.
 					return resp
 				}
 			}
+			managerData["Id"] = req.ManagerID
 			err = e.DB.UpdateData(req.URL, managerData, "Managers")
 			if err != nil {
 				errorMessage := "error while saving manager details: " + err.Error()

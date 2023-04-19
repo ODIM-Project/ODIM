@@ -251,6 +251,7 @@ func SetUpMockConfig(t *testing.T) error {
 		MessageBusType:          "Kafka",
 		OdimControlMessageQueue: "odim-control-messages",
 	}
+	Data.MessageBusConf.MessageBusConfigFilePath = "mockfilepath"
 	Data.KeyCertConf = &KeyCertConf{
 		RootCACertificate: hostCA,
 		RPCPrivateKey:     hostPrivKey,

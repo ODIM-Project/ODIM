@@ -41,7 +41,7 @@ run_forever()
 start_urplugin()
 {
 	export PLUGIN_CONFIG_FILE_PATH=/etc/urplugin_config/config.yaml
-	nohup /bin/plugin-unmanaged-racks >> /var/log/urplugin_logs/urplugin.log 2>&1 &
+	/bin/plugin-unmanaged-racks 2>&1 | tee /var/log/urplugin_logs/urplugin.log
 	PID=$!
 	sleep 3
 

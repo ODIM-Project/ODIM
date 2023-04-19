@@ -73,9 +73,12 @@ type Volume struct {
 }
 
 type SecureBoot struct {
-	SecureBootCurrentBoot string `json:"SecureBootCurrentBoot,omitempty"`
-	SecureBootEnable      string `json:"SecureBootEnable,omitempty"`
-	SecureBootMode        string `json:"SecureBootMode,omitempty"`
+	SecureBootEnable string `json:"SecureBootEnable"`
+}
+
+// ResetSecureBoot structure for checking request body case
+type ResetSecureBoot struct {
+	ResetKeysType string `json:"ResetKeysType"`
 }
 
 // Links contains Drives resoruces info

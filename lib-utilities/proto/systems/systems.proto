@@ -25,6 +25,7 @@ service Systems {
  rpc CreateVolume(VolumeRequest) returns (SystemsResponse) {}
  rpc DeleteVolume(VolumeRequest) returns (SystemsResponse) {}
  rpc UpdateSecureBoot(SecureBootRequest) returns (SystemsResponse) {}
+ rpc ResetSecureBoot(SecureBootRequest) returns (SystemsResponse) {}
 }
 
 message GetSystemsRequest{

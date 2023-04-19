@@ -39,6 +39,7 @@ type SystemRPCs struct {
 	CreateVolumeRPC            func(ctx context.Context, req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error)
 	DeleteVolumeRPC            func(ctx context.Context, req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error)
 	UpdateSecureBootRPC        func(ctx context.Context, req systemsproto.SecureBootRequest) (*systemsproto.SystemsResponse, error)
+	ResetSecureBootRPC         func(ctx context.Context, req systemsproto.SecureBootRequest) (*systemsproto.SystemsResponse, error)
 }
 
 // GetSystemsCollection fetches all systems
@@ -404,6 +405,65 @@ func (sys *SystemRPCs) UpdateSecureBoot(ctx iris.Context) {
 		RequestBody:  request,
 	}
 	resp, err := sys.UpdateSecureBootRPC(ctxt, secureBootRequest)
+	if err != nil {
+		errorMessage := "RPC error:" + err.Error()
+		l.LogWithFields(ctxt).Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for updating SecureBoot is %s with status code %d", string(resp.Body), int(resp.StatusCode))
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
+}
+
+// ResetSecureBoot shall reset the UEFI Secure Boot key databases.
+// The `ResetAllKeysToDefault` value shall reset all UEFI Secure Boot key databases to their default values.
+// The `DeleteAllKeys` value shall delete the content of all UEFI Secure Boot key databases.
+// The `DeletePK` value shall delete the content of the PK Secure Boot key database.
+func (sys *SystemRPCs) ResetSecureBoot(ctx iris.Context) {
+	defer ctx.Next()
+	ctxt := ctx.Request().Context()
+	var req interface{}
+	err := ctx.ReadJSON(&req)
+	if err != nil {
+		errorMessage := "error while trying to get JSON body from reset SecureBoot key databases request body: " + err.Error()
+		l.LogWithFields(ctxt).Error(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.JSON(&response.Body)
+		return
+	}
+	request, err := json.Marshal(req)
+	if err != nil {
+		errorMessage := "error while trying to create JSON request body: " + err.Error()
+		l.LogWithFields(ctxt).Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for resetting SecureBoot with request body %s", string(request))
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	if sessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
+		ctx.JSON(&response.Body)
+		return
+	}
+	secureBootRequest := systemsproto.SecureBootRequest{
+		SessionToken: sessionToken,
+		SystemID:     ctx.Params().Get("id"),
+		RequestBody:  request,
+	}
+	resp, err := sys.ResetSecureBootRPC(ctxt, secureBootRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)

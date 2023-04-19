@@ -497,6 +497,8 @@ func Router() *iris.Application {
 	chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkPorts", cha.GetChassisResource)
 	chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkDeviceFunctions/{rid}", cha.GetChassisResource)
 	chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkPorts/{rid}", cha.GetChassisResource)
+	chassis.Get("/{id}/NetworkAdapters/{id2}/Ports", cha.GetChassisResource)
+	chassis.Get("/{id}/NetworkAdapters/{id2}/Ports/{rid}", cha.GetChassisResource)
 	chassis.Any("/", handle.ChassisMethodNotAllowed)
 	chassis.Any("/{id}", handle.ChassisMethodNotAllowed)
 	chassis.Any("/{id}/NetworkAdapters", handle.ChassisMethodNotAllowed)

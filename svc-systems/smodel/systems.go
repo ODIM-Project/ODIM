@@ -73,7 +73,7 @@ type Volume struct {
 }
 
 type SecureBoot struct {
-	SecureBootEnable string `json:"SecureBootEnable"`
+	SecureBootEnable bool `json:"SecureBootEnable"`
 }
 
 // ResetSecureBoot structure for checking request body case

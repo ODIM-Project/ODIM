@@ -233,6 +233,8 @@ const (
 	GetFabricManagerChassis                = "GetFabricManagerChassis"
 	CollectChassisResource                 = "CollectChassisResource"
 	UpdateChassisResource                  = "UpdateChassisResource"
+	UpdateSecureBoot                       = "UpdateSecureBoot"
+	ResetSecureBoot                        = "ResetSecureBoot"
 )
 
 const (

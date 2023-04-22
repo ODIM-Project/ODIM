@@ -513,7 +513,7 @@ func (s *Systems) UpdateSecureBoot(ctx context.Context, req *systemsproto.Secure
 	}
 
 	var threadID int = 1
-	ctxt := context.WithValue(ctx, common.ThreadName, common.DeleteVolume)
+	ctxt := context.WithValue(ctx, common.ThreadName, common.UpdateSecureBoot)
 	ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	go s.EI.UpdateSecureBoot(ctx, req, &pc, taskID)
 	threadID++
@@ -576,7 +576,7 @@ func (s *Systems) ResetSecureBoot(ctx context.Context, req *systemsproto.SecureB
 	}
 
 	var threadID int = 1
-	ctxt := context.WithValue(ctx, common.ThreadName, common.DeleteVolume)
+	ctxt := context.WithValue(ctx, common.ThreadName, common.ResetSecureBoot)
 	ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
 	go s.EI.ResetSecureBoot(ctx, req, &pc, taskID)
 	threadID++

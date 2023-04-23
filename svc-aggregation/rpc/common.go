@@ -43,7 +43,7 @@ func GetAggregator() *Aggregator {
 			CreateTask:               services.CreateTask,
 			CreateChildTask:          services.CreateChildTask,
 			UpdateTask:               system.UpdateTaskData,
-			CreateSubscription:       system.CreateDefaultEventSubscription,
+			CreateSubcription:        system.CreateDefaultEventSubscription,
 			PublishEvent:             system.PublishEvent,
 			GetPluginStatus:          agcommon.GetPluginStatus,
 			SubscribeToEMB:           services.SubscribeToEMB,

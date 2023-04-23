@@ -28,6 +28,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/system"
 	uuid "github.com/satori/go.uuid"
@@ -41,7 +42,7 @@ var connector = &system.ExternalInterface{
 	UpdateTask:               mockUpdateTask,
 	DecryptPassword:          stubDevicePassword,
 	GetPluginStatus:          GetPluginStatusForTesting,
-	CreateSubscription:       EventFunctionsForTesting,
+	CreateSubcription:        EventFunctionsForTesting,
 	PublishEvent:             PostEventFunctionForTesting,
 	EncryptPassword:          stubDevicePassword,
 	DeleteComputeSystem:      deleteComputeforTest,
@@ -118,7 +119,7 @@ func deleteSystemforTest(key string) *errors.Error {
 	return nil
 }
 
-func mockDeleteSubscription(ctx context.Context, uuid string, sessionToken string) (*eventsproto.EventSubResponse, error) {
+func mockDeleteSubscription(ctx context.Context, uuid string) (*eventsproto.EventSubResponse, error) {
 	if uuid == "/redfish/v1/systems/delete-subscription-error.1" {
 		return nil, fmt.Errorf("error while trying to delete event subcription")
 	} else if uuid == "/redfish/v1/systems/unexpected-statuscode.1" {
@@ -131,8 +132,8 @@ func mockDeleteSubscription(ctx context.Context, uuid string, sessionToken strin
 	}, nil
 }
 
-func mockEventNotification(ctx context.Context, systemID, eventType, collectionType string) {
-	return
+func mockEventNotification(ctx context.Context, systemID, eventType, collectionType string, MQ agmessagebus.MQBusCommunicator) error {
+	return nil
 }
 
 func mockManagersData(id string, data map[string]interface{}) error {

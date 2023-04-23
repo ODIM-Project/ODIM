@@ -29,12 +29,12 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
 // DeleteAggregationSources is used to delete aggregation sources
-func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID string, targetURI string,
-	req *aggregatorproto.AggregatorRequest, sessionName string) error {
+func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID string, targetURI string, req *aggregatorproto.AggregatorRequest) error {
 	var task = common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       targetURI,
@@ -58,7 +58,7 @@ func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID
 		go runtime.Goexit()
 	}
 	l.LogWithFields(ctx).Debugf("request data for delete aggregation source: %s", string(req.RequestBody))
-	data := e.DeleteAggregationSource(ctx, req, sessionName)
+	data := e.DeleteAggregationSource(ctx, req)
 	err = e.UpdateTask(ctx, common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       targetURI,
@@ -83,7 +83,7 @@ func (e *ExternalInterface) DeleteAggregationSources(ctx context.Context, taskID
 }
 
 // DeleteAggregationSource is the handler for removing  bmc or manager
-func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, sessionName string) response.RPC {
+func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {
 	var resp response.RPC
 
 	aggregationSource, dbErr := agmodel.GetAggregationSourceInfo(ctx, req.URL)
@@ -142,7 +142,7 @@ func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *ag
 		}
 		for _, systemURI := range systemList {
 			index := strings.LastIndexAny(systemURI, "/")
-			resp = e.deleteCompute(ctx, systemURI, index, target.PluginID, sessionName)
+			resp = e.deleteCompute(ctx, systemURI, index, target.PluginID)
 		}
 		removeAggregationSourceFromAggregates(ctx, systemList)
 	}
@@ -307,10 +307,21 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
-
 	//deleting logservice empty collection
-	if resource[LogServices] != nil {
-		lkey := oid + "/LogServices"
+	lkey := oid + "/LogServices"
+	var isLogServicePresent bool
+	if resource[LogServices] == nil {
+		data, err := agmodel.GetResource(ctx, LogServiceCollection, lkey)
+		if err != nil && errors.DBKeyNotFound != err.ErrNo() {
+			errMsg := "error while getting LogService data: " + err.Error()
+			l.LogWithFields(ctx).Error(errMsg)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		}
+		if data != "" {
+			isLogServicePresent = true
+		}
+	}
+	if resource[LogServices] != nil || isLogServicePresent {
 		dberr = agmodel.DeleteManagersData(lkey, LogServiceCollection)
 		if dberr != nil {
 			errMsg := derr.Error()
@@ -351,7 +362,8 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
-	e.EventNotification(ctx, oid, "ResourceRemoved", "ManagerCollection")
+	MQ := agmessagebus.InitMQSCom()
+	e.EventNotification(ctx, oid, "ResourceRemoved", "ManagerCollection", MQ)
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.ResourceRemoved
 
@@ -364,7 +376,7 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 	return resp
 }
 
-func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index int, pluginID string, sessionToken string) response.RPC {
+func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index int, pluginID string) response.RPC {
 	var resp response.RPC
 	// check whether the any system operation is under progress
 	systemOperation, dbErr := agmodel.GetSystemOperationInfo(ctx, strings.TrimSuffix(key, "/"))
@@ -417,7 +429,7 @@ func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index
 		}
 	}()
 	// Delete Subscription on odimra and also on device
-	subResponse, err := e.DeleteEventSubscription(ctx, key, sessionToken)
+	subResponse, err := e.DeleteEventSubscription(ctx, key)
 	if err != nil && subResponse == nil {
 		errMsg := fmt.Sprintf("error while trying to delete subscriptions: %v", err)
 		l.LogWithFields(ctx).Error(errMsg)
@@ -484,12 +496,15 @@ func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index
 	e.deleteWildCardValues(ctx, key[index+1:])
 
 	for _, manager := range managersList {
-		e.EventNotification(ctx, manager, "ResourceRemoved", "ManagerCollection")
+		MQ := agmessagebus.InitMQSCom()
+		e.EventNotification(ctx, manager, "ResourceRemoved", "ManagerCollection", MQ)
 	}
 	for _, chassis := range chassisList {
-		e.EventNotification(ctx, chassis, "ResourceRemoved", "ChassisCollection")
+		MQ := agmessagebus.InitMQSCom()
+		e.EventNotification(ctx, chassis, "ResourceRemoved", "ChassisCollection", MQ)
 	}
-	e.EventNotification(ctx, key, "ResourceRemoved", "SystemsCollection")
+	MQ := agmessagebus.InitMQSCom()
+	e.EventNotification(ctx, key, "ResourceRemoved", "SystemsCollection", MQ)
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.ResourceRemoved
 	args := response.Args{

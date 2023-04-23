@@ -81,7 +81,7 @@ type ExternalInterface struct {
 	CreateChildTask          func(context.Context, string, string) (string, error)
 	CreateTask               func(context.Context, string) (string, error)
 	UpdateTask               func(context.Context, common.TaskData) error
-	CreateSubscription       func(context.Context, []string)
+	CreateSubcription        func(context.Context, []string)
 	PublishEvent             func(context.Context, []string, string)
 	PublishEventMB           func(context.Context, string, string, string)
 	GetPluginStatus          func(context.Context, agmodel.Plugin) bool
@@ -90,8 +90,8 @@ type ExternalInterface struct {
 	DecryptPassword          func([]byte) ([]byte, error)
 	DeleteComputeSystem      func(int, string) *errors.Error
 	DeleteSystem             func(string) *errors.Error
-	DeleteEventSubscription  func(context.Context, string, string) (*eventsproto.EventSubResponse, error)
-	EventNotification        func(context.Context, string, string, string)
+	DeleteEventSubscription  func(context.Context, string) (*eventsproto.EventSubResponse, error)
+	EventNotification        func(context.Context, string, string, string, agmessagebus.MQBusCommunicator) error
 	GetAllKeysFromTable      func(context.Context, string) ([]string, error)
 	GetConnectionMethod      func(context.Context, string) (agmodel.ConnectionMethod, *errors.Error)
 	UpdateConnectionMethod   func(agmodel.ConnectionMethod, string) *errors.Error
@@ -114,29 +114,29 @@ type responseStatus struct {
 }
 
 type getResourceRequest struct {
-	Data               []byte
-	Username           string
-	Password           string
-	SystemID           string
-	DeviceUUID         string
-	DeviceInfo         interface{}
-	LoginCredentials   map[string]string
-	ParentOID          string
-	OID                string
-	ContactClient      func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	OemFlag            bool
-	Plugin             agmodel.Plugin
-	TaskRequest        string
-	HTTPMethodType     string
-	Token              string
-	StatusPoll         bool
-	CreateSubscription func(context.Context, []string)
-	PublishEvent       func(context.Context, []string, string)
-	GetPluginStatus    func(context.Context, agmodel.Plugin) bool
-	UpdateFlag         bool
-	TargetURI          string
-	UpdateTask         func(context.Context, common.TaskData) error
-	BMCAddress         string
+	Data              []byte
+	Username          string
+	Password          string
+	SystemID          string
+	DeviceUUID        string
+	DeviceInfo        interface{}
+	LoginCredentials  map[string]string
+	ParentOID         string
+	OID               string
+	ContactClient     func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	OemFlag           bool
+	Plugin            agmodel.Plugin
+	TaskRequest       string
+	HTTPMethodType    string
+	Token             string
+	StatusPoll        bool
+	CreateSubcription func(context.Context, []string)
+	PublishEvent      func(context.Context, []string, string)
+	GetPluginStatus   func(context.Context, agmodel.Plugin) bool
+	UpdateFlag        bool
+	TargetURI         string
+	UpdateTask        func(context.Context, common.TaskData) error
+	BMCAddress        string
 }
 
 type respHolder struct {
@@ -1178,7 +1178,8 @@ func CreateDefaultEventSubscription(ctx context.Context, systemID []string) {
 // PublishEvent will publish default events
 func PublishEvent(ctx context.Context, systemIDs []string, collectionName string) {
 	for i := 0; i < len(systemIDs); i++ {
-		agmessagebus.Publish(ctx, systemIDs[i], "ResourceAdded", collectionName)
+		MQ := agmessagebus.InitMQSCom()
+		agmessagebus.Publish(ctx, systemIDs[i], "ResourceAdded", collectionName, MQ)
 	}
 }
 
@@ -1189,7 +1190,8 @@ func PublishPluginStatusOKEvent(ctx context.Context, plugin string, msgQueues []
 		PluginID:  plugin,
 		EMBQueues: msgQueues,
 	}
-	if err := agmessagebus.PublishCtrlMsg(common.SubscribeEMB, data); err != nil {
+	MQ := agmessagebus.InitMQSCom()
+	if err := agmessagebus.PublishCtrlMsg(common.SubscribeEMB, data, MQ); err != nil {
 		l.LogWithFields(ctx).Error("failed to publish resubscribe to " + plugin + " EMB event: " + err.Error())
 		return
 	}

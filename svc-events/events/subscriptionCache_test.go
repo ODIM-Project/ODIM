@@ -234,7 +234,7 @@ func Test_getSourceId(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := getSourceId(tt.args.host)
+			got, _ := getSourceID(tt.args.host)
 			if got != tt.want {
 				t.Errorf("getSourceId() = %v, want %v", got, tt.want)
 			}

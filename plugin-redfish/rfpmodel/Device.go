@@ -12,12 +12,12 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rfpmodel ...
+// Package rfpmodel ...
 package rfpmodel
 
 import "sync"
 
-//Device struct definition
+// Device struct definition
 type Device struct {
 	Host     string `json:"ManagerAddress"`
 	Username string `json:"UserName"`
@@ -27,7 +27,7 @@ type Device struct {
 	SystemID string `json:"SystemID"`
 }
 
-//EvtSubPost ...
+// EvtSubPost ...
 type EvtSubPost struct {
 	Destination     string        `json:"Destination"`
 	EventTypes      []string      `json:"EventTypes,omitempty"`
@@ -36,10 +36,10 @@ type EvtSubPost struct {
 	HTTPHeaders     []HTTPHeaders `json:"HttpHeaders"`
 	Context         string        `json:"Context"`
 	Protocol        string        `json:"Protocol"`
-	EventFormatType string        `json:"EventFormatType"`
+	EventFormatType string        `json:"EventFormatType,omitempty"`
 }
 
-//HTTPHeaders ...
+// HTTPHeaders ...
 type HTTPHeaders struct {
 	ContentType string `json:"Content-Type"`
 }

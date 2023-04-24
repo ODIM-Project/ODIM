@@ -91,7 +91,7 @@ type ExternalInterface struct {
 	DeleteComputeSystem      func(int, string) *errors.Error
 	DeleteSystem             func(string) *errors.Error
 	DeleteEventSubscription  func(context.Context, string) (*eventsproto.EventSubResponse, error)
-	EventNotification        func(context.Context, string, string, string)
+	EventNotification        func(context.Context, string, string, string, agmessagebus.MQBusCommunicator) error
 	GetAllKeysFromTable      func(context.Context, string) ([]string, error)
 	GetConnectionMethod      func(context.Context, string) (agmodel.ConnectionMethod, *errors.Error)
 	UpdateConnectionMethod   func(agmodel.ConnectionMethod, string) *errors.Error
@@ -1178,7 +1178,8 @@ func CreateDefaultEventSubscription(ctx context.Context, systemID []string) {
 // PublishEvent will publish default events
 func PublishEvent(ctx context.Context, systemIDs []string, collectionName string) {
 	for i := 0; i < len(systemIDs); i++ {
-		agmessagebus.Publish(ctx, systemIDs[i], "ResourceAdded", collectionName)
+		MQ := agmessagebus.InitMQSCom()
+		agmessagebus.Publish(ctx, systemIDs[i], "ResourceAdded", collectionName, MQ)
 	}
 }
 
@@ -1189,7 +1190,8 @@ func PublishPluginStatusOKEvent(ctx context.Context, plugin string, msgQueues []
 		PluginID:  plugin,
 		EMBQueues: msgQueues,
 	}
-	if err := agmessagebus.PublishCtrlMsg(common.SubscribeEMB, data); err != nil {
+	MQ := agmessagebus.InitMQSCom()
+	if err := agmessagebus.PublishCtrlMsg(common.SubscribeEMB, data, MQ); err != nil {
 		l.LogWithFields(ctx).Error("failed to publish resubscribe to " + plugin + " EMB event: " + err.Error())
 		return
 	}

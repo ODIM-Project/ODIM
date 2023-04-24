@@ -809,6 +809,7 @@ func (p *PluginContact) GetSystems(ctx context.Context, req *systemsproto.GetSys
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.RequestParam}, nil)
 	}
 	data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`.`, -1)
+	fmt.Println(data)
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)
 	fmt.Println(resource)

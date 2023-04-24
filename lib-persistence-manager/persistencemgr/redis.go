@@ -117,6 +117,68 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string, error) {
 	return masterIP, masterPort, nil
 }
 
+// resetDBWriteConnection is used to reset the WriteConnection Pool (inmemory / OnDisk).
+func resetDBWriteConnection(dbFlag DbType) error {
+	switch dbFlag {
+	case InMemory:
+		config := getInMemoryDBConfig()
+		inMemDBConnPool.Mux.Lock()
+		defer inMemDBConnPool.Mux.Unlock()
+		if inMemDBConnPool.WritePool != nil {
+			return nil
+		}
+		err := inMemDBConnPool.setWritePool(config)
+		if err != nil {
+			return fmt.Errorf("reset of inMemory write pool failed: %s", err.Error())
+		}
+		return nil
+	case OnDisk:
+		config := getOnDiskDBConfig()
+		onDiskDBConnPool.Mux.Lock()
+		defer onDiskDBConnPool.Mux.Unlock()
+		if onDiskDBConnPool.WritePool != nil {
+			return nil
+		}
+		err := onDiskDBConnPool.setWritePool(config)
+		if err != nil {
+			return fmt.Errorf("reset of onDisk write pool failed: %s", err.Error())
+		}
+		return nil
+	default:
+		return nil
+	}
+}
+
+func (p *ConnPool) setWritePool(c *Config) error {
+	currentMasterIP := c.Host
+	currentMasterPort := c.Port
+	if config.Data.DBConf.RedisHAEnabled {
+		currentMasterIP, currentMasterPort = retryForMasterIP(p, c)
+	}
+	if currentMasterIP == "" {
+		return fmt.Errorf("unable to retrieve master ip from sentinel master election")
+	}
+
+	writePool, _ := goRedisNewClient(c, currentMasterIP, currentMasterPort)
+	if writePool == nil {
+		return fmt.Errorf("write pool creation failed")
+	}
+	p.WritePool = writePool
+	p.MasterIP = currentMasterIP
+	return nil
+}
+
+func retryForMasterIP(pool *ConnPool, config *Config) (currentMasterIP, currentMasterPort string) {
+	for i := 0; i < 120; i++ {
+		currentMasterIP, currentMasterPort, _ = GetCurrentMasterHostPort(config)
+		if currentMasterIP != "" {
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
+	return
+}
+
 func getInMemoryDBConfig() *Config {
 	return &Config{
 		Port:         config.Data.DBConf.InMemoryPort,
@@ -154,6 +216,9 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 				return nil, errors.PackError(err.ErrNo(), err.Error())
 			}
 		}
+		if inMemDBConnPool.WritePool == nil {
+			resetDBWriteConnection(InMemory)
+		}
 
 		return inMemDBConnPool, err
 
@@ -165,6 +230,9 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 			if err != nil {
 				return nil, errors.PackError(err.ErrNo(), err.Error())
 			}
+		}
+		if onDiskDBConnPool.WritePool == nil {
+			resetDBWriteConnection(OnDisk)
 		}
 		return onDiskDBConnPool, err
 	default:

@@ -29,9 +29,8 @@ func MockDBConnection(t *testing.T) (*ConnPool, *errors.Error) {
 	if err != nil {
 		return nil, errors.PackError(errors.UndefinedErrorType, "error while trying to initiate mock db: ", err)
 	}
-	client, _ := goRedisNewClient(cfg)
 
-	return &ConnPool{RedisClient: client}, nil
+	return cfg.Connection()
 }
 
 // MockDBWriteConnection provides a mock db write connection for unit testing

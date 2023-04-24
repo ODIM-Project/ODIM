@@ -160,7 +160,7 @@ func FindAll(table, key string) ([][]byte, error) {
 	for i, v := range affectedKeys {
 		s[i] = fmt.Sprint(v)
 	}
-	val, errs := cp.RedisClient.MGet(s...).Result()
+	val, errs := cp.ReadPool.MGet(s...).Result()
 	if errs != nil {
 		return nil, errs
 	}
@@ -192,7 +192,7 @@ func scan(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {
 	results := make([]interface{}, 0)
 	if key != "" {
 		for {
-			values, nxtcursor, err := cp.RedisClient.Scan(uint64(cursor), key, 0).Result()
+			values, nxtcursor, err := cp.ReadPool.Scan(uint64(cursor), key, 0).Result()
 			if err != nil {
 				return nil, err
 			}

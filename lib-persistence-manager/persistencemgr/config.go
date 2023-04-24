@@ -39,7 +39,8 @@ type Config struct {
 
 // ConnPool is the established connection
 type ConnPool struct {
-	RedisClient *redis.Client
-	MasterIP    string
-	Mux         sync.Mutex
+	ReadPool  *redis.Client
+	WritePool *redis.Client
+	MasterIP  string
+	Mux       sync.Mutex
 }

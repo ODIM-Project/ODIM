@@ -166,7 +166,7 @@ func TestProcessTaskQueue(t *testing.T) {
 			args: args{
 				tasks: make(map[string]interface{}),
 				conn: &db.Conn{
-					RedisClientConn: c.RedisClient,
+					RedisClientConn: c.ReadPool,
 				},
 			},
 		},
@@ -175,7 +175,7 @@ func TestProcessTaskQueue(t *testing.T) {
 			args: args{
 				tasks: make(map[string]interface{}),
 				conn: &db.Conn{
-					RedisClientConn: c.RedisClient,
+					RedisClientConn: c.ReadPool,
 				},
 			},
 		},
@@ -184,7 +184,7 @@ func TestProcessTaskQueue(t *testing.T) {
 			args: args{
 				tasks: make(map[string]interface{}),
 				conn: &db.Conn{
-					RedisClientConn: c.RedisClient,
+					RedisClientConn: c.ReadPool,
 				},
 			},
 		},
@@ -193,7 +193,7 @@ func TestProcessTaskQueue(t *testing.T) {
 			args: args{
 				tasks: make(map[string]interface{}),
 				conn: &db.Conn{
-					RedisClientConn: c.RedisClient,
+					RedisClientConn: c.ReadPool,
 				},
 			},
 		},

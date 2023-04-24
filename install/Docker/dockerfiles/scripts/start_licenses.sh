@@ -42,7 +42,7 @@ start_licenses()
 {
         registry_address="etcd:2379"
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
-	/bin/svc-licenses --registry=etcd --registry_address=${registry_address} --server_address=licenses:45113   --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s  2>&1 | tee /var/log/odimra_logs/licenses.log
+	nohup /bin/svc-licenses --registry=etcd --registry_address=${registry_address} --server_address=licenses:45113   --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/licenses.log 2>&1 &
 	PID=$!
 	sleep 3
 

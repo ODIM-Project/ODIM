@@ -563,7 +563,7 @@ func TestGetAllPlugins(t *testing.T) {
 	config.SetUpMockConfig(t)
 	// mockDB := &MockRedisDB{}
 	// mockRedis(t, mockDB)
-	DB2 := DB2Interface{
+	DB2 := DBDataInterface{
 		GetAllKeysFromTableFunc: mockGetAllKeys,
 		GetPluginData:           mockGetPlugins,
 	}
@@ -573,7 +573,7 @@ func TestGetAllPlugins(t *testing.T) {
 	assert.Equal(t, 3, len(plugins), "There should be only 3 plugins")
 }
 
-func mockGetPlugins(string, agmodel.A) (agmodel.Plugin, *errors.Error) {
+func mockGetPlugins(string, agmodel.DBPluginDataRead) (agmodel.Plugin, *errors.Error) {
 	var t *testing.T
 	password := getEncryptedKey(t, []byte("Password"))
 	pluginArr := []agmodel.Plugin{

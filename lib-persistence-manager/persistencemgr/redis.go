@@ -55,8 +55,7 @@ const (
 
 // Conn contains the write connection instance retrieved from the connection pool
 type Conn struct {
-	RedisClientConn *redis.Client
-	WritePool       **redis.Client
+	WriteConn *redis.Client
 }
 
 // RedisExternalCalls containes the methods to make calls to external client libraries of Redis DB
@@ -246,10 +245,14 @@ func goRedisNewClient(dbConfig *Config, host, port string) (*redis.Client, error
 		return nil, fmt.Errorf("error while trying to get tls configuration : %s", err.Error())
 	}
 	client := redis.NewClient(&redis.Options{
-		Addr:      host + ":" + port,
-		Password:  dbConfig.Password,
-		DB:        0,
-		TLSConfig: tlsConfig,
+		Addr:            host + ":" + port,
+		Password:        dbConfig.Password,
+		DB:              0,
+		TLSConfig:       tlsConfig,
+		MaxRetries:      3,
+		MaxRetryBackoff: time.Millisecond * 500,
+		IdleTimeout:     time.Duration(config.Data.DBConf.MaxIdleConns) * time.Second,
+		PoolSize:        config.Data.DBConf.MaxActiveConns,
 	})
 	if err := client.Ping().Err(); err != nil {
 		return nil, err
@@ -262,8 +265,7 @@ func goRedisNewClient(dbConfig *Config, host, port string) (*redis.Client, error
 func (p *ConnPool) GetWriteConnection() (*Conn, *errors.Error) {
 	if p.WritePool != nil {
 		return &Conn{
-			RedisClientConn: p.WritePool,
-			WritePool:       &p.WritePool,
+			WriteConn: p.WritePool,
 		}, nil
 	}
 	return nil, errors.PackError(errors.DBConnFailed)
@@ -580,14 +582,14 @@ func (p *ConnPool) SaveBMCInventory(data map[string]interface{}) *errors.Error {
 
 // Close closes the write connection retrieved from the connection pool
 func (c *Conn) Close() {
-	if c.RedisClientConn != nil {
-		c.RedisClientConn.Close()
+	if c.WriteConn != nil {
+		c.WriteConn.Close()
 	}
 }
 
 // IsBadConn checks if the connection to DB is active or not
 func (c *Conn) IsBadConn() bool {
-	if err := c.RedisClientConn.Ping(); err != nil {
+	if err := c.WriteConn.Ping(); err != nil {
 		return false
 	}
 	return true
@@ -620,10 +622,10 @@ key of map should be the key in database.
 */
 func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 	var partialFailure bool = false
-	if c.RedisClientConn == nil {
+	if c.WriteConn == nil {
 		return errors.PackError(errors.DBConnFailed)
 	}
-	tx := c.RedisClientConn.TxPipeline()
+	tx := c.WriteConn.TxPipeline()
 	keys := getSortedMapKeys(data)
 	for _, key := range keys {
 		jsondata, err := json.Marshal(data[key])
@@ -667,7 +669,7 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 /* SetExpiryTimeForKeys takes the taskID  as input:
  */
 func (c *Conn) SetExpiryTimeForKeys(taskKeys map[string]int64, keyExpiryInterval int) *errors.Error {
-	tx := c.RedisClientConn.TxPipeline()
+	tx := c.WriteConn.TxPipeline()
 	var partialFailure bool = false
 	members := getSortedMapKeys(taskKeys)
 	duration := time.Duration(keyExpiryInterval) * time.Second

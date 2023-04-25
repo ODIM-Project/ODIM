@@ -755,7 +755,7 @@ func (h *respHolder) getStorageInfo(ctx context.Context, progress int32, alotted
 	// Read system data from DB
 	systemURI := strings.Replace(req.OID, "/Storage", "", -1)
 	systemURI = strings.Replace(systemURI, "/Systems/", "/Systems/"+req.DeviceUUID+".", -1)
-	data, dbErr := agmodel.GetResource(context.TODO(), "ComputerSystem", systemURI)
+	data, dbErr := agmodel.GetResource(ctx, "ComputerSystem", systemURI)
 	if dbErr != nil {
 		errMsg := fmt.Errorf("error while getting the systems data %v", dbErr.Error())
 		return "", progress, errMsg
@@ -839,7 +839,7 @@ func createServerSearchIndex(ctx context.Context, computeSystem map[string]inter
 
 	// saving the firmware version
 	if !strings.Contains(oidKey, "/Storage") {
-		firmwareVersion, _ := getFirmwareVersion(oidKey, deviceUUID)
+		firmwareVersion, _ := getFirmwareVersion(ctx, oidKey, deviceUUID)
 		searchForm["FirmwareVersion"] = firmwareVersion
 	}
 
@@ -1119,7 +1119,7 @@ func updateManagerName(data []byte, pluginID string) []byte {
 	return data
 }
 
-func getFirmwareVersion(oid, deviceUUID string) (string, error) {
+func getFirmwareVersion(ctx context.Context, oid, deviceUUID string) (string, error) {
 	strArray := strings.Split(oid, "/")
 	id := strArray[len(strArray)-1]
 	key := strings.Replace(oid, "/"+id, "/"+deviceUUID+".", -1)
@@ -1130,7 +1130,7 @@ func getFirmwareVersion(oid, deviceUUID string) (string, error) {
 	} else if len(keys) == 0 {
 		return "", fmt.Errorf("Manager data is not available")
 	}
-	data, dberr := agmodel.GetResource(context.TODO(), "Managers", keys[0])
+	data, dberr := agmodel.GetResource(ctx, "Managers", keys[0])
 	if dberr != nil {
 		return "", fmt.Errorf("while getting the managers data: %v", dberr.Error())
 	}

@@ -3,3 +3,4 @@ odimra:
   groupID:
   haDeploymentEnabled:
   accountSessionImageTag: "4.0"
+  deploymentType: "RHOCP"

@@ -83,10 +83,10 @@ func newMock(pluginID string) (string, *errors.Error) {
 	return string(jsonData), nil
 }
 
-func stubPluginMgrAddrData(pluginID string, abc agmodel.A) (agmodel.Plugin, *errors.Error) {
+func stubPluginMgrAddrData(pluginID string, dbDataRead agmodel.DBPluginDataRead) (agmodel.Plugin, *errors.Error) {
 	var plugin agmodel.Plugin
-	abc.Newclient = newMock
-	plugin, err := agmodel.GetPluginData(pluginID, abc)
+	dbDataRead.DBReadclient = newMock
+	plugin, err := agmodel.GetPluginData(pluginID, dbDataRead)
 	if err != nil {
 		plugin.ID = pluginID
 		plugin.ManagerUUID = "dummy-mgr-addr"

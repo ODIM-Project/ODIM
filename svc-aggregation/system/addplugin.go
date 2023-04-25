@@ -70,8 +70,8 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	// error is not nil, DB query failed, can't say for sure if queried plugin exists,
 	// except when read fails with plugin data not found, and will continue with add process,
 	// and any other errors, will fail add plugin operation.
-	a := agmodel.A{
-		Newclient: agmodel.New,
+	a := agmodel.DBPluginDataRead{
+		DBReadclient: agmodel.GetPluginDBConnection,
 	}
 	_, errs := agmodel.GetPluginData(cmVariants.PluginID, a)
 	if errs == nil || (errs != nil && (errs.ErrNo() == errors.JSONUnmarshalFailed || errs.ErrNo() == errors.DecryptionFailed)) {
@@ -92,11 +92,11 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	pluginNameArray, err := agmodel.GetAllKeysFromTable(ctx, "Plugin")
 	if err == nil {
 		for _, ID := range pluginNameArray {
-			a := agmodel.A{
-				Newclient: agmodel.New,
+			dbPluginConn := agmodel.DBPluginDataRead{
+				DBReadclient: agmodel.GetPluginDBConnection,
 			}
 
-			plugin, err := e.GetPluginMgrAddr(ID, a)
+			plugin, err := e.GetPluginMgrAddr(ID, dbPluginConn)
 
 			if err != nil && err.ErrNo() == errors.JSONUnmarshalFailed {
 				continue

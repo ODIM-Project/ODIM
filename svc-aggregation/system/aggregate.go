@@ -648,10 +648,10 @@ func (e *ExternalInterface) resetSystem(ctx context.Context, taskID, reqBody str
 	}
 	target.Password = decryptedPasswordByte
 	// Get the Plugin info
-	a := agmodel.A{
-		Newclient: agmodel.New,
+	dbPluginConn := agmodel.DBPluginDataRead{
+		DBReadclient: agmodel.GetPluginDBConnection,
 	}
-	plugin, errs := agmodel.GetPluginData(target.PluginID, a)
+	plugin, errs := agmodel.GetPluginData(target.PluginID, dbPluginConn)
 	if errs != nil {
 		subTaskChan <- http.StatusNotFound
 		errMsg := errs.Error()

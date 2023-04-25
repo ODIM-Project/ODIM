@@ -156,8 +156,8 @@ type EventSubscriptionInfo struct {
 	EventTypes []string
 	Location   string
 }
-type A struct {
-	Newclient func(string) (string, *errors.Error)
+type DBPluginDataRead struct {
+	DBReadclient func(string) (string, *errors.Error)
 }
 
 // TriggerInfo holds the metric trigger info of a device
@@ -212,9 +212,9 @@ func (system *SaveSystem) Create(ctx context.Context, systemID string) *errors.E
 }
 
 // GetPluginData will fetch plugin details
-func GetPluginData(pluginID string, abc A) (Plugin, *errors.Error) {
+func GetPluginData(pluginID string, readPluginData DBPluginDataRead) (Plugin, *errors.Error) {
 	var plugin Plugin
-	plugindata, err := abc.Newclient(pluginID)
+	plugindata, err := readPluginData.DBReadclient(pluginID)
 	if err != nil {
 		return plugin, errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
 	}
@@ -231,7 +231,7 @@ func GetPluginData(pluginID string, abc A) (Plugin, *errors.Error) {
 
 	return plugin, nil
 }
-func New(PluginID string) (string, *errors.Error) {
+func GetPluginDBConnection(PluginID string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return "", errors.PackError(err.ErrNo(), "error while trying to connect to DB: ", err.Error())

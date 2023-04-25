@@ -17,7 +17,6 @@ package agmodel
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -166,7 +165,6 @@ func TestSaveSystem_Create(t *testing.T) {
 func newMock(pluginID string) (string, *errors.Error) {
 	var t *testing.T
 	validPasswordEnc := getEncryptedKey(t, []byte("password"))
-	// invalidPassword := []byte("invalid")
 
 	a := Plugin{
 		ID:                pluginID,
@@ -199,13 +197,10 @@ func newMock(pluginID string) (string, *errors.Error) {
 }
 
 func TestGetPluginData(t *testing.T) {
-	// var t *testing.T
-	fmt.Println("abc")
 	config.SetUpMockConfig(t)
-	// validPasswordEnc := getEncryptedKey(t, []byte("password"))
 	validPassword := []byte("password")
-	abc := A{
-		Newclient: func(pluginID string) (string, *errors.Error) {
+	abc := DBPluginDataRead{
+		DBReadclient: func(pluginID string) (string, *errors.Error) {
 			return newMock(pluginID)
 		},
 	}

@@ -180,10 +180,10 @@ func (e *ExternalInterface) updateAggregationSourceWithConnectionMethod(ctx cont
 }
 
 func (e *ExternalInterface) updateManagerAggregationSource(ctx context.Context, aggregationSourceID, pluginID string, updateRequest map[string]interface{}, hostNameUpdated bool) response.RPC {
-	a := agmodel.A{
-		Newclient: agmodel.New,
+	dbPluginConn := agmodel.DBPluginDataRead{
+		DBReadclient: agmodel.GetPluginDBConnection,
 	}
-	plugin, errs := agmodel.GetPluginData(pluginID, a)
+	plugin, errs := agmodel.GetPluginData(pluginID, dbPluginConn)
 	if errs != nil {
 		errMsg := errs.Error()
 		l.LogWithFields(ctx).Error(errMsg)
@@ -306,10 +306,10 @@ func (e *ExternalInterface) updateManagerAggregationSource(ctx context.Context, 
 
 func (e *ExternalInterface) updateBMCAggregationSource(ctx context.Context, aggregationSourceID, pluginID string, updateRequest map[string]interface{}, hostNameUpdated bool) response.RPC {
 	// Get the plugin  from db
-	a := agmodel.A{
-		Newclient: agmodel.New,
+	dbPluginConn := agmodel.DBPluginDataRead{
+		DBReadclient: agmodel.GetPluginDBConnection,
 	}
-	plugin, errs := agmodel.GetPluginData(pluginID, a)
+	plugin, errs := agmodel.GetPluginData(pluginID, dbPluginConn)
 	if errs != nil {
 		errMsg := errs.Error()
 		l.LogWithFields(ctx).Error(errMsg)

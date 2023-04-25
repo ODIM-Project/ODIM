@@ -706,8 +706,9 @@ func rediscoverStorageInventory(ctx context.Context, systemID, systemURL string)
 	}
 	defer conn.Close()
 	aggregator := aggregatorproto.NewAggregatorClient(conn)
-
-	_, err = aggregator.RediscoverSystemInventory(ctx, &aggregatorproto.RediscoverSystemInventoryRequest{
+	reqCtx := common.CreateNewRequestContext(ctx)
+	reqCtx = common.CreateMetadata(reqCtx)
+	_, err = aggregator.RediscoverSystemInventory(reqCtx, &aggregatorproto.RediscoverSystemInventoryRequest{
 		SystemID:  systemID,
 		SystemURL: systemURL,
 	})
@@ -721,7 +722,7 @@ func rediscoverStorageInventory(ctx context.Context, systemID, systemURL string)
 
 // GetSystemsCollection is to fetch all the Systems uri's and retruns with created collection
 // of systems data from odimra
-func GetSystemsCollection(ctx context.Context, req *systemsproto.GetSystemsRequest) response.RPC {	
+func GetSystemsCollection(ctx context.Context, req *systemsproto.GetSystemsRequest) response.RPC {
 	allowed := make(map[string]map[string]bool)
 	allowed["searchKeys"] = make(map[string]bool)
 	allowed["conditionKeys"] = make(map[string]bool)

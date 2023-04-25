@@ -368,8 +368,9 @@ func rediscoverSystemInventory(ctx context.Context, systemID, systemURL string) 
 	}
 	defer conn.Close()
 	aggregator := aggregatorproto.NewAggregatorClient(conn)
-
-	_, err = aggregator.RediscoverSystemInventory(context.TODO(), &aggregatorproto.RediscoverSystemInventoryRequest{
+	reqCtx := common.CreateNewRequestContext(ctx)
+	reqCtx = common.CreateMetadata(reqCtx)
+	_, err = aggregator.RediscoverSystemInventory(reqCtx, &aggregatorproto.RediscoverSystemInventoryRequest{
 		SystemID:  systemID,
 		SystemURL: systemURL,
 	})
@@ -486,7 +487,9 @@ func callPluginStartUp(ctx context.Context, event common.Events) {
 	}
 	defer conn.Close()
 	aggregator := aggregatorproto.NewAggregatorClient(conn)
-	if _, err = aggregator.SendStartUpData(context.TODO(), &aggregatorproto.SendStartUpDataRequest{
+	ctxt := common.CreateNewRequestContext(ctx)
+	ctxt = common.CreateMetadata(ctxt)
+	if _, err = aggregator.SendStartUpData(ctxt, &aggregatorproto.SendStartUpDataRequest{
 		PluginAddr: event.IP,
 		OriginURI:  message.OriginatorID,
 	}); err != nil {

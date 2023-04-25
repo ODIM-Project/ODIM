@@ -36,7 +36,6 @@ func InitMQSCom() MQBusCommunicator {
 		Communicator: dc.Communicator,
 	}
 }
-
 // Publish will takes the system id,Event type and publishes the data to message bus
 func Publish(ctx context.Context, systemID, eventType, collectionType string, MQ MQBusCommunicator) error {
 	topicName := config.Data.MessageBusConf.OdimControlMessageQueue

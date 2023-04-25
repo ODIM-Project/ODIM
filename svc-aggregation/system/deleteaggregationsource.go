@@ -189,7 +189,7 @@ func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *ag
 		StatusCode:    http.StatusNoContent,
 		StatusMessage: response.ResourceRemoved,
 	}
-	l.LogWithFields(ctx).Debugf("final response for delete aggregation source request: %s", string(fmt.Sprintf("%v", resp.Body)))
+	l.LogWithFields(ctx).Debugf("final response code for delete aggregation source request: %d", resp.StatusCode)
 	return resp
 }
 

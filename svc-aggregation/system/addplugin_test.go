@@ -51,9 +51,8 @@ func mockAggregateHostIndexData(t *testing.T, dbType common.DbType, table, id st
 func newMock(pluginID string) (string, *errors.Error) {
 	var t *testing.T
 	validPasswordEnc := getEncryptedKey(t, []byte("password"))
-	// invalidPassword := []byte("invalid")
 
-	a := Plugin{
+	genricPluginData := Plugin{
 		ID:                pluginID,
 		IP:                "localhost",
 		Port:              "45001",
@@ -62,13 +61,13 @@ func newMock(pluginID string) (string, *errors.Error) {
 		PluginType:        "RF-GENERIC",
 		PreferredAuthType: "BasicAuth",
 	}
-	d := Plugin{}
+	emptyPluginData := Plugin{}
 
 	mockData := map[string]Plugin{
-		"validPlugin":       a,
-		"invalidPassword":   d,
-		"notFound":          d,
-		"invalidPluginData": d,
+		"validPlugin":       genricPluginData,
+		"invalidPassword":   emptyPluginData,
+		"notFound":          emptyPluginData,
+		"invalidPluginData": emptyPluginData,
 	}
 
 	data, ok := mockData[pluginID]

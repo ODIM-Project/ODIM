@@ -166,7 +166,7 @@ func newMock(pluginID string) (string, *errors.Error) {
 	var t *testing.T
 	validPasswordEnc := getEncryptedKey(t, []byte("password"))
 
-	a := Plugin{
+	genricPluginData := Plugin{
 		ID:                pluginID,
 		IP:                "localhost",
 		Port:              "45001",
@@ -175,13 +175,13 @@ func newMock(pluginID string) (string, *errors.Error) {
 		PluginType:        "RF-GENERIC",
 		PreferredAuthType: "BasicAuth",
 	}
-	d := Plugin{}
+	emptyPluginData := Plugin{}
 
 	mockData := map[string]Plugin{
-		"validPlugin":       a,
-		"invalidPassword":   d,
-		"notFound":          d,
-		"invalidPluginData": d,
+		"validPlugin":       genricPluginData,
+		"invalidPassword":   emptyPluginData,
+		"notFound":          emptyPluginData,
+		"invalidPluginData": emptyPluginData,
 	}
 
 	data, ok := mockData[pluginID]
@@ -199,7 +199,7 @@ func newMock(pluginID string) (string, *errors.Error) {
 func TestGetPluginData(t *testing.T) {
 	config.SetUpMockConfig(t)
 	validPassword := []byte("password")
-	abc := DBPluginDataRead{
+	dataReader := DBPluginDataRead{
 		DBReadclient: func(pluginID string) (string, *errors.Error) {
 			return newMock(pluginID)
 		},
@@ -247,7 +247,7 @@ func TestGetPluginData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetPluginData(tt.pluginID, abc)
+			got, err := GetPluginData(tt.pluginID, dataReader)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetPluginData() error = %v, wantErr %v", err, tt.wantErr)
 				return

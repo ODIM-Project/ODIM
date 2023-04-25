@@ -569,7 +569,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	var threadID int = 1
 	ctxt := context.WithValue(ctx, common.ThreadName, common.DeleteAggregationSource)
 	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
-	go a.connector.DeleteAggregationSources(ctxt, taskID, targetURI, req, sessionUserName)
+	go a.connector.DeleteAggregationSources(ctxt, taskID, targetURI, req)
 	threadID++
 	// return 202 Accepted
 	var rpcResp = response.RPC{

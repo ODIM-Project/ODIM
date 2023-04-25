@@ -66,7 +66,7 @@ func (e *ExternalInterface) GetAggregationSourceCollection(ctx context.Context) 
 }
 
 // GetAggregationSource is used  to fetch the AggregationSource with given aggregation source uri
-//and returns AggregationSource
+// and returns AggregationSource
 func (e *ExternalInterface) GetAggregationSource(ctx context.Context, reqURI string) response.RPC {
 	aggregationSource, err := e.GetAggregationSourceInfo(ctx, reqURI)
 	if err != nil {
@@ -113,6 +113,5 @@ func (e *ExternalInterface) GetAggregationSource(ctx context.Context, reqURI str
 		UserName: aggregationSource.UserName,
 		Links:    aggregationSource.Links,
 	}
-	l.LogWithFields(ctx).Debugf("final response for get aggregation source request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }

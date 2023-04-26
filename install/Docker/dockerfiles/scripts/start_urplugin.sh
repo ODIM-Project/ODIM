@@ -46,6 +46,7 @@ start_urplugin()
 	sleep 3
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/urplugin_logs/add-hosts.log 2>&1 &
+        tail -f /var/log/urplugin_logs/urplugin.log
 }
 
 monitor_process()

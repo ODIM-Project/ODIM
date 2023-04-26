@@ -47,6 +47,7 @@ start_task()
 	sleep 3
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/task-add-hosts.log 2>&1 &
+        tail -f /var/log/odimra_logs/task.log
 }
 
 monitor_process()

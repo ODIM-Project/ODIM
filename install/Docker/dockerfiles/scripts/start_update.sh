@@ -47,6 +47,7 @@ start_update()
 	sleep 3
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/update-add-hosts.log 2>&1 &
+        tail -f /var/log/odimra_logs/update.log
 }
 
 monitor_process()

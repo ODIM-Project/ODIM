@@ -46,6 +46,7 @@ start_lenovoplugin()
 	sleep 3
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/lenovoplugin_logs/add-hosts.log 2>&1 &
+        tail -f /var/log/lenovoplugin_logs/lenovoplugin.log
 }
 
 monitor_process()

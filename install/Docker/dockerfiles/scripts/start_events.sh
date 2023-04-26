@@ -47,6 +47,8 @@ start_event()
 	sleep 3
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/events-add-hosts.log 2>&1 &
+
+	tail -f /var/log/odimra_logs/events.log
 }
 
 monitor_process()

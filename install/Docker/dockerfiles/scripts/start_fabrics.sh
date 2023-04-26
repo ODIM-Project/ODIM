@@ -47,6 +47,8 @@ start_fabrics()
 	sleep 3
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/fabrics-add-hosts.log 2>&1 &
+
+        tail -f /var/log/odimra_logs/fabrics.log
 }
 
 monitor_process()

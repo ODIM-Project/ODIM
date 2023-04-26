@@ -23,7 +23,17 @@ spec:
           whenUnsatisfiable: ScheduleAnyway
           labelSelector:
             matchLabels:
-              app: urplugin      
+              app: urplugin
+              {{- if eq .Values.odimra.deploymentType "K8S" }}
+              kubernetes.labels.hpe_com_space: {{ .Values.odimra.namespace }}
+              kubernetes.labels.hpe_com_stack: vendor-plugin
+              kubernetes.labels.hpe_com_component: urplugin
+              kubernetes.labels.hpe_com_app: urplugin
+              {{- else if .Values.odimra.deploymentType "RHOCP"}}
+              kubernetes.flat_labels.hpe_com/space: {{ .Values.odimra.namespace }} 
+              kubernetes.flat_labels.hpe_com/stack: vendor-plugin
+              kubernetes.flat_labels.hpe_com/component: urplugin
+              kubernetes.flat_labels.hpe_com/app : urplugin          
       hostname: urplugin
       volumes:
         - name: urplugin-config-vol

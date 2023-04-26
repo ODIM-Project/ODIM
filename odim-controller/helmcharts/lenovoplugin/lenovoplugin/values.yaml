@@ -2,6 +2,7 @@ odimra:
   namespace:
   groupID:
   haDeploymentEnabled:
+  deploymentType: "K8S"
 lenovoplugin:
   hostname:
   eventListenerNodePort:

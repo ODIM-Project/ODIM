@@ -43,10 +43,10 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
 
 	var task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	a := agmodel.DBPluginDataRead{
+	dbconnectio := agmodel.DBPluginDataRead{
 		DBReadclient: agmodel.GetPluginDBConnection,
 	}
-	plugin, errs := agmodel.GetPluginData(pluginID, a)
+	plugin, errs := agmodel.GetPluginData(pluginID, dbconnectio)
 	if errs != nil {
 		errMsg := "error while getting plugin data: " + errs.Error()
 		l.LogWithFields(ctx).Error(errMsg)

@@ -620,7 +620,6 @@ func GetString(index, match string) ([]string, error) {
 	if dberr != nil {
 		return nil, fmt.Errorf("error while trying to connecting to DB: %v", dberr.Error())
 	}
-	fmt.Println("***************connn", conn)
 	list, err := conn.GetString(index, 0, "*"+match+"*", false)
 	if err != nil && err.Error() != "no data with ID found" {
 		fmt.Println("error while getting the data", err)
@@ -748,7 +747,6 @@ func DeleteSystemResetInfo(systemURI string) *errors.Error {
 2.aggregationSourceURI : uri of AggregationSource
 */
 func AddAggregationSource(req AggregationSource, aggregationSourceURI string) *errors.Error {
-	fmt.Println("***************add")
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return err

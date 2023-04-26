@@ -319,7 +319,6 @@ func (a *Aggregator) UpdateSystemState(ctx context.Context, req *aggregatorproto
 // AddAggregationSource function is for handling the RPC communication for AddAggregationSource
 func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
 	*aggregatorproto.AggregatorResponse, error) {
-	fmt.Println("***************AddAggregationSource")
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
 	var taskID string
@@ -377,7 +376,6 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 		l.LogWithFields(ctx).Error(errMsg)
 		return resp, nil
 	}
-	fmt.Println("***************AddAggregationSource create task", taskURI)
 	strArray := strings.Split(taskURI, "/")
 	if strings.HasSuffix(taskURI, "/") {
 		taskID = strArray[len(strArray)-2]
@@ -401,7 +399,6 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateResponse(rpcResp, resp)
-	fmt.Println("***************AddAggregationSource final")
 	l.LogWithFields(ctx).Debugf("final response for add aggregation source request: %s", string(resp.Body))
 	return resp, nil
 }

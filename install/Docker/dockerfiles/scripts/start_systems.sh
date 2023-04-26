@@ -47,6 +47,7 @@ start_systems()
 	sleep 3
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/systems-add-hosts.log 2>&1 &
+        tail -f /var/log/odimra_logs/systems.log
 }
 
 monitor_process()

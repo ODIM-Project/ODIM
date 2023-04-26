@@ -47,6 +47,7 @@ start_aggregation()
 	sleep 3
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/aggregation-add-hosts.log 2>&1 &
+        tail -f /var/log/odimra_logs/aggregation.log
 }
 
 monitor_process()

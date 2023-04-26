@@ -620,6 +620,7 @@ func GetString(index, match string) ([]string, error) {
 	if dberr != nil {
 		return nil, fmt.Errorf("error while trying to connecting to DB: %v", dberr.Error())
 	}
+	fmt.Println("***************connn", conn)
 	list, err := conn.GetString(index, 0, "*"+match+"*", false)
 	if err != nil && err.Error() != "no data with ID found" {
 		fmt.Println("error while getting the data", err)

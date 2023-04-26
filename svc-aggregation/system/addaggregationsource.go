@@ -86,13 +86,15 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 	}
 
 	ipAddr := getKeyFromManagerAddress(addResourceRequest.ManagerAddress)
+	fmt.Println("***************IP Addresss", ipAddr)
 	indexList, err := agmodel.GetString("BMCAddress", ipAddr)
+	fmt.Println("***************Index**********", indexList, "----", err)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", err.Error())
 		l.LogWithFields(ctx).Errorln(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
-	fmt.Println("***************Index**********", indexList)
+
 	if len(indexList) > 0 {
 		errMsg := fmt.Sprintf("Manager address already exist %v", ipAddr)
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"ComputerSystem", "HostName", ipAddr}, taskInfo)

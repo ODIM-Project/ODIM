@@ -957,16 +957,19 @@ func (p *ConnPool) RemoveMemberFromSet(key string, member string) *errors.Error 
 3. match is the value to match with
 */
 func (p *ConnPool) GetString(index string, cursor float64, match string, regexFlag bool) ([]string, error) {
+	fmt.Println("***************Get string", index, "--", cursor, "--", match, "--", regexFlag)
 	var getList []string
 	currentCursor := cursor
 	match = strings.ToLower(match)
 	for {
 		d, cursor, getErr := p.ReadPool.ZScan(index, uint64(currentCursor), match, count).Result()
+		fmt.Println("***************dddddddd", d, "--", cursor, "--", getErr)
 		if getErr != nil {
 			return []string{}, fmt.Errorf("error while trying to get data: " + getErr.Error())
 		}
 		if len(d) > 1 {
 			for i := 0; i < len(d); i++ {
+				fmt.Println("***************", d[i])
 				if d[i] != "0" {
 					if regexFlag {
 						getList = append(getList, d[i])

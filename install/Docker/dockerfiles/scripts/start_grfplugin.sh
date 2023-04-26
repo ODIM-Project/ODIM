@@ -46,7 +46,6 @@ start_grfplugin()
 	sleep 3
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/grfplugin_logs/add-hosts.log 2>&1 &
-        tail -f /var/log/grfplugin_logs/grfplugin.log
 }
 
 monitor_process()

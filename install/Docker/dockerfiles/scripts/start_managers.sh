@@ -47,7 +47,6 @@ start_manager()
 	sleep 3
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/managers-add-hosts.log 2>&1 &
-        tail -f /var/log/odimra_logs/managers.log
 }
 
 monitor_process()

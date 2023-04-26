@@ -12,20 +12,21 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dpmiddleware ...
+// Package dpmiddleware ...
 package dpmiddleware
 
 import (
 	"encoding/base64"
+	"net/http"
+	"strings"
+
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
-	"net/http"
-	"strings"
 )
 
-//BasicAuth is used to validate REST API calls with plugin with basic autherization
+// BasicAuth is used to validate REST API calls with plugin with basic autherization
 func BasicAuth(ctx iris.Context) {
 	basicAuth := ctx.GetHeader("Authorization")
 	if basicAuth != "" {

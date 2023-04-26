@@ -11,6 +11,7 @@ require (
 	github.com/kataras/iris/v12 v12.2.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.8.1
+	github.com/stretchr/testify v1.8.2
 	golang.org/x/crypto v0.7.0
 )
 
@@ -67,8 +68,7 @@ require (
 	github.com/sanity-io/litter v1.5.5 // indirect
 	github.com/schollz/closestmatch v2.1.0+incompatible // indirect
 	github.com/segmentio/kafka-go v0.4.31 // indirect
-	github.com/sergi/go-diff v1.0.0 // indirect
-	github.com/stretchr/testify v1.8.2 // indirect
+	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/tdewolff/minify/v2 v2.12.4 // indirect
 	github.com/tdewolff/parse/v2 v2.6.4 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

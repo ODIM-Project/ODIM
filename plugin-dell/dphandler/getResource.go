@@ -12,22 +12,22 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
-	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strings"
+
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
-//GetResource : Fetches details of the given resource from the device
+// GetResource : Fetches details of the given resource from the device
 func GetResource(ctx iris.Context) {
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
@@ -41,6 +41,7 @@ func GetResource(ctx iris.Context) {
 
 	uri = convertToSouthBoundURI(uri, storageInstance)
 	// Transforming NetworkAdapters URI
+
 	if strings.Contains(uri, "/Chassis/") && strings.Contains(uri, "NetworkAdapters") {
 		uri = strings.Replace(uri, "/Chassis/", "/Systems/", -1)
 	}
@@ -92,7 +93,6 @@ func GetResource(ctx iris.Context) {
 			return
 		}
 	}
-
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -116,24 +116,7 @@ func GetResource(ctx iris.Context) {
 	respData = convertToNorthBoundURI(respData, storageInstance)
 
 	//Transforming NetworkAdapters URI's
-	if strings.Contains(uri, "/Chassis/") && strings.Contains(respData, "NetworkAdapters") {
-		var respMap map[string]interface{}
-		err := json.Unmarshal([]byte(respData), &respMap)
-		if err != nil {
-			errMsg := "While trying to unmarshal Chassis data, got: " + err.Error()
-			log.Error(errMsg)
-			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString(errMsg)
-			return
-		}
-		netAdapterLink := respMap["NetworkAdapters"]
-		var networkAdapterURI interface{}
-		if netAdapterLink != nil {
-			networkAdapterURI = netAdapterLink.(map[string]interface{})["@odata.id"]
-		}
-		netAdapterTransitionURI := strings.Replace(networkAdapterURI.(string), "Systems", "Chassis", -1)
-		respData = strings.Replace(respData, networkAdapterURI.(string), netAdapterTransitionURI, -1)
-	} else if strings.Contains(uri, "/Systems/") && strings.Contains(uri, "NetworkAdapters") {
+	if strings.Contains(uri, "/Systems/") && strings.Contains(uri, "NetworkAdapters") {
 		respData = strings.Replace(respData, "/Systems/", "/Chassis/", -1)
 	}
 	ctx.StatusCode(resp.StatusCode)

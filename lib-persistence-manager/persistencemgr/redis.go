@@ -967,6 +967,10 @@ func (p *ConnPool) GetString(index string, cursor float64, match string, regexFl
 		if getErr != nil {
 			return []string{}, fmt.Errorf("error while trying to get data: " + getErr.Error())
 		}
+		if len(d) < 1 {
+			return []string{}, fmt.Errorf("no data found for the key: %v", match)
+
+		}
 		if len(d) > 1 {
 			for i := 0; i < len(d); i++ {
 				fmt.Println("***************", d[i])
@@ -1014,6 +1018,10 @@ func (p *ConnPool) GetStorageList(index string, cursor, match float64, condition
 		data, cursor, getErr := p.ReadPool.ZScan(index, uint64(currentCursor), "*", count).Result()
 		if getErr != nil {
 			return nil, fmt.Errorf("error while trying to get data: " + getErr.Error())
+		}
+		if len(data) < 1 {
+			return []string{}, fmt.Errorf("no data found for the key: %v", match)
+
 		}
 		if len(data) > 1 {
 			for _, j := range data {

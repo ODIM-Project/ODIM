@@ -12,17 +12,22 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ..
+// Package dphandler ..
 package dphandler
 
 import (
 	"encoding/json"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
-	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
+	"github.com/google/uuid"
+	"github.hpe.com/Bruce/plugin-ilo/constants"
+	"github.hpe.com/Bruce/plugin-ilo/iputilities"
 )
 
 var (
@@ -45,14 +50,16 @@ func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
+	transactionID := uuid.New()
+	threadID := 1
+	ctx := iputilities.CreateContext(transactionID.String(), constants.PluginEventHandlingActionID, constants.PluginEventHandlingActionName, strconv.Itoa(threadID), constants.PluginEventHandlingActionName)
 	remoteAddr := r.RemoteAddr
 	// if southbound entities are behind a proxy, then
 	// originator address is expected to be in X-Forwarded-For header
 	forwardedFor := r.Header.Get("X-Forwarded-For")
 	forwardedFor = strings.Replace(strings.Replace(forwardedFor, "\n", "", -1), "\r", "", -1)
 	if forwardedFor != "" {
-		log.Info("Request contains X-Forwarded-For: " + forwardedFor + "; RemoteAddr: " + remoteAddr)
+		l.LogWithFields(ctx).Debug("Request contains X-Forwarded-For: " + forwardedFor + "; RemoteAddr: " + remoteAddr)
 		addrList := strings.Split(forwardedFor, ",")
 		// if multiple proxies are present, then the first address
 		// in the X-Forwarded-For header is considered as originator address
@@ -63,7 +70,7 @@ func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		ip = remoteAddr
 	}
-	log.Debug("After splitting remote address, IP is: " + ip)
+	l.LogWithFields(ctx).Debug("After splitting remote address, IP is: " + ip)
 
 	request, _ := json.Marshal(req)
 

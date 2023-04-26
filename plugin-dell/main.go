@@ -16,6 +16,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -24,6 +25,7 @@ import (
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dphandler"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmessagebus"
@@ -35,7 +37,6 @@ import (
 )
 
 var subscriptionInfo []dpmodel.Device
-var log = logrus.New()
 
 // TokenObject will contains the generated token and public key of odimra
 type TokenObject struct {
@@ -45,16 +46,27 @@ type TokenObject struct {
 
 func main() {
 	// intializing the plugin start time
+	hostName := os.Getenv("HOST_NAME")
+	podName := os.Getenv("POD_NAME")
+	pid := os.Getpid()
 	dputilities.PluginStartTime = time.Now()
+	log := logs.Log
+	logs.Adorn(logrus.Fields{
+		"host":   hostName,
+		"procid": podName + fmt.Sprintf("_%d", pid),
+	})
+	if err := config.SetConfiguration(); err != nil {
+		log.Logger.SetFormatter(&logs.SysLogFormatter{})
+		log.Fatal("Error while trying set up configuration: " + err.Error())
+	}
+	logs.SetFormatter(config.Data.LogFormat)
+	log.Logger.SetOutput(os.Stdout)
+	log.Logger.SetLevel(config.Data.LogLevel)
 	log.Info("Plugin Start time:", dputilities.PluginStartTime.Format(time.RFC3339))
 
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Plugin Service should not be run as the root user")
-	}
-
-	if err := config.SetConfiguration(); err != nil {
-		log.Fatal("While reading from config, got: " + err.Error())
 	}
 
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
@@ -107,6 +119,8 @@ func app() {
 func routers() *iris.Application {
 	app := iris.New()
 	app.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		ctx := getContextHeader(r)
+		r = r.WithContext(ctx)
 		path := r.URL.Path
 		if len(path) > 1 && path[len(path)-1] == '/' && path[len(path)-2] != '/' {
 			path = path[:len(path)-1]
@@ -295,4 +309,17 @@ func sendStartupEvent() {
 	events := []interface{}{event}
 	go common.RunWriteWorkers(dphandler.In, events, 1, done)
 	log.Info("successfully sent startup event")
+}
+
+// getContextHeader is used to get context details from header for logging
+func getContextHeader(r *http.Request) context.Context {
+	ctx := context.Background()
+	podName := os.Getenv("POD_NAME")
+	ctx = context.WithValue(ctx, common.TransactionID, r.Header.Get(common.TransactionID))
+	ctx = context.WithValue(ctx, common.ThreadID, r.Header.Get(common.ThreadID))
+	ctx = context.WithValue(ctx, common.ThreadName, r.Header.Get(common.ThreadName))
+	ctx = context.WithValue(ctx, common.ActionID, r.Header.Get(common.ActionID))
+	ctx = context.WithValue(ctx, common.ActionName, r.Header.Get(common.ActionName))
+	ctx = context.WithValue(ctx, common.ProcessName, r.Header.Get(podName))
+	return ctx
 }

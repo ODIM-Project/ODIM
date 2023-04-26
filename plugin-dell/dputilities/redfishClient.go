@@ -17,16 +17,18 @@ package dputilities
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/gofrs/uuid"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
 )
 
 //RedfishDeviceCollection struct definition
@@ -139,7 +141,8 @@ func (client *RedfishClient) GetRootService(device *RedfishDevice) error {
 }
 
 // AuthWithDevice : Performs authentication with the given device and saves the token
-func (client *RedfishClient) AuthWithDevice(device *RedfishDevice) error {
+func (client *RedfishClient) AuthWithDevice(ctx context.Context, device *RedfishDevice) error {
+
 	if device.RootNode == nil {
 		return fmt.Errorf("No ServiceRoot found for device")
 	}
@@ -162,7 +165,7 @@ func (client *RedfishClient) AuthWithDevice(device *RedfishDevice) error {
 
 	defer resp.Body.Close()
 	device.Token = resp.Header["X-Auth-Token"][0]
-	log.Debug("Token: " + device.Token)
+	l.LogWithFields(ctx).Debugf("Token: " + device.Token)
 
 	return nil
 }

@@ -22,17 +22,18 @@ import (
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 )
 
-//GetManagersCollection  Fetches details of the given resource from the device
+// GetManagersCollection  Fetches details of the given resource from the device
 func GetManagersCollection(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
 	uri := ctx.Request().RequestURI
@@ -40,7 +41,7 @@ func GetManagersCollection(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
+			l.LogWithFields(ctxt).Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -77,6 +78,8 @@ func GetManagersCollection(ctx iris.Context) {
 
 //GetManagersInfo Fetches details of the given resource from the device
 func GetManagersInfo(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
+
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
 	uri := ctx.Request().RequestURI
@@ -85,7 +88,7 @@ func GetManagersInfo(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
+			l.LogWithFields(ctxt).Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -119,6 +122,7 @@ func GetManagersInfo(ctx iris.Context) {
 }
 
 func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 	//replacing the request url with south bound translation URL
 	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
 		uri = strings.Replace(uri, key, value, -1)
@@ -131,17 +135,17 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
 		errMsg := "While trying to create the redfish client, got:" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
 	}
 
 	//Fetching generic resource details from the device
-	resp, err := redfishClient.GetWithBasicAuth(device, uri)
+	resp, err := redfishClient.GetWithBasicAuth(ctxt, device, uri)
 	if err != nil {
 		errMsg := "Authentication failed: " + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errMsg)
@@ -152,7 +156,7 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error("While trying to read the response body, got: " + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to read the response body, got: " + err.Error())
 		return
 	}
 
@@ -162,7 +166,7 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 		return
 	}
 	if resp.StatusCode >= 300 {
-		log.Warn("Could not retreive generic resource for " + device.Host + ": " + string(body))
+		l.LogWithFields(ctxt).Warn("Could not retreive generic resource for " + device.Host + ": " + string(body))
 	}
 	respData := string(body)
 	//replacing the resposne with north bound translation URL
@@ -175,13 +179,14 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 
 //VirtualMediaActions performs insert and eject virtual media operations on the device based on the request
 func VirtualMediaActions(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 	uri := ctx.Request().RequestURI
 	uri = replaceURI(uri)
 	var deviceDetails dpmodel.Device
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Error("While trying to collect data from request, got: " + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -198,36 +203,36 @@ func VirtualMediaActions(ctx iris.Context) {
 		payload := map[string]interface{}{}
 		device.PostBody, err = json.Marshal(payload)
 		if err != nil {
-			log.Error(err.Error())
+			l.LogWithFields(ctxt).Error(err.Error())
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(err.Error())
 			return
 		}
 	}
 
-	statusCode, _, body, err := queryDevice(uri, device, http.MethodPost)
+	statusCode, _, body, err := queryDevice(ctx, uri, device, http.MethodPost)
 	if err != nil {
 		errMsg := "while performing actions on virtual media, got: " + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(statusCode)
 		ctx.WriteString(errMsg)
 		return
 	}
 
 	if statusCode == http.StatusNoContent {
-		log.Info("VirtualMediaActions is successful for URI : " + uri)
+		l.LogWithFields(ctxt).Info("VirtualMediaActions is successful for URI : " + uri)
 		statusCode = http.StatusOK
 		body, err = createVirtMediaActionResponse()
 		if err != nil {
 			errMsg := "while creating a response for virtual media actions" + err.Error()
-			log.Error(errMsg)
+			l.LogWithFields(ctxt).Error(errMsg)
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errMsg)
 			return
 		}
 	} else {
 		errResponse := string(body)
-		log.Errorf("VirtualMediaActions is failed for the URI %s, getting response %v ", uri, errResponse)
+		l.LogWithFields(ctxt).Errorf("VirtualMediaActions is failed for the URI %s, getting response %v ", uri, errResponse)
 	}
 
 	ctx.StatusCode(statusCode)

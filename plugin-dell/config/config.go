@@ -22,6 +22,7 @@ import (
 	"os"
 
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
+	lgr "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,6 +41,8 @@ type configModel struct {
 	KeyCertConf             *KeyCertConf      `json:"KeyCertConf"`
 	URLTranslation          *URLTranslation   `json:"URLTranslation"`
 	TLSConf                 *TLSConf          `json:"TLSConf"`
+	LogLevel                log.Level         `json:"LogLevel"`
+	LogFormat               lgr.LogFormat     `json:"LogFormat"`
 }
 
 //PluginConf is for holding all the plugin related configurations

@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-00010101000000-000000000000
 	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20220118101906-b2873faecdba
-	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20220426104855-9b203a83173f
+	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20230329075134-e5327c1b94d8
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/kataras/iris/v12 v12.2.0
@@ -102,6 +102,8 @@ require (
 	moul.io/http2curl/v2 v2.3.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+
 )
 
 replace (

@@ -156,6 +156,8 @@ type EventSubscriptionInfo struct {
 	EventTypes []string
 	Location   string
 }
+
+// DBPluginDataRead holds the db read client interface function
 type DBPluginDataRead struct {
 	DBReadclient func(string) (string, *errors.Error)
 }
@@ -231,6 +233,8 @@ func GetPluginData(pluginID string, readPluginData DBPluginDataRead) (Plugin, *e
 
 	return plugin, nil
 }
+
+// GetPluginDBConnection creates db connection and reads plugin data
 func GetPluginDBConnection(PluginID string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {

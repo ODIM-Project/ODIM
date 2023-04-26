@@ -747,6 +747,7 @@ func DeleteSystemResetInfo(systemURI string) *errors.Error {
 2.aggregationSourceURI : uri of AggregationSource
 */
 func AddAggregationSource(req AggregationSource, aggregationSourceURI string) *errors.Error {
+	fmt.Println("***************add")
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return err

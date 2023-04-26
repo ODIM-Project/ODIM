@@ -33,6 +33,7 @@ import (
 // Discovers  its top level odata.ID links and store them in inmemory db.
 // Upon successfull operation this api returns added AggregationSourceUUID  in the response body with 201 OK.
 func (e *ExternalInterface) AddAggregationSource(ctx context.Context, taskID string, sessionUserName string, req *aggregatorproto.AggregatorRequest) response.RPC {
+	fmt.Println("***************AddAggregationSource in system")
 	targetURI := "/redfish/v1/AggregationService/AggregationSources"
 	var resp response.RPC
 	var percentComplete int32
@@ -43,6 +44,7 @@ func (e *ExternalInterface) AddAggregationSource(ctx context.Context, taskID str
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
+	fmt.Println("***************AddAggregationSource UpdateTask", err)
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 	// parsing the request
 	var aggregationSourceRequest AggregationSource
@@ -74,6 +76,7 @@ func (e *ExternalInterface) AddAggregationSource(ctx context.Context, taskID str
 }
 
 func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, targetURI, reqBody string, percentComplete int32, aggregationSourceRequest AggregationSource, taskInfo *common.TaskUpdateInfo) response.RPC {
+	fmt.Println("***************addAggregationSource*****")
 	var resp response.RPC
 	var addResourceRequest = AddResourceRequest{
 		ManagerAddress:   aggregationSourceRequest.HostName,
@@ -89,6 +92,7 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 		l.LogWithFields(ctx).Errorln(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
+	fmt.Println("***************Index**********", indexList)
 	if len(indexList) > 0 {
 		errMsg := fmt.Sprintf("Manager address already exist %v", ipAddr)
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"ComputerSystem", "HostName", ipAddr}, taskInfo)
@@ -100,6 +104,7 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	if exist {
+		fmt.Println("***************if exist")
 		var errMsg string
 		mIP, _ := getIPAndPortFromAddress(addResourceRequest.ManagerAddress)
 		errMsg = fmt.Sprintf("An active request already exists for adding aggregation source IP %v", mIP)
@@ -120,6 +125,7 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 		l.LogWithFields(ctx).Errorln(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
+	fmt.Println("***************generic save ", err)
 
 	defer func() {
 		err := e.DeleteActiveRequest(ipAddr)
@@ -134,6 +140,7 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"connectionmethod id", addResourceRequest.ConnectionMethod.OdataID}, taskInfo)
 	}
+	fmt.Println("***************connection method", connectionMethod)
 	cmVariants := getConnectionMethodVariants(ctx, connectionMethod.ConnectionMethodVariant)
 	var pluginContactRequest getResourceRequest
 	pluginContactRequest.ContactClient = e.ContactClient
@@ -149,6 +156,7 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 	// else return the response
 	l.LogWithFields(ctx).Debugf("request data to check status of requested manager: %s", string(pluginContactRequest.Data))
 	statusResp, statusCode, queueList := checkStatus(ctx, pluginContactRequest, addResourceRequest, cmVariants, taskInfo)
+	fmt.Println("***************status resp", statusResp, statusCode)
 	if statusCode == http.StatusOK {
 
 		// check if AggregationSource has any values, if its there means its managing the bmcs
@@ -182,6 +190,7 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 	}
 	var aggregationSourceURI = fmt.Sprintf("%s/%s", targetURI, aggregationSourceUUID)
 	dbErr := agmodel.AddAggregationSource(aggregationSourceData, aggregationSourceURI)
+	fmt.Println("***************add agg **", dbErr)
 	if dbErr != nil {
 		errMsg := dbErr.Error()
 		l.LogWithFields(ctx).Error(errMsg)
@@ -195,6 +204,7 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
+	fmt.Println("***************connection method", connectionMethod)
 	commonResponse := response.Response{
 		OdataType:    common.AggregationSourceType,
 		OdataID:      aggregationSourceURI,

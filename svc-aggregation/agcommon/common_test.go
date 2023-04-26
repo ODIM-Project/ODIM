@@ -561,8 +561,6 @@ func mockRedis(t *testing.T, db RedisDB) {
 
 func TestGetAllPlugins(t *testing.T) {
 	config.SetUpMockConfig(t)
-	// mockDB := &MockRedisDB{}
-	// mockRedis(t, mockDB)
 	DB2 := DBDataInterface{
 		GetAllKeysFromTableFunc: mockGetAllKeys,
 		GetPluginData:           mockGetPlugins,

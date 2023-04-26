@@ -47,7 +47,6 @@ start_dellplugin()
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/dellplugin_logs/add-hosts.log 2>&1 &
 
-	tail -f /var/log/dellplugin_logs/dellplugin.log
 }
 
 monitor_process()

@@ -47,7 +47,6 @@ start_licenses()
 	sleep 3
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/licenses-add-hosts.log 2>&1 &
-        tail -f /var/log/odimra_logs/licenses.log
 }
 
 monitor_process()

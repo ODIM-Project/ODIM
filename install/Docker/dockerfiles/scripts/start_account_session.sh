@@ -48,7 +48,6 @@ start_account_session()
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/account-session-add-hosts.log 2>&1 &
 
-        tail -f /var/log/odimra_logs/account_session.log
 }
 
 monitor_process()

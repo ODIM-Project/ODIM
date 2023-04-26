@@ -43,6 +43,13 @@ type DBInterface struct {
 	DeleteInterface              func(string, string, common.DbType) *errors.Error
 }
 
+// DBDataInterface holds interface for plugin and all db data functions
+type DBDataInterface struct {
+	GetAllKeysFromTableFunc func(context.Context, string) ([]string, error)
+	GetPluginData           func(string, agmodel.DBPluginDataRead) (agmodel.Plugin, *errors.Error)
+	GetDatabaseConnection   func(PluginID string) (string, *errors.Error)
+}
+
 // PluginHealthCheckInterface holds the methods required for plugin healthcheck
 type PluginHealthCheckInterface struct {
 	DecryptPassword func([]byte) ([]byte, error)
@@ -284,7 +291,12 @@ func LookupHost(addr string) (ip, host, port string, err error) {
 func LookupPlugin(ctx context.Context, addr string) (agmodel.Plugin, error) {
 	phc := &PluginHealthCheckInterface{}
 	phc.DupPluginConf()
-	plugins, errs := GetAllPlugins(ctx)
+	DatabaseInterface := DBDataInterface{
+		GetAllKeysFromTableFunc: GetAllKeysFromTableFunc,
+		GetPluginData:           agmodel.GetPluginData,
+		GetDatabaseConnection:   agmodel.GetPluginDBConnection,
+	}
+	plugins, errs := GetAllPlugins(ctx, DatabaseInterface)
 	if errs != nil {
 		return agmodel.Plugin{}, errs
 	}
@@ -304,14 +316,17 @@ func LookupPlugin(ctx context.Context, addr string) (agmodel.Plugin, error) {
 }
 
 // GetAllPlugins is for fetching all the plugins added andn stored in db.
-func GetAllPlugins(ctx context.Context) ([]agmodel.Plugin, error) {
-	keys, err := GetAllKeysFromTableFunc(ctx, "Plugin")
+func GetAllPlugins(ctx context.Context, dbData DBDataInterface) ([]agmodel.Plugin, error) {
+	keys, err := dbData.GetAllKeysFromTableFunc(ctx, "Plugin")
 	if err != nil {
 		return nil, err
 	}
 	var plugins []agmodel.Plugin
 	for _, key := range keys {
-		plugin, err := agmodel.GetPluginData(key)
+		readPlugin := agmodel.DBPluginDataRead{
+			DBReadclient: agmodel.GetPluginDBConnection,
+		}
+		plugin, err := dbData.GetPluginData(key, readPlugin)
 		if err != nil {
 			l.LogWithFields(ctx).Error("failed to get details of " + key + " plugin: " + err.Error())
 			continue

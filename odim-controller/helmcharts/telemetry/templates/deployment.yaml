@@ -10,6 +10,16 @@ spec:
   selector:
     matchLabels:
       app: telemetry
+      {{- if eq .Values.odimra.deploymentType "K8S" }}
+      kubernetes.labels.hpe_com_space: {{ .Values.odimra.namespace }}
+      kubernetes.labels.hpe_com_stack: process
+      kubernetes.labels.hpe_com_component: telemetry
+      kubernetes.labels.hpe_com_app: telemetry
+      {{- else if .Values.odimra.deploymentType "RHOCP"}}
+      kubernetes.flat_labels.hpe_com/space: {{ .Values.odimra.namespace }} 
+      kubernetes.flat_labels.hpe_com/stack: process
+      kubernetes.flat_labels.hpe_com/component: telemetry
+      kubernetes.flat_labels.hpe_com/app : telemetry
   template:
     metadata:
       labels:

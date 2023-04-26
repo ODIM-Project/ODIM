@@ -14,6 +14,16 @@ spec:
     metadata:
       labels:
         app: aggregation
+        {{- if eq .Values.odimra.deploymentType "K8S" }}
+        kubernetes.labels.hpe_com_space: {{ .Values.odimra.namespace }}
+        kubernetes.labels.hpe_com_stack: process
+        kubernetes.labels.hpe_com_component: aggregation
+        kubernetes.labels.hpe_com_app: aggregation
+        {{- else if .Values.odimra.deploymentType "RHOCP"}}
+        kubernetes.flat_labels.hpe_com/space: {{ .Values.odimra.namespace }} 
+        kubernetes.flat_labels.hpe_com/stack: process
+        kubernetes.flat_labels.hpe_com/component: aggregation
+        kubernetes.flat_labels.hpe_com/app : aggregation
       name: dapi-envars-fieldref
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}

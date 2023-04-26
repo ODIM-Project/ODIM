@@ -17,12 +17,12 @@ spec:
         {{- if eq .Values.odimra.deploymentType "K8S" }}
         kubernetes.labels.hpe_com_space: {{ .Values.odimra.namespace }}
         kubernetes.labels.hpe_com_stack: authorization
-        kubernetes.labels.hpe_com_component: odim-privileges
+        kubernetes.labels.hpe_com_component: account-session
         kubernetes.labels.hpe_com_app: account-session
         {{- else if .Values.odimra.deploymentType "RHOCP"}}
         kubernetes.flat_labels.hpe_com/space: {{ .Values.odimra.namespace }} 
         kubernetes.flat_labels.hpe_com/stack: authorization
-        kubernetes.flat_labels.hpe_com/component: odim-privileges
+        kubernetes.flat_labels.hpe_com/component: account-session
         kubernetes.flat_labels.hpe_com/app : account-session
       name: dapi-envars-fieldref
       annotations:

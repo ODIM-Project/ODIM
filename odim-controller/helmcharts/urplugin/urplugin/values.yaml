@@ -2,6 +2,7 @@ odimra:
   namespace:
   groupID:
   haDeploymentEnabled:
+  deploymentType: "K8S"
 urplugin:
   imageTag: "3.2"
   urPluginRootServiceUUID:

@@ -1179,7 +1179,7 @@ func TestGetDBConnection(t *testing.T) {
 			args: args{
 				dbFlag: InMemory,
 			},
-			want:  &ConnPool{RedisClient: c.RedisClient},
+			want:  &ConnPool{ReadPool: c.ReadPool},
 			want1: nil,
 		},
 		{
@@ -1187,7 +1187,7 @@ func TestGetDBConnection(t *testing.T) {
 			args: args{
 				dbFlag: OnDisk,
 			},
-			want:  &ConnPool{RedisClient: c.RedisClient},
+			want:  &ConnPool{ReadPool: c.ReadPool},
 			want1: nil,
 		},
 		{
@@ -1218,12 +1218,12 @@ func TestGetDBConnection_HAEnabled(t *testing.T) {
 	config.Data.DBConf.RedisHAEnabled = true
 
 	inMemDBConnPool = &ConnPool{
-		RedisClient: &redis.Client{},
-		MasterIP:    "NotValid",
+		ReadPool: &redis.Client{},
+		MasterIP: "NotValid",
 	}
 	onDiskDBConnPool = &ConnPool{
-		RedisClient: &redis.Client{},
-		MasterIP:    "NotValid",
+		ReadPool: &redis.Client{},
+		MasterIP: "NotValid",
 	}
 	redisExtCalls = redisExtCallsImpMock{}
 	type args struct {
@@ -1451,7 +1451,7 @@ func TestConnPool_GetWriteConnection(t *testing.T) {
 		{
 			name: "fail while getting write connection to DB if write pool is nil",
 			p: &ConnPool{
-				RedisClient: nil,
+				ReadPool: nil,
 			},
 			wantErr: true,
 		},
@@ -1494,7 +1494,7 @@ func TestConn_UpdateTransaction(t *testing.T) {
 		{
 			name: "failure while db update operation",
 			c: &Conn{
-				RedisClientConn: nil,
+				WriteConn: nil,
 			},
 			wantErr: true,
 		},

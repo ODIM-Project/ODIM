@@ -35,6 +35,7 @@ spec:
               kubernetes.flat_labels.hpe_com/stack: process
               kubernetes.flat_labels.hpe_com/component: fabrics
               kubernetes.flat_labels.hpe_com/app : fabrics
+              {{- end }}
       hostname: fabrics
       volumes:
         - name: odimra-config-vol

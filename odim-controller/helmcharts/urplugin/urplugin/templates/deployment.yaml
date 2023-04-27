@@ -33,7 +33,8 @@ spec:
               kubernetes.flat_labels.hpe_com/space: {{ .Values.odimra.namespace }} 
               kubernetes.flat_labels.hpe_com/stack: vendor-plugin
               kubernetes.flat_labels.hpe_com/component: urplugin
-              kubernetes.flat_labels.hpe_com/app : urplugin          
+              kubernetes.flat_labels.hpe_com/app : urplugin      
+              {{- end }}    
       hostname: urplugin
       volumes:
         - name: urplugin-config-vol

@@ -20,6 +20,7 @@ spec:
       kubernetes.flat_labels.hpe_com/stack: process
       kubernetes.flat_labels.hpe_com/component: telemetry
       kubernetes.flat_labels.hpe_com/app : telemetry
+      {{- end }}
   template:
     metadata:
       labels:

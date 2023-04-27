@@ -20,6 +20,7 @@ spec:
       kubernetes.flat_labels.hpe_com/stack: vendor-plugin
       kubernetes.flat_labels.hpe_com/component: lenovoplugin
       kubernetes.flat_labels.hpe_com/app : lenovoplugin
+      {{- end }}
   template:
     metadata:
       labels:

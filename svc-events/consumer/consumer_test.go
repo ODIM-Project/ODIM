@@ -74,17 +74,29 @@ func TestConsume(t *testing.T) {
 		topicName string
 	}
 	tests := []struct {
-		name string
-		args args
+		name      string
+		args      args
+		setConfig func()
 	}{
 		{
 			name: "Positive Test",
 			args: args{
 				topicName: "demo",
 			},
+			setConfig: func() {},
+		},
+		{
+			name: "Negative Invalid Message Type",
+			args: args{
+				topicName: "demo",
+			},
+			setConfig: func() {
+				config.Data.MessageBusConf.MessageBusType = "Invalid"
+			},
 		},
 	}
 	for _, tt := range tests {
+		tt.setConfig()
 		t.Run(tt.name, func(t *testing.T) {
 			Consume(mockContext(), tt.args.topicName)
 		})
@@ -97,17 +109,30 @@ func TestSubscribeCtrlMsgQueue(t *testing.T) {
 		topicName string
 	}
 	tests := []struct {
-		name string
-		args args
+		name      string
+		args      args
+		setConfig func()
 	}{
 		{
 			name: "Positive Test",
 			args: args{
 				topicName: "demo",
 			},
+			setConfig: func() {
+			},
+		},
+		{
+			name: "Negative Invalid Message Type",
+			args: args{
+				topicName: "demo",
+			},
+			setConfig: func() {
+				config.Data.MessageBusConf.MessageBusType = "Invalid"
+			},
 		},
 	}
 	for _, tt := range tests {
+		tt.setConfig()
 		t.Run(tt.name, func(t *testing.T) {
 			SubscribeCtrlMsgQueue(tt.args.topicName)
 		})
@@ -116,7 +141,6 @@ func TestSubscribeCtrlMsgQueue(t *testing.T) {
 
 func Test_consumeCtrlMsg(t *testing.T) {
 	config.SetUpMockConfig(t)
-
 	type args struct {
 		event interface{}
 	}
@@ -130,12 +154,24 @@ func Test_consumeCtrlMsg(t *testing.T) {
 				event: "",
 			},
 		},
+		{
+			name: "Positive ",
+			args: args{
+				event: common.Events{
+					IP:        "00.00.00.00",
+					Request:   []byte(``),
+					EventType: "Alert",
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
+		CtrlMsgRecvQueue, CtrlMsgProcQueue = common.CreateJobQueue(4)
 		t.Run(tt.name, func(t *testing.T) {
 			consumeCtrlMsg(tt.args.event)
 		})
 	}
+
 }
 func mockContext() context.Context {
 	ctx := context.Background()

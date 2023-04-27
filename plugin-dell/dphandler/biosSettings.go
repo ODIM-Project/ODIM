@@ -123,7 +123,7 @@ func ChangeSettings(ctx iris.Context) {
 //changeBiosSettings contains the logic for changing the bios settings
 func changeBiosSettings(ctxt context.Context, uri string, device *dputilities.RedfishDevice) (int, []byte, string) {
 	var errorMessage string
-	statusCode, _, resp, err := queryDevice(uri, device, http.MethodGet)
+	statusCode, _, resp, err := queryDevice(ctxt, uri, device, http.MethodGet)
 	if err != nil {
 		errorMessage = "While trying to retrieve bios settings details, got: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
@@ -142,7 +142,7 @@ func changeBiosSettings(ctxt context.Context, uri string, device *dputilities.Re
 		reqPostBody := map[string]interface{}{"TargetSettingsURI": uri}
 		req, _ := json.Marshal(reqPostBody)
 		device.PostBody = req
-		statusCode, _, resp, err = queryDevice(jobsURI, device, http.MethodPost)
+		statusCode, _, resp, err = queryDevice(ctxt, jobsURI, device, http.MethodPost)
 		if err != nil {
 			errorMessage = "While trying to create a job for updating the Bios settings, got: " + err.Error()
 			l.LogWithFields(ctxt).Error(errorMessage)

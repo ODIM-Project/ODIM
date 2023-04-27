@@ -25,6 +25,7 @@ import (
 	"net/http"
 
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/gofrs/uuid"
@@ -171,7 +172,7 @@ func (client *RedfishClient) AuthWithDevice(ctx context.Context, device *Redfish
 }
 
 // BasicAuthWithDevice : Performs authentication with the given device and saves the token
-func (client *RedfishClient) BasicAuthWithDevice(device *RedfishDevice, requestURI string) (*http.Response, error) {
+func (client *RedfishClient) BasicAuthWithDevice(ctx context.Context, device *RedfishDevice, requestURI string) (*http.Response, error) {
 	// if device.RootNode == nil {
 	// 	return errors.New("no ServiceRoot found for device")
 	// }

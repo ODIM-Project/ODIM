@@ -38,7 +38,7 @@ import (
 
 var subscriptionInfo []dpmodel.Device
 
-// TokenObject will contains the generated token and public key of odimra
+//TokenObject will contains the generated token and public key of odimra
 type TokenObject struct {
 	AuthToken string `json:"authToken"`
 	PublicKey []byte `json:"publicKey"`
@@ -57,7 +57,7 @@ func main() {
 	})
 	if err := config.SetConfiguration(); err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
-		log.Fatal("Error while trying set up configuration: " + err.Error())
+		logs.Log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
 	logs.SetFormatter(config.Data.LogFormat)
 	log.Logger.SetOutput(os.Stdout)
@@ -90,8 +90,10 @@ func main() {
 	if configFilePath == "" {
 		log.Fatal("No value get the environment variable PLUGIN_CONFIG_FILE_PATH")
 	}
+	errChan := make(chan error)
+
 	// TrackConfigFileChanges monitors the dell config changes using fsnotfiy
-	go dputilities.TrackConfigFileChanges(configFilePath)
+	go dputilities.TrackIPConfigListener(configFilePath, errChan)
 
 	intializePluginStatus()
 	app()
@@ -111,7 +113,7 @@ func app() {
 	}
 	pluginServer, err := conf.GetHTTPServerObj()
 	if err != nil {
-		log.Fatal("While initializing plugin server: " + err.Error())
+		logs.Log.Fatal("While initializing plugin server: " + err.Error())
 	}
 	app.Run(iris.Server(pluginServer))
 }
@@ -268,12 +270,12 @@ func eventsrouters() {
 	}
 	evtServer, err := conf.GetHTTPServerObj()
 	if err != nil {
-		log.Fatalf("fatal: error while initializing event server: %v", err)
+		logs.Log.Fatalf("fatal: error while initializing event server: %v", err)
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc(config.Data.EventConf.DestURI, dphandler.RedfishEvents)
 	evtServer.Handler = mux
-	log.Fatal(evtServer.ListenAndServeTLS("", ""))
+	logs.Log.Fatal(evtServer.ListenAndServeTLS("", ""))
 }
 
 // intializePluginStatus sets plugin status
@@ -308,7 +310,8 @@ func sendStartupEvent() {
 	done := make(chan bool)
 	events := []interface{}{event}
 	go common.RunWriteWorkers(dphandler.In, events, 1, done)
-	log.Info("successfully sent startup event")
+	logs.Log.Info("successfully sent startup event")
+
 }
 
 // getContextHeader is used to get context details from header for logging

@@ -142,7 +142,7 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 	}
 
 	//Fetching generic resource details from the device
-	resp, err := redfishClient.GetWithBasicAuth(ctxt, device, uri)
+	resp, err := redfishClient.GetWithBasicAuth(device, uri)
 	if err != nil {
 		errMsg := "Authentication failed: " + err.Error()
 		l.LogWithFields(ctxt).Error(errMsg)

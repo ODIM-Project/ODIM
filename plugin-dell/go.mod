@@ -2,12 +2,14 @@ module github.com/ODIM-Project/ODIM/plugin-dell
 
 go 1.19
 
+
 require (
-	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-00010101000000-000000000000
-	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20220118101906-b2873faecdba
+	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20230329075134-e5327c1b94d8
+	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20230329075134-e5327c1b94d8
 	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20230329075134-e5327c1b94d8
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/gofrs/uuid v3.2.0+incompatible
+	github.com/google/uuid v1.3.0
 	github.com/kataras/iris/v12 v12.2.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.8.1
@@ -19,7 +21,7 @@ require (
 	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
 	github.com/CloudyKit/jet/v6 v6.2.0 // indirect
 	github.com/Joker/jade v1.1.3 // indirect
-	github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201201072448-9772421f1b55 // indirect
+	github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20220214074518-c500db3ba816 // indirect
 	github.com/Shopify/goreferrer v0.0.0-20220729165902-8cddb4f5de06 // indirect
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect

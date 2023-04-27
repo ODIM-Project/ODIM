@@ -78,7 +78,7 @@ func ResetComputerSystem(ctx iris.Context) {
 	}
 	resetType := request["ResetType"].(string)
 	systemURI := strings.Split(uri, "Actions")[0]
-	statusCode, _, body, err := queryDevice(systemURI, device, http.MethodGet)
+	statusCode, _, body, err := queryDevice(ctxt, systemURI, device, http.MethodGet)
 	if err != nil {
 		errMsg := "error while getting system data, got: " + err.Error()
 		l.LogWithFields(ctxt).Error(errMsg)

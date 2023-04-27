@@ -23,6 +23,8 @@ import (
 	"net/http"
 	"time"
 
+	uuid "github.com/satori/go.uuid"
+
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"

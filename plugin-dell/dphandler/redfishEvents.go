@@ -25,9 +25,8 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
+	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	"github.com/google/uuid"
-	"github.hpe.com/Bruce/plugin-ilo/constants"
-	"github.hpe.com/Bruce/plugin-ilo/iputilities"
 )
 
 var (
@@ -52,7 +51,7 @@ func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 	}
 	transactionID := uuid.New()
 	threadID := 1
-	ctx := iputilities.CreateContext(transactionID.String(), constants.PluginEventHandlingActionID, constants.PluginEventHandlingActionName, strconv.Itoa(threadID), constants.PluginEventHandlingActionName)
+	ctx := dputilities.CreateContext(transactionID.String(), common.PluginEventHandlingActionID, common.PluginEventHandlingActionName, strconv.Itoa(threadID), common.PluginEventHandlingActionName)
 	remoteAddr := r.RemoteAddr
 	// if southbound entities are behind a proxy, then
 	// originator address is expected to be in X-Forwarded-For header

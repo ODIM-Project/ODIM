@@ -24,6 +24,7 @@ spec:
         kubernetes.flat_labels.hpe_com/stack: authorization
         kubernetes.flat_labels.hpe_com/component: account-session
         kubernetes.flat_labels.hpe_com/app : account-session
+        {{- end }}
       name: dapi-envars-fieldref
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}

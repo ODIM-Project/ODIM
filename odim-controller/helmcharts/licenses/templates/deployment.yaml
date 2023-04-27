@@ -34,7 +34,8 @@ spec:
               kubernetes.flat_labels.hpe_com/space: {{ .Values.odimra.namespace }} 
               kubernetes.flat_labels.hpe_com/stack: process
               kubernetes.flat_labels.hpe_com/component: licenses
-              kubernetes.flat_labels.hpe_com/app : licenses      
+              kubernetes.flat_labels.hpe_com/app : licenses   
+              {{- end }}   
       hostname: licenses
       volumes:
         - name: odimra-config-vol

@@ -34,6 +34,7 @@ spec:
               kubernetes.flat_labels.hpe_com/stack: vendor-plugin
               kubernetes.flat_labels.hpe_com/component: grfplugin
               kubernetes.flat_labels.hpe_com/app : grfplugin
+              {{- end }}
       hostname: grfplugin
       volumes:
         - name: grfplugin-config-vol

@@ -24,6 +24,7 @@ spec:
         kubernetes.flat_labels.hpe_com/stack: api-gateway
         kubernetes.flat_labels.hpe_com/component: api
         kubernetes.flat_labels.hpe_com/app : api
+        {{- end }}
       name: dapi-envars-fieldref
       name: dapi-envars-fieldref
       annotations:

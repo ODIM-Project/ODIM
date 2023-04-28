@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
@@ -33,7 +33,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//CreateVolume function is used for creating a volume under storage
+// CreateVolume function is used for creating a volume under storage
 func CreateVolume(ctx iris.Context) {
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
@@ -366,7 +366,7 @@ func compareCollection(list1, list2 []string) string {
 
 // createResponse is used for creating a final response for create volume
 func createResponse(code, msg, msgID string) []byte {
-	resp := dpresponse.ErrorResopnse{
+	resp := dpresponse.ErrorResponse{
 		Error: dpresponse.Error{
 			Code:    code,
 			Message: "See @Message.ExtendedInfo for more information.",

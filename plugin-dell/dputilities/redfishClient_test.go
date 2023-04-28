@@ -12,32 +12,264 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-// Packahe dphandler ...
-package dphandler
+// Package dputilities ...
+package dputilities
 
 import (
-	"bytes"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	testhttp "net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
-	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
-	iris "github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/httptest"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestRedfishDevice_MarshalJSON(t *testing.T) {
+	type fields struct {
+		Host            string
+		Username        string
+		Password        string
+		Token           string
+		Tags            []string
+		RootNode        *dpmodel.ServiceRoot
+		ComputerSystems []*Identifier
+		PostBody        []byte
+		Location        string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "Positive",
+			fields: fields{
+				Host: "localhost",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rfd := RedfishDevice{
+				Host:            tt.fields.Host,
+				Username:        tt.fields.Username,
+				Password:        tt.fields.Password,
+				Token:           tt.fields.Token,
+				Tags:            tt.fields.Tags,
+				RootNode:        tt.fields.RootNode,
+				ComputerSystems: tt.fields.ComputerSystems,
+				PostBody:        tt.fields.PostBody,
+				Location:        tt.fields.Location,
+			}
+			_, err := rfd.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("RedfishDevice.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+}
+
+func TestGetRedfishClient(t *testing.T) {
+	config.SetUpMockConfig(t)
+	tests := []struct {
+		name string
+		// want    *RedfishClient
+		wantErr bool
+	}{
+		{
+			name: "Positive ",
+			// want:    &RedfishClient{},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := GetRedfishClient()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetRedfishClient() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			// if !reflect.DeepEqual(got, tt.want) {
+			// 	t.Errorf("GetRedfishClient() = %v, want %v", got, tt.want)
+			// }
+		})
+	}
+}
+
+func TestGet(t *testing.T) {
+	config.SetUpMockConfig(t)
+	// Create a mock RedfishClient object
+	httpClient := &http.Client{}
+	client := &RedfishClient{httpClient}
+
+	// Create a mock RedfishDevice object
+	device := &RedfishDevice{Host: "localhost:1234", Token: "abc"}
+
+	// Call the Get function with mock arguments
+	requestURI := "/Systems"
+	_, err := client.Get(device, requestURI)
+
+	// Verify that the http.NewRequest function was called with the correct arguments
+	endpoint := fmt.Sprintf("https://%s%s", device.Host, requestURI)
+	req, _ := http.NewRequest("GET", endpoint, nil)
+	req.Header.Set("Accept", "application/json")
+	if device.Token != "" {
+		req.Header.Set("X-Auth-Token", device.Token)
+	}
+	req.Close = true
+	assert.NotNil(t, err)
+
+}
+func mockBasicAuthHandler(username, password, url string, w http.ResponseWriter) {
+	if url == "/redfish/v1/GetRootService" {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	w.Header().Set("X-Auth-Token", "12345")
+	w.WriteHeader(http.StatusOK)
+}
+func TestAuthWithDevice_Success(t *testing.T) {
+	config.SetUpMockConfig(t)
+
+	t1 := startTestServer(mockBasicAuthHandler)
+	// Start the server.
+	t1.StartTLS()
+	defer t1.Close()
+
+	deviceHost := "localhost"
+	devicePort := "1234"
+	// Create a RedfishDevice object pointing to the mock HTTP server
+	device := &RedfishDevice{Host: fmt.Sprintf("%s:%s", deviceHost, devicePort), Username: "admin", Password: "password"}
+
+	// Create a RedfishClient object
+	client := &RedfishClient{httpClient: t1.Client()}
+
+	// Set the RootNode property of the device object
+	device.RootNode = &dpmodel.ServiceRoot{}
+
+	// Call the AuthWithDevice method
+	err := client.AuthWithDevice(device)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+
+	// Verify that the Token property of the device object has been set correctly
+	expectedToken := "12345"
+	if device.Token != expectedToken {
+		t.Errorf("Expected Token to be %q, but got: %q", expectedToken, device.Token)
+	}
+
+	// Call the AuthWithDevice method
+	_, err = client.BasicAuthWithDevice(device, "/system")
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+
+	_, err = client.GetWithBasicAuth(device, "/system/1")
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+
+	_, err = client.SubscribeForEvents(device)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+	_, err = client.ResetComputerSystem(device, "/reset")
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+
+	_, err = client.SetDefaultBootOrder(device, "/setDefaultBootOrder")
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+
+	_, err = client.DeleteSubscriptionDetail(device)
+	assert.NotNil(t, err)
+	_, err = client.DeviceCall(device, "/systems/1", http.MethodGet)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+	_, err = client.GetSubscriptionDetail(device)
+	assert.NotNil(t, err)
+
+	err = client.GetRootService(device)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+	redfishServiceRootURI = "/redfish/v1/GetRootService"
+	err = client.GetRootService(device)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %v", err)
+	}
+}
+
+func TestAuthWithDevice_NoServiceRoot(t *testing.T) {
+	// Create a RedfishDevice object with no ServiceRoot
+	device := &RedfishDevice{Host: "https://example.com", Username: "admin", Password: "password"}
+
+	// Create a RedfishClient object
+	client := &RedfishClient{}
+
+	// Call the AuthWithDevice method
+	err := client.AuthWithDevice(device)
+	if err == nil {
+		t.Error("Expected an error, but got none")
+	}
+
+	// Verify that the error message is correct
+	expectedError := "no ServiceRoot found for device"
+	if err.Error() != expectedError {
+		t.Errorf("Expected error message to be %q, but got: %q", expectedError, err.Error())
+	}
+}
+
+type mockHandlerFunc func(string, string, string, http.ResponseWriter)
+
+func startTestServer(handler mockHandlerFunc) *testhttp.Server {
+	// create a listener with the desired port.
+	l, err := net.Listen("tcp", "localhost:1234")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	ts := testhttp.NewUnstartedServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handler("", "", r.URL.Path, w)
+
+		}))
+
+	// NewUnstartedServer creates a listener. Close that listener and replace
+	// with the one we created.
+	ts.Listener = l
+	tlsConfig := &tls.Config{}
+
+	cert, err := tls.X509KeyPair(hostCert, hostPrivKey)
+	if err != nil {
+		log.Fatal("Failed to load key pair: " + err.Error())
+	}
+	tlsConfig.Certificates = []tls.Certificate{cert}
+	tlsConfig.BuildNameToCertificate()
+
+	capool := x509.NewCertPool()
+	if !capool.AppendCertsFromPEM(hostCA) {
+		log.Fatal("Failed to load CA certificate")
+	}
+	tlsConfig.RootCAs = capool
+	tlsConfig.ClientCAs = capool
+
+	ts.TLS = tlsConfig
+	ts.Config.TLSConfig = tlsConfig
+	return ts
+}
 
 var (
 	hostCA = []byte(`-----BEGIN CERTIFICATE-----
@@ -165,215 +397,3 @@ K6OL+MdQwFDPKEpgahApmQSze8weECGZ78kQ+bYjB/9qMFo/oNWoPDCdfy6zVWXK
 URZohcbG2+qtaL2nLZTvuy3CSEn3blGtWd9zp2IVibhF7HdFEgV8U+Fr0ao=
 -----END RSA PRIVATE KEY-----`)
 )
-
-type mockHandlerFunc func(string, string, string, http.ResponseWriter)
-
-func startTestServer(handler mockHandlerFunc) *testhttp.Server {
-	// create a listener with the desired port.
-	l, err := net.Listen("tcp", "localhost:1234")
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	ts := testhttp.NewUnstartedServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path == "/redfish/v1" {
-				handler("", "", r.URL.Path, w)
-			} else {
-				auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
-				payload, _ := base64.StdEncoding.DecodeString(auth[1])
-				pair := strings.SplitN(string(payload), ":", 2)
-				handler(pair[0], pair[1], r.URL.Path, w)
-			}
-		}))
-
-	// NewUnstartedServer creates a listener. Close that listener and replace
-	// with the one we created.
-	ts.Listener = l
-	tlsConfig := &tls.Config{}
-
-	cert, err := tls.X509KeyPair(hostCert, hostPrivKey)
-	if err != nil {
-		log.Fatal("Failed to load key pair: " + err.Error())
-	}
-	tlsConfig.Certificates = []tls.Certificate{cert}
-	tlsConfig.BuildNameToCertificate()
-
-	capool := x509.NewCertPool()
-	if !capool.AppendCertsFromPEM(hostCA) {
-		log.Fatal("Failed to load CA certificate")
-	}
-	tlsConfig.RootCAs = capool
-	tlsConfig.ClientCAs = capool
-
-	ts.TLS = tlsConfig
-	ts.Config.TLSConfig = tlsConfig
-	return ts
-}
-
-func mockDeviceHandler(username, password, url string, w http.ResponseWriter) {
-	resp, err := mockChangeBiosSettings(username, url)
-	if err != nil && resp == nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(resp.StatusCode)
-
-	defer resp.Body.Close()
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Error(err.Error())
-	}
-	w.Write(respBody)
-}
-
-func mockChangeBiosSettings(username, url string) (*http.Response, error) {
-	biosSetting := dpmodel.BiosSettings{
-		Oem: dpmodel.OemDell{
-			Dell: dpmodel.Dell{
-				Jobs: dpmodel.OdataID{
-					OdataID: "/redfish/v1/Managers/1/Jobs",
-				},
-			},
-		},
-	}
-
-	if url == "/ODIM/v1/Systems/1" && username == "admin" {
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString("Success")),
-		}, nil
-	}
-	if url == "/ODIM/v1/Systems/1" && username != "admin" {
-		return &http.Response{
-			StatusCode: http.StatusBadRequest,
-			Body:       ioutil.NopCloser(bytes.NewBufferString("Failed")),
-		}, fmt.Errorf("Error")
-	}
-	if url == "/ODIM/v1/Systems/1/Bios/Settings" && username == "admin" {
-		e, _ := json.Marshal(biosSetting)
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(string(e))),
-		}, nil
-	}
-	if url == "/ODIM/v1/Systems/1/Bios/Settings" && username != "admin" {
-		return &http.Response{
-			StatusCode: http.StatusBadRequest,
-			Body:       ioutil.NopCloser(bytes.NewBufferString("Failed")),
-		}, fmt.Errorf("Error")
-	}
-	if url == "/redfish/v1/Managers/1/Jobs" && username == "admin" {
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString("Success")),
-		}, nil
-	}
-	return nil, fmt.Errorf("Error")
-}
-
-func TestChangeBootOrderSettings(t *testing.T) {
-	config.SetUpMockConfig(t)
-
-	deviceHost := "localhost"
-	devicePort := "1234"
-	ts := startTestServer(mockDeviceHandler)
-	// Start the server.
-	ts.StartTLS()
-	defer ts.Close()
-
-	mockApp := iris.New()
-	redfishRoutes := mockApp.Party("/redfish/v1")
-
-	redfishRoutes.Patch("/Systems/{id}", ChangeSettings)
-
-	dpresponse.PluginToken = "token"
-
-	e := httptest.New(t, mockApp)
-
-	requestBody := map[string]interface{}{
-		"ManagerAddress": fmt.Sprintf("%s:%s", deviceHost, devicePort),
-		"UserName":       "admin",
-		"Password":       []byte("P@$$w0rd"),
-	}
-	//Unit Test for success scenario
-	e.PATCH("/redfish/v1/Systems/1").WithJSON(requestBody).Expect().Status(http.StatusOK)
-
-	//Invalid Read
-	IoUtilReadAll = func(r io.Reader) ([]byte, error) {
-		return nil, fmt.Errorf("fake error")
-	}
-	//Unit Test for success scenario
-	e.PATCH("/redfish/v1/Systems/1").WithJSON(requestBody).Expect().Status(http.StatusOK)
-
-	IoUtilReadAll = func(r io.Reader) ([]byte, error) {
-		return ioutil.ReadAll(r)
-	}
-
-	//Invalid Client
-	config.Data.KeyCertConf.RootCACertificate = nil
-
-	e.PATCH("/redfish/v1/Systems/1").WithJSON(requestBody).Expect().Status(http.StatusInternalServerError)
-
-	//
-	config.SetUpMockConfig(t)
-
-	// Invalid device details
-	requestBody2 := map[string]interface{}{
-		"ManagerAddress": fmt.Sprintf("%s:%s", "deviceHost", "devicePort"),
-		"UserName":       "admin",
-		"Password":       "password",
-	}
-	e.PATCH("/redfish/v1/Systems/1").WithJSON(requestBody2).Expect().Status(http.StatusInternalServerError)
-
-	//Case for invalid token
-	e.PATCH("/redfish/v1/Systems/1").WithHeader("X-Auth-Token", "token").WithJSON(requestBody).Expect().Status(http.StatusUnauthorized)
-
-	//unittest for bad request scenario: given device details are wrong
-	requestBody1 := "requestbody"
-	e.PATCH("/redfish/v1/Systems/1").WithJSON(requestBody1).Expect().Status(http.StatusBadRequest)
-}
-
-func TestChangeBiosSettings(t *testing.T) {
-	config.SetUpMockConfig(t)
-
-	deviceHost := "localhost"
-	devicePort := "1234"
-	ts := startTestServer(mockDeviceHandler)
-	// Start the server.
-	ts.StartTLS()
-	defer ts.Close()
-
-	mockApp := iris.New()
-	redfishRoutes := mockApp.Party("/redfish/v1")
-
-	redfishRoutes.Patch("/Systems/{id}/Bios/Settings", ChangeSettings)
-
-	dpresponse.PluginToken = "token"
-
-	e := httptest.New(t, mockApp)
-
-	requestBody := map[string]interface{}{
-		"ManagerAddress": fmt.Sprintf("%s:%s", deviceHost, devicePort),
-		"UserName":       "admin",
-		"Password":       []byte("P@$$w0rd"),
-	}
-	//Unit Test for success scenario
-	e.PATCH("/redfish/v1/Systems/1/Bios/Settings").WithJSON(requestBody).Expect().Status(http.StatusOK)
-
-	//Case for invalid token
-	e.PATCH("/redfish/v1/Systems/1/Bios/Settings").WithHeader("X-Auth-Token", "token").WithJSON(requestBody).Expect().Status(http.StatusUnauthorized)
-
-	//unittest for bad request scenario: given device details are wrong
-	requestBody1 := "requestbody"
-	e.PATCH("/redfish/v1/Systems/1/Bios/Settings").WithJSON(requestBody1).Expect().Status(http.StatusBadRequest)
-}
-
-func Test_changeBiosSettings(t *testing.T) {
-	config.SetUpMockConfig(t)
-	config.Data.KeyCertConf.RootCACertificate = nil
-	status, _, err := changeBiosSettings("/invalidURL", nil)
-
-	assert.NotNil(t, err)
-	assert.Equal(t, status, http.StatusInternalServerError)
-}

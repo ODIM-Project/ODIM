@@ -181,3 +181,37 @@ func DeleteVolume(ctx context.Context, req systemsproto.VolumeRequest) (*systems
 	defer conn.Close()
 	return resp, nil
 }
+
+// UpdateSecureBoot will do the rpc call to UpdateSecureBoot
+func UpdateSecureBoot(ctx context.Context, req systemsproto.SecureBootRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.Systems)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+
+	asService := NewSystemsClientFunc(conn)
+	resp, err := asService.UpdateSecureBoot(ctx, &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+	defer conn.Close()
+	return resp, nil
+}
+
+// ResetSecureBoot will do the rpc call to ResetSecureBoot
+func ResetSecureBoot(ctx context.Context, req systemsproto.SecureBootRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.Systems)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+
+	asService := NewSystemsClientFunc(conn)
+	resp, err := asService.ResetSecureBoot(ctx, &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+	defer conn.Close()
+	return resp, nil
+}

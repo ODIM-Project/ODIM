@@ -10,21 +10,21 @@ spec:
   selector:
     matchLabels:
       app: lenovoplugin
-      {{- if eq .Values.odimra.deploymentType "K8S" }}
-      kubernetes.labels.hpe_com_space: {{ .Values.odimra.namespace }}
-      kubernetes.labels.hpe_com_stack: vendor-plugin
-      kubernetes.labels.hpe_com_component: lenovoplugin
-      kubernetes.labels.hpe_com_app: lenovoplugin
-      {{- else if .Values.odimra.deploymentType "RHOCP"}}
-      kubernetes.flat_labels.hpe_com/space: {{ .Values.odimra.namespace }} 
-      kubernetes.flat_labels.hpe_com/stack: vendor-plugin
-      kubernetes.flat_labels.hpe_com/component: lenovoplugin
-      kubernetes.flat_labels.hpe_com/app : lenovoplugin
-      {{- end }}
   template:
     metadata:
       labels:
         app: lenovoplugin
+        {{- if eq .Values.odimra.deploymentType "K8S" }}
+        kubernetes.labels.hpe_com_space: {{ .Values.odimra.namespace }}
+        kubernetes.labels.hpe_com_stack: vendor-plugin
+        kubernetes.labels.hpe_com_component: lenovoplugin
+        kubernetes.labels.hpe_com_app: lenovoplugin
+        {{- else if .Values.odimra.deploymentType "RHOCP"}}
+        kubernetes.flat_labels.hpe_com/space: {{ .Values.odimra.namespace }} 
+        kubernetes.flat_labels.hpe_com/stack: vendor-plugin
+        kubernetes.flat_labels.hpe_com/component: lenovoplugin
+        kubernetes.flat_labels.hpe_com/app : lenovoplugin
+        {{- end }}
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:

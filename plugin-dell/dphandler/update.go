@@ -17,7 +17,6 @@ package dphandler
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -101,7 +100,7 @@ func SimpleUpdate(ctx iris.Context) {
 		}
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := IoUtilReadAll(resp.Body)
 	if err != nil {
 		errorMessage := "While trying to read the response body, got: " + err.Error()
 		log.Error(errorMessage)
@@ -163,7 +162,7 @@ func StartUpdate(ctx iris.Context) {
 		}
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := IoUtilReadAll(resp.Body)
 	if err != nil {
 		errorMessage := "While trying to read response body, got: " + err.Error()
 		log.Error(errorMessage)

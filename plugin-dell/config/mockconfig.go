@@ -176,7 +176,7 @@ func SetUpMockConfig(t *testing.T) error {
 		Host:     localhost,
 		Port:     "45005",
 		UserName: "admin",
-		Password: "O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==",
+		Password: "6adUhnNqVQr0_qhh4jeDBcSlVaBQlN7h3KL2iv6knMOlDo3m6hMepSExH01vsFShRugoL441_y5jaMGmLpCXFg==", // password
 	}
 	Data.LoadBalancerConf = &LoadBalancerConf{
 		Host: localhost,

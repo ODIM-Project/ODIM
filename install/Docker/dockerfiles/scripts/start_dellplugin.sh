@@ -41,11 +41,12 @@ run_forever()
 start_dellplugin()
 {
 	export PLUGIN_CONFIG_FILE_PATH=/etc/dellplugin_config/config.json
-	nohup /bin/plugin-dell >> /var/log/dellplugin_logs/dellplugin.log 2>&1 &
+	/bin/plugin-dell 2>&1 &
 	PID=$!
 	sleep 3
 
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/dellplugin_logs/add-hosts.log 2>&1 &
+
 }
 
 monitor_process()

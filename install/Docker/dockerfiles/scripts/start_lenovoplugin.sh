@@ -41,7 +41,7 @@ run_forever()
 start_lenovoplugin()
 {
 	export PLUGIN_CONFIG_FILE_PATH=/etc/lenovoplugin_config/config.json
-	nohup /bin/plugin-lenovo >> /var/log/lenovoplugin_logs/lenovoplugin.log 2>&1 &
+	/bin/plugin-lenovo 2>&1 &
 	PID=$!
 	sleep 3
 

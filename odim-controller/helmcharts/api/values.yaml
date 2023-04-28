@@ -4,3 +4,4 @@ odimra:
   apiNodePort:
   haDeploymentEnabled:
   apiImageTag: "5.0"
+  deploymentType: "K8S"

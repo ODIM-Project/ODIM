@@ -42,7 +42,8 @@ start_systems()
 {
         registry_address="etcd:2379"
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
-	/bin/svc-systems --registry=etcd --registry_address=${registry_address} --server_address=systems:45104   --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s  2>&1 &
+        client_request_timeout=$(echo $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " " )s)
+	/bin/svc-systems --registry=etcd --registry_address=${registry_address} --server_address=systems:45104   --client_request_timeout=${client_request_timeout} 2>&1 &
 	PID=$!
 	sleep 3
 

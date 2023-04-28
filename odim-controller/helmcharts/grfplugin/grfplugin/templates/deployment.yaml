@@ -34,7 +34,7 @@ spec:
           whenUnsatisfiable: ScheduleAnyway
           labelSelector:
             matchLabels:
-              app: grfplugin        
+              app: grfplugin
       hostname: grfplugin
       volumes:
         - name: grfplugin-config-vol

@@ -3,3 +3,4 @@ odimra:
   groupID:
   haDeploymentEnabled:
   systemsImageTag: "5.0"
+  deploymentType: "K8S"

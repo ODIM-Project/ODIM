@@ -14,6 +14,18 @@ spec:
     metadata:
       labels:
         app: api
+        {{- if eq .Values.odimra.deploymentType "K8S" }}
+        kubernetes.labels.hpe_com_space: {{ .Values.odimra.namespace }}
+        kubernetes.labels.hpe_com_stack: api-gateway
+        kubernetes.labels.hpe_com_component: api
+        kubernetes.labels.hpe_com_app: api
+        {{- else if .Values.odimra.deploymentType "RHOCP"}}
+        kubernetes.flat_labels.hpe_com/space: {{ .Values.odimra.namespace }} 
+        kubernetes.flat_labels.hpe_com/stack: api-gateway
+        kubernetes.flat_labels.hpe_com/component: api
+        kubernetes.flat_labels.hpe_com/app : api
+        {{- end }}
+      name: dapi-envars-fieldref
       name: dapi-envars-fieldref
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}

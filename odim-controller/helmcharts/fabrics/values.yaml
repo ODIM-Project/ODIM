@@ -3,3 +3,4 @@ odimra:
   groupID:
   haDeploymentEnabled:
   fabricsImageTag: "4.0"
+  deploymentType: "K8S"

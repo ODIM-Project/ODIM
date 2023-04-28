@@ -3,3 +3,4 @@ odimra:
   groupID:
   haDeploymentEnabled:        
   licensesImageTag: "2.0"
+  deploymentType: "K8S"

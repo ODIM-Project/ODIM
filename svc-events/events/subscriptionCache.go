@@ -354,7 +354,7 @@ START:
 		l.Log.Error("error while getDbConnection  ", errDbConn)
 		goto START
 	}
-	readConn := conn.ReadPool.Get()
+	readConn := conn.WritePool.Get()
 	defer readConn.Close()
 	err := conn.EnableKeySpaceNotifier(evcommon.RedisNotifierType, evcommon.RedisNotifierFilterKey)
 	if err != nil {

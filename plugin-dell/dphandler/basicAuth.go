@@ -12,22 +12,23 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
+	"io/ioutil"
+	"net/http"
+	"time"
+
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"time"
 )
 
-//TokenValidation validates sent token with the list of plugin generated tokens
+// TokenValidation validates sent token with the list of plugin generated tokens
 func TokenValidation(token string) bool {
 	var flag bool
 	flag = false
@@ -42,7 +43,9 @@ func TokenValidation(token string) bool {
 	return flag
 }
 
-//Validate does Basic authentication with device and returns UUID of device in response
+var IoUtilReadAll = ioutil.ReadAll
+
+// Validate does Basic authentication with device and returns UUID of device in response
 func Validate(ctx iris.Context) {
 	//Get token from Request
 	if ctx.GetHeader("X-Auth-Token") == "" && ctx.GetHeader("Authorization") == "" {
@@ -76,14 +79,12 @@ func Validate(ctx iris.Context) {
 		Username: deviceDetails.Username,
 		Password: string(deviceDetails.Password),
 	}
-
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
 		log.Error(err.Error())
 		dpresponse.SetErrorResponse(ctx, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	//Get ServiceRoot of the device
 	err = redfishClient.GetRootService(device)
 	if err != nil {
@@ -99,7 +100,7 @@ func Validate(ctx iris.Context) {
 		return
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := IoUtilReadAll(resp.Body)
 	if err != nil {
 		log.Error(err.Error())
 		dpresponse.SetErrorResponse(ctx, err.Error(), http.StatusBadRequest)
@@ -113,7 +114,7 @@ func Validate(ctx iris.Context) {
 		return
 	}
 	if resp.StatusCode >= 300 {
-		log.Warn("Could not retreive ComputerSystems for " + device.Host + ": " + string(body))
+		log.Warn("Could not retrieve ComputerSystems for " + device.Host + ": " + string(body))
 	}
 
 	response := dpresponse.Device{

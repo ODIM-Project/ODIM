@@ -220,6 +220,7 @@ func SetConfiguration() (WarningList, error) {
 	if err != nil {
 		return WarningList{}, fmt.Errorf("Failed to read the config file: %v", err)
 	}
+	fmt.Println(string(configData))
 	err = json.Unmarshal(configData, &Data)
 	if err != nil {
 		return WarningList{}, fmt.Errorf("Failed to unmarshal config data: %v", err)

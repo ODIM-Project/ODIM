@@ -12,14 +12,13 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -45,7 +44,7 @@ var tokenSpec TokenMap
 func CreateSession(ctx iris.Context) {
 	ctxt := ctx.Request().Context()
 	var userCreds dpmodel.Users
-	rawBodyAsBytes, err := ioutil.ReadAll(ctx.Request().Body)
+	rawBodyAsBytes, err := IoUtilReadAll(ctx.Request().Body)
 	if err != nil {
 		errorMessage := "While trying to validate the credentials, got: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)

@@ -32,7 +32,10 @@ import (
 	iris "github.com/kataras/iris/v12"
 )
 
-//ResetComputerSystem : reset computer system
+// QueryDevice alias queryDevice
+var QueryDevice = queryDevice
+
+// ResetComputerSystem : reset computer system
 func ResetComputerSystem(ctx iris.Context) {
 	ctxt := ctx.Request().Context()
 
@@ -78,7 +81,7 @@ func ResetComputerSystem(ctx iris.Context) {
 	}
 	resetType := request["ResetType"].(string)
 	systemURI := strings.Split(uri, "Actions")[0]
-	statusCode, _, body, err := queryDevice(ctxt, systemURI, device, http.MethodGet)
+	statusCode, _, body, err := QueryDevice(ctxt, systemURI, device, http.MethodGet)
 	if err != nil {
 		errMsg := "error while getting system data, got: " + err.Error()
 		l.LogWithFields(ctxt).Error(errMsg)
@@ -153,7 +156,7 @@ func checkPowerState(resetType, powerState string) ([]byte, int32, error) {
 		Code:    response.NoOperation,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
+			{
 				StatusMessage: response.NoOperation,
 			},
 		},

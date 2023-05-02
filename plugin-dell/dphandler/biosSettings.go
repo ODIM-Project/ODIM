@@ -12,13 +12,12 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -109,7 +108,7 @@ func ChangeSettings(ctx iris.Context) {
 		}
 	} else {
 		defer respBody.Body.Close()
-		resp, err = ioutil.ReadAll(respBody.Body)
+		resp, err = IoUtilReadAll(respBody.Body)
 		if err != nil {
 			errMsg := "While reading the response body, got" + err.Error()
 			l.LogWithFields(ctxt).Error(errMsg)
@@ -165,12 +164,12 @@ func changeBiosSettings(ctxt context.Context, uri string, device *dputilities.Re
 
 // createBiosResponse is used for creating a final response for bios settings
 func createBiosResponse() []byte {
-	resp := dpresponse.ErrorResopnse{
+	resp := dpresponse.ErrorResponse{
 		Error: dpresponse.Error{
 			Code:    response.Success,
 			Message: "See @Message.ExtendedInfo for more information.",
 			MessageExtendedInfo: []dpresponse.MsgExtendedInfo{
-				dpresponse.MsgExtendedInfo{
+				{
 					MessageID:   response.Success,
 					Message:     "A system reset is required for BIOS settings changes to get affected",
 					MessageArgs: []string{},

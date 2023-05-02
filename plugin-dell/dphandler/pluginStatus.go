@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
@@ -159,12 +159,10 @@ func GetPluginStartup(ctx iris.Context) {
 	quit <- true
 	ctx.StatusCode(http.StatusOK)
 	ctx.JSON(respBody)
-	return
 }
 
 func checkCreateSub(server dpmodel.DeviceData, startUpResponse chan map[string]string, errorCh chan error, writeWG *sync.WaitGroup) {
 	var respBody = make(map[string]string)
-
 	device := &dputilities.RedfishDevice{
 		Host:     server.Address,
 		Username: server.UserName,
@@ -176,7 +174,6 @@ func checkCreateSub(server dpmodel.DeviceData, startUpResponse chan map[string]s
 		errorCh <- err
 		return
 	}
-
 	//Get Subscription details
 	resp, err := redfishClient.GetSubscriptionDetail(device)
 	if err != nil {
@@ -255,5 +252,4 @@ func checkCreateSub(server dpmodel.DeviceData, startUpResponse chan map[string]s
 
 	respBody[device.Host] = resp.Header.Get("location")
 	startUpResponse <- respBody
-	return
 }

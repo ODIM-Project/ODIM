@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
@@ -371,7 +371,7 @@ func compareCollection(list1, list2 []string) string {
 
 // createResponse is used for creating a final response for create volume
 func createResponse(code, msg, msgID string) []byte {
-	resp := dpresponse.ErrorResopnse{
+	resp := dpresponse.ErrorResponse{
 		Error: dpresponse.Error{
 			Code:    code,
 			Message: "See @Message.ExtendedInfo for more information.",

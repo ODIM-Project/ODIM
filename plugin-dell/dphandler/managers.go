@@ -12,12 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -52,7 +51,7 @@ func GetManagersCollection(ctx iris.Context) {
 	ctx.ReadJSON(&deviceDetails)
 	if deviceDetails.Host == "" {
 		var members = []dpresponse.Link{
-			dpresponse.Link{
+			{
 				Oid: "/ODIM/v1/Managers/" + pluginConfig.Data.RootServiceUUID,
 			},
 		}
@@ -72,11 +71,10 @@ func GetManagersCollection(ctx iris.Context) {
 		return
 	}
 	getInfoFromDevice(uri, deviceDetails, ctx)
-	return
 
 }
 
-//GetManagersInfo Fetches details of the given resource from the device
+// GetManagersInfo Fetches details of the given resource from the device
 func GetManagersInfo(ctx iris.Context) {
 	ctxt := ctx.Request().Context()
 
@@ -154,7 +152,7 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := IoUtilReadAll(resp.Body)
 	if err != nil {
 		l.LogWithFields(ctxt).Error("While trying to read the response body, got: " + err.Error())
 		return
@@ -162,14 +160,14 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 
 	if resp.StatusCode == 401 {
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("Authtication with the device failed")
+		ctx.WriteString("Authentication with the device failed")
 		return
 	}
 	if resp.StatusCode >= 300 {
 		l.LogWithFields(ctxt).Warn("Could not retreive generic resource for " + device.Host + ": " + string(body))
 	}
 	respData := string(body)
-	//replacing the resposne with north bound translation URL
+	//replacing the response with north bound translation URL
 	for key, value := range pluginConfig.Data.URLTranslation.NorthBoundURL {
 		respData = strings.Replace(respData, key, value, -1)
 	}
@@ -177,7 +175,7 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 	ctx.Write([]byte(respData))
 }
 
-//VirtualMediaActions performs insert and eject virtual media operations on the device based on the request
+// VirtualMediaActions performs insert and eject virtual media operations on the device based on the request
 func VirtualMediaActions(ctx iris.Context) {
 	ctxt := ctx.Request().Context()
 	uri := ctx.Request().RequestURI
@@ -222,7 +220,7 @@ func VirtualMediaActions(ctx iris.Context) {
 	if statusCode == http.StatusNoContent {
 		l.LogWithFields(ctxt).Info("VirtualMediaActions is successful for URI : " + uri)
 		statusCode = http.StatusOK
-		body, err = createVirtMediaActionResponse()
+		body, err = createVirtualMediaActionResponse()
 		if err != nil {
 			errMsg := "while creating a response for virtual media actions" + err.Error()
 			l.LogWithFields(ctxt).Error(errMsg)
@@ -239,14 +237,14 @@ func VirtualMediaActions(ctx iris.Context) {
 	ctx.Write(body)
 }
 
-// createVirtMediaActionResponse is used for creating a final response for virtual media actions success scenario
-func createVirtMediaActionResponse() ([]byte, error) {
-	resp := dpresponse.ErrorResopnse{
+// createVirtualMediaActionResponse is used for creating a final response for virtual media actions success scenario
+func createVirtualMediaActionResponse() ([]byte, error) {
+	resp := dpresponse.ErrorResponse{
 		Error: dpresponse.Error{
 			Code:    response.Success,
 			Message: "See @Message.ExtendedInfo for more information.",
 			MessageExtendedInfo: []dpresponse.MsgExtendedInfo{
-				dpresponse.MsgExtendedInfo{
+				{
 					MessageID:   response.Success,
 					Message:     "Successfully performed virtual media actions",
 					MessageArgs: []string{},

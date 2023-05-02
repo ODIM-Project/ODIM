@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dpmessagebus ...
+// Package dpmessagebus ...
 package dpmessagebus
 
 import (
@@ -40,7 +40,7 @@ func Publish(ctx context.Context, data interface{}) bool {
 		return false
 	}
 
-	// Since we are deleting the first event from the eventlist,
+	// Since we are deleting the first event from the event list,
 	// processing the first event
 	var message common.MessageData
 	err = json.Unmarshal(event.Request, &message)

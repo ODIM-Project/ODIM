@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
@@ -42,6 +42,8 @@ func TokenValidation(token string) bool {
 	}
 	return flag
 }
+
+var IoUtilReadAll = ioutil.ReadAll
 
 // Validate does Basic authentication with device and returns UUID of device in response
 func Validate(ctx iris.Context) {
@@ -79,14 +81,12 @@ func Validate(ctx iris.Context) {
 		Username: deviceDetails.Username,
 		Password: string(deviceDetails.Password),
 	}
-
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
 		l.LogWithFields(ctxt).Error("error while trying to create the redfish client to connect to device " + err.Error())
 		dpresponse.SetErrorResponse(ctx, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	//Get ServiceRoot of the device
 	err = redfishClient.GetRootService(device)
 	if err != nil {
@@ -102,7 +102,7 @@ func Validate(ctx iris.Context) {
 		return
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := IoUtilReadAll(resp.Body)
 	if err != nil {
 		l.LogWithFields(ctxt).Error("error while trying to read the response body from the device" + err.Error())
 		dpresponse.SetErrorResponse(ctx, err.Error(), http.StatusBadRequest)
@@ -118,7 +118,7 @@ func Validate(ctx iris.Context) {
 		return
 	}
 	if resp.StatusCode >= 300 {
-		l.LogWithFields(ctxt).Errorf("southbound %s responded with status code %d with response %s while getting compute system details", device.Host, resp.StatusCode, string(body))
+		l.LogWithFields(ctxt).Warn("Could not retrieve ComputerSystems for " + device.Host + ": " + string(body))
 	}
 
 	response := dpresponse.Device{

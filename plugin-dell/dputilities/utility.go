@@ -26,7 +26,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dputilities ...
+// Package dputilities ...
 package dputilities
 
 import (
@@ -75,7 +75,7 @@ func GetPlainText(password []byte) ([]byte, error) {
 	)
 }
 
-//Status holds the Status of plugin it will be intizaied during startup time
+// Status holds the Status of plugin it will be intizaied during startup time
 var Status dpresponse.Status
 
 // PluginStartTime hold the time from which plugin started

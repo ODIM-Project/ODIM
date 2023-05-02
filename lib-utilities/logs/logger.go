@@ -26,9 +26,9 @@ import (
 
 var priorityLogFields = []string{
 	"host",
-	"threadname",
-	"procid",
-	"messageid",
+	"thread_name",
+	"process_id",
+	"message_id",
 }
 
 var syslogPriorityNumerics = map[string]int8{
@@ -83,12 +83,12 @@ func getProcessLogDetails(ctx context.Context) logrus.Fields {
 	ThreadName := strings.Replace(fmt.Sprintf("%v", ctx.Value("threadname")), "\n", "", -1)
 	ActionID := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionid")), "\n", "", -1)
 	fields["transactionid"] = TransactionID
-	fields["processname"] = ProcessName
-	fields["threadid"] = ThreadID
-	fields["actionname"] = ActionName
-	fields["messageid"] = ActionName
-	fields["threadname"] = ThreadName
-	fields["actionid"] = ActionID
+	fields["process_name"] = ProcessName
+	fields["thread_id"] = ThreadID
+	fields["action_name"] = ActionName
+	fields["message_id"] = ActionName
+	fields["thread_name"] = ThreadName
+	fields["action_id"] = ActionID
 
 	return fields
 }
@@ -226,7 +226,7 @@ func formatStructuredFields(entry *logrus.Entry, msg string) string {
 		}
 	}
 	if transID != "" {
-		msg = fmt.Sprintf("%s [process@1 processName=\"%s\" transactionID=\"%s\" actionID=\"%s\" actionName=\"%s\" threadID=\"%s\" threadName=\"%s\"]", msg, processName, transID, actionID, actionName, threadID, threadName)
+		msg = fmt.Sprintf("%s [process@1 process_Name=\"%s\" transactionID=\"%s\" actionID=\"%s\" actionName=\"%s\" threadID=\"%s\" threadName=\"%s\"]", msg, processName, transID, actionID, actionName, threadID, threadName)
 	}
 	return msg
 }

@@ -27,16 +27,17 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// MQBusCommunicator holds the communicator interface function
 type MQBusCommunicator struct {
 	Communicator func(string, string, string) (dc.MQBus, error)
 }
 
+// InitMQSCom function initiates the message bus communicator
 func InitMQSCom() MQBusCommunicator {
 	return MQBusCommunicator{
 		Communicator: dc.Communicator,
 	}
 }
-
 
 // Publish will takes the system id,Event type and publishes the data to message bus
 func Publish(ctx context.Context, systemID, eventType, collectionType string, MQ MQBusCommunicator) error {

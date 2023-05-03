@@ -121,7 +121,10 @@ func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *ag
 			return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
 		}
 		// Get the plugin
-		plugin, errs := agmodel.GetPluginData(cmVariants.PluginID)
+		dbPluginConn := agmodel.DBPluginDataRead{
+			DBReadclient: agmodel.GetPluginDBConnection,
+		}
+		plugin, errs := agmodel.GetPluginData(cmVariants.PluginID, dbPluginConn)
 		if errs != nil {
 			errMsg := errs.Error()
 			l.LogWithFields(ctx).Error(errMsg)
@@ -151,7 +154,10 @@ func (e *ExternalInterface) DeleteAggregationSource(ctx context.Context, req *ag
 	}
 
 	if target != nil {
-		plugin, errs := agmodel.GetPluginData(target.PluginID)
+		dbPluginConn := agmodel.DBPluginDataRead{
+			DBReadclient: agmodel.GetPluginDBConnection,
+		}
+		plugin, errs := agmodel.GetPluginData(target.PluginID, dbPluginConn)
 		if errs != nil {
 			l.LogWithFields(ctx).Error("failed to get " + target.PluginID + " plugin info: " + errs.Error())
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errs.Error(), []interface{}{"plugin", target.PluginID}, nil)
@@ -248,7 +254,10 @@ func (e *ExternalInterface) deletePlugin(ctx context.Context, oid string) respon
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)
 	var pluginID = resource["Name"].(string)
-	plugin, errs := agmodel.GetPluginData(pluginID)
+	dbPluginConn := agmodel.DBPluginDataRead{
+		DBReadclient: agmodel.GetPluginDBConnection,
+	}
+	plugin, errs := agmodel.GetPluginData(pluginID, dbPluginConn)
 	if errs != nil {
 		errMsg := "error while getting plugin data: " + errs.Error()
 		l.LogWithFields(ctx).Error(errMsg)
@@ -393,7 +402,10 @@ func (e *ExternalInterface) deleteCompute(ctx context.Context, key string, index
 	}
 	// Get the plugin
 	var managerData map[string]interface{}
-	plugin, errs := agmodel.GetPluginData(pluginID)
+	dbPluginConn := agmodel.DBPluginDataRead{
+		DBReadclient: agmodel.GetPluginDBConnection,
+	}
+	plugin, errs := agmodel.GetPluginData(pluginID, dbPluginConn)
 	if errs != nil {
 		errMsg := errs.Error()
 		l.LogWithFields(ctx).Error(errMsg)

@@ -16,6 +16,7 @@ package system
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -47,11 +48,44 @@ func mockAggregateHostIndexData(t *testing.T, dbType common.DbType, table, id st
 		t.Fatalf("error: mockData() failed to create entry %s-%s: %v", table, id, err1)
 	}
 }
+func newMock(pluginID string) (string, *errors.Error) {
+	var t *testing.T
+	validPasswordEnc := getEncryptedKey(t, []byte("password"))
 
-func stubPluginMgrAddrData(pluginID string) (agmodel.Plugin, *errors.Error) {
+	genricPluginData := Plugin{
+		ID:                pluginID,
+		IP:                "localhost",
+		Port:              "45001",
+		Username:          "admin",
+		Password:          validPasswordEnc,
+		PluginType:        "RF-GENERIC",
+		PreferredAuthType: "BasicAuth",
+	}
+	emptyPluginData := Plugin{}
+
+	mockData := map[string]Plugin{
+		"validPlugin":       genricPluginData,
+		"invalidPassword":   emptyPluginData,
+		"notFound":          emptyPluginData,
+		"invalidPluginData": emptyPluginData,
+	}
+
+	data, ok := mockData[pluginID]
+	if !ok {
+		return "", nil
+	}
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return "", nil
+
+	}
+	return string(jsonData), nil
+}
+
+func stubPluginMgrAddrData(pluginID string, dbDataRead agmodel.DBPluginDataRead) (agmodel.Plugin, *errors.Error) {
 	var plugin agmodel.Plugin
-
-	plugin, err := agmodel.GetPluginData(pluginID)
+	dbDataRead.DBReadclient = newMock
+	plugin, err := agmodel.GetPluginData(pluginID, dbDataRead)
 	if err != nil {
 		plugin.ID = pluginID
 		plugin.ManagerUUID = "dummy-mgr-addr"

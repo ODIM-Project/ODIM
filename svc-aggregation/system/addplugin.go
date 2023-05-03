@@ -32,6 +32,17 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 )
 
+type Plugin struct {
+	IP                string
+	Port              string
+	Username          string
+	Password          []byte
+	ID                string
+	PluginType        string
+	PreferredAuthType string
+	ManagerUUID       string
+}
+
 func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRequest, taskID, targetURI string, pluginContactRequest getResourceRequest, queueList []string, cmVariants connectionMethodVariants) (response.RPC, string, []byte) {
 	var resp response.RPC
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
@@ -59,7 +70,10 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	// error is not nil, DB query failed, can't say for sure if queried plugin exists,
 	// except when read fails with plugin data not found, and will continue with add process,
 	// and any other errors, will fail add plugin operation.
-	_, errs := agmodel.GetPluginData(cmVariants.PluginID)
+	a := agmodel.DBPluginDataRead{
+		DBReadclient: agmodel.GetPluginDBConnection,
+	}
+	_, errs := agmodel.GetPluginData(cmVariants.PluginID, a)
 	if errs == nil || (errs != nil && (errs.ErrNo() == errors.JSONUnmarshalFailed || errs.ErrNo() == errors.DecryptionFailed)) {
 		errMsg := "error:plugin with name " + cmVariants.PluginID + " already exists"
 		l.LogWithFields(ctx).Error(errMsg)
@@ -78,8 +92,11 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	pluginNameArray, err := agmodel.GetAllKeysFromTable(ctx, "Plugin")
 	if err == nil {
 		for _, ID := range pluginNameArray {
+			dbPluginConn := agmodel.DBPluginDataRead{
+				DBReadclient: agmodel.GetPluginDBConnection,
+			}
 
-			plugin, err := e.GetPluginMgrAddr(ID)
+			plugin, err := e.GetPluginMgrAddr(ID, dbPluginConn)
 
 			if err != nil && err.ErrNo() == errors.JSONUnmarshalFailed {
 				continue

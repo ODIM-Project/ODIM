@@ -93,7 +93,7 @@ type ComputerSystem struct {
 	Composition                     *Composition        `json:"Composition,omitempty"`
 }
 
-//Composition ...
+// Composition ...
 type Composition struct {
 	UseCases []string `json:"UseCases,omitempty"`
 }
@@ -238,7 +238,7 @@ type EthernetInterfaces struct {
 	VLANs                      VLANs                      `json:"VLANs,omitempty"`
 }
 
-//DHCPv4 in place object
+// DHCPv4 in place object
 type DHCPv4 struct {
 	DHCPEnabled     bool   `json:"DHCPEnabled"`
 	FallbackAddress string `json:"FallbackAddress"` //enum
@@ -249,7 +249,7 @@ type DHCPv4 struct {
 	UseStaticRoutes bool   `json:"UseStaticRoutes"`
 }
 
-//DHCPv6 in place object
+// DHCPv6 in place object
 type DHCPv6 struct {
 	OperatingMode  string `json:"OperatingMode"` //enum
 	UseDNSServers  bool   `json:"UseDNSServers"`
@@ -258,7 +258,7 @@ type DHCPv6 struct {
 	UseRapidCommit bool   `json:"UseRapidCommit"`
 }
 
-//IPv4Address in place object
+// IPv4Address in place object
 type IPv4Address struct {
 	Address       string `json:"Address"`
 	AddressOrigin string `json:"AddressOrigin"` //enum
@@ -276,32 +276,32 @@ type IPv6Address struct {
 	PrefixLength  string `json:"PrefixLength"`
 }
 
-//IPv6StaticAddress in place object
+// IPv6StaticAddress in place object
 type IPv6StaticAddress struct {
 	Address      string `json:"Address"`
 	Oem          Oem    `json:"Oem"`
 	PrefixLength string `json:"PrefixLength"`
 }
 
-//IPv6AddressPolicy in place object
+// IPv6AddressPolicy in place object
 type IPv6AddressPolicy struct {
 	Label      int    `json:"Label"`
 	Precedence int    `json:"Precedence"`
 	Prefix     string `json:"Prefix"`
 }
 
-//StatelessAddressAutoConfig in place object
+// StatelessAddressAutoConfig in place object
 type StatelessAddressAutoConfig struct {
 	IPv4AutoConfigEnabled bool `json:"IPv4AutoConfigEnabled"`
 	IPv6AutoConfigEnabled bool `json:"IPv6AutoConfigEnabled"`
 }
 
-//VLAN redfish structure
+// VLAN redfish structure
 type VLAN struct {
 	Oid string `json:"@odata.id"`
 }
 
-//VLANs redfish structure
+// VLANs redfish structure
 type VLANs struct {
 	Oid string `json:"@odata.id"`
 }
@@ -410,7 +410,7 @@ type OperatingSpeedRangeMHz struct {
 	SettingMin             float32   `json:"SettingMin,omitempty"`
 }
 
-//MemoryLocation in place object
+// MemoryLocation in place object
 type MemoryLocation struct {
 	Channel          int `json:"Channel,omitempty"`
 	MemoryController int `json:"MemoryController"`
@@ -418,7 +418,7 @@ type MemoryLocation struct {
 	Socket           int `json:"Socket"`
 }
 
-//PowerManagementPolicy in place object
+// PowerManagementPolicy in place object
 type PowerManagementPolicy struct {
 	AveragePowerBudgetMilliWatts int  `json:"AveragePowerBudgetMilliWatts"`
 	MaxTDPMilliWatts             int  `json:"MaxTDPMilliWatts"`
@@ -426,7 +426,7 @@ type PowerManagementPolicy struct {
 	PolicyEnabled                bool `json:"PolicyEnabled"`
 }
 
-//Region in place object
+// Region in place object
 type Region struct {
 	MemoryClassification string `json:"MemoryClassification"` //enum
 	OffsetMiB            int    `json:"OffsetMiB"`
@@ -436,7 +436,7 @@ type Region struct {
 	SizeMiB              int    `json:"SizeMiB"`
 }
 
-//SecurityCapabilities in place object
+// SecurityCapabilities in place object
 type SecurityCapabilities struct {
 	ConfigurationLockCapable bool     `json:"ConfigurationLockCapable"`
 	DataLockCapable          bool     `json:"DataLockCapable"`
@@ -466,13 +466,13 @@ type MemoryDomains struct {
 	Links                     Link                     `json:"Links,omitempty"`
 }
 
-//InterleavableMemorySet in place object
+// InterleavableMemorySet in place object
 type InterleavableMemorySet struct {
 	MemorySet      []Memory `json:"MemorySet,omitempty"`
 	MemorySetCount int      `json:"MemorySet@odata.count,omitempty"`
 }
 
-//MemoryChunks redfish structure
+// MemoryChunks redfish structure
 type MemoryChunks struct {
 	Oid string `json:"@odata.id"`
 }
@@ -512,12 +512,12 @@ type NetworkInterfaces struct {
 	Ports                  *Link                  `json:"Ports,omitempty"`
 }
 
-//NetworkDeviceFunctions redfish structure
+// NetworkDeviceFunctions redfish structure
 type NetworkDeviceFunctions struct {
 	Oid string `json:"@odata.id"`
 }
 
-//NetworkPorts redfish structure
+// NetworkPorts redfish structure
 type NetworkPorts struct {
 	Oid string `json:"@odata.id"`
 }
@@ -569,7 +569,7 @@ type Slot struct {
 	SlotType      string `json:"SlotType,omitempty"`
 }
 
-//PCIeErrors - The PCIe errors associated with this device
+// PCIeErrors - The PCIe errors associated with this device
 type PCIeErrors struct {
 	CorrectableErrorCount int `json:"CorrectableErrorCount,omitempty"`
 	FatalErrorCount       int `json:"FatalErrorCount,omitempty"`
@@ -581,7 +581,7 @@ type PCIeErrors struct {
 	ReplayRolloverCount   int `json:"ReplayRolloverCount,omitempty"`
 }
 
-//PCIeInterface in place object
+// PCIeInterface in place object
 type PCIeInterface struct {
 	LanesInUse  int    `json:"LanesInUse,omitempty"`
 	MaxLanes    int    `json:"MaxLanes,omitempty"`
@@ -611,9 +611,9 @@ type PCIeFunction struct {
 	DeviceID          string      `json:"DeviceId,omitempty"`
 	FunctionID        int         `json:"FunctionId,omitempty"`
 	FunctionType      string      `json:"FunctionType,omitempty"` //enum
-	Links             *Links       `json:"Links,omitempty"`
+	Links             *Links      `json:"Links,omitempty"`
 	RevisionID        string      `json:"RevisionId,omitempty"`
-	Status            *Status      `json:"Status,omitempty"`
+	Status            *Status     `json:"Status,omitempty"`
 	SubsystemID       string      `json:"SubsystemId,omitempty"`
 	SubsystemVendorID string      `json:"SubsystemVendorId,omitempty"`
 	VendorID          string      `json:"VendorId,omitempty"`
@@ -628,7 +628,6 @@ This resource shall be used to represent a single processor contained within a s
 URIs:
 /redfish/v1/Systems/{ComputerSystemId}/Processors/{ProcessorId}
 /redfish/v1/Systems/{ComputerSystemId}/Processors/{ProcessorId}/SubProcessors/{ProcessorId2}
-
 */
 type Processors struct {
 	Oid                        string                      `json:"@odata.id"`
@@ -704,12 +703,12 @@ type MemorySummaryDetails struct {
 	TotalMemorySizeMiB int     `json:"TotalMemorySizeMiB,omitempty"`
 }
 
-//AccelerationFunctions redfish structure
+// AccelerationFunctions redfish structure
 type AccelerationFunctions struct {
 	Oid string `json:"@odata.id"`
 }
 
-//FPGA in place object
+// FPGA in place object
 type FPGA struct {
 	ExternalInterfaces   []HostInterface       `json:"ExternalInterfaces"`
 	FirmwareID           string                `json:"FirmwareId"`
@@ -724,21 +723,21 @@ type FPGA struct {
 	ReconfigurationSlots []ReconfigurationSlot `json:"ReconfigurationSlots"`
 }
 
-//HostInterface in place object
+// HostInterface in place object
 type HostInterface struct {
 	Ethernet      Ethernet      `json:"Ethernet"`
 	InterfaceType string        `json:"InterfaceType"` //enum
 	PCIe          PCIeInterface `json:"PCIe"`
 }
 
-//Ethernet in place object
+// Ethernet in place object
 type Ethernet struct {
 	MaxLanes     int `json:"MaxLanes"`
 	MaxSpeedMbps int `json:"MaxSpeedMbps"`
 	Oem          Oem `json:"Oem"`
 }
 
-//ReconfigurationSlot in place object
+// ReconfigurationSlot in place object
 type ReconfigurationSlot struct {
 	AccelerationFunction AccelerationFunction `json:"AccelerationFunction"`
 	ProgrammableFromHost bool                 `json:"ProgrammableFromHost"`
@@ -746,12 +745,12 @@ type ReconfigurationSlot struct {
 	UUID                 string               `json:"UUID"`
 }
 
-//AccelerationFunction redfish structure
+// AccelerationFunction redfish structure
 type AccelerationFunction struct {
 	Oid string `json:"@odata.id"`
 }
 
-//ProcessorID in place object
+// ProcessorID in place object
 type ProcessorID struct {
 	EffectiveFamily               string `json:"EffectiveFamily,omitempty"`
 	EffectiveModel                string `json:"EffectiveModel,omitempty"`
@@ -762,7 +761,7 @@ type ProcessorID struct {
 	ProtectedIdentificationNumber string `json:"ProtectedIdentificationNumber,omitempty"`
 }
 
-//ProcessorMemory in place object
+// ProcessorMemory in place object
 type ProcessorMemory struct {
 	CapacityMiB      int    `json:"CapacityMiB"`
 	IntegratedMemory bool   `json:"IntegratedMemory"`
@@ -770,7 +769,7 @@ type ProcessorMemory struct {
 	SpeedMHz         int    `json:"SpeedMHz"`
 }
 
-//SubProcessors redfish structure
+// SubProcessors redfish structure
 type SubProcessors struct {
 	Oid string `json:"@odata.id"`
 }
@@ -801,6 +800,38 @@ type SecureBoot struct {
 	SecureBootDatabases   *Link       `json:"SecureBootDatabases,omitempty"`
 }
 
+// SecureBootDatabaseCollection This resource shall represent a resource collection
+// of SecureBootDatabase instances for a Redfish implementation.
+type SecureBootDatabaseCollection struct {
+	Oid                  string `json:"@odata.id"`
+	Ocontext             string `json:"@odata.context,omitempty"`
+	Oetag                string `json:"@odata.etag,omitempty"`
+	Otype                string `json:"@odata.type"`
+	Description          string `json:"Description,omitempty"`
+	Members              string `json:"Members"`
+	MembersCount         int    `json:"Members@odata.count"`
+	MembersODataNextLink string `json:"Members@odata.nextLink,omitempty"`
+	Name                 string `json:"Name"`
+	Oem                  *Oem   `json:"Oem,omitempty"`
+}
+
+// SecureBootDatabase This resource shall be used to represent
+// a UEFI Secure Boot database for a Redfish implementation.
+type SecureBootDatabase struct {
+	Oid          string `json:"@odata.id"`
+	Ocontext     string `json:"@odata.context,omitempty"`
+	Oetag        string `json:"@odata.etag,omitempty"`
+	Otype        string `json:"@odata.type"`
+	Actions      string `json:"Actions,omitempty"`
+	Certificates string `json:"Certificates,omitempty"`
+	DatabaseId   string `json:"DatabaseId,omitempty"`
+	Description  string `json:"Description,omitempty"`
+	Id           string `json:"Id"`
+	Name         string `json:"Name"`
+	Oem          string `json:"Oem,omitempty"`
+	Signatures   string `json:"Signatures,omitempty"`
+}
+
 // SimpleStorage redfish structure
 type SimpleStorage struct {
 	Oid            string      `json:"@odata.id"`
@@ -818,7 +849,7 @@ type SimpleStorage struct {
 	Actions        *OemActions `json:"Actions,omitempty"`
 }
 
-//Device in place object
+// Device in place object
 type Device struct {
 	CapacityBytes int    `json:"CapacityBytes,omitempty"`
 	Manufacturer  string `json:"Manufacturer,omitempty"`
@@ -843,7 +874,7 @@ type BootOptions struct {
 	Oid string `json:"@odata.id"`
 }
 
-//Certificates redfish structure
+// Certificates redfish structure
 type Certificates struct {
 	Oid string `json:"@odata.id"`
 }
@@ -860,8 +891,11 @@ type Metrics struct {
 
 // SaveInMemory will create the ComputerSystem data in in-memory DB, with key as UUID
 // Takes:
+//
 //	none as parameter, but recieves c of type *ComputerSystem as pointeer reciever impicitly.
+//
 // Returns:
+//
 //	err of type error
 //
 //	On Success - returns nil value

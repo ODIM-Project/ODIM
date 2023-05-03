@@ -24,6 +24,8 @@ service Systems {
  rpc ChangeBootOrderSettings(BootOrderSettingsRequest) returns (SystemsResponse) {}
  rpc CreateVolume(VolumeRequest) returns (SystemsResponse) {}
  rpc DeleteVolume(VolumeRequest) returns (SystemsResponse) {}
+ rpc UpdateSecureBoot(SecureBootRequest) returns (SystemsResponse) {}
+ rpc ResetSecureBoot(SecureBootRequest) returns (SystemsResponse) {}
 }
 
 message GetSystemsRequest{
@@ -68,4 +70,10 @@ message VolumeRequest{
     string StorageInstance = 3;
     string VolumeID = 4;
     bytes RequestBody = 5;   
+}
+
+message SecureBootRequest{
+    string SessionToken = 1;
+    string SystemID = 2;
+    bytes RequestBody = 3;
 }

@@ -299,6 +299,7 @@ func SetFormatter(format LogFormat) {
 			logrus.FieldKeyLevel: "log_level",
 			logrus.FieldKeyMsg:   "@message",
 		}})
+	default:
 		Log.Logger.SetFormatter(&SysLogFormatter{})
 		Log.Info("Something went wrong! Setting the default format Syslog for logging")
 	}

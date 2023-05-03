@@ -361,7 +361,7 @@ START:
 		time.Sleep(time.Second * 1)
 		goto START
 	}
-	psc := redis.PubSub(*conn.ReadPool.Subscribe())
+	psc := redis.PubSub(*conn.WritePool.Subscribe())
 	psc.Subscribe(evcommon.AggregateToHostChannelKey, evcommon.DeviceSubscriptionChannelKey,
 		evcommon.SubscriptionChannelKey)
 

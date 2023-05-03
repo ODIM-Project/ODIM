@@ -156,7 +156,8 @@ func TestAuthWithDevice_Success(t *testing.T) {
 	device.RootNode = &dpmodel.ServiceRoot{}
 
 	// Call the AuthWithDevice method
-	err := client.AuthWithDevice(device)
+	ctxt := mockContext()
+	err := client.AuthWithDevice(ctxt, device)
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
@@ -168,7 +169,7 @@ func TestAuthWithDevice_Success(t *testing.T) {
 	}
 
 	// Call the AuthWithDevice method
-	_, err = client.BasicAuthWithDevice(device, "/system")
+	_, err = client.BasicAuthWithDevice(ctxt, device, "/system")
 	if err != nil {
 		t.Errorf("Expected no error, but got: %v", err)
 	}
@@ -220,7 +221,8 @@ func TestAuthWithDevice_NoServiceRoot(t *testing.T) {
 	client := &RedfishClient{}
 
 	// Call the AuthWithDevice method
-	err := client.AuthWithDevice(device)
+	ctxt := mockContext()
+	err := client.AuthWithDevice(ctxt, device)
 	if err == nil {
 		t.Error("Expected an error, but got none")
 	}

@@ -17,6 +17,7 @@ package dphandler
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
@@ -30,6 +31,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
@@ -370,10 +372,22 @@ func TestChangeBiosSettings(t *testing.T) {
 }
 
 func Test_changeBiosSettings(t *testing.T) {
+	ctxt := mockContext()
 	config.SetUpMockConfig(t)
 	config.Data.KeyCertConf.RootCACertificate = nil
-	status, _, err := changeBiosSettings("/invalidURL", nil)
+	status, _, err := changeBiosSettings(ctxt, "/invalidURL", nil)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, status, http.StatusInternalServerError)
+}
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
 }

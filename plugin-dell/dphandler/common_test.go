@@ -58,8 +58,9 @@ func Test_queryDevice(t *testing.T) {
 		Username: "Localhost",
 		Password: "password",
 	}
+	ctxt := mockContext()
 	config.Data.KeyCertConf.RootCACertificate = nil
-	statusCode, _, _, err := queryDevice("/ODIM", &device, http.MethodPost)
+	statusCode, _, _, err := queryDevice(ctxt, "/ODIM", &device, http.MethodPost)
 	assert.NotNil(t, err, "should contain error code StatusInternalServerError")
 	assert.Equal(t, http.StatusInternalServerError, statusCode)
 
@@ -68,7 +69,7 @@ func Test_queryDevice(t *testing.T) {
 		Password: "password",
 	}
 	config.SetUpMockConfig(t)
-	statusCode, _, _, err = queryDevice("/ODIM", &device, http.MethodPost)
+	statusCode, _, _, err = queryDevice(ctxt, "/ODIM", &device, http.MethodPost)
 	assert.NotNil(t, err, "should contain error code StatusBadRequest")
 	assert.Equal(t, http.StatusBadRequest, statusCode)
 

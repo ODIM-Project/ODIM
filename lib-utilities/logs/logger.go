@@ -297,7 +297,7 @@ func SetFormatter(format LogFormat) {
 		Log.Logger.SetFormatter(&logrus.JSONFormatter{FieldMap: logrus.FieldMap{
 			logrus.FieldKeyTime:  "log_timestamp",
 			logrus.FieldKeyLevel: "log_level",
-			logrus.FieldKeyMsg:   "@message",
+			logrus.FieldKeyMsg:   "log_message",
 		}})
 	default:
 		Log.Logger.SetFormatter(&SysLogFormatter{})

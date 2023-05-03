@@ -294,8 +294,11 @@ func SetFormatter(format LogFormat) {
 	case SyslogFormat:
 		Log.Logger.SetFormatter(&SysLogFormatter{})
 	case JSONFormat:
-		Log.Logger.SetFormatter(&logrus.JSONFormatter{})
-	default:
+		Log.Logger.SetFormatter(&logrus.JSONFormatter{FieldMap: logrus.FieldMap{
+			logrus.FieldKeyTime:  "log_timestamp",
+			logrus.FieldKeyLevel: "log_level",
+			logrus.FieldKeyMsg:   "@message",
+		}})
 		Log.Logger.SetFormatter(&SysLogFormatter{})
 		Log.Info("Something went wrong! Setting the default format Syslog for logging")
 	}

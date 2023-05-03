@@ -95,7 +95,7 @@ type ExternalInterface struct {
 	GetAllKeysFromTable      func(context.Context, string) ([]string, error)
 	GetConnectionMethod      func(context.Context, string) (agmodel.ConnectionMethod, *errors.Error)
 	UpdateConnectionMethod   func(agmodel.ConnectionMethod, string) *errors.Error
-	GetPluginMgrAddr         func(string) (agmodel.Plugin, *errors.Error)
+	GetPluginMgrAddr         func(string, agmodel.DBPluginDataRead) (agmodel.Plugin, *errors.Error)
 	GetAggregationSourceInfo func(context.Context, string) (agmodel.AggregationSource, *errors.Error)
 	GenericSave              func([]byte, string, string) error
 	CheckActiveRequest       func(string) (bool, *errors.Error)

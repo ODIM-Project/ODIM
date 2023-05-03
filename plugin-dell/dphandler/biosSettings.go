@@ -12,11 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
 	"encoding/json"
+	"net/http"
+	"strings"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
@@ -24,9 +27,6 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
 // DeviceClient struct to call device for the operation
@@ -35,7 +35,7 @@ type DeviceClient struct {
 	DecryptPassword        func(password []byte) ([]byte, error)
 }
 
-//ChangeSettings is generic function where we can do following operations on different call
+// ChangeSettings is generic function where we can do following operations on different call
 // 1. change bios settings
 // 2. change boot order settings
 func ChangeSettings(ctx iris.Context) {
@@ -104,7 +104,7 @@ func ChangeSettings(ctx iris.Context) {
 		}
 	} else {
 		defer respBody.Body.Close()
-		resp, err = ioutil.ReadAll(respBody.Body)
+		resp, err = IoUtilReadAll(respBody.Body)
 		if err != nil {
 			errMsg := "While reading the response body, got" + err.Error()
 			log.Error(errMsg)
@@ -115,7 +115,7 @@ func ChangeSettings(ctx iris.Context) {
 	ctx.Write(resp)
 }
 
-//changeBiosSettings contains the logic for changing the bios settings
+// changeBiosSettings contains the logic for changing the bios settings
 func changeBiosSettings(uri string, device *dputilities.RedfishDevice) (int, []byte, string) {
 	var errorMessage string
 	statusCode, _, resp, err := queryDevice(uri, device, http.MethodGet)
@@ -160,12 +160,12 @@ func changeBiosSettings(uri string, device *dputilities.RedfishDevice) (int, []b
 
 // createBiosResponse is used for creating a final response for bios settings
 func createBiosResponse() []byte {
-	resp := dpresponse.ErrorResopnse{
+	resp := dpresponse.ErrorResponse{
 		Error: dpresponse.Error{
 			Code:    response.Success,
 			Message: "See @Message.ExtendedInfo for more information.",
 			MessageExtendedInfo: []dpresponse.MsgExtendedInfo{
-				dpresponse.MsgExtendedInfo{
+				{
 					MessageID:   response.Success,
 					Message:     "A system reset is required for BIOS settings changes to get affected",
 					MessageArgs: []string{},

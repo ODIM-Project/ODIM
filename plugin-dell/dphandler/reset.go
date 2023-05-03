@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
@@ -32,7 +32,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//ResetComputerSystem : reset computer system
+// QueryDevice alias queryDevice
+var QueryDevice = queryDevice
+
+// ResetComputerSystem : reset computer system
 func ResetComputerSystem(ctx iris.Context) {
 
 	//Get token from Request
@@ -70,14 +73,14 @@ func ResetComputerSystem(ctx iris.Context) {
 	var request map[string]interface{}
 	err = json.Unmarshal(deviceDetails.PostBody, &request)
 	if err != nil {
-		log.Error("While trying to unmarshall data : " + err.Error())
+		log.Error("While trying to unmarshal data : " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
 	}
 	resetType := request["ResetType"].(string)
 	systemURI := strings.Split(uri, "Actions")[0]
-	statusCode, _, body, err := queryDevice(systemURI, device, http.MethodGet)
+	statusCode, _, body, err := QueryDevice(systemURI, device, http.MethodGet)
 	if err != nil {
 		errMsg := "error while getting system data, got: " + err.Error()
 		log.Error(errMsg)
@@ -152,7 +155,7 @@ func checkPowerState(resetType, powerState string) ([]byte, int32, error) {
 		Code:    response.NoOperation,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
+			{
 				StatusMessage: response.NoOperation,
 			},
 		},

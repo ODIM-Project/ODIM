@@ -12,24 +12,24 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
 	"encoding/base64"
 	"encoding/json"
+	"net/http"
+	"time"
+
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	iris "github.com/kataras/iris/v12"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
-	"io/ioutil"
-	"net/http"
-	"time"
 )
 
-//TokenMap is used to define the plugin generated tokens
+// TokenMap is used to define the plugin generated tokens
 type TokenMap struct {
 	Token    string
 	LastUsed time.Time
@@ -38,10 +38,10 @@ type TokenMap struct {
 var tokenDetails []TokenMap
 var tokenSpec TokenMap
 
-//CreateSession is used to create session for odimra to interact with plugin
+// CreateSession is used to create session for odimra to interact with plugin
 func CreateSession(ctx iris.Context) {
 	var userCreds dpmodel.Users
-	rawBodyAsBytes, err := ioutil.ReadAll(ctx.Request().Body)
+	rawBodyAsBytes, err := IoUtilReadAll(ctx.Request().Body)
 	if err != nil {
 		errorMessage := "While trying to validate the credentials, got: " + err.Error()
 		log.Error(errorMessage)
@@ -58,6 +58,7 @@ func CreateSession(ctx iris.Context) {
 	//Validate the credentials
 	userName := userCreds.Username
 	password := userCreds.Password
+
 	validateResponse := validate(userName, password)
 	if !validateResponse {
 		errorMessage := "Invalid credentials for session creation"

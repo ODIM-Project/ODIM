@@ -125,19 +125,7 @@ func mockContactClient(ctx context.Context, url, method, token string, odataID s
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
-func TestPluginContact_ComputerSystemReset(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
+func mockDeviceAndSystemData(t *testing.T) {
 	device1 := smodel.Target{
 		ManagerAddress: "10.24.0.13",
 		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
@@ -158,16 +146,6 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 		UserName:       "admin",
 		DeviceUUID:     "7a2c6100-67da-5fd6-ab82-6870d29c727",
 		PluginID:       "GR",
-	}
-	errArg3 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InternalError,
-				ErrorMessage:  "error while trying to get plugin details",
-			},
-		},
 	}
 
 	err := mockPluginData(t)
@@ -194,6 +172,34 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
+}
+
+func TestPluginContact_ComputerSystemReset(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	mockDeviceAndSystemData(t)
+
+	errArg3 := response.Args{
+		Code:    response.GeneralError,
+		Message: "",
+		ErrorArgs: []response.ErrArgs{
+			response.ErrArgs{
+				StatusMessage: response.InternalError,
+				ErrorMessage:  "error while trying to get plugin details",
+			},
+		},
+	}
+
 	var positiveResponse interface{}
 	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
 	pluginContact := PluginContact{

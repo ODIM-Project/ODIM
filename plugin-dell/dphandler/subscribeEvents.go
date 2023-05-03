@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
@@ -32,7 +32,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//CreateEventSubscription : Subscribes for events
+// CreateEventSubscription : Subscribes for events
 func CreateEventSubscription(ctx iris.Context) {
 
 	device, deviceDetails, err := getDeviceDetails(ctx)
@@ -130,6 +130,7 @@ func deleteMatchingSubscriptions(device *dputilities.RedfishDevice) {
 		log.Error(err.Error())
 		return
 	}
+
 	members := subscriptionCollectionBody.(map[string]interface{})["Members"]
 	for _, member := range members.([]interface{}) {
 		device.Location = member.(map[string]interface{})["@odata.id"].(string)
@@ -143,7 +144,6 @@ func deleteMatchingSubscriptions(device *dputilities.RedfishDevice) {
 			resp.Body.Close()
 		}
 	}
-	return
 }
 func isOurSubscription(device *dputilities.RedfishDevice) bool {
 
@@ -175,6 +175,7 @@ func isOurSubscription(device *dputilities.RedfishDevice) bool {
 		log.Error(err.Error())
 		return false
 	}
+	fmt.Printf("************  %+v \n ", evtConfig.Data.LoadBalancerConf.Host+":"+evtConfig.Data.LoadBalancerConf.Port)
 	subscriptionDestinationFromDevice := subscriptionBody.(map[string]interface{})["Destination"].(string)
 	// if the subscription is ours then the destination should match with LBHOST:LBPORT.
 	//If it is not matching then retrun with MethodNotAllowed
@@ -184,7 +185,7 @@ func isOurSubscription(device *dputilities.RedfishDevice) bool {
 	return true
 }
 
-//DeleteEventSubscription : Delete subscription
+// DeleteEventSubscription : Delete subscription
 func DeleteEventSubscription(ctx iris.Context) {
 	device, _, err := getDeviceDetails(ctx)
 	if err != nil {
@@ -262,9 +263,9 @@ func getDeviceDetails(ctx iris.Context) (*dputilities.RedfishDevice, *dpmodel.De
 	return device, &deviceDetails, nil
 }
 
-// validateResponse will accepts iris context to write status code and resopnse
+// validateResponse will accepts iris context to write status code and response
 // method is to return status created incase of create subscription
-// otherwise return statusok
+// otherwise return status ok
 func validateResponse(ctx iris.Context, device *dputilities.RedfishDevice, resp *http.Response, method string) error {
 	var body []byte
 	var err error
@@ -346,5 +347,4 @@ func removeMessageID(ctx iris.Context, device *dputilities.RedfishDevice) {
 		ctx.WriteString(err.Error())
 		return
 	}
-	return
 }

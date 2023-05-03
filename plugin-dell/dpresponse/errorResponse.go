@@ -12,26 +12,26 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dpresponse ...
+// Package dpresponse ...
 package dpresponse
 
 import (
 	iris "github.com/kataras/iris/v12"
 )
 
-//ErrorResopnse struct is response Error struct
-type ErrorResopnse struct {
+// ErrorResponse struct is response Error struct
+type ErrorResponse struct {
 	Error Error `json:"Error"`
 }
 
-//Error struct is standard response struct
+// Error struct is standard response struct
 type Error struct {
 	Code                string            `json:"Code"`
 	Message             string            `json:"Message"`
 	MessageExtendedInfo []MsgExtendedInfo `json:"@Message.ExtendedInfo"`
 }
 
-//MsgExtendedInfo struct definition
+// MsgExtendedInfo struct definition
 type MsgExtendedInfo struct {
 	MessageID   string   `json:"MessageId"`
 	Message     string   `json:"Message"`
@@ -39,13 +39,13 @@ type MsgExtendedInfo struct {
 }
 
 // CreateErrorResponse will accepts the error string and create standard error response
-func CreateErrorResponse(errs string) ErrorResopnse {
-	var err = ErrorResopnse{
+func CreateErrorResponse(errs string) ErrorResponse {
+	var err = ErrorResponse{
 		Error{
 			Code:    "Base.1.13.0.GeneralError",
 			Message: "See @Message.ExtendedInfo for more information.",
 			MessageExtendedInfo: []MsgExtendedInfo{
-				MsgExtendedInfo{
+				{
 					MessageID: "Base.1.13.0.GeneralError",
 					Message:   errs,
 				},

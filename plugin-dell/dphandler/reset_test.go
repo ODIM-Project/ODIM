@@ -16,6 +16,7 @@
 package dphandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -73,13 +74,13 @@ func TestResetComputerSystem(t *testing.T) {
 	e.POST("/ODIM/v1/Systems/ComputerSystem.Reset").WithHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=").
 		WithJSON(requestBody2).Expect().Status(http.StatusBadRequest)
 
-	QueryDevice = func(uri string, device *dputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
+	QueryDevice = func(ctx context.Context, uri string, device *dputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
 		return http.StatusInternalServerError, httptest.NewRecorder().HeaderMap, nil, fmt.Errorf("fake error ")
 	}
 
 	e.POST("/ODIM/v1/Systems/ComputerSystem.Reset").WithHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=").WithJSON(requestBody).Expect().
 		Status(http.StatusInternalServerError)
-	QueryDevice = func(uri string, device *dputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
+	QueryDevice = func(ctx context.Context, uri string, device *dputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
 		return http.StatusOK, httptest.NewRecorder().HeaderMap, nil, nil
 	}
 	//  Invalid reset Type
@@ -94,7 +95,7 @@ func TestResetComputerSystem(t *testing.T) {
 	// Power state on
 	attributes1 := map[string]interface{}{"Image": "abc", "PowerState": "On"}
 	attributeByte1, _ := json.Marshal(attributes1)
-	QueryDevice = func(uri string, device *dputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
+	QueryDevice = func(ctx context.Context, uri string, device *dputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
 		return http.StatusOK, httptest.NewRecorder().HeaderMap, attributeByte1, nil
 	}
 	e.POST("/ODIM/v1/Systems/ComputerSystem.Reset").WithHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=").
@@ -105,7 +106,7 @@ func TestResetComputerSystem(t *testing.T) {
 	attributes1 = map[string]interface{}{"Image": "abc", "PowerState": "Off"}
 	attributeByte1, _ = json.Marshal(attributes1)
 
-	QueryDevice = func(uri string, device *dputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
+	QueryDevice = func(ctx context.Context, uri string, device *dputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
 		return http.StatusOK, httptest.NewRecorder().HeaderMap, attributeByte1, nil
 	}
 
@@ -125,8 +126,8 @@ func TestResetComputerSystem(t *testing.T) {
 	e.POST("/ODIM/v1/Systems/ComputerSystem.Reset").WithHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=").
 		WithJSON(requestBody).Expect().Status(http.StatusConflict)
 
-	QueryDevice = func(uri string, device *dputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
-		return queryDevice(uri, device, method)
+	QueryDevice = func(ctx context.Context, uri string, device *dputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
+		return queryDevice(ctx, uri, device, method)
 	}
 }
 func mockResetComputerSystem(username, password, url string, w http.ResponseWriter) {

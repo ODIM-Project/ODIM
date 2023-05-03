@@ -31,6 +31,7 @@ package dputilities
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha512"
@@ -41,6 +42,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/stretchr/testify/assert"
@@ -56,7 +58,9 @@ func TestTrackConfigFileChanges(t *testing.T) {
 	defer os.Remove(configFile.Name())
 
 	// Start watching the config file
-	go TrackConfigFileChanges(configFile.Name())
+	errChan := make(chan error)
+
+	go TrackIPConfigListener(configFile.Name(), errChan)
 
 	// Write to the config file and wait for the changes to be detected
 	configFile.Write([]byte("test config"))
@@ -67,7 +71,7 @@ func TestTrackConfigFileChanges(t *testing.T) {
 	assert.NotNil(t, err)
 
 	// Invalid Path
-	go TrackConfigFileChanges("")
+	go TrackIPConfigListener("", errChan)
 
 }
 
@@ -96,7 +100,8 @@ func TestGetPlainText(t *testing.T) {
 	})
 	dpmodel.PluginPrivateKey = priv
 	// Decrypt the password using the GetPlainText function
-	plaintext, err := GetPlainText(ciphertext)
+	ctxt := mockContext()
+	plaintext, err := GetPlainText(ctxt, ciphertext)
 	if err != nil {
 		t.Fatalf("error decrypting password: %v", err)
 	}
@@ -105,4 +110,15 @@ func TestGetPlainText(t *testing.T) {
 	if !bytes.Equal(plaintext, password) {
 		t.Fatalf("plaintext does not match original password")
 	}
+}
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
 }

@@ -155,6 +155,23 @@ const (
 	// AggregateSubscriptionIndex is a index name which required for indexing
 	// subscription of aggregate
 	AggregateSubscriptionIndex = "AggregateToHost"
+
+	// PluginEventHandlingActionName is an action name to be logged while processing events
+	PluginEventHandlingActionName = "EventHandling"
+
+	// PluginEventHandlingActionID is an action id to be logged while processing events
+	PluginEventHandlingActionID = "220"
+
+	// PluginEventPublishingActionName is an action name to be logged while publishing events
+	PluginEventPublishingActionName = "EventPublish"
+
+	// PluginEventPublishingActionID is an action id to be logged while publishing events
+	PluginEventPublishingActionID = "221"
+
+	// PluginTrackFileConfigActionName is an action name to be logged while tracking config changes
+	PluginTrackFileConfigActionName = "TrackConfigFIleChanges"
+	// PluginTrackFileConfigActionID is an action id to be logged while tracking config changes
+	PluginTrackFileConfigActionID = "000"
 )
 
 // Below fields are Process Name for logging

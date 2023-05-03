@@ -17,6 +17,7 @@ package dputilities
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -24,6 +25,7 @@ import (
 	"net/http"
 
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/gofrs/uuid"
@@ -140,7 +142,8 @@ func (client *RedfishClient) GetRootService(device *RedfishDevice) error {
 }
 
 // AuthWithDevice : Performs authentication with the given device and saves the token
-func (client *RedfishClient) AuthWithDevice(device *RedfishDevice) error {
+func (client *RedfishClient) AuthWithDevice(ctx context.Context, device *RedfishDevice) error {
+
 	if device.RootNode == nil {
 		return fmt.Errorf("no ServiceRoot found for device")
 	}
@@ -163,13 +166,13 @@ func (client *RedfishClient) AuthWithDevice(device *RedfishDevice) error {
 
 	defer resp.Body.Close()
 	device.Token = resp.Header["X-Auth-Token"][0]
-	log.Debug("Token: " + device.Token)
+	l.LogWithFields(ctx).Debugf("Token: " + device.Token)
 
 	return nil
 }
 
 // BasicAuthWithDevice : Performs authentication with the given device and saves the token
-func (client *RedfishClient) BasicAuthWithDevice(device *RedfishDevice, requestURI string) (*http.Response, error) {
+func (client *RedfishClient) BasicAuthWithDevice(ctx context.Context, device *RedfishDevice, requestURI string) (*http.Response, error) {
 	// if device.RootNode == nil {
 	// 	return errors.New("no ServiceRoot found for device")
 	// }

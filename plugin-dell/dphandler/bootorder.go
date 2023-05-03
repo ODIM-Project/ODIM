@@ -19,15 +19,16 @@ import (
 	"net/http"
 	"strings"
 
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 )
 
 // SetDefaultBootOrder : sets the defult boot order
 func SetDefaultBootOrder(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
@@ -35,7 +36,7 @@ func SetDefaultBootOrder(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
+			l.LogWithFields(ctxt).Error("X-Auth-Token is either expired or invalid")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -44,14 +45,17 @@ func SetDefaultBootOrder(ctx iris.Context) {
 
 	var deviceDetails dpmodel.Device
 	uri := ctx.Request().RequestURI
+	l.LogWithFields(ctxt).Debugf("incoming request received for setting boot order for URI %s method %s", uri, ctx.Request().Method)
 	//replacing the request url with south bound translation URL
 	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
 		uri = strings.Replace(uri, key, value, -1)
 	}
+	l.LogWithFields(ctxt).Debugf("the request URI for default boot setting has been replaced with southbound URI %s", uri)
+
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Error("While trying to collect data from request: " + err.Error())
+		l.LogWithFields(ctxt).Error("error while trying to get device data from request " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -66,7 +70,7 @@ func SetDefaultBootOrder(ctx iris.Context) {
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
 		errMsg := "While trying to create the redfish client, got:" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -76,7 +80,7 @@ func SetDefaultBootOrder(ctx iris.Context) {
 	resp, err := redfishClient.SetDefaultBootOrder(device, uri)
 	if err != nil {
 		errorMessage := "while trying to set default boot order, got: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errorMessage)
@@ -87,7 +91,7 @@ func SetDefaultBootOrder(ctx iris.Context) {
 	body, err := IoUtilReadAll(resp.Body)
 	if err != nil {
 		body = []byte("while trying to set default boot order, got: " + err.Error())
-		log.Error(string(body))
+		l.LogWithFields(ctxt).Error(string(body))
 	}
 
 	ctx.StatusCode(resp.StatusCode)

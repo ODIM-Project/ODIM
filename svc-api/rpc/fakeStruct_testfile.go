@@ -386,6 +386,14 @@ func (fakeStruct2) DeleteVolume(ctx context.Context, in *systemsproto.VolumeRequ
 	return nil, errors.New("fakeError")
 }
 
+func (fakeStruct2) UpdateSecureBoot(ctx context.Context, in *systemsproto.SecureBootRequest, opts ...grpc.CallOption) (*systemsproto.SystemsResponse, error) {
+	return nil, errors.New("fakeError")
+}
+
+func (fakeStruct2) ResetSecureBoot(ctx context.Context, in *systemsproto.SecureBootRequest, opts ...grpc.CallOption) (*systemsproto.SystemsResponse, error) {
+	return nil, errors.New("fakeError")
+}
+
 //-----------------------------------------TASK------------------------------------------
 
 func (fakeStruct) DeleteTask(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error) {

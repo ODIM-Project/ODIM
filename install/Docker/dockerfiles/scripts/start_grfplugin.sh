@@ -42,7 +42,7 @@ start_grfplugin()
 {
 	export PLUGIN_CONFIG_FILE_PATH=/etc/grfplugin_config/config.json
         logs_on_console=$(cat $CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
-        if [$logs_on_console -eq "true"]
+        if [[ $logs_on_console == "true" ]];
         then
         /bin/plugin-redfish 2>&1 &
         else

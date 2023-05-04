@@ -1158,6 +1158,7 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 		expected to restart and is therefore not complete.
 		*/
 		task.TaskState = taskState
+		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors.", taskID)
@@ -1192,32 +1193,33 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 	if err != nil {
 		return fmt.Errorf("error while retrieving the task details from db: " + err.Error())
 	}
+
+	if parentTask.PercentComplete == 100 {
+		l.LogWithFields(ctx).Infof("Parent Task is already updated to 100 percent with the task state %s", parentTask.TaskState)
+		return nil
+	}
+
 	if taskState != common.Completed && taskState != common.New {
-		errMsg := "One or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + task.ParentID
+		errMsg := "One or more of the requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + task.ParentID
 		parentTask.TaskState = taskState
 		parentTask.PercentComplete = 100
 		parentTask.StatusCode = payLoad.StatusCode
 		parentTask.Messages = []*tmodel.Message{{MessageID: response.Failure, Message: errMsg}}
 		parentTask.TaskResponse = payLoad.ResponseBody
+		l.LogWithFields(ctx).Debugf("Updating parent task %s with PercentComplete: %d, TaskState: %d and status code: %d",
+			parentTask.ID, parentTask.PercentComplete, parentTask.TaskState, parentTask.StatusCode)
 		ts.UpdateTaskQueue(parentTask)
 		return fmt.Errorf(errMsg)
 	}
+
 	childIDs, err := ts.getAllChildTasks(ctx, task.ParentID)
 	if err != nil {
 		return err
 	}
 	l.LogWithFields(ctx).Debugf("Child ID's associated with parent task %s: %v", task.ParentID, childIDs)
 	if len(childIDs) < 1 || (len(childIDs) == 1 && taskState == common.Completed && payLoad.StatusCode < http.StatusAccepted) {
-		parentTask.TaskState = common.Completed
-		parentTask.PercentComplete = 100
-		parentTask.StatusCode = http.StatusOK
-		parentTask.TaskStatus = common.OK
-		parentTask.StatusCode = http.StatusOK
-		resp := tcommon.GetTaskResponse(http.StatusOK, response.Success)
-		body, _ := json.Marshal(resp.Body)
-		parentTask.TaskResponse = body
-		ts.UpdateTaskQueue(parentTask)
-		l.LogWithFields(ctx).Debugf("All tasks are completed !")
+		l.LogWithFields(ctx).Debugf("All tasks are completed ! Updating Parent task %s to completed state", parentTask.ID)
+		ts.updateTaskToCompleted(parentTask)
 		return nil
 	}
 
@@ -1231,37 +1233,39 @@ func (ts *TasksRPC) validateChildTasksAndUpdateParentTask(ctx context.Context, c
 			s[i] = "task:" + v
 		}
 	}
+
 	data, _ := ts.GetMultipleTaskKeysModel(ctx, s, common.InMemory)
-	var isRunning bool
+	var isSuccess bool = true
 	for _, subtask := range *data {
-		if isActiveTask(subtask) {
-			isRunning = true
+		if subtask.PercentComplete == 100 && subtask.TaskState == common.Suspended {
+			l.LogWithFields(ctx).Debugf("updating sub task %s that made to suspended at 100 percent to completed state",
+				subtask.ID)
+			ts.updateTaskToCompleted(&subtask)
+		} else if subtask.TaskState != common.Completed {
+			isSuccess = false
 			break
 		}
-
 	}
-	if !isRunning {
-		l.LogWithFields(ctx).Debugf("All tasks are completed !")
-		parentTask.TaskState = common.Completed
-		parentTask.TaskStatus = common.OK
-		parentTask.PercentComplete = 100
-		parentTask.StatusCode = http.StatusOK
-		resp := tcommon.GetTaskResponse(http.StatusOK, response.Success)
-		body, _ := json.Marshal(resp.Body)
-		parentTask.TaskResponse = body
-		ts.UpdateTaskQueue(parentTask)
+
+	if isSuccess {
+		l.LogWithFields(ctx).Debugf("All tasks are completed ! Updating Parent task %s to completed state",
+			parentTask.ID)
+		ts.updateTaskToCompleted(parentTask)
 	}
 
 	return nil
 }
 
-func isActiveTask(task tmodel.Task) bool {
-	if task.TaskState == common.Running || task.TaskState == common.New || task.TaskState == common.Pending ||
-		task.TaskState == common.Starting || task.TaskState == common.Suspended || task.TaskState == common.Interrupted ||
-		task.TaskState == common.Cancelling {
-		return true
-	}
-	return false
+// updateTaskToCompleted update the task to completed state with success response
+func (ts *TasksRPC) updateTaskToCompleted(task *tmodel.Task) {
+	task.TaskState = common.Completed
+	task.TaskStatus = common.OK
+	task.PercentComplete = 100
+	task.StatusCode = http.StatusOK
+	resp := tcommon.GetTaskResponse(http.StatusOK, response.Success)
+	body, _ := json.Marshal(resp.Body)
+	task.TaskResponse = body
+	ts.UpdateTaskQueue(task)
 }
 
 // ProcessTaskEvents receive the task event from plugins
@@ -1334,6 +1338,15 @@ func (ts *TasksRPC) ProcessTaskEvents(ctx context.Context, data interface{}) boo
 	responseMessage := event.MessageArgs[len(event.MessageArgs)-2]
 	resp := tcommon.GetTaskResponse(int32(statusCode), responseMessage)
 	body, _ := json.Marshal(resp.Body)
+
+	if strings.Contains(responseMessage, "location") && strings.Contains(responseMessage, "host") {
+		var data tmodel.SubscriptionCreate
+		err := json.Unmarshal([]byte(responseMessage), &data)
+		if err == nil {
+			go tcommon.UpdateSubscriptionLocation(ctx, data.Location, data.Host)
+			body, _ = json.Marshal(data.Body)
+		}
+	}
 
 	payLoad := &taskproto.Payload{
 		StatusCode:   int32(statusCode),

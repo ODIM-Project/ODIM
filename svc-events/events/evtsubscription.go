@@ -39,11 +39,14 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 	"github.com/google/uuid"
 )
+
+var FillInSubTaskID = ""
 
 // ValidateRequest input request for create subscription
 func (e *ExternalInterfaces) ValidateRequest(ctx context.Context, req *eventsproto.EventSubRequest,
@@ -144,8 +147,8 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			if statusCode > bubbleUpStatusCode {
 				bubbleUpStatusCode = statusCode
 			}
-			if i <= len(originResources) {
-				percentComplete = int32((i*100)/len(originResources) - 1)
+			if i <= len(originResources) && statusCode != http.StatusAccepted {
+				percentComplete = int32((i / len(originResources)) * 100)
 				if resp.StatusCode == 0 {
 					resp.StatusCode = http.StatusAccepted
 				}
@@ -160,18 +163,36 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			collection, collectionName, collectionFlag, aggregateResource, isAggregate, _ := e.checkCollection(origin)
 			wg.Add(1)
 			// for origin is collection
-			go e.createEventSubscription(ctx, taskID, subTaskChan, sessionUserName, targetURI, postRequest, origin, result, &wg, collectionFlag, collectionName, aggregateResource, isAggregate)
+			subTaskID := e.CreateSubTask(ctx, sessionUserName, taskID)
+			if len(collection) > 0 {
+				// This means we are handling a collection. For collections we are creating event subscriptions synchronously
+				// as the task status for collections is updated in event services but the task status for resources under collection is updated
+				// in task service through task events. In order to update the parent task all child tasks should be completed.
+				// To ensure this, we complete the event subscription for collection first and after completing it, we create event subscriptions
+				// for resources under collection asynchronously
+				e.createEventSubscription(ctx, taskID, subTaskID, subTaskChan, sessionUserName, targetURI, postRequest, origin,
+					result, &wg, collectionFlag, collectionName, aggregateResource, isAggregate)
+			} else {
+				// creating event subscriptions for resources under a collection
+				go e.createEventSubscription(ctx, taskID, subTaskID, subTaskChan, sessionUserName, targetURI, postRequest, origin,
+					result, &wg, collectionFlag, collectionName, aggregateResource, isAggregate)
+			}
+
 			for i := 0; i < len(collection); i++ {
 				wg.Add(1)
 				// for subordinate origin
-				go e.createEventSubscription(ctx, "", subTaskChan, sessionUserName, targetURI, postRequest, collection[i], result, &wg, false, "", aggregateResource, isAggregate)
+				subTaskID = e.CreateSubTask(ctx, sessionUserName, taskID)
+				go e.createEventSubscription(ctx, taskID, subTaskID, subTaskChan, sessionUserName, targetURI, postRequest, collection[i],
+					result, &wg, false, "", aggregateResource, isAggregate)
 			}
 			if !isAggregate {
 				collectionList = append(collectionList, collection...)
 			}
 		} else {
 			wg.Add(1)
-			go e.createEventSubscription(ctx, taskID, subTaskChan, sessionUserName, targetURI, postRequest, origin, result, &wg, false, "", "", false)
+			subTaskID := e.CreateSubTask(ctx, sessionUserName, taskID)
+			go e.createEventSubscription(ctx, taskID, subTaskID, subTaskChan, sessionUserName, targetURI,
+				postRequest, origin, result, &wg, false, "", "", false)
 		}
 	}
 
@@ -222,10 +243,17 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 		}
 		locationHeader = resp.Header["Location"]
 	}
+
+	// if plugin returns the response code status accepted, then the task and child tasks will be updated by task service
+	if bubbleUpStatusCode == http.StatusAccepted {
+		return resp
+	}
+
 	l.LogWithFields(ctx).Debug("Process Count,", originResourceProcessedCount,
 		" successOriginResourceCount ", len(successfulSubscriptionList))
 	percentComplete = 100
 	if originResourceProcessedCount == len(successfulSubscriptionList) {
+		resp.StatusCode = http.StatusCreated
 		e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost))
 	} else {
 		args := errResponse.Args{
@@ -272,7 +300,8 @@ func (e *ExternalInterfaces) SaveSubscription(ctx context.Context, sessionUserNa
 }
 
 // eventSubscription method update subscription on device
-func (e *ExternalInterfaces) eventSubscription(ctx context.Context, postRequest model.EventDestination, origin, collectionName string, collectionFlag bool) (string, evresponse.EventResponse) {
+func (e *ExternalInterfaces) eventSubscription(ctx context.Context, postRequest model.EventDestination, origin,
+	collectionName string, collectionFlag bool, subTaskId string) (string, evresponse.EventResponse) {
 	var resp evresponse.EventResponse
 	var err error
 	var plugin *common.Plugin
@@ -357,13 +386,15 @@ func (e *ExternalInterfaces) eventSubscription(ctx context.Context, postRequest 
 		resp.Response = createEventSubscriptionResponse()
 		return collectionName, resp
 	}
-	return e.SaveSubscriptionOnDevice(ctx, origin, target, plugin, contactRequest, subscriptionPost)
+	return e.SaveSubscriptionOnDevice(ctx, origin, target, plugin, contactRequest, subscriptionPost, subTaskId)
 }
 
 // SaveSubscriptionOnDevice method update subscription on device
-func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origin string, target *common.Target, plugin *common.Plugin, contactRequest evcommon.PluginContactRequest, subscriptionPost model.EventDestination) (string, evresponse.EventResponse) {
+func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origin string, target *common.Target,
+	plugin *common.Plugin, contactRequest evcommon.PluginContactRequest,
+	subscriptionPost model.EventDestination, subTaskId string) (string, evresponse.EventResponse) {
 	var resp evresponse.EventResponse
-
+	var pluginTaskInfo evmodel.PluginTaskInfo
 	postBody, err := json.Marshal(subscriptionPost)
 	if err != nil {
 		errorMessage := "error while marshaling: " + err.Error()
@@ -400,7 +431,13 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 	}
 	defer response.Body.Close()
 	l.LogWithFields(ctx).Debug("Subscription Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
-	if response.StatusCode != http.StatusCreated {
+
+	if response.StatusCode == http.StatusAccepted && subTaskId != FillInSubTaskID {
+		pluginTaskInfo.Location = response.Header.Get("Location")
+		pluginTaskInfo.PluginIP = response.Header.Get(common.XForwardedFor)
+		services.SavePluginTaskInfo(ctx, pluginTaskInfo.PluginIP, plugin.IP,
+			subTaskId, pluginTaskInfo.Location)
+	} else if response.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
 			errorMessage := "error while trying to read response body: " + err.Error()
@@ -435,6 +472,11 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 		l.LogWithFields(ctx).Error(errorMessage)
 		return "", resp
 	}
+
+	// if status is 202 location will contain the task url
+	if response.StatusCode == http.StatusAccepted {
+		locationHdr = ""
+	}
 	// get the ip address from the host name
 	deviceIPAddress, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
 	if errorMessage != "" {
@@ -457,6 +499,7 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 	if !(strings.Contains(locationHdr, host)) {
 		evtSubscription.Location = "https://" + target.ManagerAddress + locationHdr
 	}
+
 	err = e.saveDeviceSubscriptionDetails(evtSubscription)
 	if err != nil {
 		errorMessage := "error while trying to save event subscription of device data: " + err.Error()
@@ -613,7 +656,7 @@ func (e *ExternalInterfaces) CreateDefaultEventSubscription(ctx context.Context,
 	postRequest.Protocol = protocol
 	postRequest.SubscriptionType = evmodel.SubscriptionType
 	postRequest.SubordinateResources = true
-	_, response = e.eventSubscription(ctx, postRequest, originResources[0], "", false)
+	_, response = e.eventSubscription(ctx, postRequest, originResources[0], "", false, FillInSubTaskID)
 	e.checkCollectionSubscription(ctx, originResources[0], protocol)
 	if response.StatusCode != http.StatusCreated {
 		partialResultFlag = true
@@ -755,20 +798,17 @@ func (e *ExternalInterfaces) DeleteSubscriptions(ctx context.Context, originReso
 	contactRequest.URL = "/ODIM/v1/Subscriptions"
 	contactRequest.HTTPMethodType = http.MethodDelete
 	contactRequest.PostBody = target
-
-	resp, _, _, err = e.PluginCall(ctx, contactRequest)
+	resp, _, _, _, err = e.PluginCall(ctx, contactRequest)
 	if err != nil {
 		return resp, err
 	}
 	return resp, nil
 }
 
-func (e *ExternalInterfaces) createEventSubscription(ctx context.Context, taskID string, subTaskChan chan<- int32, reqSessionToken string,
+func (e *ExternalInterfaces) createEventSubscription(ctx context.Context, taskID string, subTaskID string, subTaskChan chan<- int32, reqSessionToken string,
 	targetURI string, request model.EventDestination, originResource string, result *evresponse.MutexLock,
 	wg *sync.WaitGroup, collectionFlag bool, collectionName string, aggregateResource string, isAggregateCollection bool) {
 	var (
-		subTaskURI      string
-		subTaskID       string
 		reqBody         []byte
 		reqJSON         string
 		err             error
@@ -782,20 +822,16 @@ func (e *ExternalInterfaces) createEventSubscription(ctx context.Context, taskID
 		l.LogWithFields(ctx).Error("error while trying to marshal create event request: " + err.Error())
 	}
 	reqJSON = string(reqBody)
-	if taskID != "" {
-		subTaskURI, err = e.CreateChildTask(ctx, reqSessionToken, taskID)
-		if err != nil {
-			l.LogWithFields(ctx).Error("Error while creating the SubTask")
-		}
-		trimmedURI := strings.TrimSuffix(subTaskURI, "/")
-		subTaskID = trimmedURI[strings.LastIndex(trimmedURI, "/")+1:]
-		resp.StatusCode = http.StatusAccepted
-		e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Running, common.OK, percentComplete, http.MethodPost))
-	}
 
-	host, response := e.eventSubscription(ctx, request, originResource, collectionName, collectionFlag)
+	resp.StatusCode = http.StatusAccepted
+	e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Running, common.OK, percentComplete, http.MethodPost))
+
+	host, response := e.eventSubscription(ctx, request, originResource, collectionName, collectionFlag, subTaskID)
+	l.LogWithFields(ctx).Debugf("Event subscription response for originResource: %s, collectionName: %s, subTaskID: %s"+
+		"is %v with the status code: %v", originResource, collectionName, subTaskID, response, response.StatusCode)
 	resp.Body = response.Response
 	resp.StatusCode = int32(response.StatusCode)
+
 	if isAggregateCollection {
 		if resp.StatusCode == http.StatusConflict {
 			response.StatusCode = http.StatusCreated
@@ -805,14 +841,31 @@ func (e *ExternalInterfaces) createEventSubscription(ctx context.Context, taskID
 		result.AddResponse(originResource, host, response)
 	}
 	percentComplete = 100
-	if subTaskID != "" {
-		if response.StatusCode != http.StatusCreated {
-			e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
-		} else {
-			e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Completed, common.OK, percentComplete, http.MethodPost))
-		}
-		subTaskChan <- int32(response.StatusCode)
+	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusAccepted {
+		// got error while subscribing event. updating task status immediately
+		e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+	} else if response.StatusCode == http.StatusCreated && collectionFlag {
+		// handling the event subscription for collection. The status of the task will be temporarily updated to suspended
+		// This will be updated to completed by task service upon the completion of all resources under the collection
+		response.StatusCode = http.StatusAccepted
+		e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Suspended, common.OK, percentComplete, http.MethodPost))
+	} else if response.StatusCode == http.StatusCreated {
+		// updating the task status to completed if plugin (plugin in which queue and prioritization is not implemented)
+		// returns the status code 201
+		e.UpdateTask(ctx, fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Completed, common.OK, percentComplete, http.MethodPost))
 	}
+	subTaskChan <- int32(response.StatusCode)
+}
+
+// CreateSubTask creates a child task for a task calling RPC to task service and returns the subtask ID
+func (e *ExternalInterfaces) CreateSubTask(ctx context.Context, reqSessionToken string, parentTask string) string {
+	subTaskURI, err := e.CreateChildTask(ctx, reqSessionToken, parentTask)
+	if err != nil {
+		l.LogWithFields(ctx).Error("Error while creating the SubTask")
+	}
+	trimmedURI := strings.TrimSuffix(subTaskURI, "/")
+	subTaskID := trimmedURI[strings.LastIndex(trimmedURI, "/")+1:]
+	return subTaskID
 }
 
 // checkCollectionSubscription checks if any collection based subscription exists
@@ -902,7 +955,8 @@ func (e *ExternalInterfaces) checkCollectionSubscription(ctx context.Context, or
 	}
 
 	// Subscribing newly added server with collated event list
-	host, response := e.eventSubscription(ctx, subscriptionPost, origin, "", false)
+	// passing an empty subtask id as a subtask is not created for this operation
+	host, response := e.eventSubscription(ctx, subscriptionPost, origin, "", false, FillInSubTaskID)
 	if response.StatusCode != http.StatusCreated {
 		return
 	}
@@ -1158,7 +1212,8 @@ func (e *ExternalInterfaces) UpdateEventSubscriptions(ctx context.Context, req *
 		resp.StatusCode = int(res.StatusCode)
 		return "", resp
 	}
-	return e.SaveSubscriptionOnDevice(ctx, req.SystemID, target, plugin, contactRequest, subscriptionPost)
+	// passing an empty subtask id as a subtask is not created for this operation
+	return e.SaveSubscriptionOnDevice(ctx, req.SystemID, target, plugin, contactRequest, subscriptionPost, FillInSubTaskID)
 }
 
 // GetAggregateSubscriptionList return list of subscription corresponding to host
@@ -1200,11 +1255,30 @@ func getSuccessfulResponse(response map[string]evresponse.EventResponse) (succes
 		if originResourceID == resourceID && i > 0 {
 			successfulSubscriptionList = append(successfulSubscriptionList, model.Link{Oid: originResource})
 		}
-		if evtResponse.StatusCode == http.StatusCreated {
+		if evtResponse.StatusCode == http.StatusAccepted || evtResponse.StatusCode == http.StatusCreated {
 			successfulSubscriptionList = append(successfulSubscriptionList, model.Link{Oid: originResource})
 			successfulResponses[originResource] = evtResponse
 		}
 		i++
 	}
 	return
+}
+
+// UpdateSubscriptionLocation method location and host takes as input and
+// update subscription location in DeviceSubscription table to corresponding host
+func (e *ExternalInterfaces) UpdateSubscriptionLocation(ctx context.Context, location, host string) bool {
+	searchKey := evcommon.GetSearchKey(host, evmodel.DeviceSubscriptionIndex)
+	deviceSubscription, err := e.GetDeviceSubscriptions(searchKey)
+	if err != nil {
+		l.LogWithFields(ctx).Error(err)
+		return false
+	}
+	if deviceSubscription != nil {
+		deviceSubscription.Location = location
+		err := e.UpdateDeviceSubscriptionLocation(*deviceSubscription)
+		if err == nil {
+			return true
+		}
+	}
+	return false
 }

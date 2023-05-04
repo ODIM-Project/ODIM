@@ -41,7 +41,13 @@ run_forever()
 start_lenovoplugin()
 {
 	export PLUGIN_CONFIG_FILE_PATH=/etc/lenovoplugin_config/config.json
+        logs_on_console=$(cat $CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
+        if [$logs_on_console -eq "true"]
+        then
+        /bin/plugin-lenovo 2>&1 &
+        else
 	nohup /bin/plugin-lenovo >> /var/log/lenovoplugin_logs/lenovoplugin.log 2>&1 &
+        fi
 	PID=$!
 	sleep 3
 

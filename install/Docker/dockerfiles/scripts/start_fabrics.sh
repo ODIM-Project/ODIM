@@ -42,7 +42,14 @@ start_fabrics()
 {
         registry_address="etcd:2379"
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
+        logs_on_console=$(cat $CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
+	if [$logs_on_console -eq "true"]
+        then
+        client_request_timeout=$(echo $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " " )s)
+        /bin/svc-fabrics  --registry=etcd --registry_address=${registry_address} --server_address=fabrics:45106 --client_request_timeout=${client_request_timeout} 2>&1 &
+        else
 	nohup /bin/svc-fabrics  --registry=etcd --registry_address=${registry_address} --server_address=fabrics:45106 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/fabrics.log 2>&1 &
+        fi
 	PID=$!
 	sleep 3
 

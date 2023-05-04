@@ -645,6 +645,17 @@ func (p *PluginContact) GetSystemResource(ctx context.Context, req *systemsproto
 		return resp
 
 	}
+
+	URLsplit := req.URL
+	res := strings.Split(URLsplit, "/")
+	if res[5] == "BootOptions" && len(res) == 7 {
+		_, ok := resource["BootOptionReference"]
+		if !ok {
+			resource["BootOptionReference"] = "null"
+		}
+
+	}
+
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success

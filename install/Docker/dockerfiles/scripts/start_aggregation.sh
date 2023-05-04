@@ -42,7 +42,7 @@ start_aggregation()
 {
         registry_address="etcd:2379"
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
-        if [$logs_on_console -eq "true"]
+        if [[ $logs_on_console == "true" ]];
         then
         client_request_timeout=$(echo $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " " )s)
         /bin/svc-aggregation --registry=etcd --registry_address=${registry_address} --server_address=aggregation:45102 --client_request_timeout=${client_request_timeout} 2>&1 &

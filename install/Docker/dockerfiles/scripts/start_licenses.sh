@@ -42,13 +42,13 @@ start_licenses()
 {
         registry_address="etcd:2379"
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
+        client_request_timeout=$(echo $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " " )s)
         logs_on_console=$(cat $CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
         if [[ $logs_on_console == "true" ]]
         then
-        client_request_timeout=$(echo $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " " )s)
         /bin/svc-licenses --registry=etcd --registry_address=${registry_address} --server_address=licenses:45113 --client_request_timeout=${client_request_timeout} 2>&1 &
         else
-	nohup /bin/svc-licenses --registry=etcd --registry_address=${registry_address} --server_address=licenses:45113   --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/licenses.log 2>&1 &
+	nohup /bin/svc-licenses --registry=etcd --registry_address=${registry_address} --server_address=licenses:45113   --client_request_timeout=${client_request_timeout} >> /var/log/odimra_logs/licenses.log 2>&1 &
 	fi
         PID=$!
 	sleep 3

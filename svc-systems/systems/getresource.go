@@ -631,6 +631,14 @@ func (p *PluginContact) GetSystemResource(ctx context.Context, req *systemsproto
 
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(respData), &resource)
+	URLsplit := req.URL
+	res := strings.Split(URLsplit, "/")
+	if res[5] == "BootOptions" && len(res) == 7 {
+		_, ok := resource["BootOptionReference"]
+		if !ok {
+			resource["BootOptionReference"] = "null"
+		}
+	}
 	if strings.Contains(req.URL, "/Volumes/Capabilities") {
 		var result map[string]interface{}
 

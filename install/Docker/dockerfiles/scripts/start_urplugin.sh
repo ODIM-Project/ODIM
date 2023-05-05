@@ -43,6 +43,7 @@ start_urplugin()
 	export PLUGIN_CONFIG_FILE_PATH=/etc/urplugin_config/config.yaml
         logs_on_console=$(cat $CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
         if [[ $logs_on_console == "true" ]]
+        then
         /bin/plugin-unmanaged-racks 2>&1 &
         else
 	nohup /bin/plugin-unmanaged-racks >> /var/log/urplugin_logs/urplugin.log 2>&1 &

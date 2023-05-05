@@ -145,7 +145,7 @@ func TestAuthWithDevice_Success(t *testing.T) {
 	defer t1.Close()
 
 	deviceHost := "localhost"
-	devicePort := "1234"
+	devicePort := "1235"
 	// Create a RedfishDevice object pointing to the mock HTTP server
 	device := &RedfishDevice{Host: fmt.Sprintf("%s:%s", deviceHost, devicePort), Username: "admin", Password: "password"}
 
@@ -238,7 +238,7 @@ type mockHandlerFunc func(string, string, string, http.ResponseWriter)
 
 func startTestServer(handler mockHandlerFunc) *testhttp.Server {
 	// create a listener with the desired port.
-	l, err := net.Listen("tcp", "localhost:1234")
+	l, err := net.Listen("tcp", "localhost:1235")
 	if err != nil {
 		log.Fatal(err.Error())
 	}

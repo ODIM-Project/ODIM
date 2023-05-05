@@ -44,7 +44,6 @@ start_grfplugin()
         logs_on_console=$(cat $CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
         if [[ $logs_on_console == "true" ]]
         then
-        echo "printing logs to console"
         /bin/plugin-redfish 2>&1 &
         else
 	nohup /bin/plugin-redfish >> /var/log/grfplugin_logs/grfplugin.log 2>&1 &

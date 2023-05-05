@@ -82,7 +82,7 @@ func getProcessLogDetails(ctx context.Context) logrus.Fields {
 	ActionName := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionname")), "\n", "", -1)
 	ThreadName := strings.Replace(fmt.Sprintf("%v", ctx.Value("threadname")), "\n", "", -1)
 	ActionID := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionid")), "\n", "", -1)
-	fields["transactionid"] = TransactionID
+	fields["transaction_id"] = TransactionID
 	fields["process_name"] = ProcessName
 	fields["thread_id"] = ThreadID
 	fields["action_name"] = ActionName

@@ -646,8 +646,8 @@ func (p *PluginContact) GetSystemResource(ctx context.Context, req *systemsproto
 
 	}
 
-	URLsplit := req.URL
-	res := strings.Split(URLsplit, "/")
+	urlInfo := req.URL
+	res := strings.Split(urlInfo, "/")
 	if res[5] == "BootOptions" && len(res) == 7 {
 		_, ok := resource["BootOptionReference"]
 		if !ok {
@@ -820,10 +820,8 @@ func (p *PluginContact) GetSystems(ctx context.Context, req *systemsproto.GetSys
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.RequestParam}, nil)
 	}
 	data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`.`, -1)
-	fmt.Println(data)
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)
-	fmt.Println(resource)
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success

@@ -107,6 +107,8 @@ func TrackConfigFileChanges(errChan chan error) {
 	}
 }
 
+// UpdateSubscriptionLocation do the RPC call to events service to update subscription location
+// once a create event subscription is completed
 func UpdateSubscriptionLocation(ctx context.Context, location, host string) {
 	conn, err := services.ODIMService.Client(services.Events)
 	if err != nil {

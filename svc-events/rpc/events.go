@@ -454,6 +454,8 @@ func (e *Events) DeleteAggregateSubscriptionsRPC(ctx context.Context, req *event
 	return &resp, nil
 }
 
+// UpdateSubscriptionLocationRPC defines the operations which handles the RPC request response
+// it updates subscription location
 func (e *Events) UpdateSubscriptionLocationRPC(ctx context.Context, in *eventsproto.UpdateSubscriptionLocation) (*eventsproto.SubscribeEMBResponse, error) {
 	var resp eventsproto.SubscribeEMBResponse
 	isUpdated := e.Connector.UpdateSubscriptionLocation(ctx, in.Location, in.Host)

@@ -46,6 +46,8 @@ import (
 	"github.com/google/uuid"
 )
 
+// FillInSubTaskID is used as a nil value for subtask id as for some tasks subtask is not created
+// and the function expects a subtask id in the parameters
 var FillInSubTaskID = ""
 
 // ValidateRequest input request for create subscription
@@ -301,7 +303,7 @@ func (e *ExternalInterfaces) SaveSubscription(ctx context.Context, sessionUserNa
 
 // eventSubscription method update subscription on device
 func (e *ExternalInterfaces) eventSubscription(ctx context.Context, postRequest model.EventDestination, origin,
-	collectionName string, collectionFlag bool, subTaskId string) (string, evresponse.EventResponse) {
+	collectionName string, collectionFlag bool, subTaskID string) (string, evresponse.EventResponse) {
 	var resp evresponse.EventResponse
 	var err error
 	var plugin *common.Plugin
@@ -386,13 +388,13 @@ func (e *ExternalInterfaces) eventSubscription(ctx context.Context, postRequest 
 		resp.Response = createEventSubscriptionResponse()
 		return collectionName, resp
 	}
-	return e.SaveSubscriptionOnDevice(ctx, origin, target, plugin, contactRequest, subscriptionPost, subTaskId)
+	return e.SaveSubscriptionOnDevice(ctx, origin, target, plugin, contactRequest, subscriptionPost, subTaskID)
 }
 
 // SaveSubscriptionOnDevice method update subscription on device
 func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origin string, target *common.Target,
 	plugin *common.Plugin, contactRequest evcommon.PluginContactRequest,
-	subscriptionPost model.EventDestination, subTaskId string) (string, evresponse.EventResponse) {
+	subscriptionPost model.EventDestination, subTaskID string) (string, evresponse.EventResponse) {
 	var resp evresponse.EventResponse
 	var pluginTaskInfo evmodel.PluginTaskInfo
 	postBody, err := json.Marshal(subscriptionPost)
@@ -432,11 +434,11 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 	defer response.Body.Close()
 	l.LogWithFields(ctx).Debug("Subscription Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
 
-	if response.StatusCode == http.StatusAccepted && subTaskId != FillInSubTaskID {
+	if response.StatusCode == http.StatusAccepted && subTaskID != FillInSubTaskID {
 		pluginTaskInfo.Location = response.Header.Get("Location")
 		pluginTaskInfo.PluginIP = response.Header.Get(common.XForwardedFor)
 		services.SavePluginTaskInfo(ctx, pluginTaskInfo.PluginIP, plugin.IP,
-			subTaskId, pluginTaskInfo.Location)
+			subTaskID, pluginTaskInfo.Location)
 	} else if response.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {

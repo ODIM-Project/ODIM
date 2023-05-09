@@ -44,7 +44,7 @@ data:
     		"LBHost": {{ .Values.dellplugin.lbHost | quote }},
     		"LBPort": {{ .Values.dellplugin.lbPort | quote }}
     	},
-	    "logsRedirectionToConsole" : {{ .Values.odimra.logsOnConsole | quote }},
+        "logsRedirectionToConsole" : {{ .Values.odimra.logsOnConsole | quote }},
     	"MessageBusConf": {
     		"MessageBusConfigFilePath": "/etc/dellplugin_config/platformconfig.toml",
     		"MessageBusType": "Kafka",

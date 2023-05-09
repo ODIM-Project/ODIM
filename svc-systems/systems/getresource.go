@@ -645,9 +645,11 @@ func (p *PluginContact) GetSystemResource(ctx context.Context, req *systemsproto
 		return resp
 
 	}
-
+	// Adding the mandatory parameter 'BootOptionReference' as null if there is no such key present in response
+	// for  URI   :  /redfish/v1/Systems<systemID>/BootOptions/<BootOptionID>
 	urlInfo := req.URL
 	res := strings.Split(urlInfo, "/")
+	//
 	if res[5] == "BootOptions" && len(res) == 7 {
 		_, ok := resource["BootOptionReference"]
 		if !ok {

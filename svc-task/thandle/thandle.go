@@ -1206,7 +1206,7 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 		parentTask.StatusCode = payLoad.StatusCode
 		parentTask.Messages = []*tmodel.Message{{MessageID: response.Failure, Message: errMsg}}
 		parentTask.TaskResponse = payLoad.ResponseBody
-		l.LogWithFields(ctx).Debugf("Updating parent task %s with PercentComplete: %d, TaskState: %d and status code: %d",
+		l.LogWithFields(ctx).Debugf("Updating parent task %s with PercentComplete: %d, TaskState: %s and status code: %d",
 			parentTask.ID, parentTask.PercentComplete, parentTask.TaskState, parentTask.StatusCode)
 		ts.UpdateTaskQueue(parentTask)
 		return fmt.Errorf(errMsg)
@@ -1227,10 +1227,10 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 }
 
 func (ts *TasksRPC) validateChildTasksAndUpdateParentTask(ctx context.Context, childIDs []string, taskID string, parentTask *tmodel.Task) error {
-	s := make([]interface{}, len(childIDs))
-	for i, v := range childIDs {
+	s := make([]interface{}, 0, len(childIDs))
+	for _, v := range childIDs {
 		if v != taskID {
-			s[i] = "task:" + v
+			s = append(s, "task:"+v)
 		}
 	}
 
@@ -1240,7 +1240,14 @@ func (ts *TasksRPC) validateChildTasksAndUpdateParentTask(ctx context.Context, c
 		if subtask.PercentComplete == 100 && subtask.TaskState == common.Suspended {
 			l.LogWithFields(ctx).Debugf("updating sub task %s that made to suspended at 100 percent to completed state",
 				subtask.ID)
-			ts.updateTaskToCompleted(&subtask)
+			task := new(tmodel.Task)
+			task.ID = subtask.ID
+			task.Name = subtask.Name
+			task.TaskMonitor = subtask.TaskMonitor
+			task.URI = subtask.URI
+			task.StartTime = subtask.StartTime
+			task.EndTime = subtask.EndTime
+			ts.updateTaskToCompleted(task)
 		} else if subtask.TaskState != common.Completed {
 			isSuccess = false
 			break

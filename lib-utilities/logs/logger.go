@@ -26,9 +26,9 @@ import (
 
 var priorityLogFields = []string{
 	"host",
-	"threadname",
-	"procid",
-	"messageid",
+	"thread_name",
+	"process_id",
+	"message_id",
 }
 
 var syslogPriorityNumerics = map[string]int8{
@@ -82,13 +82,13 @@ func getProcessLogDetails(ctx context.Context) logrus.Fields {
 	ActionName := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionname")), "\n", "", -1)
 	ThreadName := strings.Replace(fmt.Sprintf("%v", ctx.Value("threadname")), "\n", "", -1)
 	ActionID := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionid")), "\n", "", -1)
-	fields["transactionid"] = TransactionID
-	fields["processname"] = ProcessName
-	fields["threadid"] = ThreadID
-	fields["actionname"] = ActionName
-	fields["messageid"] = ActionName
-	fields["threadname"] = ThreadName
-	fields["actionid"] = ActionID
+	fields["transaction_id"] = TransactionID
+	fields["process_name"] = ProcessName
+	fields["thread_id"] = ThreadID
+	fields["action_name"] = ActionName
+	fields["message_id"] = ActionName
+	fields["thread_name"] = ThreadName
+	fields["action_id"] = ActionID
 
 	return fields
 }
@@ -294,7 +294,11 @@ func SetFormatter(format LogFormat) {
 	case SyslogFormat:
 		Log.Logger.SetFormatter(&SysLogFormatter{})
 	case JSONFormat:
-		Log.Logger.SetFormatter(&logrus.JSONFormatter{})
+		Log.Logger.SetFormatter(&logrus.JSONFormatter{FieldMap: logrus.FieldMap{
+			logrus.FieldKeyTime:  "log_timestamp",
+			logrus.FieldKeyLevel: "log_level",
+			logrus.FieldKeyMsg:   "log_message",
+		}})
 	default:
 		Log.Logger.SetFormatter(&SysLogFormatter{})
 		Log.Info("Something went wrong! Setting the default format Syslog for logging")

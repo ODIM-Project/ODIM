@@ -42,7 +42,15 @@ start_account_session()
 {
 	registry_address="etcd:2379"
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
-	nohup /bin/svc-account-session --registry=etcd --registry_address=${registry_address} --server_address=account-session:45101   --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/account_session.log 2>&1 &
+        logs_on_console=$(cat $CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
+        client_request_timeout=$(echo $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " " )s)
+        if [[ $logs_on_console == "true" ]]
+        then
+        
+	/bin/svc-account-session --registry=etcd --registry_address=${registry_address} --server_address=account-session:45101 --client_request_timeout=${client_request_timeout} 2>&1 &
+        else
+        nohup /bin/svc-account-session --registry=etcd --registry_address=${registry_address} --server_address=account-session:45101 --client_request_timeout=${client_request_timeout} >> /var/log/odimra_logs/account_session.log 2>&1 &
+        fi
 	PID=$!
 	sleep 3
 

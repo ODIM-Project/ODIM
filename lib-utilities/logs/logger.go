@@ -226,7 +226,7 @@ func formatStructuredFields(entry *logrus.Entry, msg string) string {
 		}
 	}
 	if transID != "" {
-		msg = fmt.Sprintf("%s [process@1 process_Name=\"%s\" transactionID=\"%s\" actionID=\"%s\" actionName=\"%s\" threadID=\"%s\" threadName=\"%s\"]", msg, processName, transID, actionID, actionName, threadID, threadName)
+		msg = fmt.Sprintf("%s [process@1 processName=\"%s\" transactionID=\"%s\" actionID=\"%s\" actionName=\"%s\" threadID=\"%s\" threadName=\"%s\"]", msg, processName, transID, actionID, actionName, threadID, threadName)
 	}
 	return msg
 }

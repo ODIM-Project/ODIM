@@ -45,8 +45,9 @@ start_manager()
         client_request_timeout=$(echo $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " " )s)
         logs_on_console=$(cat $CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
         if [[ $logs_on_console == "true" ]]
-        /bin/svc-managers --registry=etcd --registry_address=${registry_address} --server_address=managers:45107 --client_request_timeout=${client_request_timeout} 2>&1 &
         then
+        /bin/svc-managers --registry=etcd --registry_address=${registry_address} --server_address=managers:45107 --client_request_timeout=${client_request_timeout} 2>&1 &
+        else
 	nohup /bin/svc-managers --registry=etcd --registry_address=${registry_address} --server_address=managers:45107  --client_request_timeout=${client_request_timeout} >> /var/log/odimra_logs/managers.log 2>&1 &
 	fi
         PID=$!

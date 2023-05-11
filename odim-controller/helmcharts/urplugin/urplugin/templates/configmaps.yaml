@@ -15,7 +15,7 @@ data:
     OdimPassword: {{ .Values.urplugin.odimPassword }}
     FirmwareVersion: v2.0.0
     LogLevel: debug
-    logsRedirectionToConsole : {{ .Values.odimra.logsOnConsole | quote }}
+    logsRedirectionToConsole : {{ .Values.odimra.logsOnConsole | default false }}
     PKIRootCACertificatePath: /etc/urplugin_certs/rootCA.crt
     PKIPrivateKeyPath: /etc/urplugin_certs/odimra_server.key
     PKICertificatePath: /etc/urplugin_certs/odimra_server.crt

@@ -152,7 +152,7 @@ data:
                  "DeliveryRetryAttempts" : 3,
                  "DeliveryRetryIntervalSeconds" : 60
       },
-      "logsRedirectionToConsole" : {{ .Values.odimra.logsOnConsole }},
+      "logsRedirectionToConsole" : {{ .Values.odimra.logsOnConsole | default false }},
       "ResourceRateLimit": {{ .Values.odimra.resourceRateLimit | toJson }},
       "LogLevel": {{ .Values.odimra.logLevel | quote }},
       "LogFormat": {{ .Values.odimra.logFormat | quote }},

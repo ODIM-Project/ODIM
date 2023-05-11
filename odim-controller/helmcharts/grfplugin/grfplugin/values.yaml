@@ -13,4 +13,4 @@ grfplugin:
   eventHost: grfplugin
   lbHost:
   lbPort:
-  logsOnConsole: true
+  logsOnConsole: false

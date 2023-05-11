@@ -5,3 +5,4 @@ urplugin:
   odimUsername: admin
   odimPassword:
   logPath: /var/log/urplugin_logs
+  logsOnConsole: false

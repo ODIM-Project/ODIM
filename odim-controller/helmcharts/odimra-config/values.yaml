@@ -10,3 +10,4 @@ odimra:
   keyExpiryInterval:
   eventForwardingWorkerPoolCount:
   eventSaveWorkerPoolCount:
+  logsOnConsole:

@@ -15,3 +15,4 @@ dellplugin:
   logPath:
   logLevel: warn
   logFormat: syslog
+  logsOnConsole: true

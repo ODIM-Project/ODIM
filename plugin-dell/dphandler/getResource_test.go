@@ -27,6 +27,7 @@ import (
 )
 
 func TestGetResource(t *testing.T) {
+
 	config.SetUpMockConfig(t)
 
 	deviceHost := "localhost"

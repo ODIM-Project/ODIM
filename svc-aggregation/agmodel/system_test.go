@@ -16,6 +16,7 @@ package agmodel
 
 import (
 	"context"
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -161,78 +162,92 @@ func TestSaveSystem_Create(t *testing.T) {
 	}
 }
 
-func TestGetPluginData(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer func() {
-		common.TruncateDB(common.OnDisk)
-		common.TruncateDB(common.InMemory)
-	}()
-
-	validPassword := []byte("password")
-	invalidPassword := []byte("invalid")
+func newMock(pluginID string) (string, *errors.Error) {
+	var t *testing.T
 	validPasswordEnc := getEncryptedKey(t, []byte("password"))
 
-	pluginData := Plugin{
+	genricPluginData := Plugin{
+		ID:                pluginID,
 		IP:                "localhost",
 		Port:              "45001",
 		Username:          "admin",
 		Password:          validPasswordEnc,
-		ID:                "GRF",
 		PluginType:        "RF-GENERIC",
 		PreferredAuthType: "BasicAuth",
 	}
-	mockData(t, common.OnDisk, "Plugin", "validPlugin", pluginData)
-	pluginData.Password = invalidPassword
-	mockData(t, common.OnDisk, "Plugin", "invalidPassword", pluginData)
-	mockData(t, common.OnDisk, "Plugin", "invalidPluginData", "pluginData")
+	emptyPluginData := Plugin{}
 
-	type args struct {
-		pluginID string
+	mockData := map[string]Plugin{
+		"validPlugin":       genricPluginData,
+		"invalidPassword":   emptyPluginData,
+		"notFound":          emptyPluginData,
+		"invalidPluginData": emptyPluginData,
 	}
+
+	data, ok := mockData[pluginID]
+	if !ok {
+		return "", nil
+	}
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return "", nil
+
+	}
+	return string(jsonData), nil
+}
+
+func TestGetPluginData(t *testing.T) {
+	config.SetUpMockConfig(t)
+	validPassword := []byte("password")
+	dataReader := DBPluginDataRead{
+		DBReadclient: func(pluginID string) (string, *errors.Error) {
+			return newMock(pluginID)
+		},
+	}
+
 	tests := []struct {
-		name    string
-		args    args
-		exec    func(*Plugin)
-		want    Plugin
-		wantErr bool
+		name     string
+		pluginID string
+		want     Plugin
+		wantErr  bool
 	}{
 		{
-			name: "Positive Case",
-			args: args{pluginID: "validPlugin"},
-			exec: func(want *Plugin) {
-				want.Password = validPassword
+			name:     "Positive Case",
+			pluginID: "validPlugin",
+			want: Plugin{
+				IP:                "localhost",
+				Port:              "45001",
+				Username:          "admin",
+				Password:          validPassword,
+				ID:                "validPlugin",
+				PluginType:        "RF-GENERIC",
+				PreferredAuthType: "BasicAuth",
 			},
-			want:    pluginData,
 			wantErr: false,
 		},
 		{
-			name:    "Negative Case - Non-existent plugin",
-			args:    args{pluginID: "notFound"},
-			exec:    nil,
-			want:    Plugin{},
-			wantErr: true,
+			name:     "Negative Case - Non-existent plugin",
+			pluginID: "notFound",
+			want:     Plugin{},
+			wantErr:  true,
 		},
 		{
-			name:    "Negative Case - Invalid plugin data",
-			args:    args{pluginID: "invalidPluginData"},
-			exec:    nil,
-			want:    Plugin{},
-			wantErr: true,
+			name:     "Negative Case - Invalid plugin data",
+			pluginID: "invalidPluginData",
+			want:     Plugin{},
+			wantErr:  true,
 		},
 		{
-			name:    "Negative Case - Plugin with invalid password",
-			args:    args{pluginID: "invalidPassword"},
-			exec:    nil,
-			want:    Plugin{},
-			wantErr: true,
+			name:     "Negative Case - Plugin with invalid password",
+			pluginID: "invalidPassword",
+			want:     Plugin{},
+			wantErr:  true,
 		},
 	}
+
 	for _, tt := range tests {
-		if tt.exec != nil {
-			tt.exec(&tt.want)
-		}
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetPluginData(tt.args.pluginID)
+			got, err := GetPluginData(tt.pluginID, dataReader)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetPluginData() error = %v, wantErr %v", err, tt.wantErr)
 				return

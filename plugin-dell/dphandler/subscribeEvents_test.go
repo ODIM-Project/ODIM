@@ -99,7 +99,8 @@ func TestCreateEventSubscription(t *testing.T) {
 		Password: "password",
 		PostBody: reqBodyBytes,
 	}
-	isOurSubscription(&device)
+	ctxt := mockContext()
+	isOurSubscription(ctxt, &device)
 
 }
 
@@ -165,14 +166,16 @@ func Test_deleteMatchingSubscriptions(t *testing.T) {
 		Username: "admin",
 		Password: "password1",
 	}
-	deleteMatchingSubscriptions(&device)
+	ctxt := mockContext()
+	deleteMatchingSubscriptions(ctxt, &device)
 
 	device = dputilities.RedfishDevice{
 		Host:     fmt.Sprintf("%s:%s", deviceHost, devicePort),
 		Username: "admin",
 		Password: "password",
 	}
-	deleteMatchingSubscriptions(&device)
+
+	deleteMatchingSubscriptions(ctxt, &device)
 	fmt.Println("&&&&&&&&&&&&&&&&&&&&&&&7  ")
 
 	device = dputilities.RedfishDevice{
@@ -180,11 +183,12 @@ func Test_deleteMatchingSubscriptions(t *testing.T) {
 		Username: "admin",
 		Password: "password2",
 	}
-	deleteMatchingSubscriptions(&device)
+	deleteMatchingSubscriptions(ctxt, &device)
 
 }
 
 func Test_isOurSubscription(t *testing.T) {
+	ctxt := mockContext()
 	config.SetUpMockConfig(t)
 	device := dputilities.RedfishDevice{
 		Host:     "localhost",
@@ -193,5 +197,5 @@ func Test_isOurSubscription(t *testing.T) {
 		Token:    "test",
 		Location: "empty",
 	}
-	isOurSubscription(&device)
+	isOurSubscription(ctxt, &device)
 }

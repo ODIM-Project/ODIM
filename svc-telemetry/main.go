@@ -34,8 +34,8 @@ func main() {
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
 	logs.Adorn(logrus.Fields{
-		"host":   hostName,
-		"procid": podName + fmt.Sprintf("_%d", pid),
+		"host":       hostName,
+		"process_id": podName + fmt.Sprintf("_%d", pid),
 	})
 
 	// log should be initialized after Adorn is invoked

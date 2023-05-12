@@ -109,6 +109,8 @@ func Router() *iris.Application {
 		ChangeBootOrderSettingsRPC: rpc.ChangeBootOrderSettings,
 		CreateVolumeRPC:            rpc.CreateVolume,
 		DeleteVolumeRPC:            rpc.DeleteVolume,
+		UpdateSecureBootRPC:        rpc.UpdateSecureBoot,
+		ResetSecureBootRPC:         rpc.ResetSecureBoot,
 	}
 
 	cha := handle.ChassisRPCs{
@@ -373,6 +375,14 @@ func Router() *iris.Application {
 	systems.Get("/{id}/EthernetInterfaces/{id2}/VLANS", system.GetSystemResource)
 	systems.Get("/{id}/EthernetInterfaces/{id2}/VLANS/{rid}", system.GetSystemResource)
 	systems.Get("/{id}/SecureBoot", system.GetSystemResource)
+	systems.Patch("/{id}/SecureBoot", system.UpdateSecureBoot)
+	systems.Post("/{id}/SecureBoot/Actions/SecureBoot.ResetKeys", system.ResetSecureBoot)
+	systems.Get("/{id}/SecureBoot/SecureBootDatabases", system.GetSystemResource)
+	systems.Get("/{id}/SecureBoot/SecureBootDatabases/{rid}", system.GetSystemResource)
+	systems.Get("/{id}/SecureBoot/SecureBootDatabases/{rid}/Certificates", system.GetSystemResource)
+	systems.Get("/{id}/SecureBoot/SecureBootDatabases/{rid}/Certificates/{rid2}", system.GetSystemResource)
+	systems.Get("/{id}/SecureBoot/SecureBootDatabases/{rid}/Signatures", system.GetSystemResource)
+	systems.Get("/{id}/SecureBoot/SecureBootDatabases/{rid}/Signatures/{rid2}", system.GetSystemResource)
 	systems.Get("/{id}/BootOptions", system.GetSystemResource)
 	systems.Get("/{id}/BootOptions/{rid}", system.GetSystemResource)
 	systems.Get("/{id}/LogServices", system.GetSystemResource)
@@ -389,6 +399,12 @@ func Router() *iris.Application {
 	systems.Any("/{id}/EthernetInterfaces/{rid}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/SecureBoot", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/SecureBoot/Actions/SecureBoot.ResetKeys", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/SecureBoot/SecureBootDatabases", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/SecureBoot/SecureBootDatabases/{rid}", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/SecureBoot/SecureBootDatabases/{rid}/Certificates", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/SecureBoot/SecureBootDatabases/{rid}/Certificates/{rid2}", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/SecureBoot/SecureBootDatabases/{rid}/Signatures", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/SecureBoot/SecureBootDatabases/{rid}/Signatures/{rid2}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/MemoryDomains", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/NetworkInterfaces", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Memory", handle.SystemsMethodNotAllowed)

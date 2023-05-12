@@ -157,6 +157,11 @@ type EventSubscriptionInfo struct {
 	Location   string
 }
 
+// DBPluginDataRead holds the db read client interface function
+type DBPluginDataRead struct {
+	DBReadclient func(string) (string, *errors.Error)
+}
+
 // TriggerInfo holds the metric trigger info of a device
 type TriggerInfo struct {
 }
@@ -209,17 +214,11 @@ func (system *SaveSystem) Create(ctx context.Context, systemID string) *errors.E
 }
 
 // GetPluginData will fetch plugin details
-func GetPluginData(pluginID string) (Plugin, *errors.Error) {
+func GetPluginData(pluginID string, readPluginData DBPluginDataRead) (Plugin, *errors.Error) {
 	var plugin Plugin
-
-	conn, err := common.GetDBConnection(common.OnDisk)
+	plugindata, err := readPluginData.DBReadclient(pluginID)
 	if err != nil {
-		return plugin, errors.PackError(err.ErrNo(), "error while trying to connect to DB: ", err.Error())
-	}
-
-	plugindata, err := conn.Read("Plugin", pluginID)
-	if err != nil {
-		return plugin, errors.PackError(err.ErrNo(), "error while trying to fetch plugin data: ", err.Error())
+		return plugin, errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
 	}
 
 	if err := json.Unmarshal([]byte(plugindata), &plugin); err != nil {
@@ -233,6 +232,22 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	plugin.Password = bytepw
 
 	return plugin, nil
+}
+
+// GetPluginDBConnection creates db connection and reads plugin data
+func GetPluginDBConnection(PluginID string) (string, *errors.Error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return "", errors.PackError(err.ErrNo(), "error while trying to connect to DB: ", err.Error())
+	}
+
+	plugindata, err := conn.Read("Plugin", PluginID)
+	if err != nil {
+		return "", errors.PackError(err.ErrNo(), "error while trying to fetch plugin data: ", err.Error())
+	}
+
+	return plugindata, nil
+
 }
 
 // GetComputeSystem will fetch the compute resource details

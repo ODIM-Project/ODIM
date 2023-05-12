@@ -13,3 +13,6 @@ dellplugin:
   lbHost: 
   lbPort: 
   logPath:
+  logLevel: warn
+  logFormat: syslog
+  logsOnConsole: true

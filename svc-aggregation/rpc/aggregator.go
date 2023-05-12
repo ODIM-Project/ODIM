@@ -297,7 +297,7 @@ func (a *Aggregator) RediscoverSystemInventory(ctx context.Context, req *aggrega
 	var threadID int = 1
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.AggregationService, podName)
-	ctx = context.WithValue(ctx, common.ThreadID, threadID)
+	ctx = context.WithValue(ctx, common.ThreadID, strconv.Itoa(threadID))
 	go a.connector.RediscoverSystemInventory(ctx, req.SystemID, req.SystemURL, true)
 	threadID++
 	return resp, nil

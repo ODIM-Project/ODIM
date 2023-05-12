@@ -155,6 +155,23 @@ const (
 	// AggregateSubscriptionIndex is a index name which required for indexing
 	// subscription of aggregate
 	AggregateSubscriptionIndex = "AggregateToHost"
+
+	// PluginEventHandlingActionName is an action name to be logged while processing events
+	PluginEventHandlingActionName = "EventHandling"
+
+	// PluginEventHandlingActionID is an action id to be logged while processing events
+	PluginEventHandlingActionID = "220"
+
+	// PluginEventPublishingActionName is an action name to be logged while publishing events
+	PluginEventPublishingActionName = "EventPublish"
+
+	// PluginEventPublishingActionID is an action id to be logged while publishing events
+	PluginEventPublishingActionID = "221"
+
+	// PluginTrackFileConfigActionName is an action name to be logged while tracking config changes
+	PluginTrackFileConfigActionName = "TrackConfigFIleChanges"
+	// PluginTrackFileConfigActionID is an action id to be logged while tracking config changes
+	PluginTrackFileConfigActionID = "000"
 )
 
 // Below fields are Process Name for logging
@@ -233,6 +250,8 @@ const (
 	GetFabricManagerChassis                = "GetFabricManagerChassis"
 	CollectChassisResource                 = "CollectChassisResource"
 	UpdateChassisResource                  = "UpdateChassisResource"
+	UpdateSecureBoot                       = "UpdateSecureBoot"
+	ResetSecureBoot                        = "ResetSecureBoot"
 )
 
 const (
@@ -258,29 +277,35 @@ type ActionKey struct {
 // Actions contain map of URI object and action related to request made by user
 var Actions = map[ActionKey]ActionType{
 	//Systems URI
-	{"Systems", "Systems", "GET"}:                 {"001", "GetSystemsCollection"},
-	{"Systems", "Systems/{id}", "GET"}:            {"002", "GetSystem"},
-	{"Systems", "Processors", "GET"}:              {"003", "GetProcessorCollection"},
-	{"Systems", "Processors/{id}", "GET"}:         {"004", "GetProcessor"},
-	{"Systems", "Memory", "GET"}:                  {"005", "GetMemoryCollection"},
-	{"Systems", "Memory/{id}", "GET"}:             {"006", "GetMemory"},
-	{"Systems", "NetworkInterfaces", "GET"}:       {"007", "GetNetworkInterfacesCollection"},
-	{"Systems", "NetworkInterfaces/{id}", "GET"}:  {"008", "GetNetworkInterfaces"},
-	{"Systems", "MemoryDomains", "GET"}:           {"009", "GetMemoryDomainsCollection"},
-	{"Systems", "EthernetInterfaces", "GET"}:      {"010", "GetEthernetInterfacesCollection"},
-	{"Systems", "EthernetInterfaces/{id}", "GET"}: {"011", "GetEthernetInterfaces"},
-	{"Systems", "VLANS", "GET"}:                   {"012", "GetVLANSCollection"},
-	{"Systems", "VLANS/{id}", "GET"}:              {"013", "GetVLANS"},
-	{"Systems", "SecureBoot", "GET"}:              {"014", "GetSecureBoot"},
-	{"Systems", "BootOptions", "GET"}:             {"015", "GetBootOptionsCollection"},
-	{"Systems", "BootOptions/{id}", "GET"}:        {"016", "GetBootOptions"},
-	{"Systems", "LogServices", "GET"}:             {"017", "GetLogServicesCollection"},
-	{"Systems", "LogServices/{id}", "GET"}:        {"018", "GetLogServices"},
-	{"Systems", "Entries", "GET"}:                 {"019", "GetEntriesCollection"},
-	{"Systems", "Entries/{id}", "GET"}:            {"020", "GetEntries"},
-	{"Systems", "LogService.ClearLog", "POST"}:    {"021", "ClearLog"},
-	{"Systems", "Systems/{id}", "PATCH"}:          {"022", "ChangeBootOrderSettings"},
-	{"Systems", "PCIeDevices/{id}", "GET"}:        {"023", "GetPCIeDevices"},
+	{"Systems", "Systems", "GET"}:                  {"001", "GetSystemsCollection"},
+	{"Systems", "Systems/{id}", "GET"}:             {"002", "GetSystem"},
+	{"Systems", "Processors", "GET"}:               {"003", "GetProcessorCollection"},
+	{"Systems", "Processors/{id}", "GET"}:          {"004", "GetProcessor"},
+	{"Systems", "Memory", "GET"}:                   {"005", "GetMemoryCollection"},
+	{"Systems", "Memory/{id}", "GET"}:              {"006", "GetMemory"},
+	{"Systems", "NetworkInterfaces", "GET"}:        {"007", "GetNetworkInterfacesCollection"},
+	{"Systems", "NetworkInterfaces/{id}", "GET"}:   {"008", "GetNetworkInterfaces"},
+	{"Systems", "MemoryDomains", "GET"}:            {"009", "GetMemoryDomainsCollection"},
+	{"Systems", "EthernetInterfaces", "GET"}:       {"010", "GetEthernetInterfacesCollection"},
+	{"Systems", "EthernetInterfaces/{id}", "GET"}:  {"011", "GetEthernetInterfaces"},
+	{"Systems", "VLANS", "GET"}:                    {"012", "GetVLANSCollection"},
+	{"Systems", "VLANS/{id}", "GET"}:               {"013", "GetVLANS"},
+	{"Systems", "SecureBoot", "GET"}:               {"014", "GetSecureBoot"},
+	{"Systems", "BootOptions", "GET"}:              {"015", "GetBootOptionsCollection"},
+	{"Systems", "BootOptions/{id}", "GET"}:         {"016", "GetBootOptions"},
+	{"Systems", "LogServices", "GET"}:              {"017", "GetLogServicesCollection"},
+	{"Systems", "LogServices/{id}", "GET"}:         {"018", "GetLogServices"},
+	{"Systems", "Entries", "GET"}:                  {"019", "GetEntriesCollection"},
+	{"Systems", "Entries/{id}", "GET"}:             {"020", "GetEntries"},
+	{"Systems", "LogService.ClearLog", "POST"}:     {"021", "ClearLog"},
+	{"Systems", "Systems/{id}", "PATCH"}:           {"022", "ChangeBootOrderSettings"},
+	{"Systems", "PCIeDevices/{id}", "GET"}:         {"023", "GetPCIeDevices"},
+	{"Systems", "SecureBoot", "PATCH"}:             {"219", "UpdateSecureBoot"},
+	{"Systems", "SecureBoot.ResetKeys", "POST"}:    {"220", "ResetSecureBoot"},
+	{"Systems", "SecureBootDatabases", "GET"}:      {"221", "GetSecureDatabaseCollection"},
+	{"Systems", "SecureBootDatabases/{id}", "GET"}: {"222", "GetSecureDatabase"},
+	{"Systems", "Certificates", "GET"}:             {"223", "GetCertificateCollection"},
+	{"Systems", "Certificates/{id}", "GET"}:        {"224", "GetCertificate"},
 	//Task URI
 	{"TaskService", "TaskService", "GET"}:   {"024", "GetTaskService"},
 	{"TaskService", "Tasks", "GET"}:         {"025", "TaskCollection"},
@@ -485,8 +510,8 @@ var Actions = map[ActionKey]ActionType{
 	{"LicenseService", "Licenses", "GET"}:       {"213", "GetLicenseCollection"},
 	{"LicenseService", "Licenses/{id}", "GET"}:  {"214", "GetLicenseResource"},
 	{"LicenseService", "Licenses", "POST"}:      {"215", "InstallLicenseService"},
-	// 216 and 217 operations are svc-aggregation internal operations pluginhealthcheck and RediscoverSystem
-	// 218 is an internal operation in svc-task
+	// 216 and 217 operations are svc-aggregation internal operations plugin health check and RediscoverSystem
+	// 218 is an internal operation in svc-task, assigned the values from 219 to 224 for SecureBoot and SecureBootDatabases APIs
 }
 
 // Types contains schema versions to be returned

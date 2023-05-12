@@ -20,15 +20,16 @@ import (
 	"net/http"
 	"strings"
 
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 )
 
 // GetResource : Fetches details of the given resource from the device
 func GetResource(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
 	uri := ctx.Request().RequestURI
@@ -49,7 +50,7 @@ func GetResource(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
+			l.LogWithFields(ctxt).Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -61,7 +62,7 @@ func GetResource(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Error("While trying to collect data from request, got: " + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -76,7 +77,7 @@ func GetResource(ctx iris.Context) {
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
 		errMsg := "While trying to create the redfish client, got:" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -86,7 +87,7 @@ func GetResource(ctx iris.Context) {
 	resp, err := redfishClient.GetWithBasicAuth(device, uri)
 	if err != nil {
 		errMsg := "Authentication failed: " + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errMsg)
@@ -96,7 +97,7 @@ func GetResource(ctx iris.Context) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error("While trying to read the response body, got: " + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to read the response body, got: " + err.Error())
 		return
 	}
 
@@ -106,7 +107,7 @@ func GetResource(ctx iris.Context) {
 		return
 	}
 	if resp.StatusCode >= 300 {
-		log.Warn("Could not retreive generic resource for " + device.Host + ": " + string(body))
+		l.LogWithFields(ctxt).Warn("Could not retreive generic resource for " + device.Host + ": " + string(body))
 	}
 	respData := string(body)
 	//replacing the response with north bound translation URL

@@ -33,6 +33,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -472,6 +473,85 @@ func TestProcessCtrlMsg(t *testing.T) {
 			if got := ProcessCtrlMsg(MockContext(), tt.args.data); got != tt.want {
 				t.Errorf("ProcessCtrlMsg() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestTrackConfigFileChanges(t *testing.T) {
+	// Create a mock logger that records log messages
+	logger := logrus.New()
+	logger.Out = httptest.NewRecorder()
+	logger.Level = logrus.DebugLevel
+	logger.Formatter = &logrus.TextFormatter{}
+
+	// Initialize the configuration file format and log level
+	config.Data.LogFormat = lg.JSONFormat
+	config.Data.LogLevel = logrus.InfoLevel
+
+	// Create a context with some initial values
+	ctx := context.WithValue(context.Background(), "key1", "value1")
+
+	// Create channels for events and errors
+	errChan := make(chan error)
+
+	// Launch the TrackConfigFileChanges function in a separate goroutine
+	go TrackConfigFileChanges(ctx, errChan)
+
+}
+
+func TestStartUpInterface_getPluginEMB(t *testing.T) {
+	config.SetUpMockConfig(t)
+	type fields struct {
+		DecryptPassword                  func([]byte) ([]byte, error)
+		EMBConsume                       func(context.Context, string)
+		GetAllPlugins                    func() ([]common.Plugin, *errors.Error)
+		GetAllSystems                    func() ([]string, error)
+		GetSingleSystem                  func(string) (string, error)
+		GetPluginData                    func(string) (*common.Plugin, *errors.Error)
+		GetEvtSubscriptions              func(string) ([]evmodel.SubscriptionResource, error)
+		GetDeviceSubscriptions           func(string) (*common.DeviceSubscription, error)
+		UpdateDeviceSubscriptionLocation func(common.DeviceSubscription) error
+	}
+	type args struct {
+		ctx    context.Context
+		plugin common.Plugin
+	}
+	tests := []struct {
+		name      string
+		fields    fields
+		args      args
+		setConfig func()
+	}{
+		{
+			name: "Positive",
+			args: args{
+				ctx: context.TODO(),
+				plugin: common.Plugin{
+					IP:       "10.10.10.10",
+					Port:     "8080",
+					Username: "admin",
+				},
+			},
+			setConfig: func() {
+				config.Data.PluginStatusPolling.MaxRetryAttempt = 0
+			},
+		},
+	}
+	for _, tt := range tests {
+		tt.setConfig()
+		t.Run(tt.name, func(t *testing.T) {
+			st := &StartUpInterface{
+				DecryptPassword:                  tt.fields.DecryptPassword,
+				EMBConsume:                       tt.fields.EMBConsume,
+				GetAllPlugins:                    tt.fields.GetAllPlugins,
+				GetAllSystems:                    tt.fields.GetAllSystems,
+				GetSingleSystem:                  tt.fields.GetSingleSystem,
+				GetPluginData:                    tt.fields.GetPluginData,
+				GetEvtSubscriptions:              tt.fields.GetEvtSubscriptions,
+				GetDeviceSubscriptions:           tt.fields.GetDeviceSubscriptions,
+				UpdateDeviceSubscriptionLocation: tt.fields.UpdateDeviceSubscriptionLocation,
+			}
+			st.getPluginEMB(tt.args.ctx, tt.args.plugin)
 		})
 	}
 }

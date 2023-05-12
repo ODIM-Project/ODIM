@@ -70,6 +70,16 @@ type Volume struct {
 	IOPerfModeEnabled  bool   `json:"IOPerfModeEnabled,omitempty"`
 }
 
+// SecureBoot is the model for updating SecureBoot request
+type SecureBoot struct {
+	SecureBootEnable bool `json:"SecureBootEnable"`
+}
+
+// ResetSecureBoot structure for checking request body for resetting secure boot keys
+type ResetSecureBoot struct {
+	ResetKeysType string `json:"ResetKeysType"`
+}
+
 // Links contains Drives resoruces info
 type Links struct {
 	Drives               []OdataIDLink `json:"Drives"`

@@ -12,3 +12,4 @@ urplugin:
   odimPassword:
   sentinelMasterName: primaryset
   logPath:
+  logsOnConsole: true

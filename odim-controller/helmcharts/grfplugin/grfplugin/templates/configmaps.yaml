@@ -19,6 +19,7 @@ data:
     		"ListenerHost": {{ .Values.grfplugin.eventHost | quote }},
     		"ListenerPort": "45002"
     	},
+        "logsRedirectionToConsole" : {{ .Values.odimra.logsOnConsole | default false }},
     	"KeyCertConf": {
     		"RootCACertificatePath": "/etc/odimra_certs/rootCA.crt",
     		"PrivateKeyPath": "/etc/odimra_certs/odimra_server.key",

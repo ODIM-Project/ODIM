@@ -237,6 +237,10 @@ func (fakeStruct) SubscribeEMB(ctx context.Context, in *eventsproto.SubscribeEMB
 	return nil, errors.New("fakeError")
 }
 
+func (fakeStruct) UpdateSubscriptionLocationRPC(ctx context.Context, in *eventsproto.UpdateSubscriptionLocation, opts ...grpc.CallOption) (*eventsproto.SubscribeEMBResponse, error) {
+	return nil, errors.New("fakeError")
+}
+
 //--------------------------------------FABRICS--------------------------------------
 
 func (fakeStruct) GetFabricResource(ctx context.Context, in *fabricsproto.FabricRequest, opts ...grpc.CallOption) (*fabricsproto.FabricResponse, error) {

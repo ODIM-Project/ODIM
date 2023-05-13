@@ -167,6 +167,7 @@ func Test_consumeCtrlMsg(t *testing.T) {
 	}
 	for _, tt := range tests {
 		CtrlMsgRecvQueue, CtrlMsgProcQueue = common.CreateJobQueue(4)
+		In, Out = common.CreateJobQueue(1)
 		t.Run(tt.name, func(t *testing.T) {
 			consumeCtrlMsg(tt.args.event)
 		})

@@ -3930,14 +3930,12 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 10. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
 
     ```
-     cd ~/ODIM/odim-controller/scripts
+    cd ~/ODIM/odim-controller/scripts
     ```
 
 11. Open the kube\_deploy\_nodes.yaml file to edit.
 
-         ```
-        vi kube_deploy_nodes.yaml
-         ```
+         vi kube_deploy_nodes.yaml
 
 12. Specify values for the following parameters in the `kube_deploy_nodes.yaml` file: 
 
@@ -3972,7 +3970,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
 14. Update odimra-secrets:
 
-          python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-secret
+         python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-secret
 
 15. Run the following command: 
 
@@ -3981,15 +3979,16 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
           /kube_deploy_nodes.yaml --upgrade odimra-config
 
 16. Install the GRF plugin: 
-         ```
-       python3 odim-controller.py --config \
-       /home/${USER}/ODIM/odim-controller/scripts\
-       /kube_deploy_nodes.yaml --add plugin --plugin grfplugin
-         ```
+
+     ```
+     python3 odim-controller.py --config \
+     /home/${USER}/ODIM/odim-controller/scripts\
+     /kube_deploy_nodes.yaml --add plugin --plugin grfplugin
+     ```
 
 17. Run the following command on the cluster nodes to verify the GRF plugin pod is up and running: 
 
-          kubectl get pods -n odim
+         kubectl get pods -n odim
          Example output showing the GRF plugin pod details:
 
       NAME 						READY 	STATUS 	RESTARTS 	AGE

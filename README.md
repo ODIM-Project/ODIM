@@ -613,13 +613,15 @@ Resource Aggregator for ODIM uses the odim-vault tool to encrypt and decrypt pas
    go build -ldflags "-s -w" -o odim-vault odim-vault.go
    ```
 
-2. Enter a random string in a file called odimVaultKeyFile and save it.
+3. Enter a random string in a file called `odimVaultKeyFile` and save it.
 
     ```
     vi odimVaultKeyFile
     ```
 
     The entered string acts as the odim-vault crypto key. It is required for encrypting and decrypting the local user password of the Kubernetes cluster nodes.
+
+    > NOTE: Do not add special characters in the string.
 
 3. Encode the entered odim-vault crypto key: 
 
@@ -3854,10 +3856,12 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
       eventListenerNodePort: 30081
       rootServiceUUID: 65963042-6b99-4206-8532-dcd085a835b1
       username: admin
-      password: "UUFCYFpBoHh6UdvytPzm65SkHj5zyl73EYVNJNbrFeAPWYrkpTijGB9zrVQSbbLv052HK7-7chqDQQcjgWf7YA=="
+      password: "AQ6h8PB8OVW7rBXHbDg75ic4ZP7cKIWgNHZZ41Qb4DwvZQ8Q-KEl0Fe26ddo_DLrs7MkLcNDplREwxlLOPvgFg=="
       lbHost: <Ngnix_virtual_IP_address>
       lbPort: <Ngnix_plugin_port>
       logPath: /var/log/grfplugin_logs
+      messageBusType: Kafka
+      messageBusQueue: REDFISH-EVENTS-TOPIC
     ```
     
     Other parameters have default values. Optionally, you can modify them according to your requirements. To know more about each parameter, see *[Plugin configuration parameters](#plugin-configuration-parameters)*.
@@ -3865,12 +3869,14 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 5. Update the following parameters in the plugin configuration file:
 
    - **lbHost**: IP address of the cluster node where the GRF plugin will be installed for one node cluster configuration.  For three node cluster configuration,  (`haDeploymentEnabled` is true), lbHost is the virtual IP address configured in Nginx and Keepalived.
+
    - **lbPort**: Default port is 30081 for one node cluster configuration. For three node cluster configuration, (`haDeploymentEnabled` is true), lbport must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as nginx proxy port for the plugin.
 
      > **NOTE**: The lbport is used as proxy port for eventlistenernodeport, which is used for subscribing to events.
+     
    - **grfPluginrootServiceUUID**: RootServiceUUID to be used by the GRF plugin service. Generate a new UUID by executing the command `uuidgen`.
 
-     Other parameters can have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see *[Plugin configuration parameters](#plugin-configuration-parameters)*.
+   - **MessageBusType**: Event message bus type. The supported value is Kafka. RedisStreams is not supported as the event message bus type for GRF plugin.
 
 6. Generate the Helm package for the GRF plugin on the deployment node.
 

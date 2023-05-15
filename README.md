@@ -869,8 +869,12 @@ Topics covered in this section include:
         odimraServerKey:
         odimraRSAPublicKey:
         odimraRSAPrivateKey:
-       odimraKafkaClientCert:
-       odimraKafkaClientKey:
+        odimraKafkaClientCert:
+        odimraKafkaClientKey:
+        imageRegistryAddress: ""
+        keyExpiryInterval: 86400
+        eventForwardingWorkerPoolCount: 1000
+        eventSaveWorkerPoolCount: 10
       ```
    
    For information on each parameter in this configuration file, see *[Odim-controller configuration parameters](#odim-controller-configuration-parameters)*.
@@ -3329,6 +3333,10 @@ Run the following commands:
      odimraRSAPrivateKey:
      odimraKafkaClientCert:
      odimraKafkaClientKey:
+     imageRegistryAddress: ''
+     keyExpiryInterval: 86400
+     eventForwardingWorkerPoolCount: 1000
+     eventSaveWorkerPoolCount: 10
 ```
 
 
@@ -3403,6 +3411,10 @@ The following table lists all the configuration parameters required by odim-cont
 |odimraRSAPrivateKey|The path of the RSA private key. It gets updated automatically during deployment.<br>|
 |odimraRSAPublicKey|The path of the RSA public key. It gets updated automatically during deployment.<br>|
 |odimraServerKey|The path of the Resource Aggregator for ODIM server key. It gets updated automatically during deployment.<br>|
+|imageRegistryAddress|This parameter points to the image registry where images of Resource Aggregator for ODIM services are pushed.<br/>Specify its value only if Resource Aggregator for ODIM is deployed on an existing RHOCP cluster, else specify the value as `''` (empty single quotation marks).|
+|keyExpiryInterval|This parameter enables you to specify time (in seconds) for validation of tasks. After the specified time, the tasks is deleted from the database. The default value is 86400<br/>seconds.|
+|eventForwardingWorkerPoolCount|This parameter enables you to specify the number of events to be simultaneously forwarded to the destination client. The default value is 1000.|
+|eventSaveWorkerPoolCount|This parameter enables you to specify the number of undelivered events to be saved simultaneously in the database. The default value is 10.|
 
 > **NOTE**: The parameters `priority`, `apiProxyPort`, `ngnixLogPath`, `virtualRouterID`, and `virtualIP` are mandatory only when `haDeploymentEnabled` is set to true.
 
@@ -3877,7 +3889,9 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
    - **grfPluginrootServiceUUID**: RootServiceUUID to be used by the GRF plugin service. Generate a new UUID by executing the command `uuidgen`.
 
    - **MessageBusType**: Event message bus type. The supported value is Kafka. RedisStreams is not supported as the event message bus type for GRF plugin.
-
+   
+   Other parameters can have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see *[Plugin configuration parameters](#plugin-configuration-parameters)*.
+   
 6. Generate the Helm package for the GRF plugin on the deployment node.
 
    1. Navigate to `odim-controller/helmcharts/grfplugin`.
@@ -3921,70 +3935,70 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
 11. Open the kube\_deploy\_nodes.yaml file to edit.
 
-       ```
-      vi kube_deploy_nodes.yaml
-       ```
+         ```
+        vi kube_deploy_nodes.yaml
+         ```
 
 12. Specify values for the following parameters in the `kube_deploy_nodes.yaml` file: 
 
-    | Parameter                    | Value                                                        |
-    | ---------------------------- | ------------------------------------------------------------ |
-    | connectionMethodConf         | The connection method associated with the GRF plugin:<br/> ConnectionMethodVariant: `Compute:BasicAuth:GRF_v2.0.0`<br/>Check if it is there already before updating. If yes, do not add it again.<br/> |
-    | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the GRF plugin:grfplugin, grfplugin-events<br/>Add these values to the existing comma-separated list.<br/> |
-    | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the GRF plugin: grfplugin, grfplugin-events. <br />Add these values to the existing comma-separated list.<br> |
-    | odimPluginPath               | The path of the directory where the GRF Helm package, the `grfplugin` image, and the modified `grfplugin-config.yaml` are copied. |
-    
-    Example:
-    
-    ```
-    odimPluginPath: /home/user/plugins
-        odimra:
-          groupID: 2021
-          userID: 2021
-          namespace: odim
-          fqdn:
-          rootServiceUUID:
-          haDeploymentEnabled: True
-          connectionMethodConf:
-          - ConnectionMethodType: Redfish
-            ConnectionMethodVariant: Compute:BasicAuth:GRF_v2.0.0
-          odimraKafkaClientCertFQDNSan: grfplugin,grfplugin-events
-          odimraServerCertFQDNSan: grfplugin,grfplugin-events
-    ```
-    
+     | Parameter                    | Value                                                        |
+     | ---------------------------- | ------------------------------------------------------------ |
+     | connectionMethodConf         | The connection method associated with the GRF plugin:<br/> ConnectionMethodVariant: `Compute:BasicAuth:GRF_v2.0.0`<br/>Check if it is there already before updating. If yes, do not add it again.<br/> |
+     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the GRF plugin:grfplugin, grfplugin-events<br/>Add these values to the existing comma-separated list.<br/> |
+     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the GRF plugin: grfplugin, grfplugin-events. <br />Add these values to the existing comma-separated list.<br> |
+     | odimPluginPath               | The path of the directory where the GRF Helm package, the `grfplugin` image, and the modified `grfplugin-config.yaml` are copied. |
+
+      Example:
+
+      ```
+      odimPluginPath: /home/user/plugins
+          odimra:
+            groupID: 2021
+            userID: 2021
+            namespace: odim
+            fqdn:
+            rootServiceUUID:
+            haDeploymentEnabled: True
+            connectionMethodConf:
+            - ConnectionMethodType: Redfish
+              ConnectionMethodVariant: Compute:BasicAuth:GRF_v2.0.0
+            odimraKafkaClientCertFQDNSan: grfplugin,grfplugin-events
+            odimraServerCertFQDNSan: grfplugin,grfplugin-events
+      ```
+
 13. Move `odimra_kafka_client.key`, `odimra_kafka_client.crt`, `odimra_server.key`, and `odimra_server.crt` stored in `odimCertsPath` to a different folder.
 
-    > **NOTE**: `odimCertsPath` is the absolute path of the directory where the certificates required by the services of Resource Aggregator for ODIM are present. See the *[Odim-controller configuration parameters](#odim-controller-configuration-parameters)* section in this document for more information.
+      > **NOTE**: `odimCertsPath` is the absolute path of the directory where the certificates required by the services of Resource Aggregator for ODIM are present. See the *[Odim-controller configuration parameters](#odim-controller-configuration-parameters)* section in this document for more information.
 
 14. Update odimra-secrets:
 
-        python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-secret
-    
+          python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-secret
+
 15. Run the following command: 
 
-        python3 odim-controller.py --config \ 
-        /home/${USER}/ODIM/odim-controller/scripts\
-        /kube_deploy_nodes.yaml --upgrade odimra-config
-    
+          python3 odim-controller.py --config \ 
+          /home/${USER}/ODIM/odim-controller/scripts\
+          /kube_deploy_nodes.yaml --upgrade odimra-config
+
 16. Install the GRF plugin: 
-       ```
-     python3 odim-controller.py --config \
-     /home/${USER}/ODIM/odim-controller/scripts\
-     /kube_deploy_nodes.yaml --add plugin --plugin grfplugin
-       ```
+         ```
+       python3 odim-controller.py --config \
+       /home/${USER}/ODIM/odim-controller/scripts\
+       /kube_deploy_nodes.yaml --add plugin --plugin grfplugin
+         ```
 
 17. Run the following command on the cluster nodes to verify the GRF plugin pod is up and running: 
 
-        kubectl get pods -n odim
-       Example output showing the GRF plugin pod details:
-    
-    NAME 						READY 	STATUS 	RESTARTS 	AGE
-        grfplugin-5fc4b6788-2xx97 	1/1 	Running 0 			4d22h
+          kubectl get pods -n odim
+         Example output showing the GRF plugin pod details:
+
+      NAME 						READY 	STATUS 	RESTARTS 	AGE
+          grfplugin-5fc4b6788-2xx97 	1/1 	Running 0 			4d22h
 
 18. Navigate to `~/ODIM/odim-controller/scripts`.
 
-        cd ~/ODIM/odim-controller/scripts
-    
+          cd ~/ODIM/odim-controller/scripts
+
 19. *[Add the GRF plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework)*. 
 
 

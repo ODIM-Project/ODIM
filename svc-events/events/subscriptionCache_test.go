@@ -202,6 +202,10 @@ func mockData() error {
 }
 
 func Test_getSourceId(t *testing.T) {
+	config.SetUpMockConfig(t)
+	mockData()
+	pc := getMockMethods()
+	pc.LoadSubscriptionData(mockContext())
 	type args struct {
 		host string
 	}

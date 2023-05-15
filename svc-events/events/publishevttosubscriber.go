@@ -149,6 +149,14 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 				go rediscoverSystemInventory(ctx, deviceUUID, storageURI)
 				flag = true
 			}
+			if strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
+				if strings.EqualFold(inEvent.EventType, "ResourceAdded") {
+					e.addFabricRPCCall(ctx, rawMessage.Events[index].OriginOfCondition.Oid, host)
+				}
+				if strings.EqualFold(inEvent.EventType, "ResourceRemoved") {
+					e.removeFabricRPCCall(ctx, rawMessage.Events[index].OriginOfCondition.Oid, host)
+				}
+			}
 		}
 	}
 

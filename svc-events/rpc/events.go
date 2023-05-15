@@ -266,7 +266,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		"Location": "/taskmon/" + taskID,
 	}
 	resp.StatusMessage = response.TaskStarted
-	generateTaskRespone(ctx, taskID, taskURI, &resp)
+	generateTaskResponse(ctx, taskID, taskURI, &resp)
 	return &resp, nil
 }
 
@@ -398,7 +398,7 @@ func (e *Events) SubscribeEMB(ctx context.Context, req *eventsproto.SubscribeEMB
 	return &resp, nil
 }
 
-func generateTaskRespone(ctx context.Context, taskID, taskURI string, resp *eventsproto.EventSubResponse) {
+func generateTaskResponse(ctx context.Context, taskID, taskURI string, resp *eventsproto.EventSubResponse) {
 	commonResponse := response.Response{
 		OdataType:    common.TaskType,
 		ID:           taskID,
@@ -451,5 +451,14 @@ func (e *Events) DeleteAggregateSubscriptionsRPC(ctx context.Context, req *event
 	ctx = common.ModifyContext(ctx, common.EventService, podName)
 	e.Connector.DeleteAggregateSubscriptions(ctx, req, true)
 	resp.Status = true
+	return &resp, nil
+}
+
+// UpdateSubscriptionLocationRPC defines the operations which handles the RPC request response
+// it updates subscription location
+func (e *Events) UpdateSubscriptionLocationRPC(ctx context.Context, in *eventsproto.UpdateSubscriptionLocation) (*eventsproto.SubscribeEMBResponse, error) {
+	var resp eventsproto.SubscribeEMBResponse
+	isUpdated := e.Connector.UpdateSubscriptionLocation(ctx, in.Location, in.Host)
+	resp.Status = isUpdated
 	return &resp, nil
 }

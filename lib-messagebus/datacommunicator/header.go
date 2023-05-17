@@ -84,6 +84,10 @@ func Communicator(bt string, messageQueueConfigPath, pipe string) (MQBus, error)
 		rp = new(RedisStreamsPacket)
 		rp.BrokerType = bt
 		rp.pipe = pipe
+		err := rp.getDBConnection()
+		if err != nil {
+			return nil, err
+		}
 		return rp, nil
 	default:
 		return nil, fmt.Errorf("Broker: \"Broker Type\" is not supported - %s", bt)

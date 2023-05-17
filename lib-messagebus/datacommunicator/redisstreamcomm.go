@@ -25,6 +25,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+var dbConn *redis.Client
+
 const (
 	// DefaultTLSMinVersion is default minimum version for tls
 	DefaultTLSMinVersion = tls.VersionTLS12
@@ -33,16 +35,29 @@ const (
 // RedisStreamsPacket defines the RedisStreamsPacket Message Packet Object. Apart from Base Packet, it
 // will contain Redis Connection Object
 type RedisStreamsPacket struct {
+	client *redis.Client
 	Packet
 	pipe string
 }
 
-func getDBConnection() (*redis.Client, error) {
-	var dbConn *redis.Client
+func (rp *RedisStreamsPacket) getDBConnection() error {
+
+	// Assigning the existing the db connection to RedisStreamsPacket.
+	// This connection will be validated. If it is a bad connection,
+	// a new connection will be created and assigned to RedisStreamsPacket
+	rp.client = dbConn
+	if rp.Ping() {
+		fmt.Println("******************* PING is successful ********************")
+		return nil
+	}
+
+	// closing the existing connection as it is corrupted or nil.
+	// A new connection will be created and assigned to RedisStreamsPacket
+	rp.Close()
 
 	tlsConfig, e := TLS(MQ.RedisStreams.RedisCertFile, MQ.RedisStreams.RedisKeyFile, MQ.RedisStreams.RedisCAFile)
 	if e != nil {
-		return nil, fmt.Errorf("error while trying to get DB connection: %s", e.Error())
+		return fmt.Errorf("error while trying to get DB connection: %s", e.Error())
 	}
 
 	tlsConfig.MinVersion = DefaultTLSMinVersion
@@ -56,15 +71,27 @@ func getDBConnection() (*redis.Client, error) {
 			SentinelPassword: string(MQ.RedisStreams.RedisInMemoryPassword),
 			Password:         string(MQ.RedisStreams.RedisInMemoryPassword),
 		})
-	} else {
-		dbConn = redis.NewClient(&redis.Options{
-			Addr:      fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort),
-			TLSConfig: tlsConfig,
-			Password:  string(MQ.RedisStreams.RedisInMemoryPassword),
-			DB:        0, // use default DB
-		})
 	}
-	return dbConn, nil
+
+	dbConn = redis.NewClient(&redis.Options{
+		Addr:      fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort),
+		TLSConfig: tlsConfig,
+		Password:  string(MQ.RedisStreams.RedisInMemoryPassword),
+		DB:        0, // use default DB
+	})
+
+	fmt.Println("******************* Created new DB connection ********************")
+	rp.client = dbConn
+	return nil
+}
+
+// Ping function is used to test the db connection with ping command
+func (rp *RedisStreamsPacket) Ping() bool {
+	if rp.client != nil {
+		_, err := rp.client.Ping(rp.client.Context()).Result()
+		return err == nil
+	}
+	return false
 }
 
 // Distribute defines the Producer / Publisher role and functionality. Writer
@@ -78,23 +105,19 @@ func (rp *RedisStreamsPacket) Distribute(data interface{}) error {
 	if e != nil {
 		return fmt.Errorf("while trying to encode message: %s", e.Error())
 	}
-	redisClient, err := getDBConnection()
-	if err != nil {
-		return err
-	}
-	defer redisClient.Close()
-	_, rerr := redisClient.XAdd(ctx, &redis.XAddArgs{
+
+	_, rerr := rp.client.XAdd(ctx, &redis.XAddArgs{
 		Stream: rp.pipe,
 		Values: map[string]interface{}{"data": b},
 	}).Result()
 
 	if rerr != nil {
 		if strings.Contains(rerr.Error(), " connection timed out") {
-			redisClient, err = getDBConnection()
+			err := rp.getDBConnection()
 			if err != nil {
 				return err
 			}
-			redisClient.XAdd(ctx, &redis.XAddArgs{
+			rp.client.XAdd(ctx, &redis.XAddArgs{
 				Stream: rp.pipe,
 				Values: map[string]interface{}{"data": b},
 			}).Result()
@@ -107,17 +130,15 @@ func (rp *RedisStreamsPacket) Distribute(data interface{}) error {
 
 // Accept implmentation need to be added
 func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
-	redisClient, err := getDBConnection()
-	if err != nil {
-		return err
-	}
+
 	// create a unique consumer id for the  instance
+	var err error
 	var id = uuid.NewV4().String()
-	rerr := redisClient.XGroupCreateMkStream(context.Background(),
+	rerr := rp.client.XGroupCreateMkStream(context.Background(),
 		rp.pipe, EVENTREADERGROUPNAME, "$").Err()
 	if rerr != nil {
 		if strings.Contains(rerr.Error(), " connection timed out") {
-			redisClient, err = getDBConnection()
+			err := rp.getDBConnection()
 			if err != nil {
 				return err
 			}
@@ -134,7 +155,7 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 
 	go func() {
 		for {
-			events, err := redisClient.XReadGroup(context.Background(),
+			events, err := rp.client.XReadGroup(context.Background(),
 				&redis.XReadGroupArgs{
 					Group:    EVENTREADERGROUPNAME,
 					Consumer: id,
@@ -144,7 +165,7 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 			if err != nil {
 				errChan <- fmt.Errorf("unable to get data from the group %s", err.Error())
 				if strings.Contains(err.Error(), " connection timed out") {
-					redisClient, err = getDBConnection()
+					err := rp.getDBConnection()
 					if err != nil {
 						errChan <- err
 						return
@@ -162,7 +183,7 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 						return
 					}
 					fn(evt)
-					redisClient.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
+					rp.client.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
 				}
 			}
 		}
@@ -194,17 +215,17 @@ func (rp *RedisStreamsPacket) Remove() error {
 
 // Close implmentation need to be added
 func (rp *RedisStreamsPacket) Close() error {
+	if rp.client != nil {
+		fmt.Println("******************* Closing DB connection ********************")
+		return rp.client.Close()
+	}
 	return nil
 }
 
 func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string, errChan chan<- error) {
-	redisClient, err := getDBConnection()
-	if err != nil {
-		errChan <- err
-		return
-	}
+
 	for {
-		events, _, err := redisClient.XAutoClaim(context.Background(), &redis.XAutoClaimArgs{
+		events, _, err := rp.client.XAutoClaim(context.Background(), &redis.XAutoClaimArgs{
 			Stream:   rp.pipe,
 			Group:    EVENTREADERGROUPNAME,
 			Consumer: id,
@@ -214,7 +235,7 @@ func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string
 		}).Result()
 		if err != nil {
 			if strings.Contains(err.Error(), " connection timed out") {
-				redisClient, err = getDBConnection()
+				err = rp.getDBConnection()
 				if err != nil {
 					errChan <- err
 					return
@@ -231,7 +252,7 @@ func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string
 				return
 			}
 			fn(evt)
-			redisClient.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
+			rp.client.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
 		}
 		// Pass the nil to errChan when no error encountered
 		errChan <- nil

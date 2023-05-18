@@ -47,7 +47,6 @@ func (rp *RedisStreamsPacket) getDBConnection() error {
 	// a new connection will be created and assigned to RedisStreamsPacket
 	rp.client = dbConn
 	if rp.Ping() {
-		fmt.Println("******************* PING is successful ********************")
 		return nil
 	}
 
@@ -80,7 +79,6 @@ func (rp *RedisStreamsPacket) getDBConnection() error {
 		DB:        0, // use default DB
 	})
 
-	fmt.Println("******************* Created new DB connection ********************")
 	rp.client = dbConn
 	return nil
 }
@@ -216,7 +214,6 @@ func (rp *RedisStreamsPacket) Remove() error {
 // Close implmentation need to be added
 func (rp *RedisStreamsPacket) Close() error {
 	if rp.client != nil {
-		fmt.Println("******************* Closing DB connection ********************")
 		return rp.client.Close()
 	}
 	return nil

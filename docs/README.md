@@ -1,5 +1,3 @@
-
-
 # Table of contents
 
 - [Resource Aggregator for Open Distributed Infrastructure Management](#resource-aggregator-for-open-distributed-infrastructure-management)
@@ -301,13 +299,13 @@ Use the following base URL in all your HTTP requests:
 
 `https://{odimra_host}:{port}/`
 
-- {odimra_host} is the fully qualified domain name (FQDN) used for generating certificates while deploying the resource aggregator.
+- {odimra_host} is the fully qualified domain name (FQDN) used for generating certificates while deploying Resource Aggregator for ODIM.
 
 	>**NOTE:** Ensure that FQDN is provided in the `/etc/hosts` file or in the DNS server.
 
 
 - {port} is the port where the services of the resource aggregator are running. The default port is 30080. If you have changed the default port in the `kube_deploy_nodes.yaml` file, use that as the port in the base URL.
->**NOTE**: To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where the resource aggregator is installed. To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
+>**NOTE**: To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where Resource Aggregator for ODIM is installed. To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
 
 ## curl
 
@@ -364,11 +362,11 @@ Use the listed Redfish-defined HTTP methods to implement various actions.
 
 | HTTP Request Method       | Description                                                  |
 | ------------------------- | ------------------------------------------------------------ |
-| `GET` [Read Requests]     | Use this method to request a representation of a specified resource (single resource or collection). |
-| `PATCH` [Update]          | Use this method to apply partial modifications to a resource. |
-| `POST` [Create] [Actions] | Use this method to create a resource. Submit this request to the resource collection to which you want to add the new resource. You can also use this method to initiate operations on a resource or a collection of resources. |
-| `PUT` [Replace]           | Use this method to replace the property values of a resource completely. It is used to both create and update the state of a resource. |
-| `DELETE` [Delete]         | Use this method to delete a resource.                        |
+| `GET` [Read Requests]     | Request a representation of a specified resource (single resource or collection). |
+| `PATCH` [Update]          | Apply partial modifications to a resource.                   |
+| `POST` [Create] [Actions] | Create a resource. Submit this request to the resource collection to which you want to add the new resource. You can also use this method to initiate operations on a resource or a collection of resources. |
+| `PUT` [Replace]           | Replace the property values of a resource completely. It is used to both create and update the state of a resource. |
+| `DELETE` [Delete]         | Delete a resource.                                           |
 
 ## Responses 
 
@@ -383,7 +381,7 @@ Resource Aggregator for ODIM supports the listed responses:
 
 ## Common response header properties
 
-The listed properties are common across all response headers, and are omitted from the samples in this document. 
+The listed properties are common across all response headers, and are excluded from the samples in this document. 
 
 ```
 "Connection": "keep-alive",
@@ -474,7 +472,7 @@ Replace a character in a URL with its standard encoding notation. Resource Aggre
 
 **For example**: In the URL`/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1`, if you replace the  `/` character with its encoded notation %2F and send the request, Resource Aggregator for ODIM accepts and decodes the encoded notation internally and sends a response.
 
-> **Tip**: You can visit *https://www.w3schools.com/tags/ref_urlencode.ASP* or browse the Internet to view the standard ASCII Encoding Reference of the URL characters.
+> **TIP**: You can visit *https://www.w3schools.com/tags/ref_urlencode.ASP* or browse the Internet to view the standard ASCII Encoding Reference of the URL characters.
 
 # List of supported APIs
 
@@ -526,7 +524,7 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/Systems/{ComputerSystemId}/MemoryDomains|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/NetworkInterfaces|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces|`GET`|
-|/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces/{id}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces/{Id}|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Bios|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/SecureBoot|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}|`GET`|
@@ -567,14 +565,14 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/Managers/{managerId}/LogServices|`GET`|
 |/redfish/v1/Managers/{managerId}/NetworkProtocol|`GET`|
 |/redfish/v1/Managers/{ManagerId}/VirtualMedia|`GET`|
-|/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}| `GET`  |
-|/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.InsertMedia|`POST`|
-|/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.EjectMedia|`POST`|
+|/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaId}| `GET`  |
+|/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaId}/Actions/VirtualMedia.InsertMedia|`POST`|
+|/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaId}/Actions/VirtualMedia.EjectMedia|`POST`|
 |/redfish/v1/Managers/{ManagerId}/RemoteAccountService|`GET`|
 |/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts|`GET`, `POST`|
-|/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts/{AccountID}|`GET`, `PATCH`, `DELETE`|
+|/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts/{AccountId}|`GET`, `PATCH`, `DELETE`|
 |/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Roles|`GET`|
-|/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Roles/{Roleid}|`GET`|
+|/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Roles/{RoleId}|`GET`|
 
 |UpdateService||
 |-------|--------------------|
@@ -606,11 +604,11 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/Fabrics/{fabricId}/Switches|`GET`|
 |/redfish/v1/Fabrics/{fabricId}/Switches/{switchId}|`GET`|
 |/redfish/v1/Fabrics/{fabricId}/Switches/{switchId}/Ports<br> |`GET`|
-|/redfish/v1/Fabrics/{fabricId} /Switches/{switchId}/Ports/{portid}<br> |`GET`|
+|/redfish/v1/Fabrics/{fabricId} /Switches/{switchId}/Ports/{portId}<br> |`GET`|
 |/redfish/v1/Fabrics/{fabricId}/Zones|`GET`, `POST`|
 |/redfish/v1/Fabrics/{fabricId}/Zones/{zoneId}|`GET`, `PATCH`, `DELETE`|
 |/redfish/v1/Fabrics/{fabricId}/AddressPools|`GET`, `POST`|
-|/redfish/v1/Fabrics/{fabricId}/AddressPools/{addresspoolid}|`GET`, `DELETE`|
+|/redfish/v1/Fabrics/{fabricId}/AddressPools/{addresspoolId}|`GET`, `DELETE`|
 |/redfish/v1/Fabrics/{fabricId}/Endpoints|`GET`, `POST`|
 |/redfish/v1/Fabrics/{fabricId}/Endpoints/{endpointId}|`GET`, `DELETE`|
 
@@ -763,7 +761,7 @@ Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLi
 
 > **Samples**
 
-- **`resourceRateLimit`**: Specify values for the parameter in the following format:
+- `resourceRateLimit`—Specify values for the parameter in the following format:
 
   ```
   resourceRateLimit:
@@ -802,7 +800,7 @@ Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLi
 
   > **NOTE:** The value for 'Retry-After' property is in seconds.
 
-- **`requestLimitPerSession`**: Specify the number of concurrent API requests that can be sent per session. If you specify `15` as the value for this parameter, 15 API requests are processed with `200` status code and the remaining concurrent requests triggered from your session return the `503` error code.
+- `requestLimitPerSession`—Specify the number of concurrent API requests that can be sent per session. If you specify `15` as the value for this parameter, 15 API requests are processed with `200` status code and the remaining concurrent requests triggered from your session return the `503` error code.
 
   > **Sample response body**
 
@@ -824,7 +822,7 @@ Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLi
   }
   ```
 
-- **`sessionLimitPerUser`**: Specify the number of active sessions a user can have. If you specify `10` as the value for this parameter, 10 sessions can be created for a particular user, which return the `201` status code. Beyond this, the `503` error code is returned.
+- `sessionLimitPerUser`—Specify the number of active sessions a user can have. If you specify `10` as the value for this parameter, 10 sessions can be created for a particular user, which return the `201` status code. Beyond this, the `503` error code is returned.
 
   > **Sample response body**
 
@@ -956,7 +954,7 @@ This privilege is required to view any resource or a collection of resources exp
 |ReadOnly (Redfish predefined)| `Login` <br>`ConfigureSelf` <br> |
 
 
->**NOTE:** Resource Aggregator for ODIM has a default user account that has all the privileges of an administrator role.
+>**NOTE**: Resource Aggregator for ODIM has a default user account that has all the privileges of an administrator role.
 
 
 # Sessions
@@ -1846,7 +1844,7 @@ It consists of the following parameters:
 |<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources` |
 |<strong>Description</strong> | This operation creates an aggregation source for a plugin and adds it in the inventory. It is performed in the background as a Redfish task.|
 |<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion:<ul><li>The aggregation source Id, the IP address, the username, and other details of the added plugin in the JSON response body.</li><li> A link (having the aggregation source id) to the added plugin in the `Location` header. See `Location` URI in *Sample response header (HTTP 201 status)*.</li></ul></li></ul>  |
-|<strong>Response Code</strong> |`202 Accepted` On success, `201 Created`|
+|<strong>Response Code</strong> |On success, `202 Accepted`.<br/>On successful completion of the task, `201 Created`.|
 |<strong>Authentication</strong> |Yes|
 
 **Usage information**
@@ -2054,8 +2052,8 @@ location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-af
    | <strong>Method</strong>         | `POST`                                                       |
    | <strong>URI</strong>            | `/redfish/v1/AggregationService/AggregationSources`          |
    | <strong>Description</strong>    | This operation creates an aggregation source for a BMC, discovers information, and performs a detailed inventory of it.<br> The `AggregationSource` schema provides information about a BMC such as its IP address, username, password, and so on.<br> This operation is performed in the background as a Redfish task.<br> |
-   | <strong>Returns</strong>        | <ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion:<ul><li>The aggregation source id, the IP address, the username, and other details of the added BMC in the JSON response body.</li><li>A link (having the aggregation source id) to the added BMC in the `Location` header. See `Location` URI in *Sample response header (HTTP 201 status)*.</li></ul></li></ul> |
-   | <strong>Response Code</strong>  | On success, `202 Accepted`<br>On successful completion of the task, `201 Created` <br> |
+   | <strong>Returns</strong>        | <ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion:<ul><li>The aggregation source id, the IP address, the username, and other details of the added BMC in the JSON response body.</li><li>A link (having the aggregation source id) to the added BMC in the `Location` header. See `Location` URI in *Sample response header (HTTP 201 status)*.</li></ul></li></ul> |
+   | <strong>Response Code</strong>  | On success, `202 Accepted`.<br>On successful completion of the task, `201 Created`. |
    | <strong>Authentication</strong> | Yes                                                          |
 
 **Usage information**
@@ -2069,7 +2067,7 @@ location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-af
 
 After the server is successfully added as an aggregation source, it will also be available as a computer system resource at `/redfish/v1/Systems/` and a manager resource at `/redfish/v1/Managers/`.
 
-<blockquote>NOTE: Along with the UUID of the server, check the BMC address to ensure the server isn't already present.</blockquote>
+> **NOTE**: Along with the UUID of the server, check the BMC address to ensure the server isn't already present.
 
 To view the list of links to computer system resources, perform HTTP `GET` on `/redfish/v1/Systems/`. Each link contains `ComputerSystemId` of a specific BMC. For more information, see *[Collection of computer systems](#collection-of-computer-systems)*.
 
@@ -2351,7 +2349,7 @@ curl -i PATCH \
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationService.Reset` |
 |<strong>Description</strong> |This action shuts down, powers up, and restarts one or more servers. It is performed in the background as a Redfish task and is further divided into subtasks to reset each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation (task) in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.<br><br>-   Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task id  in *Sample response body (HTTP 202 status)*.<br>**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`. <br>-  Upon the completion of the reset operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.|
+|<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion of the reset operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.</li></ul><br />**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.|
 |<strong>Response code</strong> |On success, `202 Accepted`.<br> On successful completion of the task, `200 OK`.|
 |<strong>Authentication</strong> |Yes|
 
@@ -2494,8 +2492,8 @@ Content-Length:491 bytes
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder` |
 |<strong>Description</strong> |This action changes the boot order of one or more servers to default settings. This operation is performed in the background as a Redfish task and is further divided into subtasks to change the boot order of each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.<br><br>-  Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id  in *Sample response body (HTTP 202 status)*.<br>IMPORTANT:<br>Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</blockquote><br>- On successful completion of this operation, a message in the response body, saying that the operation is completed successfully. See *Sample response body (HTTP 200 status)*.<br>|
-|<strong>Response code</strong> |`202 Accepted`. On successful completion, `200 OK` <br> |
+|<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion of the operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.</li></ul><br />**IMPORTANT**: Make a note of the task id. If the task completes with an error, you need to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.|
+|<strong>Response code</strong> |On success, `202 Accepted`.<br/>On successful completion of the task, `200 OK`. |
 |<strong>Authentication</strong> |Yes|
 
 **Usage information**
@@ -2625,8 +2623,8 @@ Content-Length:491 bytes
 |<strong>Method</strong> | `DELETE` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources/{AggregationSourceId}` |
 |<strong>Description</strong> |This operation removes a specific aggregation source (plugin, BMC, or any manager) from the inventory. Deleting an aggregation source also deletes all event subscriptions associated with the BMC. This operation is performed in the background as a Redfish task.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.<br>|
-|<strong>Response Code</strong> |`202 Accepted` On successful completion, `204 No Content` <br> |
+|<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li></ul>|
+|<strong>Response Code</strong> |On success, `202 Accepted`.<br/> On successful completion of the task, `204 No Content` |
 |<strong>Authentication</strong> |Yes|
 
 **Usage information**
@@ -2929,8 +2927,8 @@ curl -i POST \
 | <strong>Method</strong>         | `POST`                                                       |
 | <strong>URI</strong>            | `/redfish/v1/AggregationService/Aggregates/{AggregateId}/Actions/Aggregate.Reset` |
 | <strong>Description</strong>    | This action shuts down, powers up, and restarts servers in a specific aggregate. This operation is performed in the background as a Redfish task and is further divided into subtasks to reset each server individually.<br> |
-| <strong>Returns</strong>        | - `Location` URI of the task monitor associated with this operation (task) in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.<br>- Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id  in *Sample response body (HTTP 202 status)*.<br>**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>- Upon the completion of the reset operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*. |
-| <strong>Response Code</strong>  | `202 Accepted` On successful completion, `200 OK` <br>       |
+| <strong>Returns</strong>        | <ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion of the operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.</li></ul><br />**IMPORTANT**: Make a note of the task id. If the task completes with an error, you need to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`. |
+| <strong>Response Code</strong>  | On success, `202 Accepted`.<br/> On successful completion of the task, `200 OK`. |
 | <strong>Authentication</strong> | Yes                                                          |
 
 **Usage information**
@@ -3044,9 +3042,9 @@ Content-Length:491 bytes
 | ------------------------------- | ------------------------------------------------------------ |
 | <strong>Method</strong>         | `POST`                                                       |
 | <strong>URI</strong>            | `/redfish/v1/AggregationService/Aggregates/{AggregateId}/Actions/Aggregate.SetDefaultBootOrder` |
-| <strong>Description</strong>    | This action changes the boot order of all the servers belonging to a specific aggregate to default settings. This operation is performed in the background as a Redfish task and is further divided into subtasks to change the boot order of each server individually.<br> |
-| <strong>Returns</strong>        | - `Location` URI of the created aggregate having the aggregate id. See the `Location` URI in *Sample response header*.<br>-   Link to the new aggregate, its id, and a success message in the JSON response body.<br>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id  in *Sample response header (HTTP 202 status)*.<br>**IMPORTANT**: Make a note of the task id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>Upon the completion of the operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.<br> |
-| <strong>Response Code</strong>  | `202 Accepted`. On successful completion, `200 OK` <br>      |
+| <strong>Description</strong>    | This action changes the boot order of all the servers belonging to a specific aggregate to default settings. This operation is performed in the background as a Redfish task and is further divided into subtasks to change the boot order of each server individually. |
+| <strong>Returns</strong>        | <ul><li>`Location` URI of the created aggregate having the aggregate id. See the `Location` URI in *Sample response header*. </li> <li> Link to the new aggregate, its id, and a success message in the JSON response body.</li> <li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion of the operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.</li></ul><br />**IMPORTANT**: Make a note of the task id. If the task completes with an error, you need to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`. |
+| <strong>Response Code</strong>  | On success, `202 Accepted`.<br/>On successful completion of the task, `200 OK`. |
 | <strong>Authentication</strong> | Yes                                                          |
 
 **Usage information**
@@ -6744,8 +6742,8 @@ This filter searches a server having total physical memory of 384 GB and two Int
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset` |
 |**Description** |This action shuts down, powers up, and restarts a specific system.<br>**NOTE:** To reset an aggregate of systems, use the following URI:<br>`/redfish/v1/AggregationService/Actions/AggregationService.Reset` <br> See *[Resetting servers](#resetting-servers)*.|
-|**Returns** |A Redfish task in the response header and you receive a link to the task monitor associated with it. To know the progress of this operation, perform an `HTTP GET` on the task monitor (until the task is complete).|
-|**Response code** | `202 Accepted`. On successful completion, `200 OK`. |
+|**Returns** |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion of the operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.</li></ul>|
+|**Response code** | On success, `202 Accepted`.<br/>On successful completion of the task, `200 OK`. |
 |**Authentication** |Yes|
 
 
@@ -7727,7 +7725,7 @@ curl -i POST \
  'https://{odimra_host}:{port}/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.EjectMedia'
 ```
 
-<blockquote>NOTE: No payload is required for this operation. </blockquote>
+>**NOTE**: No payload is required for this operation. 
 
 >**Sample response body**
 
@@ -8430,8 +8428,8 @@ curl -i GET \
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate` |
 |<strong>Description</strong> |This operation creates an update request for updating a software or a firmware component or directly updates a software or a firmware component. The first example in "Sample request body" is used to create an update request and the second one is used to directly update a software or a firmware component of servers.<br>It is performed in the background as a Redfish task. |
-|**Returns** |`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.<br/> Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*. |
-|<strong>Response code</strong> |On success, `202 Accepted`<br />On successful completion of the task, `200 OK` |
+|**Returns** |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion of the operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.</li></ul> |
+|<strong>Response code</strong> |On success, `202 Accepted`.<br />On successful completion of the task, `200 OK`. |
 |<strong>Authentication</strong> |Yes|
 
 **Usage information** 
@@ -10374,7 +10372,7 @@ curl -i GET \
 |**URI** |`/taskmon/{TaskID}` |
 |**Description** |This endpoint retrieves the task monitor associated with a specific task. A task monitor allows for polling a specific task for its completion. Perform `GET` on a task monitor URI to view the progress of a specific task (until it is complete).|
 |**Returns** |Details of the task and its progress in the JSON response such as:<br>- Link to the task<br />- Task id<br />- Task state and status<br>- Percentage of completion<br>- Start time and end time<br>- Link to subtasks, if any<br>To know the status of a subtask, perform `GET` on the respective subtask link.<br>**NOTE:** <ul><li>Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</li><li>`EndTime` of an ongoing task has `0001-01-01T00:00:00Z` as value, which is equivalent to zero time stamp value. It is updated only after the completion of the task.</li></ul></li><li>On failure, an error message. See *Sample error response*.<br> To get the list of subtasks, perform `GET` on the task URI having the id of the failed task. To know which subtasks have failed, perform `GET` on subtask links individually.</li><li>On successful completion, result of the operation carried out by the task. See *Sample response body (completed task)*.</li></ul>|
-|**Response code** | <ul><li>`202 Accepted` until the task is complete.</li><li>`200 OK`, `201 Created` on success.</li></ul>|
+|**Response code** | On success, `202 Accepted`.<br />On successful completion of the task, `200 OK`, `201 Created`. |
 |**Authentication** |Yes|
 
 
@@ -10642,8 +10640,8 @@ Date:Fri,15 May 2020 10:10:15 GMT+5m 11s
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/EventService/Subscriptions` |
 |**Description**| This endpoint subscribes a northbound client to events originating from a set of resources (southbound devices, managers, Resource Aggregator for ODIM itself\) by creating a subscription entry. For use cases, see *[Subscription use cases](#event-subscription-use-cases)*.<br>This operation is performed in the background as a Redfish task. If there is more than one resource that is sending a specific event, the task is further divided into subtasks. |
-|**Returns** |<ul><li>`Location` URI of the task monitor associated with this operation in the response header.</li><li> Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.<br>**IMPORTANT:**<br> Make a note of the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</li><li>On success, a `Location` header that contains a link to the newly created subscription and a message in the JSON response body saying that the subscription is created. See *Sample response body (HTTP 201 status)*.</li></ul>|
-|**Response code** |<ul><li>`202 Accepted`</li><li>`201 Created`</li></ul>|
+|**Returns** |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion, a `Location` header contains a link to the newly created subscription and a message in the JSON response body saying that the subscription is created. See *Sample response body (HTTP 201 status)*.</li></ul><br>**IMPORTANT:** Make a note of the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</li>|
+|**Response code** |On success, `202 Accepted`<br/>On successful completion of the task, `201 Created`|
 |**Authentication** |Yes|
 
 
@@ -12345,7 +12343,7 @@ Audit logs provide information on each API and are stored in the `api.log` file 
 <107>1 2023-02-03T06:34:54Z 10.207.115.16:30080  svc-api  api-6fb4468885-pj9qw_7  GetSystem [process@1 processName="api-6fb4468885-pj9qw" transactionID="236842a9-5a66-4b5d-b96d-62a851adee1c" actionID="002" actionName="GetSystem" threadID="0" threadName="svc-api"] [request@1  method="GET"] 10.207.115.16:30080 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems/1225"][response@1 responseCode=404] Operation failed
 ```
 
-> **Note**: <110> and <107> are priority values. <110> is the audit information log and <107> is the audit error log.
+> **NOTE**: <110> and <107> are priority values. <110> is the audit information log and <107> is the audit error log.
 
 
 
@@ -12363,7 +12361,7 @@ Security logs provide information on the successful and failed user authenticati
 <84>1 2023-02-03T06:38:46Z clustervm  svc-account-session  account-session-854df4867d-672tz_7  GetSystemsCollection [process@1 processName="account-session-854df4867d-672tz" transactionID="9d017288-9ba9-4ed5-91a4-393ab0c3bba9" actionID="001" actionName="GetSystemsCollection" threadID="0" threadName="svc-account-session"] [account@1 user="admin1" roleID=""] Authentication failed for session token  Invalid username or password
 ```
 
-<blockquote> Note: <86> and <84> are priority values. <86> is security information log and <84> is the warning log.</blockquote>
+>**NOTE**: <86> and <84> are priority values. <86> is security information log and <84> is the warning log.
 
 
 

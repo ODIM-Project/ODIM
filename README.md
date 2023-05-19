@@ -275,11 +275,11 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
       ```
       
    3. ```
-      sudo apt-get install python3.8=3.8.10-0ubuntu1~20.04.6 -y
+      sudo apt-get install python3.8=3.8.10-0ubuntu1~20.04.7 -y
       ```
 
    4. ```
-      sudo apt-get install python3-pip=20.0.2-5ubuntu1.7 -y
+      sudo apt-get install python3-pip=20.0.2-5ubuntu1.8 -y
       ```
 
    5. ```
@@ -291,7 +291,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
       ```
 
    7. ```
-      sudo apt-get install openjdk-11-jre-headless=11.0.17+8-1ubuntu2~20.04 -y
+      sudo apt-get install openjdk-11-jre-headless=11.0.18+10-0ubuntu1~20.04.1 -y
       ```
 
    8. ```

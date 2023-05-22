@@ -305,13 +305,12 @@ func callPlugin(ctx context.Context, req PluginContactRequest) (*http.Response, 
 	return req.ContactClient(ctx, reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
 }
 
-// SavePluginTaskInfo saves the ip of plugin instance that handle the task,
+// SavePluginTaskInfoForResetRequest saves the ip of plugin instance that handle the task,
 // task id of task which created in odim, and the taskmon URL returned
 // from plugin in DB
-func SavePluginTaskInfo(ctx context.Context, pluginIP, pluginServerName,
-	odimTaskID, pluginTaskMonURL string) {
+func SavePluginTaskInfoForResetRequest(ctx context.Context, pluginIP, pluginServerName,
+	odimTaskID, pluginTaskMonURL string, serverAddress string) {
 
-	pluginTaskID := strings.TrimPrefix(pluginTaskMonURL, "/taskmon/")
 	pluginTaskInfo := common.PluginTask{
 		IP:               pluginIP,
 		PluginServerName: pluginServerName,
@@ -319,7 +318,7 @@ func SavePluginTaskInfo(ctx context.Context, pluginIP, pluginServerName,
 		PluginTaskMonURL: pluginTaskMonURL,
 	}
 
-	err := smodel.CreatePluginTask(ctx, pluginTaskID, pluginTaskInfo)
+	err := smodel.PersistPluginTaskInfoForResetRequest(ctx, serverAddress, pluginTaskInfo)
 	if err != nil {
 		l.LogWithFields(ctx).Error("Error while saving plugin task info in DB",
 			err)

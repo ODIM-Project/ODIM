@@ -524,7 +524,7 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/Systems/{ComputerSystemId}/MemoryDomains|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/NetworkInterfaces|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces|`GET`|
-|/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces/{Id}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces/{ethernetInterfaceId}|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Bios|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/SecureBoot|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}|`GET`|
@@ -535,13 +535,13 @@ Resource Aggregator for ODIM supports the listed Redfish APIs:
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/Capabilities|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}|`GET`, `DELETE`|
 |/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools|`GET`|
-|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools/{storagepool_Id}|`GET`|
-|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes|`GET`|
-|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}|`GET`|
-|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives|`GET`|
-|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools/{storagepoolId}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepoolId}/AllocatedVolumes|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepoolId}/AllocatedVolumes/{allocatedvolumeId}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepoolId}/CapacitySources/{capacitysourceId}/ProvidingDrives|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepoolId}/CapacitySources/{capacitysourceId}/ProvidingDrives/{providingdriveId}|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Processors|`GET`|
-|/redfish/v1/Systems/{ComputerSystemId}/Processors/{id}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Processors/{processorId}|`GET`|
 |/redfish/v1/Systems?filter={searchKeys*}%20{conditionKeys}%20{value/regEx}|`GET`|
 |/redfish/v1/Systems/{ComputerSystemId}/Bios/Settings<br> |`GET`, `PATCH`|
 |/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset|`POST`|
@@ -4197,7 +4197,7 @@ curl -i GET \
 |                    |                                                              |
 | ------------------ | ------------------------------------------------------------ |
 | **Method**         | `GET`                                                        |
-| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/ EthernetInterfaces` |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces`  |
 | **Description**    | This endpoint lists Ethernet interfaces or network interface controllers (NICs) of a specific system. |
 | **Returns**        | List of Ethernet interface endpoints                         |
 | **Response Code**  | `200 OK`                                                     |

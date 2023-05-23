@@ -413,7 +413,7 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.PostBody = target
 
-	_, loc, _, err := e.PluginCall(ctx, contactRequest)
+	_, loc, _, _, err := e.PluginCall(ctx, contactRequest)
 	if err != nil {
 		return err
 	}
@@ -495,12 +495,12 @@ func (e *ExternalInterfaces) DeleteFabricsSubscription(ctx context.Context, orig
 	contactRequest.URL = devSub.Location
 	contactRequest.HTTPMethodType = http.MethodDelete
 	contactRequest.PostBody = nil
-	resp, _, _, err = e.PluginCall(ctx, contactRequest)
+	resp, _, _, _, err = e.PluginCall(ctx, contactRequest)
 	if err != nil {
 		return resp, err
 	}
 	if resp.StatusCode == http.StatusUnauthorized && strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
-		resp, _, _, err = e.retryEventOperation(ctx, contactRequest)
+		resp, _, _, _, err = e.retryEventOperation(ctx, contactRequest)
 		if err != nil {
 			return resp, err
 		}
@@ -580,12 +580,12 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(ctx context.Context,
 			return err
 		}
 		l.LogWithFields(ctx).Info("Resubscribe request" + reqData)
-		response, loc, _, err := e.PluginCall(ctx, contactRequest)
+		response, loc, _, _, err := e.PluginCall(ctx, contactRequest)
 		if err != nil {
 			return err
 		}
 		if response.StatusCode == http.StatusUnauthorized && strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
-			_, _, _, err = e.retryEventOperation(ctx, contactRequest)
+			_, _, _, _, err = e.retryEventOperation(ctx, contactRequest)
 			if err != nil {
 				return err
 			}

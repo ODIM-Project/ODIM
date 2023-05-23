@@ -52,7 +52,7 @@ type TasksRPC struct {
 	AuthenticationRPC                func(ctx context.Context, sessionToken string, privileges []string) (response.RPC, error)
 	GetSessionUserNameRPC            func(ctx context.Context, sessionToken string) (string, error)
 	GetTaskStatusModel               func(ctx context.Context, taskID string, db common.DbType) (*tmodel.Task, error)
-	GetMultipleTaskKeysModel         func(ctx context.Context, taskIDs []string, db common.DbType) (*[]tmodel.Task, error)
+	GetMultipleTaskKeysModel         func(ctx context.Context, taskIDs []interface{}, db common.DbType) (*[]tmodel.Task, error)
 	GetAllTaskKeysModel              func(ctx context.Context) ([]string, error)
 	TransactionModel                 func(ctx context.Context, key string, cb func(context.Context, string) error) error
 	OverWriteCompletedTaskUtilHelper func(ctx context.Context, userName string) error
@@ -115,7 +115,7 @@ func (ts *TasksRPC) deleteCompletedTask(ctx context.Context, taskID string) erro
 	if err != nil {
 		return fmt.Errorf("error getting taskID - " + taskID + " status : " + err.Error())
 	}
-	var getChildTask []string
+	var getChildTask []interface{}
 	for _, childkey := range task.ChildTaskIDs {
 		getChildTask = append(getChildTask, "task:"+childkey)
 	}
@@ -344,7 +344,7 @@ func (ts *TasksRPC) taskCancelCallBack(ctx context.Context, taskID string) error
 		return nil
 	}
 	if task.TaskState == common.Completed || task.TaskState == common.Exception || task.TaskState == common.Pending {
-		var getChildTask []string
+		var getChildTask []interface{}
 		// check if this task has any child tasks, if so delete them.
 		for _, childkey := range task.ChildTaskIDs {
 			getChildTask = append(getChildTask, "task:"+childkey)

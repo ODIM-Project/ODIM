@@ -118,7 +118,7 @@ func mockGetTaskStatusModel(ctx context.Context, taskID string, db common.DbType
 
 }
 
-func mockGetMultipleTaskKeysModel(ctx context.Context, taskID []string, db common.DbType) (*[]tmodel.Task, error) {
+func mockGetMultipleTaskKeysModel(ctx context.Context, taskID []interface{}, db common.DbType) (*[]tmodel.Task, error) {
 	if db != common.InMemory {
 		return nil, fmt.Errorf("Resource not found")
 	}

@@ -36,7 +36,8 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
-	"github.com/gomodule/redigo/redis"
+
+	redis "github.com/go-redis/redis"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -357,20 +358,20 @@ START:
 		l.Log.Error("error while getDbConnection  ", errDbConn)
 		goto START
 	}
-	readConn := conn.WritePool.Get()
-	defer readConn.Close()
 	err := conn.EnableKeySpaceNotifier(evcommon.RedisNotifierType, evcommon.RedisNotifierFilterKey)
 	if err != nil {
 		l.LogWithFields(ctx).Error("error occurred configuring key event ", err)
 		time.Sleep(time.Second * 1)
 		goto START
 	}
-	psc := redis.PubSubConn{Conn: readConn}
-
-	psc.PSubscribe(evcommon.AggregateToHostChannelKey, evcommon.DeviceSubscriptionChannelKey,
+	psc := redis.PubSub(*conn.WritePool.Subscribe())
+	psc.Subscribe(evcommon.AggregateToHostChannelKey, evcommon.DeviceSubscriptionChannelKey,
 		evcommon.SubscriptionChannelKey)
+
 	for {
-		switch v := psc.Receive().(type) {
+		data, _ := psc.Receive()
+		switch v := data.(type) {
+
 		case redis.Message:
 			switch string(v.Pattern) {
 			case evcommon.DeviceSubscriptionChannelKey:
@@ -426,7 +427,6 @@ func (e *ExternalInterfaces) saveEventWorkers() {
 		e.saveEventWorkers()
 		return
 	}
-	writePool := conn.WritePool.Get()
 	if err != nil {
 		logging.Error("error occurred get write pool in saveEventWorker ", err.Error())
 		e.saveEventWorkers()
@@ -434,15 +434,14 @@ func (e *ExternalInterfaces) saveEventWorkers() {
 	}
 	for job := range saveEventChanel {
 
-		err := conn.SaveUndeliveredEvents(evmodel.UndeliveredEvents, job.UndeliveredEventID, job.Message, writePool)
+		err := conn.SaveUndeliveredEvents(evmodel.UndeliveredEvents, job.UndeliveredEventID, job.Message)
 		if err != nil {
 			logging.Error("error while save undelivered event ", err)
 			time.Sleep(time.Second)
-			writePool = conn.WritePool.Get()
 			if err != nil {
 				continue
 			}
-			err = conn.SaveUndeliveredEvents(evmodel.UndeliveredEvents, job.UndeliveredEventID, job.Message, writePool)
+			err = conn.SaveUndeliveredEvents(evmodel.UndeliveredEvents, job.UndeliveredEventID, job.Message)
 			if err != nil {
 				logging.Error("error occurred while save saveEventWorker ", err.Error())
 			}

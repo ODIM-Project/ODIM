@@ -117,6 +117,61 @@ func mockGetTaskStatusModel(ctx context.Context, taskID string, db common.DbType
 	return &task, nil
 
 }
+
+func mockGetMultipleTaskKeysModel(ctx context.Context, taskID []interface{}, db common.DbType) (*[]tmodel.Task, error) {
+	if db != common.InMemory {
+		return nil, fmt.Errorf("Resource not found")
+	}
+	var result []tmodel.Task
+	task := tmodel.Task{
+		UserName:     "validUser",
+		ParentID:     "",
+		ChildTaskIDs: nil,
+		ID:           "validTaskID",
+		TaskState:    "New",
+		TaskStatus:   "OK",
+		StartTime:    time.Now(),
+		EndTime:      time.Time{},
+	}
+	switch taskID[0] {
+	case "validTaskID":
+		task.TaskState = "New"
+	case "RunningTaskID":
+		task.TaskState = "Running"
+		task.TaskStatus = "OK"
+		task.ChildTaskIDs = []string{"task:CompletedSubTaskID", "task:RunningSubTaskID"}
+	case "task:CompletedTaskID":
+		task.TaskState = "Completed"
+		task.TaskStatus = "OK"
+		task.ChildTaskIDs = []string{"task:CompletedSubTaskID"}
+		task.StatusCode = http.StatusOK
+		task.EndTime = time.Now()
+	case "ExceptionTaskID":
+		task.TaskState = "Exception"
+		task.TaskStatus = "Critical"
+		task.ChildTaskIDs = []string{"ExceptionSubTaskID"}
+		task.StatusCode = http.StatusOK
+		task.EndTime = time.Now()
+	case "RunningSubTaskID":
+		task.TaskState = "Running"
+		task.TaskStatus = "OK"
+	case "task:CompletedSubTaskID":
+		task.TaskState = "Completed"
+		task.TaskStatus = "OK"
+		task.StatusCode = http.StatusOK
+		task.EndTime = time.Now()
+	case "ExceptionSubTaskID":
+		task.TaskState = "Exception"
+		task.TaskStatus = "Critical"
+		task.StatusCode = http.StatusOK
+		task.EndTime = time.Now()
+	default:
+		return nil, fmt.Errorf("Resource not found")
+	}
+	result = append(result, task)
+	return &result, nil
+
+}
 func mockTransactionModel(ctx context.Context, taskID string, cb func(context.Context, string) error) error {
 	return nil
 }

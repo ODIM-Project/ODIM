@@ -14,6 +14,16 @@
 
 package model
 
+// GraphicalConnectTypesSupported - ConnectTypesSupported
+type GraphicalConnectTypesSupported string
+
+const (
+	// GraphicalConnectTypesSupportedKVMIP - The information about the graphical console
+	GraphicalConnectTypesSupportedKVMIP GraphicalConnectTypesSupported = "KVMIP"
+	// GraphicalConnectTypesSupportedCOEM - The information about the graphical console
+	GraphicalConnectTypesSupportedCOEM GraphicalConnectTypesSupported = "OEM"
+)
+
 // Manager is the redfish Manager model according to the 2020.3 release
 type Manager struct {
 	ODataContext               string                      `json:"@odata.context,omitempty"`
@@ -62,7 +72,7 @@ type Manager struct {
 	AdditionalFirmwareVersions *AdditionalFirmwareVersions `json:"AdditionalFirmwareVersions,omitempty"`
 }
 
-//AdditionalFirmwareVersions redfish structure
+// AdditionalFirmwareVersions redfish structure
 type AdditionalFirmwareVersions struct {
 	Bootloader string `json:"Bootloader,omitempty"`
 	Kernel     string `json:"Kernel,omitempty"`
@@ -78,9 +88,12 @@ type CommandShell struct {
 }
 
 // GraphicalConsole redfish structure
+// The information about a graphical console service for this system.
+// This type shall describe a graphical console service for a computer system.
 type GraphicalConsole struct {
-	ConnectTypesSupported []string `json:"ConnectTypesSupported"`
+	ConnectTypesSupported []string `json:"ConnectTypesSupported"` //enum
 	MaxConcurrentSessions int      `json:"MaxConcurrentSessions"`
+	Port                  int      `json:"Port,omitempty"`
 	ServiceEnabled        bool     `json:"ServiceEnabled"`
 }
 
@@ -103,7 +116,7 @@ type ManagerLinks struct {
 	SoftwareImages          *Link       `json:"SoftwareImages,omitempty"`
 }
 
-//VirtualMedia is a redfish virtual media model
+// VirtualMedia is a redfish virtual media model
 type VirtualMedia struct {
 	ODataContext         string              `json:"@odata.context,omitempty"`
 	ODataEtag            string              `json:"@odata.etag,omitempty"`

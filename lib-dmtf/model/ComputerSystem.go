@@ -824,9 +824,9 @@ type SecureBootDatabase struct {
 	Otype        string `json:"@odata.type"`
 	Actions      string `json:"Actions,omitempty"`
 	Certificates string `json:"Certificates,omitempty"`
-	DatabaseId   string `json:"DatabaseId,omitempty"`
+	DatabaseID   string `json:"DatabaseId,omitempty"`
 	Description  string `json:"Description,omitempty"`
-	Id           string `json:"Id"`
+	ID           string `json:"Id"`
 	Name         string `json:"Name"`
 	Oem          string `json:"Oem,omitempty"`
 	Signatures   string `json:"Signatures,omitempty"`

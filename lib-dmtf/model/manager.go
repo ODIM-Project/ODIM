@@ -34,22 +34,22 @@ type HostInterfaceType string
 
 const (
 
-	//ManagerTypeManagementController -"ManagementController": "A controller that primarily monitors or manages the operation of a device or system."
+	// ManagerTypeManagementController -"ManagementController": "A controller that primarily monitors or manages the operation of a device or system."
 	ManagerTypeManagementController ManagerType = "ManagementController"
 
-	//ManagerTypeEnclosureManager -"EnclosureManager": "A controller that provides management functions for a chassis or group of devices or systems."
+	// ManagerTypeEnclosureManager -"EnclosureManager": "A controller that provides management functions for a chassis or group of devices or systems."
 	ManagerTypeEnclosureManager ManagerType = "EnclosureManager"
 
-	//ManagerTypeBMC - "BMC": "A controller that provides management functions for a single computer system."
+	// ManagerTypeBMC - "BMC": "A controller that provides management functions for a single computer system."
 	ManagerTypeBMC ManagerType = "BMC"
 
-	//ManagerTypeRackManager-"RackManager": "A controller that provides management functions for a whole or part of a rack."
+	// ManagerTypeRackManager-"RackManager": "A controller that provides management functions for a whole or part of a rack."
 	ManagerTypeRackManager ManagerType = "RackManager"
 
 	//ManagerTypeAuxiliaryController-"AuxiliaryController": "A controller that provides management functions for a particular subsystem or group of devices."
 	ManagerTypeAuxiliaryController ManagerType = "AuxiliaryController"
 
-	//ManagerTypeService-"Service": "A software-based service that provides management functions."
+	// ManagerTypeService-"Service": "A software-based service that provides management functions."
 	ManagerTypeService ManagerType = "Service"
 )
 
@@ -289,19 +289,19 @@ type Members struct {
 	ODataID                 string                   `json:"@odata.id"`
 	ODataType               string                   `json:"@odata.type"`
 	Actions                 *OemActions              `json:"actions,omitempty"`
-	AuthNoneRoleId          string                   `json:"authNoneRoleId,omitempty"`
+	AuthNoneRoleID          string                   `json:"authNoneRoleId,omitempty"`
 	AuthenticationModes     []string                 `json:"authenticationModes,omitempty"` //enum
 	CredentialBootstrapping *CredentialBootstrapping `json:"credentialBootstrapping,omitempty"`
 	Description             string                   `json:"description,omitempty"`
 	ExternallyAccessible    bool                     `json:"externallyAccessible,omitempty"`
 	FirmwareAuthEnabled     bool                     `json:"firmwareAuthEnabled,omitempty"`
-	FirmwareAuthRoleId      string                   `json:"firmwareAuthRoleId,omitempty"`
+	FirmwareAuthRoleID      string                   `json:"firmwareAuthRoleId,omitempty"`
 	HostEthernetInterfaces  *HostInterfaces          `json:"hostEthernetInterfaces,omitempty"`
 	HostInterfaceType       string                   `json:"hostInterfaceType,omitempty"` //enum
-	Id                      string                   `json:"id,omitempty"`
+	ID                      string                   `json:"id,omitempty"`
 	InterfaceEnabled        bool                     `json:"interfaceEnabled,omitempty"`
 	KernelAuthEnabled       bool                     `json:"kernelAuthEnabled,omitempty"`
-	KernelAuthRoleId        string                   `json:"kernelAuthRoleId,omitempty"`
+	KernelAuthRoleID        string                   `json:"kernelAuthRoleId,omitempty"`
 	Links                   *Links                   `json:"links,omitempty"`
 	Name                    string                   `json:"name,omitempty"`
 	Oem                     *Oem                     `json:"Oem,omitempty"`
@@ -312,7 +312,7 @@ type Members struct {
 type CredentialBootstrapping struct {
 	EnableAfterReset bool   `json:"enableAfterReset,omitempty"`
 	Enabled          bool   `json:"enabled,omitempty"`
-	RoleId           string `json:"roleId,omitempty"`
+	RoleID           string `json:"roleId,omitempty"`
 }
 
 // This property shall contain any status or health properties of the resource

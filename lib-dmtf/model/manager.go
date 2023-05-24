@@ -49,7 +49,7 @@ const (
 	//ManagerTypeAuxiliaryController - "AuxiliaryController": "A controller that provides management functions for a particular subsystem or group of devices."
 	ManagerTypeAuxiliaryController ManagerType = "AuxiliaryController"
 
-	// ManagerTypeService-"Service": "A software-based service that provides management functions."
+	// ManagerTypeService - "Service": "A software-based service that provides management functions."
 	ManagerTypeService ManagerType = "Service"
 )
 
@@ -254,7 +254,7 @@ type ModifyRedundancySet struct {
 	Title  string `json:"Title,omitempty"`
 }
 
-// The reset action resets/reboots the manager
+// Reset action resets/reboots the manager
 type Reset struct {
 	Target string `json:"Target,omitempty"`
 	Title  string `json:"Title,omitempty"`

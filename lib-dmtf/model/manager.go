@@ -34,22 +34,22 @@ type HostInterfaceType string
 
 const (
 
-	// ManagerTypeManagementController - "ManagementController": "A controller that primarily monitors or manages the operation of a device or system."
+	// ManagerTypeManagementController -"ManagementController": "A controller that primarily monitors or manages the operation of a device or system."
 	ManagerTypeManagementController ManagerType = "ManagementController"
 
-	// ManagerTypeEnclosureManager - "EnclosureManager": "A controller that provides management functions for a chassis or group of devices or systems."
+	// ManagerTypeEnclosureManager -"EnclosureManager": "A controller that provides management functions for a chassis or group of devices or systems."
 	ManagerTypeEnclosureManager ManagerType = "EnclosureManager"
 
 	// ManagerTypeBMC - "BMC": "A controller that provides management functions for a single computer system."
 	ManagerTypeBMC ManagerType = "BMC"
 
-	// ManagerTypeRackManager - "RackManager": "A controller that provides management functions for a whole or part of a rack."
+	// ManagerTypeRackManager-"RackManager": "A controller that provides management functions for a whole or part of a rack."
 	ManagerTypeRackManager ManagerType = "RackManager"
 
 	//ManagerTypeAuxiliaryController - "AuxiliaryController": "A controller that provides management functions for a particular subsystem or group of devices."
 	ManagerTypeAuxiliaryController ManagerType = "AuxiliaryController"
 
-	// ManagerTypeService - "Service": "A software-based service that provides management functions."
+	// ManagerTypeService-"Service": "A software-based service that provides management functions."
 	ManagerTypeService ManagerType = "Service"
 )
 

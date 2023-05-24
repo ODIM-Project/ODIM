@@ -49,7 +49,7 @@ const (
 	//ManagerTypeAuxiliaryController - "AuxiliaryController": "A controller that provides management functions for a particular subsystem or group of devices."
 	ManagerTypeAuxiliaryController ManagerType = "AuxiliaryController"
 
-	// ManagerTypeService-"Service": "A software-based service that provides management functions."
+	// ManagerTypeService - "Service": "A software-based service that provides management functions."
 	ManagerTypeService ManagerType = "Service"
 )
 

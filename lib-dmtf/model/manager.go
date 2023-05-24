@@ -34,19 +34,19 @@ type HostInterfaceType string
 
 const (
 
-	// ManagerTypeManagementController -"ManagementController": "A controller that primarily monitors or manages the operation of a device or system."
+	// ManagerTypeManagementController - "ManagementController": "A controller that primarily monitors or manages the operation of a device or system."
 	ManagerTypeManagementController ManagerType = "ManagementController"
 
-	// ManagerTypeEnclosureManager -"EnclosureManager": "A controller that provides management functions for a chassis or group of devices or systems."
+	// ManagerTypeEnclosureManager - "EnclosureManager": "A controller that provides management functions for a chassis or group of devices or systems."
 	ManagerTypeEnclosureManager ManagerType = "EnclosureManager"
 
 	// ManagerTypeBMC - "BMC": "A controller that provides management functions for a single computer system."
 	ManagerTypeBMC ManagerType = "BMC"
 
-	// ManagerTypeRackManager-"RackManager": "A controller that provides management functions for a whole or part of a rack."
+	// ManagerTypeRackManager - "RackManager": "A controller that provides management functions for a whole or part of a rack."
 	ManagerTypeRackManager ManagerType = "RackManager"
 
-	//ManagerTypeAuxiliaryController-"AuxiliaryController": "A controller that provides management functions for a particular subsystem or group of devices."
+	//ManagerTypeAuxiliaryController - "AuxiliaryController": "A controller that provides management functions for a particular subsystem or group of devices."
 	ManagerTypeAuxiliaryController ManagerType = "AuxiliaryController"
 
 	// ManagerTypeService-"Service": "A software-based service that provides management functions."
@@ -54,46 +54,46 @@ const (
 )
 
 const (
-	// PowerStateOn -"On": "The resource is powered on."
+	// PowerStateOn - "On": "The resource is powered on."
 	PowerStateOn PowerState = "On"
 
-	// PowerStateOff-"Off": "The resource is powered off.  The components within the resource might continue to have AUX power."
+	// PowerStateOff - "Off": "The resource is powered off.  The components within the resource might continue to have AUX power."
 	PowerStateOff PowerState = "Off"
 
-	// PowerStatePoweringOn-"PoweringOn": "A temporary state between off and on.  The components within the resource can take time to process the power on action."
+	// PowerStatePoweringOn - "PoweringOn": "A temporary state between off and on.  The components within the resource can take time to process the power on action."
 	PowerStatePoweringOn PowerState = "PoweringOn"
 
-	// PowerStatePoweringOff- "PoweringOff": "A temporary state between on and off.  The components within the resource can take time to process the power off action."
+	// PowerStatePoweringOff - "PoweringOff": "A temporary state between on and off.  The components within the resource can take time to process the power off action."
 	PowerStatePoweringOff PowerState = "PoweringOff"
 
-	// PowerStatePaused-"Paused": "The resource is paused."
+	// PowerStatePaused - "Paused": "The resource is paused."
 	PowerStatePaused PowerState = "Paused"
 )
 
 const (
-	// ConnectTypesSupportedKVMIP-"KVMIP": "The controller supports a graphical console connection through a KVM-IP (redirection of Keyboard, Video, Mouse over IP) protocol."
+	// ConnectTypesSupportedKVMIP - "KVMIP": "The controller supports a graphical console connection through a KVM-IP (redirection of Keyboard, Video, Mouse over IP) protocol."
 	ConnectTypesSupportedKVMIP ConnectTypesSupported = "KVMIP"
 
-	// ConnectTypesSupportedOem-"Oem": "The controller supports a graphical console connection through an OEM-specific protocol."
+	// ConnectTypesSupportedOem - "Oem": "The controller supports a graphical console connection through an OEM-specific protocol."
 	ConnectTypesSupportedOem ConnectTypesSupported = "Oem"
 )
 
 const (
-	// HostInterfaceTypeNetworkHostInterface-"NetworkHostInterface": "This interface is a Network Host Interface."
+	// HostInterfaceTypeNetworkHostInterface - "NetworkHostInterface": "This interface is a Network Host Interface."
 	HostInterfaceTypeNetworkHostInterface HostInterfaceType = "NetworkHostInterface"
 )
 
 const (
-	// AuthenticationModesAuthNone-"AuthNone": "Requests without any sort of authentication are allowed."
+	// AuthenticationModesAuthNone - "AuthNone": "Requests without any sort of authentication are allowed."
 	AuthenticationModesAuthNone AuthenticationModes = "AuthNone"
 
-	// AuthenticationModesBasicAuth -"BasicAuth": "Requests using HTTP Basic Authentication are allowed."
+	// AuthenticationModesBasicAuth - "BasicAuth": "Requests using HTTP Basic Authentication are allowed."
 	AuthenticationModesBasicAuth AuthenticationModes = "BasicAuth"
 
-	// AuthenticationModesRedfishSessionAuth -"RedfishSessionAuth": "Requests using Redfish Session Authentication are allowed."
+	// AuthenticationModesRedfishSessionAuth - "RedfishSessionAuth": "Requests using Redfish Session Authentication are allowed."
 	AuthenticationModesRedfishSessionAuth AuthenticationModes = "RedfishSessionAuth"
 
-	// AuthenticationModesOemAuth -"OemAuth": "Requests using OEM authentication mechanisms are allowed."
+	// AuthenticationModesOemAuth - "OemAuth": "Requests using OEM authentication mechanisms are allowed."
 	AuthenticationModesOemAuth AuthenticationModes = "OemAuth"
 )
 

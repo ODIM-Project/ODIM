@@ -231,7 +231,7 @@ type ActionTarget struct {
 	Target string `json:"target"`
 }
 
-// The ManagerActions property shall contain the available actions for this resource.
+// ManagerActions property shall contain the available actions for this resource.
 type ManagerActions struct {
 	ManagerForceFailover       *ForceFailover       `json:"ManagerForceFailover,omitempty"`
 	ManagerModifyRedundancySet *ModifyRedundancySet `json:"ManagerModifyRedundancy,omitempty"`
@@ -240,14 +240,14 @@ type ManagerActions struct {
 	Oem                        *Oem                 `json:"Oem,omitempty"`
 }
 
-// The ForceFailover action forces a failover of this manager to the manager
+// ForceFailover action forces a failover of this manager to the manager
 // used in the parameter
 type ForceFailover struct {
 	Target string `json:"Target,omitempty"`
 	Title  string `json:"Title,omitempty"`
 }
 
-// The ModifyRedundancySet operation shall add members to or remove members from
+// ModifyRedundancySet operation shall add members to or remove members from
 // a redundant group of managers
 type ModifyRedundancySet struct {
 	Target string `json:"Target,omitempty"`
@@ -260,14 +260,14 @@ type Reset struct {
 	Title  string `json:"Title,omitempty"`
 }
 
-// The reset action resets the manager settings to factory defaults.
+// ResetToDefaults resets the manager settings to factory defaults.
 // This can cause the manager to reset
 type ResetToDefaults struct {
 	Target string `json:"Target,omitempty"`
 	Title  string `json:"Title,omitempty"`
 }
 
-// The link to a collection of host interfaces that this manager uses for local host communication.
+// HostInterfaces link to a collection of host interfaces that this manager uses for local host communication.
 // Clients can find host interface configuration options and settings in this navigation property
 type HostInterfaces struct {
 	ODataContext         string   `json:"@odata.context,omitempty"`
@@ -282,7 +282,7 @@ type HostInterfaces struct {
 	Oem                  *Oem     `json:"Oem,omitempty"`
 }
 
-// This property shall contain an array of links to the members of this collection
+// Members property shall contain an array of links to the members of this collection
 type Members struct {
 	ODataContext            string                   `json:"@odata.context,omitempty"`
 	ODataEtag               string                   `json:"@odata.etag,omitempty"`
@@ -308,14 +308,14 @@ type Members struct {
 	Status                  []*Conditions            `json:"status,omitempty"`
 }
 
-// The credential bootstrapping settings for this interface
+// CredentialBootstrapping settings for this interface
 type CredentialBootstrapping struct {
 	EnableAfterReset bool   `json:"enableAfterReset,omitempty"`
 	Enabled          bool   `json:"enabled,omitempty"`
 	RoleID           string `json:"roleId,omitempty"`
 }
 
-// This property shall contain any status or health properties of the resource
+// ManagerStatus property shall contain any status or health properties of the resource
 type ManagerStatus struct {
 	Conditions   []*Conditions `json:"Conditions,omitempty"`
 	Name         string        `json:"Name,omitempty"`

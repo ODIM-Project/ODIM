@@ -514,6 +514,7 @@ func TestSavePluginTaskInfo(t *testing.T) {
 		pluginServerName string
 		odimTaskID       string
 		pluginTaskMonURL string
+		serverAddress    string
 	}
 	tests := []struct {
 		name string
@@ -527,12 +528,14 @@ func TestSavePluginTaskInfo(t *testing.T) {
 				pluginServerName: "iloplugin",
 				odimTaskID:       odimTaskID,
 				pluginTaskMonURL: "/taskmon/" + pluginTaskID,
+				serverAddress:    "10.10.10.10",
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			SavePluginTaskInfo(tt.args.ctx, tt.args.pluginIP, tt.args.odimTaskID, tt.args.pluginServerName, tt.args.pluginTaskMonURL)
+			SavePluginTaskInfoForResetRequest(tt.args.ctx, tt.args.pluginIP, tt.args.odimTaskID,
+				tt.args.pluginServerName, tt.args.pluginTaskMonURL, tt.args.serverAddress)
 		})
 	}
 }

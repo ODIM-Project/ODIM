@@ -428,6 +428,36 @@ func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.
 	return saveID, nil
 }
 
+// Upsert will insert new data in DB if the key does not exist.
+// else it will update the existing key
+/* Upsert take the following leys as input:
+1."uid" is a string which acts as a unique ID to fetch the data from the DB
+2."data" is user data which is of type interface sent by the user to update/patch the already existing data
+*/
+func (p *ConnPool) Upsert(table, key string, data interface{}) *errors.Error {
+
+	saveID := table + ":" + key
+
+	jsondata, err := json.Marshal(data)
+	if err != nil {
+		return errors.PackError(errors.UndefinedErrorType, err.Error())
+	}
+
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	if writePool == nil {
+		return errors.PackError(errors.UndefinedErrorType, "Update : Writepool is nil ")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+	_, createErr := writeConn.Do("SET", saveID, jsondata)
+	if createErr != nil {
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+		return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
+	}
+
+	return nil
+}
+
 // Read is for getting singular data
 // Read takes "key" sting as input which acts as a unique ID to fetch specific data from DB
 func (p *ConnPool) Read(table, key string) (string, *errors.Error) {

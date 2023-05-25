@@ -30,7 +30,7 @@ type Redundancy struct {
 	RedundancySetCount int         `json:"RedundancySet@odata.count,omitempty"`
 }
 
-// Identifier redfish structure
+//Identifier redfish structure
 type Identifier struct {
 	DurableName       string `json:"DurableName,omitempty"`
 	DurableNameFormat string `json:"DurableNameFormat,omitempty"`
@@ -122,6 +122,20 @@ type IOStatistics struct {
 	WriteIOKiBytes     int    `json:"WriteIOKiBytes,omitempty"`
 	WriteIORequests    int    `json:"WriteIORequests,omitempty"`
 	WriteIORequestTime string `json:"WriteIORequestTime,omitempty"`
+}
+
+// Conditions - This type shall contain the description and details of a
+// condition that exists within this resource or a related resource that
+// requires attention.
+type Conditions struct {
+	LogEntry          *Link    `json:"LogEntry,omitempty"`
+	Message           string   `json:"Message,omitempty"`
+	MessageArgs       []string `json:"MessageArgs,omitempty"`
+	MessageID         string   `json:"MessageId"`
+	OriginOfCondition *Link    `json:"OriginOfCondition,omitempty"`
+	Resolution        string   `json:"Resolution,omitempty"`
+	Severity          Health   `json:"Severity,omitempty"`
+	Timestamp         string   `json:"Timestamp,omitempty"`
 }
 
 // Certificates redfish structure

@@ -728,6 +728,9 @@ var XForwardedFor = "X-Forwarded-For"
 // PluginTaskIndex is name for SET in redis to store plugin task IDs
 var PluginTaskIndex = "PluginTaskIndex"
 
+// ResetTaskIDPrefix is the prefix for the task id for a reset request
+const ResetTaskIDPrefix = "reset-"
+
 // Target is for sending the request to south bound/plugin
 type Target struct {
 	ManagerAddress string `json:"ManagerAddress"`

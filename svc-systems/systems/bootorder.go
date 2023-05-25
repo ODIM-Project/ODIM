@@ -211,7 +211,10 @@ func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsprot
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
-		scommon.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		err = p.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		if err != nil {
+			l.LogWithFields(ctx).Error(err)
+		}
 		return
 	}
 
@@ -361,7 +364,10 @@ func (p *PluginContact) ChangeBootOrderSettings(ctx context.Context, req *system
 	}
 
 	if getResponse.StatusCode == http.StatusAccepted {
-		scommon.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		err = p.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		if err != nil {
+			l.LogWithFields(ctx).Error(err)
+		}
 		return
 	}
 

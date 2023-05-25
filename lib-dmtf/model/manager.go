@@ -254,12 +254,6 @@ type ModifyRedundancySet struct {
 	Title  string `json:"Title,omitempty"`
 }
 
-// Reset action resets/reboots the manager
-type Reset struct {
-	Target string `json:"Target,omitempty"`
-	Title  string `json:"Title,omitempty"`
-}
-
 // ResetToDefaults resets the manager settings to factory defaults.
 // This can cause the manager to reset
 type ResetToDefaults struct {

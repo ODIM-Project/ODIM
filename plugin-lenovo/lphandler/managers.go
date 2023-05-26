@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package lphandler ...
+// Package lphandler ...
 package lphandler
 
 import (
@@ -30,7 +30,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//GetManagersCollection  Fetches details of the given resource from the device
+// GetManagersCollection  Fetches details of the given resource from the device
 func GetManagersCollection(ctx iris.Context) {
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
@@ -74,7 +74,7 @@ func GetManagersCollection(ctx iris.Context) {
 
 }
 
-//GetManagersInfo Fetches details of the given resource from the device
+// GetManagersInfo Fetches details of the given resource from the device
 func GetManagersInfo(ctx iris.Context) {
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
@@ -104,7 +104,7 @@ func GetManagersInfo(ctx iris.Context) {
 			ID:              pluginConfig.Data.RootServiceUUID,
 			UUID:            pluginConfig.Data.RootServiceUUID,
 			FirmwareVersion: pluginConfig.Data.FirmwareVersion,
-			Status: &dmtf.Status{
+			Status: &dmtf.ManagerStatus{
 				State: "Enabled",
 			},
 		}
@@ -175,7 +175,7 @@ func getInfoFromDevice(uri string, deviceDetails lpmodel.Device, ctx iris.Contex
 	ctx.Write([]byte(respData))
 }
 
-//VirtualMediaActions performs insert and eject virtual media operations on the device based on the request
+// VirtualMediaActions performs insert and eject virtual media operations on the device based on the request
 func VirtualMediaActions(ctx iris.Context) {
 	uri := ctx.Request().RequestURI
 	//replacing the request url with south bound translation URL

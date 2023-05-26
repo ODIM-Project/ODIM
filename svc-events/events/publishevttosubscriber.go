@@ -41,6 +41,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -79,6 +80,7 @@ func (e *ExternalInterfaces) addFabric(ctx context.Context, message common.Messa
 //	bool: return false if any error occurred during execution, else returns true
 func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, data interface{}) bool {
 	eventUniqueID := uuid.NewV4().String()
+	logging = logging.WithFields(logrus.Fields{"transaction_id": eventUniqueID})
 	if data == nil {
 		logging.Info("invalid input params")
 		return false

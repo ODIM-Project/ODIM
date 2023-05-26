@@ -44,6 +44,7 @@ const (
 // It deletes old data and  Discovers Computersystem & Chassis and its top level odata.ID links and store them in inmemory db.
 func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, deviceUUID, systemURL string, updateFlag bool) {
 	l.LogWithFields(ctx).Info("Rediscovery of the BMC with ID " + deviceUUID + " is started.")
+
 	var resp response.RPC
 	systemURL = strings.TrimSuffix(systemURL, "/")
 	data := strings.Split(systemURL, "/")
@@ -159,7 +160,6 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 	if strings.Contains(systemURL, "/Storage") {
 		l.LogWithFields(ctx).Debugf("get storage info request data for %s: %s", req.OID, string(req.Data))
 		_, progress, _ = h.getStorageInfo(ctx, progress, systemsEstimatedWork, req)
-
 	} else {
 		l.LogWithFields(ctx).Debugf("get system info request data for %s: %s", req.OID, string(req.Data))
 		_, _, progress, _ = h.getSystemInfo(ctx, "", progress, systemsEstimatedWork, req)
@@ -173,7 +173,6 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 		managerEstimatedWork := int32(15)
 		progress = h.getAllRootInfo(ctx, "", progress, managerEstimatedWork, req, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
 		agmodel.SaveBMCInventory(h.InventoryData)
-
 	}
 
 	var responseBody = map[string]string{
@@ -182,7 +181,9 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 
 	resp.StatusCode = http.StatusCreated
 	resp.Body = responseBody
+
 	l.LogWithFields(ctx).Info("Rediscovery of the BMC with ID " + deviceUUID + " is now complete.")
+
 }
 
 // RediscoverResources is a function to rediscover the server inventory,

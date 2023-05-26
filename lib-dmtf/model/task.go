@@ -216,17 +216,3 @@ type TaskServiceStatus struct {
 	Oem          Oem           `json:"Oem,omitempty"`
 	State        State         `json:"State,omitempty"`
 }
-
-// Conditions - This type shall contain the description and details of a
-// condition that exists within this resource or a related resource that
-// requires attention.
-type Conditions struct {
-	LogEntry          *Link    `json:"LogEntry,omitempty"`
-	Message           string   `json:"Message,omitempty"`
-	MessageArgs       []string `json:"MessageArgs,omitempty"`
-	MessageID         string   `json:"MessageId"`
-	OriginOfCondition *Link    `json:"OriginOfCondition,omitempty"`
-	Resolution        string   `json:"Resolution,omitempty"`
-	Severity          Health   `json:"Severity,omitempty"`
-	Timestamp         string   `json:"Timestamp,omitempty"`
-}

@@ -134,7 +134,9 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 			}
 		}
 		if strings.EqualFold("Alert", inEvent.EventType) {
+			fmt.Println("inEvent.MessageID : ", inEvent.MessageID)
 			if strings.Contains(inEvent.MessageID, "ServerPostDiscoveryComplete") || strings.Contains(inEvent.MessageID, "ServerPostComplete") {
+				fmt.Println("In side if loop  : ", inEvent.MessageID)
 				go rediscoverSystemInventory(ctx, deviceUUID, inEvent.OriginOfCondition.Oid)
 				flag = true
 			}

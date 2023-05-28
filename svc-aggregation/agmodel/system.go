@@ -625,25 +625,6 @@ func GetResourceDetails(ctx context.Context, key string) (string, *errors.Error)
 	return resource, nil
 }
 
-// GetResourceDetailsBytableName fetches a resource from database using key and table name
-
-func GetResourceDetailsBytableName(ctx context.Context, table, key string) (string, *errors.Error) {
-	conn, err := common.GetDBConnection(common.InMemory)
-	if err != nil {
-		return "", errors.PackError(err.ErrNo(), err)
-	}
-	resourceData, err := conn.Read(table, key)
-	if err != nil {
-		return "", errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
-	}
-	var resource string
-	if errs := json.Unmarshal([]byte(resourceData), &resource); errs != nil {
-		return "", errors.PackError(errors.UndefinedErrorType, errs)
-	}
-	l.LogWithFields(ctx).Debugf("resource details: %s", resource)
-	return resource, nil
-}
-
 // GetString is used to retrive index values of type string
 /* Inputs:
 1. index is the index name to search with

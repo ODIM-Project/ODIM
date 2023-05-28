@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -40,10 +41,13 @@ const (
 	RediscoverResourcesActionName = "RediscoverResources"
 )
 
+var mutex sync.Mutex
+
 // RediscoverSystemInventory  is the handler for redicovering system whenever the restrat event detected in event service
 // It deletes old data and  Discovers Computersystem & Chassis and its top level odata.ID links and store them in inmemory db.
 func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, deviceUUID, systemURL string, updateFlag bool) {
 	l.LogWithFields(ctx).Info("Rediscovery of the BMC with ID " + deviceUUID + " is started.")
+
 	var resp response.RPC
 	systemURL = strings.TrimSuffix(systemURL, "/")
 	data := strings.Split(systemURL, "/")
@@ -159,7 +163,6 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 	if strings.Contains(systemURL, "/Storage") {
 		l.LogWithFields(ctx).Debugf("get storage info request data for %s: %s", req.OID, string(req.Data))
 		_, progress, _ = h.getStorageInfo(ctx, progress, systemsEstimatedWork, req)
-
 	} else {
 		l.LogWithFields(ctx).Debugf("get system info request data for %s: %s", req.OID, string(req.Data))
 		_, _, progress, _ = h.getSystemInfo(ctx, "", progress, systemsEstimatedWork, req)
@@ -168,12 +171,12 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 		req.OID = "/redfish/v1/Chassis"
 		chassisEstimatedWork := int32(15)
 		progress = h.getAllRootInfo(ctx, "", progress, chassisEstimatedWork, req, config.Data.AddComputeSkipResources.SkipResourceListUnderChassis)
+
 		//rediscovering the Manager Information
 		req.OID = "/redfish/v1/Managers"
 		managerEstimatedWork := int32(15)
 		progress = h.getAllRootInfo(ctx, "", progress, managerEstimatedWork, req, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
 		agmodel.SaveBMCInventory(h.InventoryData)
-
 	}
 
 	var responseBody = map[string]string{
@@ -182,6 +185,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 
 	resp.StatusCode = http.StatusCreated
 	resp.Body = responseBody
+
 	l.LogWithFields(ctx).Info("Rediscovery of the BMC with ID " + deviceUUID + " is now complete.")
 }
 
@@ -319,6 +323,7 @@ func (e *ExternalInterface) isServerRediscoveryRequired(ctx context.Context, dev
 		return true
 
 	}
+
 	key = strings.Replace(systemKey, "Systems", "Chassis", -1)
 	keys, err := agmodel.GetAllMatchingDetails("Chassis", key, common.InMemory)
 	if err != nil || len(keys) == 0 {
@@ -376,6 +381,8 @@ func deleteSubordinateResource(ctx context.Context, deviceUUID string) {
 	var deleteKeys []string
 	l.LogWithFields(ctx).Info("Initiated removal of subordinate resource for the BMC with ID " +
 		deviceUUID + " from the in-memory DB")
+	mutex.Lock()
+	defer mutex.Unlock()
 	keys, err := agmodel.GetAllMatchingDetails("*", deviceUUID, common.InMemory)
 	if err != nil {
 		l.LogWithFields(ctx).Error("Unable to fetch all matching keys from system reset table: " + err.Error())

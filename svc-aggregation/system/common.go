@@ -646,6 +646,7 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 
 	var computeSystem map[string]interface{}
 	err = json.Unmarshal(body, &computeSystem)
+
 	if err != nil {
 		h.lock.Lock()
 		h.ErrorMessage = "error while trying unmarshal response body: " + err.Error()
@@ -653,12 +654,13 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
 		return computeSystemID, oidKey, progress, err
-	}
 
+	}
 	oid := computeSystem["@odata.id"].(string)
 	computeSystemID = computeSystem["Id"].(string)
 	computeSystemUUID := computeSystem["UUID"].(string)
 	oidKey = keyFormation(oid, computeSystemID, req.DeviceUUID)
+
 	if !req.UpdateFlag {
 		indexList, err := agmodel.GetString("UUID", computeSystemUUID)
 		if err != nil {
@@ -686,11 +688,12 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
 	var retrievalLinks = make(map[string]bool)
-
 	getLinks(computeSystem, retrievalLinks, false)
 	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SkipResourceListUnderSystem, h.TraversedLinks)
+
 	req.SystemID = computeSystemID
 	req.ParentOID = oid
+
 	for resourceOID, oemFlag := range retrievalLinks {
 		estimatedWork := alottedWork / int32(len(retrievalLinks))
 		resourceOID = strings.TrimSuffix(resourceOID, "/")
@@ -700,6 +703,7 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 	}
 	json.Unmarshal([]byte(updatedResourceData), &computeSystem)
 	err = agmodel.SaveBMCInventory(h.InventoryData)
+
 	if err != nil {
 		h.lock.Lock()
 		h.ErrorMessage = "error while trying to save data: " + err.Error()
@@ -708,14 +712,16 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 		h.lock.Unlock()
 		return computeSystemID, oidKey, progress, err
 	}
-
 	searchForm := createServerSearchIndex(ctx, computeSystem, oidKey, req.DeviceUUID)
+
 	//save the   search form here
+
 	if req.UpdateFlag {
 		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID, req.BMCAddress)
 	} else {
 		err = agmodel.SaveIndex(searchForm, oidKey, computeSystemUUID, req.BMCAddress)
 	}
+
 	if err != nil {
 		h.ErrorMessage = "error while trying save index values: " + err.Error()
 		h.StatusMessage = response.InternalError
@@ -816,7 +822,6 @@ func (h *respHolder) getStorageInfo(ctx context.Context, progress int32, alotted
 
 func createServerSearchIndex(ctx context.Context, computeSystem map[string]interface{}, oidKey, deviceUUID string) map[string]interface{} {
 	var searchForm = make(map[string]interface{})
-
 	if val, ok := computeSystem["MemorySummary"]; ok {
 		memSum := val.(map[string]interface{})
 		searchForm["MemorySummary/TotalSystemMemoryGiB"] = memSum["TotalSystemMemoryGiB"].(float64)
@@ -836,7 +841,6 @@ func createServerSearchIndex(ctx context.Context, computeSystem map[string]inter
 	if _, ok := computeSystem["PowerState"]; ok {
 		searchForm["PowerState"] = computeSystem["PowerState"].(string)
 	}
-
 	// saving the firmware version
 	if !strings.Contains(oidKey, "/Storage") {
 		firmwareVersion, _ := getFirmwareVersion(ctx, oidKey, deviceUUID)
@@ -852,7 +856,7 @@ func createServerSearchIndex(ctx context.Context, computeSystem map[string]inter
 			storage := val.(map[string]interface{})
 			storageCollectionOdataID = storage["@odata.id"].(string)
 		}
-		storageCollection := agcommon.GetStorageResources(ctx, strings.TrimSuffix(storageCollectionOdataID, "/"))
+		storageCollection := agcommon.GetStorageResourcesBytableName(ctx, "StorageCollection", strings.TrimSuffix(storageCollectionOdataID, "/"))
 		storageMembers := storageCollection["Members"]
 		if storageMembers != nil {
 			var capacity []float64
@@ -861,13 +865,13 @@ func createServerSearchIndex(ctx context.Context, computeSystem map[string]inter
 			// Loop through all the storage members collection and discover all of them
 			for _, object := range storageMembers.([]interface{}) {
 				storageODataID := object.(map[string]interface{})["@odata.id"].(string)
-				storageRes := agcommon.GetStorageResources(ctx, strings.TrimSuffix(storageODataID, "/"))
+				storageRes := agcommon.GetStorageResourcesBytableName(ctx, "Storage", strings.TrimSuffix(storageODataID, "/"))
 				drives := storageRes["Drives"]
 				if drives != nil {
 					quantity += len(drives.([]interface{}))
 					for _, drive := range drives.([]interface{}) {
 						driveODataID := drive.(map[string]interface{})["@odata.id"].(string)
-						driveRes := agcommon.GetStorageResources(ctx, strings.TrimSuffix(driveODataID, "/"))
+						driveRes := agcommon.GetStorageResourcesBytableName(ctx, "Drives", strings.TrimSuffix(driveODataID, "/"))
 						capInBytes := driveRes["CapacityBytes"]
 						// convert bytes to gb in decimal format
 						if capInBytes != nil {

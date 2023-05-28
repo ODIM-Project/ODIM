@@ -141,7 +141,10 @@ func (e *ExternalInterface) UpdateSecureBoot(ctx context.Context, req *systemspr
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
-		scommon.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		err = pc.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		if err != nil {
+			l.LogWithFields(ctx).Error(err)
+		}
 		return
 	}
 
@@ -269,7 +272,10 @@ func (e *ExternalInterface) ResetSecureBoot(ctx context.Context, req *systemspro
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
-		scommon.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		err = pc.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		if err != nil {
+			l.LogWithFields(ctx).Error(err)
+		}
 		return
 	}
 

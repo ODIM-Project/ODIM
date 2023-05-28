@@ -26,6 +26,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 )
@@ -208,8 +209,9 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 		return &resp, nil
 	}
 	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
+		ContactClient:      pmbhandle.ContactPlugin,
+		DevicePassword:     common.DecryptWithPrivateKey,
+		SavePluginTaskInfo: services.SavePluginTaskInfo,
 	}
 	data := pc.SetDefaultBootOrder(ctx, req.SystemID)
 	fillSystemProtoResponse(ctx, &resp, data)
@@ -238,9 +240,10 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 		return &resp, nil
 	}
 	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
-		UpdateTask:     s.UpdateTask,
+		ContactClient:      pmbhandle.ContactPlugin,
+		DevicePassword:     common.DecryptWithPrivateKey,
+		UpdateTask:         s.UpdateTask,
+		SavePluginTaskInfo: services.SavePluginTaskInfo,
 	}
 	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
@@ -323,9 +326,10 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 	fillSystemProtoResponse(ctx, &resp, rpcResp)
 
 	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
-		UpdateTask:     s.UpdateTask,
+		ContactClient:      pmbhandle.ContactPlugin,
+		DevicePassword:     common.DecryptWithPrivateKey,
+		UpdateTask:         s.UpdateTask,
+		SavePluginTaskInfo: services.SavePluginTaskInfo,
 	}
 
 	var threadID int = 1
@@ -385,9 +389,10 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	fillSystemProtoResponse(ctx, &resp, rpcResp)
 	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
-		UpdateTask:     s.UpdateTask,
+		ContactClient:      pmbhandle.ContactPlugin,
+		DevicePassword:     common.DecryptWithPrivateKey,
+		UpdateTask:         s.UpdateTask,
+		SavePluginTaskInfo: services.SavePluginTaskInfo,
 	}
 
 	var threadID int = 1
@@ -446,9 +451,10 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	fillSystemProtoResponse(ctx, &resp, rpcResp)
 	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
-		UpdateTask:     s.UpdateTask,
+		ContactClient:      pmbhandle.ContactPlugin,
+		DevicePassword:     common.DecryptWithPrivateKey,
+		UpdateTask:         s.UpdateTask,
+		SavePluginTaskInfo: services.SavePluginTaskInfo,
 	}
 
 	var threadID int = 1
@@ -507,9 +513,10 @@ func (s *Systems) UpdateSecureBoot(ctx context.Context, req *systemsproto.Secure
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	fillSystemProtoResponse(ctx, &resp, rpcResp)
 	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
-		UpdateTask:     s.UpdateTask,
+		ContactClient:      pmbhandle.ContactPlugin,
+		DevicePassword:     common.DecryptWithPrivateKey,
+		UpdateTask:         s.UpdateTask,
+		SavePluginTaskInfo: services.SavePluginTaskInfo,
 	}
 
 	var threadID int = 1

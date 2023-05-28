@@ -673,7 +673,7 @@ func TestCreatePluginTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := CreatePluginTask(tt.args.ctx, tt.args.key, tt.args.value)
+			err := PersistPluginTaskInfoForResetRequest(tt.args.ctx, tt.args.key, tt.args.value)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreatePluginTask()  error = %v, wantErr %v", err, tt.wantErr)
 				return

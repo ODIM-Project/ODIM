@@ -342,6 +342,11 @@ func RemovePluginTaskID(ctx context.Context, pluginTaskID string) error {
 	if err != nil {
 		return fmt.Errorf("error while trying to remove the plugin task from set - %v", err.Error())
 	}
+	err = connPool.Delete("PluginTask", pluginTaskID)
+	if err != nil {
+		return fmt.Errorf("error while trying to remove the plugin task data from DB - %v", err.Error())
+	}
+
 	return nil
 }
 

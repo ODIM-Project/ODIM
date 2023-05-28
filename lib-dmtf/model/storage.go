@@ -80,6 +80,11 @@ type StorageControllers struct {
 
 // Actions redfish structure
 type Actions struct {
+	AddResourceBlock    AddResourceBlock    `json:"AddResourceBlock,omitempty"`
+	RemoveResourceBlock RemoveResourceBlock `json:"RemoveResourceBlock,omitempty"`
+	Reset               Reset               `json:"Reset,omitempty"`
+	SetDefaultBootOrder SetDefaultBootOrder `json:"SetDefaultBootOrder,omitempty"`
+	Oem                 Oem                 `json:"Oem,omitempty"`
 }
 
 // StorageLinks struct is for storage Links schema

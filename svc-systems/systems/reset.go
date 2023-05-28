@@ -31,10 +31,11 @@ import (
 
 // PluginContact struct to inject the pmb client function into the handlers
 type PluginContact struct {
-	ContactClient   func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	DevicePassword  func([]byte) ([]byte, error)
-	GetPluginStatus func(context.Context, smodel.Plugin) bool
-	UpdateTask      func(context.Context, common.TaskData) error
+	ContactClient      func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	DevicePassword     func([]byte) ([]byte, error)
+	GetPluginStatus    func(context.Context, smodel.Plugin) bool
+	SavePluginTaskInfo func(ctx context.Context, pluginIP, pluginServerName, odimTaskID, pluginTaskMonURL string) error
+	UpdateTask         func(context.Context, common.TaskData) error
 }
 
 var (
@@ -169,7 +170,9 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context,
 	}
 
 	if getResponse.StatusCode == http.StatusAccepted {
-		scommon.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		pluginTaskKey := common.ResetTaskIDPrefix + target.ManagerAddress
+		scommon.SavePluginTaskInfoForResetRequest(ctx, pluginIP, plugin.IP,
+			taskID, location, pluginTaskKey)
 		return
 	}
 

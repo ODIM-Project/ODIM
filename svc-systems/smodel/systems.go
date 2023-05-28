@@ -413,8 +413,8 @@ func DeleteVolume(ctx context.Context, key string) *errors.Error {
 	return nil
 }
 
-// CreatePluginTask will insert plugin task info in DB
-func CreatePluginTask(ctx context.Context, key string,
+// PersistPluginTaskInfoForResetRequest will insert plugin task info in DB
+func PersistPluginTaskInfoForResetRequest(ctx context.Context, key string,
 	value interface{}) *errors.Error {
 
 	table := "PluginTask"
@@ -424,7 +424,7 @@ func CreatePluginTask(ctx context.Context, key string,
 			" to DB: ", err.Error())
 	}
 
-	if err = connPool.Create(table, key, value); err != nil {
+	if err = connPool.Upsert(table, key, value); err != nil {
 		return errors.PackError(err.ErrNo(), "error while trying to insert"+
 			" plugin task: ", err.Error())
 	}

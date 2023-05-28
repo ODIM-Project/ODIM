@@ -646,6 +646,7 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 
 	var computeSystem map[string]interface{}
 	err = json.Unmarshal(body, &computeSystem)
+
 	if err != nil {
 		h.lock.Lock()
 		h.ErrorMessage = "error while trying unmarshal response body: " + err.Error()
@@ -653,11 +654,13 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
 		return computeSystemID, oidKey, progress, err
+
 	}
 	oid := computeSystem["@odata.id"].(string)
 	computeSystemID = computeSystem["Id"].(string)
 	computeSystemUUID := computeSystem["UUID"].(string)
 	oidKey = keyFormation(oid, computeSystemID, req.DeviceUUID)
+
 	if !req.UpdateFlag {
 		indexList, err := agmodel.GetString("UUID", computeSystemUUID)
 		if err != nil {
@@ -687,8 +690,10 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 	var retrievalLinks = make(map[string]bool)
 	getLinks(computeSystem, retrievalLinks, false)
 	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SkipResourceListUnderSystem, h.TraversedLinks)
+
 	req.SystemID = computeSystemID
 	req.ParentOID = oid
+
 	for resourceOID, oemFlag := range retrievalLinks {
 		estimatedWork := alottedWork / int32(len(retrievalLinks))
 		resourceOID = strings.TrimSuffix(resourceOID, "/")
@@ -698,6 +703,7 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 	}
 	json.Unmarshal([]byte(updatedResourceData), &computeSystem)
 	err = agmodel.SaveBMCInventory(h.InventoryData)
+
 	if err != nil {
 		h.lock.Lock()
 		h.ErrorMessage = "error while trying to save data: " + err.Error()
@@ -707,7 +713,9 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 		return computeSystemID, oidKey, progress, err
 	}
 	searchForm := createServerSearchIndex(ctx, computeSystem, oidKey, req.DeviceUUID)
+
 	//save the   search form here
+
 	if req.UpdateFlag {
 		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID, req.BMCAddress)
 	} else {

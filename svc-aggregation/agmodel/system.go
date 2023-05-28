@@ -626,6 +626,7 @@ func GetResourceDetails(ctx context.Context, key string) (string, *errors.Error)
 }
 
 // GetResourceDetailsBytableName fetches a resource from database using key and table name
+
 func GetResourceDetailsBytableName(ctx context.Context, table, key string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {

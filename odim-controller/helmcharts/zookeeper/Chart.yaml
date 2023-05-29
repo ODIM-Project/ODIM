@@ -1,5 +1,5 @@
 apiVersion: v2
-name: zookeeper-3.7.0
+name: zookeeper-3.8.1
 description: A Helm chart for zookeeper
 
 # A chart can be either an 'application' or a 'library' chart.

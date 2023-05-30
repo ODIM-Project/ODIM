@@ -15,7 +15,7 @@
 # This is Dockerfile to build zookeeper image
 FROM ubuntu:20.04 as zookeeper-build
 
-LABEL version="2.0"
+LABEL version="3.0"
 LABEL ubuntuVersion="20.04"
 LABEL kafkaVersion="3.4.0"
 LABEL zookeeperVersion="3.8.1"

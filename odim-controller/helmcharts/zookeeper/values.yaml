@@ -1,4 +1,4 @@
 odimra:
   namespace:
   groupID:
-  zookeeperImageTag: "2.0"
+  zookeeperImageTag: "3.0"

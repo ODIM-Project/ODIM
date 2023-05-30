@@ -120,9 +120,9 @@ func bytesToPrivateKey(privateKey []byte) *rsa.PrivateKey {
 			logging.Error(err)
 		}
 	}
-	key, err := x509.ParsePKCS1PrivateKey(b)
+	key, err := x509.ParsePKCS8PrivateKey(b)
 	if err != nil {
 		logging.Fatal(err)
 	}
-	return key
+	return key.(*rsa.PrivateKey)
 }

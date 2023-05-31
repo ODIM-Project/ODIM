@@ -70,7 +70,7 @@ func GetPlainText(ctx context.Context, password []byte) ([]byte, error) {
 			return []byte{}, err
 		}
 	}
-	key, err := x509.ParsePKCS1PrivateKey(b)
+	key, err := x509.ParsePKCS8PrivateKey(b)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err.Error())
 		return []byte{}, err
@@ -81,7 +81,7 @@ func GetPlainText(ctx context.Context, password []byte) ([]byte, error) {
 	return rsa.DecryptOAEP(
 		hash,
 		rand.Reader,
-		key,
+		key.(*rsa.PrivateKey),
 		password,
 		nil,
 	)

@@ -161,10 +161,10 @@ func bytesToPrivateKey(privateKey []byte) (*rsa.PrivateKey, error) {
 			MQ.RedisStreams.RSAPrivateKeyPath)
 	}
 
-	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse DER encoded public key for the RSAPrivateKeyPath:%s with %v",
 			MQ.RedisStreams.RSAPrivateKeyPath, err)
 	}
-	return key, nil
+	return key.(*rsa.PrivateKey), nil
 }

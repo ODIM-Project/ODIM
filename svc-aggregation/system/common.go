@@ -499,7 +499,7 @@ func (h *respHolder) getRegistriesInfo(ctx context.Context, taskID string, progr
 		return progress
 	}
 	uri := ""
-	/* '#' charactor in the begining of the registryfile name is giving some issue
+	/* '#' character in the beginning of the registry file name is giving some issue
 	* during api routing. So getting Id instead of Registry name if it has '#' char as a
 	* prefix.
 	 */
@@ -551,7 +551,7 @@ func (h *respHolder) getRegistriesInfo(ctx context.Context, taskID string, progr
 	}
 	req.OID = uri
 	h.getRegistryFile(ctx, registryName, req)
-	// File already exist retrun progress here
+	// File already exist return progress here
 	return progress + allotedWork
 
 }
@@ -622,7 +622,7 @@ func (h *respHolder) getAllRootInfo(ctx context.Context, taskID string, progress
 			oDataID := object.(map[string]interface{})["@odata.id"].(string)
 			oDataID = strings.TrimSuffix(oDataID, "/")
 			req.OID = oDataID
-			progress = h.getIndivdualInfo(ctx, taskID, progress, estimatedWork, req, resourceList)
+			progress = h.getIndividualInfo(ctx, taskID, progress, estimatedWork, req, resourceList)
 		}
 	}
 	return progress
@@ -888,7 +888,7 @@ func createServerSearchIndex(ctx context.Context, computeSystem map[string]inter
 	}
 	return searchForm
 }
-func (h *respHolder) getIndivdualInfo(ctx context.Context, taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
+func (h *respHolder) getIndividualInfo(ctx context.Context, taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
 	resourceName := getResourceName(req.OID, false)
 	body, _, getResponse, err := contactPlugin(ctx, req, "error while trying to get "+resourceName+" details: ")
 	if err != nil {
@@ -974,7 +974,7 @@ func (h *respHolder) getResourceDetails(ctx context.Context, taskID string, prog
 		CollectionCapabilities := dmtf.CollectionCapabilities{
 			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
 			Capabilities: []*dmtf.Capabilities{
-				&dmtf.Capabilities{
+				{
 					CapabilitiesObject: &dmtf.Link{
 						Oid: req.OID + "/Capabilities",
 					},
@@ -1058,18 +1058,18 @@ func getLinks(data map[string]interface{}, retrievalLinks map[string]bool, oemFl
 	}
 }
 
-func checkRetrieval(oid, parentoid string, traversedLinks map[string]bool) bool {
+func checkRetrieval(oid, parentId string, traversedLinks map[string]bool) bool {
 	if _, ok := traversedLinks[oid]; ok {
 		return false
 	}
-	//skiping the Retrieval if oid mathches the parent oid
-	if strings.EqualFold(parentoid, oid) || strings.EqualFold(parentoid+"/", oid) {
+	//skipping the Retrieval if oid matches the parent oid
+	if strings.EqualFold(parentId, oid) || strings.EqualFold(parentId+"/", oid) {
 		return false
 	}
-	//skiping the Retrieval if parent oid contains links in other resource of config
-	// TODO : beyond second level Retrieval need to be taken from config it will be implemented in RUCE-1239
+	//skipping the Retrieval if parent oid contains links in other resource of config
+	// TODO : beyond second level Retrieval need to be taken from config it will be implemented in BRUCE-1239
 	for _, resourceName := range config.Data.AddComputeSkipResources.SkipResourceListUnderOthers {
-		if strings.Contains(parentoid, resourceName) {
+		if strings.Contains(parentId, resourceName) {
 			return false
 		}
 	}
@@ -1128,17 +1128,17 @@ func getFirmwareVersion(ctx context.Context, oid, deviceUUID string) (string, er
 	if dberr != nil {
 		return "", fmt.Errorf("while getting the managers data %v", dberr.Error())
 	} else if len(keys) == 0 {
-		return "", fmt.Errorf("Manager data is not available")
+		return "", fmt.Errorf("manager data is not available")
 	}
 	data, dberr := agmodel.GetResource(ctx, "Managers", keys[0])
 	if dberr != nil {
 		return "", fmt.Errorf("while getting the managers data: %v", dberr.Error())
 	}
-	// unmarshall the managers data
+	// unmarshal the managers data
 	var managersData map[string]interface{}
 	err := json.Unmarshal([]byte(data), &managersData)
 	if err != nil {
-		return "", fmt.Errorf("Error while unmarshaling  the data %v", err.Error())
+		return "", fmt.Errorf("error while unmarshal the data %v", err.Error())
 	}
 	var firmwareVersion string
 	var ok bool
@@ -1305,7 +1305,7 @@ func checkStatus(ctx context.Context, pluginContactRequest getResourceRequest, r
 		}
 	}
 
-	// Verfiying the plugin Status
+	// Verifying the plugin Status
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 	pluginContactRequest.OID = "/ODIM/v1/Status"
 	body, _, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
@@ -1343,7 +1343,7 @@ func checkStatus(ctx context.Context, pluginContactRequest getResourceRequest, r
 }
 
 func getConnectionMethodVariants(ctx context.Context, connectionMethodVariant string) connectionMethodVariants {
-	// Split the connectionmethodvariant and get the PluginType, PreferredAuthType, PluginID and FirmwareVersion.
+	// Split the connection method variant and get the PluginType, PreferredAuthType, PluginID and FirmwareVersion.
 	// Example: Compute:BasicAuth:GRF_v1.0.0
 	cm := strings.Split(connectionMethodVariant, ":")
 	firmwareVersion := strings.Split(cm[2], "_")
@@ -1541,7 +1541,7 @@ func (e *ExternalInterface) createWildCard(resourceData, resourceName, oid strin
 func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string, error) {
 	var systemID, chassisID string
 	var wildCards []WildCard
-	var dbMetricProperities []interface{}
+	var dbMetricProperties []interface{}
 
 	if len(dbData) < 1 {
 		wildCards = getEmptyWildCard()
@@ -1555,29 +1555,31 @@ func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string
 			return "", fmt.Errorf("wild card map is empty")
 		}
 		wildCards = getWildCard(dbDataMap["Wildcards"].([]interface{}))
-		dbMetricProperities = dbDataMap["MetricProperties"].([]interface{})
+		dbMetricProperties = dbDataMap["MetricProperties"].([]interface{})
 	}
-	metricProperties := resourceDataMap["MetricProperties"].([]interface{})
-	for _, mProperty := range metricProperties {
-		property := mProperty.(string)
-		for i, wCard := range wildCards {
-			if wCard.Name == SystemUUID && strings.Contains(property, "/Systems/") {
-				property, systemID = getUpdatedProperty(property, SystemUUID)
-				if !checkWildCardPresent(systemID, wildCards[i].Values) {
-					wildCards[i].Values = append(wildCards[i].Values, systemID)
+	metricProperties, isExists := resourceDataMap["MetricProperties"].([]interface{})
+	if isExists {
+		for _, mProperty := range metricProperties {
+			property := mProperty.(string)
+			for i, wCard := range wildCards {
+				if wCard.Name == SystemUUID && strings.Contains(property, "/Systems/") {
+					property, systemID = getUpdatedProperty(property, SystemUUID)
+					if !checkWildCardPresent(systemID, wildCards[i].Values) {
+						wildCards[i].Values = append(wildCards[i].Values, systemID)
+					}
+					break
 				}
-				break
-			}
-			if wCard.Name == ChassisUUID && strings.Contains(property, "/Chassis/") {
-				property, chassisID = getUpdatedProperty(property, ChassisUUID)
-				if !checkWildCardPresent(chassisID, wCard.Values) {
-					wildCards[i].Values = append(wildCards[i].Values, chassisID)
+				if wCard.Name == ChassisUUID && strings.Contains(property, "/Chassis/") {
+					property, chassisID = getUpdatedProperty(property, ChassisUUID)
+					if !checkWildCardPresent(chassisID, wCard.Values) {
+						wildCards[i].Values = append(wildCards[i].Values, chassisID)
+					}
+					break
 				}
-				break
 			}
-		}
-		if !checkMetricPropertyPresent(property, dbMetricProperities) {
-			dbMetricProperities = append(dbMetricProperities, property)
+			if !checkMetricPropertyPresent(property, dbMetricProperties) {
+				dbMetricProperties = append(dbMetricProperties, property)
+			}
 		}
 	}
 	var wCards []WildCard
@@ -1588,7 +1590,7 @@ func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string
 	}
 	if len(wCards) > 0 {
 		resourceDataMap["Wildcards"] = wCards
-		resourceDataMap["MetricProperties"] = dbMetricProperities
+		resourceDataMap["MetricProperties"] = dbMetricProperties
 	}
 	resourceDataByte, err := json.Marshal(resourceDataMap)
 	if err != nil {

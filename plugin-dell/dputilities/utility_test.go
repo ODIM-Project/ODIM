@@ -93,6 +93,7 @@ func TestGetPlainText(t *testing.T) {
 		t.Fatalf("error encrypting password: %v", err)
 	}
 
+	// Marshal the rsa private key to PKCS8 format
 	marshalledPrivateKey, err := x509.MarshalPKCS8PrivateKey(key)
 	if err != nil {
 		t.Fatalf("error marshalling private key : %v", err)

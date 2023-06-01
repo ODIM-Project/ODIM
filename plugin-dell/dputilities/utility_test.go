@@ -36,6 +36,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha512"
 	"crypto/x509"
+	"encoding/asn1"
 	"encoding/pem"
 	"io/ioutil"
 	"os"
@@ -47,6 +48,12 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/stretchr/testify/assert"
 )
+
+type PKCS8Key struct {
+	Version             int
+	PrivateKeyAlgorithm []asn1.ObjectIdentifier
+	PrivateKey          []byte
+}
 
 func TestTrackConfigFileChanges(t *testing.T) {
 	config.SetUpMockConfig(t)
@@ -93,10 +100,15 @@ func TestGetPlainText(t *testing.T) {
 		t.Fatalf("error encrypting password: %v", err)
 	}
 
+	bytess, err := MarshalPKCS8PrivateKey(key)
+	if err != nil {
+		t.Fatalf("error marshalling private key : %v", err)
+	}
+
 	// Convert the private key to PEM format
 	priv := pem.EncodeToMemory(&pem.Block{
 		Type:  "RSA PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(key),
+		Bytes: bytess,
 	})
 	dpmodel.PluginPrivateKey = priv
 	// Decrypt the password using the GetPlainText function
@@ -110,6 +122,15 @@ func TestGetPlainText(t *testing.T) {
 	if !bytes.Equal(plaintext, password) {
 		t.Fatalf("plaintext does not match original password")
 	}
+}
+
+func MarshalPKCS8PrivateKey(key *rsa.PrivateKey) ([]byte, error) {
+	var pkey PKCS8Key
+	pkey.Version = 0
+	pkey.PrivateKeyAlgorithm = make([]asn1.ObjectIdentifier, 1)
+	pkey.PrivateKeyAlgorithm[0] = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
+	pkey.PrivateKey = x509.MarshalPKCS1PrivateKey(key)
+	return asn1.Marshal(pkey)
 }
 
 func mockContext() context.Context {

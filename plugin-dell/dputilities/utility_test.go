@@ -93,10 +93,15 @@ func TestGetPlainText(t *testing.T) {
 		t.Fatalf("error encrypting password: %v", err)
 	}
 
+	marshalledPrivateKey, err := x509.MarshalPKCS8PrivateKey(key)
+	if err != nil {
+		t.Fatalf("error marshalling private key : %v", err)
+	}
+
 	// Convert the private key to PEM format
 	priv := pem.EncodeToMemory(&pem.Block{
 		Type:  "RSA PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(key),
+		Bytes: marshalledPrivateKey,
 	})
 	dpmodel.PluginPrivateKey = priv
 	// Decrypt the password using the GetPlainText function

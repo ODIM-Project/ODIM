@@ -77,7 +77,6 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) ([]
 	if err != nil {
 		return []byte{}, err
 	}
-	fmt.Printf("***** Resource ******** %+v ", plugins)
 	var wg sync.WaitGroup
 	var lock sync.Mutex
 	var threadID int = 1

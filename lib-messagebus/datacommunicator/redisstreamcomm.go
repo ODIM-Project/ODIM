@@ -29,7 +29,8 @@ var dbConn *redis.Client
 
 const (
 	// DefaultTLSMinVersion is default minimum version for tls
-	DefaultTLSMinVersion = tls.VersionTLS12
+	DefaultTLSMinVersion        = tls.VersionTLS12
+	TimeoutErrMsg        string = " connection timed out"
 )
 
 // RedisStreamsPacket defines the RedisStreamsPacket Message Packet Object. Apart from Base Packet, it
@@ -110,7 +111,7 @@ func (rp *RedisStreamsPacket) Distribute(data interface{}) error {
 	}).Result()
 
 	if rerr != nil {
-		if strings.Contains(rerr.Error(), " connection timed out") {
+		if strings.Contains(rerr.Error(), TimeoutErrMsg) {
 			err := rp.getDBConnection()
 			if err != nil {
 				return err
@@ -134,20 +135,15 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 	var id = uuid.NewV4().String()
 	rerr := rp.client.XGroupCreateMkStream(context.Background(),
 		rp.pipe, EVENTREADERGROUPNAME, "$").Err()
-	if rerr != nil {
-		if strings.Contains(rerr.Error(), " connection timed out") {
-			err := rp.getDBConnection()
-			if err != nil {
-				return err
-			}
+	if rerr != nil && strings.Contains(rerr.Error(), TimeoutErrMsg) {
+		if err := rp.getDBConnection(); err != nil {
+			return err
 		}
-
 	}
 	// errChan to hold the errors faced in the  below go-rotines
 	errChan := make(chan error)
 	go rp.checkUnacknowledgedEvents(fn, id, errChan)
-	err = <-errChan
-	if err != nil {
+	if err = <-errChan; err != nil {
 		return err
 	}
 
@@ -162,7 +158,7 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 				}).Result()
 			if err != nil {
 				errChan <- fmt.Errorf("unable to get data from the group %s", err.Error())
-				if strings.Contains(err.Error(), " connection timed out") {
+				if strings.Contains(err.Error(), TimeoutErrMsg) {
 					err := rp.getDBConnection()
 					if err != nil {
 						errChan <- err
@@ -230,13 +226,10 @@ func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string
 			Count:    100,
 			Start:    "0-0",
 		}).Result()
-		if err != nil {
-			if strings.Contains(err.Error(), " connection timed out") {
-				err = rp.getDBConnection()
-				if err != nil {
-					errChan <- err
-					return
-				}
+		if err != nil && strings.Contains(err.Error(), TimeoutErrMsg) {
+			if err = rp.getDBConnection(); err != nil {
+				errChan <- err
+				return
 			}
 		}
 		for _, event := range events {

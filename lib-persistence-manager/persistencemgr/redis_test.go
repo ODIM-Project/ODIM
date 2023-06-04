@@ -31,6 +31,16 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
+const (
+	deleteDataErrMsg string = "Error while deleting Data: %v\n"
+	dataEntryFailed  string = "Error while making data entry: %v\n"
+	mockDBConnection string = "Error while making mock DB connection:"
+	pluginTask       string = "PluginTask:task1"
+	pluginTaskIndex  string = "PluginTaskIndex"
+	hostIPAddress    string = "10.24.0.1"
+	readDataErrMsg   string = "Error while reading data: %v\n"
+)
+
 type MockConn struct {
 	MockClose   func() error
 	MockErr     func() error
@@ -91,21 +101,21 @@ func TestCreate(t *testing.T) {
 
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
 	if cerr := c.Create("table", "key", "sample"); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 }
 
-func TestCreate_invalidData(t *testing.T) {
+func TestCreateInvalidData(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 
 	defer func() {
@@ -114,13 +124,13 @@ func TestCreate_invalidData(t *testing.T) {
 
 	if cerr := c.Create("table", "key", math.Inf(1)); cerr != nil {
 		if !(strings.Contains(cerr.Error(), "unsupported")) {
-			t.Errorf("Error while making data entry: %v\n", cerr.Error())
+			t.Errorf(dataEntryFailed, cerr.Error())
 		}
 	}
 
 }
 
-func TestCreate_existingData(t *testing.T) {
+func TestCreateExistingData(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
@@ -141,7 +151,7 @@ func TestCreate_existingData(t *testing.T) {
 	}
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
@@ -151,7 +161,7 @@ func TestRead(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.Create("table", "key", data); cerr != nil {
@@ -159,7 +169,7 @@ func TestRead(t *testing.T) {
 	}
 	got, rerr := c.Read("table", "key")
 	if rerr != nil {
-		t.Errorf("Error while reading data: %v\n", rerr.Error())
+		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	var res sample
 	if jerr := json.Unmarshal([]byte(string(got)), &res); jerr != nil {
@@ -171,23 +181,23 @@ func TestRead(t *testing.T) {
 	}
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
 }
 
-func TestRead_nonExistingData(t *testing.T) {
+func TestReadNonExistingData(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	_, rerr := c.Read("othertable", "key")
 
 	if rerr != nil {
 		if !(strings.Contains(rerr.Error(), "no data with")) {
-			t.Errorf("Error while making data entry: %v\n", rerr.Error())
+			t.Errorf(dataEntryFailed, rerr.Error())
 		}
 	}
 
@@ -197,7 +207,7 @@ func TestUpdate(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.Create("table", "key", data); cerr != nil {
@@ -224,16 +234,16 @@ func TestUpdate(t *testing.T) {
 
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
 }
 
-func TestUpdate_invalidData(t *testing.T) {
+func TestUpdateInvalidData(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.Create("table", "key", data); cerr != nil {
@@ -242,12 +252,12 @@ func TestUpdate_invalidData(t *testing.T) {
 
 	if _, uerr := c.Update("table", "key", make(chan int, 1)); uerr != nil {
 		if !(strings.Contains(uerr.Error(), "unsupported")) {
-			t.Errorf("Error while making data entry: %v\n", uerr.Error())
+			t.Errorf(dataEntryFailed, uerr.Error())
 		}
 	}
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 }
@@ -256,7 +266,7 @@ func TestGetall(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	data1 := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if errs := c.Create("table", "key1", data1); errs != nil {
@@ -292,18 +302,18 @@ func TestGetall(t *testing.T) {
 	}
 	defer func() {
 		if derr := c.Delete("table", "key1"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 		if derr := c.Delete("table", "key2"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 }
 
-func TestGetall_nonExistingtable(t *testing.T) {
+func TestGetallNonExistingtable(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	keys, errs := c.GetAllDetails("nonExistingtable")
 	if errs != nil {
@@ -316,14 +326,14 @@ func TestGetall_nonExistingtable(t *testing.T) {
 func TestDelete(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	data1 := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.Create("table", "key1", data1); cerr != nil {
 		t.Errorf("Error while creating data: %v\n", cerr.Error())
 	}
 	if derr := c.Delete("table", "key1"); derr != nil {
-		t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		t.Errorf(deleteDataErrMsg, derr.Error())
 	}
 	if _, rerr := c.Read("table", "key1"); rerr == nil {
 		t.Errorf("Error, data still exists post delete operation")
@@ -331,10 +341,10 @@ func TestDelete(t *testing.T) {
 
 }
 
-func TestDelete_nonExistingKey(t *testing.T) {
+func TestDeleteNonExistingKey(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	want := errors.PackError(errors.DBKeyNotFound, "no data with the with key key found")
 	derr := c.Delete("table", "key")
@@ -346,7 +356,7 @@ func TestDelete_nonExistingKey(t *testing.T) {
 func TestCleanUpDB(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	data1 := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if errs := c.Create("table", "key1", data1); errs != nil {
@@ -370,7 +380,7 @@ func TestFilterSearch(t *testing.T) {
 
 	c, err := MockDBConnection()
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if errs := c.Create("table", "key", data); errs != nil {
@@ -386,7 +396,7 @@ func TestFilterSearch(t *testing.T) {
 	}
 	defer func() {
 		if errs := c.Delete("table", "key"); errs != nil {
-			t.Errorf("Error while deleting Data: %v\n", errs.Error())
+			t.Errorf(deleteDataErrMsg, errs.Error())
 		}
 	}()
 
@@ -396,7 +406,7 @@ func TestGetAllMatchingDetails(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	data1 := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.Create("table", "key1", data1); cerr != nil {
@@ -429,18 +439,18 @@ func TestGetAllMatchingDetails(t *testing.T) {
 	}
 	defer func() {
 		if derr := c.Delete("table", "key1"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 		if derr := c.Delete("table", "key2"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 }
 
-func TestGetAllMatchingDetails_nonExistingtable(t *testing.T) {
+func TestGetAllMatchingDetailsNonExistingtable(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	keys, err := c.GetAllMatchingDetails("nonExistingtable", "key")
 	if len(keys) != 0 {
@@ -452,7 +462,7 @@ func TestTransaction(t *testing.T) {
 	const threadCount = 10
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	state := [5]string{"Running", "Completed", "Cancelled", "cancelling", "Pending"}
 	data := sample{Data1: "Running", Data2: "Value2", Data3: "Value3"}
@@ -507,7 +517,7 @@ func TestTransaction(t *testing.T) {
 	wg.Wait()
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 }
@@ -516,7 +526,7 @@ func TestGetResourceDetails(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.Create("table", "key", data); cerr != nil {
@@ -524,7 +534,7 @@ func TestGetResourceDetails(t *testing.T) {
 	}
 	got, rerr := c.GetResourceDetails("key")
 	if rerr != nil {
-		t.Errorf("Error while reading data: %v\n", rerr.Error())
+		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	var res sample
 	if jerr := json.Unmarshal([]byte(string(got)), &res); jerr != nil {
@@ -536,23 +546,23 @@ func TestGetResourceDetails(t *testing.T) {
 	}
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
 }
 
-func TestGetResourceDetails_nonExistingData(t *testing.T) {
+func TestGetResourceDetailsNonExistingData(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	_, rerr := c.GetResourceDetails("key")
 
 	if rerr != nil {
 		if !(strings.Contains(rerr.Error(), "no data with")) {
-			t.Errorf("Error while making data entry: %v\n", rerr.Error())
+			t.Errorf(dataEntryFailed, rerr.Error())
 		}
 	}
 
@@ -567,21 +577,21 @@ func TestAddResourceData(t *testing.T) {
 
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
 	if cerr := c.Create("table", "key", "sample"); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 }
 
-func TestAddResourceData_invalidData(t *testing.T) {
+func TestAddResourceDataInvalidData(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 
 	defer func() {
@@ -590,7 +600,7 @@ func TestAddResourceData_invalidData(t *testing.T) {
 
 	if cerr := c.Create("table", "key", math.Inf(1)); cerr != nil {
 		if !(strings.Contains(cerr.Error(), "unsupported")) {
-			t.Errorf("Error while making data entry: %v\n", cerr.Error())
+			t.Errorf(dataEntryFailed, cerr.Error())
 		}
 	}
 
@@ -615,32 +625,32 @@ func TestIndexCreate(t *testing.T) {
 
 	defer func() {
 		if derr := c.Del("table", "123::sample"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 	form := map[string]interface{}{"table": 123}
 	if cerr := c.CreateIndex(form, "sample"); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 	form = map[string]interface{}{"table": 2.179699264}
 	if cerr := c.CreateIndex(form, "sample"); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 	form = map[string]interface{}{"table": []float64{2.179699264, 4.543211223}}
 	if cerr := c.CreateIndex(form, "sample"); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 	form = map[string]interface{}{"table": []string{"sample", "sample2"}}
 	if cerr := c.CreateIndex(form, "sample"); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 }
-func TestCreateIndex_invalidData(t *testing.T) {
+func TestCreateIndexInvalidData(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 
 	defer func() {
@@ -649,7 +659,7 @@ func TestCreateIndex_invalidData(t *testing.T) {
 
 	if cerr := c.CreateIndex(map[string]interface{}{"table": []string{"key"}}, "sample"); cerr != nil {
 		if !(strings.Contains(cerr.Error(), "unsupported")) {
-			t.Errorf("Error while making data entry: %v\n", cerr.Error())
+			t.Errorf(dataEntryFailed, cerr.Error())
 		}
 	}
 
@@ -659,7 +669,7 @@ func TestGet(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	if cerr := c.CreateIndex(map[string]interface{}{"model": "intel"}, "abc-123"); cerr != nil {
 		t.Errorf("Error: %v\n", cerr.Error())
@@ -675,21 +685,21 @@ func TestGet(t *testing.T) {
 	}
 	got, rerr := c.GetString("model", 0, "*intel*", false)
 	if rerr != nil {
-		t.Errorf("Error while reading data: %v\n", rerr.Error())
+		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
 		t.Errorf("data not found")
 	}
 	got, rerr = c.GetString("ProcessorSummary/Model", 0, "value*", false)
 	if rerr != nil {
-		t.Errorf("Error while reading data: %v\n", rerr.Error())
+		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) != 10000 {
 		t.Errorf("data not found")
 	}
 	defer func() {
 		if derr := c.Del("model", "intel::abc-123"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
@@ -699,21 +709,21 @@ func TestGetTaskList(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	if cerr := c.CreateIndex(map[string]interface{}{"count": 4}, "abc-123"); cerr != nil {
 		t.Errorf("Error: %v\n", cerr.Error())
 	}
 	got, rerr := c.GetTaskList("count", 0, -1)
 	if rerr != nil {
-		t.Errorf("Error while reading data: %v\n", rerr.Error())
+		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
 		t.Errorf("data not found")
 	}
 	defer func() {
 		if derr := c.Del("count", "4::abc-123"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
@@ -722,21 +732,21 @@ func TestGetRange(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	if cerr := c.CreateIndex(map[string]interface{}{"count": 4}, "abc-123"); cerr != nil {
 		t.Errorf("Error: %v\n", cerr.Error())
 	}
 	got, rerr := c.GetRange("count", 0, 5, false)
 	if rerr != nil {
-		t.Errorf("Error while reading data: %v\n", rerr.Error())
+		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
 		t.Errorf("data not found")
 	}
 	defer func() {
 		if derr := c.Del("count", "4::abc-123"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
@@ -744,42 +754,42 @@ func TestGetRange(t *testing.T) {
 func TestGetStorageList(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	if cerr := c.CreateIndex(map[string]interface{}{"storage": "[2.179699264 4.543211223]"}, "abc-123"); cerr != nil {
 		t.Errorf("Error: %v\n", cerr.Error())
 	}
 	got, rerr := c.GetStorageList("storage", 0, 2.179699264, "eq", false)
 	if rerr != nil {
-		t.Errorf("Error while reading data: %v\n", rerr.Error())
+		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
 		t.Errorf("data not found")
 	}
 	got, rerr = c.GetStorageList("storage", 0, 2.179699264, "ge", false)
 	if rerr != nil {
-		t.Errorf("Error while reading data: %v\n", rerr.Error())
+		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
 		t.Errorf("data not found")
 	}
 	got, rerr = c.GetStorageList("storage", 0, 0, "gt", false)
 	if rerr != nil {
-		t.Errorf("Error while reading data: %v\n", rerr.Error())
+		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
 		t.Errorf("data not found")
 	}
 	got, rerr = c.GetStorageList("storage", 0, 4, "lt", false)
 	if rerr != nil {
-		t.Errorf("Error while reading data: %v\n", rerr.Error())
+		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
 		t.Errorf("data not found")
 	}
 	got, rerr = c.GetStorageList("storage", 0, 4, "le", false)
 	if rerr != nil {
-		t.Errorf("Error while reading data: %v\n", rerr.Error())
+		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
 		t.Errorf("data not found")
@@ -787,7 +797,7 @@ func TestGetStorageList(t *testing.T) {
 
 	defer func() {
 		if derr := c.Del("storage", "*::abc-123"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
@@ -801,16 +811,16 @@ func TestCreateEvtSubscriptions(t *testing.T) {
 	js := `{"Name":"Subscriptions", "hostip":"10.10.10.10"}`
 	defer func() {
 		if derr := c.DeleteEvtSubscriptions("subscriptions", js); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
 	if cerr := c.CreateEvtSubscriptionIndex("subscriptions", js); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 }
 
-func TestCreateEvtSubscriptions_existingData(t *testing.T) {
+func TestCreateEvtSubscriptionsExistingData(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
@@ -819,12 +829,12 @@ func TestCreateEvtSubscriptions_existingData(t *testing.T) {
 	js := `{"Name":"Subscriptions", "hosts":["10.10.10.10"]}`
 	defer func() {
 		if derr := c.DeleteEvtSubscriptions("subscriptions", js); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
 	if cerr := c.CreateEvtSubscriptionIndex("subscriptions", js); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 	if cerr := c.CreateEvtSubscriptionIndex("subscriptions", js); cerr == nil {
@@ -841,12 +851,12 @@ func TestGetEvtSubscriptions(t *testing.T) {
 	js := `{"Name":"Subscriptions", "hostip":"10.10.10.10"}`
 	defer func() {
 		if derr := c.DeleteEvtSubscriptions("subscriptions", js); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
 	if cerr := c.CreateEvtSubscriptionIndex("subscriptions", js); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 	subscriptions, gerr := c.GetEvtSubscriptions("subscriptions", "*10.10.10.10*")
@@ -879,16 +889,16 @@ func TestDeleteEvtSubscriptions(t *testing.T) {
 	js := `{"Name":"Subscriptions", "hostip":"10.10.10.10"}`
 
 	if cerr := c.CreateEvtSubscriptionIndex("subscriptions", js); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 	if derr := c.DeleteEvtSubscriptions("subscriptions", js); derr != nil {
-		t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		t.Errorf(deleteDataErrMsg, derr.Error())
 	}
 
 }
 
-func TestDeleteEvtSubscriptions_nonexisting_data(t *testing.T) {
+func TestDeleteEvtSubscriptionsNonexisting_data(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
@@ -911,13 +921,13 @@ func TestUpdateEvtSubscriptions(t *testing.T) {
 	js := `{"Name":"Subscriptions", "SubscriptionID":"12345","hostip":["10.10.10.10"]}`
 
 	if cerr := c.CreateEvtSubscriptionIndex("subscriptions", js); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 	js = `{"Name":"Subscriptions", "SubscriptionID":"12345","hostip":["10.10.10.19"]}`
 
 	if cerr := c.UpdateEvtSubscriptions("subscriptions", "*12345*", js); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 }
@@ -929,33 +939,33 @@ func TestCreateDeviceSubscription(t *testing.T) {
 	}
 	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
 	originResources := []string{"/redfish/v1/Systems/uuid.1"}
-	hostIP := "10.24.0.1"
+	hostIP := hostIPAddress
 	defer func() {
 		if derr := c.DeleteDeviceSubscription("DeviceSubscription", hostIP); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 	if cerr := c.CreateDeviceSubscriptionIndex("DeviceSubscription", hostIP, location, originResources); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 }
 
-func TestCreateDeviceSubscription_existingData(t *testing.T) {
+func TestCreateDeviceSubscriptionExistingData(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
 	originResources := []string{"/redfish/v1/Systems/uuid.1"}
-	hostIP := "10.24.0.1"
+	hostIP := hostIPAddress
 	defer func() {
 		if derr := c.DeleteDeviceSubscription("DeviceSubscription", hostIP); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 	if cerr := c.CreateDeviceSubscriptionIndex("DeviceSubscription", hostIP, location, originResources); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 	if cerr := c.CreateDeviceSubscriptionIndex("DeviceSubscription", hostIP, location, originResources); cerr == nil {
@@ -970,14 +980,14 @@ func TestGetDeviceSubscription(t *testing.T) {
 	}
 	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
 	originResources := []string{"/redfish/v1/Systems/uuid.1"}
-	hostIP := "10.24.0.1"
+	hostIP := hostIPAddress
 	defer func() {
 		if derr := c.DeleteDeviceSubscription("DeviceSubscription", hostIP); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 	if cerr := c.CreateDeviceSubscriptionIndex("DeviceSubscription", hostIP, location, originResources); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 	subscriptions, gerr := c.GetDeviceSubscription("DeviceSubscription", "10.24.0.1*")
@@ -1010,17 +1020,17 @@ func TestDeleteDeviceSubscription(t *testing.T) {
 	}
 	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
 	originResources := []string{"/redfish/v1/Systems/uuid.1"}
-	hostIP := "10.24.0.1"
+	hostIP := hostIPAddress
 	if cerr := c.CreateDeviceSubscriptionIndex("DeviceSubscription", hostIP, location, originResources); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 	if derr := c.DeleteDeviceSubscription("DeviceSubscription", hostIP); derr != nil {
-		t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		t.Errorf(deleteDataErrMsg, derr.Error())
 	}
 
 }
 
-func TestDeleteDeviceSubscriptions_nonexisting_data(t *testing.T) {
+func TestDeleteDeviceSubscriptionsNonexisting_data(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
@@ -1039,19 +1049,19 @@ func TestUpdateDeviceSubscriptions(t *testing.T) {
 
 	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
 	originResources := []string{"/redfish/v1/Systems/uuid.1"}
-	hostIP := "10.24.0.1"
+	hostIP := hostIPAddress
 	defer func() {
 		if derr := c.DeleteDeviceSubscription("DeviceSubscription", hostIP); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 	if cerr := c.CreateDeviceSubscriptionIndex("DeviceSubscription", hostIP, location, originResources); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 	location = "https://10.24.1.23/redfish/v1/EventService/Subscriptions/12345"
 	if cerr := c.UpdateDeviceSubscription("DeviceSubscription", hostIP, location, originResources); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 }
@@ -1226,7 +1236,7 @@ func TestGetDBConnection(t *testing.T) {
 	}
 }
 
-func TestGetDBConnection_HAEnabled(t *testing.T) {
+func TestGetDBConnectionHAEnabled(t *testing.T) {
 	GetMockDBConfig()
 	// Enableing HA
 	config.Data.DBConf.RedisHAEnabled = true
@@ -1295,7 +1305,7 @@ func TestIncr(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 
 	got, rerr := c.Incr("table", "key")
@@ -1316,7 +1326,7 @@ func TestIncr(t *testing.T) {
 
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
@@ -1326,7 +1336,7 @@ func TestDecr(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	_, rerr := c.Incr("table", "key")
 	if rerr != nil {
@@ -1355,7 +1365,7 @@ func TestDecr(t *testing.T) {
 
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
@@ -1370,21 +1380,21 @@ func TestSetExpire(t *testing.T) {
 
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
 	if cerr := c.SetExpire("table", "key", "sample", 1); cerr != nil {
-		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		t.Errorf(dataEntryFailed, cerr.Error())
 	}
 
 }
 
-func TestSetExpire_invalidData(t *testing.T) {
+func TestSetExpireInvalidData(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 
 	defer func() {
@@ -1393,13 +1403,13 @@ func TestSetExpire_invalidData(t *testing.T) {
 
 	if cerr := c.SetExpire("table", "key", math.Inf(1), 1); cerr != nil {
 		if !(strings.Contains(cerr.Error(), "unsupported")) {
-			t.Errorf("Error while making data entry: %v\n", cerr.Error())
+			t.Errorf(dataEntryFailed, cerr.Error())
 		}
 	}
 
 }
 
-func TestSetExpire_existingData(t *testing.T) {
+func TestSetExpireExistingData(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
@@ -1420,7 +1430,7 @@ func TestSetExpire_existingData(t *testing.T) {
 	}
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
@@ -1429,7 +1439,7 @@ func TestSetExpire_existingData(t *testing.T) {
 func TestTTL(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 
 	rerr := c.SetExpire("table", "key", "", 2)
@@ -1445,16 +1455,16 @@ func TestTTL(t *testing.T) {
 	}
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
-			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+			t.Errorf(deleteDataErrMsg, derr.Error())
 		}
 	}()
 
 }
 
-func TestConnPool_GetWriteConnection(t *testing.T) {
+func TestConnPoolGetWriteConnection(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	tests := []struct {
 		name    string
@@ -1484,10 +1494,10 @@ func TestConnPool_GetWriteConnection(t *testing.T) {
 	}
 }
 
-func TestConn_UpdateTransaction(t *testing.T) {
+func TestConnUpdateTransaction(t *testing.T) {
 	c, err := MockDBWriteConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	type args struct {
 		data map[string]interface{}
@@ -1533,7 +1543,7 @@ func TestConn_UpdateTransaction(t *testing.T) {
 	}
 }
 
-func Test_getSortedMapKeys(t *testing.T) {
+func TestGetSortedMapKeys(t *testing.T) {
 	type args struct {
 		m interface{}
 	}
@@ -1648,7 +1658,7 @@ func (e timeOutError) Error() string {
 	return ""
 }
 
-func Test_isTimeOutError(t *testing.T) {
+func TestIsTimeOutError(t *testing.T) {
 
 	type args struct {
 		err error
@@ -1684,10 +1694,10 @@ func Test_isTimeOutError(t *testing.T) {
 	}
 }
 
-func TestConnPool_AddMemberToSet(t *testing.T) {
+func TestConnPoolAddMemberToSet(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 
 	defer func() {
@@ -1710,8 +1720,8 @@ func TestConnPool_AddMemberToSet(t *testing.T) {
 			name: "add members to a set",
 			p:    c,
 			args: args{
-				key:    "PluginTaskIndex",
-				member: "PluginTask:task1",
+				key:    pluginTaskIndex,
+				member: pluginTask,
 			},
 			wantErr: false,
 		},
@@ -1725,13 +1735,13 @@ func TestConnPool_AddMemberToSet(t *testing.T) {
 	}
 }
 
-func TestConnPool_GetAllMembersInSet(t *testing.T) {
+func TestConnPoolGetAllMembersInSet(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 
-	err = c.AddMemberToSet("PluginTaskIndex", "PluginTask:task1")
+	err = c.AddMemberToSet(pluginTaskIndex, pluginTask)
 	if err != nil {
 		t.Fatal("Error while adding plugin task to set", err)
 	}
@@ -1756,9 +1766,9 @@ func TestConnPool_GetAllMembersInSet(t *testing.T) {
 			name: "get all members from plugin task",
 			p:    c,
 			args: args{
-				key: "PluginTaskIndex",
+				key: pluginTaskIndex,
 			},
-			want:    []string{"PluginTask:task1"},
+			want:    []string{pluginTask},
 			wantErr: false,
 		},
 	}
@@ -1776,18 +1786,18 @@ func TestConnPool_GetAllMembersInSet(t *testing.T) {
 	}
 }
 
-func TestConnPool_RemoveMemberFromSet(t *testing.T) {
+func TestConnPoolRemoveMemberFromSet(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB connection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 
-	err = c.AddMemberToSet("PluginTaskIndex", "PluginTask:task1")
+	err = c.AddMemberToSet(pluginTaskIndex, pluginTask)
 	if err != nil {
 		t.Fatal("Error while adding plugin task to set", err)
 	}
 
-	err = c.AddMemberToSet("PluginTaskIndex", "PluginTask:task2")
+	err = c.AddMemberToSet(pluginTaskIndex, "PluginTask:task2")
 	if err != nil {
 		t.Fatal("Error while adding plugin task to set", err)
 	}
@@ -1812,8 +1822,8 @@ func TestConnPool_RemoveMemberFromSet(t *testing.T) {
 			name: "remove member from set",
 			p:    c,
 			args: args{
-				key:    "PluginTaskIndex",
-				member: "PluginTask:task1",
+				key:    pluginTaskIndex,
+				member: pluginTask,
 			},
 			wantErr: false,
 		},

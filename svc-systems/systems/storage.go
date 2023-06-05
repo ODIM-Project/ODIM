@@ -200,7 +200,10 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
-		scommon.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		err = pc.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		if err != nil {
+			l.LogWithFields(ctx).Error(err)
+		}
 		return
 	}
 	resp.StatusCode = http.StatusOK
@@ -513,7 +516,10 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
-		scommon.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		err = pc.SavePluginTaskInfo(ctx, pluginIP, plugin.IP, taskID, location)
+		if err != nil {
+			l.LogWithFields(ctx).Error(err)
+		}
 		return
 	}
 

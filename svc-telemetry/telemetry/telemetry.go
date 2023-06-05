@@ -100,9 +100,9 @@ func (e *ExternalInterface) GetTelemetryService(ctx context.Context) response.RP
 
 // GetMetricDefinitionCollection is a functioanlity to retrive all the available inventory
 // resources from the added BMC's
-func (e *ExternalInterface) GetMetricDefinitionCollection(ctx context.Context,req *teleproto.TelemetryRequest) response.RPC {
+func (e *ExternalInterface) GetMetricDefinitionCollection(ctx context.Context, req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	data, err := e.DB.GetResource(ctx,"MetricDefinitionsCollection", req.URL, common.InMemory)
+	data, err := e.DB.GetResource(ctx, "MetricDefinitionsCollection", req.URL, common.InMemory)
 	if err != nil {
 		// return empty collection response
 		metricDefinitionCollection := tlresp.Collection{
@@ -130,9 +130,9 @@ func (e *ExternalInterface) GetMetricDefinitionCollection(ctx context.Context,re
 
 // GetMetricReportDefinitionCollection is a functioanlity to retrive all the available inventory
 // resources from the added BMC's
-func (e *ExternalInterface) GetMetricReportDefinitionCollection(ctx context.Context,req *teleproto.TelemetryRequest) response.RPC {
+func (e *ExternalInterface) GetMetricReportDefinitionCollection(ctx context.Context, req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	data, err := e.DB.GetResource(ctx,"MetricReportDefinitionsCollection", req.URL, common.InMemory)
+	data, err := e.DB.GetResource(ctx, "MetricReportDefinitionsCollection", req.URL, common.InMemory)
 	if err != nil {
 		// return empty collection response
 		metricReportDefinitionCollection := tlresp.Collection{
@@ -160,9 +160,9 @@ func (e *ExternalInterface) GetMetricReportDefinitionCollection(ctx context.Cont
 
 // GetMetricReportCollection is a functioanlity to retrive all the available inventory
 // resources from the added BMC's
-func (e *ExternalInterface) GetMetricReportCollection(ctx context.Context,req *teleproto.TelemetryRequest) response.RPC {
+func (e *ExternalInterface) GetMetricReportCollection(ctx context.Context, req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	data, err := e.DB.GetResource(ctx,"MetricReportsCollection", req.URL, common.InMemory)
+	data, err := e.DB.GetResource(ctx, "MetricReportsCollection", req.URL, common.InMemory)
 	if err != nil {
 		// return empty collection response
 		metricReportCollection := tlresp.Collection{
@@ -190,9 +190,9 @@ func (e *ExternalInterface) GetMetricReportCollection(ctx context.Context,req *t
 
 // GetTriggerCollection is a functioanlity to retrive all the available inventory
 // resources from the added BMC's
-func (e *ExternalInterface) GetTriggerCollection(ctx context.Context,req *teleproto.TelemetryRequest) response.RPC {
+func (e *ExternalInterface) GetTriggerCollection(ctx context.Context, req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	data, err := e.DB.GetResource(ctx,"TriggersCollection", req.URL, common.InMemory)
+	data, err := e.DB.GetResource(ctx, "TriggersCollection", req.URL, common.InMemory)
 	if err != nil {
 		// return empty collection response
 		triggersCollection := tlresp.Collection{
@@ -221,7 +221,7 @@ func (e *ExternalInterface) GetTriggerCollection(ctx context.Context,req *telepr
 // GetMetricReportDefinition ...
 func (e *ExternalInterface) GetMetricReportDefinition(ctx context.Context, req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	data, gerr := e.DB.GetResource(ctx,"MetricReportDefinitions", req.URL, common.InMemory)
+	data, gerr := e.DB.GetResource(ctx, "MetricReportDefinitions", req.URL, common.InMemory)
 	if gerr != nil {
 		l.LogWithFields(ctx).Warn("Unable to get MetricReportDefinition details : " + gerr.Error())
 		errorMessage := gerr.Error()
@@ -273,7 +273,7 @@ func (e *ExternalInterface) GetMetricReport(ctx context.Context, req *teleproto.
 // GetMetricDefinition ...
 func (e *ExternalInterface) GetMetricDefinition(ctx context.Context, req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	data, gerr := e.DB.GetResource(ctx,"MetricDefinitions", req.URL, common.InMemory)
+	data, gerr := e.DB.GetResource(ctx, "MetricDefinitions", req.URL, common.InMemory)
 	if gerr != nil {
 		l.LogWithFields(ctx).Warn("Unable to get MetricDefinition details : " + gerr.Error())
 		errorMessage := gerr.Error()
@@ -296,7 +296,7 @@ func (e *ExternalInterface) GetMetricDefinition(ctx context.Context, req *telepr
 // GetTrigger ...
 func (e *ExternalInterface) GetTrigger(ctx context.Context, req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	data, gerr := e.DB.GetResource(ctx,"Triggers", req.URL, common.InMemory)
+	data, gerr := e.DB.GetResource(ctx, "Triggers", req.URL, common.InMemory)
 	if gerr != nil {
 		l.LogWithFields(ctx).Warn("Unable to get Triggers details `: " + gerr.Error())
 		errorMessage := gerr.Error()

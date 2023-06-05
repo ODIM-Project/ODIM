@@ -53,6 +53,9 @@ const (
 	stringConvErrMsg      string = "error while trying to convert the data into string: "
 	deleteErrMsg          string = "error while trying to delete data: "
 	dataRetrivalErrMsg    string = "error while trying to get data: "
+	writeDataErrMsg       string = "error while trying to Write Transaction data: WritePool is nil"
+	notFoundErrMsg        string = "No data found for the key: %v"
+	intConvErrMsg         string = "error while trying to convert the data into int: "
 )
 
 // DbType is a alias name for int32
@@ -222,35 +225,53 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 	switch dbFlag {
 	case InMemory:
 		// In this case this function return in-memory db connection pool
-		if inMemDBConnPool == nil || inMemDBConnPool.ReadPool == nil {
-			config := getInMemoryDBConfig()
-			if inMemDBConnPool, err = config.Connection(); err != nil {
-				return nil, errors.PackError(err.ErrNo(), err.Error())
-			}
-			inMemDBConnPool.PoolUpdatedTime = time.Now()
+		inMemDBConnPool, err := getInmemoryDBConnection()
+		if err != nil {
+			return nil, err
 		}
-		if inMemDBConnPool.WritePool == nil {
-			resetDBWriteConnection(InMemory)
-		}
-
 		return inMemDBConnPool, err
 
 	case OnDisk:
 		// In this case this function returns On-Disk db connection pool
-		if onDiskDBConnPool == nil || onDiskDBConnPool.ReadPool == nil {
-			config := getOnDiskDBConfig()
-			if onDiskDBConnPool, err = config.Connection(); err != nil {
-				return nil, errors.PackError(err.ErrNo(), err.Error())
-			}
-			onDiskDBConnPool.PoolUpdatedTime = time.Now()
-		}
-		if onDiskDBConnPool.WritePool == nil {
-			resetDBWriteConnection(OnDisk)
+		onDiskDBConnPool, err = getOnDiskDBConnection()
+		if err != nil {
+			return nil, err
 		}
 		return onDiskDBConnPool, err
+
 	default:
 		return nil, errors.PackError(errors.UndefinedErrorType, "error invalid db type selection")
 	}
+}
+
+func getInmemoryDBConnection() (*ConnPool, *errors.Error) {
+	var err *errors.Error
+	if inMemDBConnPool == nil || inMemDBConnPool.ReadPool == nil {
+		config := getInMemoryDBConfig()
+		if inMemDBConnPool, err = config.Connection(); err != nil {
+			return nil, errors.PackError(err.ErrNo(), err.Error())
+		}
+		inMemDBConnPool.PoolUpdatedTime = time.Now()
+	}
+	if inMemDBConnPool.WritePool == nil {
+		resetDBWriteConnection(InMemory)
+	}
+	return inMemDBConnPool, nil
+}
+
+func getOnDiskDBConnection() (*ConnPool, *errors.Error) {
+	var err *errors.Error
+	if onDiskDBConnPool == nil || onDiskDBConnPool.ReadPool == nil {
+		config := getOnDiskDBConfig()
+		if onDiskDBConnPool, err = config.Connection(); err != nil {
+			return nil, errors.PackError(err.ErrNo(), err.Error())
+		}
+		onDiskDBConnPool.PoolUpdatedTime = time.Now()
+	}
+	if onDiskDBConnPool.WritePool == nil {
+		resetDBWriteConnection(OnDisk)
+	}
+	return onDiskDBConnPool, err
 }
 
 // getPool is used is utility function to get the Connection Pool from DB.
@@ -297,7 +318,7 @@ func getPool(host, port, password string) (*redis.Pool, error) {
 func (p *ConnPool) GetWritePool() (*redis.Pool, *errors.Error) {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		return nil, errors.PackError(errors.DBConnFailed, "error while trying to Write Transaction data: WritePool is nil")
+		return nil, errors.PackError(errors.DBConnFailed, writeDataErrMsg)
 	}
 	return writePool, nil
 }
@@ -683,7 +704,7 @@ func (p *ConnPool) GetAllMatchingDetails(table, pattern string) ([]string, *erro
 func (p *ConnPool) Transaction(ctx context.Context, key string, cb func(context.Context, string) error) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		return errors.PackError(errors.UndefinedErrorType, "error while trying to Write Transaction data: WritePool is nil")
+		return errors.PackError(errors.UndefinedErrorType, writeDataErrMsg)
 	}
 	writeConn := writePool.Get()
 	defer writeConn.Close()
@@ -722,7 +743,7 @@ func isDbConnectError(err error) (*errors.Error, bool) {
 func (p *ConnPool) SaveBMCInventory(data map[string]interface{}) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		return errors.PackError(errors.UndefinedErrorType, "error while trying to Write Transaction data: WritePool is nil")
+		return errors.PackError(errors.UndefinedErrorType, writeDataErrMsg)
 	}
 	writeConn := writePool.Get()
 	defer writeConn.Close()
@@ -1261,8 +1282,7 @@ func (p *ConnPool) GetStorageList(index string, cursor, match float64, condition
 		return getList, nil
 	}
 	var err error
-	storeList, err = getStoreListItemsFromList(getList, match, condition)
-	if err != nil {
+	if storeList, err = getStoreListItemsFromList(getList, match, condition); err != nil {
 		return nil, err
 	}
 	storeList = getUniqueSlice(storeList)
@@ -1485,7 +1505,7 @@ func (p *ConnPool) DeleteEvtSubscriptions(index, removeKey string) error {
 		return err
 	}
 	if len(value) < 1 {
-		return fmt.Errorf("No data found for the key: %v", matchKey)
+		return fmt.Errorf(notFoundErrMsg, matchKey)
 	}
 	for _, data := range value {
 		delErr := writeConn.Send("ZREM", index, data)
@@ -1572,7 +1592,7 @@ func (p *ConnPool) GetDeviceSubscription(index string, match string) ([]string, 
 			return []string{}, err
 		}
 		if len(data) < 1 {
-			return []string{}, fmt.Errorf("No data found for the key: %v", match)
+			return []string{}, fmt.Errorf(notFoundErrMsg, match)
 		}
 	}
 	return data, nil
@@ -1594,7 +1614,7 @@ func (p *ConnPool) DeleteDeviceSubscription(index, hostIP string) error {
 	}
 
 	if len(value) < 1 {
-		return fmt.Errorf("No data found for the key: %v", hostIP)
+		return fmt.Errorf(notFoundErrMsg, hostIP)
 	}
 	for _, data := range value {
 		delErr := writeConn.Send("ZREM", index, data)
@@ -1677,7 +1697,7 @@ func (p *ConnPool) Incr(table, key string) (int, *errors.Error) {
 	}
 	count, err = redis.Int(value, err)
 	if err != nil {
-		return count, errors.PackError(errors.UndefinedErrorType, "error while trying to convert the data into int: ", err)
+		return count, errors.PackError(errors.UndefinedErrorType, intConvErrMsg, err)
 	}
 	return count, nil
 }
@@ -1713,7 +1733,7 @@ func (p *ConnPool) Decr(table, key string) (int, *errors.Error) {
 	}
 	count, err = redis.Int(value, err)
 	if err != nil {
-		return count, errors.PackError(errors.UndefinedErrorType, "error while trying to convert the data into int: ", err)
+		return count, errors.PackError(errors.UndefinedErrorType, intConvErrMsg, err)
 	}
 	return count, nil
 }
@@ -1774,7 +1794,7 @@ func (p *ConnPool) TTL(table, key string) (int, *errors.Error) {
 	}
 	time, err := redis.Int(value, err)
 	if err != nil {
-		return 0, errors.PackError(errors.UndefinedErrorType, "error while trying to convert the data into int: ", err)
+		return 0, errors.PackError(errors.UndefinedErrorType, intConvErrMsg, err)
 	}
 	return time, nil
 }
@@ -1826,7 +1846,7 @@ func (p *ConnPool) GetAggregateHosts(index string, match string) ([]string, erro
 				return []string{}, err
 			}
 			if len(data) < 1 {
-				return []string{}, fmt.Errorf("no data found for the key: %v", match)
+				return []string{}, fmt.Errorf(notFoundErrMsg, match)
 			}
 			return data, nil
 		}
@@ -1872,7 +1892,7 @@ func (p *ConnPool) DeleteAggregateHosts(index, aggregateID string) error {
 		return err
 	}
 	if len(value) < 1 {
-		return fmt.Errorf("no data found for the key: %v", aggregateID)
+		return fmt.Errorf(notFoundErrMsg, aggregateID)
 	}
 	for _, data := range value {
 		delErr := writeConn.Send("ZREM", index, data)

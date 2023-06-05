@@ -322,16 +322,14 @@ func checkDBConf(wl *WarningList) error {
 		Data.DBConf.Protocol = DefaultDBProtocol
 	}
 
-	if err := checkEmptyvalue(Data.DBConf.InMemoryHost, "InMemoryHost"); err != nil {
-		return err
+	fieldMap := map[string]string{
+		"InMemoryHost": Data.DBConf.InMemoryHost,
+		"InMemoryPort": Data.DBConf.InMemoryPort,
+		"OnDiskHost":   Data.DBConf.OnDiskHost,
+		"OnDiskPort":   Data.DBConf.OnDiskPort,
 	}
-	if err := checkEmptyvalue(Data.DBConf.InMemoryPort, "InMemoryPort"); err != nil {
-		return err
-	}
-	if err := checkEmptyvalue(Data.DBConf.OnDiskHost, "OnDiskHost"); err != nil {
-		return err
-	}
-	if err := checkEmptyvalue(Data.DBConf.OnDiskPort, "OnDiskPort"); err != nil {
+
+	if err := checkEmptyvalue(fieldMap); err != nil {
 		return err
 	}
 	if Data.DBConf.MaxActiveConns == 0 {
@@ -361,9 +359,11 @@ func checkDBConf(wl *WarningList) error {
 	return nil
 }
 
-func checkEmptyvalue(value string, fieldName string) error {
-	if value == "" {
-		return fmt.Errorf("error: no value configured for DB %s", fieldName)
+func checkEmptyvalue(fieldMap map[string]string) error {
+	for key, value := range fieldMap {
+		if value == "" {
+			return fmt.Errorf("error: no value configured for DB %s", key)
+		}
 	}
 	return nil
 }

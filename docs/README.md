@@ -217,7 +217,7 @@ Resource Aggregator for Open Distributed Infrastructure Management (Resource Agg
 
 Resource Aggregator for ODIM framework comprises the following two components.
 
-- The resource aggregation function (the resource aggregator)
+- The resource aggregation function (resource aggregator)
 
   The resource aggregator is the single point of contact between the northbound clients and the southbound infrastructure. The primary function of the resource aggregator is to build and maintain a central resource inventory. It exposes Redfish-compliant APIs to allow northbound infrastructure management systems to:
 
@@ -269,7 +269,7 @@ The plugin layer allows developers to create plugins on the tool set of their ch
 
 # API usage and access guidelines
 
-> **PREREQUISITE**: Ensure that you have the required privileges to access all the services to avoid encountering the HTTP `403 Forbidden` error.
+> **PREREQUISITE**: Ensure that you have the required privileges to access all the services to avoid getting the HTTP `403 Forbidden` error.
 
 This guide contains sample request and response payloads. For information on response payload parameters, see *[Redfish® Scalable Platforms API (Redfish) schema 2022.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2022.1.pdf)*.
 
@@ -309,7 +309,7 @@ Use the following base URL in all your HTTP requests:
 
 ## curl
 
-*[curl](https://curl.haxx.se)* is a command-line tool which helps you get or send information through URLs using supported protocols. Resource Aggregator for ODIM supports HTTPS protocol. Examples in this document use curl commands to make HTTP requests.
+*[curl](https://curl.haxx.se)* is a command-line tool that helps you get or send information through URLs using supported protocols. Resource Aggregator for ODIM supports HTTPS protocol. Examples in this document use curl commands to make HTTP requests.
 
 >**IMPORTANT:** If you have set proxy configuration, set `no_proxy` using the following command before you run a curl command:
 >
@@ -319,12 +319,12 @@ Use the following base URL in all your HTTP requests:
 
 ## curl command options
 
-- `--cacert` <file_path> includes a specified X.509 root certificate.
-- `-H` passes on custom headers.
-- `-X` specifies a custom request method. Use `-X` for HTTP `PATCH`, `PUT`, and `DELETE` operations.
-- `-d` posts data to a URI. Use `-d` for all HTTP operations that include a request body.
-- `-i` returns HTTP response headers.
-- `-v` fetches verbose.
+- `--cacert` <file_path> includes a specified X.509 root certificate
+- `-H` passes on custom headers
+- `-X` specifies a custom request method. Use `-X` for HTTP `PATCH`, `PUT`, and `DELETE` operations
+- `-d` posts data to a URI. Use `-d` for all HTTP operations that include a request body
+- `-i` returns HTTP response headers
+- `-v` fetches verbose
 
 For a complete list of curl flags, see *[https://curl.haxx.se](https://curl.haxx.se)*.
 
@@ -354,7 +354,7 @@ Without CA certificate, curl fails to verify that HTTP connections are secure an
        curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
        ```
 
-   >**NOTE:** To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file located in this path:<br> `/etc/ssl/certs/ca-certificates.crt`.
+   >**NOTE:** To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file located at `/etc/ssl/certs/ca-certificates.crt`.
 
 ## HTTP request methods
 
@@ -395,7 +395,7 @@ The listed properties are common across all response headers, and are excluded f
 
 ## Status codes
 
-The HTTP status codes include the success codes and the error codes and their respective descriptions for all API operations.
+The HTTP status codes include the success codes, error codes and their respective descriptions for all API operations.
 
 | Success code<br> | Description                                                  |
 | ---------------- | ------------------------------------------------------------ |
@@ -442,8 +442,8 @@ The default value for `nwPreferences` parameter in the Resource Aggregator for O
   -d \
   '{
     "HostName":"xxx.xxx.xxx.xxx",
-    "UserName":"admin",
-    "Password":"<your_password>",
+    "UserName":"{username}",
+    "Password":"{your_password}",
     "Links":{
        "ConnectionMethod":{
        "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/e9fec4a3-a9f7-4d4e-b65f-8d9316e7f0d9"

@@ -4969,7 +4969,7 @@ curl -i GET \
 
 ```
 curl -i -X GET \
-   -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
    -H "Content-Type:application/json" \
  'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/Capabilities'
 ```
@@ -5234,7 +5234,7 @@ curl -i GET \
 ```
 curl -i -X PATCH \
    -H "Content-Type:application/json" \
-   -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
    -d \
 '{
   "SecureBootEnable": true
@@ -5301,7 +5301,7 @@ curl -i -X PATCH \
 
 ```
 curl -i -X POST \
-   -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
    -H "Content-Type:application/json" \
    -d \
 '{
@@ -5370,7 +5370,7 @@ curl -i -X POST \
 
 ```
 curl -i -X POST \
-   -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
    -H "Content-Type:application/json" \
    -d \
 '{
@@ -5418,7 +5418,7 @@ curl -i -X POST \
 
 ```
 curl -i -X GET \
-   -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases/PKDefault'
 ```
 
@@ -5469,7 +5469,7 @@ curl -i -X GET \
 
 ```
 curl -i -X GET \
-   -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
 'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases/PKDefault/Certificates'
 ```
 
@@ -5520,7 +5520,7 @@ curl -i -X GET \
 
 ```
 curl -i -X GET \
-   -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odimra_host}:port}/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases/PKDefault/Certificates/2'
 ```
 

@@ -837,6 +837,7 @@ Topics covered in this section include:
        
         logLevel: 
         logFormat: 
+        logsOnConsole: 
         
         messageBusType: Kafka
         messageBusQueue: REDFISH-EVENTS-TOPIC
@@ -1244,13 +1245,13 @@ Topics covered in this section include:
 6. Update the following parameters in the plugin configuration file: 
 
     - **odimUsername**: The username of the default administrator account of Resource Aggregator for ODIM.
-    
+
     - **odimPassword**:  The encrypted password of the default administrator account of Resource Aggregator for ODIM. To generate the encrypted password, see step 3 of this procedure.
-    
+
       Other parameters can have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see *[Plugin configuration parameters](#plugin-configuration-parameters)*.
-    
+
       **Sample urplugin-config.yaml file**
-    
+
       ```
       urplugin:
         urPluginRootServiceUUID: e3473202-8706-4077-bd7d-d43d8d323a5b
@@ -1259,6 +1260,7 @@ Topics covered in this section include:
         odimUsername: admin
         odimPassword: ip/jrKjQdzKIU1JvT4ZQ6gbCe2XJtCKPRgqOQv6g3aIAYtG+hpVgel3k67TB723h9dN2cABWZgE+b9CAxbIXj3qZZFWrUMMuPkT4fwtW8fTlhdR+phmOvnnSw5bvUrXyl5Se1IczwtMXfhqk7U8eqpJnZ6xWNR8Q1K7baDv1QvZwej/v3bqHRTC93pDL+3SvE8VCyrIgbMVdfvv3+mJKvs2F7hXoTJiwjRfKGyzdP0yRIHAFOB3m/xnv6ZIRm8Ak6+sx18NRq8RH20bktzhZ45fT+iX4twMJG1lI0KRJ3j/PL+IqY4MmYzv/72fQhMznL39Rjr9LR6mB/JGI0ww0sMUCFr6obzQfQWv1so+Ck694fNJMQPXQS64VcqVDuISXSd4cqkdMx9zBmfDbgzMQQVwgjDgt4nC1w8/wGSfMtkms8rSJrBa18hKCWi+jfhASbNM84udKc0kQsQJlsnjcdsL84zrE8iUqqXC/fK2cQbNL31H5C+qEfJqdNTauQSskkK3cpNWh1FVw736WBYYJSja59q5QwMniXldwcvRglEIELsjKgjbuOnQoIZaVTcbheaa2b1XAiRKTKuPmweysyV3fbuR0jgSJTmdTehrtYG9omjUbg/L7WFjC43JWq8suWi5uch+jHtGG5mZJFFdkE37pQd3wzHBSa+/9Yq9/ZSY=
         logPath: /var/log/urplugin_logs
+        logsOnConsole: false
       ```
 
 7. Generate Helm package for URP on the deployment node:
@@ -1409,6 +1411,7 @@ Topics covered in this section include:
        lbHost: xxx.xxx.xxx.xxx
        lbPort: 30084
        logPath: /var/log/dellplugin_logs
+       logsOnConsole: false
       ```
 
 6. Generate the Helm package for the Dell plugin on the deployment node.
@@ -1562,6 +1565,7 @@ Topics covered in this section include:
        lbHost: xxx.xxx.xxx.xxx
        lbPort: 30089
        logPath: /var/log/lenovoplugin_logs
+       logsOnConsole: false
      ```
    
 6. Generate the Helm package for the Lenovo plugin on the deployment node.
@@ -3296,6 +3300,7 @@ Run the following commands:
      
      logLevel: warn
      logFormat: syslog
+     logsOnConsole: false
      
      messageBusType: Kafka
      messageBusQueue: REDFISH-EVENTS-TOPIC
@@ -3378,6 +3383,7 @@ The following table lists all the configuration parameters required by odim-cont
 |kafkaNodePort|The port to be used for accessing the Kafka services from external services. Default port is 30092. You can optionally change it.<br>**NOTE**: Ensure that the port is in the range of 30000 to 32767.<br>|
 |logLevel|Every operation in Resource Aggregator for ODIM is logged in `var/log/odimra`. For more information, see *Log Levels* in *Resource Aggregator for ODIM API Reference and User Guide*.|
 |logFormat|Resource Aggregator for ODIM supports logs in syslog format. To change it to JSON format, update the value of this parameter in your `kube_deploy_nodes.yaml` configuration file to `JSON`.|
+|logsOnConsole|When you set the value to `false`, the Resource Aggregator for ODIM logs are redirected to a log file. Setting the value to `true` displays the logs on console. Default value is `false`.|
 |MessageBusType|Event message bus type. The value is either `Kafka` or `RedisStreams` and they are case-sensitive.<br />**NOTE**: Resource Aggregator for ODIM supports `RedisStreams`. URP, GRF, Lenovo, Dell and Cisco ACI plugins don't support `RedisStreams`.|
 |MessageBusQueue|Event message bus queue name. Allowed characters for the value are alphabets, numbers, period, underscore, and hyphen. <br />**NOTE**: Do not include blank spaces.|
 |etcHostsEntries|List of FQDNs of the external servers and plugins to be added to the `/etc/hosts` file in each of the service containers of Resource Aggregator for ODIM. The external servers are the servers that you want to add into the resource inventory.<br>**NOTE**: It must be in the YAML multiline format as shown in the "etcHostsEntries template".<br>|
@@ -3475,6 +3481,7 @@ The following table lists all the configuration parameters required to deploy a 
 | lbHost                                  | If there is only one cluster node, the lbHost is the IP address of the cluster node. If there is more than one cluster node (`haDeploymentEnabled` is true), lbHost is the virtual IP address configured in Nginx and Keepalived. |
 | lbPort                                  | If it is a one-cluster configuration, the lbPort must be same as eventListenerNodePort. <br>If there is more than one cluster node (`haDeploymentEnabled` is true), lbport must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as nginx proxy port for the plugin. |
 | logPath                                 | The path where the plugin logs are stored. Default path is `/var/log/<plugin_name>_logs`<br>**Example**: `/var/log/grfplugin_logs` |
+| logsOnConsole                           | When you set the value to `false`, the plugin logs are redirected to a log file. Setting the value to `true` displays the plugin logs on console. Default value is `false`. |
 
 
 
@@ -3872,6 +3879,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
       lbHost: <Ngnix_virtual_IP_address>
       lbPort: <Ngnix_plugin_port>
       logPath: /var/log/grfplugin_logs
+      logsOnConsole: false
       messageBusType: Kafka
       messageBusQueue: REDFISH-EVENTS-TOPIC
     ```
@@ -3939,12 +3947,12 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
 12. Specify values for the following parameters in the `kube_deploy_nodes.yaml` file: 
 
-     | Parameter                    | Value                                                        |
-     | ---------------------------- | ------------------------------------------------------------ |
-     | connectionMethodConf         | The connection method associated with the GRF plugin:<br/> ConnectionMethodVariant: `Compute:BasicAuth:GRF_v2.0.0`<br/>Check if it is there already before updating. If yes, do not add it again.<br/> |
-     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the GRF plugin:grfplugin, grfplugin-events<br/>Add these values to the existing comma-separated list.<br/> |
-     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the GRF plugin: grfplugin, grfplugin-events. <br />Add these values to the existing comma-separated list.<br> |
-     | odimPluginPath               | The path of the directory where the GRF Helm package, the `grfplugin` image, and the modified `grfplugin-config.yaml` are copied. |
+    | Parameter                    | Value                                                        |
+    | ---------------------------- | ------------------------------------------------------------ |
+    | connectionMethodConf         | The connection method associated with the GRF plugin:<br/> ConnectionMethodVariant: `Compute:BasicAuth:GRF_v2.0.0`<br/>Check if it is there already before updating. If yes, do not add it again.<br/> |
+    | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the GRF plugin:grfplugin, grfplugin-events<br/>Add these values to the existing comma-separated list.<br/> |
+    | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the GRF plugin: grfplugin, grfplugin-events. <br />Add these values to the existing comma-separated list.<br> |
+    | odimPluginPath               | The path of the directory where the GRF Helm package, the `grfplugin` image, and the modified `grfplugin-config.yaml` are copied. |
 
       Example:
 

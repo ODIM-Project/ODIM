@@ -225,7 +225,7 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 	var err *errors.Error
 	switch dbFlag {
 	case InMemory:
-		// In this case this function return in-memory db connection pool
+		// In this case getInmemoryDBConnection return in-memory db connection pool
 		inMemDBConnPool, err := getInmemoryDBConnection()
 		if err != nil {
 			return nil, err
@@ -233,7 +233,7 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 		return inMemDBConnPool, err
 
 	case OnDisk:
-		// In this case this function returns On-Disk db connection pool
+		// In this case getOnDiskDBConnection returns On-Disk db connection pool
 		onDiskDBConnPool, err = getOnDiskDBConnection()
 		if err != nil {
 			return nil, err

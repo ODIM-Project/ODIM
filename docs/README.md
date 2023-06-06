@@ -5301,13 +5301,13 @@ curl -i -X PATCH \
 
 ```
 curl -i -X POST \
-   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
    -H "Content-Type:application/json" \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
    -d \
 '{
-  "ResetType":"ForceRestart"
+  "ResetKeysType": "ResetAllKeysToDefault"
 }' \
- 'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset'
+'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/Actions/SecureBoot.ResetKeys'
 ```
 
 > **Sample request body**
@@ -5568,8 +5568,8 @@ curl -i -X GET \
 |---------|-------|
 |**Method** |`GET` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Processors` |
-|**Description** | This endpoint lists the collection of SecureBoot database certificates. |
-| **Returns**        |                                                              |
+|**Description** | This endpoint lists processors of a specific system. |
+| **Returns**        | List of processor resource endpoints. |
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 

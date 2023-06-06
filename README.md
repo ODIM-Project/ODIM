@@ -3383,7 +3383,7 @@ The following table lists all the configuration parameters required by odim-cont
 |kafkaNodePort|The port to be used for accessing the Kafka services from external services. Default port is 30092. You can optionally change it.<br>**NOTE**: Ensure that the port is in the range of 30000 to 32767.<br>|
 |logLevel|Every operation in Resource Aggregator for ODIM is logged in `var/log/odimra`. For more information, see *Log Levels* in *Resource Aggregator for ODIM API Reference and User Guide*.|
 |logFormat|Resource Aggregator for ODIM supports logs in syslog format. To change it to JSON format, update the value of this parameter in your `kube_deploy_nodes.yaml` configuration file to `JSON`.|
-|logsOnConsole|When you set the value to `False`, the Resource Aggregator for ODIM logs are redirected to a log file. Setting the value to `True` displays the logs on console. Default value is `False`.|
+|logsOnConsole|When you set the value to `false`, the Resource Aggregator for ODIM logs are redirected to a log file. Setting the value to `true` displays the logs on console. Default value is `false`.|
 |MessageBusType|Event message bus type. The value is either `Kafka` or `RedisStreams` and they are case-sensitive.<br />**NOTE**: Resource Aggregator for ODIM supports `RedisStreams`. URP, GRF, Lenovo, Dell and Cisco ACI plugins don't support `RedisStreams`.|
 |MessageBusQueue|Event message bus queue name. Allowed characters for the value are alphabets, numbers, period, underscore, and hyphen. <br />**NOTE**: Do not include blank spaces.|
 |etcHostsEntries|List of FQDNs of the external servers and plugins to be added to the `/etc/hosts` file in each of the service containers of Resource Aggregator for ODIM. The external servers are the servers that you want to add into the resource inventory.<br>**NOTE**: It must be in the YAML multiline format as shown in the "etcHostsEntries template".<br>|
@@ -3481,7 +3481,7 @@ The following table lists all the configuration parameters required to deploy a 
 | lbHost                                  | If there is only one cluster node, the lbHost is the IP address of the cluster node. If there is more than one cluster node (`haDeploymentEnabled` is true), lbHost is the virtual IP address configured in Nginx and Keepalived. |
 | lbPort                                  | If it is a one-cluster configuration, the lbPort must be same as eventListenerNodePort. <br>If there is more than one cluster node (`haDeploymentEnabled` is true), lbport must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as nginx proxy port for the plugin. |
 | logPath                                 | The path where the plugin logs are stored. Default path is `/var/log/<plugin_name>_logs`<br>**Example**: `/var/log/grfplugin_logs` |
-| logsOnConsole                           | When you set the value to `False`, the plugin logs are redirected to a log file. Setting the value to `True` displays the plugin logs on console. Default value is `False`. |
+| logsOnConsole                           | When you set the value to `false`, the plugin logs are redirected to a log file. Setting the value to `true` displays the plugin logs on console. Default value is `false`. |
 
 
 

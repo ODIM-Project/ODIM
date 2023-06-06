@@ -56,14 +56,10 @@ func reqValidator(rawReqBodyMap interface{}, reqStructMap map[string]interface{}
 			invalidProperties += getInvalidProperty(reqStructMap, key)
 		} else {
 			for nestedkey, nestedVal := range v {
-				if key != "" {
-					invalidCase, err := reqValidator(nestedVal, reqStructMap[key].(map[string]interface{}), nestedkey)
-					if err != nil {
-						return "", fmt.Errorf("error while trying to validate the request parameters case in map: %v", err)
-					}
-					invalidProperties += invalidCase
-				} else {
-					invalidProperties += getInvalidProperty(reqStructMap, nestedkey)
+				var err error
+				invalidProperties, err = getInvalidProperties(invalidProperties, key, nestedkey, reqStructMap, nestedVal)
+				if err != nil {
+					return "", err
 				}
 			}
 		}
@@ -80,6 +76,20 @@ func reqValidator(rawReqBodyMap interface{}, reqStructMap map[string]interface{}
 	default:
 		invalidProperties += getInvalidProperty(reqStructMap, key)
 	}
+	return invalidProperties, nil
+}
+
+func getInvalidProperties(invalidProperties, key, nestedkey string, reqStructMap map[string]interface{}, nestedVal interface{}) (string, error) {
+	if key != "" {
+		invalidCase, err := reqValidator(nestedVal, reqStructMap[key].(map[string]interface{}), nestedkey)
+		if err != nil {
+			return "", fmt.Errorf("error while trying to validate the request parameters case in map: %v", err)
+		}
+		invalidProperties += invalidCase
+	} else {
+		invalidProperties += getInvalidProperty(reqStructMap, nestedkey)
+	}
+
 	return invalidProperties, nil
 }
 

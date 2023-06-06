@@ -166,29 +166,31 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 					}
 				}
 			} else {
-
-				if len(events) > 0 && len(events[0].Messages) > 0 {
-					messageID := events[0].Messages[0].ID
-					evtStr := events[0].Messages[0].Values["data"].(string)
-					var evt interface{}
-					err := Decode([]byte(evtStr), &evt)
-					if err != nil {
-						errChan <- err
-						return
-					}
-					fn(evt)
-					rp.client.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
-				}
+				processEvent(rp, events, errChan, fn)
 			}
 		}
 	}()
 
 	// channel to handle the errors occured during go routines
-	err = <-errChan
-	if err != nil {
+	if err = <-errChan; err != nil {
 		return err
 	}
 	return nil
+}
+
+func processEvent(rp *RedisStreamsPacket, events []redis.XStream, errChan chan<- error, fn MsgProcess) {
+	if len(events) > 0 && len(events[0].Messages) > 0 {
+		messageID := events[0].Messages[0].ID
+		evtStr := events[0].Messages[0].Values["data"].(string)
+		var evt interface{}
+		err := Decode([]byte(evtStr), &evt)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		fn(evt)
+		rp.client.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
+	}
 }
 
 // Read implmentation need to be added

@@ -56,6 +56,7 @@ const (
 	writeDataErrMsg       string = "error while trying to Write Transaction data: WritePool is nil"
 	notFoundErrMsg        string = "No data found for the key: %v"
 	intConvErrMsg         string = "error while trying to convert the data into int: "
+	foundStr              string = " found"
 )
 
 // DbType is a alias name for int32
@@ -502,7 +503,7 @@ func (p *ConnPool) Read(table, key string) (string, *errors.Error) {
 	if err != nil {
 
 		if err.Error() == redigoNil {
-			return "", errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, " found")
+			return "", errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, foundStr)
 		}
 		if errs, aye := isDbConnectError(err); aye {
 			return "", errs
@@ -511,7 +512,7 @@ func (p *ConnPool) Read(table, key string) (string, *errors.Error) {
 	}
 
 	if value == nil {
-		return "", errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, " found")
+		return "", errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, foundStr)
 	}
 	data, err := redis.String(value, err)
 	if err != nil {
@@ -532,7 +533,7 @@ func (p *ConnPool) ReadMultipleKeys(key []interface{}) ([]string, *errors.Error)
 	if err != nil {
 
 		if err.Error() == redigoNil {
-			return nil, errors.PackError(errors.DBKeyNotFound, "no data with the key ", key, " found")
+			return nil, errors.PackError(errors.DBKeyNotFound, "no data with the key ", key, foundStr)
 		}
 		if errs, aye := isDbConnectError(err); aye {
 			return nil, errs
@@ -541,7 +542,7 @@ func (p *ConnPool) ReadMultipleKeys(key []interface{}) ([]string, *errors.Error)
 	}
 
 	if value == nil {
-		return nil, errors.PackError(errors.DBKeyNotFound, "no data with the key ", key, " found")
+		return nil, errors.PackError(errors.DBKeyNotFound, "no data with the key ", key, foundStr)
 	}
 
 	data, err := redis.Strings(value, err)
@@ -975,7 +976,7 @@ func (p *ConnPool) GetResourceDetails(key string) (string, *errors.Error) {
 		dkey = string(data.([]uint8))
 	}
 	if dkey == "" {
-		return "", errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, " found")
+		return "", errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, foundStr)
 	}
 
 	params := strings.SplitN(dkey, ":", 2)
@@ -1201,20 +1202,10 @@ func (p *ConnPool) GetString(index string, cursor float64, match string, regexFl
 		if getErr != nil {
 			return []string{}, fmt.Errorf(dataRetrivalErrMsg + getErr.Error())
 		}
-		if len(d.([]interface{})) > 1 {
-			data, err := redis.Strings(d.([]interface{})[1], getErr)
-			if err != nil {
-				return []string{}, fmt.Errorf(dataRetrivalErrMsg + err.Error())
-			}
-			for i := 0; i < len(data); i++ {
-				if data[i] != "0" {
-					if regexFlag {
-						getList = append(getList, data[i])
-					} else {
-						getList = append(getList, strings.Split(data[i], "::")[1])
-					}
-				}
-			}
+		var err error
+		getList, err = getListItems(getList, getErr, regexFlag, d)
+		if err != nil {
+			return []string{}, err
 		}
 		stringCursor := string(d.([]interface{})[0].([]uint8))
 		if stringCursor == "0" {
@@ -1223,6 +1214,25 @@ func (p *ConnPool) GetString(index string, cursor float64, match string, regexFl
 		currentCursor, getErr = strconv.ParseFloat(stringCursor, 64)
 		if getErr != nil {
 			return []string{}, getErr
+		}
+	}
+	return getList, nil
+}
+
+func getListItems(getList []string, getErr error, regexFlag bool, d interface{}) ([]string, error) {
+	if len(d.([]interface{})) > 1 {
+		data, err := redis.Strings(d.([]interface{})[1], getErr)
+		if err != nil {
+			return []string{}, fmt.Errorf(dataRetrivalErrMsg + err.Error())
+		}
+		for i := 0; i < len(data); i++ {
+			if data[i] != "0" {
+				if regexFlag {
+					getList = append(getList, data[i])
+				} else {
+					getList = append(getList, strings.Split(data[i], "::")[1])
+				}
+			}
 		}
 	}
 	return getList, nil
@@ -1257,16 +1267,11 @@ func (p *ConnPool) GetStorageList(index string, cursor, match float64, condition
 		if getErr != nil {
 			return nil, fmt.Errorf(dataRetrivalErrMsg + getErr.Error())
 		}
-		if len(d.([]interface{})) > 1 {
-			data, err := redis.Strings(d.([]interface{})[1], getErr)
-			if err != nil {
-				return nil, fmt.Errorf(dataRetrivalErrMsg + err.Error())
-			}
-			for _, j := range data {
-				if j != "0" {
-					getList = append(getList, j)
-				}
-			}
+
+		var err error
+		getList, err = getListForStorage(getList, getErr, d)
+		if err != nil {
+			return nil, err
 		}
 		stringCursor := string(d.([]interface{})[0].([]uint8))
 		if stringCursor == "0" {
@@ -1287,6 +1292,21 @@ func (p *ConnPool) GetStorageList(index string, cursor, match float64, condition
 	}
 	storeList = getUniqueSlice(storeList)
 	return storeList, nil
+}
+
+func getListForStorage(getList []string, getErr error, d interface{}) ([]string, error) {
+	if len(d.([]interface{})) > 1 {
+		data, err := redis.Strings(d.([]interface{})[1], getErr)
+		if err != nil {
+			return nil, fmt.Errorf(dataRetrivalErrMsg + err.Error())
+		}
+		for _, j := range data {
+			if j != "0" {
+				getList = append(getList, j)
+			}
+		}
+	}
+	return getList, nil
 }
 
 func getStoreListItemsFromList(list []string, match float64, condition string) ([]string, error) {
@@ -1399,17 +1419,9 @@ func (p *ConnPool) Del(index string, k string) error {
 			}
 			writeConn := writePool.Get()
 			defer writeConn.Close()
-			for _, resource := range data {
-				if resource != "0" {
-					_, delErr := writeConn.Do("ZREM", index, resource)
-					if delErr != nil {
-						if errs, aye := isDbConnectError(delErr); aye {
-							atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
-							return errs
-						}
-						return fmt.Errorf(deleteErrMsg + delErr.Error())
-					}
-				}
+			err = processData(data, writeConn, index, p)
+			if err != nil {
+				return err
 			}
 		}
 		stringCursor := string(d.([]interface{})[0].([]uint8))
@@ -1422,6 +1434,22 @@ func (p *ConnPool) Del(index string, k string) error {
 		}
 	}
 
+	return nil
+}
+
+func processData(data []string, writeConn redis.Conn, index string, p *ConnPool) error {
+	for _, resource := range data {
+		if resource != "0" {
+			_, delErr := writeConn.Do("ZREM", index, resource)
+			if delErr != nil {
+				if errs, aye := isDbConnectError(delErr); aye {
+					atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+					return errs
+				}
+				return fmt.Errorf(deleteErrMsg + delErr.Error())
+			}
+		}
+	}
 	return nil
 }
 
@@ -1684,7 +1712,7 @@ func (p *ConnPool) Incr(table, key string) (int, *errors.Error) {
 	if err != nil {
 
 		if err.Error() == redigoNil {
-			return count, errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, " found")
+			return count, errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, foundStr)
 		}
 		if errs, aye := isDbConnectError(err); aye {
 			return count, errs
@@ -1693,7 +1721,7 @@ func (p *ConnPool) Incr(table, key string) (int, *errors.Error) {
 	}
 
 	if value == nil {
-		return count, errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, " found")
+		return count, errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, foundStr)
 	}
 	count, err = redis.Int(value, err)
 	if err != nil {
@@ -1720,7 +1748,7 @@ func (p *ConnPool) Decr(table, key string) (int, *errors.Error) {
 	if err != nil {
 
 		if err.Error() == redigoNil {
-			return count, errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, " found")
+			return count, errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, foundStr)
 		}
 		if errs, aye := isDbConnectError(err); aye {
 			return count, errs
@@ -1729,7 +1757,7 @@ func (p *ConnPool) Decr(table, key string) (int, *errors.Error) {
 	}
 
 	if value == nil {
-		return count, errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, " found")
+		return count, errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, foundStr)
 	}
 	count, err = redis.Int(value, err)
 	if err != nil {
@@ -1785,7 +1813,7 @@ func (p *ConnPool) TTL(table, key string) (int, *errors.Error) {
 	if err != nil {
 
 		if err.Error() == redigoNil {
-			return 0, errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, " found")
+			return 0, errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, foundStr)
 		}
 		if errs, aye := isDbConnectError(err); aye {
 			return 0, errs
@@ -1994,7 +2022,7 @@ func (p *ConnPool) GetKeyValue(key string) (string, *errors.Error) {
 	if err != nil {
 
 		if err.Error() == redigoNil {
-			return "", errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, " found")
+			return "", errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, foundStr)
 		}
 		if errs, aye := isDbConnectError(err); aye {
 			return "", errs
@@ -2003,7 +2031,7 @@ func (p *ConnPool) GetKeyValue(key string) (string, *errors.Error) {
 	}
 
 	if value == nil {
-		return "", errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, " found")
+		return "", errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, foundStr)
 	}
 	data, err := redis.String(value, err)
 	if err != nil {

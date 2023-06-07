@@ -53,6 +53,7 @@ func TrackConfigFileChanges(configFilePath string, eventChan chan<- interface{},
 	}()
 }
 
+// setConfiguration sets the required configurations
 func setConfiguration(fileEvent fsnotify.Event, eventChan chan<- interface{}, errChan chan<- error) {
 	if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
 		// update the odim config

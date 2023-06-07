@@ -359,6 +359,7 @@ func checkDBConf(wl *WarningList) error {
 	return nil
 }
 
+// checkEmptyvalue checks and returns error if any key in the map has empty value
 func checkEmptyvalue(fieldMap map[string]string) error {
 	for key, value := range fieldMap {
 		if value == "" {

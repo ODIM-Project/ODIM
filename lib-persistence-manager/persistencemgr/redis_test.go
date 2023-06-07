@@ -32,13 +32,22 @@ import (
 )
 
 const (
-	deleteDataErrMsg string = "Error while deleting Data: %v\n"
-	dataEntryFailed  string = "Error while making data entry: %v\n"
-	mockDBConnection string = "Error while making mock DB connection:"
-	pluginTask       string = "PluginTask:task1"
-	pluginTaskIndex  string = "PluginTaskIndex"
-	hostIPAddress    string = "10.24.0.1"
-	readDataErrMsg   string = "Error while reading data: %v\n"
+	deleteDataErrMsg    string = "Error while deleting Data: %v\n"
+	createDataErrMsg    string = "Error while creating data: %v\n"
+	fetchDataErrMsg     string = "Error while fetching data: %v\n"
+	readDataErrMsg      string = "Error while reading data: %v\n"
+	dataExistErrMsg     string = "Data already exists"
+	genericErrorMsg     string = "Error: %v\n"
+	unmarshalingErrMsg  string = "Error while unmarshaling data : %v\n"
+	dataMismatchErrMsg  string = "Mismatch in fetched data"
+	dataIncrementErrMsg string = "Error while incrementing data: %v\n"
+	dataEntryFailed     string = "Error while making data entry: %v\n"
+	mockDBConnection    string = "Error while making mock DB connection:"
+	pluginTask          string = "PluginTask:task1"
+	pluginTaskIndex     string = "PluginTaskIndex"
+	hostIPAddress       string = "10.24.0.1"
+	locationUrl         string = "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
+	originResourcesURI  string = "/redfish/v1/Systems/uuid.1"
 )
 
 type MockConn struct {
@@ -134,19 +143,19 @@ func TestCreateExistingData(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB coonection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.Create("table", "key", data); cerr != nil {
 		if errors.DBKeyAlreadyExist != cerr.ErrNo() {
-			t.Errorf("Data already exists")
+			t.Errorf(dataExistErrMsg)
 		}
 	}
 
 	data = sample{Data1: "Value4", Data2: "Value5", Data3: "Value6"}
 	if cerr := c.Create("table", "key", data); cerr != nil {
 		if errors.DBKeyAlreadyExist != cerr.ErrNo() {
-			t.Errorf("Data already exists")
+			t.Errorf(dataExistErrMsg)
 		}
 	}
 	defer func() {
@@ -165,7 +174,7 @@ func TestRead(t *testing.T) {
 	}
 	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.Create("table", "key", data); cerr != nil {
-		t.Errorf("Error: %v\n", cerr.Error())
+		t.Errorf(genericErrorMsg, cerr.Error())
 	}
 	got, rerr := c.Read("table", "key")
 	if rerr != nil {
@@ -173,11 +182,11 @@ func TestRead(t *testing.T) {
 	}
 	var res sample
 	if jerr := json.Unmarshal([]byte(string(got)), &res); jerr != nil {
-		t.Errorf("Error while unmarshaling data : %v\n", jerr)
+		t.Errorf(unmarshalingErrMsg, jerr)
 	}
 
 	if res != data {
-		t.Errorf("Mismatch in fetched data")
+		t.Errorf(dataMismatchErrMsg)
 	}
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
@@ -211,7 +220,7 @@ func TestUpdate(t *testing.T) {
 	}
 	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.Create("table", "key", data); cerr != nil {
-		t.Errorf("Error: %v\n", cerr.Error())
+		t.Errorf(genericErrorMsg, cerr.Error())
 	}
 	data = sample{Data1: "Value1", Data2: "Value2", Data3: "Value4"}
 	uid, uerr := c.Update("table", "key", data)
@@ -221,15 +230,15 @@ func TestUpdate(t *testing.T) {
 	updateResponse := strings.Split(uid, ":")
 	got, rerr := c.Read(updateResponse[0], updateResponse[1])
 	if rerr != nil {
-		t.Errorf("Error while read data: %v\n", rerr.Error())
+		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	var res sample
 	if jerr := json.Unmarshal([]byte(string(got)), &res); jerr != nil {
-		t.Errorf("Error while unmarshaling data : %v\n", jerr)
+		t.Errorf(unmarshalingErrMsg, jerr)
 	}
 
 	if res != data {
-		t.Errorf("Mismatch in fetched data")
+		t.Errorf(dataMismatchErrMsg)
 	}
 
 	defer func() {
@@ -247,7 +256,7 @@ func TestUpdateInvalidData(t *testing.T) {
 	}
 	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.Create("table", "key", data); cerr != nil {
-		t.Errorf("Error: %v\n", cerr.Error())
+		t.Errorf(genericErrorMsg, cerr.Error())
 	}
 
 	if _, uerr := c.Update("table", "key", make(chan int, 1)); uerr != nil {
@@ -270,15 +279,15 @@ func TestGetall(t *testing.T) {
 	}
 	data1 := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if errs := c.Create("table", "key1", data1); errs != nil {
-		t.Errorf("Error while creating data: %v\n", errs.Error())
+		t.Errorf(createDataErrMsg, errs.Error())
 	}
 	data2 := sample{Data1: "Value4", Data2: "Value5", Data3: "Value6"}
 	if errs := c.Create("table", "key2", data2); errs != nil {
-		t.Errorf("Error while creating data: %v\n", errs.Error())
+		t.Errorf(createDataErrMsg, errs.Error())
 	}
 	keys, errs := c.GetAllDetails("table")
 	if errs != nil {
-		t.Errorf("Error while fetching data: %v\n", errs.Error())
+		t.Errorf(fetchDataErrMsg, errs.Error())
 	}
 
 	if len(keys) < 2 {
@@ -287,7 +296,7 @@ func TestGetall(t *testing.T) {
 	for _, key := range keys {
 		got, rerr := c.Read("table", key)
 		if rerr != nil {
-			t.Errorf("Error while read data: %v\n", rerr.Error())
+			t.Errorf(readDataErrMsg, rerr.Error())
 		}
 		var res sample
 		if err := json.Unmarshal([]byte(string(got)), &res); err != nil {
@@ -317,7 +326,7 @@ func TestGetallNonExistingtable(t *testing.T) {
 	}
 	keys, errs := c.GetAllDetails("nonExistingtable")
 	if errs != nil {
-		t.Errorf("Error while fetching data: %v\n", errs.Error())
+		t.Errorf(fetchDataErrMsg, errs.Error())
 	}
 	if len(keys) != 0 {
 		t.Errorf("Error, fetching data even if table does not exist")
@@ -330,7 +339,7 @@ func TestDelete(t *testing.T) {
 	}
 	data1 := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.Create("table", "key1", data1); cerr != nil {
-		t.Errorf("Error while creating data: %v\n", cerr.Error())
+		t.Errorf(createDataErrMsg, cerr.Error())
 	}
 	if derr := c.Delete("table", "key1"); derr != nil {
 		t.Errorf(deleteDataErrMsg, derr.Error())
@@ -360,14 +369,14 @@ func TestCleanUpDB(t *testing.T) {
 	}
 	data1 := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if errs := c.Create("table", "key1", data1); errs != nil {
-		t.Errorf("Error while creating data: %v\n", errs.Error())
+		t.Errorf(createDataErrMsg, errs.Error())
 	}
 	if errs := c.CleanUpDB(); errs != nil {
 		t.Errorf("error while trying to flush db: %v\n", errs.Error())
 	}
 	keys, errs := c.GetAllDetails("*")
 	if errs != nil {
-		t.Errorf("Error while fetching data: %v\n", errs.Error())
+		t.Errorf(fetchDataErrMsg, errs.Error())
 	}
 	if len(keys) != 0 {
 		t.Error("database was not fully cleaned")
@@ -384,7 +393,7 @@ func TestFilterSearch(t *testing.T) {
 	}
 	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if errs := c.Create("table", "key", data); errs != nil {
-		t.Errorf("Error: %v\n", errs.Error())
+		t.Errorf(genericErrorMsg, errs.Error())
 	}
 	got, errs := c.FilterSearch("table", "key", ".Data3")
 	// t.Errorf("HERE: %v, %v",len(string(got.([]uint8))),len("Value3"))
@@ -392,7 +401,7 @@ func TestFilterSearch(t *testing.T) {
 		t.Errorf("error while looking up data: %v", errs.Error())
 	}
 	if string(got.([]uint8)) != `"Value3"` {
-		t.Errorf("Mismatch in fetched data")
+		t.Errorf(dataMismatchErrMsg)
 	}
 	defer func() {
 		if errs := c.Delete("table", "key"); errs != nil {
@@ -410,11 +419,11 @@ func TestGetAllMatchingDetails(t *testing.T) {
 	}
 	data1 := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.Create("table", "key1", data1); cerr != nil {
-		t.Errorf("Error while creating data: %v\n", cerr.Error())
+		t.Errorf(createDataErrMsg, cerr.Error())
 	}
 	data2 := sample{Data1: "Value4", Data2: "Value5", Data3: "Value6"}
 	if cerr := c.Create("table", "key2", data2); cerr != nil {
-		t.Errorf("Error while creating data: %v\n", cerr.Error())
+		t.Errorf(createDataErrMsg, cerr.Error())
 	}
 	keys, err := c.GetAllMatchingDetails("table", "key")
 
@@ -424,11 +433,11 @@ func TestGetAllMatchingDetails(t *testing.T) {
 	for _, key := range keys {
 		got, rerr := c.Read("table", key)
 		if rerr != nil {
-			t.Errorf("Error while read data: %v\n", rerr.Error())
+			t.Errorf(readDataErrMsg, rerr.Error())
 		}
 		var res sample
 		if jerr := json.Unmarshal([]byte(string(got)), &res); jerr != nil {
-			t.Errorf("Error while unmarshaling data : %v\n", jerr)
+			t.Errorf(unmarshalingErrMsg, jerr)
 		}
 
 		if res != data1 {
@@ -530,7 +539,7 @@ func TestGetResourceDetails(t *testing.T) {
 	}
 	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.Create("table", "key", data); cerr != nil {
-		t.Errorf("Error: %v\n", cerr.Error())
+		t.Errorf(genericErrorMsg, cerr.Error())
 	}
 	got, rerr := c.GetResourceDetails("key")
 	if rerr != nil {
@@ -538,11 +547,11 @@ func TestGetResourceDetails(t *testing.T) {
 	}
 	var res sample
 	if jerr := json.Unmarshal([]byte(string(got)), &res); jerr != nil {
-		t.Errorf("Error while unmarshaling data : %v\n", jerr)
+		t.Errorf(unmarshalingErrMsg, jerr)
 	}
 
 	if res != data {
-		t.Errorf("Mismatch in fetched data")
+		t.Errorf(dataMismatchErrMsg)
 	}
 	defer func() {
 		if derr := c.Delete("table", "key"); derr != nil {
@@ -672,7 +681,7 @@ func TestGet(t *testing.T) {
 		t.Fatal(mockDBConnection, err)
 	}
 	if cerr := c.CreateIndex(map[string]interface{}{"model": "intel"}, "abc-123"); cerr != nil {
-		t.Errorf("Error: %v\n", cerr.Error())
+		t.Errorf(genericErrorMsg, cerr.Error())
 	}
 	for i := 0; i < 10000; {
 		f := strconv.Itoa(i)
@@ -712,7 +721,7 @@ func TestGetTaskList(t *testing.T) {
 		t.Fatal(mockDBConnection, err)
 	}
 	if cerr := c.CreateIndex(map[string]interface{}{"count": 4}, "abc-123"); cerr != nil {
-		t.Errorf("Error: %v\n", cerr.Error())
+		t.Errorf(genericErrorMsg, cerr.Error())
 	}
 	got, rerr := c.GetTaskList("count", 0, -1)
 	if rerr != nil {
@@ -735,7 +744,7 @@ func TestGetRange(t *testing.T) {
 		t.Fatal(mockDBConnection, err)
 	}
 	if cerr := c.CreateIndex(map[string]interface{}{"count": 4}, "abc-123"); cerr != nil {
-		t.Errorf("Error: %v\n", cerr.Error())
+		t.Errorf(genericErrorMsg, cerr.Error())
 	}
 	got, rerr := c.GetRange("count", 0, 5, false)
 	if rerr != nil {
@@ -757,7 +766,7 @@ func TestGetStorageList(t *testing.T) {
 		t.Fatal(mockDBConnection, err)
 	}
 	if cerr := c.CreateIndex(map[string]interface{}{"storage": "[2.179699264 4.543211223]"}, "abc-123"); cerr != nil {
-		t.Errorf("Error: %v\n", cerr.Error())
+		t.Errorf(genericErrorMsg, cerr.Error())
 	}
 	got, rerr := c.GetStorageList("storage", 0, 2.179699264, "eq", false)
 	if rerr != nil {
@@ -824,7 +833,7 @@ func TestCreateEvtSubscriptionsExistingData(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB coonection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	js := `{"Name":"Subscriptions", "hosts":["10.10.10.10"]}`
 	defer func() {
@@ -937,8 +946,8 @@ func TestCreateDeviceSubscription(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
-	originResources := []string{"/redfish/v1/Systems/uuid.1"}
+	location := locationUrl
+	originResources := []string{originResourcesURI}
 	hostIP := hostIPAddress
 	defer func() {
 		if derr := c.DeleteDeviceSubscription("DeviceSubscription", hostIP); derr != nil {
@@ -956,8 +965,8 @@ func TestCreateDeviceSubscriptionExistingData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
-	originResources := []string{"/redfish/v1/Systems/uuid.1"}
+	location := locationUrl
+	originResources := []string{originResourcesURI}
 	hostIP := hostIPAddress
 	defer func() {
 		if derr := c.DeleteDeviceSubscription("DeviceSubscription", hostIP); derr != nil {
@@ -978,8 +987,8 @@ func TestGetDeviceSubscription(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
-	originResources := []string{"/redfish/v1/Systems/uuid.1"}
+	location := locationUrl
+	originResources := []string{originResourcesURI}
 	hostIP := hostIPAddress
 	defer func() {
 		if derr := c.DeleteDeviceSubscription("DeviceSubscription", hostIP); derr != nil {
@@ -1018,8 +1027,8 @@ func TestDeleteDeviceSubscription(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
-	originResources := []string{"/redfish/v1/Systems/uuid.1"}
+	location := locationUrl
+	originResources := []string{originResourcesURI}
 	hostIP := hostIPAddress
 	if cerr := c.CreateDeviceSubscriptionIndex("DeviceSubscription", hostIP, location, originResources); cerr != nil {
 		t.Errorf(dataEntryFailed, cerr.Error())
@@ -1030,7 +1039,7 @@ func TestDeleteDeviceSubscription(t *testing.T) {
 
 }
 
-func TestDeleteDeviceSubscriptionsNonexisting_data(t *testing.T) {
+func TestDeleteDeviceSubscriptionsNonexistingData(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
@@ -1047,8 +1056,8 @@ func TestUpdateDeviceSubscriptions(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
-	originResources := []string{"/redfish/v1/Systems/uuid.1"}
+	location := locationUrl
+	originResources := []string{originResourcesURI}
 	hostIP := hostIPAddress
 	defer func() {
 		if derr := c.DeleteDeviceSubscription("DeviceSubscription", hostIP); derr != nil {
@@ -1310,18 +1319,18 @@ func TestIncr(t *testing.T) {
 
 	got, rerr := c.Incr("table", "key")
 	if rerr != nil {
-		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+		t.Errorf(dataIncrementErrMsg, rerr.Error())
 	}
 	if got != 1 {
-		t.Errorf("Mismatch in fetched data")
+		t.Errorf(dataMismatchErrMsg)
 	}
 
 	got, rerr = c.Incr("table", "key")
 	if rerr != nil {
-		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+		t.Errorf(dataIncrementErrMsg, rerr.Error())
 	}
 	if got != 2 {
-		t.Errorf("Mismatch in fetched data")
+		t.Errorf(dataMismatchErrMsg)
 	}
 
 	defer func() {
@@ -1340,27 +1349,27 @@ func TestDecr(t *testing.T) {
 	}
 	_, rerr := c.Incr("table", "key")
 	if rerr != nil {
-		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+		t.Errorf(dataIncrementErrMsg, rerr.Error())
 	}
 	_, rerr = c.Incr("table", "key")
 	if rerr != nil {
-		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+		t.Errorf(dataIncrementErrMsg, rerr.Error())
 	}
 
 	got, rerr := c.Decr("table", "key")
 	if rerr != nil {
-		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+		t.Errorf(dataIncrementErrMsg, rerr.Error())
 	}
 	if got != 1 {
-		t.Errorf("Mismatch in fetched data")
+		t.Errorf(dataMismatchErrMsg)
 	}
 
 	got, rerr = c.Decr("table", "key")
 	if rerr != nil {
-		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+		t.Errorf(dataIncrementErrMsg, rerr.Error())
 	}
 	if got != 0 {
-		t.Errorf("Mismatch in fetched data")
+		t.Errorf(dataMismatchErrMsg)
 	}
 
 	defer func() {
@@ -1413,19 +1422,19 @@ func TestSetExpireExistingData(t *testing.T) {
 
 	c, err := MockDBConnection(t)
 	if err != nil {
-		t.Fatal("Error while making mock DB coonection:", err)
+		t.Fatal(mockDBConnection, err)
 	}
 	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
 	if cerr := c.SetExpire("table", "key", data, 1); cerr != nil {
 		if errors.DBKeyAlreadyExist != cerr.ErrNo() {
-			t.Errorf("Data already exists")
+			t.Errorf(dataExistErrMsg)
 		}
 	}
 
 	data = sample{Data1: "Value4", Data2: "Value5", Data3: "Value6"}
 	if cerr := c.SetExpire("table", "key", data, 1); cerr != nil {
 		if errors.DBKeyAlreadyExist != cerr.ErrNo() {
-			t.Errorf("Data already exists")
+			t.Errorf(dataExistErrMsg)
 		}
 	}
 	defer func() {

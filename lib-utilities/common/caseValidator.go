@@ -79,6 +79,7 @@ func reqValidator(rawReqBodyMap interface{}, reqStructMap map[string]interface{}
 	return invalidProperties, nil
 }
 
+// getInvalidProperties validates the request fields and returns the invalid properties
 func getInvalidProperties(invalidProperties, key, nestedkey string, reqStructMap map[string]interface{}, nestedVal interface{}) (string, error) {
 	if key != "" {
 		invalidCase, err := reqValidator(nestedVal, reqStructMap[key].(map[string]interface{}), nestedkey)

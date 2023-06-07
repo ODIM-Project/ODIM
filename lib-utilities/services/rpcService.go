@@ -364,6 +364,7 @@ func GetEnabledServiceList() map[string]bool {
 	return data
 }
 
+// addServicesToMap adds the enabled service to the passes map
 func addServicesToMap(microService string, resp *clientv3.GetResponse, data map[string]bool, err error) {
 	if err == nil && len(resp.Kvs) > 0 {
 		data[microService] = true

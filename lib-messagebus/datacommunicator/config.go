@@ -118,6 +118,7 @@ func SetConfiguration(filePath string) error {
 	return nil
 }
 
+// checkKafkaFConfiguration checks the validity of KafkaPacket object fields
 func checkKafkaFConfiguration() error {
 	if len(MQ.KafkaF.KServersInfo) <= 0 {
 		return fmt.Errorf("no value found for KServersInfo in messagebus config file")
@@ -137,6 +138,7 @@ func checkKafkaFConfiguration() error {
 	return nil
 }
 
+// checkRedisStreamsConfiguration checks the validity of RedisStream object fields
 func checkRedisStreamsConfiguration() error {
 	var err error
 	if MQ.RedisStreams.RedisInMemoryEncryptedPassword == "" {

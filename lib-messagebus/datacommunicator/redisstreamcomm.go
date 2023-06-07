@@ -178,6 +178,7 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 	return nil
 }
 
+// processEvent processes the redis stream events and decode the data
 func processEvent(rp *RedisStreamsPacket, events []redis.XStream, errChan chan<- error, fn MsgProcess) {
 	if len(events) > 0 && len(events[0].Messages) > 0 {
 		messageID := events[0].Messages[0].ID

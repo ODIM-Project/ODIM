@@ -225,7 +225,6 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 	var err *errors.Error
 	switch dbFlag {
 	case InMemory:
-		// In this case getInmemoryDBConnection return in-memory db connection pool
 		inMemDBConnPool, err := getInmemoryDBConnection()
 		if err != nil {
 			return nil, err
@@ -233,7 +232,6 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 		return inMemDBConnPool, err
 
 	case OnDisk:
-		// In this case getOnDiskDBConnection returns On-Disk db connection pool
 		onDiskDBConnPool, err = getOnDiskDBConnection()
 		if err != nil {
 			return nil, err
@@ -245,6 +243,7 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 	}
 }
 
+// getInmemoryDBConnection return an in-memory db connection pool
 func getInmemoryDBConnection() (*ConnPool, *errors.Error) {
 	var err *errors.Error
 	if inMemDBConnPool == nil || inMemDBConnPool.ReadPool == nil {
@@ -260,6 +259,7 @@ func getInmemoryDBConnection() (*ConnPool, *errors.Error) {
 	return inMemDBConnPool, nil
 }
 
+// getOnDiskDBConnection returns an On-Disk db connection pool
 func getOnDiskDBConnection() (*ConnPool, *errors.Error) {
 	var err *errors.Error
 	if onDiskDBConnPool == nil || onDiskDBConnPool.ReadPool == nil {
@@ -866,6 +866,7 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 	return nil
 }
 
+// sendUpdateRequest will make an update call to database with the provided json payload
 func sendUpdateRequest(writeConn redis.Conn, key string, jsondata []byte) *errors.Error {
 	updateErr := writeConn.Send("SET", key, jsondata)
 	if updateErr != nil {
@@ -1219,6 +1220,7 @@ func (p *ConnPool) GetString(index string, cursor float64, match string, regexFl
 	return getList, nil
 }
 
+// getListItems forms a list of index values from the retrieved data from database
 func getListItems(getList []string, getErr error, regexFlag bool, d interface{}) ([]string, error) {
 	if len(d.([]interface{})) > 1 {
 		data, err := redis.Strings(d.([]interface{})[1], getErr)
@@ -1294,6 +1296,7 @@ func (p *ConnPool) GetStorageList(index string, cursor, match float64, condition
 	return storeList, nil
 }
 
+// getListForStorage creates a list from the data retrieved from database
 func getListForStorage(getList []string, getErr error, d interface{}) ([]string, error) {
 	if len(d.([]interface{})) > 1 {
 		data, err := redis.Strings(d.([]interface{})[1], getErr)
@@ -1309,6 +1312,7 @@ func getListForStorage(getList []string, getErr error, d interface{}) ([]string,
 	return getList, nil
 }
 
+// getStoreListItemsFromList returns a storage list of capacity based on the condition satisfied
 func getStoreListItemsFromList(list []string, match float64, condition string) ([]string, error) {
 	var storeList []string
 	for _, k := range list {
@@ -1419,7 +1423,7 @@ func (p *ConnPool) Del(index string, k string) error {
 			}
 			writeConn := writePool.Get()
 			defer writeConn.Close()
-			err = processData(data, writeConn, index, p)
+			err = deleteData(data, writeConn, index, p)
 			if err != nil {
 				return err
 			}
@@ -1437,7 +1441,8 @@ func (p *ConnPool) Del(index string, k string) error {
 	return nil
 }
 
-func processData(data []string, writeConn redis.Conn, index string, p *ConnPool) error {
+// deleteData deletes the resource under an index from the database
+func deleteData(data []string, writeConn redis.Conn, index string, p *ConnPool) error {
 	for _, resource := range data {
 		if resource != "0" {
 			_, delErr := writeConn.Do("ZREM", index, resource)

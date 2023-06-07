@@ -193,10 +193,10 @@ func (e *ExternalInterface) CreateVolume(ctx context.Context, req *systemsproto.
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		errMsg := "error while creating volume: " + err.Error()
-		l.LogWithFields(ctx).Error(errMsg)
-		common.GeneralError(http.StatusInternalServerError, response.InternalError,
-			errMsg, nil, taskInfo)
+		l.LogWithFields(ctx).Error(err)
+		task := fillTaskData(taskID, targetURI, string(req.RequestBody), resp,
+			common.Completed, common.Warning, 100, http.MethodPost)
+		pc.UpdateTask(ctx, task)
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
@@ -511,8 +511,9 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 		json.Unmarshal(body, &resp.Body)
 		errMsg := "error while deleting volume: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		common.GeneralError(http.StatusInternalServerError, response.InternalError,
-			errMsg, nil, taskInfo)
+		task := fillTaskData(taskID, targetURI, string(req.RequestBody), resp,
+			common.Completed, common.Warning, 100, http.MethodPost)
+		pc.UpdateTask(ctx, task)
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
@@ -520,6 +521,16 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 		if err != nil {
 			l.LogWithFields(ctx).Error(err)
 		}
+		return
+	}
+
+	// updating response of DELL XR11 response
+	if getResponse.StatusCode == http.StatusOK && body != nil {
+		resp.StatusCode = getResponse.StatusCode
+		json.Unmarshal(body, &resp.Body)
+		task := fillTaskData(taskID, targetURI, string(req.RequestBody), resp,
+			common.Completed, common.OK, 100, http.MethodDelete)
+		pc.UpdateTask(ctx, task)
 		return
 	}
 
@@ -544,6 +555,6 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 	resp.StatusCode = http.StatusNoContent
 	resp.StatusMessage = response.Success
 	task := fillTaskData(taskID, targetURI, string(req.RequestBody), resp,
-		common.Completed, common.OK, 100, http.MethodPost)
+		common.Completed, common.OK, 100, http.MethodDelete)
 	pc.UpdateTask(ctx, task)
 }

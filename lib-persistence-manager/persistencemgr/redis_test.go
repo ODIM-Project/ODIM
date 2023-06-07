@@ -37,11 +37,15 @@ const (
 	fetchDataErrMsg     string = "Error while fetching data: %v\n"
 	readDataErrMsg      string = "Error while reading data: %v\n"
 	dataExistErrMsg     string = "Data already exists"
+	getDataErrMsg       string = "Error while getting data: %v\n"
 	genericErrorMsg     string = "Error: %v\n"
 	unmarshalingErrMsg  string = "Error while unmarshaling data : %v\n"
 	dataMismatchErrMsg  string = "Mismatch in fetched data"
 	dataIncrementErrMsg string = "Error while incrementing data: %v\n"
 	dataEntryFailed     string = "Error while making data entry: %v\n"
+	dataCleanUpfailed   string = "Error while cleaning up data in DB: %v\n"
+	addPluginFailed     string = "Error while adding plugin task to set"
+	dataNotFound        string = "data not found"
 	mockDBConnection    string = "Error while making mock DB connection:"
 	pluginTask          string = "PluginTask:task1"
 	pluginTaskIndex     string = "PluginTaskIndex"
@@ -697,14 +701,14 @@ func TestGet(t *testing.T) {
 		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
-		t.Errorf("data not found")
+		t.Errorf(dataNotFound)
 	}
 	got, rerr = c.GetString("ProcessorSummary/Model", 0, "value*", false)
 	if rerr != nil {
 		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) != 10000 {
-		t.Errorf("data not found")
+		t.Errorf(dataNotFound)
 	}
 	defer func() {
 		if derr := c.Del("model", "intel::abc-123"); derr != nil {
@@ -728,7 +732,7 @@ func TestGetTaskList(t *testing.T) {
 		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
-		t.Errorf("data not found")
+		t.Errorf(dataNotFound)
 	}
 	defer func() {
 		if derr := c.Del("count", "4::abc-123"); derr != nil {
@@ -751,7 +755,7 @@ func TestGetRange(t *testing.T) {
 		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
-		t.Errorf("data not found")
+		t.Errorf(dataNotFound)
 	}
 	defer func() {
 		if derr := c.Del("count", "4::abc-123"); derr != nil {
@@ -773,35 +777,35 @@ func TestGetStorageList(t *testing.T) {
 		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
-		t.Errorf("data not found")
+		t.Errorf(dataNotFound)
 	}
 	got, rerr = c.GetStorageList("storage", 0, 2.179699264, "ge", false)
 	if rerr != nil {
 		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
-		t.Errorf("data not found")
+		t.Errorf(dataNotFound)
 	}
 	got, rerr = c.GetStorageList("storage", 0, 0, "gt", false)
 	if rerr != nil {
 		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
-		t.Errorf("data not found")
+		t.Errorf(dataNotFound)
 	}
 	got, rerr = c.GetStorageList("storage", 0, 4, "lt", false)
 	if rerr != nil {
 		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
-		t.Errorf("data not found")
+		t.Errorf(dataNotFound)
 	}
 	got, rerr = c.GetStorageList("storage", 0, 4, "le", false)
 	if rerr != nil {
 		t.Errorf(readDataErrMsg, rerr.Error())
 	}
 	if len(got) == 0 {
-		t.Errorf("data not found")
+		t.Errorf(dataNotFound)
 	}
 
 	defer func() {
@@ -870,7 +874,7 @@ func TestGetEvtSubscriptions(t *testing.T) {
 
 	subscriptions, gerr := c.GetEvtSubscriptions("subscriptions", "*10.10.10.10*")
 	if gerr != nil {
-		t.Errorf("Error while getting data: %v\n", gerr.Error())
+		t.Errorf(getDataErrMsg, gerr.Error())
 	}
 	if len(subscriptions) < 1 {
 		t.Errorf("No data found for the host ip")
@@ -882,7 +886,7 @@ func TestGetEvtSubscriptions(t *testing.T) {
 
 	subscriptions, gerr = c.GetEvtSubscriptions("subscriptions", "*10.10.10.100*")
 	if err != nil {
-		t.Errorf("Error while getting data: %v\n", err.Error())
+		t.Errorf(getDataErrMsg, err.Error())
 	}
 	if len(subscriptions) > 0 {
 		t.Errorf("data shouldn't be there")
@@ -907,7 +911,7 @@ func TestDeleteEvtSubscriptions(t *testing.T) {
 
 }
 
-func TestDeleteEvtSubscriptionsNonexisting_data(t *testing.T) {
+func TestDeleteEvtSubscriptionsNonexistingData(t *testing.T) {
 	c, err := MockDBConnection(t)
 	if err != nil {
 		t.Fatal(err)
@@ -1001,7 +1005,7 @@ func TestGetDeviceSubscription(t *testing.T) {
 
 	subscriptions, gerr := c.GetDeviceSubscription("DeviceSubscription", "10.24.0.1*")
 	if gerr != nil {
-		t.Errorf("Error while getting data: %v\n", gerr.Error())
+		t.Errorf(getDataErrMsg, gerr.Error())
 	}
 	if len(subscriptions) < 1 {
 		t.Errorf("No data found for the host ip")
@@ -1014,7 +1018,7 @@ func TestGetDeviceSubscription(t *testing.T) {
 
 	subscriptions, gerr = c.GetDeviceSubscription("DeviceSubscription", "10.10.10.100*")
 	if err != nil {
-		t.Errorf("Error while getting data: %v\n", err.Error())
+		t.Errorf(getDataErrMsg, err.Error())
 	}
 	if len(subscriptions) > 0 {
 		t.Errorf("data shouldn't be there")
@@ -1711,7 +1715,7 @@ func TestConnPoolAddMemberToSet(t *testing.T) {
 
 	defer func() {
 		if derr := c.CleanUpDB(); derr != nil {
-			t.Errorf("Error while cleaning up data in DB: %v\n", derr.Error())
+			t.Errorf(dataCleanUpfailed, derr.Error())
 		}
 	}()
 
@@ -1752,12 +1756,12 @@ func TestConnPoolGetAllMembersInSet(t *testing.T) {
 
 	err = c.AddMemberToSet(pluginTaskIndex, pluginTask)
 	if err != nil {
-		t.Fatal("Error while adding plugin task to set", err)
+		t.Fatal(addPluginFailed, err)
 	}
 
 	defer func() {
 		if derr := c.CleanUpDB(); derr != nil {
-			t.Errorf("Error while cleaning up data in DB: %v\n", derr.Error())
+			t.Errorf(dataCleanUpfailed, derr.Error())
 		}
 	}()
 
@@ -1803,17 +1807,17 @@ func TestConnPoolRemoveMemberFromSet(t *testing.T) {
 
 	err = c.AddMemberToSet(pluginTaskIndex, pluginTask)
 	if err != nil {
-		t.Fatal("Error while adding plugin task to set", err)
+		t.Fatal(addPluginFailed, err)
 	}
 
 	err = c.AddMemberToSet(pluginTaskIndex, "PluginTask:task2")
 	if err != nil {
-		t.Fatal("Error while adding plugin task to set", err)
+		t.Fatal(addPluginFailed, err)
 	}
 
 	defer func() {
 		if derr := c.CleanUpDB(); derr != nil {
-			t.Errorf("Error while cleaning up data in DB: %v\n", derr.Error())
+			t.Errorf(dataCleanUpfailed, derr.Error())
 		}
 	}()
 

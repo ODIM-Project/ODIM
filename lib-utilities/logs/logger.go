@@ -195,34 +195,26 @@ func formatAuthStructFields(entry *logrus.Entry, msg string, priorityNo int8) st
 // formatStructuredFields is used to create structured fields for log
 func formatStructuredFields(entry *logrus.Entry, msg string) string {
 	var transID, processName, actionID, actionName, threadID, threadName string
-	if val, ok := entry.Data["process_name"]; ok {
-		if val != nil {
-			processName = val.(string)
-		}
-	}
-	if val, ok := entry.Data["transaction_id"]; ok {
-		if val != nil {
-			transID = val.(string)
-		}
-	}
-	if val, ok := entry.Data["action_id"]; ok {
-		if val != nil {
-			actionID = val.(string)
-		}
-	}
-	if val, ok := entry.Data["action_name"]; ok {
-		if val != nil {
-			actionName = val.(string)
-		}
-	}
-	if val, ok := entry.Data["thread_id"]; ok {
-		if val != nil {
-			threadID = val.(string)
-		}
-	}
-	if val, ok := entry.Data["thread_name"]; ok {
-		if val != nil {
-			threadName = val.(string)
+	fields := []string{"process_name", "transaction_id", "action_id", "action_name", "thread_id", "thread_name"}
+
+	for _, value := range fields {
+		if val, ok := entry.Data[value]; ok {
+			if val != nil {
+				switch value {
+				case "process_name":
+					processName = val.(string)
+				case "transaction_id":
+					transID = val.(string)
+				case "action_id":
+					actionID = val.(string)
+				case "action_name":
+					actionName = val.(string)
+				case "thread_id":
+					threadID = val.(string)
+				case "thread_name":
+					threadName = val.(string)
+				}
+			}
 		}
 	}
 	if transID != "" {

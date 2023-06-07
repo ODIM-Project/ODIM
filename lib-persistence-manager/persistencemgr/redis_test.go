@@ -46,7 +46,7 @@ const (
 	pluginTask          string = "PluginTask:task1"
 	pluginTaskIndex     string = "PluginTaskIndex"
 	hostIPAddress       string = "10.24.0.1"
-	locationUrl         string = "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
+	locationURL         string = "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
 	originResourcesURI  string = "/redfish/v1/Systems/uuid.1"
 )
 
@@ -946,7 +946,7 @@ func TestCreateDeviceSubscription(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	location := locationUrl
+	location := locationURL
 	originResources := []string{originResourcesURI}
 	hostIP := hostIPAddress
 	defer func() {
@@ -965,7 +965,7 @@ func TestCreateDeviceSubscriptionExistingData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	location := locationUrl
+	location := locationURL
 	originResources := []string{originResourcesURI}
 	hostIP := hostIPAddress
 	defer func() {
@@ -987,7 +987,7 @@ func TestGetDeviceSubscription(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	location := locationUrl
+	location := locationURL
 	originResources := []string{originResourcesURI}
 	hostIP := hostIPAddress
 	defer func() {
@@ -1027,7 +1027,7 @@ func TestDeleteDeviceSubscription(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	location := locationUrl
+	location := locationURL
 	originResources := []string{originResourcesURI}
 	hostIP := hostIPAddress
 	if cerr := c.CreateDeviceSubscriptionIndex("DeviceSubscription", hostIP, location, originResources); cerr != nil {
@@ -1056,7 +1056,7 @@ func TestUpdateDeviceSubscriptions(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	location := locationUrl
+	location := locationURL
 	originResources := []string{originResourcesURI}
 	hostIP := hostIPAddress
 	defer func() {

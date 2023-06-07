@@ -29,8 +29,9 @@ var dbConn *redis.Client
 
 const (
 	// DefaultTLSMinVersion is default minimum version for tls
-	DefaultTLSMinVersion        = tls.VersionTLS12
-	TimeoutErrMsg        string = " connection timed out"
+	DefaultTLSMinVersion = tls.VersionTLS12
+	// TimeoutErrMsg is the connection time out error message
+	TimeoutErrMsg string = " connection timed out"
 )
 
 // RedisStreamsPacket defines the RedisStreamsPacket Message Packet Object. Apart from Base Packet, it

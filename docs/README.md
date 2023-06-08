@@ -97,6 +97,13 @@
     + [Creating a volume](#creating-a-volume)
     + [Deleting a volume](#deleting-a-volume)
   * [SecureBoot](#secureboot)
+    * [Viewing SecureBoot](#Viewing-SecureBoot )
+    * [Updating SecureBoot](#Updating-SecureBoot )
+    * [Resetting SecureBootKeys](#Resetting-SecureBootKeys)
+    * [Collection of SecureBOOT databases](#Collection-of-SecureBOOT-databases)
+    * [Single SecureBOOT database](#Single-SecureBOOT-database)
+    * [Collection of certificates](#Collection-of-certificates)
+    * [Single certificate](#Single-certificate)
   * [Processors](#processors)
     * [Viewing information of a processor](#Viewing-information-of-a-processor)
   * [Chassis](#chassis)
@@ -5194,15 +5201,16 @@ curl -i -X DELETE \
 |---------|----|-----------|
 |@Redfish.OperationApplyTime|Redfish annotation (optional)<br> | It enables you to control when the operation is carried out.<br> Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume is deleted only after you successfully reset the system.<br> `Immediate` indicates that the volume is deleted immediately after the operation is successfully complete. |
 
-
 ##  SecureBoot
+
+### Viewing SecureBoot 
 
 |||
 |---------|-------|
 |**Method** |`GET` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/SecureBoot` |
-|**Description** |Use this endpoint to discover information on `UEFI Secure Boot` and manage the `UEFI Secure Boot` functionality of a specific system.|
-|**Returns** | <ul><li>Action for resetting keys</li><li> `UEFI Secure Boot` properties<br>**NOTE:** Use URI in the *Actions* group to discover information about resetting keys.</li></ul> |
+|**Description** |Use this endpoint to discover information on `UEFI SecureBoot` .|
+|**Returns** | Information on SecureBoot. |
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
 
@@ -5235,6 +5243,351 @@ curl -i GET \
     "SecureBootMode": "UserMode"
 }
 ```
+
+### Updating SecureBoot
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `PATCH`                                                      |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/SecureBoot`          |
+| **Description**    | Use this endpoint to update the `UEFI Secure Boot` functionality of a specific system. |
+| **Returns**        | <ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion of the operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.</li></ul> |
+| **Response code**  | On success, `202 Accepted`.<br/>On successful completion of the task, `200 OK`. |
+| **Authentication** | Yes                                                          |
+
+>**curl command**
+
+
+```
+curl -i -X PATCH \
+   -H "Content-Type:application/json" \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -d \
+'{
+  "SecureBootEnable": true
+}' \
+ 'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/SecureBoot'
+```
+
+> **Sample request body**
+
+```
+{
+  "SecureBootEnable": true
+}
+```
+
+>**Sample response body (HTTP 202 status)**
+
+```
+{
+    "@odata.type": "#Task.v1_6_0.Task",
+    "@odata.id": "/redfish/v1/TaskService/Tasks/task41e537d7-78f2-4bb2-862b-97605153760f",
+    "@odata.context": "/redfish/v1/$metadata#Task.Task",
+    "Id": "task41e537d7-78f2-4bb2-862b-97605153760f",
+    "Name": "Task task41e537d7-78f2-4bb2-862b-97605153760f",
+    "Message": "The task with id task41e537d7-78f2-4bb2-862b-97605153760f has started.",
+    "MessageId": "TaskEvent.1.0.3.TaskStarted",
+    "MessageArgs": [
+        "task41e537d7-78f2-4bb2-862b-97605153760f"
+    ],
+    "NumberOfArgs": 1,
+    "Severity": "OK"
+}
+```
+
+>**Sample response body (HTTP 200 status)**
+
+```
+{
+    "error": {
+        "@Message.ExtendedInfo": [
+            {
+                "MessageId": "iLO.2.15.SystemResetRequired"
+            }
+        ],
+        "code": "iLO.0.10.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information."
+    }
+}
+```
+
+### Resetting SecureBootKeys
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `POST`                                                       |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/Actions/SecureBoot.ResetKeys` |
+| **Description**    | Use this endpoint to reset the `UEFI Secure Boot` keys of a specific system. |
+| **Returns**        | <ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion of the operation, you receive a success message in the response body. See *Sample response body (HTTP 200 status)*.</li></ul> |
+| **Response code**  | On success, `202 Accepted`.<br/>On successful completion of the task, `200 OK`. |
+| **Authentication** | Yes                                                          |
+
+>**curl command**
+
+
+```
+curl -i -X POST \
+   -H "Content-Type:application/json" \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -d \
+'{
+  "ResetKeysType": "ResetAllKeysToDefault"
+}' \
+'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/Actions/SecureBoot.ResetKeys'
+```
+
+> **Sample request body**
+
+```
+{
+    "ResetKeysType": "ResetAllKeysToDefault"
+}
+```
+
+>**Sample response body (HTTP 202 status)**
+
+```
+{
+    "@odata.type": "#Task.v1_6_0.Task",
+    "@odata.id": "/redfish/v1/TaskService/Tasks/taskad98a7fc-145d-4d11-90d8-3ba854f1f7c9",
+    "@odata.context": "/redfish/v1/$metadata#Task.Task",
+    "Id": "taskad98a7fc-145d-4d11-90d8-3ba854f1f7c9",
+    "Name": "Task taskad98a7fc-145d-4d11-90d8-3ba854f1f7c9",
+    "Message": "The task with id taskad98a7fc-145d-4d11-90d8-3ba854f1f7c9 has started.",
+    "MessageId": "TaskEvent.1.0.3.TaskStarted",
+    "MessageArgs": [
+        "taskad98a7fc-145d-4d11-90d8-3ba854f1f7c9"
+    ],
+    "NumberOfArgs": 1,
+    "Severity": "OK"
+}
+```
+
+>**Sample response body (HTTP 200 status)**
+
+```
+{
+    "error": {
+        "@Message.ExtendedInfo": [
+            {
+                "MessageId": "iLO.2.15.SystemResetRequired"
+            }
+        ],
+        "code": "iLO.0.10.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information."
+    }
+}
+```
+
+### Collection of SecureBOOT databases
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases` |
+| **Description**    | This endpoint lists all the SecureBoot databases.            |
+| **Returns**        | List of SecureBoot databases.                                |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+
+>**curl command**
+
+
+```
+curl -i -X POST \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+  "ResetType":"ForceRestart"
+}' \
+ 'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset'
+```
+
+> **Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#SecureBootDatabaseCollection.SecureBootDatabaseCollection",
+    "@odata.etag": "W/\"C4D3BA70\"",
+    "@odata.id": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases",
+    "@odata.type": "#SecureBootDatabaseCollection.SecureBootDatabaseCollection",
+    "Description": "SecureBoot Databases View",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases/PKDefault"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases/db"
+        }
+    ],
+    "Members@odata.count": 12,
+    "Name": "SecureBoot Databases Collection"
+}
+```
+
+### Single SecureBOOT database
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases/{db}` |
+| **Description**    | This endpoint fetches information of a SecureBOOT database.  |
+| **Returns**        | Information of a SecureBOOT database.                        |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+
+>**curl command**
+
+
+```
+curl -i -X GET \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+ 'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases/PKDefault'
+```
+
+> **Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#SecureBootDatabase.SecureBootDatabase",
+    "@odata.etag": "W/\"38361AFA\"",
+    "@odata.id": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases/db",
+    "@odata.type": "#SecureBootDatabase.v1_0_1.SecureBootDatabase",
+    "Actions": {
+        "#SecureBootDatabase.ResetKeys": {
+            "ResetKeysType@Redfish.AllowableValues": [
+                "ResetAllKeysToDefault",
+                "DeleteAllKeys"
+            ],
+            "target": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases/db/Actions/SecureBootDatabase.ResetKeys"
+        }
+    },
+    "Certificates": {
+        "@odata.id": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases/db/Certificates"
+    },
+    "DatabaseId": "db",
+    "Description": "SecureBoot Database",
+    "Id": "db",
+    "Name": "Authorized Signature Database",
+    "Signatures": {
+        "@odata.id": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases/db/Signatures"
+    }
+}
+```
+
+### Collection of certificates
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases/db/Certificates` |
+| **Description**    | This endpoint lists the collection of SecureBoot database certificates. |
+| **Returns**        | List of SecureBoot database certificates.                    |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+
+>**curl command**
+
+
+```
+curl -i -X GET \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases/PKDefault/Certificates'
+```
+
+> **Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#CertificateCollection.CertificateCollection",
+    "@odata.etag": "W/\"08A22FCA\"",
+    "@odata.id": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases/db/Certificates",
+    "@odata.type": "#CertificateCollection.CertificateCollection",
+    "Description": "Secure Boot Database db certificate view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases/db/Certificates/2"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases/db/Certificates/3"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases/db/Certificates/4"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases/db/Certificates/5"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases/db/Certificates/6"
+        }
+    ],
+    "Members@odata.count": 5,
+    "Name": "Secure Boot Database db certificate view"
+}
+```
+
+### Single certificate
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases/db/Certificates/2` |
+| **Description**    | This endpoint fetches information of a single SecureBoot database certificate. |
+| **Returns**        | Information of a SecureBOOT database certificate.            |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+
+>**curl command**
+
+
+```
+curl -i -X GET \
+   -H "Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+ 'https://{odimra_host}:port}/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases/PKDefault/Certificates/2'
+```
+
+> **Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#Certificate.Certificate",
+    "@odata.etag": "W/\"BD3F3064\"",
+    "@odata.id": "/redfish/v1/Systems/20e875d4-3f47-4e7f-ad91-2b1982f8c284.1/SecureBoot/SecureBootDatabases/db/Certificates/2",
+    "@odata.type": "#Certificate.v1_6_0.Certificate",
+    "CertificateString": "-----BEGIN CERTIFICATE-----\r\nMIIFeDCCBGCgAwIBAgIQVnSnA+85CRCLH0dTaHNtbTANBgkqhkiG9w0BAQsFADBr\r\nMQswCQYDVQQGEwJVUzEgMB4GA1UEChMXSGV3bGV0dC1QYWNrYXJkIENvbXBhbnkx\r\nOjA4BgNVBAMTMUhld2xldHQtUGFja2FyZCBQcmludGluZyBEZXZpY2UgSW5mcmFz\r\ndHJ1Y3R1cmUgQ0EwHhcNMTMwODIzMDAwMDAwWhcNMzMwODIzMjM1OTU5WjB5MSAw\r\nHgYDVQQKExdIZXdsZXR0LVBhY2thcmQgQ29tcGFueTErMCkGA1UECxQiTG9uZyBM\r\naXZlZCBDb2RlU2lnbmluZyBDZXJ0aWZpY2F0ZTEoMCYGA1UEAxQfSFAgVUVGSSBT\r\nZWN1cmUgQm9vdCAyMDEzIERCIGtleTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCC\r\nAQoCggEBAMlHv4hkphZZV29sfwzKCN+XgqE77zYCFUOb6pqr5U28+7S0T4WJ5Kfl\r\nJdTmmzZLmY4vAX3hkNiKOWGOkGafc9PzOC5o/eYY2/M+rITsZBzpB6Py51JrKHVv\r\nNHmrJD+nzP38OjJx/LMiERhgdusxoiiNcvM8r02VAb2i8LFDal0UMzsRcoxpcau0\r\nox3HM2SGin/hQTPYGRWacRTfunYQyY8D/Vw6TMWT5am2QOADe3VHejo+OlGv00Mq\r\nK8pqz9A8RB7pv8mvprPQxMDzGLmcpmtuPFdOgvZqRDJl2jhS9FufvLEiGpjz8OGJ\r\npaGLpJohMSqJtevzsZtEk9UCtaUrFosCAwEAAaOCAggwggIEMAwGA1UdEwEB/wQC\r\nMAAwawYDVR0fBGQwYjBgoF6gXIZaaHR0cDovL29uc2l0ZWNybC52ZXJpc2lnbi5j\r\nb20vSGV3bGV0dFBhY2thcmRDb21wYW55RGVTUHJpbnRpbmdEZXZpY2VDU0lEVGVt\r\ncC9MYXRlc3RDUkwuY3JsMA4GA1UdDwEB/wQEAwIHgDCB4QYDVR0gBIHZMIHWMIHT\r\nBgorBgEEAQsEBAEBMIHEMIHBBggrBgEFBQcCAjCBtBqBsUhld2xldHQgUGFja2Fy\r\nZCBDb21wYW55LCAyLCBBdXRob3JpdHkgdG8gYmluZCBIZXdsZXR0LVBhY2thcmQg\r\nQ29tcGFueSBkb2VzIG5vdCBjb3JyZXNwb25kIHdpdGggdXNlIG9yIHBvc3Nlc3Np\r\nb24gb2YgdGhpcyBjZXJ0aWZpY2F0ZS4gSXNzdWVkIHRvIGZhY2lsaXRhdGUgY29t\r\nbXVuaWNhdGlvbiB3aXRoIEhQLjA7BggrBgEFBQcBAQQvMC0wKwYIKwYBBQUHMAGG\r\nH2h0dHA6Ly9vbnNpdGUtb2NzcC52ZXJpc2lnbi5jb20wHQYDVR0OBBYEFB188sK5\r\nJnP2nI7h7HBjlnq5tivsMB8GA1UdIwQYMBaAFLihDL0GX0YR6YDb95m9HfT96g3G\r\nMBYGA1UdJQEB/wQMMAoGCCsGAQUFBwMDMA0GCSqGSIb3DQEBCwUAA4IBAQBFzx6B\r\nvBJCurNC31IQ4ilrLmlmM4L0pEfKc3hUA+f+7eWH5225BOsI/yE6MsOcQgRSKj+X\r\n8CvVvJN7QT456SdnefLaOkGBmpmdoXnhxpRr8Jgd7duURJvSPMvI0zVH16iWx9ON\r\nP6TpbTTsqWxoWCOfJ2o25uKamOGSprKwbinsk53SNVmmBquDvs/Dfl34Etm6Z3Z6\r\nmeEYBVH6NIXrH4VfGaoyvTJBmHIiaSRBIsusrnMXF1pZKNcp+Kf9VI7PvhTrRh6C\r\njXeNk82TBptW2rKyTsmWiG2XBHKI4/eoHqA3r9xuBa7oyFAoWkGj6krtfgyt/G6A\r\n68k2VJenVGEMNGBA\r\n-----END CERTIFICATE-----\r\n",
+    "CertificateType": "PEM",
+    "Id": "2",
+    "Issuer": {
+        "City": "���",
+        "CommonName": "Hewlett-Packard Printing Device Infrastructure CA",
+        "Country": "US",
+        "Email": "",
+        "Organization": "Hewlett-Packard Company",
+        "OrganizationalUnit": "���",
+        "State": "���"
+    },
+    "Name": "HP UEFI Secure Boot 2013 DB key",
+    "Subject": {
+        "City": "���",
+        "CommonName": "HP UEFI Secure Boot 2013 DB key",
+        "Country": "��",
+        "Email": "",
+        "Organization": "Hewlett-Packard Company",
+        "OrganizationalUnit": "Long Lived CodeSigning Certificate",
+        "State": "���"
+    },
+    "UefiSignatureOwner": "1E910BE1-4BEB-6337-19F1-8A8AC107D512",
+    "ValidNotAfter": "0008-01-01T00:00:00Z",
+    "ValidNotBefore": "0008-01-01T00:00:00Z"
+}
+```
+
+
 
 ##  Processors
 
@@ -10639,9 +10992,9 @@ Date:Fri,15 May 2020 10:10:15 GMT+5m 11s
 |-----------|-----------|
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/EventService/Subscriptions` |
-|**Description**| This operation subscribes a northbound client to events originating from a set of resources (southbound devices, managers, Resource Aggregator for ODIM itself\) by creating a subscription entry. For use cases, see *[Subscription use cases](#event-subscription-use-cases)*.<br>This operation is performed in the background as a Redfish task. If there is more than one resource that is sending a specific event, the task is further divided into subtasks. |
-|**Returns** |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion, a `Location` header contains a link to the newly created subscription and a message in the JSON response body saying that the subscription is created. See *Sample response body (HTTP 201 status)*.</li></ul><br>**IMPORTANT:** Make a note of the task ID. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskID}`.</li>|
-|**Response code** |On success, `202 Accepted`<br/>On successful completion of the task, `201 Created`|
+|**Description**| This endpoint subscribes a northbound client to events originating from a set of resources (southbound devices, managers, Resource Aggregator for ODIM itself\) by creating a subscription entry. For use cases, see *[Subscription use cases](#event-subscription-use-cases)*.<br>This operation is performed in the background as a Redfish task. If there is more than one resource that is sending a specific event, the task is further divided into subtasks. |
+|**Returns** |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI in *Sample response header (HTTP 202 status)*.</li><li>Link to the task and the task id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See *Sample response body (HTTP 202 status)*.</li><li>On successful completion, a `Location` header contains a link to the newly created subscription and a message in the JSON response body saying that the subscription is created. See *Sample response body (HTTP 201 status)*.</li></ul><br>**IMPORTANT:** Make a note of the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</li>|
+|**Response code** |On success, `202 Accepted`<br/>On successful completion of the task, `200 OK`|
 |**Authentication** |Yes|
 
 **Usage information**
@@ -10649,7 +11002,6 @@ Date:Fri,15 May 2020 10:10:15 GMT+5m 11s
 1. To know the progress of this operation, perform HTTP `GET` on the task monitor returned in the response header (until the task is complete).
 2. To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See *Sample response body (HTTP 202 status)*. The JSON response body of each subtask contains a link to the task monitor associated with it. 
 3. To know the progress of the reset operation (subtask) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. 
-
 
 >**curl command**
 
@@ -10741,7 +11093,61 @@ curl -i POST \
 | DeliveryRetryPolicy  | String                | Optional                           | This property shall indicate the subscription delivery retry policy for events where the subscription type is `RedfishEvent`. Supported value is `RetryForever`, which implies that the attempts at delivery of future events shall continue regardless of the number of retries. |
 
 
-> **Sample event**
+> **Sample response header (HTTP 202 status) **
+
+```
+Location:/taskmon/taska9702e20-884c-41e2-bd9c-d779a4dd2e6e
+Date:Fri, 08 Nov 2019 07:49:42 GMT+7m 9s
+Content-Length:0 byte
+```
+
+>**Sample response header (HTTP 200 status) **
+
+```
+Location:/redfish/v1/EventService/Subscriptions/76088e1c-4654-4eec-a3f6-60bc33b77cdb
+Date:Thu,14 May 2020 09:48:23 GMT+5m 10s
+```
+
+>**Sample response body (HTTP 202 status) **
+
+```
+{
+   "@odata.type":"#Task.v1_6_0.Task",
+   "@odata.id":"/redfish/v1/TaskService/Tasks/taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
+   "@odata.context":"/redfish/v1/$metadata#Task.Task",
+   "Id":"taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
+   "Name":"Task taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
+   "Message":"The task with id taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad has started.",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
+   "MessageArgs":[
+      "taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad"
+   ],
+   "NumberOfArgs":1,
+   "Severity":"OK"
+}
+```
+
+>**Sample response body (HTTP 201 status) **
+
+```
+{
+    "error": {
+        "code": "Base.1.13.0.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information.",
+        "@Message.ExtendedInfo": [
+            {
+                "@odata.type": "#Message.v1_1_2.Message",
+                "MessageId": "Base.1.13.0.Success",
+                "Message": "Successfully Completed Request",
+                "Severity": "OK",
+                "Resolution": "None"
+            }
+        ]
+    }
+}
+```
+
+### Sample event
 
 ~~~
 {
@@ -10823,58 +11229,59 @@ curl -i POST \
 
 > **Request parameters**
 
-|Parameter|Value|Attributes|Description|
-|---------|-----|----------|-----------|
-|Name|String| (optional)<br> |Name for the subscription.|
-|Destination|String|Read-only (Required on create)<br> |The URL of the destination event listener that listens to events (Fault management system or any northbound client).<br/>**NOTE:** <br />Destinations with both IPv4 and IPv6 addresses are supported.<br />`Destination` is unique to a subscription. There can be only one subscription for a destination event listener.<br/>To change the parameters of an existing subscription , delete it and then create again with the new parameters and a new destination URL.<br/> |
-|EventTypes|Array (string (enum))|Read-only (optional)<br> |The types of events that are sent to the destination. For possible values, see *Event types* table.|
-|ResourceTypes|Array (string, null)|Read-only (optional)<br> |The list of resource type values (Schema names) that correspond to the `OriginResources`. For possible values, perform `GET` on `redfish/v1/EventService` and check values listed under `ResourceTypes` in the JSON response.<br> Examples: "ComputerSystem", "Storage", "Task"<br> |
-|Context|String|Read/write Required (null)<br> |A string that is stored with the event destination subscription.|
-|MessageIds|Array|Read-only (optional)<br> |The key used to find the message in a Message Registry.|
-|Protocol|String (enum)|Read-only (Required on create)<br> |The protocol type of the event connection. For possible values, see *Protocol* table.|
-|SubscriptionType|String (enum)|Read-only Required (null)<br> |Indicates the subscription type for events. For possible values, see *Subscription type* table.|
-|EventFormatType|String (enum)|Read-only (optional)<br> |Indicates the content types of the message that this service can send to the event destination. For possible values, see *EventFormat type* table.|
-|SubordinateResources|Boolean|Read-only (null)|Indicates whether the service supports the `SubordinateResource` property on event subscriptions or not. If it is set to `true`, the service creates subscription for an event originating from the specified `OriginResoures` and also from its subordinate resources. For example, by setting this property to `true`, you can receive specified events from a compute node: `/redfish/v1/Systems/{ComputerSystemId}` and from its subordinate resources such as:<br> `/redfish/v1/Systems/{ComputerSystemId}/Memory`<br> `/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces`<br> `/redfish/v1/Systems/{ComputerSystemId}/Bios`<br> `/redfish/v1/Systems/{ComputerSystemId}/Storage`|
-|OriginResources|Array| Optional (null)<br> |Resources for which the service only sends related events. If this property is absent or the array is empty, events originating from any resource is sent to the subscriber. For possible values, see *Origin resources* table.|
+| Parameter            | Value                 | Attributes                         | Description                                                  |
+| -------------------- | --------------------- | ---------------------------------- | ------------------------------------------------------------ |
+| Name                 | String                | (optional)<br>                     | Name for the subscription.                                   |
+| Destination          | String                | Read-only (Required on create)<br> | The URL of the destination event listener that listens to events (Fault management system or any northbound client).<br/>**NOTE:** <br />Destinations with both IPv4 and IPv6 addresses are supported.<br />`Destination` is unique to a subscription. There can be only one subscription for a destination event listener.<br/>To change the parameters of an existing subscription , delete it and then create again with the new parameters and a new destination URL.<br/> |
+| EventTypes           | Array (string (enum)) | Read-only (optional)<br>           | The types of events that are sent to the destination. For possible values, see *Event types* table. |
+| ResourceTypes        | Array (string, null)  | Read-only (optional)<br>           | The list of resource type values (Schema names) that correspond to the `OriginResources`. For possible values, perform `GET` on `redfish/v1/EventService` and check values listed under `ResourceTypes` in the JSON response.<br> Examples: "ComputerSystem", "Storage", "Task"<br> |
+| Context              | String                | Read/write Required (null)<br>     | A string that is stored with the event destination subscription. |
+| MessageIds           | Array                 | Read-only (optional)<br>           | The key used to find the message in a Message Registry.      |
+| Protocol             | String (enum)         | Read-only (Required on create)<br> | The protocol type of the event connection. For possible values, see *Protocol* table. |
+| SubscriptionType     | String (enum)         | Read-only Required (null)<br>      | Indicates the subscription type for events. For possible values, see *Subscription type* table. |
+| EventFormatType      | String (enum)         | Read-only (optional)<br>           | Indicates the content types of the message that this service can send to the event destination. For possible values, see *EventFormat type* table. |
+| SubordinateResources | Boolean               | Read-only (null)                   | Indicates whether the service supports the `SubordinateResource` property on event subscriptions or not. If it is set to `true`, the service creates subscription for an event originating from the specified `OriginResoures` and also from its subordinate resources. For example, by setting this property to `true`, you can receive specified events from a compute node: `/redfish/v1/Systems/{ComputerSystemId}` and from its subordinate resources such as:<br> `/redfish/v1/Systems/{ComputerSystemId}/Memory`<br> `/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces`<br> `/redfish/v1/Systems/{ComputerSystemId}/Bios`<br> `/redfish/v1/Systems/{ComputerSystemId}/Storage` |
+| OriginResources      | Array                 | Optional (null)<br>                | Resources for which the service only sends related events. If this property is absent or the array is empty, events originating from any resource is sent to the subscriber. For possible values, see *Origin resources* table. |
 
 ##### **OriginResources**
 
-|String|Description|
-|------|-----------|
-|A single resource|A specific resource for which the service sends only related events.|
-|A list of resources. Supported collections:<br> |A collection of resources for which the service will send only related events.|
-|/redfish/v1/Systems|All computer system resources available in Resource Aggregator for ODIM for which the service sends only related events. By setting `EventType` property in the request payload to `ResourceAdded` or `ResourceRemoved` and `OriginResources` property to `/redfish/v1/Systems`, you can receive notifications when a system is added or removed in Resource Aggregator for ODIM.|
-|/redfish/v1/Chassis|All chassis resources available in Resource Aggregator for ODIM for which the service sends only related events.|
-|/redfish/v1/Fabrics|All fabric resources available in Resource Aggregator for ODIM for which the service sends only related events.|
-|/redfish/v1/Managers|All manager resources available in Resource Aggregator for ODIM for which the service sends only related events.|
-|/redfish/v1/TaskService/Tasks|All tasks scheduled by or being executed by Redfish `TaskService`. By subscribing to Redfish tasks, you can receive task status change notifications on the subscribed destination client.<br> By specifying the task URIs as `OriginResources` and `EventTypes` as `StatusChange`, you can receive notifications automatically when the tasks are complete.<br> To check the status of a specific task manually, perform HTTP `GET` on its task monitor until the task is complete.<br> |
-| /redfish/v1/Aggregates/{AggregateId}         |Individual aggregate available in Resource Aggregator for ODIM for which the service sends only related events. |
+| String                                          | Description                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| A single resource                               | A specific resource for which the service sends only related events. |
+| A list of resources. Supported collections:<br> | A collection of resources for which the service will send only related events. |
+| /redfish/v1/Systems                             | All computer system resources available in Resource Aggregator for ODIM for which the service sends only related events. By setting `EventType` property in the request payload to `ResourceAdded` or `ResourceRemoved` and `OriginResources` property to `/redfish/v1/Systems`, you can receive notifications when a system is added or removed in Resource Aggregator for ODIM. |
+| /redfish/v1/Chassis                             | All chassis resources available in Resource Aggregator for ODIM for which the service sends only related events. |
+| /redfish/v1/Fabrics                             | All fabric resources available in Resource Aggregator for ODIM for which the service sends only related events. |
+| /redfish/v1/Managers                            | All manager resources available in Resource Aggregator for ODIM for which the service sends only related events. |
+| /redfish/v1/TaskService/Tasks                   | All tasks scheduled by or being executed by Redfish `TaskService`. By subscribing to Redfish tasks, you can receive task status change notifications on the subscribed destination client.<br> By specifying the task URIs as `OriginResources` and `EventTypes` as `StatusChange`, you can receive notifications automatically when the tasks are complete.<br> To check the status of a specific task manually, perform HTTP `GET` on its task monitor until the task is complete.<br> |
+| /redfish/v1/Aggregates/{AggregateId}            | Individual aggregate available in Resource Aggregator for ODIM for which the service sends only related events. |
 
 **EventTypes**
 
-|String|Description|
-|------|-----------|
-|Alert|A condition exists which requires attention|
-|ResourceAdded|A resource has been added|
-|ResourceRemoved|A resource has been removed|
-|ResourceUpdated|The value of this resource has been updated|
-|StatusChange|The status of this resource has changed|
-|MetricReport|Collects resource metrics|
+| String          | Description                                 |
+| --------------- | ------------------------------------------- |
+| Alert           | A condition exists which requires attention |
+| ResourceAdded   | A resource has been added                   |
+| ResourceRemoved | A resource has been removed                 |
+| ResourceUpdated | The value of this resource has been updated |
+| StatusChange    | The status of this resource has changed     |
+| MetricReport    | Collects resource metrics                   |
 
 **EventFormatType**
 
-|String|Description|
-|------|-----------|
-|Event|The subscription destination will receive JSON bodies of the Resource Type Event|
-|MetricReport|Collects resource metrics|
+| String       | Description                                                  |
+| ------------ | ------------------------------------------------------------ |
+| Event        | The subscription destination will receive JSON bodies of the Resource Type Event |
+| MetricReport | Collects resource metrics                                    |
 
 **SubscriptionType**
 
-|String|Description|
-|------|-----------|
-|RedfishEvent|The subscription follows the Redfish specification for event notifications, which is done by a service sending an HTTP `POST` to the destination URI of the subscriber.|
+| String       | Description                                                  |
+| ------------ | ------------------------------------------------------------ |
+| RedfishEvent | The subscription follows the Redfish specification for event notifications, which is done by a service sending an HTTP `POST` to the destination URI of the subscriber. |
 
 **Protocol**
+
 
 |String|Description|
 |------|-----------|

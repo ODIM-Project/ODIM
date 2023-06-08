@@ -5091,7 +5091,7 @@ curl -i GET \
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong>  |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes` |
 |<strong>Description</strong>| This operation creates a volume in a specific storage subsystem.|
-|<strong>Response code</strong>   |On success, `200 Ok` |
+|<strong>Response code</strong>   | On success, `202 Accepted`.<br />On successful completion of the task, `200 OK`. |
 |<strong>Authentication</strong>|Yes|
 
 >**curl command**
@@ -5175,7 +5175,7 @@ curl -i -X POST \
 |<strong>Method</strong>  | `DELETE` |
 |<strong>URI</strong>   |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}` |
 |<strong>Description</strong>  | This operation removes a volume in a specific storage subsystem.|
-|<strong>Response code</strong>|On success, `204 No Content` |
+|<strong>Response code</strong>| On success, `202 Accepted`.<br />On successful completion of the task, `200 OK`. |
 |<strong>Authentication</strong>  |Yes|
 
 >**curl command**
@@ -5209,7 +5209,7 @@ curl -i -X DELETE \
 |---------|-------|
 |**Method** |`GET` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/SecureBoot` |
-|**Description** |Use this endpoint to discover information on `UEFI SecureBoot` .|
+|**Description** |This operation provides information on `UEFI SecureBoot` .|
 |**Returns** | Information on SecureBoot. |
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
@@ -5380,14 +5380,14 @@ curl -i -X POST \
 }
 ```
 
-### Collection of SecureBOOT databases
+### Viewing a collection of SecureBOOT databases
 
 |                    |                                                              |
 | ------------------ | ------------------------------------------------------------ |
 | **Method**         | `GET`                                                        |
 | **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases` |
-| **Description**    | This endpoint lists all the SecureBoot databases.            |
-| **Returns**        | List of SecureBoot databases.                                |
+| **Description**    | This operation lists all the SecureBoot databases.           |
+| **Returns**        | List of SecureBoot databases                                 |
 | **Response code**  | `200 OK`                                                     |
 | **Authentication** | Yes                                                          |
 
@@ -5428,14 +5428,14 @@ curl -i -X POST \
 }
 ```
 
-### Single SecureBOOT database
+### Viewing information of a SecureBOOT database
 
 |                    |                                                              |
 | ------------------ | ------------------------------------------------------------ |
 | **Method**         | `GET`                                                        |
 | **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases/{db}` |
-| **Description**    | This endpoint fetches information of a SecureBOOT database.  |
-| **Returns**        | Information of a SecureBOOT database.                        |
+| **Description**    | This operation retrieves information of a SecureBOOT database. |
+| **Returns**        | Information of a SecureBOOT database                         |
 | **Response code**  | `200 OK`                                                     |
 | **Authentication** | Yes                                                          |
 
@@ -5479,13 +5479,13 @@ curl -i -X GET \
 }
 ```
 
-### Collection of certificates
+### Viewing a collection of certificates
 
 |                    |                                                              |
 | ------------------ | ------------------------------------------------------------ |
 | **Method**         | `GET`                                                        |
 | **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases/db/Certificates` |
-| **Description**    | This endpoint lists the collection of SecureBoot database certificates. |
+| **Description**    | This operation lists the collection of SecureBoot database certificates. |
 | **Returns**        | List of SecureBoot database certificates.                    |
 | **Response code**  | `200 OK`                                                     |
 | **Authentication** | Yes                                                          |
@@ -5531,12 +5531,12 @@ curl -i -X GET \
 }
 ```
 
-### Single certificate
+### Viewing information of a certificate
 
 | **Method**         | `GET`                                                        |
 | ------------------ | ------------------------------------------------------------ |
 | **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/SecureBoot/SecureBootDatabases/db/Certificates/2` |
-| **Description**    | This endpoint fetches information of a single SecureBoot database certificate. |
+| **Description**    | This operation retrieves information of a single SecureBoot database certificate. |
 | **Returns**        | Information of a SecureBOOT database certificate.            |
 | **Response code**  | `200 OK`                                                     |
 | **Authentication** | Yes                                                          |
@@ -7193,7 +7193,7 @@ See *[Resetting Servers](#resetting-servers)* to know about `ResetType.`
 |**URI** |`/redfish/v1/Systems/{ComputerSystemID}/Bios/Settings` |
 |**Description** |This operation changes BIOS configuration.<br>**NOTE:** Any change in BIOS configuration is reflected only after the system reset. To see the change, *[reset the computer system](#resetting-a-computer-system)*.|
 |**Returns** |Message ID of the actual message in the JSON response body. To get the complete message, look up the specified registry file. Registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message ID. See *[Message registries](#message-registries)*. <br />For example:`MessageID` in the sample response body is `iLO.2.8.SystemResetRequired`. The registry to look up is `iLO.2.8`.<br> |
-|**Response code** | `200 OK` |
+|**Response code** | On success, `202 Accepted`.<br />On successful completion of the task, `200 OK`. |
 |**Authentication** |Yes|
 
 
@@ -7249,7 +7249,7 @@ See *[Resetting Servers](#resetting-servers)* to know about `ResetType.`
 |**URI** |`/redfish/v1/Systems/{ComputerSystemID}` |
 |**Description** |This operation changes the boot settings of a specific system such as boot source override target, boot order, and more.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before changing the boot order.</li><li>Power on the system once the operation is successful. Changes are seen in the system only after a successful reset.</li></ul><br> To know how to power off, power on, or restart a system, see *[Resetting a computer system](#resetting-a-computer-system)*.|
 |**Returns** |Message ID of the actual message in the JSON response body. To get the complete message, look up the specified registry file. Registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message ID. See *[Message Registries](#message-registries)*. <br />For example,`MessageID` in the sample response body is `Base.1.13.0.Success`. The registry to look up is `Base.1.13.0`.<br> |
-|**Response code** |`200 OK`|
+|**Response code** | On success, `202 Accepted`.<br />On successful completion of the task, `200 OK`. |
 |**Authentication** |Yes|
 
 >**curl command**
@@ -8022,7 +8022,7 @@ curl -i GET \
 | **URI**            | `/redfish/v1/Managers/{ManagerID}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.InsertMedia` |
 | **Description**    | This operation inserts the virtual media on to the manager.  |
 | **Returns**        | A success message of the virtual media insertion             |
-| **Response code**  | `200 OK`                                                     |
+| **Response code**  | On success, `202 Accepted`.<br />On successful completion of the task, `200 OK`. |
 | **Authentication** | Yes                                                          |
 
 >**curl command**
@@ -8067,7 +8067,7 @@ curl -i POST \
 | **URI**            | `/redfish/v1/Managers/{ManagerID}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.EjectMedia` |
 | **Description**    | This operation ejects the virtual media from the manager.    |
 | **Returns**        | A success message of the virtual media ejection              |
-| **Response code**  | `200 OK`                                                     |
+| **Response code**  | On success, `202 Accepted`.<br />On successful completion of the task, `200 OK`. |
 | **Authentication** | Yes                                                          |
 
 >**curl command**
@@ -8284,7 +8284,7 @@ curl -i GET \
 | <strong>URI</strong>            | `/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts` |
 | <strong>Description</strong>    | This operation creates a BMC user account.                   |
 | <strong>Returns</strong>        | JSON schema representing the created user account            |
-| <strong>Response code</strong>  | On success, `201 Created`                                    |
+| <strong>Response code</strong>  | On success, `202 Accepted`.<br />On successful completion of the task, `201 Created`. |
 | <strong>Authentication</strong> | Yes                                                          |
 
 > **curl command**
@@ -8340,7 +8340,7 @@ curl -i POST \
 | <strong>URI</strong>            | `/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts/{AccountID}` |
 | <strong>Description</strong>    | This operation updates a BMC user account.                   |
 | <strong>Returns</strong>        | JSON schema representing the updated user account            |
-| <strong>Response code</strong>  | On success, `200 Ok`                                         |
+| <strong>Response code</strong>  | On success, `202 Accepted`.<br />On successful completion of the task, `200 OK`. |
 | <strong>Authentication</strong> | Yes                                                          |
 
 > **curl command**
@@ -8394,7 +8394,7 @@ curl -i PATCH \
 | <strong>Method</strong>         | `DELETE`                                                     |
 | <strong>URI</strong>            | `/redfish/v1/Managers/{ManagerID}/RemoteAccountService/Accounts/{AccountID}` |
 | <strong>Description</strong>    | This operation deletes a BMC user account.                   |
-| <strong>Response code</strong>  | On success, `204 No Content`                                 |
+| <strong>Response code</strong>  | On success, `202 Accepted`.<br />On successful completion of the task, `204 No Content`. |
 | <strong>Authentication</strong> | Yes                                                          |
 
 > **curl command**
@@ -8832,9 +8832,11 @@ curl -i POST \
 |ImageURI|String (required)<br> |The URI of the software or firmware image to install. It is the location address of the software or firmware image you want to install.|
 |Password|String (optional)<br> |The password to access the URI specified by the Image URI parameter.|
 |Targets[]|Array (required)<br> |An array of URIs that indicate where to apply the update image.|
-|TransferProtocol|String (optional)<br> | The network protocol that the update service uses to retrieve the software or the firmware image file at the URI provided in the `ImageURI` parameter, if the URI does not contain a scheme.<br> For the possible property values, see *Transfer protocol* table.<br> |
+|TransferProtocol|String (optional)<br> | The network protocol that the update service uses to retrieve the software or the firmware image file at the URI provided in the `ImageURI` parameter, if the URI does not contain a scheme.<br> For the possible property values, see the following *Transfer protocol* table.<br> |
 |Username|String (optional)<br> |The user name to access the URI specified by the Image URI parameter.|
 |@Redfish.OperationApplyTime|Redfish annotation (optional)<br> | It enables you to control when the update is carried out.<br> Supported value is: `OnStartUpdate`. It indicates that the update will be carried out only after you perform HTTP POST on:<br> `/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate`.<br> |
+
+#### Transfer protocol
 
 |Transfer Protocol String|Description|
 |------|-----------|
@@ -8900,7 +8902,7 @@ Content-Length:491 bytes
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate` |
 |<strong>Description</strong> |This operation starts updating software or firmware components for which an update request has been created.<br>It is performed in the background as a Redfish task.<br>**IMPORTANT**: Before performing this operation, ensure that you have created an update request first. To know how to create an update request, see *[SimpleUpdate](#Simpleupdate)*.|
-|<strong>Response code</strong> |On success, `200 Ok` |
+|<strong>Response code</strong> | On success, `202 Accepted`.<br />On successful completion of the task, `200 OK`. |
 |<strong>Authentication</strong> |Yes|
 
 **Usage information** 
@@ -12680,14 +12682,14 @@ curl -i GET \
 
 ## Installing a license
 
-|                    |                                                      |
-| ------------------ | ---------------------------------------------------- |
-| **Method**         | `POST`                                               |
-| **URI**            | `/redfish/v1/LicenseService/Licenses`                |
-| **Description**    | This endpoint installs a license on the BMC servers. |
-| **Returns**        | No content                                           |
-| **Response Code**  | `204 No Content`                                     |
-| **Authentication** | Yes                                                  |
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `POST`                                                       |
+| **URI**            | `/redfish/v1/LicenseService/Licenses`                        |
+| **Description**    | This endpoint installs a license on the BMC servers.         |
+| **Returns**        | No content                                                   |
+| **Response Code**  | On success, `202 Accepted`.<br />On successful completion of the task, `200 OK`. |
+| **Authentication** | Yes                                                          |
 
 >**curl command**
 

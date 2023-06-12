@@ -118,10 +118,10 @@ func GetStorageResources(ctx context.Context, oid string) map[string]interface{}
 		l.LogWithFields(ctx).Error("Unable to get system data : " + dbErr.Error())
 		return resourceData
 	}
-	// unmarshall the resourceData
+	// unmarshal the resourceData
 	err := JSONUnMarshalFunc([]byte(data), &resourceData)
 	if err != nil {
-		l.LogWithFields(ctx).Error("Unable to unmarshall  the data: " + err.Error())
+		l.LogWithFields(ctx).Error("Unable to unmarshal  the data: " + err.Error())
 		return resourceData
 	}
 
@@ -160,7 +160,7 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 	}
 	var connectionMethodInfo = make(map[string]agmodel.ConnectionMethod)
 	var connectionMehtodIDMap = make(map[string]string)
-	// Get all existing connectionmethod info store it in above two map
+	// Get all existing connection method info store it in above two map
 	for i := 0; i < len(connectionMethodsKeys); i++ {
 		connectionmethod, err := e.GetConnectionMethodInterface(ctx, connectionMethodsKeys[i])
 		if err != nil {
@@ -274,7 +274,6 @@ func (phc *PluginHealthCheckInterface) DupPluginConf() {
 	phc.PluginConfig.StartUpResourceBatchSize = config.Data.PluginStatusPolling.StartUpResourceBatchSize
 	phc.RootCA = make([]byte, len(config.Data.KeyCertConf.RootCACertificate))
 	copy(phc.RootCA, config.Data.KeyCertConf.RootCACertificate)
-	return
 }
 
 // GetPluginStatus checks the status of given plugin
@@ -528,7 +527,6 @@ func UpdateDeviceSubscriptionDetails(ctx context.Context, subsData map[string]st
 			}
 		}
 	}
-	return
 }
 
 // GetPluginStatusRecord is for getting the status record of a plugin
@@ -544,7 +542,6 @@ func SetPluginStatusRecord(plugin string, count int) {
 	PSRecord.Lock.Lock()
 	PSRecord.InactiveCount[plugin] = count
 	PSRecord.Lock.Unlock()
-	return
 }
 
 // CreateContext creates a new context based on transactionId, actionId, actionName, threadId, threadName, ProcessName

@@ -214,7 +214,13 @@ jobs:
         cd ${ODIM_CONTROLLER_PATH}/scripts/
         echo "[$(date)] -- INFO  -- install kubernetes using odim-controller"
         python3 odim-controller.py --deploy kubernetes --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml
-        echo
+        if [ $? -eq 0 ];
+        then 
+          echo "Kubernetes installation is successful"
+        else
+          echo "Kubernetes installation failed..."
+          exit 1
+        fi
         
         echo "[$(date)] -- INFO  -- configure docker and kubectl commands"
         sudo usermod -aG docker $USER
@@ -245,6 +251,13 @@ jobs:
 
         cd ${ODIM_CONTROLLER_PATH}/scripts/
         python3 odim-controller.py --deploy odimra --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml
+        if [ $? -eq 0 ];
+        then 
+          echo "Odimra installation is successful"
+        else
+          echo "Odimra installation failed..."
+          exit 1
+        fi
         echo 
         echo "[$(date)] -- INFO  -- list pods in odim namespace"
         count=0

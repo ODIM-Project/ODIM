@@ -544,7 +544,7 @@ jobs:
         
         
         if [[ $run2 -eq 201 ]];
-        then 
+        then
             echo "Account Created Sucessfully"
             echo "---------------------------"
         else
@@ -556,7 +556,7 @@ jobs:
         echo "========================Account Checked==================================="
         
         if [ $flag -eq 1 ];
-        then 
+        then
           echo "Sanity Tests Failed"
           #exit 1
         else

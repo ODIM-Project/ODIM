@@ -524,7 +524,7 @@ func (e *ExternalInterface) DeleteVolume(ctx context.Context, req *systemsproto.
 		return
 	}
 
-	// updating response of DELL XR11 response
+	// handling the status ok response from plugin
 	if getResponse.StatusCode == http.StatusOK && body != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)

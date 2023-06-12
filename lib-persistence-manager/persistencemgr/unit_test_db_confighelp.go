@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package persistencemgr provides an  interfaces for database communication
+// Package persistencemgr provides an  interfaces for database communication
 package persistencemgr
 
 import (

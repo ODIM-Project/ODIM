@@ -372,28 +372,20 @@ func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.
 2."data" is user data which is of type interface sent by the user to update/patch the already existing data
 */
 func (p *ConnPool) Upsert(table, key string, data interface{}) *errors.Error {
-
 	saveID := table + ":" + key
 
 	jsondata, err := json.Marshal(data)
 	if err != nil {
 		return errors.PackError(errors.UndefinedErrorType, err.Error())
 	}
-
-	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
-	if writePool == nil {
-		return errors.PackError(errors.UndefinedErrorType, "Update : Writepool is nil ")
-	}
-	writeConn := writePool.Get()
-	defer writeConn.Close()
-	_, createErr := writeConn.Do("SET", saveID, jsondata)
+	createErr := p.WritePool.Set(saveID, jsondata, 0).Err()
 	if createErr != nil {
-		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
 		return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
 	}
 
 	return nil
 }
+
 
 // Read is for getting singular data
 // Read takes "key" sting as input which acts as a unique ID to fetch specific data from DB

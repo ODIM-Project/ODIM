@@ -70,7 +70,7 @@ var (
 	ConfigFilePath string
 )
 
-// GetResourceInfoFromDevice will contact to the southbound client and gets the Particual resource info from device
+// GetResourceInfoFromDevice will contact to the southbound client and gets the Particular resource info from device
 func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) ([]byte, error) {
 	var metricReportData dmtf.MetricReports
 	plugins, err := req.GetAllKeysFromTable(ctx, "Plugin", common.OnDisk)
@@ -90,7 +90,7 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) ([]
 	wg.Wait()
 	if reflect.DeepEqual(metricReportData, dmtf.MetricReports{}) {
 		removeNonExistingID(ctx, req)
-		return []byte{}, fmt.Errorf("Metric report not found")
+		return []byte{}, fmt.Errorf("metric report not found")
 	}
 	data, err := json.Marshal(metricReportData)
 	if err != nil {
@@ -139,20 +139,19 @@ func getResourceInfo(ctx context.Context, pluginID string, metricReportData *dmt
 	}
 	lock.Lock()
 	defer lock.Unlock()
-	var metrictData dmtf.MetricReports
-	if err := json.Unmarshal(body, &metrictData); err != nil {
+	var metricsData dmtf.MetricReports
+	if err := json.Unmarshal(body, &metricsData); err != nil {
 		return
 	}
-	metricReportData.ODataID = metrictData.ODataID
-	metricReportData.ODataType = metrictData.ODataType
-	metricReportData.ODataContext = metrictData.ODataContext
-	metricReportData.ID = metrictData.ID
-	metricReportData.Name = metrictData.Name
-	metricReportData.Description = metrictData.Description
-	metricReportData.MetricReportDefinition = metrictData.MetricReportDefinition
-	metricReportData.Context = metrictData.Context
-	metricReportData.MetricValues = append(metricReportData.MetricValues, metrictData.MetricValues...)
-	return
+	metricReportData.ODataID = metricsData.ODataID
+	metricReportData.ODataType = metricsData.ODataType
+	metricReportData.ODataContext = metricsData.ODataContext
+	metricReportData.ID = metricsData.ID
+	metricReportData.Name = metricsData.Name
+	metricReportData.Description = metricsData.Description
+	metricReportData.MetricReportDefinition = metricsData.MetricReportDefinition
+	metricReportData.Context = metricsData.Context
+	metricReportData.MetricValues = append(metricReportData.MetricValues, metricsData.MetricValues...)
 }
 
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
@@ -190,7 +189,7 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 	}
 
 	data := string(body)
-	//replacing the resposne with north bound translation URL
+	//replacing the response with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}

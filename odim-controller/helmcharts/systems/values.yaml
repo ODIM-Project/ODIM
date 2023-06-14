@@ -2,4 +2,4 @@ odimra:
   namespace:
   groupID:
   haDeploymentEnabled:
-  systemsImageTag: "5.0"
+  systemsImageTag: "6.0"

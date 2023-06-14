@@ -186,6 +186,8 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) (st
 	if gerr != nil {
 		return "", gerr
 	}
+	fmt.Printf("Target data *** %+v\n\n", string(target.Password))
+	fmt.Printf("System id %s \n ", req.UUID)
 	// Get the Plugin info
 	plugin, gerr := getPluginDataFunc(target.PluginID)
 	if gerr != nil {
@@ -229,12 +231,15 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) (st
 				"UserName":       target.UserName,
 				"Password":       []byte(req.BmcUpdatedCreds.UpdatedPassword),
 			}
+			fmt.Println("Password New Password**** 1 ", req.BmcUpdatedCreds.UpdatedPassword)
 		}
 
 	}
 
 	//replace the uuid:system id with the system to the @odata.id from request url
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
+	fmt.Println("Password ********** ", decryptedPasswordByte, string(decryptedPasswordByte))
+	fmt.Println("Url is ***************** ", contactRequest.OID)
 	contactRequest.HTTPMethodType = http.MethodGet
 	body, _, _, getResp, err := ContactPlugin(ctx, contactRequest, "error while getting the details "+contactRequest.OID+": ")
 	if err != nil {
@@ -296,7 +301,7 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 		return body, "", pluginTaskInfo, resp, fmt.Errorf(errorMessage)
 	}
 	data := string(body)
-	//replacing the resposne with north bound translation URL
+	//replacing the response with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}
@@ -372,7 +377,7 @@ func createToken(ctx context.Context, req PluginContactRequest) string {
 }
 
 // RetryManagersOperation will be called whenever  the unauthorized status code during the plugin call
-// This function will create a new session token reexcutes the plugin call
+// This function will create a new session token re-executes the plugin call
 func RetryManagersOperation(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, PluginTaskInfo, ResponseStatus, error) {
 	var resp response.RPC
 	var pluginTaskInfo PluginTaskInfo

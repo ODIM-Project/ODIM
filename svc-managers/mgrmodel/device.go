@@ -16,6 +16,7 @@ package mgrmodel
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -102,4 +103,24 @@ func GetTarget(deviceUUID string) (*DeviceTarget, *errors.Error) {
 		return nil, errors.PackError(errors.UndefinedErrorType, errs)
 	}
 	return &target, nil
+}
+
+// UpdateSystem fetches the System(Target Device Credentials) table details
+func UpdateSystem(deviceUUID string, device *DeviceTarget) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	// data, err := conn.Read("System", deviceUUID)
+	// if err != nil {
+	// 	return nil, errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
+	// }
+
+	data, err := conn.Update("System", deviceUUID, device)
+	if err != nil {
+
+		return err
+	}
+	fmt.Println("data &&&&&&&&&&&&&&&&&&&7 ", data)
+	return nil
 }

@@ -18,12 +18,10 @@ package handle
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
 )
 
@@ -45,32 +43,22 @@ func (mgr *ManagersRPCs) GetManagersCollection(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := managersproto.ManagerRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
 	l.LogWithFields(ctxt).Debug("Incoming request received for the getting all Managers collection")
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := mgr.GetManagersCollectionRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctx).Debugf("Outgoing response for Getting Managers collection is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	sendManagersResponse(ctx, resp)
 }
 
 // GetManager fetches computer managers details
@@ -78,34 +66,24 @@ func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := managersproto.ManagerRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		ManagerID:    ctx.Params().Get("id"),
 		URL:          ctx.Request().RequestURI,
 	}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for the getting a Managers with id %s", req.ManagerID)
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := mgr.GetManagersRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctx).Debugf("Outgoing response for getting Manager is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	sendManagersResponse(ctx, resp)
 }
 
 // GetManagersResource defines the GetManagersResource iris handler.
@@ -115,36 +93,21 @@ func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
 func (mgr *ManagersRPCs) GetManagersResource(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
-	req := managersproto.ManagerRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
-		ManagerID:    ctx.Params().Get("id"),
-		ResourceID:   ctx.Params().Get("rid"),
-		URL:          ctx.Request().RequestURI,
-	}
+	req := getManagerRequest(ctx)
 	l.LogWithFields(ctxt).Debugf("Incoming request received for the getting a Managers resources with id %s and resource id %s", req.ManagerID, req.ResourceID)
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := mgr.GetManagersResourceRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctx).Debugf("Outgoing response for getting Manager resource is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	sendManagersResponse(ctx, resp)
 }
 
 // VirtualMediaInsert defines the Insert virtual media iris handler
@@ -159,25 +122,17 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 	if err != nil {
 		errorMessage := "while trying to get JSON body from the virtual media actions request body: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(&response.Body)
-		return
+		common.SendMalformedJSONRequestErrResponse(ctx, errorMessage)
 	}
 	request, err := json.Marshal(reqIn)
 	if err != nil {
 		errorMessage := "while trying to create JSON request body: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 
 	req := managersproto.ManagerRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		ManagerID:    ctx.Params().Get("id"),
 		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI,
@@ -185,27 +140,17 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 	}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for the virtual media insert with id %s and request body %s", req.ManagerID, string(request))
 	if req.SessionToken == "" {
-		errorMessage := "no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := mgr.VirtualMediaInsertRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctx).Debugf("Outgoing response for virtual media insert is %s and response status %d", string(resp.Body), int(resp.StatusCode))
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	sendManagersResponse(ctx, resp)
 }
 
 // VirtualMediaEject defines the eject virtual media iris handler
@@ -215,35 +160,20 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 func (mgr *ManagersRPCs) VirtualMediaEject(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
-	req := managersproto.ManagerRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
-		ManagerID:    ctx.Params().Get("id"),
-		ResourceID:   ctx.Params().Get("rid"),
-		URL:          ctx.Request().RequestURI,
-	}
+	req := getManagerRequest(ctx)
 	l.LogWithFields(ctxt).Debugf("Incoming request received for the virtual media eject with id %s", req.ManagerID)
 	if req.SessionToken == "" {
-		errorMessage := "no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := mgr.VirtualMediaEjectRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctx).Debugf("Outgoing response for virtual media eject is %s and response status %d", string(resp.Body), int(resp.StatusCode))
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	sendManagersResponse(ctx, resp)
 }
 
 // GetRemoteAccountService defines the GetRemoteAccountService iris handler.
@@ -253,30 +183,17 @@ func (mgr *ManagersRPCs) VirtualMediaEject(ctx iris.Context) {
 func (mgr *ManagersRPCs) GetRemoteAccountService(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
-	req := managersproto.ManagerRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
-		ManagerID:    ctx.Params().Get("id"),
-		ResourceID:   ctx.Params().Get("rid"),
-		URL:          ctx.Request().RequestURI,
-	}
+	req := getManagerRequest(ctx)
 	l.LogWithFields(ctxt).Debugf("Incoming request received for the getting remote account service with id %s", req.ManagerID)
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := mgr.GetRemoteAccountServiceRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 
 	switch req.URL {
@@ -288,9 +205,7 @@ func (mgr *ManagersRPCs) GetRemoteAccountService(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}
 	l.LogWithFields(ctx).Debugf("Outgoing response for getting remote account service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	sendManagersResponse(ctx, resp)
 }
 
 // CreateRemoteAccountService defines the CreateRemoteAccountService iris handler.
@@ -305,25 +220,17 @@ func (mgr *ManagersRPCs) CreateRemoteAccountService(ctx iris.Context) {
 	if err != nil {
 		errorMessage := "while trying to get JSON body from the create remote account request body: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(&response.Body)
-		return
+		common.SendMalformedJSONRequestErrResponse(ctx, errorMessage)
 	}
 	request, err := json.Marshal(reqIn)
 	if err != nil {
 		errorMessage := "while trying to create JSON request body in create remote account: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 
 	req := managersproto.ManagerRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		ManagerID:    ctx.Params().Get("id"),
 		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI,
@@ -331,27 +238,17 @@ func (mgr *ManagersRPCs) CreateRemoteAccountService(ctx iris.Context) {
 	}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for the creating remote account with id %s and request body %s", req.ManagerID, string(request))
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := mgr.CreateRemoteAccountServiceRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctx).Debugf("Outgoing response for getting remote account service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	sendManagersResponse(ctx, resp)
 }
 
 // UpdateRemoteAccountService defines the UpdateRemoteAccountService iris handler.
@@ -366,25 +263,17 @@ func (mgr *ManagersRPCs) UpdateRemoteAccountService(ctx iris.Context) {
 	if err != nil {
 		errorMessage := "while trying to get JSON body from the update remote account request body: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(&response.Body)
-		return
+		common.SendMalformedJSONRequestErrResponse(ctx, errorMessage)
 	}
 	request, err := json.Marshal(reqIn)
 	if err != nil {
 		errorMessage := "while trying to update JSON request body in update remote account: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 
 	req := managersproto.ManagerRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		ManagerID:    ctx.Params().Get("id"),
 		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI,
@@ -392,27 +281,17 @@ func (mgr *ManagersRPCs) UpdateRemoteAccountService(ctx iris.Context) {
 	}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for the updating remote account service with id %s and request body %s", req.ManagerID, string(request))
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := mgr.UpdateRemoteAccountServiceRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctx).Debugf("Outgoing response for updating remote account service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	sendManagersResponse(ctx, resp)
 }
 
 // DeleteRemoteAccountService defines the DeleteRemoteAccountService iris handler.
@@ -422,33 +301,35 @@ func (mgr *ManagersRPCs) UpdateRemoteAccountService(ctx iris.Context) {
 func (mgr *ManagersRPCs) DeleteRemoteAccountService(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
-	req := managersproto.ManagerRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
-		ManagerID:    ctx.Params().Get("id"),
-		ResourceID:   ctx.Params().Get("rid"),
-		URL:          ctx.Request().RequestURI,
-	}
+	req := getManagerRequest(ctx)
 	l.LogWithFields(ctxt).Debugf("Incoming request received for the deleting remote account service with id %s", req.ManagerID)
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := mgr.DeleteRemoteAccountServiceRPC(ctxt, req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctx).Debugf("Outgoing response for deleting remote account service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
+	sendManagersResponse(ctx, resp)
+}
+
+// sendManagersResponse writes the managers response to client
+func sendManagersResponse(ctx iris.Context, resp *managersproto.ManagerResponse) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+}
+
+// getManagerRequest will extract the request from the context and return
+func getManagerRequest(ctx iris.Context) managersproto.ManagerRequest {
+	return managersproto.ManagerRequest{
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
+		ManagerID:    ctx.Params().Get("id"),
+		ResourceID:   ctx.Params().Get("rid"),
+		URL:          ctx.Request().RequestURI,
+	}
 }

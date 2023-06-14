@@ -353,7 +353,7 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 	return e
 }
 
-//CreateInternalErrorResponse is used to create internal server error response
+// CreateInternalErrorResponse is used to create internal server error response
 func (resp *RPC) CreateInternalErrorResponse(errorMessage string) {
 	resp.StatusCode = http.StatusInternalServerError
 	resp.StatusMessage = InternalError

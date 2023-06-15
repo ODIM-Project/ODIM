@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -31,10 +30,9 @@ var (
 
 // GetManagersCollection will do the rpc call to collect Managers
 func GetManagersCollection(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Managers)
+	ctx, conn, err := getConnection(ctx, services.Managers)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	asService := NewManagersClientFunc(conn)
@@ -48,10 +46,9 @@ func GetManagersCollection(ctx context.Context, req managersproto.ManagerRequest
 
 // GetManagers will do the rpc calls for the svc-managers
 func GetManagers(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Managers)
+	ctx, conn, err := getConnection(ctx, services.Managers)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	asService := NewManagersClientFunc(conn)
@@ -65,10 +62,9 @@ func GetManagers(ctx context.Context, req managersproto.ManagerRequest) (*manage
 
 // GetManagersResource will do the rpc calls for the svc-managers
 func GetManagersResource(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Managers)
+	ctx, conn, err := getConnection(ctx, services.Managers)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	asService := NewManagersClientFunc(conn)
@@ -82,10 +78,9 @@ func GetManagersResource(ctx context.Context, req managersproto.ManagerRequest) 
 
 // VirtualMediaInsert will do the rpc calls for the svc-managers
 func VirtualMediaInsert(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Managers)
+	ctx, conn, err := getConnection(ctx, services.Managers)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	asService := NewManagersClientFunc(conn)
@@ -99,10 +94,9 @@ func VirtualMediaInsert(ctx context.Context, req managersproto.ManagerRequest) (
 
 // VirtualMediaEject will do the rpc calls for the svc-managers
 func VirtualMediaEject(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Managers)
+	ctx, conn, err := getConnection(ctx, services.Managers)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	asService := NewManagersClientFunc(conn)
@@ -116,10 +110,9 @@ func VirtualMediaEject(ctx context.Context, req managersproto.ManagerRequest) (*
 
 // GetRemoteAccountService will do the rpc call to collect BMC accounts
 func GetRemoteAccountService(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Managers)
+	ctx, conn, err := getConnection(ctx, services.Managers)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	mService := NewManagersClientFunc(conn)
@@ -133,10 +126,9 @@ func GetRemoteAccountService(ctx context.Context, req managersproto.ManagerReque
 
 // CreateRemoteAccountService will do the rpc call to create a new BMC account
 func CreateRemoteAccountService(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Managers)
+	ctx, conn, err := getConnection(ctx, services.Managers)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	mService := NewManagersClientFunc(conn)
@@ -150,10 +142,9 @@ func CreateRemoteAccountService(ctx context.Context, req managersproto.ManagerRe
 
 // UpdateRemoteAccountService will do rpc call to update BMC account
 func UpdateRemoteAccountService(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Managers)
+	ctx, conn, err := getConnection(ctx, services.Managers)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	mService := NewManagersClientFunc(conn)
@@ -167,10 +158,9 @@ func UpdateRemoteAccountService(ctx context.Context, req managersproto.ManagerRe
 
 // DeleteRemoteAccountService will do the rpc call to delete an existing BMC account
 func DeleteRemoteAccountService(ctx context.Context, req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Managers)
+	ctx, conn, err := getConnection(ctx, services.Managers)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	mService := NewManagersClientFunc(conn)

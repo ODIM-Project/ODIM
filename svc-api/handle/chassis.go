@@ -58,7 +58,7 @@ func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
 		ctxt,
 		chassisproto.CreateChassisRequest{
 			RequestBody:  *requestBody,
-			SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+			SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		},
 	)
 
@@ -88,7 +88,7 @@ func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := chassisproto.GetChassisRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		URL:          ctx.Request().RequestURI}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for getting chassis collection with request uri %s", string(req.URL))
 	if req.SessionToken == "" {
@@ -124,7 +124,7 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := chassisproto.GetChassisRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		RequestParam: ctx.Params().Get("id"),
 		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI}
@@ -163,7 +163,7 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := chassisproto.GetChassisRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		RequestParam: ctx.Params().Get("id"),
 		URL:          ctx.Request().RequestURI}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for getting chassis with request uri %s and request params %s", req.URL, req.RequestParam)
@@ -210,7 +210,7 @@ func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
 	}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for updating chassis with request body %s", string(*requestBody))
 	rr, rerr := chassis.UpdateChassisRPC(ctxt, chassisproto.UpdateChassisRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		URL:          ctx.Request().RequestURI,
 		RequestBody:  *requestBody,
 	})
@@ -232,7 +232,7 @@ func (chassis *ChassisRPCs) DeleteChassis(ctx iris.Context) {
 	ctxt := ctx.Request().Context()
 	l.LogWithFields(ctxt).Debugf("Incoming request received for deleting chassis with request uri %s", ctx.Request().RequestURI)
 	rpcResp, rpcErr := chassis.DeleteChassisRPC(ctxt, chassisproto.DeleteChassisRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		URL:          ctx.Request().RequestURI,
 	})
 

@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package response ...
+// Package response ...
 package response
 
 // RedfishSessionResponse will have all the
@@ -45,7 +45,7 @@ type Session struct {
 	UserName     string `json:"UserName"`
 }
 
-//SessionService struct definition
+// SessionService struct definition
 type SessionService struct {
 	OdataType      string   `json:"@odata.type"`
 	ID             string   `json:"Id"`
@@ -60,12 +60,12 @@ type SessionService struct {
 	Etag           string   `json:"@odata.etag,omitempty"`
 }
 
-//Sessions struct definition
+// Sessions struct definition
 type Sessions struct {
 	OdataID string `json:"@odata.id"`
 }
 
-//Status struct definition
+// Status struct definition
 type Status struct {
 	State  string `json:"State"`
 	Health string `json:"Health"`

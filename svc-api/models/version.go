@@ -12,10 +12,10 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package models ...
+// Package models ...
 package models
 
-//Version struct definition
+// Version struct definition
 type Version struct {
 	V1 string `json:"v1"`
 }

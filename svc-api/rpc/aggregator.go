@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -32,10 +31,9 @@ var (
 // DoGetAggregationService defines the RPC call function for
 // the GetAggregationService from aggregator micro service
 func DoGetAggregationService(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -51,10 +49,9 @@ func DoGetAggregationService(ctx context.Context, req aggregatorproto.Aggregator
 // DoResetRequest defines the RPC call function for
 // the Reset from aggregator micro service
 func DoResetRequest(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -70,10 +67,9 @@ func DoResetRequest(ctx context.Context, req aggregatorproto.AggregatorRequest) 
 // DoSetDefaultBootOrderRequest defines the RPC call function for
 // the SetDefaultBootOrder from aggregator micro service
 func DoSetDefaultBootOrderRequest(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -89,10 +85,9 @@ func DoSetDefaultBootOrderRequest(ctx context.Context, req aggregatorproto.Aggre
 // DoAddAggregationSource defines the RPC call function for
 // the AddAggregationSource from aggregator micro service
 func DoAddAggregationSource(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -108,10 +103,9 @@ func DoAddAggregationSource(ctx context.Context, req aggregatorproto.AggregatorR
 // DoGetAllAggregationSource defines the RPC call function for
 // the GetAllAggregationSource from aggregator micro service
 func DoGetAllAggregationSource(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -127,10 +121,9 @@ func DoGetAllAggregationSource(ctx context.Context, req aggregatorproto.Aggregat
 // DoGetAggregationSource defines the RPC call function for
 // the GetAggregationSource from aggregator micro service
 func DoGetAggregationSource(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -146,10 +139,9 @@ func DoGetAggregationSource(ctx context.Context, req aggregatorproto.AggregatorR
 // DoUpdateAggregationSource defines the RPC call function for
 // the UpdateAggregationSource from aggregator micro service
 func DoUpdateAggregationSource(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -165,10 +157,9 @@ func DoUpdateAggregationSource(ctx context.Context, req aggregatorproto.Aggregat
 // DoDeleteAggregationSource defines the RPC call function for
 // the DeleteAggregationSource  from aggregator micro service
 func DoDeleteAggregationSource(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -184,10 +175,9 @@ func DoDeleteAggregationSource(ctx context.Context, req aggregatorproto.Aggregat
 // DoCreateAggregate defines the RPC call function for
 // the CreateAggregate from aggregator micro service
 func DoCreateAggregate(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -203,10 +193,9 @@ func DoCreateAggregate(ctx context.Context, req aggregatorproto.AggregatorReques
 // DoGetAggregateCollection defines the RPC call function for
 // the get aggregate collections from aggregator micro service
 func DoGetAggregateCollection(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -222,10 +211,9 @@ func DoGetAggregateCollection(ctx context.Context, req aggregatorproto.Aggregato
 // DoGeteAggregate defines the RPC call function for
 // the get aggregate from aggregator micro service
 func DoGeteAggregate(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -241,10 +229,9 @@ func DoGeteAggregate(ctx context.Context, req aggregatorproto.AggregatorRequest)
 // DoDeleteAggregate defines the RPC call function for
 // the delete aggregate from aggregator micro service
 func DoDeleteAggregate(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -260,10 +247,9 @@ func DoDeleteAggregate(ctx context.Context, req aggregatorproto.AggregatorReques
 // DoAddElementsToAggregate defines the RPC call function for
 // the add elements to an aggregate from aggregator micro service
 func DoAddElementsToAggregate(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -279,10 +265,9 @@ func DoAddElementsToAggregate(ctx context.Context, req aggregatorproto.Aggregato
 // DoRemoveElementsFromAggregate defines the RPC call function for
 // the remove elements from an aggregate from aggregator micro service
 func DoRemoveElementsFromAggregate(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -298,10 +283,9 @@ func DoRemoveElementsFromAggregate(ctx context.Context, req aggregatorproto.Aggr
 // DoResetAggregateElements defines the RPC call function for
 // the reset elements of an aggregate from aggregator micro service
 func DoResetAggregateElements(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -317,10 +301,9 @@ func DoResetAggregateElements(ctx context.Context, req aggregatorproto.Aggregato
 // DoSetDefaultBootOrderAggregateElements defines the RPC call function for
 // the set default boot order elements of an aggregate from aggregator micro service
 func DoSetDefaultBootOrderAggregateElements(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -336,10 +319,9 @@ func DoSetDefaultBootOrderAggregateElements(ctx context.Context, req aggregatorp
 // DoGetAllConnectionMethods defines the RPC call function for
 // the get connection method collection from aggregator micro service
 func DoGetAllConnectionMethods(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -355,10 +337,9 @@ func DoGetAllConnectionMethods(ctx context.Context, req aggregatorproto.Aggregat
 // DoGetConnectionMethod defines the RPC call function for
 // the get on connection method from aggregator micro service
 func DoGetConnectionMethod(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -374,10 +355,9 @@ func DoGetConnectionMethod(ctx context.Context, req aggregatorproto.AggregatorRe
 // DoGetResetActionInfoService defines the RPC call function for
 // the GetResetActionInfoService from aggregator micro service
 func DoGetResetActionInfoService(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)
@@ -393,10 +373,9 @@ func DoGetResetActionInfoService(ctx context.Context, req aggregatorproto.Aggreg
 // DoGetSetDefaultBootOrderActionInfo defines the RPC call function for
 // the GetSetDefaultBootOrderActionInfo from aggregator micro service
 func DoGetSetDefaultBootOrderActionInfo(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.Aggregator)
+	ctx, conn, err := getConnection(ctx, services.Aggregator)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	aggregator := NewAggregatorClientFunc(conn)

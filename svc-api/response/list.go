@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package response defines the response structs
+// Package response defines the response structs
 package response
 
 // ListResponse define list for odimra

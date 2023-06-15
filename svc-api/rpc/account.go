@@ -22,6 +22,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"google.golang.org/grpc"
 )
 
 // helper functions
@@ -33,10 +34,9 @@ var (
 // DoGetAccountServiceRequest defines the RPC call function for
 // the GetAccountService from account-session micro service
 func DoGetAccountServiceRequest(ctx context.Context, req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.AccountSession)
+	ctx, conn, err := getConnection(ctx, services.AccountSession)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 	account := NewAccountClientFunc(conn)
 
@@ -51,10 +51,9 @@ func DoGetAccountServiceRequest(ctx context.Context, req accountproto.AccountReq
 // DoAccountCreationRequest defines the RPC call function for
 // the AccountCreation from account-session micro service
 func DoAccountCreationRequest(ctx context.Context, req accountproto.CreateAccountRequest) (*accountproto.AccountResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.AccountSession)
+	ctx, conn, err := getConnection(ctx, services.AccountSession)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 	account := NewAccountClientFunc(conn)
 
@@ -69,10 +68,9 @@ func DoAccountCreationRequest(ctx context.Context, req accountproto.CreateAccoun
 // DoGetAllAccountRequest defines the RPC call function for
 // the GetAllAccount from account-session micro service
 func DoGetAllAccountRequest(ctx context.Context, req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.AccountSession)
+	ctx, conn, err := getConnection(ctx, services.AccountSession)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 	account := NewAccountClientFunc(conn)
 
@@ -87,10 +85,9 @@ func DoGetAllAccountRequest(ctx context.Context, req accountproto.AccountRequest
 // DoGetAccountRequest defines the RPC call function for
 // the GetAccount from account-session micro service
 func DoGetAccountRequest(ctx context.Context, req accountproto.GetAccountRequest) (*accountproto.AccountResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.AccountSession)
+	ctx, conn, err := getConnection(ctx, services.AccountSession)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 
 	account := NewAccountClientFunc(conn)
@@ -106,10 +103,9 @@ func DoGetAccountRequest(ctx context.Context, req accountproto.GetAccountRequest
 // DoUpdateAccountRequest defines the RPC call function for
 // the UpdateAccount from account-session micro service
 func DoUpdateAccountRequest(ctx context.Context, req accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.AccountSession)
+	ctx, conn, err := getConnection(ctx, services.AccountSession)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 	account := NewAccountClientFunc(conn)
 
@@ -124,10 +120,9 @@ func DoUpdateAccountRequest(ctx context.Context, req accountproto.UpdateAccountR
 // DoAccountDeleteRequest defines the RPC call function for
 // the AccountDelete from account-session micro service
 func DoAccountDeleteRequest(ctx context.Context, req accountproto.DeleteAccountRequest) (*accountproto.AccountResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, err := ClientFunc(services.AccountSession)
+	ctx, conn, err := getConnection(ctx, services.AccountSession)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+		return nil, err
 	}
 	account := NewAccountClientFunc(conn)
 
@@ -137,4 +132,13 @@ func DoAccountDeleteRequest(ctx context.Context, req accountproto.DeleteAccountR
 	}
 	defer conn.Close()
 	return resp, err
+}
+
+func getConnection(ctx context.Context, service string) (context.Context, *grpc.ClientConn, error) {
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(service)
+	if err != nil {
+		return ctx, nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	return ctx, conn, nil
 }

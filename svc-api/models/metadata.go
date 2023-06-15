@@ -12,12 +12,12 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package models ...
+// Package models ...
 package models
 
 import "encoding/xml"
 
-//Metadata struct definition
+// Metadata struct definition
 type Metadata struct {
 	XMLName      xml.Name `xml:"edmx:Edmx"`
 	Xmlnsedmx    string   `xml:"xmlns:edmx,attr"`
@@ -25,14 +25,14 @@ type Metadata struct {
 	TopReference []Reference
 }
 
-//Reference strcut definition
+// Reference strcut definition
 type Reference struct {
 	XMLName    xml.Name  `xml:"edmx:Reference"`
 	URI        string    `xml:"Uri,attr"`
 	TopInclude []Include `xml:"edmx:Include"`
 }
 
-//Include struct definition
+// Include struct definition
 type Include struct {
 	Namespace string `xml:"Namespace,attr"`
 	Alias     string `xml:"Alias,attr,omitempty"`

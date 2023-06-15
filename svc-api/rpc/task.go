@@ -34,10 +34,9 @@ var (
 
 // DeleteTaskRequest will do the rpc calls for the svc-task DeleteTask
 func DeleteTaskRequest(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, connErr := ClientFunc(services.Tasks)
-	if connErr != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	ctx, conn, err := getConnection(ctx, services.Tasks)
+	if err != nil {
+		return nil, err
 	}
 
 	asService := NewGetTaskServiceClientFunc(conn)
@@ -59,10 +58,9 @@ func DeleteTaskRequest(ctx context.Context, req *taskproto.GetTaskRequest) (*tas
 
 // GetTaskRequest will do the rpc calls for the svc-task GetTaskStatus
 func GetTaskRequest(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, connErr := ClientFunc(services.Tasks)
-	if connErr != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	ctx, conn, err := getConnection(ctx, services.Tasks)
+	if err != nil {
+		return nil, err
 	}
 
 	asService := NewGetTaskServiceClientFunc(conn)
@@ -84,10 +82,9 @@ func GetTaskRequest(ctx context.Context, req *taskproto.GetTaskRequest) (*taskpr
 
 // GetSubTasks will do the rpc calls for the svc-task GetSubTasks
 func GetSubTasks(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, connErr := ClientFunc(services.Tasks)
-	if connErr != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	ctx, conn, err := getConnection(ctx, services.Tasks)
+	if err != nil {
+		return nil, err
 	}
 
 	tService := NewGetTaskServiceClientFunc(conn)
@@ -109,10 +106,9 @@ func GetSubTasks(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto
 
 // GetSubTask will do the rpc calls for the svc-task GetSubTask
 func GetSubTask(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, connErr := ClientFunc(services.Tasks)
-	if connErr != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	ctx, conn, err := getConnection(ctx, services.Tasks)
+	if err != nil {
+		return nil, err
 	}
 
 	tService := NewGetTaskServiceClientFunc(conn)
@@ -134,10 +130,9 @@ func GetSubTask(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.
 
 // GetTaskMonitor will do the rpc calls for the svc-task GetTaskMonitor
 func GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, connErr := ClientFunc(services.Tasks)
-	if connErr != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	ctx, conn, err := getConnection(ctx, services.Tasks)
+	if err != nil {
+		return nil, err
 	}
 
 	tService := NewGetTaskServiceClientFunc(conn)
@@ -159,10 +154,9 @@ func GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRequest) (*taskpr
 
 // TaskCollection will perform the rpc call to svc-task TaskCollection
 func TaskCollection(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, connErr := ClientFunc(services.Tasks)
-	if connErr != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	ctx, conn, err := getConnection(ctx, services.Tasks)
+	if err != nil {
+		return nil, err
 	}
 
 	tService := NewGetTaskServiceClientFunc(conn)
@@ -184,10 +178,9 @@ func TaskCollection(ctx context.Context, req *taskproto.GetTaskRequest) (*taskpr
 
 // GetTaskService will perform the rpc call to svc-task GetTaskService
 func GetTaskService(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	ctx = common.CreateMetadata(ctx)
-	conn, connErr := ClientFunc(services.Tasks)
-	if connErr != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	ctx, conn, err := getConnection(ctx, services.Tasks)
+	if err != nil {
+		return nil, err
 	}
 
 	tService := NewGetTaskServiceClientFunc(conn)

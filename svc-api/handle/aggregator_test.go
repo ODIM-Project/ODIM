@@ -41,117 +41,33 @@ func testDeleteComputeRPCWIthRPCError(ctx context.Context, req aggregatorproto.A
 	return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
 }
 func testGetAggregationService(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	var response = &aggregatorproto.AggregatorResponse{}
-	if req.SessionToken == "ValidToken" {
-		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    200,
-			StatusMessage: "Success",
-			Body:          []byte(`{"Response":"Success"}`),
-		}
-	} else if req.SessionToken == "InvalidToken" {
-		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    401,
-			StatusMessage: "Unauthorized", Body: []byte(`{"Response":"Unauthorized"}`),
-		}
-	} else if req.SessionToken == "token" {
-		return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
-	}
-	return response, nil
+	response, err := getMockAggregatorResponse(ctx, req, 200, 401)
+	return response, err
 }
 
 func testAddAggregationSourceRPCCall(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	var response = &aggregatorproto.AggregatorResponse{}
-	if req.SessionToken == "ValidToken" {
-		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    http.StatusAccepted,
-			StatusMessage: "Success",
-			Body:          []byte(`{"Response":"Success"}`),
-		}
-	} else if req.SessionToken == "InvalidToken" {
-		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    http.StatusUnauthorized,
-			StatusMessage: "Unauthorized", Body: []byte(`{"Response":"Unauthorized"}`),
-		}
-	} else if req.SessionToken == "token" {
-		return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
-	}
-	return response, nil
+	response, err := getMockAggregatorResponse(ctx, req, http.StatusAccepted, http.StatusUnauthorized)
+	return response, err
 }
 
 func testGetAllAggregationSourceRPC(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	var response = &aggregatorproto.AggregatorResponse{}
-	if req.SessionToken == "ValidToken" {
-		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    http.StatusOK,
-			StatusMessage: "Success",
-			Body:          []byte(`{"Response":"Success"}`),
-		}
-	} else if req.SessionToken == "InvalidToken" {
-		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    http.StatusUnauthorized,
-			StatusMessage: "Unauthorized", Body: []byte(`{"Response":"Unauthorized"}`),
-		}
-	} else if req.SessionToken == "token" {
-		return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
-	}
-	return response, nil
+	response, err := getMockAggregatorResponse(ctx, req, http.StatusOK, http.StatusUnauthorized)
+	return response, err
 }
 
 func testUpdateAggregationSourceRPCCall(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	var response = &aggregatorproto.AggregatorResponse{}
-	if req.SessionToken == "ValidToken" {
-		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    http.StatusOK,
-			StatusMessage: "Success",
-			Body:          []byte(`{"Response":"Success"}`),
-		}
-	} else if req.SessionToken == "InvalidToken" {
-		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    http.StatusUnauthorized,
-			StatusMessage: "Unauthorized", Body: []byte(`{"Response":"Unauthorized"}`),
-		}
-	} else if req.SessionToken == "token" {
-		return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
-	}
-	return response, nil
+	response, err := getMockAggregatorResponse(ctx, req, http.StatusOK, http.StatusUnauthorized)
+	return response, err
 }
 
 func testGetAggregationSourceRPC(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	var response = &aggregatorproto.AggregatorResponse{}
-	if req.SessionToken == "ValidToken" {
-		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    http.StatusOK,
-			StatusMessage: "Success",
-			Body:          []byte(`{"Response":"Success"}`),
-		}
-	} else if req.SessionToken == "InvalidToken" {
-		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    http.StatusUnauthorized,
-			StatusMessage: "Unauthorized", Body: []byte(`{"Response":"Unauthorized"}`),
-		}
-	} else if req.SessionToken == "token" {
-		return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
-	}
-	return response, nil
+	response, err := getMockAggregatorResponse(ctx, req, http.StatusOK, http.StatusUnauthorized)
+	return response, err
 }
 
 func testDeleteAggregationSourceRPCCall(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-	var response = &aggregatorproto.AggregatorResponse{}
-	if req.SessionToken == "ValidToken" {
-		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    http.StatusAccepted,
-			StatusMessage: "Success",
-			Body:          []byte(`{"Response":"Success"}`),
-		}
-	} else if req.SessionToken == "InvalidToken" {
-		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    http.StatusUnauthorized,
-			StatusMessage: "Unauthorized", Body: []byte(`{"Response":"Unauthorized"}`),
-		}
-	} else if req.SessionToken == "token" {
-		return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
-	}
-	return response, nil
+	response, err := getMockAggregatorResponse(ctx, req, http.StatusAccepted, http.StatusUnauthorized)
+	return response, err
 }
 
 func testAggregateRPCCall(ctx context.Context, req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
@@ -346,9 +262,33 @@ func TestAddAggregationSource(t *testing.T) {
 	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSources")
 	redfishRoutes.Post("/", a.AddAggregationSource)
 	test := httptest.New(t, testApp)
-	test.POST("/redfish/v1/AggregationService/AggregationSources").WithHeader("X-Auth-Token", "ValidToken").WithJSON(addAggregationSourceRequest).Expect().Status(http.StatusAccepted)
-	test.POST("/redfish/v1/AggregationService/AggregationSources").WithHeader("X-Auth-Token", "InvalidToken").WithJSON(addAggregationSourceRequest).Expect().Status(http.StatusUnauthorized)
-	test.POST("/redfish/v1/AggregationService/AggregationSources").WithHeader("X-Auth-Token", "token").WithJSON(addAggregationSourceRequest).Expect().Status(http.StatusInternalServerError)
+	tests := []struct {
+		name           string
+		authToken      string
+		expectedStatus int
+	}{
+		{
+			name:           "Success",
+			authToken:      "ValidToken",
+			expectedStatus: http.StatusAccepted,
+		},
+		{
+			name:           "Unauthorized error",
+			authToken:      "InvalidToken",
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:           "Internal server error",
+			authToken:      "token",
+			expectedStatus: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test.POST("/redfish/v1/AggregationService/AggregationSources").WithHeader("X-Auth-Token", tt.authToken).WithJSON(addAggregationSourceRequest).Expect().Status(tt.expectedStatus)
+		})
+	}
 }
 
 func TestGetAllAggregationSource(t *testing.T) {
@@ -425,31 +365,45 @@ func TestCreateAggregate(t *testing.T) {
 	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/Aggregates")
 	redfishRoutes.Post("/", a.CreateAggregate)
 	test := httptest.New(t, testApp)
-	//  update status code after the code is added
-	// test with valid token
-	test.POST(
-		"/redfish/v1/AggregationService/Aggregates",
-	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusCreated)
-
-	// test with Invalid token
-	test.POST(
-		"/redfish/v1/AggregationService/Aggregates",
-	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
-
-	// test without token
-	test.POST(
-		"/redfish/v1/AggregationService/Aggregates",
-	).WithHeader("X-Auth-Token", "").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
+	tests := []struct {
+		name           string
+		authToken      string
+		expectedStatus int
+	}{
+		{
+			name:           "valid token",
+			authToken:      "ValidToken",
+			expectedStatus: http.StatusCreated,
+		},
+		{
+			name:           "Invalid token",
+			authToken:      "InvalidToken",
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:           "without token",
+			authToken:      "",
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:           "RPC Error",
+			authToken:      "token",
+			expectedStatus: http.StatusInternalServerError,
+		},
+	}
 
 	// test without RequestBody
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates",
 	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest)
 
-	// test for RPC Error
-	test.POST(
-		"/redfish/v1/AggregationService/Aggregates",
-	).WithHeader("X-Auth-Token", "token").WithJSON(aggregateRequest).Expect().Status(http.StatusInternalServerError)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test.POST(
+				"/redfish/v1/AggregationService/Aggregates",
+			).WithHeader("X-Auth-Token", tt.authToken).WithJSON(aggregateRequest).Expect().Status(tt.expectedStatus)
+		})
+	}
 }
 
 func TestGetAggregateCollection(t *testing.T) {
@@ -730,4 +684,24 @@ func TestGetConnectionMethod(t *testing.T) {
 	test.GET(
 		"/redfish/v1/AggregationService/ConnectionMethods/74116e00-0a4a-53e6-a959-e6a7465d6358",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError) //TODO : replace with http.StatusInternalServerError
+}
+
+// getMockAggregatorResponse will return a mock aggregator response based on the token in request
+func getMockAggregatorResponse(ctx context.Context, req aggregatorproto.AggregatorRequest, validTokenStatusCode, invalidTokenStatusCode int32) (*aggregatorproto.AggregatorResponse, error) {
+	var response = &aggregatorproto.AggregatorResponse{}
+	if req.SessionToken == "ValidToken" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode:    validTokenStatusCode,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	} else if req.SessionToken == "InvalidToken" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode:    invalidTokenStatusCode,
+			StatusMessage: "Unauthorized", Body: []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "token" {
+		return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
+	}
+	return response, nil
 }

@@ -12,14 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package response ...
+// Package response ...
 package response
 
 import (
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 )
 
-//User struct is used to ommit password for display purposes
+// User struct is used to ommit password for display purposes
 type User struct {
 	OdataContext string  `json:"@odata.context"`
 	Etag         string  `json:"@odata.etag,omitempty"`
@@ -35,21 +35,21 @@ type User struct {
 	OEM          OEM     `json:"Oem"`
 }
 
-//OEM struct definition
+// OEM struct definition
 type OEM struct {
 }
 
-//Links struct definition
+// Links struct definition
 type Links struct {
 	Role Role `json:"Role"`
 }
 
-//Role struct definition
+// Role struct definition
 type Role struct {
 	OdataID string `json:"@odata.id"`
 }
 
-//AccountService struct definition
+// AccountService struct definition
 type AccountService struct {
 	OdataType                          string           `json:"@odata.type"`
 	ID                                 string           `json:"Id"`
@@ -84,23 +84,23 @@ type AccountService struct {
 	TACACSplus                         *TACACSplus      `json:"TACACSplus,omitempty"`
 }
 
-//Accounts struct definition
+// Accounts struct definition
 type Accounts struct {
 	OdataID string `json:"@odata.id"`
 }
 
-//OAuth2 struct definition
+// OAuth2 struct definition
 type OAuth2 struct {
 }
 
-//ActiveDirectory struct definition
+// ActiveDirectory struct definition
 type ActiveDirectory struct {
 }
 
-//LDAP struct definition
+// LDAP struct definition
 type LDAP struct {
 }
 
-//TACACSplus struct definition
+// TACACSplus struct definition
 type TACACSplus struct {
 }

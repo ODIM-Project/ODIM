@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -31,9 +32,10 @@ var (
 // GetFabricResource defines the RPC call function for
 // the GetFabricResource from fabrics micro service
 func GetFabricResource(ctx context.Context, req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.Fabrics)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.Fabrics)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	fab := NewFabricsClientFunc(conn)
@@ -48,9 +50,10 @@ func GetFabricResource(ctx context.Context, req fabricsproto.FabricRequest) (*fa
 // UpdateFabricResource defines the RPC call function for creating/updating
 // the Fabric Resource such as Endpoints, Zones from fabrics micro service
 func UpdateFabricResource(ctx context.Context, req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.Fabrics)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.Fabrics)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	fab := NewFabricsClientFunc(conn)
@@ -66,9 +69,10 @@ func UpdateFabricResource(ctx context.Context, req fabricsproto.FabricRequest) (
 // DeleteFabricResource defines the RPC call function for
 // the DeleteFabricResource from fabrics micro service
 func DeleteFabricResource(ctx context.Context, req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.Fabrics)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.Fabrics)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	fab := NewFabricsClientFunc(conn)

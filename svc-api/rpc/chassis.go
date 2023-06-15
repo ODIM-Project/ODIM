@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -31,9 +32,10 @@ var (
 
 // GetChassisCollection will do the rpc call to collect all chassis
 func GetChassisCollection(ctx context.Context, req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.Systems)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewChassisClientFunc(conn)
@@ -47,9 +49,10 @@ func GetChassisCollection(ctx context.Context, req chassisproto.GetChassisReques
 
 // GetChassisResource will do the rpc call to collect Chassis Resource
 func GetChassisResource(ctx context.Context, req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.Systems)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewChassisClientFunc(conn)
@@ -63,9 +66,10 @@ func GetChassisResource(ctx context.Context, req chassisproto.GetChassisRequest)
 
 // GetChassis will do the rpc call to  System Resource
 func GetChassis(ctx context.Context, req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.Systems)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewChassisClientFunc(conn)
@@ -79,9 +83,10 @@ func GetChassis(ctx context.Context, req chassisproto.GetChassisRequest) (*chass
 
 // CreateChassis will do the rpc call to create a Chassis
 func CreateChassis(ctx context.Context, req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.Systems)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	service := NewChassisClientFunc(conn)
@@ -95,9 +100,10 @@ func CreateChassis(ctx context.Context, req chassisproto.CreateChassisRequest) (
 
 // DeleteChassis will do the rpc call to delete a chassis
 func DeleteChassis(ctx context.Context, req chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.Systems)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	service := NewChassisClientFunc(conn)
@@ -111,9 +117,10 @@ func DeleteChassis(ctx context.Context, req chassisproto.DeleteChassisRequest) (
 
 // UpdateChassis will do the rpc call to update a chassis
 func UpdateChassis(ctx context.Context, req chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.Systems)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	service := NewChassisClientFunc(conn)

@@ -66,9 +66,10 @@ func DoSessionCreationRequest(ctx context.Context, req sessionproto.SessionCreat
 
 // DeleteSessionRequest will do the rpc call to delete session
 func DeleteSessionRequest(ctx context.Context, sessionID, sessionToken string) (*sessionproto.SessionResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.AccountSession)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSessionClientFunc(conn)
@@ -87,9 +88,10 @@ func DeleteSessionRequest(ctx context.Context, sessionID, sessionToken string) (
 
 // GetSessionRequest will do the rpc call to get session
 func GetSessionRequest(ctx context.Context, sessionID, sessionToken string) (*sessionproto.SessionResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.AccountSession)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSessionClientFunc(conn)
@@ -108,9 +110,10 @@ func GetSessionRequest(ctx context.Context, sessionID, sessionToken string) (*se
 
 // GetAllActiveSessionRequest will do the rpc call to get session
 func GetAllActiveSessionRequest(ctx context.Context, sessionID, sessionToken string) (*sessionproto.SessionResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.AccountSession)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSessionClientFunc(conn)
@@ -129,9 +132,10 @@ func GetAllActiveSessionRequest(ctx context.Context, sessionID, sessionToken str
 
 // GetSessionServiceRequest will do the rpc call to check session
 func GetSessionServiceRequest(ctx context.Context) (*sessionproto.SessionResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.AccountSession)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewSessionClientFunc(conn)

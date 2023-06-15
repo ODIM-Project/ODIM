@@ -18,15 +18,17 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	licenseproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/licenses"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
 // GetLicenseService will do the rpc call to get License Service Information
 func GetLicenseService(ctx context.Context, req licenseproto.GetLicenseServiceRequest) (*licenseproto.GetLicenseResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.Licenses)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := services.ODIMService.Client(services.Licenses)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 	defer conn.Close()
 	licenseService := licenseproto.NewLicensesClient(conn)
@@ -39,9 +41,10 @@ func GetLicenseService(ctx context.Context, req licenseproto.GetLicenseServiceRe
 
 // GetLicenseCollection will do the rpc call to get License Service Information
 func GetLicenseCollection(ctx context.Context, req licenseproto.GetLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.Licenses)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := services.ODIMService.Client(services.Licenses)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 	defer conn.Close()
 	licenseService := licenseproto.NewLicensesClient(conn)
@@ -54,9 +57,10 @@ func GetLicenseCollection(ctx context.Context, req licenseproto.GetLicenseReques
 
 // GetLicenseResource will do the rpc call to get License Service Information
 func GetLicenseResource(ctx context.Context, req licenseproto.GetLicenseResourceRequest) (*licenseproto.GetLicenseResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.Licenses)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := services.ODIMService.Client(services.Licenses)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 	defer conn.Close()
 	licenseService := licenseproto.NewLicensesClient(conn)
@@ -69,9 +73,10 @@ func GetLicenseResource(ctx context.Context, req licenseproto.GetLicenseResource
 
 // InstallLicenseService will do the rpc call to install License
 func InstallLicenseService(ctx context.Context, req licenseproto.InstallLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.Licenses)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := services.ODIMService.Client(services.Licenses)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 	defer conn.Close()
 	licenseService := licenseproto.NewLicensesClient(conn)

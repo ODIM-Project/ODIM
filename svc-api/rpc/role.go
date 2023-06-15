@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -31,9 +32,10 @@ var (
 // GetRole defines the RPC call function for
 // the GetRole from account-session micro service
 func GetRole(ctx context.Context, req roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.AccountSession)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewRolesClientFunc(conn)
@@ -48,9 +50,10 @@ func GetRole(ctx context.Context, req roleproto.GetRoleRequest) (*roleproto.Role
 // GetAllRoles defines the RPC call function for
 // the GetAllRoles from account-session micro service
 func GetAllRoles(ctx context.Context, req roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.AccountSession)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewRolesClientFunc(conn)
@@ -65,9 +68,10 @@ func GetAllRoles(ctx context.Context, req roleproto.GetRoleRequest) (*roleproto.
 // UpdateRole defines the RPC call function for
 // the UpdateRole from account-session micro service
 func UpdateRole(ctx context.Context, req roleproto.UpdateRoleRequest) (*roleproto.RoleResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.AccountSession)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewRolesClientFunc(conn)
@@ -81,9 +85,10 @@ func UpdateRole(ctx context.Context, req roleproto.UpdateRoleRequest) (*roleprot
 
 // DeleteRole defines the RPC call function for the DeleteRole from account-session microservice
 func DeleteRole(ctx context.Context, req roleproto.DeleteRoleRequest) (*roleproto.RoleResponse, error) {
-	ctx, conn, err := getConnection(ctx, services.AccountSession)
+	ctx = common.CreateMetadata(ctx)
+	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 
 	asService := NewRolesClientFunc(conn)

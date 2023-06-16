@@ -16,7 +16,6 @@ package mgrmodel
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -111,16 +110,50 @@ func UpdateSystem(deviceUUID string, device *DeviceTarget) *errors.Error {
 	if err != nil {
 		return err
 	}
-	// data, err := conn.Read("System", deviceUUID)
-	// if err != nil {
-	// 	return nil, errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
-	// }
-
-	data, err := conn.Update("System", deviceUUID, device)
+	_, err = conn.Update("System", deviceUUID, device)
 	if err != nil {
 
 		return err
 	}
-	fmt.Println("data &&&&&&&&&&&&&&&&&&&7 ", data)
+	return nil
+}
+
+// UpdateSystem fetches the System(Target Device Credentials) table details
+func AddTempPassword(hostIp string, device *DeviceTarget) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	err = conn.Create("tempBmcPassword", hostIp, device)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func GetTempPassword(deviceUUID string) (*DeviceTarget, *errors.Error) {
+	var target DeviceTarget
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	data, err := conn.Read("tempBmcPassword", deviceUUID)
+	if err != nil {
+		return nil, errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
+	}
+	if errs := json.Unmarshal([]byte(data), &target); errs != nil {
+		return nil, errors.PackError(errors.UndefinedErrorType, errs)
+	}
+	return &target, nil
+}
+func DeleteTempPassword(deviceUUID string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	err = conn.Delete("tempBmcPassword", deviceUUID)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
+	}
+
 	return nil
 }

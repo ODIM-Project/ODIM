@@ -779,7 +779,6 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 	// splitting managerID to get uuid
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
-
 	//do get call with
 	data, err := e.getResourceInfoFromDevice(ctx, uri, uuid, requestData[1], nil)
 	if err != nil {
@@ -811,7 +810,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 	if resp.StatusCode == http.StatusAccepted {
 		e.DB.SavePluginTaskInfo(ctx, plugin.PluginIP, plugin.PluginServerName,
 			taskID, plugin.Location)
-		e.UpdatePassword(ctx, uuid, bmcAccReq.Password, username)
+		e.UpdatePassword(ctx, uuid, bmcAccReq.Password, username, resp.StatusCode)
 		return
 	}
 
@@ -824,7 +823,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 			common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, taskInfo)
 			return
 		}
-		e.UpdatePassword(ctx, uuid, bmcAccReq.Password, username)
+		e.UpdatePassword(ctx, uuid, bmcAccReq.Password, username, resp.StatusCode)
 		// Replace response body to BMC manager
 		data = replaceBMCAccResp(data, req.ManagerID)
 		resource := convertToRedfishModel(ctx, req.URL, data)
@@ -869,7 +868,7 @@ func (e *ExternalInterface) DeleteRemoteAccountService(ctx context.Context, req 
 }
 
 // UpdatePassword method used to update system password
-func (e ExternalInterface) UpdatePassword(ctx context.Context, uuid, password string, userName string) {
+func (e ExternalInterface) UpdatePassword(ctx context.Context, uuid, password string, userName string, statusCode int32) {
 	target, gerr := mgrmodel.GetTarget(uuid)
 	if gerr != nil {
 		l.LogWithFields(ctx).Error("error while getting device details :" + gerr.Error())
@@ -885,10 +884,39 @@ func (e ExternalInterface) UpdatePassword(ctx context.Context, uuid, password st
 		return
 	}
 	target.Password = newPassword
-	err1 := mgrmodel.UpdateSystem(uuid, target)
+	if statusCode == http.StatusOK {
+		err1 := mgrmodel.UpdateSystem(target.ManagerAddress, target)
+		if err1 != nil {
+			errMsg := "error while update password : " + err.Error()
+			l.LogWithFields(ctx).Error(errMsg)
+		}
+		return
+	}
+	err1 := mgrmodel.AddTempPassword(uuid, target)
 	if err1 != nil {
 		errMsg := "error while update password : " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
 		return
 	}
+}
+
+// UpdateRemoteAccountService is used to update BMC account
+func (e *ExternalInterface) UpdateRemoteAccountPasswordService(ctx context.Context, req *managersproto.ManagerRequest) {
+	target, err := mgrmodel.GetTempPassword(req.ManagerID)
+	if err != nil {
+		errMsg := "no password found: " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		return
+	}
+	if err := mgrmodel.UpdateSystem(target.DeviceUUID, target); err != nil {
+		errMsg := "error while update password : " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		return
+	}
+	if err := mgrmodel.DeleteTempPassword(req.ManagerID); err != nil {
+		errMsg := "error while delete temp password : " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		return
+	}
+	l.LogWithFields(ctx).Info("Password updated successfully for device " + target.DeviceUUID)
 }

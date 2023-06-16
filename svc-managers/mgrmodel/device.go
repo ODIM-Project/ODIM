@@ -112,19 +112,18 @@ func UpdateSystem(deviceUUID string, device *DeviceTarget) *errors.Error {
 	}
 	_, err = conn.Update("System", deviceUUID, device)
 	if err != nil {
-
 		return err
 	}
 	return nil
 }
 
 // UpdateSystem fetches the System(Target Device Credentials) table details
-func AddTempPassword(hostIp string, device *DeviceTarget) *errors.Error {
+func AddTempPassword(uuid string, device *DeviceTarget) *errors.Error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
-	err = conn.Create("tempBmcPassword", hostIp, device)
+	err = conn.Create("tempBmcPassword", uuid, device)
 	if err != nil {
 		return err
 	}

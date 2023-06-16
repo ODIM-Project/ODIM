@@ -30,7 +30,7 @@ declare -A images_list=(\
 		["telemetry"]="3.1"\
 		["update"]="5.0" \
 		["zookeeper"]="2.0" \
-		["licenses"]="3.0" \
+		["licenses"]="3.0" \ 
 		)
 
 eval_cmd_exec()

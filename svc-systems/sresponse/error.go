@@ -12,22 +12,22 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package sresponse ...
+// Package sresponse ...
 package sresponse
 
-//CommonError struct definition
+// CommonError struct definition
 type CommonError struct {
 	Error ErrorClass `json:"error"`
 }
 
-//ErrorClass struct definition
+// ErrorClass struct definition
 type ErrorClass struct {
 	Code                string            `json:"code"`
 	Message             string            `json:"message"`
 	MessageExtendedInfo []MsgExtendedInfo `json:"@Message.ExtendedInfo"`
 }
 
-//MsgExtendedInfo struct definition
+// MsgExtendedInfo struct definition
 type MsgExtendedInfo struct {
 	OdataType  string `json:"@odata.type"`
 	MessageID  string `json:"MessageId"`

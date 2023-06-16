@@ -266,7 +266,7 @@ func (e *ExternalInterface) getManagerDetails(ctx context.Context, id string) (m
 // For getting system resource information,  parameters need to be passed GetSystemsRequest .
 // GetManagersResource holds the  Uuid,Url and Resourceid ,
 // Url will be parsed from that search key will created
-// There will be two return values for the fuction. One is the RPC response, which contains the
+// There will be two return values for the function. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (e *ExternalInterface) GetManagersResource(ctx context.Context, req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
@@ -340,7 +340,8 @@ func (e *ExternalInterface) GetManagersResource(ctx context.Context, req *manage
 	return resp
 }
 
-// VirtualMediaActions is used to perform action on VirtualMedia. For insert and eject of virtual media this function is used
+// VirtualMediaActions is used to perform action on VirtualMedia.
+// For insert and eject of virtual media this function is used
 func (e *ExternalInterface) VirtualMediaActions(ctx context.Context, req *managersproto.ManagerRequest, taskID string) {
 	var resp response.RPC
 	var requestBody = req.RequestBody
@@ -356,7 +357,7 @@ func (e *ExternalInterface) VirtualMediaActions(ctx context.Context, req *manage
 		vmiReq.WriteProtected = true
 		err := json.Unmarshal(req.RequestBody, &vmiReq)
 		if err != nil {
-			errorMessage := "while unmarshaling the virtual media insert request: " + err.Error()
+			errorMessage := "while unmarshal the virtual media insert request: " + err.Error()
 			l.LogWithFields(ctx).Error(errorMessage)
 			common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, taskInfo)
 			return
@@ -716,7 +717,6 @@ func (e *ExternalInterface) CreateRemoteAccountService(ctx context.Context, req 
 	}
 	respBody := fmt.Sprintf("%v", resp.Body)
 	l.LogWithFields(ctx).Debugf("Outgoing remote account service response to northbound: %s", string(respBody))
-	return
 }
 
 // validateFields will validate the request payload, if any mandatory fields are missing then it will generate an error
@@ -754,7 +754,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 	// Updating the default values
 	err := json.Unmarshal(req.RequestBody, &bmcAccReq)
 	if err != nil {
-		errorMessage := "error while unmarshaling the update remote account service request: " + err.Error()
+		errorMessage := "error while unmarshal the update remote account service request: " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
 		common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage,
 			[]interface{}{}, taskInfo)
@@ -779,7 +779,6 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 	// splitting managerID to get uuid
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
-
 	//do get call with
 	data, err := e.getResourceInfoFromDevice(ctx, uri, uuid, requestData[1], nil)
 	if err != nil {
@@ -808,10 +807,10 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 	}
 
 	plugin, resp := e.deviceCommunication(ctx, uri, uuid, requestData[1], http.MethodPatch, requestBody)
-
 	if resp.StatusCode == http.StatusAccepted {
 		e.DB.SavePluginTaskInfo(ctx, plugin.PluginIP, plugin.PluginServerName,
 			taskID, plugin.Location)
+		e.UpdatePassword(ctx, uuid, bmcAccReq.Password, username, resp.StatusCode)
 		return
 	}
 
@@ -824,6 +823,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 			common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, taskInfo)
 			return
 		}
+		e.UpdatePassword(ctx, uuid, bmcAccReq.Password, username, resp.StatusCode)
 		// Replace response body to BMC manager
 		data = replaceBMCAccResp(data, req.ManagerID)
 		resource := convertToRedfishModel(ctx, req.URL, data)
@@ -840,8 +840,6 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 	}
 	respBody := fmt.Sprintf("%v", resp.Body)
 	l.LogWithFields(ctx).Debugf("Outgoing update remote account service response to northbound: %s", string(respBody))
-	return
-
 }
 
 // DeleteRemoteAccountService is used to delete the BMC account user
@@ -867,5 +865,58 @@ func (e *ExternalInterface) DeleteRemoteAccountService(ctx context.Context, req 
 	e.RPC.UpdateTask(ctx, task)
 	respBody := fmt.Sprintf("%v", resp.Body)
 	l.LogWithFields(ctx).Debugf("Outgoing delete remote account service response to northbound: %s", string(respBody))
-	return
+}
+
+// UpdatePassword method used to update system password
+func (e ExternalInterface) UpdatePassword(ctx context.Context, uuid, password string, userName string, statusCode int32) {
+	target, gerr := mgrmodel.GetTarget(uuid)
+	if gerr != nil {
+		l.LogWithFields(ctx).Error("error while getting device details :" + gerr.Error())
+		return
+	}
+	if userName != target.UserName {
+		return
+	}
+	newPassword, err := e.Device.EncryptDevicePassword([]byte(password))
+	if err != nil {
+		errMsg := "error while trying to encrypt: " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		return
+	}
+	target.Password = newPassword
+	if statusCode == http.StatusOK {
+		err1 := mgrmodel.UpdateSystem(target.ManagerAddress, target)
+		if err1 != nil {
+			errMsg := "error while update password : " + err.Error()
+			l.LogWithFields(ctx).Error(errMsg)
+		}
+		return
+	}
+	err1 := mgrmodel.AddTempPassword(uuid, target)
+	if err1 != nil {
+		errMsg := "error while update password : " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		return
+	}
+}
+
+// UpdateRemoteAccountService is used to update BMC account
+func (e *ExternalInterface) UpdateRemoteAccountPasswordService(ctx context.Context, req *managersproto.ManagerRequest) {
+	target, err := mgrmodel.GetTempPassword(req.ManagerID)
+	if err != nil {
+		errMsg := "no password found: " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		return
+	}
+	if err := mgrmodel.UpdateSystem(target.DeviceUUID, target); err != nil {
+		errMsg := "error while update password : " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		return
+	}
+	if err := mgrmodel.DeleteTempPassword(req.ManagerID); err != nil {
+		errMsg := "error while delete temp password : " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		return
+	}
+	l.LogWithFields(ctx).Info("Password updated successfully for device " + target.DeviceUUID)
 }

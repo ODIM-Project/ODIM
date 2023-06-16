@@ -103,3 +103,56 @@ func GetTarget(deviceUUID string) (*DeviceTarget, *errors.Error) {
 	}
 	return &target, nil
 }
+
+// UpdateSystem fetches the System(Target Device Credentials) table details
+func UpdateSystem(deviceUUID string, device *DeviceTarget) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	_, err = conn.Update("System", deviceUUID, device)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateSystem fetches the System(Target Device Credentials) table details
+func AddTempPassword(uuid string, device *DeviceTarget) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	err = conn.Create("tempBmcPassword", uuid, device)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func GetTempPassword(deviceUUID string) (*DeviceTarget, *errors.Error) {
+	var target DeviceTarget
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	data, err := conn.Read("tempBmcPassword", deviceUUID)
+	if err != nil {
+		return nil, errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
+	}
+	if errs := json.Unmarshal([]byte(data), &target); errs != nil {
+		return nil, errors.PackError(errors.UndefinedErrorType, errs)
+	}
+	return &target, nil
+}
+func DeleteTempPassword(deviceUUID string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	err = conn.Delete("tempBmcPassword", deviceUUID)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
+	}
+
+	return nil
+}

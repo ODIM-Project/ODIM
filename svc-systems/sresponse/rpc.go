@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package sresponse ...
+// Package sresponse ...
 package sresponse
 
 // RPC defines the reponse which account-session service returns back as

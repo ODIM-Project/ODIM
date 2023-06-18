@@ -13,14 +13,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package sresponse ...
+// Package sresponse ...
 package sresponse
 
 import (
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 )
 
-//Collection holds response  of System and ChassisCollection
+// Collection holds response  of System and ChassisCollection
 type Collection struct {
 	OdataContext         string      `json:"@odata.context"`
 	Etag                 string      `json:"@odata.etag,omitempty"`

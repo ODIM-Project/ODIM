@@ -819,13 +819,10 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	// Authorize the request here
-	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	sessionToken := ctx.Request().Header.Get(AuthTokenHeader)
 	if sessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 		return
 	}
 	authResp, err := r.Auth(ctxt, sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -834,11 +831,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 		if err != nil {
 			errMsg = errMsg + ": " + err.Error()
 		}
-		l.LogWithFields(ctxt).Error(errMsg)
-		ctx.StatusCode(int(authResp.StatusCode))
-		common.SetResponseHeader(ctx, authResp.Header)
-		ctx.JSON(authResp.Body)
-		return
+		sendAuthErrorResponse(ctxt, ctx, errMsg, authResp)
 	}
 
 	//Get the Registrystore location
@@ -894,7 +887,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
-	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	sessionToken := ctx.Request().Header.Get(AuthTokenHeader)
 	regFileID := ctx.Params().Get("id")
 	if strings.Contains(regFileID, ".json") {
 		r.GetMessageRegistryFile(ctx)
@@ -912,11 +905,8 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	}
 	regFileID = strings.Replace(regFileID, "#", "%23", -1)
 	if sessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 		return
 	}
 	authResp, err := r.Auth(ctxt, sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -925,11 +915,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 		if err != nil {
 			errMsg = errMsg + ": " + err.Error()
 		}
-		l.LogWithFields(ctxt).Error(errMsg)
-		ctx.StatusCode(int(authResp.StatusCode))
-		common.SetResponseHeader(ctx, authResp.Header)
-		ctx.JSON(authResp.Body)
-		return
+		sendAuthErrorResponse(ctxt, ctx, errMsg, authResp)
 	}
 	var headers = map[string]string{
 		"Allow": "GET",
@@ -997,7 +983,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
-	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	sessionToken := ctx.Request().Header.Get(AuthTokenHeader)
 	regFileID := ctx.Params().Get("id")
 	if strings.HasPrefix(regFileID, "#") {
 		reqURI := ctx.Request().RequestURI
@@ -1012,11 +998,8 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 	regFileID = strings.Replace(regFileID, "#", "%23", -1)
 	l.LogWithFields(ctxt).Debugf("Retriveing message registry file with file id %s", regFileID)
 	if sessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 		return
 	}
 	authResp, err := r.Auth(ctxt, sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -1025,11 +1008,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		if err != nil {
 			errMsg = errMsg + ": " + err.Error()
 		}
-		l.LogWithFields(ctxt).Error(errMsg)
-		ctx.StatusCode(int(authResp.StatusCode))
-		common.SetResponseHeader(ctx, authResp.Header)
-		ctx.JSON(authResp.Body)
-		return
+		sendAuthErrorResponse(ctxt, ctx, errMsg, authResp)
 	}
 	var headers = map[string]string{
 		"Allow": "GET",
@@ -1063,11 +1042,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		l.LogWithFields(ctxt).Error(err.Error())
 		errorMessage := "error: Resource not found"
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	common.SetResponseHeader(ctx, headers)
 	ctx.JSON(data)
@@ -1399,5 +1374,14 @@ func RoleMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
 	}
 	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}
+
+// sendAuthErrorResponse writes the response for an RPC call when authentication of session fails
+func sendAuthErrorResponse(ctxt context.Context, ctx iris.Context, errorMessage string, authResp errResponse.RPC) {
+	l.LogWithFields(ctxt).Error(errorMessage)
+	ctx.StatusCode(int(authResp.StatusCode))
+	common.SetResponseHeader(ctx, authResp.Header)
+	ctx.JSON(authResp.Body)
 	return
 }

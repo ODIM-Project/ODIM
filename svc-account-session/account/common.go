@@ -15,6 +15,8 @@
 package account
 
 import (
+	"fmt"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -57,6 +59,7 @@ func TrackConfigFileChanges(errChan chan error) {
 	for {
 		select {
 		case info := <-eventChan:
+			fmt.Printf("Config Changes ************ %+v \n ", config.Data.DBConf.InMemoryHost)
 			l.Log.Info(info) // new data arrives through eventChan channel
 			if l.Log.Level != config.Data.LogLevel {
 				l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)

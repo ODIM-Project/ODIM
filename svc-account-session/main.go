@@ -33,6 +33,7 @@ import (
 
 func main() {
 	// setting up the logging framework
+	fmt.Println("Update ************")
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()

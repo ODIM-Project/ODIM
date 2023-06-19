@@ -257,7 +257,7 @@ func getPluginStatus(ctx context.Context, plugin smodel.Plugin) bool {
 
 // getPluginToken will verify the if any token present to the plugin else it will create token for the new plugin
 func (f *fabricFactory) getPluginToken(ctx context.Context, plugin smodel.Plugin) string {
-	authToken := Token.getToken(plugin.ID)	
+	authToken := Token.getToken(plugin.ID)
 	if authToken == "" {
 		return f.createToken(ctx, plugin)
 	}

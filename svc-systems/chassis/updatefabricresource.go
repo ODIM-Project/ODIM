@@ -77,7 +77,7 @@ func (f *fabricFactory) updateResource(ctx context.Context, plugin smodel.Plugin
 
 // patchResource contacts the plugin with the details available in the
 // pluginContactRequest, and returns the RPC response
-func patchResource(ctx context.Context, f *fabricFactory, pluginRequest *pluginContactRequest) (r response.RPC) {	
+func patchResource(ctx context.Context, f *fabricFactory, pluginRequest *pluginContactRequest) (r response.RPC) {
 	body, _, statusCode, statusMessage, err := contactPlugin(ctx, pluginRequest)
 	if statusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
 		body, _, statusCode, statusMessage, err = retryFabricsOperation(ctx, f, pluginRequest)

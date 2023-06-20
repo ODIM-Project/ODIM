@@ -117,7 +117,8 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 		"Password":       saveSystem.Password,
 	}
 
-	// enable event service in case if the property set to false
+	// This call will patch the EventService in order to set ServiceEnabled property true
+	// this property should be enabled to get the events
 	pluginContactRequest.DeviceInfo = getSystemBody
 	pluginContactRequest.OID = "/redfish/v1/EventService"
 	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID

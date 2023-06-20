@@ -120,34 +120,27 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string, error) {
 	if atomic.CompareAndSwapUint32(&goroutineCreated, 0, 1) {
 		go monitorFailureOver(sentinelClient)
 	}
-	fmt.Println(" ********** MasterIP ", masterIP, " Master Port ", masterPort, " Data  ", stringSlice)
-	fmt.Println("*** Config set ", dbConfig.MasterSet)
 
 	return masterIP, masterPort, nil
 }
 
 func monitorFailureOver(sentinelClient *redis.SentinelClient) {
-	fmt.Println("Monitor start ************ ")
 	pub := sentinelClient.Subscribe("+switch-master")
 	var err *errors.Error
 
 	for {
-		data, _ := pub.Receive()
-		fmt.Printf(" **************  Failure over received %+v \n ", data)
+		pub.Receive()
 		time.Sleep(10 * time.Second)
 		if inMemDBConnPool != nil && onDiskDBConnPool != nil {
 			config := getInMemoryDBConfig()
-			fmt.Printf("Master node is %+v \n", config)
 			inMemDBConnPool, err = config.Connection()
 			if err != nil {
-				fmt.Println("Error is ****** In Memory  ", err)
 				continue
 			}
 
 			config1 := getOnDiskDBConfig()
 			onDiskDBConnPool, err = config1.Connection()
 			if err != nil {
-				fmt.Println("Error is ****** In Memory  ", err)
 				continue
 			}
 			resetDBWriteConnection(InMemory)
@@ -341,7 +334,6 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 			return nil, errors.PackError(errors.UndefinedErrorType, err.Error())
 		}
 	}
-	fmt.Println("Master host is ", masterIP)
 	connPools.ReadPool, err = goRedisNewClient(c, c.Host, c.Port)
 	if err != nil {
 		return nil, errors.PackError(errors.DBConnFailed, err.Error())

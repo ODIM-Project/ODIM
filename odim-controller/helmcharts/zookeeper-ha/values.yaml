@@ -2,4 +2,4 @@ odimra:
   namespace:
   groupID:
   zookeeperDirPath:
-  zookeeperImageTag: "2.0"
+  zookeeperImageTag: "3.0"

@@ -321,17 +321,16 @@ func checkDBConf(wl *WarningList) error {
 		wl.add("Incorrect value configured for DB Protocol, setting default value")
 		Data.DBConf.Protocol = DefaultDBProtocol
 	}
-	if Data.DBConf.InMemoryHost == "" {
-		return fmt.Errorf("error: no value configured for DB InMemoryHost")
+
+	fieldMap := map[string]string{
+		"InMemoryHost": Data.DBConf.InMemoryHost,
+		"InMemoryPort": Data.DBConf.InMemoryPort,
+		"OnDiskHost":   Data.DBConf.OnDiskHost,
+		"OnDiskPort":   Data.DBConf.OnDiskPort,
 	}
-	if Data.DBConf.InMemoryPort == "" {
-		return fmt.Errorf("error: no value configured for DB InMemoryPort")
-	}
-	if Data.DBConf.OnDiskHost == "" {
-		return fmt.Errorf("error: no value configured for DB OnDiskHost")
-	}
-	if Data.DBConf.OnDiskPort == "" {
-		return fmt.Errorf("error: no value configured for DB OnDiskPort")
+
+	if err := checkEmptyvalue(fieldMap); err != nil {
+		return err
 	}
 	if Data.DBConf.MaxActiveConns == 0 {
 		wl.add("No value configured for MaxActiveConns, setting default value")
@@ -355,6 +354,16 @@ func checkDBConf(wl *WarningList) error {
 	if Data.DBConf.RedisOnDiskPasswordFilePath != "" && Data.KeyCertConf.RSAPrivateKeyPath != "" {
 		if Data.DBConf.RedisOnDiskPassword, err = decryptRSAOAEPEncryptedPasswords(Data.DBConf.RedisOnDiskPasswordFilePath); err != nil {
 			return fmt.Errorf("error: while decrypting password from the passwordFilePath:%s with %v", Data.DBConf.RedisOnDiskPasswordFilePath, err)
+		}
+	}
+	return nil
+}
+
+// checkEmptyvalue checks and returns error if any key in the map has empty value
+func checkEmptyvalue(fieldMap map[string]string) error {
+	for key, value := range fieldMap {
+		if value == "" {
+			return fmt.Errorf("error: no value configured for DB %s", key)
 		}
 	}
 	return nil

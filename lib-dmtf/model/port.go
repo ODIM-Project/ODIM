@@ -32,7 +32,7 @@ type Port struct {
 	Ethernet                *PortEthernet        `json:"Ethernet,omitempty"`
 	FibreChannel            *FibreChannel        `json:"FibreChannel,omitempty"`
 	GenZ                    *GenZ                `json:"GenZ,omitempty"`
-	InterfaceEnabled        bool                 `json:"InterfaceEnabled"`
+	InterfaceEnabled        bool                 `json:"InterfaceEnabled,omitempty"`
 	LinkConfiguration       []*LinkConfiguration `json:"LinkConfiguration,omitempty"`
 	LinkNetworkTechnology   string               `json:"LinkNetworkTechnology,omitempty"`
 	LinkState               string               `json:"LinkState,omitempty"`
@@ -159,8 +159,8 @@ type LinkConfiguration struct {
 
 //CapableLinkSpeedGbps redfish model
 type CapableLinkSpeedGbps struct {
-	ConfiguredLinkSpeedGbps []float64 `json:"ConfiguredLinkSpeedGbps,omitempty"`
-	ConfiguredWidth         int       `json:"ConfiguredWidth,omitempty"`
+	ConfiguredLinkSpeedGbps float64 `json:"ConfiguredLinkSpeedGbps,omitempty"`
+	ConfiguredWidth         int     `json:"ConfiguredWidth,omitempty"`
 }
 
 //PortLinks Port link redfish model

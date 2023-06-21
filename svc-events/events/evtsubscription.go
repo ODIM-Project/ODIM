@@ -548,7 +548,7 @@ func (e *ExternalInterfaces) IsEventsSubscribed(ctx context.Context, token, orig
 		host = collectionName
 		searchKey = collectionName
 	} else {
-		host, err := common.GetIPFromHostName(target.ManagerAddress)
+		host, err := GetIPFromHostNameFunc(target.ManagerAddress)
 		if err != nil {
 			evcommon.GenErrorResponse(err.Error(), errResponse.ResourceNotFound, http.StatusNotFound,
 				[]interface{}{"ManagerAddress", target.ManagerAddress}, &resp)

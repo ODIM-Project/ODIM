@@ -258,6 +258,8 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 
 	postBody, _ := json.Marshal(&SubscriptionReq)
 
+	GetIPFromHostNameFunc = func(fqdn string) (string, error) { return "odim.test1.com", nil }
+
 	// Bad Request from the plugin
 	req := &eventsproto.EventSubRequest{
 		SessionToken: "token",

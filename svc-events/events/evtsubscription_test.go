@@ -24,6 +24,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"reflect"
 	"testing"
@@ -589,7 +590,7 @@ func TestExternalInterfaces_UpdateEventSubscriptions(t *testing.T) {
 	assert.NotNil(t, res, "there should be an error ")
 
 	pc = getMockMethods()
-	GetIPFromHostNameFunc = func(fqdn string) (string, string) { return "", "not Found " }
+	GetIPFromHostNameFunc = func(fqdn string) (string, error) { return "", fmt.Errorf("not Found ") }
 	_, res = pc.UpdateEventSubscriptions(evcommon.MockContext(), &eventsproto.EventUpdateRequest{SessionToken: "", AggregateId: "6d4a0a66-7efa-578e-83cf-44dc68d2874e", SystemID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}, false)
 	assert.NotNil(t, res, "there should be an error ")
 
@@ -615,7 +616,7 @@ func TestExternalInterfaces_createFabricSubscription(t *testing.T) {
 	_, resp := p.createFabricSubscription(evcommon.MockContext(), postBody, "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "", false)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusCreated")
 
-	GetIPFromHostNameFunc = func(fqdn string) (string, string) { return "", "Not found" }
+	GetIPFromHostNameFunc = func(fqdn string) (string, error) { return "", fmt.Errorf("not Found ") }
 	_, resp = p.createFabricSubscription(evcommon.MockContext(), postBody, "/redfish/v1/Fabrics/6d4a0a66-7efa-578e-83cf-44dc68d2874e", "", false)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusCreated")
 

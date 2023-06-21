@@ -19,6 +19,15 @@ import (
 	"testing"
 )
 
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
 func TestGetIPFromHostName(t *testing.T) {
 	type args struct {
 		fqdn string
@@ -26,7 +35,7 @@ func TestGetIPFromHostName(t *testing.T) {
 	tests := []struct {
 		name  string
 		args  args
-		want  string
+		want  []string
 		want1 bool
 	}{
 		{
@@ -34,7 +43,7 @@ func TestGetIPFromHostName(t *testing.T) {
 			args: args{
 				fqdn: "localhost:8080",
 			},
-			want:  "127.0.0.1",
+			want:  []string{"127.0.0.1", "::1"},
 			want1: false,
 		},
 		{
@@ -42,7 +51,7 @@ func TestGetIPFromHostName(t *testing.T) {
 			args: args{
 				fqdn: "127.0.0.1",
 			},
-			want:  "127.0.0.1",
+			want:  []string{"127.0.0.1", "::1"},
 			want1: false,
 		},
 		{
@@ -50,15 +59,15 @@ func TestGetIPFromHostName(t *testing.T) {
 			args: args{
 				fqdn: "invalid",
 			},
-			want:  "",
+			want:  []string{""},
 			want1: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := GetIPFromHostName(tt.args.fqdn)
-			if got != tt.want {
-				t.Errorf("GetIPFromHostName() got = %v, want %v", got, tt.want)
+			if !contains(tt.want, got) {
+				t.Errorf("GetIPFromHostName() got = %v, want one of %v", got, tt.want)
 			}
 			if (got1 != nil) != tt.want1 {
 				t.Errorf("GetIPFromHostName() got = %v, want %v", got1 != nil, tt.want1)

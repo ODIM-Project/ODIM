@@ -442,12 +442,12 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 // DeleteFabricsSubscription will delete fabric subscription
 func (e *ExternalInterfaces) DeleteFabricsSubscription(ctx context.Context, originResource string, plugin *common.Plugin) (response.RPC, error) {
 	var resp response.RPC
-	addr, errorMessage := GetIPFromHostNameFunc(plugin.IP)
-	if errorMessage != "" {
+	addr, err := GetIPFromHostNameFunc(plugin.IP)
+	if err != nil {
 		var msgArgs = []interface{}{"ManagerAddress", plugin.IP}
-		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
-		l.LogWithFields(ctx).Error(errorMessage)
-		return resp, fmt.Errorf(errorMessage)
+		evcommon.GenErrorResponse(err.Error(), response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
+		l.LogWithFields(ctx).Error(err.Error())
+		return resp, fmt.Errorf(err.Error())
 	}
 	searchKey := evcommon.GetSearchKey(addr, evmodel.DeviceSubscriptionIndex)
 	devSub, err := e.GetDeviceSubscriptions(searchKey)

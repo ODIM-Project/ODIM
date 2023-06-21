@@ -1056,11 +1056,11 @@ func (e *ExternalInterfaces) createFabricSubscription(ctx context.Context, postR
 	if len(subscriptionPost.ResourceTypes) == 0 {
 		subscriptionPost.ResourceTypes = emptySlice
 	}
-	deviceIPAddress, errorMessage := GetIPFromHostNameFunc(plugin.IP)
-	if errorMessage != "" {
-		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusBadRequest,
+	deviceIPAddress, err := GetIPFromHostNameFunc(plugin.IP)
+	if err != nil {
+		evcommon.GenEventErrorResponse(err.Error(), errResponse.ResourceNotFound, http.StatusBadRequest,
 			&resp, []interface{}{"ManagerAddress", plugin.IP})
-		l.LogWithFields(ctx).Error(errorMessage)
+		l.LogWithFields(ctx).Error(err.Error())
 		return "", resp
 	}
 	var target = common.Target{

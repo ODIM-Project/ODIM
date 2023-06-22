@@ -19,6 +19,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
 	"google.golang.org/grpc/metadata"
 )
@@ -117,4 +118,31 @@ func CreateContext(transactionID, actionID, actionName, threadID, threadName, pr
 	ctx = context.WithValue(ctx, ThreadName, threadName)
 	ctx = context.WithValue(ctx, ProcessName, processName)
 	return ctx
+}
+
+// SendInvalidSessionResponse writes the response to client when no valid session is found
+func SendInvalidSessionResponse(ctx iris.Context, errorMessage string) {
+	response := GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+	SetResponseHeader(ctx, response.Header)
+	ctx.StatusCode(http.StatusUnauthorized)
+	ctx.JSON(&response.Body)
+	return
+}
+
+// SendFailedRPCCallResponse writes the response to client when a RPC call fails
+func SendFailedRPCCallResponse(ctx iris.Context, errorMessage string) {
+	response := GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	SetResponseHeader(ctx, response.Header)
+	ctx.StatusCode(http.StatusInternalServerError)
+	ctx.JSON(&response.Body)
+	return
+}
+
+// SendMalformedJSONRequestErrResponse writes the response to client when the request contains malformed JSON structure
+func SendMalformedJSONRequestErrResponse(ctx iris.Context, errorMessage string) {
+	response := GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+	SetResponseHeader(ctx, response.Header)
+	ctx.StatusCode(http.StatusBadRequest)
+	ctx.JSON(&response.Body)
+	return
 }

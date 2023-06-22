@@ -152,6 +152,8 @@ const (
 	AggregationSourceType = "#AggregationSource.v1_2_0.AggregationSource"
 	//ChassisType has version to be returned with Chassis Service
 	ChassisType = "#Chassis.v1_20_0.Chassis"
+	//ManagerAccountServiceType has version to be returned with RemoteAccountService response
+	ManagerAccountServiceType = "#AccountService.v1_13_0.AccountService"
 	// AggregateSubscriptionIndex is a index name which required for indexing
 	// subscription of aggregate
 	AggregateSubscriptionIndex = "AggregateToHost"

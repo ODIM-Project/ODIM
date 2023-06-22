@@ -170,7 +170,15 @@ func (p *PluginContact) ComputerSystemReset(ctx context.Context,
 	}
 
 	if getResponse.StatusCode == http.StatusAccepted {
-		pluginTaskKey := common.ResetTaskIDPrefix + target.ManagerAddress
+		targetIP, err := common.GetIPFromHostName(target.ManagerAddress)
+		if err != nil {
+			errMsg := "error while saving task data to DB: " + err.Error()
+			l.LogWithFields(ctx).Error(errMsg)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError,
+				errMsg, nil, taskInfo)
+			return
+		}
+		pluginTaskKey := common.ResetTaskIDPrefix + targetIP
 		scommon.SavePluginTaskInfoForResetRequest(ctx, pluginIP, plugin.IP,
 			taskID, location, pluginTaskKey)
 		return

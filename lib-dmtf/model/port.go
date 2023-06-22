@@ -14,7 +14,7 @@
 
 package model
 
-//Port is the redfish Port model according to the 2020.3 release
+// Port is the redfish Port model according to the 2020.3 release
 type Port struct {
 	ODataContext            string               `json:"@odata.context,omitempty"`
 	ODataEtag               string               `json:"@odata.etag,omitempty"`
@@ -76,7 +76,7 @@ type FunctionBandwidth struct {
 	NetworkDeviceFunction *Link `json:"NetworkDeviceFunctions,omitempty"`
 }
 
-//PortEthernet redfish model
+// PortEthernet redfish model
 type PortEthernet struct {
 	FlowControlConfiguration      string   `json:"FlowControlConfiguration,omitempty"`
 	FlowControlStatus             string   `json:"FlowControlStatus,omitempty"`
@@ -101,7 +101,7 @@ type LLDP struct {
 	PortIDSubtype         string `json:"PortIdSubtype,omitempty"`
 }
 
-//FibreChannel redfish model
+// FibreChannel redfish model
 type FibreChannel struct {
 	FabricName                  string   `json:"FabricName,omitempty"`
 	NumberDiscoveredRemotePorts int      `json:"NumberDiscoveredRemotePorts,omitempty"`
@@ -109,7 +109,7 @@ type FibreChannel struct {
 	AssociatedWorldWideNames    []string `json:"AssociatedWorldWideNames,omitempty"`
 }
 
-//LinkConfiguration redfish model
+// LinkConfiguration redfish model
 type LinkConfiguration struct {
 	AutoSpeedNegotiationCapable bool                   `json:"AutoSpeedNegotiationCapable,omitempty"`
 	AutoSpeedNegotiationEnabled bool                   `json:"AutoSpeedNegotiationEnabled,omitempty"`
@@ -117,13 +117,13 @@ type LinkConfiguration struct {
 	ConfiguredNetworkLinks      []CapableLinkSpeedGbps `json:"ConfiguredNetworkLinks,omitempty"`
 }
 
-//CapableLinkSpeedGbps redfish model
+// CapableLinkSpeedGbps redfish model
 type CapableLinkSpeedGbps struct {
 	ConfiguredLinkSpeedGbps []float64 `json:"ConfiguredLinkSpeedGbps,omitempty"`
 	ConfiguredWidth         int       `json:"ConfiguredWidth,omitempty"`
 }
 
-//PortLinks Port link redfish model
+// PortLinks Port link redfish model
 type PortLinks struct {
 	AssociatedEndpoints       []Link      `json:"AssociatedEndpoints,omitempty"`
 	ConnectedPorts            []Link      `json:"ConnectedPorts,omitempty"`

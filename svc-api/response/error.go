@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package response ...
+// Package response ...
 package response
 
 // CommonError struct definition

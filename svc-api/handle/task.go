@@ -45,7 +45,7 @@ func (task *TaskRPCs) DeleteTask(ctx iris.Context) {
 	ctxt := ctx.Request().Context()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for deleting task with taskid %s", req.TaskID)
 	response, err := task.DeleteTaskRPC(ctxt, req)
@@ -60,9 +60,7 @@ func (task *TaskRPCs) DeleteTask(ctx iris.Context) {
 		return
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for deleting task is %s with status code %d", string(response.Body), int(response.StatusCode))
-	common.SetResponseHeader(ctx, response.Header)
-	ctx.StatusCode(int(response.StatusCode))
-	ctx.Write(response.Body)
+	sendTaskResponse(ctx, response)
 }
 
 // GetTaskStatus fetches task status
@@ -73,7 +71,7 @@ func (task *TaskRPCs) GetTaskStatus(ctx iris.Context) {
 	ctxt := ctx.Request().Context()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for getting task status with taskid %s", req.TaskID)
 	response, err := task.GetTaskRPC(ctxt, req)
@@ -89,9 +87,7 @@ func (task *TaskRPCs) GetTaskStatus(ctx iris.Context) {
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for getting task is %s with status code %d", string(response.Body), int(response.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
-	common.SetResponseHeader(ctx, response.Header)
-	ctx.StatusCode(int(response.StatusCode))
-	ctx.Write(response.Body)
+	sendTaskResponse(ctx, response)
 }
 
 // GetSubTasks fetches sub task collection under given umbralla tasks
@@ -102,7 +98,7 @@ func (task *TaskRPCs) GetSubTasks(ctx iris.Context) {
 	ctxt := ctx.Request().Context()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
 	response, err := task.GetSubTasksRPC(ctxt, req)
 	common.SetResponseHeader(ctx, response.Header)
@@ -117,9 +113,7 @@ func (task *TaskRPCs) GetSubTasks(ctx iris.Context) {
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for getting sub tasks is %s with status code %d", string(response.Body), int(response.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
-	common.SetResponseHeader(ctx, response.Header)
-	ctx.StatusCode(int(response.StatusCode))
-	ctx.Write(response.Body)
+	sendTaskResponse(ctx, response)
 }
 
 // GetSubTask fetches sub task details
@@ -131,7 +125,7 @@ func (task *TaskRPCs) GetSubTask(ctx iris.Context) {
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
 		SubTaskID:    ctx.Params().Get("subTaskID"),
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for getting sub task information with taskid %s and subtaskid %s", req.TaskID, req.SubTaskID)
 	response, err := task.GetSubTaskRPC(ctxt, req)
@@ -147,9 +141,7 @@ func (task *TaskRPCs) GetSubTask(ctx iris.Context) {
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for getting sub task information is %s with status code %d", string(response.Body), int(response.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
-	common.SetResponseHeader(ctx, response.Header)
-	ctx.StatusCode(int(response.StatusCode))
-	ctx.Write(response.Body)
+	sendTaskResponse(ctx, response)
 }
 
 // GetTaskMonitor fetches task monitor
@@ -160,7 +152,7 @@ func (task *TaskRPCs) GetTaskMonitor(ctx iris.Context) {
 	ctxt := ctx.Request().Context()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for getting task mon for taskid %s", req.TaskID)
 	response, err := task.GetTaskMonitorRPC(ctxt, req)
@@ -176,9 +168,7 @@ func (task *TaskRPCs) GetTaskMonitor(ctx iris.Context) {
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for getting task monitoring information is %s with status code %d", string(response.Body), int(response.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
-	common.SetResponseHeader(ctx, response.Header)
-	ctx.StatusCode(int(response.StatusCode))
-	ctx.Write(response.Body)
+	sendTaskResponse(ctx, response)
 }
 
 // TaskCollection fetches all tasks available in DB
@@ -188,7 +178,7 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := &taskproto.GetTaskRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for getting task all the available tasks collection")
 	if req.SessionToken == "" {
@@ -212,9 +202,7 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for getting task collections is %s with status code %d", string(response.Body), int(response.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
-	common.SetResponseHeader(ctx, response.Header)
-	ctx.StatusCode(int(response.StatusCode))
-	ctx.Write(response.Body)
+	sendTaskResponse(ctx, response)
 
 }
 
@@ -225,7 +213,7 @@ func (task *TaskRPCs) GetTaskService(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := &taskproto.GetTaskRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
 	response, err := task.GetTaskServiceRPC(ctxt, req)
 	common.SetResponseHeader(ctx, response.Header)
@@ -240,6 +228,11 @@ func (task *TaskRPCs) GetTaskService(ctx iris.Context) {
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for getting task service is %s with status code %d", string(response.Body), int(response.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	sendTaskResponse(ctx, response)
+}
+
+// sendTaskResponse writes the task response to client
+func sendTaskResponse(ctx iris.Context, response *taskproto.TaskResponse) {
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)

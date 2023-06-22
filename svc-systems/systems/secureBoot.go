@@ -59,9 +59,9 @@ func (e *ExternalInterface) UpdateSecureBoot(ctx context.Context, req *systemspr
 	// unmarshalling the volume
 	err := json.Unmarshal(req.RequestBody, &secureBoot)
 	if err != nil {
-		errorMessage := "Error while unmarshaling the create volume request: " + err.Error()
+		errorMessage := "Error while unmarshaling the update secure boot request: " + err.Error()
 		if StringContain(err.Error(), "smodel.OdataIDLink") {
-			errorMessage = "Error processing create volume request: @odata.id key(s) is missing in Drives list"
+			errorMessage = "Error processing update secure boot request: @odata.id key(s) is missing in Drives list"
 		}
 		l.LogWithFields(ctx).Error(errorMessage)
 		common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, taskInfo)
@@ -76,7 +76,7 @@ func (e *ExternalInterface) UpdateSecureBoot(ctx context.Context, req *systemspr
 		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		return
 	} else if invalidProperties != "" {
-		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in upper camel case "
 		l.LogWithFields(ctx).Error(errorMessage)
 		common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
 		return
@@ -130,14 +130,15 @@ func (e *ExternalInterface) UpdateSecureBoot(ctx context.Context, req *systemspr
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s/SecureBoot", requestData[1])
 
-	body, location, pluginIP, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while creating a volume: ")
+	body, location, pluginIP, getResponse, err := ContactPluginFunc(ctx, contactRequest, "error while updating secure boot: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		errMsg := "error while creating volume: " + err.Error()
+		errMsg := "error while updating secure boot: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		common.GeneralError(http.StatusInternalServerError, response.InternalError,
-			errMsg, nil, taskInfo)
+		task := fillTaskData(taskID, targetURI, string(req.RequestBody), resp,
+			common.Completed, common.Warning, 100, http.MethodPatch)
+		pc.UpdateTask(ctx, task)
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
@@ -267,8 +268,9 @@ func (e *ExternalInterface) ResetSecureBoot(ctx context.Context, req *systemspro
 		json.Unmarshal(body, &resp.Body)
 		errMsg := "error while resetting secure boot: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		common.GeneralError(http.StatusInternalServerError, response.InternalError,
-			errMsg, nil, taskInfo)
+		task := fillTaskData(taskID, targetURI, string(req.RequestBody), resp,
+			common.Completed, common.Warning, 100, http.MethodPost)
+		pc.UpdateTask(ctx, task)
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {

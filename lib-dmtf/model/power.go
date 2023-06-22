@@ -14,7 +14,7 @@
 
 package model
 
-//Power is the redfish Power model according to the 2020.3 release
+// Power is the redfish Power model according to the 2020.3 release
 type Power struct {
 	ODataContext       string          `json:"@odata.context,omitempty"`
 	ODataEtag          string          `json:"@odata.etag,omitempty"`

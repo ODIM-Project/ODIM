@@ -625,6 +625,7 @@ func convertToRedfishModel(ctx context.Context, uri, data string) interface{} {
 	if URIRegexRemAcc.MatchString(uri) {
 		var resource dmtf.AccountService
 		json.Unmarshal([]byte(data), &resource)
+		resource.ODataType = common.ManagerAccountServiceType
 		return resource
 	} else if URIRegexAcc.MatchString(uri) {
 		var resource dmtf.ManagerAccount

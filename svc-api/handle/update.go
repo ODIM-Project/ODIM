@@ -46,33 +46,22 @@ func (a *UpdateRPCs) GetUpdateService(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := updateproto.UpdateRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
 	l.LogWithFields(ctxt).Debug("Incoming request received for getting update service details")
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.GetUpdateServiceRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for getting update service is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
-
+	sendUpdateResponse(ctx, resp)
 }
 
 // GetFirmwareInventoryCollection is a handler for firmware inventory collection
@@ -80,32 +69,22 @@ func (a *UpdateRPCs) GetFirmwareInventoryCollection(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := updateproto.UpdateRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
 	l.LogWithFields(ctxt).Debug("Incoming request received for getting firmware inventory collection")
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.GetFirmwareInventoryCollectionRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for getting firmware inventory collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	sendUpdateResponse(ctx, resp)
 
 }
 
@@ -114,32 +93,22 @@ func (a *UpdateRPCs) GetSoftwareInventoryCollection(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := updateproto.UpdateRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
 	l.LogWithFields(ctxt).Debug("Incoming request received for software inventory collection")
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.GetSoftwareInventoryCollectionRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for getting software inventory collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	sendUpdateResponse(ctx, resp)
 
 }
 
@@ -148,34 +117,24 @@ func (a *UpdateRPCs) GetFirmwareInventory(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := updateproto.UpdateRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		ResourceID:   ctx.Params().Get("firmwareInventory_id"),
 		URL:          ctx.Request().RequestURI,
 	}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for getting firmware inventory with url %s", req.URL)
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.GetFirmwareInventoryRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for getting firmware inventory details is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	sendUpdateResponse(ctx, resp)
 
 }
 
@@ -184,34 +143,24 @@ func (a *UpdateRPCs) GetSoftwareInventory(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := updateproto.UpdateRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		ResourceID:   ctx.Params().Get("softwareInventory_id"),
 		URL:          ctx.Request().RequestURI,
 	}
 	l.LogWithFields(ctxt).Debugf("Incoming request received for getting software inventory with url %s", req.URL)
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.GetSoftwareInventoryRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for getting software inventory details is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	sendUpdateResponse(ctx, resp)
 
 }
 
@@ -224,20 +173,12 @@ func (a *UpdateRPCs) SimpleUpdate(ctx iris.Context) {
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the simple update request body: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(&response.Body)
-		return
+		common.SendMalformedJSONRequestErrResponse(ctx, errorMessage)
 	}
-	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	sessionToken := ctx.Request().Header.Get(AuthTokenHeader)
 	if sessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	// Marshalling the req to make reset request
 	request, err := json.Marshal(req)
@@ -257,16 +198,10 @@ func (a *UpdateRPCs) SimpleUpdate(ctx iris.Context) {
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for simple update action is %s with status code %d", string(resp.Body), int(resp.StatusCode))
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	sendUpdateResponse(ctx, resp)
 }
 
 func validateSimpleUpdateRequest(ctx context.Context, requestBody []byte) response.RPC {
@@ -319,14 +254,10 @@ func (a *UpdateRPCs) StartUpdate(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	l.LogWithFields(ctxt).Debug("Incoming request received for start update action")
-	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	sessionToken := ctx.Request().Header.Get(AuthTokenHeader)
 	if sessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	updateRequest := updateproto.UpdateRequest{
 		SessionToken: sessionToken,
@@ -335,13 +266,14 @@ func (a *UpdateRPCs) StartUpdate(ctx iris.Context) {
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
 	l.LogWithFields(ctxt).Debugf("Outgoing response for start update action is %s with status code %d", string(resp.Body), int(resp.StatusCode))
+	sendUpdateResponse(ctx, resp)
+}
+
+// sendUpdateResponse writes the update response to client
+func sendUpdateResponse(ctx iris.Context, resp *updateproto.UpdateResponse) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

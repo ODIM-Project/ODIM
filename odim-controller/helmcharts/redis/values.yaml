@@ -1,6 +1,6 @@
 odimra:
   namespace:
   groupID:
-  redisImageTag: "4.0"
+  redisImageTag: "5.0"
   redisInMemoryPassword:
   redisOnDiskPassword:

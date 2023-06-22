@@ -29,6 +29,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"sync/atomic"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -113,6 +114,10 @@ func sentinelNewClient(dbConfig *Config) (*redis.SentinelClient, error) {
 	return rdb, nil
 }
 
+var (
+	goroutineCreated uint32
+)
+
 // GetCurrentMasterHostPort is to get the current Redis Master IP and Port from Sentinel.
 func GetCurrentMasterHostPort(dbConfig *Config) (string, string, error) {
 	sentinelClient, err := sentinelNewClient(dbConfig)
@@ -126,8 +131,37 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string, error) {
 		masterIP = stringSlice[0]
 		masterPort = stringSlice[1]
 	}
+	if atomic.CompareAndSwapUint32(&goroutineCreated, 0, 1) {
+		go monitorFailureOver(sentinelClient)
+	}
 
 	return masterIP, masterPort, nil
+}
+
+func monitorFailureOver(sentinelClient *redis.SentinelClient) {
+	pub := sentinelClient.Subscribe("+switch-master")
+	var err *errors.Error
+
+	for {
+		pub.Receive()
+		time.Sleep(10 * time.Second)
+		if inMemDBConnPool != nil && onDiskDBConnPool != nil {
+			config := getInMemoryDBConfig()
+			inMemDBConnPool, err = config.Connection()
+			if err != nil {
+				continue
+			}
+
+			config1 := getOnDiskDBConfig()
+			onDiskDBConnPool, err = config1.Connection()
+			if err != nil {
+				continue
+			}
+			resetDBWriteConnection(InMemory)
+			resetDBWriteConnection(OnDisk)
+		}
+	}
+
 }
 
 // resetDBWriteConnection is used to reset the WriteConnection Pool (inmemory / OnDisk).

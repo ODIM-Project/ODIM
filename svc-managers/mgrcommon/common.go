@@ -296,7 +296,7 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 		return body, "", pluginTaskInfo, resp, fmt.Errorf(errorMessage)
 	}
 	data := string(body)
-	//replacing the response with north bound translation URL
+	//replacing the resposne with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}
@@ -372,7 +372,7 @@ func createToken(ctx context.Context, req PluginContactRequest) string {
 }
 
 // RetryManagersOperation will be called whenever  the unauthorized status code during the plugin call
-// This function will create a new session token re-executes the plugin call
+// This function will create a new session token reexcutes the plugin call
 func RetryManagersOperation(ctx context.Context, req PluginContactRequest, errorMessage string) ([]byte, string, PluginTaskInfo, ResponseStatus, error) {
 	var resp response.RPC
 	var pluginTaskInfo PluginTaskInfo

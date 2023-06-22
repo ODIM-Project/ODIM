@@ -172,27 +172,6 @@ const (
 	PluginTrackFileConfigActionName = "TrackConfigFIleChanges"
 	// PluginTrackFileConfigActionID is an action id to be logged while tracking config changes
 	PluginTrackFileConfigActionID = "000"
-
-	//LogServicesID is the URI for endpoints which operates on a specific log
-	LogServicesID = "LogServices/{id}"
-	//EntriesID is the URI for endpoints which operates on a specific entry
-	EntriesID = "Entries/{id}"
-	//RolesID is the URI for endpoints which performs operations on a specific user role
-	RolesID = "Roles/{id}"
-	//AccountsID is the URI for endpoints which performs operations on a specific user account
-	AccountsID = "Accounts/{id}"
-	//AggregationSourcesID is the URI for endpoints which performs operations on a specific aggregation source
-	AggregationSourcesID = "AggregationSources/{id}"
-	//ChassisID is the URI for endpoints which performs operations on a specific computer system chassis, rack group, or a rack.
-	ChassisID = "Chassis/{id}"
-	//AddressPoolsID is the URI for endpoints which performs operations on a specific address pool
-	AddressPoolsID = "AddressPools/{id}"
-	//PortsID is the URI for endpoints which performs operations on a specific switch port
-	PortsID = "Ports/{id}"
-	//ZonesID is the URI for endpoints which performs operations on a specific fabric zone
-	ZonesID = "Zones/{id}"
-	//EndpointsID is the URI for endpoints which performs operations on a specific fabric endpoint
-	EndpointsID = "Endpoints/{id}"
 )
 
 // Below fields are Process Name for logging
@@ -315,9 +294,9 @@ var Actions = map[ActionKey]ActionType{
 	{"Systems", "BootOptions", "GET"}:              {"015", "GetBootOptionsCollection"},
 	{"Systems", "BootOptions/{id}", "GET"}:         {"016", "GetBootOptions"},
 	{"Systems", "LogServices", "GET"}:              {"017", "GetLogServicesCollection"},
-	{"Systems", LogServicesID, "GET"}:              {"018", "GetLogServices"},
+	{"Systems", "LogServices/{id}", "GET"}:         {"018", "GetLogServices"},
 	{"Systems", "Entries", "GET"}:                  {"019", "GetEntriesCollection"},
-	{"Systems", EntriesID, "GET"}:                  {"020", "GetEntries"},
+	{"Systems", "Entries/{id}", "GET"}:             {"020", "GetEntries"},
 	{"Systems", "LogService.ClearLog", "POST"}:     {"021", "ClearLog"},
 	{"Systems", "Systems/{id}", "PATCH"}:           {"022", "ChangeBootOrderSettings"},
 	{"Systems", "PCIeDevices/{id}", "GET"}:         {"023", "GetPCIeDevices"},
@@ -335,17 +314,17 @@ var Actions = map[ActionKey]ActionType{
 	{"TaskService", "SubTasks/{id}", "GET"}: {"028", "GetSubTask"},
 	{"TaskService", "Tasks/{id}", "DELETE"}: {"029", "DeleteTask"},
 	// Roles URI
-	{"Roles", "Roles", "GET"}:    {"030", "GetAllRoles"},
-	{"Roles", RolesID, "GET"}:    {"031", "GetRole"},
-	{"Roles", RolesID, "PATCH"}:  {"032", "UpdateRole"},
-	{"Roles", RolesID, "DELETE"}: {"033", "DeleteRole"},
+	{"Roles", "Roles", "GET"}:         {"030", "GetAllRoles"},
+	{"Roles", "Roles/{id}", "GET"}:    {"031", "GetRole"},
+	{"Roles", "Roles/{id}", "PATCH"}:  {"032", "UpdateRole"},
+	{"Roles", "Roles/{id}", "DELETE"}: {"033", "DeleteRole"},
 	// Account Service URI
-	{"AccountService", "AccountService", "GET"}: {"034", "GetAccountService"},
-	{"AccountService", "Accounts", "GET"}:       {"035", "GetAllAccounts"},
-	{"AccountService", AccountsID, "GET"}:       {"036", "GetAccount"},
-	{"AccountService", "Accounts", "POST"}:      {"037", "CreateAccount"},
-	{"AccountService", AccountsID, "PATCH"}:     {"038", "UpdateAccount"},
-	{"AccountService", AccountsID, "DELETE"}:    {"039", "DeleteAccount"},
+	{"AccountService", "AccountService", "GET"}:   {"034", "GetAccountService"},
+	{"AccountService", "Accounts", "GET"}:         {"035", "GetAllAccounts"},
+	{"AccountService", "Accounts/{id}", "GET"}:    {"036", "GetAccount"},
+	{"AccountService", "Accounts", "POST"}:        {"037", "CreateAccount"},
+	{"AccountService", "Accounts/{id}", "PATCH"}:  {"038", "UpdateAccount"},
+	{"AccountService", "Accounts/{id}", "DELETE"}: {"039", "DeleteAccount"},
 	// Session Service URI
 	{"SessionService", "SessionService", "GET"}:   {"040", "GetSessionService"},
 	{"SessionService", "Sessions", "GET"}:         {"041", "GetAllActiveSessions"},
@@ -373,7 +352,7 @@ var Actions = map[ActionKey]ActionType{
 	{"Systems", "Controllers", "GET"}:           {"058", "GetControllersCollection"},
 	{"Systems", "Controllers/{id}", "GET"}:      {"059", "GetSystemController"},
 	{"Systems", "Ports", "GET"}:                 {"060", "GetPortsCollection"},
-	{"Systems", PortsID, "GET"}:                 {"061", "GetSystemPort"},
+	{"Systems", "Ports/{id}", "GET"}:            {"061", "GetSystemPort"},
 	{"Systems", "Volumes", "GET"}:               {"062", "GetVolumeCollection"},
 	{"Systems", "Volumes", "POST"}:              {"063", "CreateVolume"},
 	{"Systems", "Capabilities", "GET"}:          {"064", "GetVolumeCapabilities"},
@@ -397,11 +376,11 @@ var Actions = map[ActionKey]ActionType{
 	{"AggregationService", "AggregationService.Reset", "POST"}:               {"080", "AggregationServiceReset"},
 	{"AggregationService", "AggregationService.SetDefaultBootOrder", "POST"}: {"081", "SetDefaultBootOrder"},
 	//AggregationSources URI
-	{"AggregationService", "AggregationSources", "POST"}:   {"082", "AddAggregationSource"},
-	{"AggregationService", "AggregationSources", "GET"}:    {"083", "GetAllAggregationSource"},
-	{"AggregationService", AggregationSourcesID, "GET"}:    {"084", "GetAggregationSource"},
-	{"AggregationService", AggregationSourcesID, "PATCH"}:  {"085", "UpdateAggregationSource"},
-	{"AggregationService", AggregationSourcesID, "DELETE"}: {"086", "DeleteAggregationSource"},
+	{"AggregationService", "AggregationSources", "POST"}:        {"082", "AddAggregationSource"},
+	{"AggregationService", "AggregationSources", "GET"}:         {"083", "GetAllAggregationSource"},
+	{"AggregationService", "AggregationSources/{id}", "GET"}:    {"084", "GetAggregationSource"},
+	{"AggregationService", "AggregationSources/{id}", "PATCH"}:  {"085", "UpdateAggregationSource"},
+	{"AggregationService", "AggregationSources/{id}", "DELETE"}: {"086", "DeleteAggregationSource"},
 	// ConnectionMethods URI
 	{"AggregationService", "ConnectionMethods", "GET"}:      {"087", "GetAllConnectionMethods"},
 	{"AggregationService", "ConnectionMethods/{id}", "GET"}: {"088", "GetConnectionMethod"},
@@ -417,9 +396,9 @@ var Actions = map[ActionKey]ActionType{
 	// Chassis URI
 	{"Chassis", "Chassis", "GET"}:                     {"106", "GetChassisCollection"},
 	{"Chassis", "Chassis", "POST"}:                    {"107", "CreateChassis"},
-	{"Chassis", ChassisID, "GET"}:                     {"108", "GetChassis"},
-	{"Chassis", ChassisID, "PATCH"}:                   {"109", "UpdateChassis"},
-	{"Chassis", ChassisID, "DELETE"}:                  {"110", "DeleteChassis"},
+	{"Chassis", "Chassis/{id}", "GET"}:                {"108", "GetChassis"},
+	{"Chassis", "Chassis/{id}", "PATCH"}:              {"109", "UpdateChassis"},
+	{"Chassis", "Chassis/{id}", "DELETE"}:             {"110", "DeleteChassis"},
 	{"Chassis", "NetworkAdapters", "GET"}:             {"111", "GetAllNetworkAdapters"},
 	{"Chassis", "NetworkAdapters/{id}", "GET"}:        {"112", "GetNetworkAdapters"},
 	{"Chassis", "NetworkDeviceFunctions", "GET"}:      {"113", "GetAllNetworkDeviceFunctions"},
@@ -436,9 +415,9 @@ var Actions = map[ActionKey]ActionType{
 	{"Chassis", "Sensors", "GET"}:                     {"124", "GetAllSensors"},
 	{"Chassis", "Sensors/{id}", "GET"}:                {"125", "GetSensors"},
 	{"Chassis", "LogServices", "GET"}:                 {"126", "GetAllLogServices"},
-	{"Chassis", LogServicesID, "GET"}:                 {"127", "GetLogServices"},
+	{"Chassis", "LogServices/{id}", "GET"}:            {"127", "GetLogServices"},
 	{"Chassis", "Entries", "GET"}:                     {"128", "GetAllEntries"},
-	{"Chassis", EntriesID, "GET"}:                     {"129", "GetEntries"},
+	{"Chassis", "Entries/{id}", "GET"}:                {"129", "GetEntries"},
 	{"Chassis", "Power", "GET"}:                       {"130", "GetChassisPower"},
 	{"Chassis", "#PowerControl/{id}", "GET"}:          {"131", "GetPowerControl"},
 	{"Chassis", "#PowerSupplies/{id}", "GET"}:         {"132", "GetPowerSupplies"},
@@ -454,31 +433,31 @@ var Actions = map[ActionKey]ActionType{
 	{"EventService", "EventService.SubmitTestEvent", "GET"}: {"141", "SubmitTestEvent"},
 	{"EventService", "Subscriptions/{id}", "DELETE"}:        {"142", "DeleteEventSubscription"},
 	// Fabrics URI
-	{"Fabrics", "Fabrics", "GET"}:         {"143", "GetFabricCollection"},
-	{"Fabrics", "Fabrics/{id}", "GET"}:    {"144", "GetFabric"},
-	{"Fabrics", "Switches", "GET"}:        {"145", "GetFabricSwitchCollection"},
-	{"Fabrics", "Switches/{id}", "GET"}:   {"146", "GetFabricSwitch"},
-	{"Fabrics", "Ports", "GET"}:           {"147", "GetSwitchPortCollection"},
-	{"Fabrics", PortsID, "GET"}:           {"148", "GetSwitchPort"},
-	{"Fabrics", "Zones", "GET"}:           {"149", "GetFabricZoneCollection"},
-	{"Fabrics", "Endpoints", "GET"}:       {"150", "GetFabricEndPointCollection"},
-	{"Fabrics", "AddressPools", "GET"}:    {"151", "GetFabricAddressPoolCollection"},
-	{"Fabrics", AddressPoolsID, "GET"}:    {"152", "GetFabricAddressPool"},
-	{"Fabrics", AddressPoolsID, "PUT"}:    {"153", "VerifyAndUpdateFabricAddressPool"},
-	{"Fabrics", "AddressPools", "POST"}:   {"154", "CreateFabricAddressPool"},
-	{"Fabrics", AddressPoolsID, "PATCH"}:  {"155", "UpdateFabricAddressPool"},
-	{"Fabrics", AddressPoolsID, "DELETE"}: {"156", "DeleteFabricAddressPool"},
-	{"Fabrics", ZonesID, "GET"}:           {"157", "GetFabricZone"},
-	{"Fabrics", ZonesID, "PUT"}:           {"158", "VerifyAndUpdateFabricZone"},
-	{"Fabrics", "Zones", "POST"}:          {"159", "CreateFabricZone"},
-	{"Fabrics", ZonesID, "PATCH"}:         {"160", "UpdateFabricZone"},
-	{"Fabrics", ZonesID, "DELETE"}:        {"161", "DeleteFabricZone"},
-	{"Fabrics", EndpointsID, "GET"}:       {"162", "GetFabricEndPoints"},
-	{"Fabrics", EndpointsID, "PUT"}:       {"163", "VerifyAndUpdateFabricEndPoints"},
-	{"Fabrics", EndpointsID, "POST"}:      {"164", "CreateFabricEndPoints"},
-	{"Fabrics", EndpointsID, "PATCH"}:     {"165", "UpdateFabricEndPoints"},
-	{"Fabrics", EndpointsID, "DELETE"}:    {"166", "DeleteFabricEndPoints"},
-	{"Fabrics", PortsID, "Patch"}:         {"167", "UpdateFabricPorts"},
+	{"Fabrics", "Fabrics", "GET"}:              {"143", "GetFabricCollection"},
+	{"Fabrics", "Fabrics/{id}", "GET"}:         {"144", "GetFabric"},
+	{"Fabrics", "Switches", "GET"}:             {"145", "GetFabricSwitchCollection"},
+	{"Fabrics", "Switches/{id}", "GET"}:        {"146", "GetFabricSwitch"},
+	{"Fabrics", "Ports", "GET"}:                {"147", "GetSwitchPortCollection"},
+	{"Fabrics", "Ports/{id}", "GET"}:           {"148", "GetSwitchPort"},
+	{"Fabrics", "Zones", "GET"}:                {"149", "GetFabricZoneCollection"},
+	{"Fabrics", "Endpoints", "GET"}:            {"150", "GetFabricEndPointCollection"},
+	{"Fabrics", "AddressPools", "GET"}:         {"151", "GetFabricAddressPoolCollection"},
+	{"Fabrics", "AddressPools/{id}", "GET"}:    {"152", "GetFabricAddressPool"},
+	{"Fabrics", "AddressPools/{id}", "PUT"}:    {"153", "VerifyAndUpdateFabricAddressPool"},
+	{"Fabrics", "AddressPools", "POST"}:        {"154", "CreateFabricAddressPool"},
+	{"Fabrics", "AddressPools/{id}", "PATCH"}:  {"155", "UpdateFabricAddressPool"},
+	{"Fabrics", "AddressPools/{id}", "DELETE"}: {"156", "DeleteFabricAddressPool"},
+	{"Fabrics", "Zones/{id}", "GET"}:           {"157", "GetFabricZone"},
+	{"Fabrics", "Zones/{id}", "PUT"}:           {"158", "VerifyAndUpdateFabricZone"},
+	{"Fabrics", "Zones", "POST"}:               {"159", "CreateFabricZone"},
+	{"Fabrics", "Zones/{id}", "PATCH"}:         {"160", "UpdateFabricZone"},
+	{"Fabrics", "Zones/{id}", "DELETE"}:        {"161", "DeleteFabricZone"},
+	{"Fabrics", "Endpoints/{id}", "GET"}:       {"162", "GetFabricEndPoints"},
+	{"Fabrics", "Endpoints/{id}", "PUT"}:       {"163", "VerifyAndUpdateFabricEndPoints"},
+	{"Fabrics", "Endpoints/{id}", "POST"}:      {"164", "CreateFabricEndPoints"},
+	{"Fabrics", "Endpoints/{id}", "PATCH"}:     {"165", "UpdateFabricEndPoints"},
+	{"Fabrics", "Endpoints/{id}", "DELETE"}:    {"166", "DeleteFabricEndPoints"},
+	{"Fabrics", "Ports/{id}", "Patch"}:         {"167", "UpdateFabricPorts"},
 	// Managers URI
 	{"Managers", "Managers", "GET"}:                  {"168", "GetManagersCollection"},
 	{"Managers", "Managers/{id}", "GET"}:             {"169", "GetManager"},
@@ -495,18 +474,18 @@ var Actions = map[ActionKey]ActionType{
 	{"Managers", "VirtualMedia.EjectMedia", "POST"}:  {"180", "VirtualMediaEjectMedia"},
 	{"Managers", "VirtualMedia.InsertMedia", "POST"}: {"181", "VirtualMediaInsertMedia"},
 	{"Managers", "LogServices", "GET"}:               {"182", "GetAllLogServices"},
-	{"Managers", LogServicesID, "GET"}:               {"183", "GetLogServices"},
+	{"Managers", "LogServices/{id}", "GET"}:          {"183", "GetLogServices"},
 	{"Managers", "Entries", "GET"}:                   {"184", "GetAllLogServiceEntries"},
-	{"Managers", EntriesID, "GET"}:                   {"185", "GetLogServiceEntries"},
+	{"Managers", "Entries/{id}", "GET"}:              {"185", "GetLogServiceEntries"},
 	{"Managers", "LogService.ClearLog", "POST"}:      {"186", "LogServiceClearLog"},
 	{"Managers", "RemoteAccountService", "GET"}:      {"187", "GetRemoteAccountService"},
 	{"Managers", "Accounts", "GET"}:                  {"188", "GetAllManagerAccounts"},
-	{"Managers", AccountsID, "GET"}:                  {"189", "GetManagerAccounts"},
+	{"Managers", "Accounts/{id}", "GET"}:             {"189", "GetManagerAccounts"},
 	{"Managers", "Accounts", "POST"}:                 {"190", "CreateManagerAccounts"},
-	{"Managers", AccountsID, "PATCH"}:                {"191", "UpdateManagerAccounts"},
-	{"Managers", AccountsID, "DELETE"}:               {"192", "DeleteManagerAccounts"},
+	{"Managers", "Accounts/{id}", "PATCH"}:           {"191", "UpdateManagerAccounts"},
+	{"Managers", "Accounts/{id}", "DELETE"}:          {"192", "DeleteManagerAccounts"},
 	{"Managers", "Roles", "GET"}:                     {"193", "GetAllManagersRoles"},
-	{"Managers", RolesID, "GET"}:                     {"194", "GetManagersRoles"},
+	{"Managers", "Roles/{id}", "GET"}:                {"194", "GetManagersRoles"},
 	// Update Service URI
 	{"UpdateService", "UpdateService", "GET"}:               {"195", "GetUpdateService"},
 	{"UpdateService", "UpdateService.SimpleUpdate", "POST"}: {"196", "UpdateServiceSimpleUpdate"},

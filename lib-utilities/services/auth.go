@@ -27,10 +27,6 @@ import (
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
-const (
-	clientConnectionErrMsg string = "Failed to create client connection: %v"
-)
-
 // IsAuthorized is used to authorize the services using svc-account-session.
 // As parameters session token, privileges and oem privileges are passed.
 // A RPC call is made with these parameters to the Account-Session service
@@ -38,7 +34,7 @@ const (
 func IsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (errResponse.RPC, error) {
 	conn, err := ODIMService.Client(AccountSession)
 	if err != nil {
-		errMsg := fmt.Sprintf(clientConnectionErrMsg, err)
+		errMsg := fmt.Sprintf("Failed to create client connection: %v", err)
 		return GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil), fmt.Errorf(errMsg)
 	}
 	defer conn.Close()
@@ -68,7 +64,7 @@ func IsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivi
 func GetSessionUserName(ctx context.Context, sessionToken string) (string, error) {
 	conn, err := ODIMService.Client(AccountSession)
 	if err != nil {
-		return "", fmt.Errorf(clientConnectionErrMsg, err)
+		return "", fmt.Errorf("Failed to create client connection: %v", err)
 	}
 	defer conn.Close()
 	asService := sessionproto.NewSessionClient(conn)
@@ -90,7 +86,7 @@ func GetSessionUserName(ctx context.Context, sessionToken string) (string, error
 func GetSessionUserRoleID(ctx context.Context, sessionToken string) (string, error) {
 	conn, err := ODIMService.Client(AccountSession)
 	if err != nil {
-		return "", fmt.Errorf(clientConnectionErrMsg, err)
+		return "", fmt.Errorf("Failed to create client connection: %v", err)
 	}
 	defer conn.Close()
 	asService := sessionproto.NewSessionClient(conn)

@@ -30,8 +30,6 @@ var dbConn *redis.Client
 const (
 	// DefaultTLSMinVersion is default minimum version for tls
 	DefaultTLSMinVersion = tls.VersionTLS12
-	// TimeoutErrMsg is the connection time out error message
-	TimeoutErrMsg string = " connection timed out"
 )
 
 // RedisStreamsPacket defines the RedisStreamsPacket Message Packet Object. Apart from Base Packet, it
@@ -112,7 +110,7 @@ func (rp *RedisStreamsPacket) Distribute(data interface{}) error {
 	}).Result()
 
 	if rerr != nil {
-		if strings.Contains(rerr.Error(), TimeoutErrMsg) {
+		if strings.Contains(rerr.Error(), " connection timed out") {
 			err := rp.getDBConnection()
 			if err != nil {
 				return err
@@ -136,15 +134,20 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 	var id = uuid.NewV4().String()
 	rerr := rp.client.XGroupCreateMkStream(context.Background(),
 		rp.pipe, EVENTREADERGROUPNAME, "$").Err()
-	if rerr != nil && strings.Contains(rerr.Error(), TimeoutErrMsg) {
-		if err := rp.getDBConnection(); err != nil {
-			return err
+	if rerr != nil {
+		if strings.Contains(rerr.Error(), " connection timed out") {
+			err := rp.getDBConnection()
+			if err != nil {
+				return err
+			}
 		}
+
 	}
 	// errChan to hold the errors faced in the  below go-rotines
 	errChan := make(chan error)
 	go rp.checkUnacknowledgedEvents(fn, id, errChan)
-	if err = <-errChan; err != nil {
+	err = <-errChan
+	if err != nil {
 		return err
 	}
 
@@ -159,7 +162,7 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 				}).Result()
 			if err != nil {
 				errChan <- fmt.Errorf("unable to get data from the group %s", err.Error())
-				if strings.Contains(err.Error(), TimeoutErrMsg) {
+				if strings.Contains(err.Error(), " connection timed out") {
 					err := rp.getDBConnection()
 					if err != nil {
 						errChan <- err
@@ -167,32 +170,29 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 					}
 				}
 			} else {
-				processEvent(rp, events, errChan, fn)
+
+				if len(events) > 0 && len(events[0].Messages) > 0 {
+					messageID := events[0].Messages[0].ID
+					evtStr := events[0].Messages[0].Values["data"].(string)
+					var evt interface{}
+					err := Decode([]byte(evtStr), &evt)
+					if err != nil {
+						errChan <- err
+						return
+					}
+					fn(evt)
+					rp.client.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
+				}
 			}
 		}
 	}()
 
 	// channel to handle the errors occured during go routines
-	if err = <-errChan; err != nil {
+	err = <-errChan
+	if err != nil {
 		return err
 	}
 	return nil
-}
-
-// processEvent processes the redis stream events and decode the data
-func processEvent(rp *RedisStreamsPacket, events []redis.XStream, errChan chan<- error, fn MsgProcess) {
-	if len(events) > 0 && len(events[0].Messages) > 0 {
-		messageID := events[0].Messages[0].ID
-		evtStr := events[0].Messages[0].Values["data"].(string)
-		var evt interface{}
-		err := Decode([]byte(evtStr), &evt)
-		if err != nil {
-			errChan <- err
-			return
-		}
-		fn(evt)
-		rp.client.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
-	}
 }
 
 // Read implmentation need to be added
@@ -230,10 +230,13 @@ func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string
 			Count:    100,
 			Start:    "0-0",
 		}).Result()
-		if err != nil && strings.Contains(err.Error(), TimeoutErrMsg) {
-			if err = rp.getDBConnection(); err != nil {
-				errChan <- err
-				return
+		if err != nil {
+			if strings.Contains(err.Error(), " connection timed out") {
+				err = rp.getDBConnection()
+				if err != nil {
+					errChan <- err
+					return
+				}
 			}
 		}
 		for _, event := range events {

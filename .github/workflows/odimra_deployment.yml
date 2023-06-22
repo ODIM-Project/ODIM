@@ -17,10 +17,6 @@ jobs:
         set +e
         echo "[$(date)] -- INFO  -- Start pre req conguration"
         echo
-        sudo rm -rf /usr/share/dotnet
-        sudo rm -rf /opt/ghc
-        sudo rm -rf "/usr/local/share/boost"
-        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
         
         sudo systemctl status docker.service
         

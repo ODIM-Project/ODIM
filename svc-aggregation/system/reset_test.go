@@ -276,13 +276,6 @@ func mockContactClient(ctx context.Context, url, method, token string, odataID s
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
-	} else if url == host+"/ODIM/v1/EventService" {
-		body := `{"MessageId": "` + response.Success + `"}`
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-
 	} else if strings.Contains(url, "/ODIM/v1/Registries") {
 		return &http.Response{
 			StatusCode: http.StatusNotFound,

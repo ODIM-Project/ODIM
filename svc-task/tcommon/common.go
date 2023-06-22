@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	eventproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
-	managerproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -121,26 +120,6 @@ func UpdateSubscriptionLocation(ctx context.Context, location, host string) {
 	isUpdated, err := event.UpdateSubscriptionLocationRPC(ctx, &eventproto.UpdateSubscriptionLocation{
 		Location: location,
 		Host:     host,
-	})
-	if err != nil {
-		l.LogWithFields(ctx).Info("Error while updating subscription location", err)
-		return
-	}
-	l.LogWithFields(ctx).Debug("Location update status ", isUpdated)
-}
-
-// UpdateAccount do the RPC call to events service to update account details
-func UpdateRemoteAccount(ctx context.Context, location, host string) {
-	conn, err := services.ODIMService.Client(services.Managers)
-	if err != nil {
-		l.LogWithFields(ctx).Error("Error while Event ", err.Error())
-		return
-	}
-	defer conn.Close()
-	manager := managerproto.NewManagersClient(conn)
-	isUpdated, err := manager.UpdateRemoteAccountPassword(ctx, &managerproto.ManagerRequest{
-		ResourceID: location,
-		ManagerID:  host,
 	})
 	if err != nil {
 		l.LogWithFields(ctx).Info("Error while updating subscription location", err)

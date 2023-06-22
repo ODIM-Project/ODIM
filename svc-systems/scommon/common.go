@@ -240,8 +240,8 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 	resp.StatusCode = int32(response.StatusCode)
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted {
 		resp.StatusCode = int32(response.StatusCode)
-		msg := errorMessage + "got the response :" + string(body)
-		return body, "", "", resp, fmt.Errorf(msg)
+		l.LogWithFields(ctx).Println(errorMessage)
+		return body, "", "", resp, fmt.Errorf(errorMessage)
 	}
 
 	data := string(body)

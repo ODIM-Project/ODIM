@@ -37,9 +37,6 @@ import (
 type serviceType int
 
 const (
-	createClientErrMsg string = "While trying to create registry client, got: %v"
-)
-const (
 	serverService serviceType = iota
 	clientService
 )
@@ -164,7 +161,7 @@ func (s *odimService) getServiceAddress(serviceName string) (string, error) {
 		TLS:         s.etcdTLSConfig,
 	})
 	if err != nil {
-		return "", fmt.Errorf(createClientErrMsg, err)
+		return "", fmt.Errorf("While trying to create registry client, got: %v", err)
 	}
 	defer cli.Close()
 	kv := clientv3.NewKV(cli)
@@ -185,7 +182,7 @@ func (s *odimService) registerService() error {
 		TLS:         s.etcdTLSConfig,
 	})
 	if err != nil {
-		return fmt.Errorf(createClientErrMsg, err)
+		return fmt.Errorf("While trying to create registry client, got: %v", err)
 	}
 	defer cli.Close()
 	kv := clientv3.NewKV(cli)
@@ -203,7 +200,7 @@ func (s *odimService) deregisterService() error {
 		TLS:         s.etcdTLSConfig,
 	})
 	if err != nil {
-		return fmt.Errorf(createClientErrMsg, err)
+		return fmt.Errorf("While trying to create registry client, got: %v", err)
 	}
 	defer cli.Close()
 	kv := clientv3.NewKV(cli)
@@ -318,55 +315,67 @@ func GetEnabledServiceList() map[string]bool {
 		switch microService {
 		case "AccountService", "SessionService":
 			resp, err := kv.Get(context.TODO(), AccountSession, clientv3.WithPrefix())
-			addServicesToMap(microService, resp, data, err)
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
 
 		case "EventService":
 			resp, err := kv.Get(context.TODO(), Events, clientv3.WithPrefix())
-			addServicesToMap(microService, resp, data, err)
-
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
 		case "Systems", "Chassis":
 			resp, err := kv.Get(context.TODO(), Systems, clientv3.WithPrefix())
-			addServicesToMap(microService, resp, data, err)
-
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
 		case "TaskService":
 			resp, err := kv.Get(context.TODO(), Tasks, clientv3.WithPrefix())
-			addServicesToMap(microService, resp, data, err)
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
 
 		case "AggregationService":
 			resp, err := kv.Get(context.TODO(), Aggregator, clientv3.WithPrefix())
-			addServicesToMap(microService, resp, data, err)
-
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
 		case "Fabrics":
 			resp, err := kv.Get(context.TODO(), Fabrics, clientv3.WithPrefix())
-			addServicesToMap(microService, resp, data, err)
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
 
 		case "Managers":
 			resp, err := kv.Get(context.TODO(), Managers, clientv3.WithPrefix())
-			addServicesToMap(microService, resp, data, err)
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
 
 		case "UpdateService":
 			resp, err := kv.Get(context.TODO(), Update, clientv3.WithPrefix())
-			addServicesToMap(microService, resp, data, err)
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
 
 		case "TelemetryService":
 			resp, err := kv.Get(context.TODO(), Telemetry, clientv3.WithPrefix())
-			addServicesToMap(microService, resp, data, err)
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
 
 		case "CompositionService":
 			resp, err := kv.Get(context.TODO(), CompositionService, clientv3.WithPrefix())
-			addServicesToMap(microService, resp, data, err)
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
 
 		case "LicenseService":
 			resp, err := kv.Get(context.TODO(), Licenses, clientv3.WithPrefix())
-			addServicesToMap(microService, resp, data, err)
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
 		}
 	}
 	return data
-}
-
-// addServicesToMap adds the enabled service to the passes map
-func addServicesToMap(microService string, resp *clientv3.GetResponse, data map[string]bool, err error) {
-	if err == nil && len(resp.Kvs) > 0 {
-		data[microService] = true
-	}
 }

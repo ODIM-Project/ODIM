@@ -40,7 +40,6 @@ type Device struct {
 	DeviceRequest         func(context.Context, mgrcommon.ResourceInfoRequest) (mgrcommon.PluginTaskInfo, response.RPC)
 	ContactClient         func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DecryptDevicePassword func([]byte) ([]byte, error)
-	EncryptDevicePassword func([]byte) ([]byte, error)
 }
 
 // DB struct to inject the contact DB function into the handlers
@@ -66,7 +65,6 @@ func GetExternalInterface() *ExternalInterface {
 			DeviceRequest:         mgrcommon.DeviceCommunication,
 			ContactClient:         pmbhandle.ContactPlugin,
 			DecryptDevicePassword: common.DecryptWithPrivateKey,
-			EncryptDevicePassword: common.EncryptWithPublicKey,
 		},
 		DB: DB{
 			GetAllKeysFromTable: mgrmodel.GetAllKeysFromTable,

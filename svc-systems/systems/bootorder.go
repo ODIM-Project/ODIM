@@ -207,9 +207,7 @@ func (p *PluginContact) ChangeBiosSettings(ctx context.Context, req *systemsprot
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		task := fillTaskData(taskID, targetURI, string(req.RequestBody), resp,
-			common.Completed, common.OK, 100, http.MethodPatch)
-		p.UpdateTask(ctx, task)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
 		return
 	}
 	if getResponse.StatusCode == http.StatusAccepted {
@@ -362,9 +360,6 @@ func (p *PluginContact) ChangeBootOrderSettings(ctx context.Context, req *system
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		task := fillTaskData(taskID, targetURI, string(req.RequestBody), resp,
-			common.Completed, common.OK, 100, http.MethodPatch)
-		p.UpdateTask(ctx, task)
 		return
 	}
 

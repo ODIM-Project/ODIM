@@ -299,9 +299,6 @@ func (fakeStruct) UpdateRemoteAccountService(ctx context.Context, in *managerspr
 func (fakeStruct) DeleteRemoteAccountService(ctx context.Context, in *managersproto.ManagerRequest, opts ...grpc.CallOption) (*managersproto.ManagerResponse, error) {
 	return nil, errors.New("fakeError")
 }
-func (fakeStruct) UpdateRemoteAccountPassword(ctx context.Context, in *managersproto.ManagerRequest, opts ...grpc.CallOption) (*managersproto.ManagerResponse, error) {
-	return nil, errors.New("fakeError")
-}
 
 //------------------------------------ROLE-------------------------------------------------
 

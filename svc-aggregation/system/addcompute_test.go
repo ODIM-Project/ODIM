@@ -211,8 +211,7 @@ func mockContactClientForDuplicate(ctx context.Context, url, method, token strin
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 
-	} else if strings.Contains(url, "/ODIM/v1/validate") || url == "https://localhost:9091/ODIM/v1/Sessions" ||
-		url == host+"/ODIM/v1/Sessions" || url == host+"/ODIM/v1/EventService" {
+	} else if strings.Contains(url, "/ODIM/v1/validate") || url == "https://localhost:9091/ODIM/v1/Sessions" || url == host+"/ODIM/v1/Sessions" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		if bData.UserName == "incorrectusername" || bytes.Compare(bData.Password, []byte("incorrectPassword")) == 0 {
 			return &http.Response{

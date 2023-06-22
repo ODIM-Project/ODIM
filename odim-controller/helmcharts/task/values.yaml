@@ -2,4 +2,4 @@ odimra:
   namespace:
   groupID:
   haDeploymentEnabled:
-  taskImageTag: "5.0"
+  taskImageTag: "4.0"

@@ -70,7 +70,7 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 	// Check the state of the task
 	if task.TaskState == "Completed" || task.TaskState == "Cancelled" || task.TaskState == "Killed" || task.TaskState == "Exception" {
 		// return with the actual status code, along with response header and response body
-		//Build the response Body
+		//Build the respose Body
 		rsp.Header = task.Payload.HTTPHeaders
 		rsp.Body = task.TaskResponse
 		rsp.StatusCode = task.StatusCode

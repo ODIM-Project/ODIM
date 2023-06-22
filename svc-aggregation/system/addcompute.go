@@ -117,20 +117,6 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 		"Password":       saveSystem.Password,
 	}
 
-	// This call will patch the EventService in order to set ServiceEnabled property true
-	// this property should be enabled to get the events
-	pluginContactRequest.DeviceInfo = getSystemBody
-	pluginContactRequest.OID = "/redfish/v1/EventService"
-	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
-	pluginContactRequest.HTTPMethodType = http.MethodPatch
-
-	body, _, getResponse, err = contactPlugin(ctx, pluginContactRequest, "error while trying to enable event service")
-	if getResponse.StatusCode != http.StatusOK && getResponse.StatusCode != http.StatusNotFound {
-		errMsg := fmt.Sprintf("error while trying to enable event service. got the status code: %v %v", getResponse.StatusCode, err)
-		l.LogWithFields(ctx).Error(errMsg)
-		return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), "", nil
-	}
-
 	//Discover Systems collection this will be moved to a function later if needed
 	pluginContactRequest.DeviceInfo = getSystemBody
 	pluginContactRequest.OID = "/redfish/v1/Systems"

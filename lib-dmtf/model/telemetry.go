@@ -52,7 +52,7 @@ type CalculationParam struct {
 	SourceMetric string `json:"SourceMetric,omitempty"`
 }
 
-//MetricReportDefinitions schema describes set of metrics that are collected into a metric report
+// MetricReportDefinitions schema describes set of metrics that are collected into a metric report
 type MetricReportDefinitions struct {
 	ODataID                       string     `json:"@odata.id"`
 	ODataType                     string     `json:"@odata.type"`
@@ -77,7 +77,7 @@ type MetricReportDefinitions struct {
 	Oem                           *Oem       `json:"Oem,omitempty"`
 }
 
-//Schedule defines a series of occurrences
+// Schedule defines a series of occurrences
 type Schedule struct {
 	EnabledDaysOfMonth  []string `json:"EnabledDaysOfMonth,omitempty"`
 	EnabledDaysOfWeek   []string `json:"EnabledDaysOfWeek,omitempty"`
@@ -90,9 +90,9 @@ type Schedule struct {
 	RecurrenceInterval  string   `json:"RecurrenceInterval,omitempty"`
 }
 
-//Metric defines the list of metrics to include in the metric report. The
-//metrics might include metric properties or calculations
-//applied to a metric property
+// Metric defines the list of metrics to include in the metric report. The
+// metrics might include metric properties or calculations
+// applied to a metric property
 type Metric struct {
 	CollectionDuration  string   `json:"CollectionDuration,omitempty"`
 	CollectionFunction  string   `json:"CollectionFunction,omitempty"`
@@ -102,19 +102,19 @@ type Metric struct {
 	Oem                 *Oem     `json:"Oem,omitempty"`
 }
 
-//MetricLink defines the links to other resources that are related to MetricReportDefinition resource
+// MetricLink defines the links to other resources that are related to MetricReportDefinition resource
 type MetricLink struct {
 	Oem           *Oem  `json:"Oem,omitempty"`
 	Triggers      []Oid `json:"Triggers,omitempty"`
 	TriggersCount int   `json:"Triggers@odata.count,omitempty"`
 }
 
-//Oid defines the odata id link
+// Oid defines the odata id link
 type Oid struct {
 	ODataID string `json:"@odata.id"`
 }
 
-//MetricReports schema represents a set of collected metrics
+// MetricReports schema represents a set of collected metrics
 type MetricReports struct {
 	ODataID                string        `json:"@odata.id"`
 	ODataType              string        `json:"@odata.type"`
@@ -130,7 +130,7 @@ type MetricReports struct {
 	Actions                *OemActions   `json:"Actions,omitempty"`
 }
 
-//MetricValue defines an array of metric values for the metered items of this metric report.
+// MetricValue defines an array of metric values for the metered items of this metric report.
 type MetricValue struct {
 	MetricDefinition Oid    `json:"MetricDefinition,omitempty"`
 	MetricID         string `json:"MetricId,omitempty"`
@@ -140,7 +140,7 @@ type MetricValue struct {
 	Timestamp        string `json:"Timestamp,omitempty"`
 }
 
-//Triggers schema describes a trigger that applies to metrics.
+// Triggers schema describes a trigger that applies to metrics.
 type Triggers struct {
 	ODataID                  string            `json:"@odata.id"`
 	ODataType                string            `json:"@odata.type"`
@@ -161,7 +161,7 @@ type Triggers struct {
 	Oem                      *Oem              `json:"Oem,omitempty"`
 }
 
-//NumericThresholds defines when a numeric metric triggers
+// NumericThresholds defines when a numeric metric triggers
 type NumericThresholds struct {
 	LowerCritical Threshold `json:"LowerCritical,omitempty"`
 	LowerWarning  Threshold `json:"LowerWarning,omitempty"`
@@ -169,21 +169,21 @@ type NumericThresholds struct {
 	UpperWarning  Threshold `json:"UpperWarning,omitempty"`
 }
 
-//Threshold schema for numeric threshold
+// Threshold schema for numeric threshold
 type Threshold struct {
 	Activation string `json:"Activation,omitempty"`
 	DwellTime  string `json:"DwellTime,omitempty"`
 	Reading    int    `json:"Reading,omitempty"`
 }
 
-//TriggerLinks defines links to resources associated with Triggers
+// TriggerLinks defines links to resources associated with Triggers
 type TriggerLinks struct {
 	MetricReportDefinitions      []Oid `json:"MetricReportDefinitions,omitempty"`
 	Oem                          *Oem  `json:"Oem,omitempty"`
 	MetricReportDefinitionsCount int   `json:"MetricReportDefinitions@odata.count,omitempty"`
 }
 
-//DiscreteTrigger holds the list of discrete triggers
+// DiscreteTrigger holds the list of discrete triggers
 type DiscreteTrigger struct {
 	DwellTime string `json:"DwellTime,omitempty"`
 	Name      string `json:"Name,omitempty"`
@@ -191,8 +191,8 @@ type DiscreteTrigger struct {
 	Value     string `json:"Value,omitempty"`
 }
 
-//WildCard defines the wildcards and their substitution values for the entries
-//in the MetricProperties array property.
+// WildCard defines the wildcards and their substitution values for the entries
+// in the MetricProperties array property.
 type WildCard struct {
 	Name   string   `json:"Name,omitempty"`
 	Values []string `json:"Values,omitempty"`

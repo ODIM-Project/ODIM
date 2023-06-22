@@ -29,8 +29,7 @@ func TrackConfigFileChanges(configFilePath string, eventChan chan<- interface{},
 	if err != nil {
 		errChan <- err
 	}
-	err = watcher.Add(configFilePath)
-	if err != nil {
+	if err = watcher.Add(configFilePath); err != nil {
 		errChan <- err
 	}
 
@@ -41,15 +40,7 @@ func TrackConfigFileChanges(configFilePath string, eventChan chan<- interface{},
 				if !ok {
 					continue
 				}
-				if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
-					// update the odim config
-					config.TLSConfMutex.Lock()
-					if _, err := config.SetConfiguration(); err != nil {
-						errChan <- fmt.Errorf("error while trying to set configuration: %s", err.Error())
-					}
-					config.TLSConfMutex.Unlock()
-					eventChan <- "config file modified" + fileEvent.Name
-				}
+				setConfiguration(fileEvent, eventChan, errChan)
 				//Reading file to continue the watch
 				watcher.Add(configFilePath)
 			case err, _ := <-watcher.Errors:
@@ -60,4 +51,17 @@ func TrackConfigFileChanges(configFilePath string, eventChan chan<- interface{},
 			}
 		}
 	}()
+}
+
+// setConfiguration sets the required configurations
+func setConfiguration(fileEvent fsnotify.Event, eventChan chan<- interface{}, errChan chan<- error) {
+	if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
+		// update the odim config
+		config.TLSConfMutex.Lock()
+		if _, err := config.SetConfiguration(); err != nil {
+			errChan <- fmt.Errorf("error while trying to set configuration: %s", err.Error())
+		}
+		config.TLSConfMutex.Unlock()
+		eventChan <- "config file modified" + fileEvent.Name
+	}
 }

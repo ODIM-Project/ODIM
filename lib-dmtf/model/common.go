@@ -30,7 +30,7 @@ type Redundancy struct {
 	RedundancySetCount int         `json:"RedundancySet@odata.count,omitempty"`
 }
 
-//Identifier redfish structure
+// Identifier redfish structure
 type Identifier struct {
 	DurableName       string `json:"DurableName,omitempty"`
 	DurableNameFormat string `json:"DurableNameFormat,omitempty"`

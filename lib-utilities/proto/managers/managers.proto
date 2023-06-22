@@ -24,6 +24,7 @@ service Managers {
     rpc CreateRemoteAccountService(ManagerRequest) returns (ManagerResponse) {}
     rpc UpdateRemoteAccountService(ManagerRequest) returns (ManagerResponse) {}
     rpc DeleteRemoteAccountService(ManagerRequest) returns (ManagerResponse) {}
+    rpc UpdateRemoteAccountPassword(ManagerRequest) returns (ManagerResponse) {}
 }
 
 message ManagerRequest {

@@ -433,3 +433,22 @@ func generateTaskResponse(taskID, taskURI string, rpcResp *response.RPC) {
 	commonResponse.CreateGenericResponse(rpcResp.StatusMessage)
 	rpcResp.Body = commonResponse
 }
+
+// UpdateRemoteAccountPassword defines the operations which handles the RPC request response
+// The functionality retrieves the request and return backs the response to
+// RPC according to the protoc file defined in the lib-util package.
+// The function uses IsAuthorized of lib-util to validate the session token
+// which is present in the request.
+func (m *Managers) UpdateRemoteAccountPassword(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, common.ManagerService)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	var resp managersproto.ManagerResponse
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.UpdateRemoteAccountService)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	ctxt = context.WithValue(ctxt, common.ActionName, "UpdateRemoteAccountPassword")
+	go m.EI.UpdateRemoteAccountPasswordService(ctx, req)
+	l.LogWithFields(ctx).Debugf("Outgoing update remote account service response to northbound: %s", string(resp.Body))
+	return &resp, nil
+}

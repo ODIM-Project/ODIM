@@ -21,6 +21,7 @@
 package events
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -137,14 +138,14 @@ func TestDeleteEventSubscriptionOnDeletedServer(t *testing.T) {
 	resp = pc.DeleteEventSubscriptions(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusNotFound")
 
-	GetIPFromHostNameFunc = func(fqdn string) (string, string) {
-		return "", "Not Found"
+	GetIPFromHostNameFunc = func(fqdn string) (string, error) {
+		return "", fmt.Errorf("Not Found")
 	}
 	resp = pc.DeleteEventSubscriptions(evcommon.MockContext(), req)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be ResourceNotFound")
 
-	GetIPFromHostNameFunc = func(fqdn string) (string, string) {
-		return evcommon.GetIPFromHostName(fqdn)
+	GetIPFromHostNameFunc = func(fqdn string) (string, error) {
+		return common.GetIPFromHostName(fqdn)
 	}
 	pc.DB.GetEvtSubscriptions = func(s string) ([]evmodel.SubscriptionResource, error) {
 		return nil, &errors.Error{}
@@ -282,11 +283,11 @@ func TestDeleteFabricsSubscription(t *testing.T) {
 	assert.Nil(t, err, "error should be nil")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status Code should be StatusOK")
 	// Negative
-	GetIPFromHostNameFunc = func(fqdn string) (string, string) { return "", "Not found" }
+	GetIPFromHostNameFunc = func(fqdn string) (string, error) { return "", fmt.Errorf("Not found") }
 	resp, _ = pc.DeleteFabricsSubscription(evcommon.MockContext(), "", plugin)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusOK")
 
-	GetIPFromHostNameFunc = func(fqdn string) (string, string) { return evcommon.GetIPFromHostName(fqdn) }
+	GetIPFromHostNameFunc = func(fqdn string) (string, error) { return common.GetIPFromHostName(fqdn) }
 	// Negative test cases
 	// if subscription id is not present
 	plugin.IP = "10.10.10.10"

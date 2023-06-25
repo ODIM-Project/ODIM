@@ -28,6 +28,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -113,6 +114,10 @@ func sentinelNewClient(dbConfig *Config) (*redis.SentinelClient, error) {
 	return rdb, nil
 }
 
+var (
+	goroutineCreated uint32
+)
+
 // GetCurrentMasterHostPort is to get the current Redis Master IP and Port from Sentinel.
 func GetCurrentMasterHostPort(dbConfig *Config) (string, string, error) {
 	sentinelClient, err := sentinelNewClient(dbConfig)
@@ -126,8 +131,38 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string, error) {
 		masterIP = stringSlice[0]
 		masterPort = stringSlice[1]
 	}
+	if atomic.CompareAndSwapUint32(&goroutineCreated, 0, 1) {
+		go monitorFailureOver(sentinelClient)
+	}
 
 	return masterIP, masterPort, nil
+}
+
+// monitorFailureOver will monitor the failover and reset the connection
+func monitorFailureOver(sentinelClient *redis.SentinelClient) {
+	pub := sentinelClient.Subscribe("+switch-master")
+	var err *errors.Error
+
+	for {
+		pub.Receive()
+		time.Sleep(10 * time.Second)
+		if inMemDBConnPool != nil && onDiskDBConnPool != nil {
+			config := getInMemoryDBConfig()
+			inMemDBConnPool, err = config.Connection()
+			if err != nil {
+				continue
+			}
+
+			config1 := getOnDiskDBConfig()
+			onDiskDBConnPool, err = config1.Connection()
+			if err != nil {
+				continue
+			}
+			resetDBWriteConnection(InMemory)
+			resetDBWriteConnection(OnDisk)
+		}
+	}
+
 }
 
 // resetDBWriteConnection is used to reset the WriteConnection Pool (inmemory / OnDisk).
@@ -259,6 +294,7 @@ func goRedisNewClient(dbConfig *Config, host, port string) (*redis.Client, error
 	}
 	return client, nil
 }
+
 // getInmemoryDBConnection return an in-memory db connection pool
 func getInmemoryDBConnection() (*ConnPool, *errors.Error) {
 	var err *errors.Error
@@ -292,7 +328,6 @@ func getOnDiskDBConnection() (*ConnPool, *errors.Error) {
 	}
 	return onDiskDBConnPool, err
 }
-
 
 // GetWriteConnection retrieve a write connection from the connection pool
 func (p *ConnPool) GetWriteConnection() (*Conn, *errors.Error) {
@@ -419,7 +454,6 @@ func (p *ConnPool) Upsert(table, key string, data interface{}) *errors.Error {
 	return nil
 }
 
-
 // Read is for getting singular data
 // Read takes "key" sting as input which acts as a unique ID to fetch specific data from DB
 func (p *ConnPool) Read(table, key string) (string, *errors.Error) {
@@ -454,8 +488,8 @@ func (p *ConnPool) ReadMultipleKeys(key []string) ([]string, *errors.Error) {
 	if len(value) < 1 {
 		return nil, errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, foundStr)
 	}
-		if value == nil {
-		return nil, errors.PackError(errors.DBKeyNotFound,noDataErrMsg, key, foundStr)
+	if value == nil {
+		return nil, errors.PackError(errors.DBKeyNotFound, noDataErrMsg, key, foundStr)
 	}
 	strArr := make([]string, len(value))
 	for i, v := range value {
@@ -722,7 +756,6 @@ func (c *Conn) UpdateTransaction(data map[string]interface{}) *errors.Error {
 	return nil
 }
 
-
 // SetExpiryTimeForKeys will create the expiry time using pipelined transaction
 /* SetExpiryTimeForKeys takes the taskID  as input:
  */
@@ -851,8 +884,8 @@ func (p *ConnPool) SaveUndeliveredEvents(table, key string, data []byte) *errors
 	saveID := table + ":" + key
 	createErr := p.WritePool.Set(saveID, data, 0).Err()
 	if createErr != nil {
-return errors.PackError(errors.UndefinedErrorType, writeToDBErrMsg+createErr.Error())
-		
+		return errors.PackError(errors.UndefinedErrorType, writeToDBErrMsg+createErr.Error())
+
 	}
 
 	return nil
@@ -1020,7 +1053,7 @@ func (p *ConnPool) GetString(index string, cursor float64, match string, regexFl
 	currentCursor := cursor
 	match = strings.ToLower(match)
 	for {
-		d, cursor, getErr := p.ReadPool.ZScan(index, uint64(currentCursor), match,  int64(count)).Result()
+		d, cursor, getErr := p.ReadPool.ZScan(index, uint64(currentCursor), match, int64(count)).Result()
 		if getErr != nil {
 			return []string{}, fmt.Errorf(dataRetrivalErrMsg + getErr.Error())
 		}
@@ -1719,7 +1752,6 @@ func (p *ConnPool) GetKeyValue(key string) (string, *errors.Error) {
 
 	return value, nil
 }
-
 
 // DeleteKey takes "key" sting as input which acts as a unique ID
 // to delete specific data from DB

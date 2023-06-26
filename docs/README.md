@@ -84,7 +84,7 @@
     * [Viewing a collection of StoragePools](#Viewing-a-collection-of-StoragePools)
     * [Viewing information of a StoragePool](#Viewing-information-of-a-StoragePool)
     * [Viewing a collection of AllocatedVolumes](#Viewing-a-collection-of-AllocatedVolumes)
-    * [Viewing information of an AllocatedVolume](#Viewing-information-of-an AllocatedVolume)
+    * [Viewing information of an AllocatedVolume](#Viewing-information-of-an-AllocatedVolume)
     * [Viewing a collection of ProvidingDrives](#Viewing-a-collection-of-ProvidingDrives)
     * [Viewing information of a ProvidingDrive](#Viewing-information-of-a-ProvidingDrive)
   * [Viewing a collection of storage subsystem resources](#Viewing-a-collection-of-storage-subsystem-resources)
@@ -134,8 +134,7 @@
   * [VirtualMedia](#virtualmedia)
     
     + [Viewing the VirtualMedia collection](#viewing-the-virtualmedia-collection)
-    
-      [Viewing information of a VirtualMedia Instance](#viewing-information-of-a-virtualmedia-instance)
+    + [Viewing information of a VirtualMedia Instance](#viewing-information-of-a-virtualmedia-instance)
     + [Inserting VirtualMedia](#inserting-virtualmedia)
     + [Ejecting VirtualMedia](#ejecting-virtualmedia)
   * [Remote BMC accounts and roles](#remote-bmc-accounts-and-roles)
@@ -2117,8 +2116,6 @@ curl -i -X POST \
 }
 }' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources'
-
-
 ```
 
 >**Sample request body**
@@ -2404,8 +2401,6 @@ curl -i POST \
    ]
 }' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/Actions/AggregationService.Reset'
-
-
 ```
 
 >**Sample request body**

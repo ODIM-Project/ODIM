@@ -2825,7 +2825,6 @@ curl -i GET \
 curl -i GET \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/Aggregates/{AggregateID}'
-
 ```
 > **Sample response body**
 
@@ -2969,7 +2968,6 @@ curl -i POST \
    "ResetType":"ForceRestart"
 }' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/Aggregates/{AggregateID}/Actions/Aggregate.Reset'
-
 ```
 > **Sample request body**
 
@@ -2980,7 +2978,6 @@ curl -i POST \
    "DelayBetweenBatchesInSeconds":2,
    "ResetType":"ForceRestart"
 }
-
 ```
 > **Request parameters**
 
@@ -3716,7 +3713,6 @@ curl -i GET \
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
               'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemID}/Memory'
-
 ```
 > **Sample response body** 
 
@@ -6577,8 +6573,6 @@ curl -i POST \
 }
 ' \
  'https://{odim_host}:{port}/redfish/v1/Chassis'
-
-
 ```
 
 >**Sample request body**
@@ -6791,8 +6785,6 @@ curl -i PATCH \
 }
 ' \
  'https://{odim_host}:{port}/redfish/v1/Chassis/{rackID}'
-
-
 ```
 
 >**Sample request body**
@@ -6992,7 +6984,6 @@ curl -i DELETE \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Systems?$filter={searchKeys}%20{conditionKeys}%20{value/regular_expression}%20{logicalOperand}%20{searchKeys}%20{conditionKeys}%20{value}'
-
 ```
 
 > **Sample usage** 
@@ -7113,7 +7104,6 @@ This filter searches a server having total physical memory of 384 GB and two Int
 }
 ' \
  'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemID}/Actions/ComputerSystem.Reset'
-
 ```
 
 >**Sample request body**
@@ -7162,7 +7152,6 @@ See *[Resetting Servers](#resetting-servers)* to know about `ResetType.`
    -d \
 '' \
  'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemID}/Actions/ComputerSystem.SetDefaultBootOrder'
-
 ```
 
 >**Sample response body**
@@ -7261,7 +7250,6 @@ See *[Resetting Servers](#resetting-servers)* to know about `ResetType.`
    }
 }' \
  'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemID}}'
-
 ```
 
 
@@ -7395,7 +7383,6 @@ Resource Aggregator for ODIM exposes APIs to retrieve information about managers
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Managers'
-
 ```
 
 
@@ -7452,7 +7439,6 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/Managers/{ManagerID}'
-
 ```
 
 >**Sample response body for a system (BMC) manager** 
@@ -8052,7 +8038,6 @@ curl -i POST \
         "Message": "See @Message.ExtendedInfo for more information."
     }
 } 
-
 ```
 
 ### Ejecting VirtualMedia
@@ -9675,7 +9660,6 @@ curl -i POST \
 }
 '
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'
-
 ```
 
 >**Sample request body**
@@ -9991,7 +9975,6 @@ curl -i POST \
 }
 '
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Zones'
-
 ```
 
 >**Sample request body**
@@ -11035,7 +11018,6 @@ curl -i POST \
    "DeliveryRetryPolicy": "RetryForever"
 }' \
  'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions'
-
 ```
 
 
@@ -11068,7 +11050,6 @@ curl -i POST \
       }
    ],
    "DeliveryRetryPolicy": "RetryForever"
-
 }
 ```
 
@@ -12104,7 +12085,6 @@ curl -i GET \
 ```
 curl -i GET \
               'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricDefinitions/{MetricDefinitionID}'
-
 ```
 
 
@@ -12159,7 +12139,6 @@ curl -i GET \
 ```
 curl -i GET \
               'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricReportDefinitions/'
-
 ```
 
 
@@ -12213,7 +12192,6 @@ curl -i GET \
 ```
 curl -i GET \
               'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricReportDefinitions/{MetricReportDefinitionID}'
-
 ```
 
 
@@ -12274,7 +12252,6 @@ curl -i GET \
 ```
 curl -i GET \
               'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricReports/'
-
 ```
 
 
@@ -12313,7 +12290,6 @@ curl -i GET \
     "Members@odata.count": 7,
     "Name": "Metric Reports"
 }
- 
 ```
 
 ## Viewing information of a metric report 
@@ -12534,7 +12510,6 @@ curl -i -X PATCH \
   "EventTriggers": ["Alert"]
 }' \
  'https://{odimra_host}:{port}/redfish/v1/TelemetryService/Triggers/{TriggersID}'
-
 ```
 
 
@@ -12704,7 +12679,6 @@ curl -i -X POST \
 }
 ' \
 'https://{odim_host}:{port}/redfish/v1/LicenseService/Licenses'
-
 ```
 
 

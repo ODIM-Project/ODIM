@@ -2862,7 +2862,7 @@ python3 odim-controller.py [option(s)] [argument(s)]
     ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
     --scale --svc aggregation --replicas 3
     ```
-For more examples, see *[Post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)*.
+    For more examples, see *[Post-deployment operations](#Resource-Aggregator-for-ODIM-post-deployment-operations)*.
 
 
 
@@ -4431,14 +4431,14 @@ These checks run in parallel and take a few minutes to complete.
 ### GitHub action workflow details
 
 1. build_unittest.yml
-   - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md*.
+   - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md*.
    - Installs Go 1.19.5 package.
    - Installs and configures Redis 7.0.8 with two instances running on ports 6379 and 6380.
    - Checks out the PR code into the Go module directory.
    - Builds/compiles the code.
    - Runs the unit tests.
 2. build_deploy_test.yml
-   - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md*.
+   - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md*.
    - Checks out the PR code.
    - Builds and deploys the following docker containers:
      - ODIMRA 

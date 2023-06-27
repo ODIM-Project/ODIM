@@ -24,6 +24,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
@@ -75,39 +76,11 @@ func TestDeleteSession(t *testing.T) {
 		req *sessionproto.SessionRequest
 	}
 
-	errArgUnauth := &response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "failed to delete session : error while trying to get the session from DB: no data with the with key  found",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	eArgs := &response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "failed to delete session : Session ID not found",
-				MessageArgs:   []interface{}{"Session", "invalid-id"},
-			},
-		},
-	}
-	errArgIns := &response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to delete session : Insufficient privileges",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
+	errArgUnauth := account.GetResponseArgs(response.NoValidSession, "failed to delete session : error while trying to get the session from DB: no data with the with key  found", []interface{}{})
+
+	eArgs := account.GetResponseArgs(response.ResourceNotFound, "failed to delete session : Session ID not found", []interface{}{"Session", "invalid-id"})
+
+	errArgIns := account.GetResponseArgs(response.InsufficientPrivilege, "failed to delete session : Insufficient privileges", []interface{}{})
 
 	tests := []struct {
 		name string

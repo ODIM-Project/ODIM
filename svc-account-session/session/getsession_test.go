@@ -25,6 +25,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
@@ -56,28 +57,9 @@ func TestGetSession(t *testing.T) {
 		"X-Auth-Token": sessionToken,
 	}
 
-	errArgUnauth := &response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "failed to fetch the session : Unable to authorize session token: error while trying to get session details: error while trying to get the session from DB: no data with the with key invalid-token found",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	eArgs := &response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "No session with id invalid-sessionID found.",
-				MessageArgs:   []interface{}{"Session", "invalid-sessionID"},
-			},
-		},
-	}
+	errArgUnauth := account.GetResponseArgs(response.NoValidSession, "failed to fetch the session : Unable to authorize session token: error while trying to get session details: error while trying to get the session from DB: no data with the with key invalid-token found", []interface{}{})
+
+	eArgs := account.GetResponseArgs(response.ResourceNotFound, "No session with id invalid-sessionID found.", []interface{}{"Session", "invalid-sessionID"})
 	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionRequest
@@ -168,28 +150,10 @@ func TestGetAllActiveSessions(t *testing.T) {
 	listMembers = append(listMembers, asresponse.ListMember{
 		OdataID: "/redfish/v1/SessionService/Sessions/" + sessionID,
 	})
-	eArgs1 := &response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "failed to fetch all active sessions : Unable to authorize session token: error: no session token found in header",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArgUnauth2 := &response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "failed to fetch all active sessions : Unable to authorize session token: error while trying to get session details: error while trying to get the session from DB: no data with the with key invalidToken found",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
+
+	eArgs1 := account.GetResponseArgs(response.NoValidSession, "failed to fetch all active sessions : Unable to authorize session token: error: no session token found in header", []interface{}{})
+
+	errArgUnauth2 := account.GetResponseArgs(response.NoValidSession, "failed to fetch all active sessions : Unable to authorize session token: error while trying to get session details: error while trying to get the session from DB: no data with the with key invalidToken found", []interface{}{})
 	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionRequest

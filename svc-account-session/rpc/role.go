@@ -74,18 +74,14 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*rol
 	}
 
 	data := CreateFunc(ctx, req, sess)
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Header = data.Header
-	body, err := MarshalFunc(data.Body)
+	errorMessage := "error while trying to marshal the response body of create role API: "
+	resp, args, err = mapRoleResponse(resp, args, errorMessage, data)
+
 	if err != nil {
-		errorMessage := "error while trying to marshal the response body of create role API: " + err.Error()
-		resp, args = mapResponseAndError(resp, args, errorMessage)
 		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response of request to create a role: %s", string(body))
-	resp.Body = body
+	l.LogWithFields(ctx).Debugf("outgoing response of request to create a role: %s", string(resp.Body))
 	return &resp, nil
 }
 
@@ -117,19 +113,16 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 	}
 
 	data := GetRoleFunc(ctx, req, sess)
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Header = data.Header
-	body, err := MarshalFunc(data.Body)
-	if err != nil {
-		errorMessage := "error while trying to marshal the response body of get role API: " + err.Error()
-		resp, args = mapResponseAndError(resp, args, errorMessage)
 
+	errorMessage := "error while trying to marshal the response body of get role API: "
+
+	resp, args, err = mapRoleResponse(resp, args, errorMessage, data)
+
+	if err != nil {
 		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response of request to view role details: %s", string(body))
-	resp.Body = body
+	l.LogWithFields(ctx).Debugf("outgoing response of request to view role details: %s", string(resp.Body))
 
 	return &resp, nil
 }
@@ -161,18 +154,14 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (
 	}
 
 	data := GetAllRolesFunc(ctx, sess)
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Header = data.Header
-	body, err := MarshalFunc(data.Body)
+	errorMessage := "error while trying to marshal the response body of the get all roles API: "
+	resp, args, err = mapRoleResponse(resp, args, errorMessage, data)
+
 	if err != nil {
-		errorMessage := "error while trying to marshal the response body of the get all roles API: " + err.Error()
-		resp, args = mapResponseAndError(resp, args, errorMessage)
 		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response of request to view all roles: %s", string(body))
-	resp.Body = body
+	l.LogWithFields(ctx).Debugf("outgoing response of request to view all roles: %s", string(resp.Body))
 
 	return &resp, nil
 }
@@ -205,18 +194,14 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 	}
 
 	data := UpdateFunc(ctx, req, sess)
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Header = data.Header
-	body, err := MarshalFunc(data.Body)
+	errorMessage := "error while trying to marshal the response body of the update role API: "
+	resp, args, err = mapRoleResponse(resp, args, errorMessage, data)
+
 	if err != nil {
-		errorMessage := "error while trying to marshal the response body of the update role API: " + err.Error()
-		resp, args = mapResponseAndError(resp, args, errorMessage)
 		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response of request to update the role: %s", string(body))
-	resp.Body = body
+	l.LogWithFields(ctx).Debugf("outgoing response of request to update the role: %s", string(resp.Body))
 
 	return &resp, nil
 }
@@ -227,29 +212,33 @@ func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest)
 	var resp roleproto.RoleResponse
 	args := account.GetResponseArgs("", "", []interface{}{})
 	data := DeleteFunc(ctx, req)
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Header = data.Header
 	var err error
-	body, err := MarshalFunc(data.Body)
+	errorMessage := "error while trying to marshal the response body of the delete role API: "
+
+	resp, args, err = mapRoleResponse(resp, args, errorMessage, *data)
+
 	if err != nil {
-		errorMessage := "error while trying to marshal the response body of the delete role API: " + err.Error()
-		resp, args = mapResponseAndError(resp, args, errorMessage)
 		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response of request to delete the role: %s", string(body))
-	resp.Body = body
+	l.LogWithFields(ctx).Debugf("outgoing response of request to delete the role: %s", string(resp.Body))
 
 	return &resp, nil
 }
 
-func mapResponseAndError(resp roleproto.RoleResponse, args response.Args, errorMessage string) (roleproto.RoleResponse, response.Args) {
-	resp.StatusCode = http.StatusInternalServerError
-	resp.StatusMessage = response.InternalError
-	args.ErrorArgs[0].ErrorMessage = errorMessage
-	args.ErrorArgs[0].StatusMessage = resp.StatusMessage
-	resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-
-	return resp, args
+func mapRoleResponse(resp roleproto.RoleResponse, args response.Args, errorMessage string, data response.RPC) (roleproto.RoleResponse, response.Args, error) {
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Header = data.Header
+	body, err := MarshalFunc(data.Body)
+	if err != nil {
+		resp.StatusCode = http.StatusInternalServerError
+		resp.StatusMessage = response.InternalError
+		args.ErrorArgs[0].ErrorMessage = errorMessage + err.Error()
+		args.ErrorArgs[0].StatusMessage = resp.StatusMessage
+		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
+		return resp, args, err
+	}
+	resp.Body = body
+	return resp, args, nil
 }

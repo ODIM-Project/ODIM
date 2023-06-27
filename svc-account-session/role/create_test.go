@@ -24,9 +24,9 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
-	"github.com/akshata-s-banoshi/Odim-Project/ODIM/svc-account-session/account"
 )
 
 func mockRedfishRoles() error {

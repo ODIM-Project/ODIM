@@ -74,17 +74,13 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 
 	acc := account.GetExternalInterface()
 	data, err := acc.Create(ctx, req, sess)
-	var jsonErr error // jsonErr is created to protect the data in err
-	body, jsonErr := MarshalFunc(data.Body)
-	if jsonErr != nil {
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying to marshal the response body of the create account API: " + jsonErr.Error()
+	errorMessage := "error while trying to marshal the response body of the create account API: "
+	resp, err = mapAccountResponse(resp, data, errorMessage)
+	if err != nil {
 		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response of request to create an account: %s", string(body))
-	resp = mapAccountResponse(resp, body, data)
-
+	l.LogWithFields(ctx).Debugf("outgoing response of request to create an account: %s", string(resp.Body))
 	return &resp, nil
 }
 
@@ -115,15 +111,13 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 	}
 
 	data := GetAllAccountsFunc(ctx, sess)
-	body, err := MarshalFunc(data.Body)
+	errorMessage := "error while trying to marshal the response body of the get all accounts API: "
+	resp, err = mapAccountResponse(resp, data, errorMessage)
 	if err != nil {
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying to marshal the response body of the get all accounts API: " + err.Error()
 		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response of request to view all accounts: %s", string(body))
-	resp = mapAccountResponse(resp, body, data)
+	l.LogWithFields(ctx).Debugf("outgoing response of request to view all accounts: %s", string(resp.Body))
 
 	return &resp, err
 }
@@ -155,15 +149,13 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 	}
 
 	data := GetAccountFunc(ctx, sess, req.AccountID)
-	body, err := MarshalFunc(data.Body)
+	errorMessage := "error while trying to marshal the response body of the get account API: "
+	resp, err = mapAccountResponse(resp, data, errorMessage)
 	if err != nil {
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying to marshal the response body of the get account API: " + err.Error()
 		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response of request to view the account: %s", string(body))
-	resp = mapAccountResponse(resp, body, data)
+	l.LogWithFields(ctx).Debugf("outgoing response of request to view the account: %s", string(resp.Body))
 
 	return &resp, nil
 }
@@ -194,15 +186,13 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 	}
 
 	data := GetAccountServiceFunc(ctx)
-	body, err := MarshalFunc(data.Body)
+	errorMessage := "error while trying to marshal the response body of the get account service API: "
+	resp, err = mapAccountResponse(resp, data, errorMessage)
 	if err != nil {
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying to marshal the response body of the get account service API: " + err.Error()
 		l.LogWithFields(ctx).Printf(resp.StatusMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response of request to view the account session: %s", string(body))
-	resp = mapAccountResponse(resp, body, data)
+	l.LogWithFields(ctx).Debugf("outgoing response of request to view the account session: %s", string(resp.Body))
 
 	return &resp, err
 }
@@ -235,15 +225,13 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 	acc := account.GetExternalInterface()
 
 	data := acc.Update(ctx, req, sess)
-	body, err := MarshalFunc(data.Body)
+	errorMessage := "error while to trying to marshal the response body of the update account API: "
+	resp, err = mapAccountResponse(resp, data, errorMessage)
 	if err != nil {
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while to trying to marshal the response body of the update account API: " + err.Error()
 		l.LogWithFields(ctx).Printf(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response of request to update the account: %s", string(body))
-	resp = mapAccountResponse(resp, body, data)
+	l.LogWithFields(ctx).Debugf("outgoing response of request to update the account: %s", string(resp.Body))
 
 	return &resp, nil
 }
@@ -274,16 +262,13 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 	}
 
 	data := AccDeleteFunc(ctx, sess, req.AccountID)
-	var jsonErr error // jsonErr is created to protect the data in err
-	body, jsonErr := MarshalFunc(data.Body)
-	if jsonErr != nil {
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = "error while trying to marshal the response body of the delete account API: " + jsonErr.Error()
+	errorMessage := "error while trying to marshal the response body of the delete account API: "
+	resp, err = mapAccountResponse(resp, data, errorMessage)
+	if err != nil {
 		l.LogWithFields(ctx).Error(resp.StatusMessage)
 		return &resp, nil
 	}
-	l.LogWithFields(ctx).Debugf("outgoing response of request to delete the account: %s", string(body))
-	resp = mapAccountResponse(resp, body, data)
+	l.LogWithFields(ctx).Debugf("outgoing response of request to delete the account: %s", string(resp.Body))
 
 	return &resp, nil
 }
@@ -309,10 +294,22 @@ func validateUpdateLastUsedTimeError(ctx context.Context, err error) (errorMessa
 	return
 }
 
-func mapAccountResponse(resp accountproto.AccountResponse, body []byte, data response.RPC) accountproto.AccountResponse {
+func mapAccountResponse(resp accountproto.AccountResponse, data response.RPC, errorMessage string) (accountproto.AccountResponse, error) {
+	// resp.Body = body
+	// resp.StatusCode = data.StatusCode
+	// resp.StatusMessage = data.StatusMessage
+	// resp.Header = data.Header
+	// return resp
+	body, jsonErr := MarshalFunc(data.Body)
+	if jsonErr != nil {
+		resp.StatusCode = http.StatusInternalServerError
+		resp.StatusMessage = errorMessage + jsonErr.Error()
+		return resp, jsonErr
+	}
 	resp.Body = body
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
-	return resp
+
+	return resp, nil
 }

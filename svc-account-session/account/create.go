@@ -93,17 +93,7 @@ func (e *ExternalInterface) Create(ctx context.Context, req *accountproto.Create
 		errorMessage := errorLogPrefix + "User does not have the privilege of creating a new user"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: resp.StatusMessage,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{},
-				},
-			},
-		}
+		args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{})
 		resp.Body = args.CreateGenericErrorResponse()
 		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp, fmt.Errorf(errorMessage)
@@ -113,17 +103,7 @@ func (e *ExternalInterface) Create(ctx context.Context, req *accountproto.Create
 		errorMessage := errorLogPrefix + "Mandatory fields " + invalidParams + " are empty"
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.PropertyMissing
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: resp.StatusMessage,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{invalidParams},
-				},
-			},
-		}
+		args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{invalidParams})
 		resp.Body = args.CreateGenericErrorResponse()
 		l.LogWithFields(ctx).Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
@@ -137,17 +117,7 @@ func (e *ExternalInterface) Create(ctx context.Context, req *accountproto.Create
 		errorMessage := err.Error()
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.PropertyValueFormatError
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: resp.StatusMessage,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{user.Password, "Password"},
-				},
-			},
-		}
+		args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{user.Password, "Password"})
 		resp.Body = args.CreateGenericErrorResponse()
 		l.LogWithFields(ctx).Error(errorMessage)
 		return resp, err
@@ -164,17 +134,7 @@ func (e *ExternalInterface) Create(ctx context.Context, req *accountproto.Create
 		if errors.DBKeyAlreadyExist == cerr.ErrNo() {
 			resp.StatusCode = http.StatusConflict
 			resp.StatusMessage = response.ResourceAlreadyExists
-			args := response.Args{
-				Code:    response.GeneralError,
-				Message: "",
-				ErrorArgs: []response.ErrArgs{
-					response.ErrArgs{
-						StatusMessage: response.ResourceAlreadyExists,
-						ErrorMessage:  errorMessage,
-						MessageArgs:   []interface{}{"ManagerAccount", "Id", user.UserName},
-					},
-				},
-			}
+			args := GetResponseArgs(response.ResourceAlreadyExists, errorMessage, []interface{}{"ManagerAccount", "Id", user.UserName})
 			resp.Body = args.CreateGenericErrorResponse()
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)

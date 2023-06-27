@@ -56,17 +56,7 @@ func TestGetAllAccounts(t *testing.T) {
 		t.Fatalf("Error in creating mock admin user %v", err)
 	}
 
-	errArgs := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to fetch accounts : User SomeOne does not have the privilege to view all users",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
+	errArgs := GetResponseArgs(response.InsufficientPrivilege, "failed to fetch accounts : User SomeOne does not have the privilege to view all users", []interface{}{})
 	ctx := mockContext()
 	type args struct {
 		session *asmodel.Session
@@ -152,28 +142,9 @@ func TestGetAccount(t *testing.T) {
 		accountID string
 	}
 
-	errArg := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to fetch the account testUser1: testUser2 does not have the privilege to view other user's details",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArg1 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "failed to fetch the account testUser4: error while trying to get user: no data with the with key testUser4 found",
-				MessageArgs:   []interface{}{"Account", "testUser4"},
-			},
-		},
-	}
+	errArg := GetResponseArgs(response.InsufficientPrivilege, "failed to fetch the account testUser1: testUser2 does not have the privilege to view other user's details", []interface{}{})
+
+	errArg1 := GetResponseArgs(response.ResourceNotFound, "failed to fetch the account testUser4: error while trying to get user: no data with the with key testUser4 found", []interface{}{"Account", "testUser4"})
 
 	tests := []struct {
 		name string

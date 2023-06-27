@@ -25,6 +25,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
+	"github.com/akshata-s-banoshi/Odim-Project/ODIM/svc-account-session/account"
 )
 
 func createMockRole(roleID string, privileges []string, oemPrivileges []string, predefined bool) error {
@@ -69,28 +70,9 @@ func TestGetRole(t *testing.T) {
 		session *asmodel.Session
 	}
 	var errArgs response.Args
-	errArgs = response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to fetch the role Administrator: User does not have the privilege of viewing the role",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArg := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "failed to fetch the role ReadOnly: Error while getting the role : error while trying to get role details: no data with the with key " + common.RoleClient + " found",
-				MessageArgs:   []interface{}{"Role", common.RoleClient},
-			},
-		},
-	}
+	errArgs = account.GetResponseArgs(response.InsufficientPrivilege, "failed to fetch the role Administrator: User does not have the privilege of viewing the role", []interface{}{})
+
+	errArg := account.GetResponseArgs(response.ResourceNotFound, "failed to fetch the role ReadOnly: Error while getting the role : error while trying to get role details: no data with the with key "+common.RoleClient+" found", []interface{}{"Role", common.RoleClient})
 	tests := []struct {
 		name string
 		args args
@@ -182,17 +164,8 @@ func TestGetAllRoles(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock admin role %v", err)
 	}
-	errArgs := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to fetch all roles: User does not have the privilege of viewing the roles",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
+	errArgs := account.GetResponseArgs(response.InsufficientPrivilege, "failed to fetch all roles: User does not have the privilege of viewing the roles", []interface{}{})
+
 	ctx := mockContext()
 	type args struct {
 		session *asmodel.Session

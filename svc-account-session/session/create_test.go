@@ -25,6 +25,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
@@ -107,40 +108,11 @@ func TestCreateSession(t *testing.T) {
 		ID:        "Sessions",
 		Name:      "Session Service",
 	}
-	errArgUnauth := &response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "failed to create session for user : Unable to authorize session creation credentials: error while checking session credentials: username or password is empty",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
+	errArgUnauth := account.GetResponseArgs(response.NoValidSession, "failed to create session for user : Unable to authorize session creation credentials: error while checking session credentials: username or password is empty", []interface{}{})
 
-	errArgUnauth1 := &response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "failed to create session for user admin: Unable to authorize session creation credentials: error while checking session credentials: input password is not matching user password",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArg2 := &response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to create session for user sample: User doesn't have required privilege to create a session",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
+	errArgUnauth1 := account.GetResponseArgs(response.NoValidSession, "failed to create session for user admin: Unable to authorize session creation credentials: error while checking session credentials: input password is not matching user password", []interface{}{})
+
+	errArg2 := account.GetResponseArgs(response.InsufficientPrivilege, "failed to create session for user sample: User doesn't have required privilege to create a session", []interface{}{})
 	ctx := mockContext()
 	type args struct {
 		req *sessionproto.SessionCreateRequest

@@ -52,9 +52,7 @@ var (
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*roleproto.RoleResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -112,9 +110,7 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*rol
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -173,9 +169,7 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -233,9 +227,7 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest) (*roleproto.RoleResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -289,9 +281,7 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 
 // DeleteRole handles the RPC call from the client
 func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest) (*roleproto.RoleResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{

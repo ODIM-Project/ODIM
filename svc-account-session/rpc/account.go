@@ -53,9 +53,7 @@ var podName = os.Getenv("POD_NAME")
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountRequest) (*accountproto.AccountResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -111,9 +109,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -167,9 +163,7 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRequest) (*accountproto.AccountResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -223,9 +217,7 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
@@ -278,9 +270,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp accountproto.AccountResponse
 	l.LogWithFields(ctx).Info("Validating session and updating the last used time of the session before updating the account")
 	errorArgs := []response.ErrArgs{
@@ -335,9 +325,7 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountRequest) (*accountproto.AccountResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{

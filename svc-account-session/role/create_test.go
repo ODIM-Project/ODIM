@@ -26,6 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
+	"github.com/akshata-s-banoshi/Odim-Project/ODIM/svc-account-session/account"
 )
 
 func mockRedfishRoles() error {
@@ -87,61 +88,15 @@ func TestCreate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock redfish predefined roles %v", err)
 	}
-	errArgs := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to create role testRole: User does not have the privilege of creating a new role",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArgsMiss := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyMissing,
-				ErrorMessage:  "failed to create role testRole: Both AssignedPrivileges and OemPrivileges cannot be empty.",
-				MessageArgs:   []interface{}{"AssignedPrivileges/OemPrivileges"},
-			},
-		},
-	}
-	errArg := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "failed to create role testRole: Requested Redfish predefined privilege is not correct",
-				MessageArgs:   []interface{}{"Configure", "AssignedPrivileges"},
-			},
-		},
-	}
-	errArgsInvalid := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "failed to create role @testRole: Invalid create role request",
-				MessageArgs:   []interface{}{"@testRole", "RoleId"},
-			},
-		},
-	}
-	errArgsInvalidRole := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to create role Administrator: Cannot create pre-defined roles",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
+	errArgs := account.GetResponseArgs(response.InsufficientPrivilege, "failed to create role testRole: User does not have the privilege of creating a new role", []interface{}{})
+
+	errArgsMiss := account.GetResponseArgs(response.PropertyMissing, "failed to create role testRole: Both AssignedPrivileges and OemPrivileges cannot be empty.", []interface{}{"AssignedPrivileges/OemPrivileges"})
+
+	errArg := account.GetResponseArgs(response.PropertyValueNotInList, "failed to create role testRole: Requested Redfish predefined privilege is not correct", []interface{}{"Configure", "AssignedPrivileges"})
+
+	errArgsInvalid := account.GetResponseArgs(response.PropertyValueNotInList, "failed to create role @testRole: Invalid create role request", []interface{}{"@testRole", "RoleId"})
+
+	errArgsInvalidRole := account.GetResponseArgs(response.InsufficientPrivilege, "failed to create role Administrator: Cannot create pre-defined roles", []interface{}{})
 
 	errArgu := response.Args{
 		Code:    response.GeneralError,

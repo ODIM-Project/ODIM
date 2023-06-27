@@ -58,28 +58,9 @@ func TestDelete(t *testing.T) {
 
 	common.SetUpMockConfig()
 
-	errArgs := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "failed to delete account xyz: no data with the with key xyz found",
-				MessageArgs:   []interface{}{"Account", "xyz"},
-			},
-		},
-	}
-	errArg := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to delete account 2: SomeOne does not have the privilege to delete user",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
+	errArgs := GetResponseArgs(response.ResourceNotFound, "failed to delete account xyz: no data with the with key xyz found", []interface{}{"Account", "xyz"})
+
+	errArg := GetResponseArgs(response.InsufficientPrivilege, "failed to delete account 2: SomeOne does not have the privilege to delete user", []interface{}{})
 	ctx := mockContext()
 	type args struct {
 		session   *asmodel.Session

@@ -31,33 +31,11 @@ func TestUpdate(t *testing.T) {
 	config.SetUpMockConfig(t)
 	acc := getMockExternalInterface()
 
-	successResponse := response.Response{
-		OdataType:    common.ManagerAccountType,
-		OdataID:      "/redfish/v1/AccountService/Accounts/testUser1",
-		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-		ID:           "testUser1",
-		Name:         "Account Service",
-	}
+	successResponse := createMockUpdateResponseObject(common.ManagerAccountType, "/redfish/v1/AccountService/Accounts/testUser1", "/redfish/v1/$metadata#ManagerAccount.ManagerAccount", "testUser1")
 
-	operatorSuccessResponse := response.Response{
-		OdataType:    common.ManagerAccountType,
-		OdataID:      "/redfish/v1/AccountService/Accounts/operatorUser",
-		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-		ID:           "operatorUser",
-		Name:         "Account Service",
-	}
+	operatorSuccessResponse := createMockUpdateResponseObject(common.ManagerAccountType, "/redfish/v1/AccountService/Accounts/operatorUser", "/redfish/v1/$metadata#ManagerAccount.ManagerAccount", "operatorUser")
 
-	successResponse2 := response.Response{
-		OdataType:    common.ManagerAccountType,
-		OdataID:      "/redfish/v1/AccountService/Accounts/testUser2",
-		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-		ID:           "testUser2",
-		Name:         "Account Service",
-	}
-
-	successResponse.CreateGenericResponse(response.AccountModified)
-	successResponse2.CreateGenericResponse(response.AccountModified)
-	operatorSuccessResponse.CreateGenericResponse(response.AccountModified)
+	successResponse2 := createMockUpdateResponseObject(common.ManagerAccountType, "/redfish/v1/AccountService/Accounts/testUser2", "/redfish/v1/$metadata#ManagerAccount.ManagerAccount", "testUser2")
 
 	errArg := GetResponseArgs(response.ResourceNotFound, "failed to update the account xyz: Unable to get account: error while trying to get user: no data with the with key xyz found", []interface{}{"Account", "xyz"})
 
@@ -509,4 +487,16 @@ func TestUpdate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func createMockUpdateResponseObject(odataType, odataID, odataContext, ID string) response.Response {
+	successResponse := response.Response{
+		OdataType:    odataType,
+		OdataID:      odataID,
+		OdataContext: odataContext,
+		ID:           ID,
+		Name:         "Account Service",
+	}
+	successResponse.CreateGenericResponse(response.AccountModified)
+	return successResponse
 }

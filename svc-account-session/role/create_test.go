@@ -102,31 +102,15 @@ func TestCreate(t *testing.T) {
 		Code:    response.GeneralError,
 		Message: "Role with name testRole already exists",
 	}
-	reqBodyCreateRole, _ := json.Marshal(asmodel.Role{
-		ID:                 "testRole",
-		AssignedPrivileges: []string{common.PrivilegeLogin},
-		OEMPrivileges:      []string{},
-	})
-	reqBodyRoleConfigure, _ := json.Marshal(asmodel.Role{
-		ID:                 "testRole",
-		AssignedPrivileges: []string{"Configure"},
-		OEMPrivileges:      []string{},
-	})
-	reqBodyInvalidRole, _ := json.Marshal(asmodel.Role{
-		ID:                 "@testRole",
-		AssignedPrivileges: []string{common.PrivilegeLogin},
-		OEMPrivileges:      []string{},
-	})
-	reqBodyRoleEmpPrivilege, _ := json.Marshal(asmodel.Role{
-		ID:                 "testRole",
-		AssignedPrivileges: []string{},
-		OEMPrivileges:      []string{},
-	})
-	reqBodyCreateAdminRole, _ := json.Marshal(asmodel.Role{
-		ID:                 common.RoleAdmin,
-		AssignedPrivileges: []string{common.PrivilegeLogin},
-		OEMPrivileges:      []string{},
-	})
+	reqBodyCreateRole, _ := marshalRoleRequest("testRole", []string{common.PrivilegeLogin}, []string{})
+
+	reqBodyRoleConfigure, _ := marshalRoleRequest("testRole", []string{"Configure"}, []string{})
+
+	reqBodyInvalidRole, _ := marshalRoleRequest("@testRole", []string{common.PrivilegeLogin}, []string{})
+
+	reqBodyRoleEmpPrivilege, _ := marshalRoleRequest("testRole", []string{}, []string{})
+
+	reqBodyCreateAdminRole, _ := marshalRoleRequest(common.RoleAdmin, []string{common.PrivilegeLogin}, []string{})
 	ctx := mockContext()
 	type args struct {
 		req     *roleproto.RoleRequest
@@ -275,5 +259,12 @@ func TestCreate(t *testing.T) {
 			}
 		})
 	}
+}
 
+func marshalRoleRequest(ID string, assignedPrivileges, oemPrivileges []string) ([]byte, error) {
+	return json.Marshal(asmodel.Role{
+		ID:                 ID,
+		AssignedPrivileges: assignedPrivileges,
+		OEMPrivileges:      oemPrivileges,
+	})
 }

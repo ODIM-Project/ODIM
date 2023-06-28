@@ -244,7 +244,7 @@ func isEmptyRequest(requestBody []byte) bool {
 	return false
 }
 
-// getResponseArgs creates and return Args object with the values provided
+// GetResponseArgs creates and return Args object with the values provided
 func GetResponseArgs(statusMessage string, errorMessage string, messageArgs []interface{}) response.Args {
 	return response.Args{
 		Code:    response.GeneralError,

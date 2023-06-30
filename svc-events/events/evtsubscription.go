@@ -439,7 +439,7 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 		pluginTaskInfo.PluginIP = response.Header.Get(common.XForwardedFor)
 		services.SavePluginTaskInfo(ctx, pluginTaskInfo.PluginIP, plugin.IP,
 			subTaskID, pluginTaskInfo.Location)
-	} else if response.StatusCode != http.StatusCreated {
+	} else if response.StatusCode > http.StatusAccepted {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
 			errorMessage := "error while trying to read response body: " + err.Error()

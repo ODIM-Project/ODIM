@@ -55,17 +55,7 @@ func GetAllAccounts(ctx context.Context, session *asmodel.Session) response.RPC 
 		errorMessage := errLogPrefix + "User " + session.UserName + " does not have the privilege to view all users"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: resp.StatusMessage,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{},
-				},
-			},
-		}
+		args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{})
 		resp.Body = args.CreateGenericErrorResponse()
 		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp
@@ -97,10 +87,8 @@ func GetAllAccounts(ctx context.Context, session *asmodel.Session) response.RPC 
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
-	commonResponse.Message = ""
 	commonResponse.ID = ""
-	commonResponse.MessageID = ""
-	commonResponse.Severity = ""
+	commonResponse = mapEmptyValuesResponseFields(commonResponse)
 	resp.Body = asresponse.List{
 		Response:     commonResponse,
 		MembersCount: len(users),
@@ -136,17 +124,7 @@ func GetAccount(ctx context.Context, session *asmodel.Session, accountID string)
 			errorMessage := errLogPrefix + session.UserName + " does not have the privilege to view other user's details"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
-			args := response.Args{
-				Code:    response.GeneralError,
-				Message: "",
-				ErrorArgs: []response.ErrArgs{
-					response.ErrArgs{
-						StatusMessage: resp.StatusMessage,
-						ErrorMessage:  errorMessage,
-						MessageArgs:   []interface{}{},
-					},
-				},
-			}
+			args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{})
 			resp.Body = args.CreateGenericErrorResponse()
 			auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 			return resp
@@ -160,17 +138,7 @@ func GetAccount(ctx context.Context, session *asmodel.Session, accountID string)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
-			args := response.Args{
-				Code:    response.GeneralError,
-				Message: "",
-				ErrorArgs: []response.ErrArgs{
-					response.ErrArgs{
-						StatusMessage: resp.StatusMessage,
-						ErrorMessage:  errorMessage,
-						MessageArgs:   []interface{}{"Account", accountID},
-					},
-				},
-			}
+			args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{"Account", accountID})
 			resp.Body = args.CreateGenericErrorResponse()
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
@@ -187,9 +155,7 @@ func GetAccount(ctx context.Context, session *asmodel.Session, accountID string)
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
-	commonResponse.Message = ""
-	commonResponse.MessageID = ""
-	commonResponse.Severity = ""
+	commonResponse = mapEmptyValuesResponseFields(commonResponse)
 	resp.Body = asresponse.Account{
 		Response:     commonResponse,
 		UserName:     user.UserName,
@@ -239,9 +205,7 @@ func GetAccountService(ctx context.Context) response.RPC {
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
-	commonResponse.Message = ""
-	commonResponse.MessageID = ""
-	commonResponse.Severity = ""
+	commonResponse = mapEmptyValuesResponseFields(commonResponse)
 	resp.Body = asresponse.AccountService{
 		Response: commonResponse,
 		//TODO: Yet to implement AccountService state and health
@@ -261,4 +225,12 @@ func GetAccountService(ctx context.Context) response.RPC {
 
 	return resp
 
+}
+
+// mapEmptyValuesResponseFields maps empty string values to Messsage, MessageID and Severity field of Response struct
+func mapEmptyValuesResponseFields(commonResponse response.Response) response.Response {
+	commonResponse.Message = ""
+	commonResponse.MessageID = ""
+	commonResponse.Severity = ""
+	return commonResponse
 }

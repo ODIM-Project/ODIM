@@ -31,21 +31,21 @@ type Account struct {
 	OEM          *OEM     `json:"Oem,omitempty"`
 }
 
-//OEM struct definition
+// OEM struct definition
 type OEM struct {
 }
 
-//Links struct definition
+// Links struct definition
 type Links struct {
 	Role Role `json:"Role"`
 }
 
-//Role struct definition
+// Role struct definition
 type Role struct {
 	OdataID string `json:"@odata.id"`
 }
 
-//AccountService struct definition
+// AccountService struct definition
 type AccountService struct {
 	response.Response
 	Status                             Status           `json:"Status,omitempty"`
@@ -75,7 +75,7 @@ type AccountService struct {
 	TACACSplus                         *TACACSplus      `json:"TACACSplus,omitempty"`
 }
 
-//Accounts struct definition
+// Accounts struct definition
 type Accounts struct {
 	OdataID string `json:"@odata.id"`
 }

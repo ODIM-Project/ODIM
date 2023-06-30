@@ -22,12 +22,12 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
-//RedfishRoles struct definition
+// RedfishRoles struct definition
 type RedfishRoles struct {
 	List []string
 }
 
-//GetRedfishRoles retrives the privileges from database
+// GetRedfishRoles retrives the privileges from database
 func GetRedfishRoles() (RedfishRoles, *errors.Error) {
 	var redfishRoles RedfishRoles
 	conn, err := GetDBConnectionFunc(common.OnDisk)

@@ -24,6 +24,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 )
@@ -87,91 +88,29 @@ func TestCreate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock redfish predefined roles %v", err)
 	}
-	errArgs := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to create role testRole: User does not have the privilege of creating a new role",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArgsMiss := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyMissing,
-				ErrorMessage:  "failed to create role testRole: Both AssignedPrivileges and OemPrivileges cannot be empty.",
-				MessageArgs:   []interface{}{"AssignedPrivileges/OemPrivileges"},
-			},
-		},
-	}
-	errArg := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "failed to create role testRole: Requested Redfish predefined privilege is not correct",
-				MessageArgs:   []interface{}{"Configure", "AssignedPrivileges"},
-			},
-		},
-	}
-	errArgsInvalid := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "failed to create role @testRole: Invalid create role request",
-				MessageArgs:   []interface{}{"@testRole", "RoleId"},
-			},
-		},
-	}
-	errArgsInvalidRole := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to create role Administrator: Cannot create pre-defined roles",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
+	errArgs := account.GetResponseArgs(response.InsufficientPrivilege, "failed to create role testRole: User does not have the privilege of creating a new role", []interface{}{})
+
+	errArgsMiss := account.GetResponseArgs(response.PropertyMissing, "failed to create role testRole: Both AssignedPrivileges and OemPrivileges cannot be empty.", []interface{}{"AssignedPrivileges/OemPrivileges"})
+
+	errArg := account.GetResponseArgs(response.PropertyValueNotInList, "failed to create role testRole: Requested Redfish predefined privilege is not correct", []interface{}{"Configure", "AssignedPrivileges"})
+
+	errArgsInvalid := account.GetResponseArgs(response.PropertyValueNotInList, "failed to create role @testRole: Invalid create role request", []interface{}{"@testRole", "RoleId"})
+
+	errArgsInvalidRole := account.GetResponseArgs(response.InsufficientPrivilege, "failed to create role Administrator: Cannot create pre-defined roles", []interface{}{})
 
 	errArgu := response.Args{
 		Code:    response.GeneralError,
 		Message: "Role with name testRole already exists",
 	}
-	reqBodyCreateRole, _ := json.Marshal(asmodel.Role{
-		ID:                 "testRole",
-		AssignedPrivileges: []string{common.PrivilegeLogin},
-		OEMPrivileges:      []string{},
-	})
-	reqBodyRoleConfigure, _ := json.Marshal(asmodel.Role{
-		ID:                 "testRole",
-		AssignedPrivileges: []string{"Configure"},
-		OEMPrivileges:      []string{},
-	})
-	reqBodyInvalidRole, _ := json.Marshal(asmodel.Role{
-		ID:                 "@testRole",
-		AssignedPrivileges: []string{common.PrivilegeLogin},
-		OEMPrivileges:      []string{},
-	})
-	reqBodyRoleEmpPrivilege, _ := json.Marshal(asmodel.Role{
-		ID:                 "testRole",
-		AssignedPrivileges: []string{},
-		OEMPrivileges:      []string{},
-	})
-	reqBodyCreateAdminRole, _ := json.Marshal(asmodel.Role{
-		ID:                 common.RoleAdmin,
-		AssignedPrivileges: []string{common.PrivilegeLogin},
-		OEMPrivileges:      []string{},
-	})
+	reqBodyCreateRole, _ := marshalRoleRequest("testRole", []string{common.PrivilegeLogin}, []string{})
+
+	reqBodyRoleConfigure, _ := marshalRoleRequest("testRole", []string{"Configure"}, []string{})
+
+	reqBodyInvalidRole, _ := marshalRoleRequest("@testRole", []string{common.PrivilegeLogin}, []string{})
+
+	reqBodyRoleEmpPrivilege, _ := marshalRoleRequest("testRole", []string{}, []string{})
+
+	reqBodyCreateAdminRole, _ := marshalRoleRequest(common.RoleAdmin, []string{common.PrivilegeLogin}, []string{})
 	ctx := mockContext()
 	type args struct {
 		req     *roleproto.RoleRequest
@@ -320,5 +259,12 @@ func TestCreate(t *testing.T) {
 			}
 		})
 	}
+}
 
+func marshalRoleRequest(ID string, assignedPrivileges, oemPrivileges []string) ([]byte, error) {
+	return json.Marshal(asmodel.Role{
+		ID:                 ID,
+		AssignedPrivileges: assignedPrivileges,
+		OEMPrivileges:      oemPrivileges,
+	})
 }

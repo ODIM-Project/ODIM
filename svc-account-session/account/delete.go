@@ -68,17 +68,7 @@ func Delete(ctx context.Context, session *asmodel.Session, accountID string) res
 		errorMessage := errorLogPrefix + session.UserName + " does not have the privilege to delete user"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: resp.StatusMessage,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{},
-				},
-			},
-		}
+		args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{})
 		resp.Body = args.CreateGenericErrorResponse()
 		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp
@@ -90,17 +80,7 @@ func Delete(ctx context.Context, session *asmodel.Session, accountID string) res
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
-			args := response.Args{
-				Code:    response.GeneralError,
-				Message: "",
-				ErrorArgs: []response.ErrArgs{
-					response.ErrArgs{
-						StatusMessage: resp.StatusMessage,
-						ErrorMessage:  errorMessage,
-						MessageArgs:   []interface{}{"Account", accountID},
-					},
-				},
-			}
+			args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{"Account", accountID})
 			resp.Body = args.CreateGenericErrorResponse()
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)

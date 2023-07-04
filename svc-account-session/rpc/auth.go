@@ -35,9 +35,7 @@ var (
 // IsAuthorized will accepts the request and send a request to Auth method
 // from session package, if its authorized then respond with the status code.
 func (a *Auth) IsAuthorized(ctx context.Context, req *authproto.AuthRequest) (*authproto.AuthResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp authproto.AuthResponse
 	l.LogWithFields(ctx).Info("Validating if the session is authorized")
 	statusCode, errorMessage := AuthFunc(ctx, req)

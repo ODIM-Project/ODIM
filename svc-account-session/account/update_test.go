@@ -31,126 +31,27 @@ func TestUpdate(t *testing.T) {
 	config.SetUpMockConfig(t)
 	acc := getMockExternalInterface()
 
-	successResponse := response.Response{
-		OdataType:    common.ManagerAccountType,
-		OdataID:      "/redfish/v1/AccountService/Accounts/testUser1",
-		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-		ID:           "testUser1",
-		Name:         "Account Service",
-	}
+	successResponse := createMockUpdateResponseObject(common.ManagerAccountType, "/redfish/v1/AccountService/Accounts/testUser1", "/redfish/v1/$metadata#ManagerAccount.ManagerAccount", "testUser1")
 
-	operatorSuccessResponse := response.Response{
-		OdataType:    common.ManagerAccountType,
-		OdataID:      "/redfish/v1/AccountService/Accounts/operatorUser",
-		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-		ID:           "operatorUser",
-		Name:         "Account Service",
-	}
+	operatorSuccessResponse := createMockUpdateResponseObject(common.ManagerAccountType, "/redfish/v1/AccountService/Accounts/operatorUser", "/redfish/v1/$metadata#ManagerAccount.ManagerAccount", "operatorUser")
 
-	successResponse2 := response.Response{
-		OdataType:    common.ManagerAccountType,
-		OdataID:      "/redfish/v1/AccountService/Accounts/testUser2",
-		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-		ID:           "testUser2",
-		Name:         "Account Service",
-	}
+	successResponse2 := createMockUpdateResponseObject(common.ManagerAccountType, "/redfish/v1/AccountService/Accounts/testUser2", "/redfish/v1/$metadata#ManagerAccount.ManagerAccount", "testUser2")
 
-	successResponse.CreateGenericResponse(response.AccountModified)
-	successResponse2.CreateGenericResponse(response.AccountModified)
-	operatorSuccessResponse.CreateGenericResponse(response.AccountModified)
+	errArg := GetResponseArgs(response.ResourceNotFound, "failed to update the account xyz: Unable to get account: error while trying to get user: no data with the with key xyz found", []interface{}{"Account", "xyz"})
 
-	errArg := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "failed to update the account xyz: Unable to get account: error while trying to get user: no data with the with key xyz found",
-				MessageArgs:   []interface{}{"Account", "xyz"},
-			},
-		},
-	}
-	errArgs := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to update the account testUser2: User does not have the privilege of updating other accounts",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArgs5 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to update the account testUser1: User does not have the privilege of updating other accounts",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArg4 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to update the account testUser3: Roles, user is associated with, doesn't allow changing own or other users password",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
+	errArgs := GetResponseArgs(response.InsufficientPrivilege, "failed to update the account testUser2: User does not have the privilege of updating other accounts", []interface{}{})
 
-	errArgs1 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to update the account testUser3: User does not have the privilege of updating any account role, including his own account",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
+	errArgs5 := GetResponseArgs(response.InsufficientPrivilege, "failed to update the account testUser1: User does not have the privilege of updating other accounts", []interface{}{})
 
-	errArg2 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "failed to update the account testUser1: Invalid RoleID xyz present",
-				MessageArgs:   []interface{}{"xyz", "RoleID"},
-			},
-		},
-	}
+	errArg4 := GetResponseArgs(response.InsufficientPrivilege, "failed to update the account testUser3: Roles, user is associated with, doesn't allow changing own or other users password", []interface{}{})
 
-	errArg3 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueFormatError,
-				ErrorMessage:  "error: invalid password, password length is less than the minimum length",
-				MessageArgs:   []interface{}{"xyz", "Password"},
-			},
-		},
-	}
+	errArgs1 := GetResponseArgs(response.InsufficientPrivilege, "failed to update the account testUser3: User does not have the privilege of updating any account role, including his own account", []interface{}{})
 
-	errArg5 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyMissing,
-				ErrorMessage:  "failed to update the account testUser1: empty request can not be processed",
-				MessageArgs:   []interface{}{"request body"},
-			},
-		},
-	}
+	errArg2 := GetResponseArgs(response.PropertyValueNotInList, "failed to update the account testUser1: Invalid RoleID xyz present", []interface{}{"xyz", "RoleID"})
+
+	errArg3 := GetResponseArgs(response.PropertyValueFormatError, "error: invalid password, password length is less than the minimum length", []interface{}{"xyz", "Password"})
+
+	errArg5 := GetResponseArgs(response.PropertyMissing, "failed to update the account testUser1: empty request can not be processed", []interface{}{"request body"})
 
 	genArgs := response.Args{
 		Code:    response.GeneralError,
@@ -586,4 +487,16 @@ func TestUpdate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func createMockUpdateResponseObject(odataType, odataID, odataContext, ID string) response.Response {
+	successResponse := response.Response{
+		OdataType:    odataType,
+		OdataID:      odataID,
+		OdataContext: odataContext,
+		ID:           ID,
+		Name:         "Account Service",
+	}
+	successResponse.CreateGenericResponse(response.AccountModified)
+	return successResponse
 }

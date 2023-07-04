@@ -58,127 +58,27 @@ func TestCreate(t *testing.T) {
 	acc := getMockExternalInterface()
 	common.SetUpMockConfig()
 	ctx := mockContext()
-	errArgs := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to create account for the user testUser3: User does not have the privilege of creating a new user",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArg := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueFormatError,
-				ErrorMessage:  "error: invalid password, password length is less than the minimum length",
-				MessageArgs:   []interface{}{"Password", "Password"},
-			},
-		},
-	}
-	errArg2 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueFormatError,
-				ErrorMessage:  "error: invalid password, username is present inside the password",
-				MessageArgs:   []interface{}{"testUser4", "Password"},
-			},
-		},
-	}
-	errArg3 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueFormatError,
-				ErrorMessage:  "error: invalid password, password length is greater than the maximum length",
-				MessageArgs:   []interface{}{"Password1234567890", "Password"},
-			},
-		},
-	}
-	errArg4 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueFormatError,
-				ErrorMessage:  "error: invalid password, password should contain minimum One Upper case, One Lower case, One Number and One Special character",
-				MessageArgs:   []interface{}{"password@123", "Password"},
-			},
-		},
-	}
-	errArg5 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueFormatError,
-				ErrorMessage:  "error: invalid password, password should contain minimum One Upper case, One Lower case, One Number and One Special character",
-				MessageArgs:   []interface{}{"PASSWORD@123", "Password"},
-			},
-		},
-	}
-	errArg6 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueFormatError,
-				ErrorMessage:  "error: invalid password, password should contain minimum One Upper case, One Lower case, One Number and One Special character",
-				MessageArgs:   []interface{}{"Password@ABC", "Password"},
-			},
-		},
-	}
-	errArg7 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueFormatError,
-				ErrorMessage:  "error: invalid password, password should contain minimum One Upper case, One Lower case, One Number and One Special character",
-				MessageArgs:   []interface{}{"P\\assword123", "Password"},
-			},
-		},
-	}
-	errArg1 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyMissing,
-				ErrorMessage:  "failed to create account for the user : Mandatory fields UserName Password RoleID are empty",
-				MessageArgs:   []interface{}{"UserName Password RoleID"},
-			},
-		},
-	}
-	errArgu := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceAlreadyExists,
-				ErrorMessage:  "failed to create account for the user existingUser: error: data with key existingUser already exists",
-				MessageArgs:   []interface{}{"ManagerAccount", "Id", "existingUser"},
-			},
-		},
-	}
-	errArgum := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "failed to create account for the user testUser1: Invalid RoleID present: error while trying to get role details: error: Invalid RoleID xyz present",
-				MessageArgs:   []interface{}{"Role", "xyz"},
-			},
-		},
-	}
+	errArgs := GetResponseArgs(response.InsufficientPrivilege, "failed to create account for the user testUser3: User does not have the privilege of creating a new user", []interface{}{})
+
+	errArg := GetResponseArgs(response.PropertyValueFormatError, "error: invalid password, password length is less than the minimum length", []interface{}{"Password", "Password"})
+
+	errArg2 := GetResponseArgs(response.PropertyValueFormatError, "error: invalid password, username is present inside the password", []interface{}{"testUser4", "Password"})
+
+	errArg3 := GetResponseArgs(response.PropertyValueFormatError, "error: invalid password, password length is greater than the maximum length", []interface{}{"Password1234567890", "Password"})
+
+	errArg4 := GetResponseArgs(response.PropertyValueFormatError, "error: invalid password, password should contain minimum One Upper case, One Lower case, One Number and One Special character", []interface{}{"password@123", "Password"})
+
+	errArg5 := GetResponseArgs(response.PropertyValueFormatError, "error: invalid password, password should contain minimum One Upper case, One Lower case, One Number and One Special character", []interface{}{"PASSWORD@123", "Password"})
+
+	errArg6 := GetResponseArgs(response.PropertyValueFormatError, "error: invalid password, password should contain minimum One Upper case, One Lower case, One Number and One Special character", []interface{}{"Password@ABC", "Password"})
+
+	errArg7 := GetResponseArgs(response.PropertyValueFormatError, "error: invalid password, password should contain minimum One Upper case, One Lower case, One Number and One Special character", []interface{}{"P\\assword123", "Password"})
+
+	errArg1 := GetResponseArgs(response.PropertyMissing, "failed to create account for the user : Mandatory fields UserName Password RoleID are empty", []interface{}{"UserName Password RoleID"})
+
+	errArgu := GetResponseArgs(response.ResourceAlreadyExists, "failed to create account for the user existingUser: error: data with key existingUser already exists", []interface{}{"ManagerAccount", "Id", "existingUser"})
+
+	errArgum := GetResponseArgs(response.ResourceNotFound, "failed to create account for the user testUser1: Invalid RoleID present: error while trying to get role details: error: Invalid RoleID xyz present", []interface{}{"Role", "xyz"})
 	type args struct {
 		req     *accountproto.CreateAccountRequest
 		session *asmodel.Session

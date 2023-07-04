@@ -1368,6 +1368,14 @@ func (ts *TasksRPC) ProcessTaskEvents(ctx context.Context, data interface{}) boo
 			body, _ = json.Marshal(data.Body)
 		}
 	}
+	if strings.Contains(responseMessage, "UpdateRemoteAccount") && strings.Contains(responseMessage, "host") {
+		var data tmodel.UpdateAccount
+		err := json.Unmarshal([]byte(responseMessage), &data)
+		if err == nil {
+			go tcommon.UpdateRemoteAccount(ctx, data.Location, data.Host)
+			body, _ = json.Marshal(data.Body)
+		}
+	}
 
 	payLoad := &taskproto.Payload{
 		StatusCode:   int32(statusCode),

@@ -25,6 +25,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
@@ -83,19 +84,7 @@ func GetSession(ctx context.Context, req *sessionproto.SessionRequest) response.
 	}
 	var resp response.RPC
 	errLogPrefix := "failed to fetch the session : "
-
-	errorArgs := []response.ErrArgs{
-		response.ErrArgs{
-			StatusMessage: "",
-			ErrorMessage:  "",
-			MessageArgs:   []interface{}{},
-		},
-	}
-	args := &response.Args{
-		Code:      response.GeneralError,
-		Message:   "",
-		ErrorArgs: errorArgs,
-	}
+	args := account.GetResponseArgs("", "", []interface{}{})
 
 	l.LogWithFields(ctx).Info("Validating the request to fetch the session")
 	// Validating the session
@@ -155,8 +144,8 @@ func GetSession(ctx context.Context, req *sessionproto.SessionRequest) response.
 			errorMessage := errLogPrefix + "The session doesn't have the requisite privileges for the action"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
-			errorArgs[0].ErrorMessage = errorMessage
-			errorArgs[0].StatusMessage = resp.StatusMessage
+			args.ErrorArgs[0].ErrorMessage = errorMessage
+			args.ErrorArgs[0].StatusMessage = resp.StatusMessage
 			resp.Body = args.CreateGenericErrorResponse()
 			auth.CustomAuthLog(ctx, req.SessionToken, errorMessage, resp.StatusCode)
 			return resp
@@ -167,9 +156,9 @@ func GetSession(ctx context.Context, req *sessionproto.SessionRequest) response.
 	l.LogWithFields(ctx).Error(errLogPrefix + errorMessage)
 	resp.StatusCode = http.StatusNotFound
 	resp.StatusMessage = response.ResourceNotFound
-	errorArgs[0].ErrorMessage = errorMessage
-	errorArgs[0].StatusMessage = resp.StatusMessage
-	errorArgs[0].MessageArgs = []interface{}{"Session", req.SessionId}
+	args.ErrorArgs[0].ErrorMessage = errorMessage
+	args.ErrorArgs[0].StatusMessage = resp.StatusMessage
+	args.ErrorArgs[0].MessageArgs = []interface{}{"Session", req.SessionId}
 	resp.Body = args.CreateGenericErrorResponse()
 	return resp
 }
@@ -189,18 +178,19 @@ func GetAllActiveSessions(ctx context.Context, req *sessionproto.SessionRequest)
 
 	var resp response.RPC
 	errorLogPrefix := "failed to fetch all active sessions : "
-	errorArgs := []response.ErrArgs{
-		response.ErrArgs{
-			StatusMessage: "",
-			ErrorMessage:  "",
-			MessageArgs:   []interface{}{},
-		},
-	}
-	args := &response.Args{
-		Code:      response.GeneralError,
-		Message:   "",
-		ErrorArgs: errorArgs,
-	}
+	// errorArgs := []response.ErrArgs{
+	// 	response.ErrArgs{
+	// 		StatusMessage: "",
+	// 		ErrorMessage:  "",
+	// 		MessageArgs:   []interface{}{},
+	// 	},
+	// }
+	// args := &response.Args{
+	// 	Code:      response.GeneralError,
+	// 	Message:   "",
+	// 	ErrorArgs: errorArgs,
+	// }
+	args := account.GetResponseArgs("", "", []interface{}{})
 
 	l.LogWithFields(ctx).Info("fetching all active sessions")
 	// Validating the session
@@ -230,8 +220,8 @@ func GetAllActiveSessions(ctx context.Context, req *sessionproto.SessionRequest)
 		errorMessage := errorLogPrefix + "Insufficient privileges: " + err.Error()
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
-		errorArgs[0].ErrorMessage = errorMessage
-		errorArgs[0].StatusMessage = resp.StatusMessage
+		args.ErrorArgs[0].ErrorMessage = errorMessage
+		args.ErrorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body = args.CreateGenericErrorResponse()
 		auth.CustomAuthLog(ctx, req.SessionToken, errorMessage, resp.StatusCode)
 		return resp

@@ -44,7 +44,7 @@ import (
 
 var (
 	//GetIPFromHostNameFunc ...
-	GetIPFromHostNameFunc = evcommon.GetIPFromHostName
+	GetIPFromHostNameFunc = common.GetIPFromHostName
 	//DecryptWithPrivateKeyFunc ...
 	DecryptWithPrivateKeyFunc = common.DecryptWithPrivateKey
 )
@@ -68,11 +68,11 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
 		return resp
 	}
-	deviceIPAddress, errorMessage := GetIPFromHostNameFunc(target.ManagerAddress)
-	if errorMessage != "" {
+	deviceIPAddress, err := GetIPFromHostNameFunc(target.ManagerAddress)
+	if err != nil {
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
-		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
-		l.LogWithFields(ctx).Error(errorMessage)
+		evcommon.GenErrorResponse(err.Error(), response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
+		l.LogWithFields(ctx).Error(err.Error())
 		return resp
 	}
 	searchKey := evcommon.GetSearchKey(deviceIPAddress, evmodel.SubscriptionIndex)
@@ -419,11 +419,11 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 	}
 	// Update Location to all destination of device if already subscribed to the device
 	var resp response.RPC
-	deviceIPAddress, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
-	if errorMessage != "" {
+	deviceIPAddress, err := common.GetIPFromHostName(target.ManagerAddress)
+	if err != nil {
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
-		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
-		l.LogWithFields(ctx).Error(errorMessage)
+		evcommon.GenErrorResponse(err.Error(), response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
+		l.LogWithFields(ctx).Error(err.Error())
 	}
 	searchKey := evcommon.GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
 	devSub, err := e.GetDeviceSubscriptions(searchKey)
@@ -442,12 +442,12 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 // DeleteFabricsSubscription will delete fabric subscription
 func (e *ExternalInterfaces) DeleteFabricsSubscription(ctx context.Context, originResource string, plugin *common.Plugin) (response.RPC, error) {
 	var resp response.RPC
-	addr, errorMessage := GetIPFromHostNameFunc(plugin.IP)
-	if errorMessage != "" {
+	addr, err := GetIPFromHostNameFunc(plugin.IP)
+	if err != nil {
 		var msgArgs = []interface{}{"ManagerAddress", plugin.IP}
-		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
-		l.LogWithFields(ctx).Error(errorMessage)
-		return resp, fmt.Errorf(errorMessage)
+		evcommon.GenErrorResponse(err.Error(), response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
+		l.LogWithFields(ctx).Error(err.Error())
+		return resp, fmt.Errorf(err.Error())
 	}
 	searchKey := evcommon.GetSearchKey(addr, evmodel.DeviceSubscriptionIndex)
 	devSub, err := e.GetDeviceSubscriptions(searchKey)
@@ -590,9 +590,9 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(ctx context.Context,
 				return err
 			}
 		}
-		addr, errorMessage := evcommon.GetIPFromHostName(plugin.IP)
-		if errorMessage != "" {
-			return fmt.Errorf(errorMessage)
+		addr, err := common.GetIPFromHostName(plugin.IP)
+		if err != nil {
+			return fmt.Errorf(err.Error())
 		}
 		searchKey := evcommon.GetSearchKey(addr, evmodel.DeviceSubscriptionIndex)
 		// Update Location to all destination of device if already subscribed to the device

@@ -43,7 +43,7 @@ type Session struct {
 	CreatedTime string `json:"CreatedTime,omitempty"`
 }
 
-//SessionService struct definition
+// SessionService struct definition
 type SessionService struct {
 	response.Response
 	Status         Status   `json:"Status,omitempty"`
@@ -52,12 +52,12 @@ type SessionService struct {
 	Sessions       Sessions `json:"Sessions,omitempty"`
 }
 
-//Sessions struct definition
+// Sessions struct definition
 type Sessions struct {
 	OdataID string `json:"@odata.id"`
 }
 
-//Status struct definition
+// Status struct definition
 type Status struct {
 	State  string `json:"State"`
 	Health string `json:"Health"`

@@ -22,12 +22,12 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
-//Privileges struct definition
+// Privileges struct definition
 type Privileges struct {
 	List []string
 }
 
-//GetPrivilegeRegistry retrives the privileges from database
+// GetPrivilegeRegistry retrives the privileges from database
 func GetPrivilegeRegistry() (Privileges, *errors.Error) {
 	var privileges Privileges
 	conn, err := GetDBConnectionFunc(common.OnDisk)
@@ -57,12 +57,12 @@ func (p *Privileges) Create() *errors.Error {
 	return nil
 }
 
-//OEMPrivileges struct definition
+// OEMPrivileges struct definition
 type OEMPrivileges struct {
 	List []string
 }
 
-//GetOEMPrivileges retrives the privileges from database
+// GetOEMPrivileges retrives the privileges from database
 func GetOEMPrivileges() (OEMPrivileges, *errors.Error) {
 	var oemPrivileges OEMPrivileges
 	conn, err := GetDBConnectionFunc(common.OnDisk)

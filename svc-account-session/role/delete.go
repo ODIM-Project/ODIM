@@ -19,17 +19,18 @@ import (
 	"context"
 	"fmt"
 
+	"net/http"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	"github.com/ODIM-Project/ODIM/svc-account-session/session"
-
-	"net/http"
 )
 
 func doSessionAuthAndUpdate(ctx context.Context, resp *response.RPC, sessionToken string) (*asmodel.Session, error) {
@@ -70,17 +71,7 @@ func Delete(ctx context.Context, req *roleproto.DeleteRoleRequest) *response.RPC
 		errorMessage := errLogPrefix + "The session token doesn't have required privilege"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: response.InsufficientPrivilege,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{},
-				},
-			},
-		}
+		args := account.GetResponseArgs(response.InsufficientPrivilege, errorMessage, []interface{}{})
 		resp.Body = args.CreateGenericErrorResponse()
 		auth.CustomAuthLog(ctx, req.SessionToken, errorMessage, resp.StatusCode)
 		return &resp
@@ -97,17 +88,7 @@ func Delete(ctx context.Context, req *roleproto.DeleteRoleRequest) *response.RPC
 			errorMessage := errLogPrefix + "Role is assigned to a user"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.ResourceInUse
-			args := response.Args{
-				Code:    response.GeneralError,
-				Message: "",
-				ErrorArgs: []response.ErrArgs{
-					response.ErrArgs{
-						StatusMessage: response.ResourceInUse,
-						ErrorMessage:  errorMessage,
-						MessageArgs:   []interface{}{},
-					},
-				},
-			}
+			args := account.GetResponseArgs(response.ResourceInUse, errorMessage, []interface{}{})
 			resp.Body = args.CreateGenericErrorResponse()
 			l.LogWithFields(ctx).Error(errorMessage)
 			return &resp
@@ -120,17 +101,7 @@ func Delete(ctx context.Context, req *roleproto.DeleteRoleRequest) *response.RPC
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
 			messageArgs := []interface{}{"Role", req.ID}
-			args := response.Args{
-				Code:    response.GeneralError,
-				Message: "",
-				ErrorArgs: []response.ErrArgs{
-					response.ErrArgs{
-						StatusMessage: resp.StatusMessage,
-						ErrorMessage:  errorMessage,
-						MessageArgs:   messageArgs,
-					},
-				},
-			}
+			args := account.GetResponseArgs(resp.StatusMessage, errorMessage, messageArgs)
 			resp.Body = args.CreateGenericErrorResponse()
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
@@ -142,17 +113,7 @@ func Delete(ctx context.Context, req *roleproto.DeleteRoleRequest) *response.RPC
 		errorMessage := errLogPrefix + "A predefined role cannot be deleted."
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: resp.StatusMessage,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{},
-				},
-			},
-		}
+		args := account.GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{})
 		resp.Body = args.CreateGenericErrorResponse()
 		l.LogWithFields(ctx).Error(errorMessage)
 		return &resp

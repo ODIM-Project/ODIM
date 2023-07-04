@@ -439,7 +439,7 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 		pluginTaskInfo.PluginIP = response.Header.Get(common.XForwardedFor)
 		services.SavePluginTaskInfo(ctx, pluginTaskInfo.PluginIP, plugin.IP,
 			subTaskID, pluginTaskInfo.Location)
-	} else if response.StatusCode != http.StatusCreated {
+	} else if response.StatusCode > http.StatusAccepted {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
 			errorMessage := "error while trying to read response body: " + err.Error()
@@ -480,11 +480,11 @@ func (e *ExternalInterfaces) SaveSubscriptionOnDevice(ctx context.Context, origi
 		locationHdr = ""
 	}
 	// get the ip address from the host name
-	deviceIPAddress, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
-	if errorMessage != "" {
-		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
+	deviceIPAddress, err := common.GetIPFromHostName(target.ManagerAddress)
+	if err != nil {
+		evcommon.GenEventErrorResponse(err.Error(), errResponse.ResourceNotFound, http.StatusNotFound,
 			&resp, []interface{}{"ManagerAddress", target.ManagerAddress})
-		l.LogWithFields(ctx).Error(errorMessage)
+		l.LogWithFields(ctx).Error(err.Error())
 		return "", resp
 	}
 	l.LogWithFields(ctx).Debug("Saving device subscription details : ", deviceIPAddress)
@@ -548,11 +548,11 @@ func (e *ExternalInterfaces) IsEventsSubscribed(ctx context.Context, token, orig
 		host = collectionName
 		searchKey = collectionName
 	} else {
-		host, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
-		if errorMessage != "" {
-			evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
+		host, err := GetIPFromHostNameFunc(target.ManagerAddress)
+		if err != nil {
+			evcommon.GenErrorResponse(err.Error(), errResponse.ResourceNotFound, http.StatusNotFound,
 				[]interface{}{"ManagerAddress", target.ManagerAddress}, &resp)
-			l.LogWithFields(ctx).Error(errorMessage)
+			l.LogWithFields(ctx).Error(err.Error())
 			return resp, err
 		}
 		l.LogWithFields(ctx).Info("After look up, manager address is: ", host)
@@ -752,11 +752,11 @@ func (e *ExternalInterfaces) DeleteSubscriptions(ctx context.Context, originReso
 	var err error
 	var deviceSubscription *common.DeviceSubscription
 
-	addr, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
-	if errorMessage != "" {
-		evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
+	addr, err := common.GetIPFromHostName(target.ManagerAddress)
+	if err != nil {
+		evcommon.GenErrorResponse(err.Error(), errResponse.ResourceNotFound, http.StatusNotFound,
 			[]interface{}{"ManagerAddress", target.ManagerAddress}, &resp)
-		l.LogWithFields(ctx).Error(errorMessage)
+		l.LogWithFields(ctx).Error(err.Error())
 		return resp, err
 	}
 	searchKey := evcommon.GetSearchKey(addr, evmodel.DeviceSubscriptionIndex)
@@ -1056,11 +1056,11 @@ func (e *ExternalInterfaces) createFabricSubscription(ctx context.Context, postR
 	if len(subscriptionPost.ResourceTypes) == 0 {
 		subscriptionPost.ResourceTypes = emptySlice
 	}
-	deviceIPAddress, errorMessage := GetIPFromHostNameFunc(plugin.IP)
-	if errorMessage != "" {
-		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusBadRequest,
+	deviceIPAddress, err := GetIPFromHostNameFunc(plugin.IP)
+	if err != nil {
+		evcommon.GenEventErrorResponse(err.Error(), errResponse.ResourceNotFound, http.StatusBadRequest,
 			&resp, []interface{}{"ManagerAddress", plugin.IP})
-		l.LogWithFields(ctx).Error(errorMessage)
+		l.LogWithFields(ctx).Error(err.Error())
 		return "", resp
 	}
 	var target = common.Target{

@@ -32,7 +32,7 @@ type Port struct {
 	Ethernet                *PortEthernet        `json:"Ethernet,omitempty"`
 	FibreChannel            *FibreChannel        `json:"FibreChannel,omitempty"`
 	GenZ                    *GenZ                `json:"GenZ,omitempty"`
-	InterfaceEnabled        bool                 `json:"InterfaceEnabled"`
+	InterfaceEnabled        bool                 `json:"InterfaceEnabled,omitempty"`
 	LinkConfiguration       []*LinkConfiguration `json:"LinkConfiguration,omitempty"`
 	LinkNetworkTechnology   string               `json:"LinkNetworkTechnology,omitempty"`
 	LinkState               string               `json:"LinkState,omitempty"`
@@ -56,6 +56,43 @@ type Port struct {
 	FunctionMinBandwidth    []*FunctionBandwidth `json:"FunctionMinBandwidth,omitempty"`
 	Location                interface{}          `json:"Location,omitempty"`
 	SFP                     SFP                  `json:"SFP,omitempty"`
+	CXL                     *CXL                 `json:"CXL,omitempty"`
+	InfiniBand              *InfiniBand          `json:"InfiniBand,omitempty"`
+	RemotePortId            string               `json:"RemotePortId,omitempty"`
+}
+
+//InfiniBand redfish structure
+type InfiniBand struct {
+	AssociatedNodeGUIDs   []string `json:"AssociatedNodeGUIDs,omitempty"`
+	AssociatedPortGUIDs   []string `json:"AssociatedPortGUIDs,omitempty"`
+	AssociatedSystemGUIDs []string `json:"AssociatedSystemGUIDs,omitempty"`
+}
+
+// CXL redfish structure
+type CXL struct {
+	Congestion                          *Congestion               `json:"Congestion,omitempty"`
+	ConnectedDeviceMode                 string                    `json:"ConnectedDeviceMode,omitempty"`
+	ConnectedDeviceType                 string                    `json:"ConnectedDeviceType,omitempty"`
+	CurrentPortConfigurationState       string                    `json:"CurrentPortConfigurationState,omitempty"`
+	MaxLogicalDeviceCount               string                    `json:"MaxLogicalDeviceCount,omitempty"`
+	QoSTelemetryCapabilities            *QoSTelemetryCapabilities `json:"QoSTelemetryCapabilities,omitempty"`
+	TemporaryThroughputReductionEnabled bool                      `json:"TemporaryThroughputReductionEnabled,omitempty"`
+}
+
+// Congestion redfish structure
+type Congestion struct {
+	BackpressureSampleInterval   int  `json:"BackpressureSampleInterval,omitempty"`
+	CompletionCollectionInterval int  `json:"CompletionCollectionInterval,omitempty"`
+	CongestionTelemetryEnabled   bool `json:"CongestionTelemetryEnabled,omitempty"`
+	EgressModeratePercentage     int  `json:"EgressModeratePercentage,omitempty"`
+	EgressSeverePercentage       int  `json:"EgressSeverePercentage,omitempty"`
+	MaxSustainedRequestCmpBias   int  `json:"MaxSustainedRequestCmpBias,omitempty"`
+}
+
+// QoSTelemetryCapabilities redfish structure
+type QoSTelemetryCapabilities struct {
+	EgressPortBackpressureSupported       bool `json:"EgressPortBackpressureSupported,omitempty"`
+	TemporaryThroughputReductionSupported bool `json:"TemporaryThroughputReductionSupported,omitempty"`
 }
 
 // SFP redfish structure
@@ -91,14 +128,17 @@ type PortEthernet struct {
 
 // LLDP redfish structure
 type LLDP struct {
-	ChassisID             string `json:"ChassisId,omitempty"`
-	ChassisIDSubtype      string `json:"ChassisIdSubtype,omitempty"`
-	ManagementAddressIPv4 string `json:"ManagementAddressIPv4,omitempty"`
-	ManagementAddressIPv6 string `json:"ManagementAddressIPv6,omitempty"`
-	ManagementAddressMAC  string `json:"ManagementAddressMAC,omitempty"`
-	ManagementVlanID      int    `json:"ManagementVlanId,omitempty"`
-	PortID                string `json:"PortId,omitempty"`
-	PortIDSubtype         string `json:"PortIdSubtype,omitempty"`
+	ChassisID             string   `json:"ChassisId,omitempty"`
+	ChassisIDSubtype      string   `json:"ChassisIdSubtype,omitempty"`
+	ManagementAddressIPv4 string   `json:"ManagementAddressIPv4,omitempty"`
+	ManagementAddressIPv6 string   `json:"ManagementAddressIPv6,omitempty"`
+	ManagementAddressMAC  string   `json:"ManagementAddressMAC,omitempty"`
+	ManagementVlanID      int      `json:"ManagementVlanId,omitempty"`
+	PortID                string   `json:"PortId,omitempty"`
+	PortIDSubtype         string   `json:"PortIdSubtype,omitempty"`
+	SystemCapabilities    []string `json:"SystemCapabilities,omitempty"`
+	SystemDescription     string   `json:"SystemDescription,omitempty"`
+	SystemName            string   `json:"SystemName,omitempty"`
 }
 
 // FibreChannel redfish model
@@ -113,14 +153,14 @@ type FibreChannel struct {
 type LinkConfiguration struct {
 	AutoSpeedNegotiationCapable bool                   `json:"AutoSpeedNegotiationCapable,omitempty"`
 	AutoSpeedNegotiationEnabled bool                   `json:"AutoSpeedNegotiationEnabled,omitempty"`
-	CapableLinkSpeedGbps        []CapableLinkSpeedGbps `json:"CapableLinkSpeedGbps,omitempty"`
+	CapableLinkSpeedGbps        []int                  `json:"CapableLinkSpeedGbps,omitempty"`
 	ConfiguredNetworkLinks      []CapableLinkSpeedGbps `json:"ConfiguredNetworkLinks,omitempty"`
 }
 
 // CapableLinkSpeedGbps redfish model
 type CapableLinkSpeedGbps struct {
-	ConfiguredLinkSpeedGbps []float64 `json:"ConfiguredLinkSpeedGbps,omitempty"`
-	ConfiguredWidth         int       `json:"ConfiguredWidth,omitempty"`
+	ConfiguredLinkSpeedGbps float64 `json:"ConfiguredLinkSpeedGbps,omitempty"`
+	ConfiguredWidth         int     `json:"ConfiguredWidth,omitempty"`
 }
 
 // PortLinks Port link redfish model
@@ -136,4 +176,5 @@ type PortLinks struct {
 	ConnectedPortsCount       int         `json:"ConnectedPorts@odata.count,omitempty"`
 	ConnectedSwitchPortsCount int         `json:"ConnectedSwitchPorts@odata.count,omitempty"`
 	ConnectedSwitchesCount    int         `json:"ConnectedSwitches@odata.count,omitempty"`
+	EthernetInterfaces        []Link      `json:"EthernetInterfaces,omitempty"`
 }

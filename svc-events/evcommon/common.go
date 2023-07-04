@@ -18,9 +18,7 @@ package evcommon
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -363,9 +361,9 @@ func (st *StartUpInterface) getSubscribedEventsDetails(serverAddress string) (st
 	var eventTypes []string
 	var emptyListFlag bool
 
-	deviceIPAddress, errorMessage := GetIPFromHostName(serverAddress)
-	if errorMessage != "" {
-		return "", nil, fmt.Errorf(errorMessage)
+	deviceIPAddress, err := common.GetIPFromHostName(serverAddress)
+	if err != nil {
+		return "", nil, err
 	}
 	searchKey := GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
 	deviceSubscription, err := st.GetDeviceSubscriptions(searchKey)
@@ -423,8 +421,8 @@ func getTypes(subscription string) []string {
 func updateDeviceSubscriptionLocation(ctx context.Context, r map[string]string) error {
 	for serverAddress, location := range r {
 		if location != "" {
-			deviceIPAddress, errorMessage := GetIPFromHostName(serverAddress)
-			if errorMessage != "" {
+			deviceIPAddress, err := common.GetIPFromHostName(serverAddress)
+			if err != nil {
 				continue
 			}
 			searchKey := GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
@@ -484,24 +482,6 @@ func GenEventErrorResponse(errorMessage string, StatusMessage string, httpStatus
 	}
 	respPtr.Response = args.CreateGenericErrorResponse()
 
-}
-
-// GetIPFromHostName - look up the ip from the fqdn
-func GetIPFromHostName(fqdn string) (string, string) {
-	host, _, err := net.SplitHostPort(fqdn)
-	if err != nil {
-		host = fqdn
-	}
-	addr, err := net.LookupIP(host)
-	var errorMessage string
-	if err != nil || len(addr) < 1 {
-		errorMessage = "Can't lookup the ip from host name"
-		if err != nil {
-			errorMessage = "Can't lookup the ip from host name" + err.Error()
-		}
-		return "", errorMessage
-	}
-	return fmt.Sprintf("%v", addr[0]), errorMessage
 }
 
 // GetSearchKey will return search key with regular expression for filtering

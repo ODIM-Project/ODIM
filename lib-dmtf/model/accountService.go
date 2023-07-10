@@ -290,8 +290,8 @@ type ExternalAccountProvider struct {
 	LDAPService         *LDAPService       `json:"LDAPService,omitempty"`
 	OAuth2Service       *OAuth2Service     `json:"OAuth2Service,omitempty"`
 	PasswordSet         bool               `json:"PasswordSet,omitempty"`
-	Priority            int                `json:"Priority"`
-	RemoteRoleMapping   *RoleMapping       `json:"RemoteRoleMapping"`
+	Priority            int                `json:"Priority,omitempty"`
+	RemoteRoleMapping   []*RoleMapping     `json:"RemoteRoleMapping,omitempty"`
 	ServiceAddresses    []string           `json:"ServiceAddresses,omitempty"`
 	ServiceEnabled      bool               `json:"ServiceEnabled,omitempty"`
 	TACACSplusService   *TACACSplusService `json:"TACACSplusService,omitempty"`

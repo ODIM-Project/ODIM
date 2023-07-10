@@ -48,9 +48,7 @@ var (
 // and It will check the credentials of user, if user is authorized
 // then create session for the same
 func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCreateRequest) (*sessionproto.SessionCreateResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var err error
 	var resp sessionproto.SessionCreateResponse
 	response, sessionID := CreateNewSessionFunc(ctx, req)
@@ -75,9 +73,7 @@ func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCr
 // It will get all the session tokens from the db and from the session token get the session details
 // if session id is matched with recieved session id ten delete the session
 func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	response := DeleteSessionFunc(ctx, req)
 	var resp sessionproto.SessionResponse
 	body, err := MarshalFunc(response.Body)
@@ -89,10 +85,7 @@ func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRe
 	}
 	l.LogWithFields(ctx).Debugf("outgoing response of request to delete the session: %s", string(body))
 	resp.Body = body
-	resp.StatusCode = response.StatusCode
-	resp.StatusMessage = response.StatusMessage
-	resp.Header = response.Header
-	resp.Body = body
+	resp = mapSessionResponse(resp, response, body)
 	return &resp, nil
 }
 
@@ -100,9 +93,7 @@ func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRe
 // It will get all the session tokens from the db and from the session token get the session details
 // if session id is matched with recieved session id then delete the session
 func (s *Session) GetSession(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp sessionproto.SessionResponse
 	response := GetSessionFunc(ctx, req)
 	body, err := MarshalFunc(response.Body)
@@ -112,20 +103,14 @@ func (s *Session) GetSession(ctx context.Context, req *sessionproto.SessionReque
 		return &resp, nil
 	}
 	l.LogWithFields(ctx).Debugf("outgoing response of request to get the session: %s", string(body))
-	resp.Body = body
-	resp.StatusCode = response.StatusCode
-	resp.StatusMessage = response.StatusMessage
-	resp.Header = response.Header
-	resp.Body = body
+	resp = mapSessionResponse(resp, response, body)
 	return &resp, nil
 }
 
 // GetSessionUserName is a rpc call to get session username
 // It will get all the session username from the session
 func (s *Session) GetSessionUserName(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUserName, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	resp, err := GetSessionUserNameFunc(ctx, req)
 	return resp, err
 }
@@ -144,9 +129,7 @@ func (s *Session) GetSessionUserRoleID(ctx context.Context, req *sessionproto.Se
 // and it will call GetAllActiveSessions from the session package
 // and respond all the sessionresponse values along with error if there is.
 func (s *Session) GetAllActiveSessions(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp sessionproto.SessionResponse
 	response := GetAllActiveSessionsFunc(ctx, req)
 	body, err := MarshalFunc(response.Body)
@@ -158,10 +141,7 @@ func (s *Session) GetAllActiveSessions(ctx context.Context, req *sessionproto.Se
 	}
 	l.LogWithFields(ctx).Debugf("outgoing response of request to get all active sessions: %s", string(body))
 	resp.Body = body
-	resp.StatusCode = response.StatusCode
-	resp.StatusMessage = response.StatusMessage
-	resp.Header = response.Header
-	resp.Body = body
+	resp = mapSessionResponse(resp, response, body)
 	return &resp, nil
 
 }
@@ -169,9 +149,7 @@ func (s *Session) GetAllActiveSessions(ctx context.Context, req *sessionproto.Se
 // GetSessionService is a rpc call to get session service
 // which basically checks if the session service is enabled or not
 func (s *Session) GetSessionService(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionResponse, error) {
-	ctx = common.GetContextData(ctx)
-	ctx = context.WithValue(ctx, common.ThreadName, common.SessionService)
-	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = getContext(ctx, common.SessionService)
 	var resp sessionproto.SessionResponse
 	response := GetSessionServiceFunc(ctx, req)
 	body, err := MarshalFunc(response.Body)
@@ -181,10 +159,7 @@ func (s *Session) GetSessionService(ctx context.Context, req *sessionproto.Sessi
 		l.LogWithFields(ctx).Printf(response.StatusMessage)
 		return &resp, nil
 	}
-	resp.StatusCode = response.StatusCode
-	resp.StatusMessage = response.StatusMessage
-	resp.Header = response.Header
-	resp.Body = body
+	resp = mapSessionResponse(resp, response, body)
 	return &resp, nil
 
 }
@@ -201,4 +176,21 @@ func getCommonResponse(statusMessage string) asresponse.RedfishSessionResponse {
 			},
 		},
 	}
+}
+
+// mapSessionResponse maps the response fields to Sessionresponse object
+func mapSessionResponse(resp sessionproto.SessionResponse, response response.RPC, body []byte) sessionproto.SessionResponse {
+	resp.StatusCode = response.StatusCode
+	resp.StatusMessage = response.StatusMessage
+	resp.Header = response.Header
+	resp.Body = body
+
+	return resp
+}
+
+func getContext(ctx context.Context, service string) context.Context {
+	ctx = common.GetContextData(ctx)
+	ctx = context.WithValue(ctx, common.ThreadName, service)
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	return ctx
 }

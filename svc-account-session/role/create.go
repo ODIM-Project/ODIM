@@ -27,6 +27,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
@@ -84,17 +85,7 @@ func Create(ctx context.Context, req *roleproto.RoleRequest, session *asmodel.Se
 		return response
 	} else if err := validate.Var(createRoleReq.ID, "required,is-empty,excludesall=!@#?%&$*"); err != nil {
 		errorMessage := errorLogPrefix + "Invalid create role request"
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: response.PropertyValueNotInList,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{createRoleReq.ID, "RoleId"},
-				},
-			},
-		}
+		args := account.GetResponseArgs(response.PropertyValueNotInList, errorMessage, []interface{}{createRoleReq.ID, "RoleId"})
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.PropertyValueNotInList
 		resp.Body = args.CreateGenericErrorResponse()
@@ -108,34 +99,14 @@ func Create(ctx context.Context, req *roleproto.RoleRequest, session *asmodel.Se
 		errorMessage := errorLogPrefix + "User does not have the privilege of creating a new role"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: status.Message,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{},
-				},
-			},
-		}
+		args := account.GetResponseArgs(status.Message, errorMessage, []interface{}{})
 		resp.Body = args.CreateGenericErrorResponse()
 		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 	if len(createRoleReq.AssignedPrivileges) == 0 && len(createRoleReq.OEMPrivileges) == 0 {
 		errorMessage := errorLogPrefix + "Both AssignedPrivileges and OemPrivileges cannot be empty."
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: response.PropertyMissing,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{"AssignedPrivileges/OemPrivileges"},
-				},
-			},
-		}
+		args := account.GetResponseArgs(response.PropertyMissing, errorMessage, []interface{}{"AssignedPrivileges/OemPrivileges"})
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.PropertyMissing
 		resp.Body = args.CreateGenericErrorResponse()
@@ -149,17 +120,7 @@ func Create(ctx context.Context, req *roleproto.RoleRequest, session *asmodel.Se
 			errorMessage := errorLogPrefix + err.Error()
 			resp.StatusCode = int32(status.Code)
 			resp.StatusMessage = status.Message
-			args := response.Args{
-				Code:    response.GeneralError,
-				Message: "",
-				ErrorArgs: []response.ErrArgs{
-					response.ErrArgs{
-						StatusMessage: status.Message,
-						ErrorMessage:  errorMessage,
-						MessageArgs:   messageArgs,
-					},
-				},
-			}
+			args := account.GetResponseArgs(status.Message, errorMessage, messageArgs)
 			resp.Body = args.CreateGenericErrorResponse()
 			l.LogWithFields(ctx).Error(errorMessage)
 			return resp
@@ -171,17 +132,7 @@ func Create(ctx context.Context, req *roleproto.RoleRequest, session *asmodel.Se
 			errorMessage := errorLogPrefix + err.Error()
 			resp.StatusCode = int32(status.Code)
 			resp.StatusMessage = status.Message
-			args := response.Args{
-				Code:    response.GeneralError,
-				Message: "",
-				ErrorArgs: []response.ErrArgs{
-					response.ErrArgs{
-						StatusMessage: status.Message,
-						ErrorMessage:  errorMessage,
-						MessageArgs:   messageArgs,
-					},
-				},
-			}
+			args := account.GetResponseArgs(status.Message, errorMessage, messageArgs)
 			resp.Body = args.CreateGenericErrorResponse()
 			l.LogWithFields(ctx).Error(errorMessage)
 			return resp
@@ -205,17 +156,7 @@ func Create(ctx context.Context, req *roleproto.RoleRequest, session *asmodel.Se
 	}
 	if isPredefined {
 		errorMessage := errorLogPrefix + "Cannot create pre-defined roles"
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: response.InsufficientPrivilege,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{},
-				},
-			},
-		}
+		args := account.GetResponseArgs(response.InsufficientPrivilege, errorMessage, []interface{}{})
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		resp.Body = args.CreateGenericErrorResponse()

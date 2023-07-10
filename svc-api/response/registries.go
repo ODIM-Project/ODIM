@@ -12,10 +12,10 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package response ...
+// Package response ...
 package response
 
-//MessageRegistryFileID defines the message registry file id
+// MessageRegistryFileID defines the message registry file id
 type MessageRegistryFileID struct {
 	ID           string     `json:"Id"`
 	OdataContext string     `json:"@odata.context"`
@@ -29,7 +29,7 @@ type MessageRegistryFileID struct {
 	Registry     string     `json:"Registry"`
 }
 
-//Location defines the locations/Paths of the file to retrieve.
+// Location defines the locations/Paths of the file to retrieve.
 type Location struct {
 	ArchiveFile    string `json:"ArchiveFile,omitempty"`
 	ArchiveURI     string `json:"ArchiveUri,omitempty"`

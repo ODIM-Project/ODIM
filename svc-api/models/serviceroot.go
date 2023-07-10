@@ -12,10 +12,10 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package models ...
+// Package models ...
 package models
 
-//ServiceRoot struct definition
+// ServiceRoot struct definition
 type ServiceRoot struct {
 	OdataContext              string       `json:"@odata.context"`
 	Etag                      string       `json:"@odata.etag,omitempty"`
@@ -63,7 +63,7 @@ type ServiceRoot struct {
 	LicenseService            *Service     `json:"LicenseService,omitempty"`
 }
 
-//PFSupported struct definition
+// PFSupported struct definition
 type PFSupported struct {
 	ExcerptQuery    bool         `json:"ExcerptQuery"`
 	ExpandQuery     *ExpandQuery `json:"ExpandQuery:omitempty"`
@@ -72,7 +72,7 @@ type PFSupported struct {
 	SelectQuery     bool         `json:"SelectQuery"`
 }
 
-//ExpandQuery struct definition
+// ExpandQuery struct definition
 type ExpandQuery struct {
 	ExpandAll bool `json:"ExpandAll"`
 	Levels    bool `json:"Levels"`
@@ -81,21 +81,21 @@ type ExpandQuery struct {
 	NoLinks   bool `json:"NoLinks"`
 }
 
-//Service struct definition
+// Service struct definition
 type Service struct {
 	OdataID string `json:"@odata.id"`
 }
 
-//Links struct definition
+// Links struct definition
 type Links struct {
 	Sessions Sessions `json:"Sessions"`
 }
 
-//Sessions struct definition
+// Sessions struct definition
 type Sessions struct {
 	OdataID string `json:"@odata.id"`
 }
 
-//OEM struct definition
+// OEM struct definition
 type OEM struct {
 }

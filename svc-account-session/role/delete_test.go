@@ -24,6 +24,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"golang.org/x/crypto/sha3"
 )
@@ -108,61 +109,15 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock admin user %v", err)
 	}
-	errArg := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to delete role someRole: The session token doesn't have required privilege",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArgs := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "failed to delete role xyz: Unable to get role details: error while trying to get role details: no data with the with key xyz found",
-				MessageArgs:   []interface{}{"Role", "xyz"},
-			},
-		},
-	}
-	errArgsu := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to authorize session token: error while trying to get session details: error while trying to get the session from DB: no data with the with key invalid-token found",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArgu := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to delete role someOtherRole: A predefined role cannot be deleted.",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArgus := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceInUse,
-				ErrorMessage:  "failed to delete role someUserDefinedRole: Role is assigned to a user",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
+	errArg := account.GetResponseArgs(response.InsufficientPrivilege, "failed to delete role someRole: The session token doesn't have required privilege", []interface{}{})
+
+	errArgs := account.GetResponseArgs(response.ResourceNotFound, "failed to delete role xyz: Unable to get role details: error while trying to get role details: no data with the with key xyz found", []interface{}{"Role", "xyz"})
+
+	errArgsu := account.GetResponseArgs(response.NoValidSession, "Unable to authorize session token: error while trying to get session details: error while trying to get the session from DB: no data with the with key invalid-token found", []interface{}{})
+
+	errArgu := account.GetResponseArgs(response.InsufficientPrivilege, "failed to delete role someOtherRole: A predefined role cannot be deleted.", []interface{}{})
+
+	errArgus := account.GetResponseArgs(response.ResourceInUse, "failed to delete role someUserDefinedRole: Role is assigned to a user", []interface{}{})
 	ctx := mockContext()
 	type args struct {
 		req *roleproto.DeleteRoleRequest

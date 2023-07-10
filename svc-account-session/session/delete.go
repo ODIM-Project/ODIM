@@ -23,6 +23,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
@@ -34,18 +35,7 @@ import (
 func DeleteSession(ctx context.Context, req *sessionproto.SessionRequest) response.RPC {
 	var resp response.RPC
 	errorLogPrefix := "failed to delete session : "
-	errorArgs := []response.ErrArgs{
-		response.ErrArgs{
-			StatusMessage: "",
-			ErrorMessage:  "",
-			MessageArgs:   []interface{}{},
-		},
-	}
-	args := &response.Args{
-		Code:      response.GeneralError,
-		Message:   "",
-		ErrorArgs: errorArgs,
-	}
+	args := account.GetResponseArgs("", "", []interface{}{})
 	l.LogWithFields(ctx).Info("Validating the request to delete the session")
 	currentSession, serr := asmodel.GetSession(req.SessionToken)
 	if serr != nil {
@@ -93,8 +83,8 @@ func DeleteSession(ctx context.Context, req *sessionproto.SessionRequest) respon
 			errorMessage := errorLogPrefix + "Insufficient privileges"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
-			errorArgs[0].ErrorMessage = errorMessage
-			errorArgs[0].StatusMessage = resp.StatusMessage
+			args.ErrorArgs[0].ErrorMessage = errorMessage
+			args.ErrorArgs[0].StatusMessage = resp.StatusMessage
 			resp.Body = args.CreateGenericErrorResponse()
 			auth.CustomAuthLog(ctx, req.SessionToken, errorMessage, resp.StatusCode)
 			return resp
@@ -105,9 +95,9 @@ func DeleteSession(ctx context.Context, req *sessionproto.SessionRequest) respon
 	l.LogWithFields(ctx).Error(errorMessage)
 	resp.StatusCode = http.StatusNotFound
 	resp.StatusMessage = response.ResourceNotFound
-	errorArgs[0].ErrorMessage = errorMessage
-	errorArgs[0].StatusMessage = resp.StatusMessage
-	errorArgs[0].MessageArgs = []interface{}{"Session", req.SessionId}
+	args.ErrorArgs[0].ErrorMessage = errorMessage
+	args.ErrorArgs[0].StatusMessage = resp.StatusMessage
+	args.ErrorArgs[0].MessageArgs = []interface{}{"Session", req.SessionId}
 	resp.Body = args.CreateGenericErrorResponse()
 	return resp
 }

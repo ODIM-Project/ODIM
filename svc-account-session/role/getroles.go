@@ -26,6 +26,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
@@ -55,17 +56,7 @@ func GetRole(ctx context.Context, req *roleproto.GetRoleRequest, session *asmode
 		errorMessage := errLogPrefix + "User does not have the privilege of viewing the role"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: status.Message,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{},
-				},
-			},
-		}
+		args := account.GetResponseArgs(status.Message, errorMessage, []interface{}{})
 		resp.Body = args.CreateGenericErrorResponse()
 		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp
@@ -79,17 +70,7 @@ func GetRole(ctx context.Context, req *roleproto.GetRoleRequest, session *asmode
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
 			messageArgs := []interface{}{"Role", req.Id}
-			args := response.Args{
-				Code:    response.GeneralError,
-				Message: "",
-				ErrorArgs: []response.ErrArgs{
-					response.ErrArgs{
-						StatusMessage: resp.StatusMessage,
-						ErrorMessage:  errorMessage,
-						MessageArgs:   messageArgs,
-					},
-				},
-			}
+			args := account.GetResponseArgs(resp.StatusMessage, errorMessage, messageArgs)
 			resp.Body = args.CreateGenericErrorResponse()
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
@@ -137,17 +118,7 @@ func GetAllRoles(ctx context.Context, session *asmodel.Session) response.RPC {
 		errorMessage := errLogPrefix + "User does not have the privilege of viewing the roles"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: status.Message,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{},
-				},
-			},
-		}
+		args := account.GetResponseArgs(status.Message, errorMessage, []interface{}{})
 		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		resp.Body = args.CreateGenericErrorResponse()
 		return resp

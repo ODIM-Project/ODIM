@@ -348,7 +348,17 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Severity:   "Critical",
 					Resolution: "Provide a valid URI and resubmit the request.",
 				})
+		case CreateLimitReachedForResource:
+			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
+				Msg{
+					OdataType:  ErrorMessageOdataType,
+					MessageID:  GeneralError,
+					Message:    "The create operation failed because the resource has reached the limit of possible resources.",
+					Severity:   "Critical",
+					Resolution: "Either delete resources and resubmit the request if the operation failed or do not resubmit the request.",
+				})
 		}
+
 	}
 	return e
 }

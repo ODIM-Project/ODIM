@@ -83,10 +83,15 @@ const (
 	NoOperation = BaseVersion + "NoOperation"
 	// RateLimitExceeded  defines exceded the number of requests/resources.
 	RateLimitExceeded = "RateLimitExceeded"
-	// SessionLimitExceeded Indicates that a session establishment has been requested but the operation failed due to the number of simultaneous sessions exceeding the limit of the implementation.
+	// SessionLimitExceeded Indicates that a session establishment has been
+	// requested but the operation failed due to the number of simultaneous
+	// sessions exceeding the limit of the implementation.
 	SessionLimitExceeded = BaseVersion + "SessionLimitExceeded"
 	// InvalidURI defines the status message at the time of URL Not Found
 	InvalidURI = BaseVersion + "InvalidURI"
+	//Indicates that no more resources can be created on the resource as
+	// it has reached its create limit.
+	CreateLimitReachedForResource = BaseVersion + "CreateLimitReachedForResource"
 )
 
 // Response holds the generic response from odimra

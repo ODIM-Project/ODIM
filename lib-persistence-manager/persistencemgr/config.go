@@ -17,9 +17,8 @@ package persistencemgr
 
 import (
 	"sync"
-	"time"
 
-	"github.com/gomodule/redigo/redis"
+	redis "github.com/go-redis/redis"
 )
 
 // Config is the configuration for db which is set by the wrapper package.
@@ -40,9 +39,8 @@ type Config struct {
 
 // ConnPool is the established connection
 type ConnPool struct {
-	ReadPool        *redis.Pool
-	WritePool       *redis.Pool
-	MasterIP        string
-	PoolUpdatedTime time.Time
-	Mux             sync.Mutex
+	ReadPool  *redis.Client
+	WritePool *redis.Client
+	MasterIP  string
+	Mux       sync.Mutex
 }

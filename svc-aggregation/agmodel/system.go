@@ -364,19 +364,21 @@ func DeleteComputeSystem(index int, key string) *errors.Error {
 		return errors.PackError(err.ErrNo(), "error while trying to get ComputerSystem details: ", err.Error())
 	}
 	if len(computeData) == 1 {
+		var deleteItems []string
 		if inventoryData, err = connPool.GetAllMatchingDetails("FirmwareInventory", systemID); err != nil {
 			return errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
 		}
 		for _, value := range inventoryData {
-			if err = connPool.Delete("FirmwareInventory", value); err != nil {
-				return errors.PackError(err.ErrNo(), "error while trying to delete compute details: ", err.Error())
-			}
+			deleteItems = append(deleteItems, "FirmwareInventory:"+value)
 		}
 		if inventoryData, err = connPool.GetAllMatchingDetails("SoftwareInventory", systemID); err != nil {
 			return errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
 		}
 		for _, value := range inventoryData {
-			if err = connPool.Delete("SoftwareInventory", value); err != nil {
+			deleteItems = append(deleteItems, "SoftwareInventory:"+value)
+		}
+		if len(deleteItems) > 1 {
+			if err = connPool.DeleteMultipleKeys(deleteItems); err != nil {
 				return errors.PackError(err.ErrNo(), "error while trying to delete compute details: ", err.Error())
 			}
 		}
@@ -612,6 +614,25 @@ func GetResourceDetails(ctx context.Context, key string) (string, *errors.Error)
 		return "", errors.PackError(err.ErrNo(), err)
 	}
 	resourceData, err := conn.GetResourceDetails(key)
+	if err != nil {
+		return "", errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
+	}
+	var resource string
+	if errs := json.Unmarshal([]byte(resourceData), &resource); errs != nil {
+		return "", errors.PackError(errors.UndefinedErrorType, errs)
+	}
+	l.LogWithFields(ctx).Debugf("resource details: %s", resource)
+	return resource, nil
+}
+
+// GetResourceDetailsBytableName fetches a resource from database using key and table name
+
+func GetResourceDetailsBytableName(ctx context.Context, table, key string) (string, *errors.Error) {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return "", errors.PackError(err.ErrNo(), err)
+	}
+	resourceData, err := conn.Read(table, key)
 	if err != nil {
 		return "", errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
 	}
@@ -1035,6 +1056,18 @@ func Delete(table, key string, dbtype common.DbType) *errors.Error {
 	return nil
 }
 
+// DeleteMultipleKeys is used to delete multiple keys from DB using pipeline
+func DeleteMultipleKeys(keys []string, dbtype common.DbType) *errors.Error {
+	conn, err := common.GetDBConnection(dbtype)
+	if err != nil {
+		return err
+	}
+	if err = conn.DeleteMultipleKeys(keys); err != nil {
+		return err
+	}
+	return nil
+}
+
 // UpdateConnectionMethod updates the Connection Method details
 func UpdateConnectionMethod(connectionMethod ConnectionMethod, key string) *errors.Error {
 	conn, err := common.GetDBConnection(common.OnDisk)
@@ -1083,7 +1116,7 @@ func SavePluginManagerInfo(body []byte, table string, key string) error {
 
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
-		return fmt.Errorf("Unable to save the plugin data with SavePluginManagerInfo: %v", err.Error())
+		return fmt.Errorf("unable to save the plugin data with SavePluginManagerInfo: %v", err.Error())
 	}
 	if err := conn.Create(table, key, string(body)); err != nil {
 		return errors.PackError(err.ErrNo(), "Unable to save the plugin data with SavePluginManagerInfo:  duplicate UUID: ", err.Error())

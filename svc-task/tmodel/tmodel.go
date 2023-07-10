@@ -177,6 +177,18 @@ func DeleteTaskFromDB(ctx context.Context, t *Task) error {
 	return nil
 }
 
+// DeleteMultipleTaskFromDB is used to delete multiple tasks from DB using pipeline
+func DeleteMultipleTaskFromDB(ctx context.Context, t []string) error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.DeleteMultipleKeys(t); err != nil {
+		return fmt.Errorf("error while trying to delete the task: %v", err.Error())
+	}
+	return nil
+}
+
 // GetTaskStatus is to retrieve the task data already present in db
 // Takes:
 //
@@ -211,13 +223,17 @@ func GetTaskStatus(ctx context.Context, taskID string, db common.DbType) (*Task,
 // GetMultipleTaskKeys is used to get multiple keys
 func GetMultipleTaskKeys(ctx context.Context, taskIDs []interface{}, db common.DbType) (*[]Task, error) {
 	var task []Task
+	var taskList []string
 	subtask := new(Task)
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		l.LogWithFields(ctx).Error("GetTaskStatus : error while trying to get DB Connection : " + err.Error())
 		return &task, fmt.Errorf("error while trying to connnect to DB: %v", err.Error())
 	}
-	taskData, err := connPool.ReadMultipleKeys(taskIDs)
+	for _, value := range taskIDs {
+		taskList = append(taskList, value.(string))
+	}
+	taskData, err := connPool.ReadMultipleKeys(taskList)
 	if err != nil {
 		l.LogWithFields(ctx).Error("GetTaskStatus : Unable to read taskdata from DB: " + err.Error())
 		return &task, fmt.Errorf("error while trying to read from DB: %v", err.Error())

@@ -362,7 +362,6 @@ func (e *ExternalInterface) addCompute(ctx context.Context, taskID, targetURI, p
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil), "", nil
 	}
-
 	err = json.Unmarshal([]byte(data), &managerData)
 	if err != nil {
 		errorMessage := "error unmarshalling manager details: " + err.Error()

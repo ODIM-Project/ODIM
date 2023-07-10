@@ -76,6 +76,8 @@ var SupportedConnectionMethodTypes = map[string]bool{
 var (
 	//GetResourceDetailsFunc function pointer for the agmodel.GetResourceDetails
 	GetResourceDetailsFunc = agmodel.GetResourceDetails
+	//GetResourceDetailsBytableNameFunc function pointer for the agmodel.GetResourceDetailsBytableName
+	GetResourceDetailsBytableNameFunc = agmodel.GetResourceDetailsBytableName
 	// GetAllKeysFromTableFunc function pointer for the agmodel.GetAllKeysFromTable
 	GetAllKeysFromTableFunc = agmodel.GetAllKeysFromTable
 	//GetAllSystemsFunc function pointer for the agmodel.GetAllSystems
@@ -120,6 +122,24 @@ func GetStorageResources(ctx context.Context, oid string) map[string]interface{}
 	err := JSONUnMarshalFunc([]byte(data), &resourceData)
 	if err != nil {
 		l.LogWithFields(ctx).Error("Unable to unmarshal  the data: " + err.Error())
+		return resourceData
+	}
+
+	return resourceData
+}
+
+// GetStorageResourcesBytableName will get the resource details from the database for the given odata id and table name
+func GetStorageResourcesBytableName(ctx context.Context, table, oid string) map[string]interface{} {
+	resourceData := make(map[string]interface{})
+	data, dbErr := GetResourceDetailsBytableNameFunc(ctx, table, oid)
+	if dbErr != nil {
+		l.LogWithFields(ctx).Error("Unable to get system data : " + dbErr.Error())
+		return resourceData
+	}
+	// unmarshall the resourceData
+	err := JSONUnMarshalFunc([]byte(data), &resourceData)
+	if err != nil {
+		l.LogWithFields(ctx).Error("Unable to unmarshall  the data: " + err.Error())
 		return resourceData
 	}
 

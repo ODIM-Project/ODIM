@@ -89,6 +89,7 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 		l.LogWithFields(ctx).Errorln(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
+
 	if len(indexList) > 0 {
 		errMsg := fmt.Sprintf("Manager address already exist %v", ipAddr)
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"ComputerSystem", "HostName", ipAddr}, taskInfo)

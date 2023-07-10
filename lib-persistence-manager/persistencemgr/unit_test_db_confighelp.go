@@ -29,6 +29,7 @@ func MockDBConnection(t *testing.T) (*ConnPool, *errors.Error) {
 	if err != nil {
 		return nil, errors.PackError(errors.UndefinedErrorType, "error while trying to initiate mock db: ", err)
 	}
+
 	return cfg.Connection()
 }
 
@@ -60,6 +61,7 @@ func GetMockDBConfig() (*Config, *errors.Error) {
 		MaxIdleConns:          config.DefaultDBMaxIdleConns,
 		MaxActiveConns:        config.DefaultDBMaxActiveConns,
 		RedisInMemoryPassword: []byte("redis_password"),
+		RedisOnDiskPassword:   []byte("redis_password"),
 	}
 	config := &Config{
 		Port:     config.Data.DBConf.InMemoryPort,

@@ -32,7 +32,7 @@ docker_dep_pkgs:
 docker_pkgs:
         #  - docker-ce=5:20.10.12~3-0~ubuntu-focal
         #  - docker-ce-cli=5:20.10.12~3-0~ubuntu-focal
-  - containerd.io=1.4.12-1
+  - containerd.io=1.6.4-1
   - pigz
 docker_pkgs_wo_version:
   - docker-ce

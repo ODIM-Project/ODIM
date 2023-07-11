@@ -17,7 +17,7 @@ COPY install/Docker/dockerfiles/build/accountSession.sh .
 RUN ./accountSession.sh
 
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ARG ODIMRA_USER_ID
 ARG ODIMRA_GROUP_ID

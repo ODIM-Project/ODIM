@@ -26,7 +26,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package lputilities ...
+// Package lputilities ...
 package lputilities
 
 import (
@@ -60,7 +60,7 @@ func GetPlainText(password []byte) ([]byte, error) {
 			return []byte{}, err
 		}
 	}
-	key, err := x509.ParsePKCS1PrivateKey(b)
+	key, err := x509.ParsePKCS8PrivateKey(b)
 	if err != nil {
 		log.Info(err.Error())
 		return []byte{}, err
@@ -71,13 +71,13 @@ func GetPlainText(password []byte) ([]byte, error) {
 	return rsa.DecryptOAEP(
 		hash,
 		rand.Reader,
-		key,
+		key.(*rsa.PrivateKey),
 		password,
 		nil,
 	)
 }
 
-//Status holds the Status of plugin it will be intizaied during startup time
+// Status holds the Status of plugin it will be intizaied during startup time
 var Status lpresponse.Status
 
 // PluginStartTime hold the time from which plugin started

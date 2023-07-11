@@ -13,12 +13,12 @@
 # under the License.
 
 # This is Dockerfile to build kafka image
-FROM ubuntu:20.04 as kafka-build
+FROM ubuntu:22.04 as kafka-build
 
 LABEL version="3.0"
-LABEL ubuntuVersion="20.04"
+LABEL ubuntuVersion="22.04"
 LABEL kafkaVersion="3.4.0"
-LABEL description="Kafka docker image built on top of ubuntu:20.04"
+LABEL description="Kafka docker image built on top of ubuntu:22.04"
 
 WORKDIR /kafka/
 

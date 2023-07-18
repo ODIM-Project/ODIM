@@ -171,16 +171,23 @@ func decryptRSAOAEPEncryptedPasswords(encryptedPassword string) ([]byte, error) 
 }
 
 func bytesToPrivateKey(privateKey []byte) (*rsa.PrivateKey, error) {
+	var key *rsa.PrivateKey
 	block, _ := pem.Decode(privateKey)
 	if block == nil {
 		return nil, fmt.Errorf("failed to parse PEM block containing the public key for the RSAPrivateKeyPath:%s",
 			MQ.RedisStreams.RSAPrivateKeyPath)
 	}
 
-	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	pkcs1Key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse DER encoded public key for the RSAPrivateKeyPath:%s with %v",
-			MQ.RedisStreams.RSAPrivateKeyPath, err)
+		pkcs8Key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse DER encoded public key for the RSAPrivateKeyPath:%s with %v",
+				MQ.RedisStreams.RSAPrivateKeyPath, err)
+		}
+		key = pkcs8Key.(*rsa.PrivateKey)
+	} else {
+		key = pkcs1Key
 	}
-	return key.(*rsa.PrivateKey), nil
+	return key, nil
 }

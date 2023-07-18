@@ -46,15 +46,22 @@ func DecryptWithPrivateKey(ciphertext []byte) ([]byte, error) {
 			return nil, fmt.Errorf("error while trying to decrypt pem block: %v", err)
 		}
 	}
-	key, err := x509.ParsePKCS8PrivateKey(b)
+	var key *rsa.PrivateKey
+	pkcs1Key, err := x509.ParsePKCS1PrivateKey(b)
 	if err != nil {
-		return nil, fmt.Errorf("error while parsing private key: %v", err)
+		pkcs8Key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("error while parsing private key: %v", err)
+		}
+		key = pkcs8Key.(*rsa.PrivateKey)
+	} else {
+		key = pkcs1Key
 	}
 	hash := sha512.New()
 	plainText, err := rsa.DecryptOAEP(
 		hash,
 		rand.Reader,
-		key.(*rsa.PrivateKey),
+		key,
 		ciphertext,
 		nil,
 	)

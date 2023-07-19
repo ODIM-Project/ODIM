@@ -63,6 +63,7 @@ func GetPlainText(ctx context.Context, password []byte) ([]byte, error) {
 	enc := x509.IsEncryptedPEMBlock(block)
 	b := block.Bytes
 	var err error
+	var key *rsa.PrivateKey
 	if enc {
 		b, err = x509.DecryptPEMBlock(block, nil)
 		if err != nil {
@@ -70,10 +71,16 @@ func GetPlainText(ctx context.Context, password []byte) ([]byte, error) {
 			return []byte{}, err
 		}
 	}
-	key, err := x509.ParsePKCS1PrivateKey(b)
+	pkcs1Key, err := x509.ParsePKCS1PrivateKey(b)
 	if err != nil {
-		l.LogWithFields(ctx).Error(err.Error())
-		return []byte{}, err
+		pkcs8Key, err := x509.ParsePKCS8PrivateKey(b)
+		if err != nil {
+			l.LogWithFields(ctx).Error(err.Error())
+			return []byte{}, err
+		}
+		key = pkcs8Key.(*rsa.PrivateKey)
+	} else {
+		key = pkcs1Key
 	}
 
 	hash := sha512.New()

@@ -381,10 +381,18 @@ func decryptRSAOAEPEncryptedPasswords(passwordFilePath string) ([]byte, error) {
 			Data.KeyCertConf.RSAPrivateKeyPath)
 	}
 
-	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	var privateKey *rsa.PrivateKey
+
+	pkcs1Key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse DER encoded public key for the RSAPrivateKeyPath:%s with %v",
-			Data.KeyCertConf.RSAPrivateKeyPath, err)
+		pkcs8Key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse DER encoded public key for the RSAPrivateKeyPath:%s with %v",
+				Data.KeyCertConf.RSAPrivateKeyPath, err)
+		}
+		privateKey = pkcs8Key.(*rsa.PrivateKey)
+	} else {
+		privateKey = pkcs1Key
 	}
 
 	cipherText, err := ioutil.ReadFile(passwordFilePath)

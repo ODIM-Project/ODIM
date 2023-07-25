@@ -15,6 +15,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -22,16 +23,23 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/fsnotify/fsnotify"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
 const (
 	// NULL is a constant for empty string
-	NULL          = ""
-	hostsFilePath = "/etc/hosts"
-	contentHeader = "# --- User configured entries --- BEGIN"
-	contentFooter = "# --- User configured entries --- END"
+	NULL              = ""
+	hostsFilePath     = "/etc/hosts"
+	contentHeader     = "# --- User configured entries --- BEGIN"
+	contentFooter     = "# --- User configured entries --- END"
+	AddHostActionID   = "1000"
+	AddHostActionName = "AddHosts"
+	AddHostService    = "AddHosts"
 )
 
 var log = logrus.New()
@@ -39,7 +47,23 @@ var log = logrus.New()
 func main() {
 
 	var inputFile string
-
+	hostName := os.Getenv("HOST_NAME")
+	podName := os.Getenv("POD_NAME")
+	pid := os.Getpid()
+	log := logs.Log
+	logs.Adorn(logrus.Fields{
+		"host":       hostName,
+		"process_id": podName + fmt.Sprintf("_%d", pid),
+	})
+	if err := config.SetConfiguration(); err != nil {
+		log.Logger.SetFormatter(&logs.SysLogFormatter{})
+		log.Fatal("Error while trying set up configuration: " + err.Error())
+	}
+	logs.SetFormatter(config.Data.LogFormat)
+	log.Logger.SetOutput(os.Stdout)
+	log.Logger.SetLevel(config.Data.LogLevel)
+	transactionID := uuid.New()
+	ctx := createContext(transactionID.String(), AddHostActionID, AddHostActionName, "1", AddHostService, podName)
 	flag.StringVar(&inputFile, "file", "", "Path of the file which contains hosts info")
 	flag.Parse()
 
@@ -47,7 +71,7 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	go trackConfigFileChanges(inputFile)
+	go trackConfigFileChanges(ctx, inputFile)
 	data, err := ioutil.ReadFile(inputFile)
 	if err != nil {
 		log.Fatal("Failed to read ", err.Error())
@@ -76,14 +100,14 @@ func forever() {
 }
 
 // trackConfigFileChanges monitors the host file using fsnotfiy
-func trackConfigFileChanges(configFilePath string) {
+func trackConfigFileChanges(ctx context.Context, configFilePath string) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Info(err.Error())
+		logs.LogWithFields(ctx).Error(err.Error())
 	}
 	err = watcher.Add(configFilePath)
 	if err != nil {
-		log.Info(err.Error())
+		logs.LogWithFields(ctx).Error(err.Error())
 	}
 	go func() {
 		for {
@@ -94,15 +118,15 @@ func trackConfigFileChanges(configFilePath string) {
 				}
 				log.Info("event:" + fileEvent.String())
 				if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
-					log.Info("modified file:" + fileEvent.Name)
+					logs.LogWithFields(ctx).Info("modified file:" + fileEvent.Name)
 					// update the host file
-					addHost(configFilePath)
+					addHost(ctx, configFilePath)
 				}
 				//Reading file to continue the watch
 				watcher.Add(configFilePath)
 			case err, _ := <-watcher.Errors:
 				if err != nil {
-					log.Info(err.Error())
+					logs.LogWithFields(ctx).Error(err.Error())
 					defer watcher.Close()
 				}
 			}
@@ -110,22 +134,34 @@ func trackConfigFileChanges(configFilePath string) {
 	}()
 }
 
-func addHost(inputFile string) {
+func addHost(ctx context.Context, inputFile string) {
 	data, err := ioutil.ReadFile(inputFile)
 	if err != nil {
-		log.Info("Failed to read file ", err.Error())
+		logs.LogWithFields(ctx).Error("Failed to read file ", err.Error())
 	}
 
 	etcHostData, err := ioutil.ReadFile(hostsFilePath)
 	if err != nil {
-		log.Info(err.Error())
+		logs.LogWithFields(ctx).Error(err.Error())
 	}
 
 	str := strings.Split(string(etcHostData), contentHeader)
 	hostsData := fmt.Sprintf("%s\n%s\n%s\n%s", str[0], contentHeader, data, contentFooter)
 	err = ioutil.WriteFile(hostsFilePath, []byte(hostsData), 0644)
 	if err != nil {
-		log.Info(err.Error())
+		logs.LogWithFields(ctx).Error(err.Error())
 	}
 	return
+}
+
+// createContext creates a new context based on transactionId, actionId, actionName, threadId, threadName, ProcessName
+func createContext(transactionID, actionID, actionName, threadID, threadName, ProcessName string) context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, transactionID)
+	ctx = context.WithValue(ctx, common.ActionID, actionID)
+	ctx = context.WithValue(ctx, common.ActionName, actionName)
+	ctx = context.WithValue(ctx, common.ThreadID, threadID)
+	ctx = context.WithValue(ctx, common.ThreadName, threadName)
+	ctx = context.WithValue(ctx, common.ProcessName, ProcessName)
+	return ctx
 }

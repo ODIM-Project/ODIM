@@ -66,7 +66,7 @@ func (s *Session) CreateSession(ctx context.Context, req *sessionproto.SessionCr
 	resp.StatusCode = response.StatusCode
 	resp.StatusMessage = response.StatusMessage
 	resp.Header = response.Header
-	resp.Header.Set("Location", location)
+	resp.Header["Location"] = location
 	l.LogWithFields(ctx).Info("Header >>>>", resp.Header)
 	return &resp, nil
 }

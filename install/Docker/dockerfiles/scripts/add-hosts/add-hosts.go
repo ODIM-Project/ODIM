@@ -24,8 +24,8 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
-	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/fsnotify/fsnotify"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -55,7 +55,7 @@ func main() {
 		"host":       hostName,
 		"process_id": podName + fmt.Sprintf("_%d", pid),
 	})
-	if err := config.SetConfiguration(); err != nil {
+	if _, err := config.SetConfiguration(); err != nil {
 		log.Logger.SetFormatter(&logs.SysLogFormatter{})
 		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}

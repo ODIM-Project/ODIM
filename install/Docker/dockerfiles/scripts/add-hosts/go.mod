@@ -4,11 +4,11 @@ go 1.19
 
 require (
 	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20230721024733-ec53169c7ef1
-	github.com/ODIM-Project/ODIM/plugin-dell v0.0.0-20230302150954-8d2fcc7e9754
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/google/uuid v1.3.0
 	github.com/sirupsen/logrus v1.8.1
 )
+
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect

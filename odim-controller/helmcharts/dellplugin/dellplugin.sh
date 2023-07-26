@@ -31,7 +31,8 @@ ODIMRA_GROUP_NAME=odimra
 # install should handle any pre-reqs to be performed
 # before installing/adding plugin using odim-controller
 install()
-{
+{	logs_on_console=$(cat $CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
+	if [[ $logs_on_console == "false" ]]
 	logpath=$(grep logPath ${CONFIG_FILE_PATH} | cut -d':' -f2 | xargs)
 	if [[ $? -ne 0 ]] || [[ -z ${logpath} ]]; then
 		echo "[$(date)] -- ERROR -- unable to get configured logPath from ${CONFIG_FILE_PATH}"
@@ -44,6 +45,7 @@ install()
 		echo "[$(date)] -- INFO  -- ${logpath} already exists"
 	fi
 	chown ${ODIMRA_USER_NAME}:${ODIMRA_GROUP_NAME} ${logpath}
+	fi
 }
 
 # install should handle any pre-reqs to be performed

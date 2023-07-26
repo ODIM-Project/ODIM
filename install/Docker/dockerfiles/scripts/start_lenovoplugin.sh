@@ -53,7 +53,7 @@ start_lenovoplugin()
         
 	if [[ $logs_on_console == "true" ]]
         then
-        /bin/add-hosts -file /tmp/host.append
+        /bin/add-hosts -file /tmp/host.append 2>&1 &
         else
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/lenovoplugin_logs/add-hosts.log 2>&1 &
         fi

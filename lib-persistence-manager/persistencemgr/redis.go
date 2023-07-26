@@ -1771,7 +1771,7 @@ func (p *ConnPool) DeleteKey(key string) *errors.Error {
 func (p *ConnPool) EnableKeySpaceNotifier(notifierType, filterType string) *errors.Error {
 	doErr := p.WritePool.ConfigSet(notifierType, filterType).Err()
 	if doErr != nil {
-		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: ", doErr)
+		return errors.PackError(errors.UndefinedErrorType, "error while setting config file : ", doErr)
 	}
 	return nil
 }

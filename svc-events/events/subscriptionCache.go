@@ -37,7 +37,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 
-	redis "github.com/go-redis/redis"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -364,35 +363,26 @@ START:
 		time.Sleep(time.Second * 1)
 		goto START
 	}
-	psc := redis.PubSub(*conn.WritePool.Subscribe())
-	psc.Subscribe(evcommon.AggregateToHostChannelKey, evcommon.DeviceSubscriptionChannelKey,
+	psc := conn.WritePool.PSubscribe(evcommon.AggregateToHostChannelKey, evcommon.DeviceSubscriptionChannelKey,
 		evcommon.SubscriptionChannelKey)
-
 	for {
-		data, _ := psc.Receive()
-		switch v := data.(type) {
-
-		case redis.Message:
-			switch string(v.Pattern) {
-			case evcommon.DeviceSubscriptionChannelKey:
-				err := getAllDeviceSubscriptions(ctx)
-				if err != nil {
-					l.LogWithFields(ctx).Error(err)
-				}
-			case evcommon.SubscriptionChannelKey:
-				err := getAllSubscriptions(ctx)
-				if err != nil {
-					l.LogWithFields(ctx).Error(err)
-				}
-			case evcommon.AggregateToHostChannelKey:
-				err := getAllAggregates(ctx)
-				if err != nil {
-					l.LogWithFields(ctx).Error(err)
-				}
+		data, _ := psc.ReceiveMessage()
+		switch string(data.Pattern) {
+		case evcommon.DeviceSubscriptionChannelKey:
+			err := getAllDeviceSubscriptions(ctx)
+			if err != nil {
+				l.LogWithFields(ctx).Error(err)
 			}
-		case error:
-			logging.Error("Error occurred in redis keySpace notifier publisher ", v)
-			goto START
+		case evcommon.SubscriptionChannelKey:
+			err := getAllSubscriptions(ctx)
+			if err != nil {
+				l.LogWithFields(ctx).Error(err)
+			}
+		case evcommon.AggregateToHostChannelKey:
+			err := getAllAggregates(ctx)
+			if err != nil {
+				l.LogWithFields(ctx).Error(err)
+			}
 		}
 	}
 }

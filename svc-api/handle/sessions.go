@@ -81,9 +81,9 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	//removing host id
 	if resp.StatusCode == http.StatusCreated {
-		resp.Header["Location"] = ctx.Request().Host + "/redfish/v1/SessionService/Sessions/" + resp.SessionId
+		resp.Header["Location"] = "/redfish/v1/SessionService/Sessions/" + resp.SessionId
 	}
 	l.LogWithFields(ctxt).Debugf("response code for creating a session is %d", resp.StatusCode)
 	common.SetResponseHeader(ctx, resp.Header)

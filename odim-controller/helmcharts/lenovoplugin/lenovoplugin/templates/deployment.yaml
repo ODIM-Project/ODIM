@@ -59,9 +59,11 @@ spec:
               path: odimra_kafka_client.key
               mode: 0444
             {{- end }}
+        {{- if not .Values.lenovoplugin.logsOnConsole }}
         - name: lenovoplugin-log
           persistentVolumeClaim:
             claimName: lenovoplugin-log-claim
+        {{- end }}
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       containers:
@@ -79,7 +81,9 @@ spec:
               mountPath: /etc/lenovoplugin_config
             - name: configure-hosts
               mountPath: /tmp
+              {{- if not .Values.lenovoplugin.logsOnConsole }}
             - name: lenovoplugin-log
               mountPath: /var/log/lenovoplugin_logs
+              {{- end }}
             - name: odimra-secret
               mountPath: /etc/odimra_certs

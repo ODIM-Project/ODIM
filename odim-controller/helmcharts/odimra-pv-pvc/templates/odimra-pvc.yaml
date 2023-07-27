@@ -51,6 +51,7 @@ spec:
     requests:
       storage: 100Mi
 ---
+{{- if not .Values.odimra.logsOnConsole }}
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -63,6 +64,7 @@ spec:
   resources:
     requests:
       storage: 100Mi
+{{- end }}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1

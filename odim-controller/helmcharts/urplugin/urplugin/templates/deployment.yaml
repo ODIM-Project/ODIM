@@ -60,9 +60,11 @@ spec:
             - key: redis_ondisk_password
               path: redis_ondisk_password
               mode: 0444
+        {{- if not .Values.urplugin.logsOnConsole }}
         - name: urplugin-log
           persistentVolumeClaim:
             claimName: urplugin-log-claim
+        {{- end }}
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       containers:
@@ -79,7 +81,9 @@ spec:
               mountPath: /etc/urplugin_config
             - name: configure-hosts
               mountPath: /tmp
+            {{- if not .Values.urplugin.logsOnConsole }}
             - name: urplugin-log
               mountPath: /var/log/urplugin_logs
+            {{- end }}
             - name: odimra-secret
               mountPath: /etc/urplugin_certs

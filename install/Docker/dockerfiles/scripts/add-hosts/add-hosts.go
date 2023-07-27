@@ -116,7 +116,6 @@ func trackConfigFileChanges(ctx context.Context, configFilePath string) {
 				if !ok {
 					continue
 				}
-				logs.LogWithFields(ctx).Info("event:" + fileEvent.String())
 				if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
 					logs.LogWithFields(ctx).Info("modified file:" + fileEvent.Name)
 					// update the host file

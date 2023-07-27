@@ -53,7 +53,7 @@ start_urplugin()
 
         if [[ $logs_on_console == "true" ]]
         then
-        /bin/add-hosts -file /tmp/host.append
+        /bin/add-hosts -file /tmp/host.append 
         else
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/urplugin_logs/add-hosts.log 2>&1 &
         fi

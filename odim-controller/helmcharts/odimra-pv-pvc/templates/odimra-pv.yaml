@@ -75,6 +75,7 @@ spec:
   hostPath:
     path: {{ .Values.odimra.zookeeperConfPath | quote }}
 ---
+{{- if not .Values.odimra.logsOnConsole }}
 kind: PersistentVolume
 apiVersion: v1
 metadata:
@@ -112,6 +113,7 @@ spec:
     name: redis-inmemory-data-claim
   hostPath:
     path: {{ .Values.odimra.redisInmemoryDataPath }}
+{{- end }}
 ---
 kind: PersistentVolume
 apiVersion: v1

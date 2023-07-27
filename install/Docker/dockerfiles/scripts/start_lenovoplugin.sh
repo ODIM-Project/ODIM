@@ -41,7 +41,7 @@ run_forever()
 start_lenovoplugin()
 {
 	export PLUGIN_CONFIG_FILE_PATH=/etc/lenovoplugin_config/config.json
-        logs_on_console=$(cat $CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
+        logs_on_console=$(cat $$PLUGIN_CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
         if [[ $logs_on_console == "true" ]]
         then
         /bin/plugin-lenovo 2>&1 &

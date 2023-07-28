@@ -1,4 +1,5 @@
 ---
+{{- if not .Values.urplugin.logsOnConsole }}
 kind: PersistentVolume
 apiVersion: v1
 metadata:
@@ -17,3 +18,4 @@ spec:
     name: urplugin-log-claim
   hostPath:
     path: {{ .Values.urplugin.logPath }}
+{{- end}}

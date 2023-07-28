@@ -41,7 +41,7 @@ run_forever()
 start_lenovoplugin()
 {
 	export PLUGIN_CONFIG_FILE_PATH=/etc/lenovoplugin_config/config.json
-        logs_on_console=$(cat $CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
+        logs_on_console=$(cat $$PLUGIN_CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
         if [[ $logs_on_console == "true" ]]
         then
         /bin/plugin-lenovo 2>&1 &
@@ -50,8 +50,13 @@ start_lenovoplugin()
         fi
 	PID=$!
 	sleep 3
-
+        
+	if [[ $logs_on_console == "true" ]]
+        then
+        /bin/add-hosts -file /tmp/host.append 2>&1 &
+        else
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/lenovoplugin_logs/add-hosts.log 2>&1 &
+        fi
 }
 
 monitor_process()

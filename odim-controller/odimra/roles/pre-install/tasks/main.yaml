@@ -115,6 +115,7 @@
     recurse: yes
   loop:
     - "{{ odimra.appsLogPath }}"
+  when: not (odimra.logsOnConsole| default(false) | bool)
 
 - name: Copy kafka certificates
   copy:

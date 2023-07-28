@@ -66,9 +66,11 @@ spec:
               path: odimra_kafka_client.key
               mode: 0444
             {{- end }}
+        {{- if not .Values.dellplugin.logsOnConsole }}
         - name: dellplugin-log
           persistentVolumeClaim:
             claimName: dellplugin-log-claim
+        {{- end }}
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       containers:
@@ -98,7 +100,9 @@ spec:
               mountPath: /etc/dellplugin_config
             - name: configure-hosts
               mountPath: /tmp
+            {{- if not .Values.dellplugin.logsOnConsole }}
             - name: dellplugin-log
               mountPath: /var/log/dellplugin_logs
+            {{- end }}
             - name: odimra-secret
               mountPath: /etc/odimra_certs

@@ -53,7 +53,14 @@ start_manager()
         PID=$!
 	sleep 3
 
+        
+	if [[ $logs_on_console == "true" ]]
+        then
+        /bin/add-hosts -file /tmp/host.append 2>&1 &
+        else
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/managers-add-hosts.log 2>&1 &
+        fi
+	
 }
 
 monitor_process()

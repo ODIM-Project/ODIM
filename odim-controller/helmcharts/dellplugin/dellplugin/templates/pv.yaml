@@ -1,4 +1,5 @@
 ---
+{{- if not .Values.dellplugin.logsOnConsole }}
 kind: PersistentVolume
 apiVersion: v1
 metadata:
@@ -17,3 +18,4 @@ spec:
     name: dellplugin-log-claim
   hostPath:
     path: {{ .Values.dellplugin.logPath }}
+{{- end }}

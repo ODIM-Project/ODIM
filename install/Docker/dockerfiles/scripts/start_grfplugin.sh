@@ -41,7 +41,7 @@ run_forever()
 start_grfplugin()
 {
 	export PLUGIN_CONFIG_FILE_PATH=/etc/grfplugin_config/config.json
-        logs_on_console=$(cat $CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
+        logs_on_console=$(cat $PLUGIN_CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
         if [[ $logs_on_console == "true" ]]
         then
         /bin/plugin-redfish 2>&1 &
@@ -50,8 +50,13 @@ start_grfplugin()
         fi
 	PID=$!
 	sleep 3
-
+        
+	if [[ $logs_on_console == "true" ]]
+        then
+        /bin/add-hosts -file /tmp/host.append 2>&1 &
+        else
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/grfplugin_logs/add-hosts.log 2>&1 &
+        fi
 }
 
 monitor_process()

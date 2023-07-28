@@ -1,4 +1,5 @@
 ---
+{{- if not .Values.lenovoplugin.logsOnConsole }}
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -11,3 +12,4 @@ spec:
   resources:
     requests:
       storage: 100Mi
+{{- end}}

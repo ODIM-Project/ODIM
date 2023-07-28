@@ -74,9 +74,11 @@ spec:
               path: odimra_kafka_client.key
               mode: 0444
             {{- end }}
+        {{- if not .Values.odimra.logsOnConsole }}
         - name: odimra-log
           persistentVolumeClaim:
             claimName: odimra-log-claim
+        {{- end }}
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
         runAsUser: {{ .Values.odimra.userID }}
@@ -106,7 +108,9 @@ spec:
               mountPath: /etc/odimra_config
             - name: configure-hosts
               mountPath: /tmp
+            {{- if not .Values.odimra.logsOnConsole }}
             - name: odimra-log
               mountPath: /var/log/odimra_logs
+            {{- end }}
             - name: odimra-secret
               mountPath: /etc/odimra_certs

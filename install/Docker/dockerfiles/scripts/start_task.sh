@@ -53,7 +53,12 @@ start_task()
         PID=$!
 	sleep 3
 
+        if [[ $logs_on_console == "true" ]]
+        then
+        /bin/add-hosts -file /tmp/host.append 2>&1 &
+        else
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/task-add-hosts.log 2>&1 &
+        fi
 }
 
 monitor_process()

@@ -50,14 +50,20 @@ var (
 )
 
 // DeleteEventSubscriptions delete subscription data against given URL
-func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *eventsproto.EventRequest) response.RPC {
+func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *eventsproto.EventRequest, taskId string) response.RPC {
 	var resp response.RPC
 	originResource := req.UUID
 	uuid, err := getUUID(originResource)
+	var (
+		percentComplete int32 = 100
+		targetURI             = "/redfish/v1/EventService/Subscriptions"
+	)
 	if err != nil {
 		msgArgs := []interface{}{"OriginResource", originResource}
 		evcommon.GenErrorResponse(err.Error(), response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
 		l.LogWithFields(ctx).Error(err.Error())
+		e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+			common.Critical, percentComplete, http.MethodDelete))
 		return resp
 	}
 	target, err := e.GetTarget(uuid)
@@ -66,6 +72,8 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *
 		errorMessage := err.Error()
 		msgArgs := []interface{}{"uuid", uuid}
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
+		e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+			common.Critical, percentComplete, http.MethodDelete))
 		return resp
 	}
 	deviceIPAddress, err := GetIPFromHostNameFunc(target.ManagerAddress)
@@ -73,6 +81,8 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
 		evcommon.GenErrorResponse(err.Error(), response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
 		l.LogWithFields(ctx).Error(err.Error())
+		e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+			common.Critical, percentComplete, http.MethodDelete))
 		return resp
 	}
 	searchKey := evcommon.GetSearchKey(deviceIPAddress, evmodel.SubscriptionIndex)
@@ -82,6 +92,8 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *
 		errorMessage := err.Error()
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
+		e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+			common.Critical, percentComplete, http.MethodDelete))
 		return resp
 	}
 	l.LogWithFields(ctx).Debug("Number of subscription present :", strconv.Itoa(len(subscriptionDetails)))
@@ -92,6 +104,8 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *
 		msgArgs := []interface{}{""}
 		evcommon.GenErrorResponse(errorMessage, response.InternalError, http.StatusInternalServerError, msgArgs, &resp)
 		l.LogWithFields(ctx).Error(errorMessage)
+		e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+			common.Critical, percentComplete, http.MethodDelete))
 		return resp
 	}
 	target.Password = decryptedPasswordByte
@@ -103,6 +117,8 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *
 		l.LogWithFields(ctx).Error("error while deleting event subscription details : " + err.Error())
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
 		evcommon.GenErrorResponse(err.Error(), response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
+		e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+			common.Critical, percentComplete, http.MethodDelete))
 		return resp
 	}
 	searchKey = evcommon.GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
@@ -112,6 +128,8 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
 		l.LogWithFields(ctx).Error(errorMessage)
+		e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+			common.Critical, percentComplete, http.MethodDelete))
 		return resp
 	}
 	originResource = deviceSubscription.OriginResources[0]
@@ -130,6 +148,8 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *
 				msgArgs := []interface{}{"SubscriptionID", evtSubscription.SubscriptionID}
 				evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
 				l.LogWithFields(ctx).Error(errorMessage)
+				e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+					common.Critical, percentComplete, http.MethodDelete))
 				return resp
 			}
 		} else {
@@ -142,6 +162,8 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *
 				msgArgs := []interface{}{"SubscriptionID", evtSubscription.SubscriptionID}
 				evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
 				l.LogWithFields(ctx).Error(errorMessage)
+				e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+					common.Critical, percentComplete, http.MethodDelete))
 				return resp
 			}
 		}
@@ -152,6 +174,8 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *
 		errorMessage := "Error while deleting device subscription : " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
 	}
+	e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.OK, common.Completed,
+		percentComplete, http.MethodDelete))
 
 	resp.StatusCode = http.StatusNoContent
 	resp.StatusMessage = response.ResourceRemoved
@@ -173,23 +197,35 @@ func (e *ExternalInterfaces) deleteSubscription(ctx context.Context, target *com
 }
 
 // DeleteEventSubscriptionsDetails delete subscription data against given subscription id
-func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(ctx context.Context, req *eventsproto.EventRequest) response.RPC {
+func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(ctx context.Context, req *eventsproto.EventRequest,
+	sessionUserName string, taskId string) response.RPC {
 	var resp response.RPC
-	authResp, err := e.Auth(ctx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	var (
+		percentComplete int32 = 100
+		targetURI             = "/redfish/v1/EventService/Subscriptions"
+	)
+	reqCtx := common.CreateNewRequestContext(ctx)
+	reqCtx = common.CreateMetadata(reqCtx)
+	authResp, err := e.Auth(reqCtx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		if err != nil {
 			errMsg = errMsg + ": " + err.Error()
 		}
 		l.LogWithFields(ctx).Error(errMsg)
+		e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+			common.Critical, percentComplete, http.MethodDelete))
 		return authResp
 	}
 	subscriptionDetails, err := e.GetEvtSubscriptions(req.EventSubscriptionID)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
-		l.LogWithFields(ctx).Error("error while deleting eventsubscription details : " + err.Error())
+		l.LogWithFields(ctx).Error("error while deleting event subscription details : " + err.Error())
 		errorMessage := err.Error()
 		msgArgs := []interface{}{"SubscriptionID", req.EventSubscriptionID}
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
+		e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+			common.Critical, percentComplete, http.MethodDelete))
+
 		return resp
 	}
 	if len(subscriptionDetails) < 1 {
@@ -197,6 +233,9 @@ func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(ctx context.Context
 		l.LogWithFields(ctx).Error(errorMessage)
 		var msgArgs = []interface{}{"SubscriptionID", req.EventSubscriptionID}
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
+		e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+			common.Critical, percentComplete, http.MethodDelete))
+
 		return resp
 	}
 	for _, evtSubscription := range subscriptionDetails {
@@ -207,15 +246,26 @@ func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(ctx context.Context
 			l.LogWithFields(ctx).Error(errorMessage)
 			var msgArgs = []interface{}{"SubscriptionID", req.EventSubscriptionID}
 			evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
+			e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+				common.Critical, percentComplete, http.MethodDelete))
+
 			return resp
 		}
 
 		// Delete and re subscribe Event Subscription
-		err = e.deleteAndReSubscribeToEvents(ctx, evtSubscription, req.SessionToken)
+		isStatusAccepted, err := e.deleteAndReSubscribeToEvents(ctx, evtSubscription, req.SessionToken, sessionUserName, taskId)
 		if err != nil {
 			errorMessage := err.Error()
 			msgArgs := []interface{}{"SubscriptionID", req.EventSubscriptionID}
 			evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
+			e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+				common.Critical, percentComplete, http.MethodDelete))
+
+			return resp
+		}
+
+		if isStatusAccepted {
+			services.SaveEventSubscriptionID(ctx, taskId, evtSubscription.SubscriptionID)
 			return resp
 		}
 
@@ -226,6 +276,8 @@ func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(ctx context.Context
 			errorMessage := err.Error()
 			msgArgs := []interface{}{"SubscriptionID", req.EventSubscriptionID}
 			evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
+			e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Exception,
+				common.Critical, percentComplete, http.MethodDelete))
 			return resp
 		}
 	}
@@ -242,11 +294,17 @@ func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(ctx context.Context
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
 	resp.Body = commonResponse
+	e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.OK,
+		common.Completed, percentComplete, http.MethodDelete))
+
 	return resp
 }
 
 // This function is to delete and re subscribe for Event Subscriptions
-func (e *ExternalInterfaces) deleteAndReSubscribeToEvents(ctx context.Context, evtSubscription evmodel.SubscriptionResource, sessionToken string) error {
+func (e *ExternalInterfaces) deleteAndReSubscribeToEvents(ctx context.Context, evtSubscription evmodel.SubscriptionResource,
+	sessionToken, sessionUserName string, taskID string) (bool, error) {
+
+	var isStatusAccepted bool
 	originResources := evtSubscription.EventDestination.OriginResources
 	for _, origin := range originResources {
 		// ignore if origin is empty
@@ -255,7 +313,7 @@ func (e *ExternalInterfaces) deleteAndReSubscribeToEvents(ctx context.Context, e
 		}
 		subscriptionDetails, err := e.GetEvtSubscriptions(origin.Oid)
 		if err != nil {
-			return err
+			return isStatusAccepted, err
 		}
 		subscriptionDetails = append([]evmodel.SubscriptionResource{{
 			EventDestination: &model.EventDestination{
@@ -273,7 +331,7 @@ func (e *ExternalInterfaces) deleteAndReSubscribeToEvents(ctx context.Context, e
 
 		var deleteFlag bool
 		if len(subscriptionDetails) < 1 {
-			return fmt.Errorf("subscription details not found for subscription id: %s", origin)
+			return isStatusAccepted, fmt.Errorf("subscription details not found for subscription id: %s", origin)
 		} else if len(subscriptionDetails) == 1 {
 			deleteFlag = true
 		}
@@ -321,12 +379,12 @@ func (e *ExternalInterfaces) deleteAndReSubscribeToEvents(ctx context.Context, e
 			Destination:   destination,
 		}
 
-		err = e.subscribe(ctx, subscriptionPost, origin.Oid, deleteFlag, sessionToken)
+		isStatusAccepted, err = e.subscribe(ctx, subscriptionPost, origin.Oid, deleteFlag, sessionToken, sessionUserName, taskID)
 		if err != nil {
-			return err
+			return isStatusAccepted, err
 		}
 	}
-	return nil
+	return isStatusAccepted, nil
 }
 
 func isCollectionOriginResourceURI(origin string) bool {
@@ -358,40 +416,43 @@ func isCollectionOriginResourceURI(origin string) bool {
 }
 
 // Subscribe to the Event Subscription
-func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost model.EventDestination, origin string, deleteflag bool, sessionToken string) error {
+func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost model.EventDestination, origin string,
+	deleteFlag bool, sessionToken string, sessionUserName string, taskId string) (bool, error) {
+	var isStatusAccepted bool
 	if strings.Contains(origin, "Fabrics") {
-		return e.resubscribeFabricsSubscription(ctx, subscriptionPost, origin, deleteflag)
+		return isStatusAccepted, e.resubscribeFabricsSubscription(ctx, subscriptionPost, origin, sessionUserName, taskId, deleteFlag)
 	}
 	if strings.Contains(origin, "/redfish/v1/AggregationService/Aggregates") {
-		return e.resubscribeAggregateSubscription(ctx, subscriptionPost, origin, deleteflag, sessionToken)
+		return isStatusAccepted, e.resubscribeAggregateSubscription(ctx, subscriptionPost, origin, deleteFlag, sessionToken, sessionUserName, taskId)
 	}
 	originResource := origin
 	if isCollectionOriginResourceURI(originResource) {
 		l.LogWithFields(ctx).Error("Collection of origin resource:" + originResource)
-		return nil
+		return isStatusAccepted, nil
 	}
 	target, _, err := e.getTargetDetails(originResource)
 	if err != nil {
-		return err
+		return isStatusAccepted, err
 	}
 
 	plugin, errs := e.GetPluginData(target.PluginID)
 	if errs != nil {
-		return errs
+		return isStatusAccepted, errs
 	}
 	postBody, err := json.Marshal(subscriptionPost)
 	if err != nil {
-		return fmt.Errorf("error while marshalling subscription details: %s", err)
+		return isStatusAccepted, fmt.Errorf("error while marshalling subscription details: %s", err)
 	}
 	target.PostBody = postBody
-	_, err = e.DeleteSubscriptions(ctx, origin, "", plugin, target)
-	if err != nil {
-		return err
-	}
-	// if deleteflag is true then only one document is there
+	// _, err = e.DeleteSubscriptions(ctx, origin, "", plugin, target)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// if deleteFlag is true then only one document is there
 	// so don't re subscribe again
-	if deleteflag {
-		return nil
+	if deleteFlag {
+		return isStatusAccepted, nil
 	}
 
 	var contactRequest evcommon.PluginContactRequest
@@ -399,7 +460,7 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		token := e.getPluginToken(ctx, plugin)
 		if token == "" {
-			return fmt.Errorf("error: Unable to create session with plugin " + plugin.ID)
+			return isStatusAccepted, fmt.Errorf("error: Unable to create session with plugin " + plugin.ID)
 		}
 		contactRequest.Token = token
 	} else {
@@ -409,14 +470,30 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 		}
 
 	}
-	contactRequest.URL = "/ODIM/v1/Subscriptions"
-	contactRequest.HTTPMethodType = http.MethodPost
-	contactRequest.PostBody = target
 
-	_, loc, _, _, err := e.PluginCall(ctx, contactRequest)
+	// Note: commenting delete subscription API call and calling patch API instead
+	// a subtask is created for each patch call
+
+	subtaskID := e.CreateSubTask(ctx, sessionUserName, taskId)
+	contactRequest.URL = "/ODIM/v1/Subscriptions"
+	contactRequest.HTTPMethodType = http.MethodPatch
+	contactRequest.PostBody = target
+	createResponse, loc, _, pluginIP, err := e.PluginCall(ctx, contactRequest)
 	if err != nil {
-		return err
+		e.UpdateTask(ctx, fillTaskData(subtaskID, contactRequest.URL, "", createResponse, common.Exception,
+			common.Critical, 100, http.MethodPatch))
+		return isStatusAccepted, err
 	}
+	if createResponse.StatusCode == http.StatusAccepted {
+		isStatusAccepted = true
+		services.SavePluginTaskInfo(ctx, pluginIP, plugin.IP,
+			subtaskID, loc)
+		return isStatusAccepted, nil
+	}
+
+	e.UpdateTask(ctx, fillTaskData(subtaskID, contactRequest.URL, "", createResponse, common.Completed,
+		common.OK, 100, http.MethodPatch))
+
 	// Update Location to all destination of device if already subscribed to the device
 	var resp response.RPC
 	deviceIPAddress, err := common.GetIPFromHostName(target.ManagerAddress)
@@ -428,14 +505,14 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 	searchKey := evcommon.GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
 	devSub, err := e.GetDeviceSubscriptions(searchKey)
 	if err != nil {
-		return err
+		return isStatusAccepted, err
 	}
 	deviceSub := common.DeviceSubscription{
 		EventHostIP:     devSub.EventHostIP,
 		Location:        loc,
 		OriginResources: devSub.OriginResources,
 	}
-	return e.UpdateDeviceSubscriptionLocation(deviceSub)
+	return isStatusAccepted, e.UpdateDeviceSubscriptionLocation(deviceSub)
 
 }
 
@@ -509,7 +586,8 @@ func (e *ExternalInterfaces) DeleteFabricsSubscription(ctx context.Context, orig
 }
 
 // resubscribeFabricsSubscription updates subscription fabric subscription details  by forming the super set of MessageIDs,EventTypes and ResourceTypes
-func (e *ExternalInterfaces) resubscribeFabricsSubscription(ctx context.Context, subscriptionPost model.EventDestination, origin string, deleteflag bool) error {
+func (e *ExternalInterfaces) resubscribeFabricsSubscription(ctx context.Context, subscriptionPost model.EventDestination,
+	sessionUserName string, taskId string, origin string, deleteFlag bool) error {
 	originResources := e.getSubordinateResourcesFromCollection(origin)
 	for _, origin := range originResources {
 		originResource := origin
@@ -538,9 +616,9 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(ctx context.Context,
 			}
 			return err
 		}
-		// if deleteflag is true then only one document is there
+		// if deleteFlag is true then only one document is there
 		// so don't re subscribe again
-		if deleteflag {
+		if deleteFlag {
 			return nil
 		}
 		var contactRequest evcommon.PluginContactRequest
@@ -572,6 +650,7 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(ctx context.Context,
 			reqData = strings.Replace(string(postBody), key, value, -1)
 		}
 
+		subtaskID := e.CreateSubTask(ctx, sessionUserName, taskId)
 		// recreating the subscription
 		contactRequest.URL = "/ODIM/v1/Subscriptions"
 		contactRequest.HTTPMethodType = http.MethodPost
@@ -580,16 +659,31 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(ctx context.Context,
 			return err
 		}
 		l.LogWithFields(ctx).Info("Resubscribe request" + reqData)
-		response, loc, _, _, err := e.PluginCall(ctx, contactRequest)
+		response, loc, _, pluginIP, err := e.PluginCall(ctx, contactRequest)
 		if err != nil {
+			e.UpdateTask(ctx, fillTaskData(subtaskID, contactRequest.URL, "", response, common.Exception,
+				common.Critical, 100, http.MethodPost))
 			return err
 		}
+
+		if response.StatusCode == http.StatusAccepted {
+			services.SavePluginTaskInfo(ctx, pluginIP, plugin.IP,
+				subtaskID, loc)
+			return nil
+		}
+
 		if response.StatusCode == http.StatusUnauthorized && strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 			_, _, _, _, err = e.retryEventOperation(ctx, contactRequest)
 			if err != nil {
+				e.UpdateTask(ctx, fillTaskData(subtaskID, contactRequest.URL, "", response, common.Exception,
+					common.Critical, 100, http.MethodPost))
 				return err
 			}
 		}
+
+		e.UpdateTask(ctx, fillTaskData(subtaskID, contactRequest.URL, "", response, common.ComputerSystemReset,
+			common.OK, 100, http.MethodPost))
+
 		addr, err := common.GetIPFromHostName(plugin.IP)
 		if err != nil {
 			return fmt.Errorf(err.Error())
@@ -724,14 +818,15 @@ func getAggregateSystemList(origin string, sessionToken string) ([]model.Link, e
 
 // resubscribeAggregateSubscription method subscribe event for
 // aggregate system members
-func (e *ExternalInterfaces) resubscribeAggregateSubscription(ctx context.Context, subscriptionPost model.EventDestination, origin string, deleteflag bool, sessionToken string) error {
+func (e *ExternalInterfaces) resubscribeAggregateSubscription(ctx context.Context, subscriptionPost model.EventDestination,
+	origin string, deleteFlag bool, sessionToken string, sessionUserName string, taskId string) error {
 	originResource := origin
 	systems, err := getAggregateSystemList(originResource, sessionToken)
 	if err != nil {
 		return nil
 	}
 	for _, system := range systems {
-		err = e.subscribe(ctx, subscriptionPost, system.Oid, deleteflag, sessionToken)
+		_, err = e.subscribe(ctx, subscriptionPost, system.Oid, deleteFlag, sessionToken, sessionUserName, taskId)
 		if err != nil {
 			return err
 		}

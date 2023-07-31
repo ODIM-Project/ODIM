@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20221116052950-e215237718e2
 	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20211220033333-4314870ed337
-	github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201201072448-9772421f1b55
+	github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20230719110936-f43048b6407a
 	github.com/ODIM-Project/ODIM/lib-rest-client v0.0.0-20201201072448-9772421f1b55
 	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20220426104855-9b203a83173f
 	github.com/go-redis/redis v6.15.9+incompatible

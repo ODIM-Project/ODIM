@@ -860,8 +860,8 @@ func (e *ExternalInterfaces) createEventSubscription(ctx context.Context, taskID
 }
 
 // CreateSubTask creates a child task for a task calling RPC to task service and returns the subtask ID
-func (e *ExternalInterfaces) CreateSubTask(ctx context.Context, reqSessionToken string, parentTask string) string {
-	subTaskURI, err := e.CreateChildTask(ctx, reqSessionToken, parentTask)
+func (e *ExternalInterfaces) CreateSubTask(ctx context.Context, sessionUserName string, parentTask string) string {
+	subTaskURI, err := e.CreateChildTask(ctx, sessionUserName, parentTask)
 	if err != nil {
 		l.LogWithFields(ctx).Error("Error while creating the SubTask")
 	}

@@ -339,26 +339,6 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
    sudo -H pip3 install cryptography==3.4.8 --proxy=${http_proxy}
    ```
    
-   ```
-   wget https://dl.google.com/go/go1.19.5.linux-amd64.tar.gz -P /var/tmp
-   ```
-   
-   ```
-   sudo tar -C /usr/local -xzf /var/tmp/go1.19.5.linux-amd64.tar.gz
-   ```
-   
-   ```
-   sudo apt-get install -y apt-transport-https=2.4.9 ca-certificates=20230311ubuntu0.22.04.1 curl=7.81.0-1ubuntu1.13
-   ```
-   
-   ```
-   sudo apt-get install -y gnupg-agent=2.2.27-3ubuntu2.1 software-properties-common=0.99.22.7
-   ```
-   
-   ```
-   sudo apt-get install -y docker-ce=5:24.0.5-1~ubuntu.22.04~jammy docker-ce-cli=5:24.0.5-1~ubuntu.22.04~jammy  containerd.io --allow-downgrades
-   ```
-   
    > **NOTE**: If a package version is unavailable or outdated, run the following command to view the latest available versions of that package and install the first version listed in the output.
    
    ```
@@ -3184,11 +3164,11 @@ Run the following commands:
 1. Run the following commands:
    
    1. ```
-      sudo apt-get install -y apt-transport-https=2.0.9 ca-certificates=20211016ubuntu0.20.04.1 curl=7.68.0-1ubuntu2.15
+      sudo apt-get install -y apt-transport-https=2.4.9 ca-certificates=20230311ubuntu0.22.04.1 curl=7.81.0-1ubuntu1.13
       ```
 	  
    2. ```
-      sudo apt-get install -y gnupg-agent=2.2.19-3ubuntu2.2 software-properties-common=0.99.9.8
+      sudo apt-get install -y gnupg-agent=2.2.27-3ubuntu2.1 software-properties-common=0.99.22.7
       ```
 	  
    3. ```
@@ -3200,7 +3180,7 @@ Run the following commands:
       ```
 	
    5. ```
-      sudo apt-get install -y docker-ce=5:20.10.12~3-0~ubuntu-focal docker-ce-cli=5:20.10.12~3-0~ubuntu-focal containerd.io --allow-downgrades
+      sudo apt-get install -y docker-ce=5:24.0.5-1~ubuntu.22.04~jammy docker-ce-cli=5:24.0.5-1~ubuntu.22.04~jammy  containerd.io --allow-downgrades
       ```
    
    > **NOTE**: If the current version of a package is not found, please run the following command to check for the latest available version of that package and install the first version listed in the output.

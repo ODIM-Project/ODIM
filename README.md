@@ -205,8 +205,8 @@ The following table lists the software components and versions that are compatib
 |etcd| 3.4.15            |
 |Java JRE|11|
 |Kafka|3.1.0|
-|Redis|7.0.8|
-|Ubuntu LTS|20.04.4|
+|Redis|7.0.11|
+|Ubuntu LTS|22.04.2|
 |ZooKeeper|3.7.0|
 |Docker|20.10.12|
 |Ansible|5.7.1|
@@ -4449,14 +4449,14 @@ These checks run in parallel and take a few minutes to complete.
 ### GitHub action workflow details
 
 1. build_unittest.yml
-   - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md*.
+   - Brings up a Ubuntu 22.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md*.
    - Installs Go 1.19.5 package.
-   - Installs and configures Redis 7.0.8 with two instances running on ports 6379 and 6380.
+   - Installs and configures Redis 7.0.11 with two instances running on ports 6379 and 6380.
    - Checks out the PR code into the Go module directory.
    - Builds/compiles the code.
    - Runs the unit tests.
 2. build_deploy_test.yml
-   - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md*.
+   - Brings up a Ubuntu 22.04.2 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md*.
    - Checks out the PR code.
    - Builds and deploys the following docker containers:
      - ODIMRA 

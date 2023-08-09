@@ -4,7 +4,7 @@ odimra:
   haDeploymentEnabled:
 dellplugin:
   eventListenerNodePort: 
-  imageTag: "3.0"
+  imageTag: "3.1"
   dellPluginRootServiceUUID: 
   username: 
   password: 

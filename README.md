@@ -4449,7 +4449,7 @@ These checks run in parallel and take a few minutes to complete.
 ### GitHub action workflow details
 
 1. build_unittest.yml
-   - Brings up a Ubuntu 22.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md*.
+   - Brings up a Ubuntu 22.04.2 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md*.
    - Installs Go 1.19.5 package.
    - Installs and configures Redis 7.0.11 with two instances running on ports 6379 and 6380.
    - Checks out the PR code into the Go module directory.

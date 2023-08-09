@@ -11,7 +11,7 @@
 - [Resource Aggregator for ODIM pre-deployment operations](#Resource-Aggregator-for-ODIM-pre-deployment-operations)
    - [Setting up the environment](#setting-up-the-environment)
    - [Pulling Docker images of all Kubernetes microservices](#pulling-docker-images-of-all-kubernetes-microservices)
-   - [Building Docker images of all services](#building-docker-images-of-all-services)
+   - [Building Docker images of all Resource Aggregator for ODIM services](#building-docker-images-of-all-resource-aggregator-for-odim-services)
    - [Updating additional package versions](#updating-additional-package-versions)
    - [Generating encrypted passwords for nodes and Redis](#generating-encrypted-passwords-for-nodes-and-Redis)
    - [Configuring log path for odim-controller](#configuring-log-path-for-odim-controller)
@@ -232,7 +232,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
 
 1. [Setting up the environment](#setting-up-the-environment)
 2. [Pulling Docker images of all Kubernetes microservices](#Pulling-Docker-images-of-all-Kubernetes-microservices)
-3. [Building Docker images of all services](#building-docker-images-of-all-services)
+3. [Building Docker images of all Resource Aggregator for ODIM services](#building-docker-images-of-all-resource-aggregator-for-odim-services)
 4. [Updating additional package versions](#updating-additional-package-versions)
 5. [Generating encrypted passwords for nodes and Redis](#generating-encrypted-passwords-for-nodes-and-Redis)
 6. [Configuring log path for odim-controller](#configuring-log-path-for-odim-controller)
@@ -251,7 +251,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
     - To add 5000 servers or less, you require nodes having 32 GB (32768 MB) RAM, 16 CPU cores and 32 threads, and 200 GB HDD each
 
 
-1. Download and install `ubuntu-20.04.4-live-server-amd64.iso` on the deployment node and all the cluster nodes. 
+1. Download and install `ubuntu-22.04.2-live-server-amd64.iso` on the deployment node and all the cluster nodes. 
     During installation, configure the IP addresses of cluster nodes to reach the management VLANs where devices are connected. Ensure there is no firewall or switches blocking the connections and ports.
 
    <blockquote>
@@ -452,7 +452,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
    > **NOTE**: Verify the permissions of the archived tar files of the Docker images; the privilege of all files must be `user:docker`.
 
 
-## Building Docker images of all services
+## Building Docker images of all Resource Aggregator for ODIM services
 
 1. Run the following commands on the deployment node:
    1. ```
@@ -509,28 +509,28 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
 
     | **Docker image name** | **Version** | **Docker image bundle name** |
     | :-------------------- | ----------- | ---------------------------- |
-    | account-session       | 4.0         | account-session.tar          |
-    | aggregation           | 5.1         | aggregation.tar              |
-    | api                   | 6.0         | api.tar                      |
-    | events                | 6.0         | events.tar                   |
-    | fabrics               | 4.1         | fabrics.tar                  |
-    | managers              | 6.0         | managers.tar                 |
-    | systems               | 6.0         | systems.tar                  |
-    | licenses              | 3.0         | licenses.tar                 |
-    | task                  | 5.0         | task.tar                     |
-    | update                | 5.0         | update.tar                   |
+    | account-session       | 5.0         | account-session.tar          |
+    | aggregation           | 6.0         | aggregation.tar              |
+    | api                   | 7.0         | api.tar                      |
+    | events                | 7.0         | events.tar                   |
+    | fabrics               | 5.0         | fabrics.tar                  |
+    | managers              | 7.0         | managers.tar                 |
+    | systems               | 7.0         | systems.tar                  |
+    | licenses              | 4.0         | licenses.tar                 |
+    | task                  | 6.0         | task.tar                     |
+    | update                | 6.0         | update.tar                   |
     | kafka                 | 3.0         | kafka.tar                    |
     | zookeeper             | 3.0         | zookeeper.tar                |
     | etcd                  | 1.16        | etcd.tar                     |
     | redis                 | 5.0         | redis.tar                    |
     | stakater/reloader     | v0.0.76     | stakater_reloader.tar        |
     | busybox               | 1.33        | busybox.tar                  |
-    | dellplugin            | 3.0         | dellplugin.tar               |
-    | lenovoplugin          | 1.2         | lenovoplugin.tar             |
-    | urplugin              | 3.3         | urplugin.tar                 |
-    | grfplugin             | 4.0         | grfplugin.tar                |
+    | dellplugin            | 3.1         | dellplugin.tar               |
+    | lenovoplugin          | 1.3         | lenovoplugin.tar             |
+    | urplugin              | 3.4         | urplugin.tar                 |
+    | grfplugin             | 4.1         | grfplugin.tar                |
     | aciplugin             | 3.2         | aciplugin.tar                |
-    | telemetry             | 3.1         | telemetry.tar                |
+    | telemetry             | 4.0         | telemetry.tar                |
     
 3. To install the Docker images of all services on the cluster nodes, create a directory called `odimra_images` on the deployment node and copy each tar archive to this directory. 
     For example: `cp /home/<user>/ODIM/*.tar /home/<user>/odimra_images`

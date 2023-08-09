@@ -204,10 +204,10 @@ The following table lists the software components and versions that are compatib
 |--------|-------|
 |etcd| 3.4.15            |
 |Java JRE|11|
-|Kafka|3.1.0|
+|Kafka|3.4.0|
 |Redis|7.0.11|
 |Ubuntu LTS|22.04.2|
-|ZooKeeper|3.7.0|
+|ZooKeeper|3.8.1|
 |Docker|20.10.12|
 |Ansible|5.7.1|
 |Kubernetes|1.24.6|

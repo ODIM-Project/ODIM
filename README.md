@@ -503,7 +503,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
     ```
     docker save -o <image_name.tar> <image_name>:<version>
     ```
-    Example: `docker save -o api.tar api:6.0`
+    Example: `docker save -o api.tar api:7.0`
 
     The following table lists the Docker images of all Resource Aggregator for ODIM services:
 
@@ -529,7 +529,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
     | lenovoplugin          | 1.3         | lenovoplugin.tar             |
     | urplugin              | 3.4         | urplugin.tar                 |
     | grfplugin             | 4.1         | grfplugin.tar                |
-    | aciplugin             | 3.2         | aciplugin.tar                |
+    | aciplugin             | 3.3         | aciplugin.tar                |
     | telemetry             | 4.0         | telemetry.tar                |
     
 3. To install the Docker images of all services on the cluster nodes, create a directory called `odimra_images` on the deployment node and copy each tar archive to this directory. 

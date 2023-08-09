@@ -42,17 +42,17 @@ odim_third_party_ha_helmcharts:
    kafka: kafka-ha-3.4.0-0.3.0
    etcd: etcd-ha-1.0.0
 odim_svc_helmcharts:
-   account-session: account-session-4.0.0
-   aggregation: aggregation-5.1.0
-   api: api-6.0.0
-   events: events-6.0.0
-   fabrics: fabrics-4.1.0
-   managers: managers-6.0.0
-   systems: systems-6.0.0
-   task: task-5.0.0
-   update: update-5.0.0
-   telemetry: telemetry-3.1.0
-   licenses: licenses-3.0.0
+   account-session: account-session-5.0.0
+   aggregation: aggregation-6.0.0
+   api: api-7.0.0
+   events: events-7.0.0
+   fabrics: fabrics-5.0.0
+   managers: managers-7.0.0
+   systems: systems-7.0.0
+   task: task-6.0.0
+   update: update-6.0.0
+   telemetry: telemetry-4.0.0
+   licenses: licenses-4.0.0
    #composition-service: composition-service-1.0.0
 odim_docker_images:
    account-session: account-session

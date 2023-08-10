@@ -1795,12 +1795,12 @@ The plugin you want to add is successfully deployed.
    |HostName|String \(required\)<br> |It is the plugin service name and the port specified in the Kubernetes environment. For default plugin ports, see *[Resource Aggregator for ODIM default ports](#resource-aggregator-for-odim-default-ports)*.|
    |UserName|String \(required\)<br> |The plugin username. See default administrator account usernames of all the plugins in "Default plugin credentials".<br>|
    |Password|String \(required\)<br> |The plugin password. See default administrator account passwords of all the plugins in "Default plugin credentials".<br> |
-   |ConnectionMethod|Array \(required\)<br> |Links to the connection methods that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`.<br>**NOTE**: Ensure that the connection method information for the plugin you want to add is updated in the odim-controller configuration file.<br>To know which connection method to use, do the following:<br>    1.  Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of links to available connection methods.<br>    2.  Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response. It displays the details of a plugin. Choose a connection method having the details of the plugin of your choice. For available connection method variants, see the following "Connection method variants" table.<br>|
+   |ConnectionMethod|Array \(required\)<br> |Links to the connection methods that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`.<br>**NOTE**: Ensure that the connection method information for the plugin you want to add is updated in the odim-controller configuration file.<br>To know which connection method to use, do the following:<br>    1.  Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of links to available connection methods.<br>    2.  Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response. It displays the details of a plugin. Choose a connection method having the details of the plugin of your choice. For available connection method variants, see the following "Connection method variants" table.|
    
    |Plugin|Default username|Default password|Connection method variant|
    |------|----------------|----------------|------|
-   |GRF plugin|admin|GRFPlug!n12$4|Compute:BasicAuth:GRF_v1.0.0|
-   |URP|admin|Plug!n12$4|Compute:BasicAuth:URP_v1.0.0|
+   |GRF plugin|admin|GRFPlug!n12$4|Compute:BasicAuth:GRF_v2.0.0|
+   |URP|admin|Plug!n12$4|Compute:BasicAuth:URP_v2.0.0|
    
     Use the following curl command to add the plugin:
    

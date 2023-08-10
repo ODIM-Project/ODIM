@@ -11,7 +11,7 @@
 - [Resource Aggregator for ODIM pre-deployment operations](#Resource-Aggregator-for-ODIM-pre-deployment-operations)
    - [Setting up the environment](#setting-up-the-environment)
    - [Pulling Docker images of all Kubernetes microservices](#pulling-docker-images-of-all-kubernetes-microservices)
-   - [Building Docker images of all services](#building-docker-images-of-all-services)
+   - [Building Docker images of all Resource Aggregator for ODIM services](#building-docker-images-of-all-resource-aggregator-for-odim-services)
    - [Updating additional package versions](#updating-additional-package-versions)
    - [Generating encrypted passwords for nodes and Redis](#generating-encrypted-passwords-for-nodes-and-Redis)
    - [Configuring log path for odim-controller](#configuring-log-path-for-odim-controller)
@@ -204,10 +204,10 @@ The following table lists the software components and versions that are compatib
 |--------|-------|
 |etcd| 3.4.15            |
 |Java JRE|11|
-|Kafka|3.1.0|
-|Redis|7.0.8|
-|Ubuntu LTS|20.04.4|
-|ZooKeeper|3.7.0|
+|Kafka|3.4.0|
+|Redis|7.0.11|
+|Ubuntu LTS|22.04.2|
+|ZooKeeper|3.8.1|
 |Docker|20.10.12|
 |Ansible|5.7.1|
 |Kubernetes|1.24.6|
@@ -232,7 +232,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
 
 1. [Setting up the environment](#setting-up-the-environment)
 2. [Pulling Docker images of all Kubernetes microservices](#Pulling-Docker-images-of-all-Kubernetes-microservices)
-3. [Building Docker images of all services](#building-docker-images-of-all-services)
+3. [Building Docker images of all Resource Aggregator for ODIM services](#building-docker-images-of-all-resource-aggregator-for-odim-services)
 4. [Updating additional package versions](#updating-additional-package-versions)
 5. [Generating encrypted passwords for nodes and Redis](#generating-encrypted-passwords-for-nodes-and-Redis)
 6. [Configuring log path for odim-controller](#configuring-log-path-for-odim-controller)
@@ -251,7 +251,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
     - To add 5000 servers or less, you require nodes having 32 GB (32768 MB) RAM, 16 CPU cores and 32 threads, and 200 GB HDD each
 
 
-1. Download and install `ubuntu-20.04.4-live-server-amd64.iso` on the deployment node and all the cluster nodes. 
+1. Download and install `ubuntu-22.04.2-live-server-amd64.iso` on the deployment node and all the cluster nodes. 
     During installation, configure the IP addresses of cluster nodes to reach the management VLANs where devices are connected. Ensure there is no firewall or switches blocking the connections and ports.
 
    <blockquote>
@@ -266,77 +266,79 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
 
 5. Install packages such as Python, Java, Ansible, and more on the deployment node:
 
-   1. ```
-      sudo apt-get update
-      ```
+   ```
+   sudo apt-get update
+   ```
 
-   2. ```
-      sudo apt-get install sshpass=1.06-1 -y
-      ```
-      
-   3. ```
-      sudo apt-get install python3.8=3.8.10-0ubuntu1~20.04.7 -y
-      ```
+   ```
+   sudo apt-get install sshpass=1.06-1 -y
+   ```
+   
+   ```
+   sudo apt-get install python3.11=3.11.0~rc1-1~22.04
+   ```
 
-   4. ```
-      sudo apt-get install python3-pip=20.0.2-5ubuntu1.8 -y
-      ```
+   ```
+   sudo apt-get install python3-pip=22.0.2+dfsg-1ubuntu0.3 -y
+   ```
 
-   5. ```
-      sudo apt-get install software-properties-common=0.99.9.8 -y
-      ```
+   ```
+   sudo apt-get install software-properties-common=0.99.22.7 -y
+   ```
 
-   6. ```
-      sudo -E apt-add-repository ppa:ansible/ansible -y
-      ```
+   ```
+   sudo -E apt-add-repository ppa:ansible/ansible -y
+   ```
 
-   7. ```
-      sudo apt-get install openjdk-11-jre-headless=11.0.18+10-0ubuntu1~20.04.1 -y
-      ```
+   ```
+   sudo apt-get install openjdk-11-jre-headless=11.0.20+8-1ubuntu1~22.04 -y
+   ```
 
-   8. ```
-      python3 -m pip install --upgrade pip
-      ```
+   ```
+   python3 -m pip install --upgrade pip
+   ```
 
-   9. ```
-      sudo -H pip3 install ansible==5.7.1 --proxy=${http_proxy}
-      ```
+   ```
+   sudo -H pip3 install ansible==5.7.1 --proxy=${http_proxy}
+   ```
 
-   10. ```
-       sudo -H pip3 install jinja2==2.11.1 --proxy=${http_proxy}
-       ```
-       
-   11. ```
-       sudo -H pip3 install netaddr==0.7.19 --proxy=${http_proxy}
-       ```
+   ```
+   sudo -H pip3 install jinja2==2.11.1 --proxy=${http_proxy}
+   ```
+   
+   ```
+   sudo -H pip3 install netaddr==0.7.19 --proxy=${http_proxy}
+   ```
 
-   12. ```
-       sudo -H pip3 install pbr==5.4.4 --proxy=${http_proxy}
-       ```
+   ```
+   sudo -H pip3 install pbr==5.4.4 --proxy=${http_proxy}
+   ```
 
-   13. ```
-       sudo -H pip3 install hvac==0.10.0 --proxy=${http_proxy}
-       ```
+   ```
+   sudo -H pip3 install hvac==0.10.0 --proxy=${http_proxy}
+   ```
 
-   14. ```
-       sudo -H pip3 install jmespath==0.9.5 --proxy=${http_proxy}
-       ```
+   ```
+   sudo -H pip3 install jmespath==0.9.5 --proxy=${http_proxy}
+   ```
 
-   15. ```
-       sudo -H pip3 install ruamel.yaml==0.16.10 --proxy=${http_proxy}
-       ```
+   ```
+   sudo -H pip3 install ruamel.yaml==0.16.10 --proxy=${http_proxy}
+   ```
 
-   16. ```
-       sudo -H pip3 install pyyaml==5.3.1 --proxy=${http_proxy}
-       ```
-   17. ```
-       sudo -H pip3 install pycryptodome==3.4.3 --proxy=${http_proxy}
-       ```
+   ```
+   sudo -H pip3 install pyyaml==5.3.1 --proxy=${http_proxy}
+   ```
+   
+   ```
+   sudo -H pip3 install pycryptodome==3.4.3 --proxy=${http_proxy}
+   ```
 
-   18. ```
-       sudo -H pip3 install cryptography==3.4.8 --proxy=${http_proxy}
-       ```
-
+   
+   ```
+   sudo -H pip3 install cryptography==3.4.8 --proxy=${http_proxy}
+   ```
+   
    > **NOTE**: If a package version is unavailable or outdated, run the following command to view the latest available versions of that package and install the first version listed in the output.
    
    ```
@@ -380,7 +382,19 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
         /bin/bash get_helm.sh
         ```
 
+10. Run the following command:
 
+    ```
+    sudo vi  /etc/needrestart/needrestart.conf
+    ```
+
+11. Update the line `“#$nrconf{restart} = 'i';” ` to the following content:
+
+    ```
+    $nrconf{restart} = 'l';
+    ```
+
+    
 
 ## Pulling Docker images of all Kubernetes microservices
 
@@ -438,7 +452,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
    > **NOTE**: Verify the permissions of the archived tar files of the Docker images; the privilege of all files must be `user:docker`.
 
 
-## Building Docker images of all services
+## Building Docker images of all Resource Aggregator for ODIM services
 
 1. Run the following commands on the deployment node:
    1. ```
@@ -489,34 +503,34 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
     ```
     docker save -o <image_name.tar> <image_name>:<version>
     ```
-    Example: `docker save -o api.tar api:5.0`
+    Example: `docker save -o api.tar api:7.0`
 
     The following table lists the Docker images of all Resource Aggregator for ODIM services:
 
     | **Docker image name** | **Version** | **Docker image bundle name** |
     | :-------------------- | ----------- | ---------------------------- |
-    | account-session       | 4.0         | account-session.tar          |
-    | aggregation           | 5.0         | aggregation.tar              |
-    | api                   | 5.0         | api.tar                      |
-    | events                | 5.0         | events.tar                   |
-    | fabrics               | 4.0         | fabrics.tar                  |
-    | managers              | 5.0         | managers.tar                 |
-    | systems               | 5.0         | systems.tar                  |
-    | licenses              | 2.0         | licenses.tar                 |
-    | task                  | 4.0         | task.tar                     |
-    | update                | 4.0         | update.tar                   |
-    | kafka                 | 2.0         | kafka.tar                    |
-    | zookeeper             | 2.0         | zookeeper.tar                |
+    | account-session       | 5.0         | account-session.tar          |
+    | aggregation           | 6.0         | aggregation.tar              |
+    | api                   | 7.0         | api.tar                      |
+    | events                | 7.0         | events.tar                   |
+    | fabrics               | 5.0         | fabrics.tar                  |
+    | managers              | 7.0         | managers.tar                 |
+    | systems               | 7.0         | systems.tar                  |
+    | licenses              | 4.0         | licenses.tar                 |
+    | task                  | 6.0         | task.tar                     |
+    | update                | 6.0         | update.tar                   |
+    | kafka                 | 3.0         | kafka.tar                    |
+    | zookeeper             | 3.0         | zookeeper.tar                |
     | etcd                  | 1.16        | etcd.tar                     |
-    | redis                 | 4.0         | redis.tar                    |
+    | redis                 | 5.0         | redis.tar                    |
     | stakater/reloader     | v0.0.76     | stakater_reloader.tar        |
     | busybox               | 1.33        | busybox.tar                  |
-    | dellplugin            | 2.2         | dellplugin.tar               |
-    | lenovoplugin          | 1.2         | lenovoplugin.tar             |
-    | urplugin              | 3.2         | urplugin.tar                 |
-    | grfplugin             | 3.2         | grfplugin.tar                |
-    | aciplugin             | 3.2         | aciplugin.tar                |
-    | telemetry             | 3.0         | telemetry.tar                |
+    | dellplugin            | 3.1         | dellplugin.tar               |
+    | lenovoplugin          | 1.3         | lenovoplugin.tar             |
+    | urplugin              | 3.4         | urplugin.tar                 |
+    | grfplugin             | 4.1         | grfplugin.tar                |
+    | aciplugin             | 3.3         | aciplugin.tar                |
+    | telemetry             | 4.0         | telemetry.tar                |
     
 3. To install the Docker images of all services on the cluster nodes, create a directory called `odimra_images` on the deployment node and copy each tar archive to this directory. 
     For example: `cp /home/<user>/ODIM/*.tar /home/<user>/odimra_images`
@@ -542,7 +556,7 @@ While deploying Resource Aggregator for ODIM, verify the versions of the followi
 1. Enter the following command:
 
    ```
-   sudo apt-cache madison linux-headers-5.8.0-63-generic
+   sudo apt-cache madison linux-headers-linux-headers-6.2.0-26-generic
    ```
 
    > **NOTE**: If the above command fails with the error message, `N: Unable to locate package linuxheaders-5.8.0-63-generic`, the package version has been updated. Proceed with further steps to find the latest version.
@@ -573,11 +587,13 @@ While deploying Resource Aggregator for ODIM, verify the versions of the followi
    sudo apt-cache madison keepalived
    ```
 
-2. Verify if the latest version is `keepalived=1:2.0.19-2`.
+2. Verify if the latest version is `keepalived=1:2.2.4-0.2build1`.
 
 3. In case of a version mismatch, update the latest version of the `Keepalived` package in:
    
-   `~/ODIM/odim-controller/odimra/group_vars/all/requirements.yaml`
+   ```
+   ~/ODIM/odim-controller/odimra/group_vars/all/requirements.yaml
+   ```
 
 #### Nginx
 
@@ -587,13 +603,15 @@ While deploying Resource Aggregator for ODIM, verify the versions of the followi
    sudo apt-cache madison nginx
    ```
 
-2. Verify if the latest version is `nginx=1.18.0-0ubuntu1.4`.
+2. Verify if the latest version is `nginx=1.18.0-6ubuntu14.4`.
 
 3. In case of a version mismatch, update the latest version of the `Nginx` package in:
    
-   `~/ODIM/odim-controller/odimra/group_vars/all/requirements.yaml`
-
-
+   ```
+   ~/ODIM/odim-controller/odimra/group_vars/all/requirements.yaml
+   ```
+   
+   
 
 ## Generating encrypted passwords for nodes and Redis
 
@@ -3146,11 +3164,11 @@ Run the following commands:
 1. Run the following commands:
    
    1. ```
-      sudo apt-get install -y apt-transport-https=2.0.9 ca-certificates=20211016ubuntu0.20.04.1 curl=7.68.0-1ubuntu2.15
+      sudo apt-get install -y apt-transport-https=2.4.9 ca-certificates=20230311ubuntu0.22.04.1 curl=7.81.0-1ubuntu1.13
       ```
 	  
    2. ```
-      sudo apt-get install -y gnupg-agent=2.2.19-3ubuntu2.2 software-properties-common=0.99.9.8
+      sudo apt-get install -y gnupg-agent=2.2.27-3ubuntu2.1 software-properties-common=0.99.22.7
       ```
 	  
    3. ```
@@ -3162,7 +3180,7 @@ Run the following commands:
       ```
 	
    5. ```
-      sudo apt-get install -y docker-ce=5:20.10.12~3-0~ubuntu-focal docker-ce-cli=5:20.10.12~3-0~ubuntu-focal containerd.io --allow-downgrades
+      sudo apt-get install -y docker-ce=5:24.0.5-1~ubuntu.22.04~jammy docker-ce-cli=5:24.0.5-1~ubuntu.22.04~jammy  containerd.io --allow-downgrades
       ```
    
    > **NOTE**: If the current version of a package is not found, please run the following command to check for the latest available version of that package and install the first version listed in the output.
@@ -4431,14 +4449,14 @@ These checks run in parallel and take a few minutes to complete.
 ### GitHub action workflow details
 
 1. build_unittest.yml
-   - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md*.
+   - Brings up a Ubuntu 22.04.2 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md*.
    - Installs Go 1.19.5 package.
-   - Installs and configures Redis 7.0.8 with two instances running on ports 6379 and 6380.
+   - Installs and configures Redis 7.0.11 with two instances running on ports 6379 and 6380.
    - Checks out the PR code into the Go module directory.
    - Builds/compiles the code.
    - Runs the unit tests.
 2. build_deploy_test.yml
-   - Brings up a Ubuntu 20.04 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md*.
+   - Brings up a Ubuntu 22.04.2 VM hosted on GitHub infrastructure with preinstalled packages. See the link *https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md*.
    - Checks out the PR code.
    - Builds and deploys the following docker containers:
      - ODIMRA 

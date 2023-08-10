@@ -69,6 +69,8 @@ func GetTaskResponse(statusCode int32, message string) response.RPC {
 	switch statusCode {
 	case http.StatusOK:
 		resp = common.GeneralError(statusCode, response.Success, message, nil, nil)
+	case http.StatusCreated:
+		resp = common.GeneralError(statusCode, response.Created, message, nil, nil)
 	case http.StatusInternalServerError:
 		resp = common.GeneralError(statusCode, response.InternalError, message, nil, nil)
 	default:

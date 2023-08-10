@@ -1244,11 +1244,13 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 	l.LogWithFields(ctx).Debugf("Child ID's associated with parent task %s: %v", task.ParentID, childIDs)
 	if len(childIDs) < 1 || (len(childIDs) == 1 && taskState == common.Completed && payLoad.StatusCode < http.StatusAccepted) {
 		l.LogWithFields(ctx).Debugf("All tasks are completed ! Updating Parent task %s to completed state", parentTask.ID)
+		parentTask.StatusCode = http.StatusOK
 		if parentTask.TaskFinalResponse != nil {
 			var resp response.RPC
 			json.Unmarshal(parentTask.TaskFinalResponse, &resp)
 			parentTask.Payload.HTTPHeaders = resp.Header
 			parentTask.TaskFinalResponse = nil
+			parentTask.StatusCode = http.StatusCreated
 		}
 		ts.updateTaskToCompleted(parentTask)
 		return nil
@@ -1278,6 +1280,7 @@ func (ts *TasksRPC) validateChildTasksAndUpdateParentTask(ctx context.Context, c
 			task.URI = subtask.URI
 			task.StartTime = subtask.StartTime
 			task.EndTime = subtask.EndTime
+			task.StatusCode = http.StatusOK
 			ts.updateTaskToCompleted(task)
 		} else if subtask.TaskState != common.Completed {
 			isSuccess = false
@@ -1288,11 +1291,13 @@ func (ts *TasksRPC) validateChildTasksAndUpdateParentTask(ctx context.Context, c
 	if isSuccess {
 		l.LogWithFields(ctx).Debugf("All tasks are completed ! Updating Parent task %s to completed state",
 			parentTask.ID)
+		parentTask.StatusCode = http.StatusOK
 		if parentTask.TaskFinalResponse != nil {
 			var resp response.RPC
 			json.Unmarshal(parentTask.TaskFinalResponse, &resp)
 			parentTask.Payload.HTTPHeaders = resp.Header
 			parentTask.TaskFinalResponse = nil
+			parentTask.StatusCode = http.StatusCreated
 		}
 		ts.updateTaskToCompleted(parentTask)
 	}
@@ -1305,8 +1310,7 @@ func (ts *TasksRPC) updateTaskToCompleted(task *tmodel.Task) {
 	task.TaskState = common.Completed
 	task.TaskStatus = common.OK
 	task.PercentComplete = 100
-	task.StatusCode = http.StatusOK
-	resp := tcommon.GetTaskResponse(http.StatusOK, response.Success)
+	resp := tcommon.GetTaskResponse(task.StatusCode, response.Success)
 	body, _ := json.Marshal(resp.Body)
 	task.TaskResponse = body
 	ts.UpdateTaskQueue(task)

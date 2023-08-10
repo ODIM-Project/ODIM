@@ -32,6 +32,7 @@ type TaskData struct {
 	TaskStatus      string
 	PercentComplete int32
 	HTTPMethod      string
+	FinalResponse   response.RPC
 }
 
 // TaskUpdateInfo holds the info for updating a task during error response

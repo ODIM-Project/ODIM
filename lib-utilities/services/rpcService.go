@@ -291,6 +291,9 @@ func (s *odimService) intiateSignalHandler(errChan chan<- error) {
 	signal.Notify(sigs,
 		os.Interrupt,
 		syscall.SIGTERM,
+		syscall.SIGABRT,
+		syscall.SIGKILL,
+		syscall.SIGINT,
 		syscall.SIGQUIT)
 	go func() {
 		sig := <-sigs

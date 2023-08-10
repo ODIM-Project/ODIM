@@ -172,6 +172,10 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 		req.OID = "/redfish/v1/Managers"
 		managerEstimatedWork := int32(15)
 		progress = h.getAllRootInfo(ctx, "", progress, managerEstimatedWork, req, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
+		// rediscovering the regisrty info
+		req.OID = "/redfish/v1/Registries"
+		registriesEstimatedWork := int32(5)
+		progress = h.getAllRegistries(ctx, "", progress, registriesEstimatedWork, req)
 		agmodel.SaveBMCInventory(h.InventoryData)
 
 	}

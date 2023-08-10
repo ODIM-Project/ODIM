@@ -1138,7 +1138,7 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 		// TODO
 	case "Running":
 		// This state shall represent that the operation is executing.
-		if payLoad.FinalResponseBody != nil {
+		if payLoad != nil && payLoad.FinalResponseBody != nil {
 			task.TaskFinalResponse = payLoad.FinalResponseBody
 		}
 		task.TaskState = taskState

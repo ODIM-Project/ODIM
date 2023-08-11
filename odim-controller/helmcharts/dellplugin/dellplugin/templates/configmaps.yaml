@@ -8,8 +8,8 @@ data:
     {
     	"RootServiceUUID": {{ .Values.dellplugin.dellPluginRootServiceUUID | quote }},
     	"LogLevel": {{ .Values.dellplugin.logLevel | quote }},
-        "LogFormat": {{ .Values.dellplugin.logFormat | quote }},
-        "logsRedirectionToConsole" : {{ .Values.dellplugin.logsOnConsole | default false }},
+      "LogFormat": {{ .Values.dellplugin.logFormat | quote }},
+      "logsRedirectionToConsole" : {{ .Values.dellplugin.logsOnConsole | default false }},
     	"PluginConf": {
     		"ID": "DELL",
     		"Host": {{ .Values.dellplugin.host | quote }},

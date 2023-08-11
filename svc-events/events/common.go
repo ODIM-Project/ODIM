@@ -101,13 +101,15 @@ func fillTaskData(taskID, targetURI, request string, resp errResponse.RPC, taskS
 // UpdateTaskData update the task with the given data
 func UpdateTaskData(ctx context.Context, taskData common.TaskData) error {
 	respBody, _ := json.Marshal(taskData.Response.Body)
+	finalResponse, _ := json.Marshal(taskData.FinalResponse)
 	payLoad := &taskproto.Payload{
-		HTTPHeaders:   taskData.Response.Header,
-		HTTPOperation: taskData.HTTPMethod,
-		JSONBody:      taskData.TaskRequest,
-		StatusCode:    taskData.Response.StatusCode,
-		TargetURI:     taskData.TargetURI,
-		ResponseBody:  respBody,
+		HTTPHeaders:       taskData.Response.Header,
+		HTTPOperation:     taskData.HTTPMethod,
+		JSONBody:          taskData.TaskRequest,
+		StatusCode:        taskData.Response.StatusCode,
+		TargetURI:         taskData.TargetURI,
+		ResponseBody:      respBody,
+		FinalResponseBody: finalResponse,
 	}
 
 	err := UpdateTaskService(ctx, taskData.TaskID, taskData.TaskState, taskData.TaskStatus,

@@ -248,6 +248,9 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 
 	// if plugin returns the response code status accepted, then the task and child tasks will be updated by task service
 	if bubbleUpStatusCode == http.StatusAccepted {
+		task := fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Running, common.OK, percentComplete-1, http.MethodPost)
+		task.FinalResponse = resp
+		e.UpdateTask(ctx, task)
 		return resp
 	}
 

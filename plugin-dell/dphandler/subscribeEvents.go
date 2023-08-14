@@ -177,7 +177,6 @@ func isOurSubscription(ctxt context.Context, device *dputilities.RedfishDevice) 
 		l.LogWithFields(ctxt).Error(err.Error())
 		return false
 	}
-	fmt.Printf("************  %+v \n ", evtConfig.Data.LoadBalancerConf.Host+":"+evtConfig.Data.LoadBalancerConf.Port)
 	subscriptionDestinationFromDevice := subscriptionBody.(map[string]interface{})["Destination"].(string)
 	// if the subscription is ours then the destination should match with LBHOST:LBPORT.
 	//If it is not matching then retrun with MethodNotAllowed

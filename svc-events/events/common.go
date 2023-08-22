@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path"
 	"runtime"
 	"strings"
 	"time"
@@ -132,6 +133,15 @@ func removeOdataIDfromOriginResources(originResources []model.Link) []string {
 	var originRes []string
 	for _, origin := range originResources {
 		originRes = append(originRes, origin.Oid)
+	}
+	return originRes
+}
+
+// this function is for to create array of originofresources without odata id
+func addOdataIDfromOriginResources(originResources []string) []model.Link {
+	var originRes []model.Link
+	for _, origin := range originResources {
+		originRes = append(originRes, model.Link{Oid: origin})
 	}
 	return originRes
 }
@@ -495,4 +505,14 @@ func isHostPresentInEventForward(hosts []string, hostIP string) bool {
 		rear--
 	}
 	return false
+}
+func removeDuplicateSystems(input []string) (result []string) {
+	uniqueList := make(map[string]string)
+	for _, url := range input {
+		uniqueList[path.Base(url)] = url
+	}
+	for _, url := range uniqueList {
+		result = append(result, url)
+	}
+	return
 }

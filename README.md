@@ -271,7 +271,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
    ```
 
    ```
-   sudo apt-get install sshpass=1.06-1 -y
+   sudo apt-get install sshpass=1.09-1 -y
    ```
    
    ```
@@ -382,7 +382,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
         /bin/bash get_helm.sh
         ```
 
-10. Run the following command:
+10. Run the following command on deployment node and cluster nodes:
 
     ```
     sudo vi  /etc/needrestart/needrestart.conf
@@ -3165,7 +3165,7 @@ Run the following commands:
 1. Run the following commands:
    
    1. ```
-      sudo apt-get install -y apt-transport-https=2.4.9 ca-certificates=20230311ubuntu0.22.04.1 curl=7.81.0-1ubuntu1.13
+      sudo apt-get install -y apt-transport-https=2.4.10 ca-certificates=20230311ubuntu0.22.04.1 curl=7.81.0-1ubuntu1.13
       ```
 	  
    2. ```

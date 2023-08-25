@@ -23,6 +23,7 @@ message Payload {
      int32 StatusCode = 4;
      string TargetURI = 5;
      bytes ResponseBody = 6;
+     bytes FinalResponseBody = 7;
 }
 message GetTaskRequest {
       string taskID = 1;

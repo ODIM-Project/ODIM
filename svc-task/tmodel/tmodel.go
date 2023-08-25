@@ -59,15 +59,16 @@ type Task struct {
 	the task, reported in percent of completion.
 	If the task has not been started, the value shall be zero.
 	*/
-	PercentComplete int32
-	TaskMonitor     string
-	TaskState       string
-	TaskStatus      string
-	StatusCode      int32
-	TaskResponse    []byte
-	Messages        []*Message // Its there in the spec, how are we going to use it
-	StartTime       time.Time
-	EndTime         time.Time
+	PercentComplete   int32
+	TaskMonitor       string
+	TaskState         string
+	TaskStatus        string
+	StatusCode        int32
+	TaskResponse      []byte
+	Messages          []*Message // Its there in the spec, how are we going to use it
+	StartTime         time.Time
+	EndTime           time.Time
+	TaskFinalResponse []byte
 }
 
 // Tick struct is used to help the goroutines that process the task queue to communicate effectively

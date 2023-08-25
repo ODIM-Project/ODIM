@@ -158,7 +158,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			}
 		}
 	}()
-
+	var isServerAdded = false
 	for _, origin := range originResources {
 		_, err := getUUID(origin)
 		if err != nil {
@@ -181,6 +181,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			}
 
 			for i := 0; i < len(collection); i++ {
+				isServerAdded = true
 				wg.Add(1)
 				// for subordinate origin
 				subTaskID = e.CreateSubTask(ctx, sessionUserName, taskID)
@@ -191,6 +192,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 				collectionList = append(collectionList, collection...)
 			}
 		} else {
+			isServerAdded = true
 			wg.Add(1)
 			subTaskID := e.CreateSubTask(ctx, sessionUserName, taskID)
 			go e.createEventSubscription(ctx, taskID, subTaskID, subTaskChan, sessionUserName, targetURI,
@@ -245,10 +247,17 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 		}
 		locationHeader = resp.Header["Location"]
 	}
-
 	// if plugin returns the response code status accepted, then the task and child tasks will be updated by task service
 	if bubbleUpStatusCode == http.StatusAccepted {
-		return resp
+		if !isServerAdded {
+			e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost))
+			return resp
+		} else {
+			task := fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Running, common.OK, percentComplete-1, http.MethodPost)
+			task.FinalResponse = resp
+			e.UpdateTask(ctx, task)
+			return resp
+		}
 	}
 
 	l.LogWithFields(ctx).Debug("Process Count,", originResourceProcessedCount,

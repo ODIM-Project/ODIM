@@ -362,7 +362,6 @@ func SearchAndFilter(ctx context.Context, paramStr []string, resp response.RPC) 
 		for _, element := range submatchall {
 			element = strings.Trim(element, "(")
 			element = strings.Trim(element, ")")
-			fmt.Println(element)
 			if strings.Contains(element, " and ") || strings.Contains(element, " or ") {
 				var x []string
 				if strings.Contains(element, " and ") {

@@ -333,7 +333,6 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
-	fmt.Println("AddAggregationSource********")
 	sessionUserName, err := a.connector.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
@@ -341,7 +340,6 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 		l.LogWithFields(ctx).Error(errMsg)
 		return resp, nil
 	}
-	fmt.Println("session AddAggregationSource********", sessionUserName)
 	// parsing the AggregationSourceRequest
 	var addRequest system.AggregationSource
 	err = json.Unmarshal(req.RequestBody, &addRequest)

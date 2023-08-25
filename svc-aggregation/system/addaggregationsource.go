@@ -221,6 +221,15 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 	percentComplete = 100
 	task := fillTaskData(taskID, targetURI, reqBody, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(ctx, task)
-	l.LogWithFields(ctx).Debugf("final response for add aggregation source request: %s", string(fmt.Sprintf("%v", resp.Body)))
+	finalresp := generateResponse(ctx, resp.Body)
+	l.LogWithFields(ctx).Debugf("final response for add aggregation source request: %s", string(finalresp))
 	return resp
+}
+
+func generateResponse(ctx context.Context, input interface{}) []byte {
+	bytes, err := json.Marshal(input)
+	if err != nil {
+		l.LogWithFields(ctx).Error("error in unmarshalling response object " + err.Error())
+	}
+	return bytes
 }

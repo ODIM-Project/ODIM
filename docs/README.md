@@ -11030,7 +11030,7 @@ curl -i POST \
    "EventTypes":[ 
       "Alert"
    ],
-   "MessageIDs":[ 
+   "MessageIds":[ 
 
    ],
    "ResourceTypes":[ 
@@ -11189,7 +11189,7 @@ curl -i POST \
    "EventTypes":[ 
       "Alert"
    ],
-   "MessageIDs":[ 
+   "MessageIds":[ 
 
    ],
    "ResourceTypes":[ 

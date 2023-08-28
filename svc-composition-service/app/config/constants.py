@@ -25,7 +25,7 @@ EVENT_TYPES = [
 
 RESOURCE_BLOCK_TEMP = {
     "@odata.context": "/redfish/v1/$metadata#ResourceBlock.ResourceBlock.",
-    "@odata.type": "#ResourceBlock.v1_4_1.ResourceBlock",
+    "@odata.type": "#ResourceBlock.v1_4_0.ResourceBlock",
     "@odata.id": "/redfish/v1/CompositionService/ResourceBlocks",
     "Id": "ComputerSystemBlock",
     "Name": "ComputerSystem Block",

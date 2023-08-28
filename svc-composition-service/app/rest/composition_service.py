@@ -29,7 +29,7 @@ class CompositonService():
     def get_cs(self):
         res = {
             "@odata.context": "/redfish/v1/$metadata#CompositionService",
-            "@odata.type": "#CompositionService.v1_2_1.CompositionService",
+            "@odata.type": "#CompositionService.v1_2_0.CompositionService",
             "@odata.id": "/redfish/v1/CompositionService",
             "Id": "CompositionService",
             "Name": "Composition Service",

@@ -208,7 +208,7 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 		Description:  "Logs view",
 		Members: []*model.Link{
 			&model.Link{
-				Oid: "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL",
+				Oid: "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries",
 			},
 		},
 		MembersCount: 1,

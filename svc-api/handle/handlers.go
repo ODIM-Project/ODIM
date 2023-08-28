@@ -174,13 +174,13 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AccountService_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "AccountService"},
-					models.Include{Namespace: "AccountService.v1_11_0"},
+					models.Include{Namespace: "AccountService.v1_13_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AddressPool_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "AddressPool"},
-					models.Include{Namespace: "AddressPool.v1_2_0"},
+					models.Include{Namespace: "AddressPool.v1_2_2"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AddressPoolCollection_v1.xml",
@@ -202,13 +202,13 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AggregationService_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "AggregationService"},
-					models.Include{Namespace: "AggregationService.v1_0_1"},
+					models.Include{Namespace: "AggregationService.v1_0_2"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AggregationSource_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "AggregationSource"},
-					models.Include{Namespace: "AggregationSource.v1_2_0"},
+					models.Include{Namespace: "AggregationSource.v1_3_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/AggregationSourceCollection_v1.xml",
@@ -225,7 +225,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Bios_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Bios"},
-					models.Include{Namespace: "Bios.v1_2_0"},
+					models.Include{Namespace: "Bios.v1_2_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/BootOption_v1.xml",
@@ -242,7 +242,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Chassis_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Chassis"},
-					models.Include{Namespace: "Chassis.v1_20_0"},
+					models.Include{Namespace: "Chassis.v1_23_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ChassisCollection_v1.xml",
@@ -253,13 +253,13 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/CompositionService_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "CompositionService"},
-					models.Include{Namespace: "CompositionService.v1_2_0"},
+					models.Include{Namespace: "CompositionService.v1_2_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ComputerSystem_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "ComputerSystem"},
-					models.Include{Namespace: "ComputerSystem.v1_18_0"},
+					models.Include{Namespace: "ComputerSystem.v1_20_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ComputerSystemCollection_v1.xml",
@@ -270,7 +270,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ConnectionMethod_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "ConnectionMethod"},
-					models.Include{Namespace: "ConnectionMethod.v1_0_0"},
+					models.Include{Namespace: "ConnectionMethod.v1_1_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ConnectionMethodCollection_v1.xml",
@@ -281,13 +281,13 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Drive_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Drive"},
-					models.Include{Namespace: "Drive.v1_15_0"},
+					models.Include{Namespace: "Drive.v1_17_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Endpoint_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Endpoint"},
-					models.Include{Namespace: "Endpoint.v1_7_0"},
+					models.Include{Namespace: "Endpoint.v1_8_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/EndpointCollection_v1.xml",
@@ -298,7 +298,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/EthernetInterface_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "EthernetInterface"},
-					models.Include{Namespace: "EthernetInterface.v1_8_0"},
+					models.Include{Namespace: "EthernetInterface.v1_10_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/EthernetInterfaceCollection_v1.xml",
@@ -309,7 +309,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/EventDestination_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "EventDestination"},
-					models.Include{Namespace: "EventDestination.v1_12_0"},
+					models.Include{Namespace: "EventDestination.v1_13_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/EventDestinationCollection_v1.xml",
@@ -320,7 +320,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/EventService_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "EventService"},
-					models.Include{Namespace: "EventService.v1_8_0"},
+					models.Include{Namespace: "EventService.v1_10_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Fabric_v1.xml",
@@ -353,7 +353,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/LogEntry_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "LogEntry"},
-					models.Include{Namespace: "LogEntry.v1_11_0"},
+					models.Include{Namespace: "LogEntry.v1_15_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/LogEntryCollection_v1.xml",
@@ -364,19 +364,19 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/LogService_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "LogService"},
-					models.Include{Namespace: "LogService.v1_3_0"},
+					models.Include{Namespace: "LogService.v1_4_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Manager_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Manager"},
-					models.Include{Namespace: "Manager.v1_15_0"},
+					models.Include{Namespace: "Manager.v1_18_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ManagerAccount_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "ManagerAccount"},
-					models.Include{Namespace: "ManagerAccount.v1_9_0"},
+					models.Include{Namespace: "ManagerAccount.v1_10_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ManagerAccountCollection_v1.xml",
@@ -392,13 +392,13 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ManagerNetworkProtocol_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "ManagerNetworkProtocol"},
-					models.Include{Namespace: "ManagerNetworkProtocol.v1_8_0"},
+					models.Include{Namespace: "ManagerNetworkProtocol.v1_9_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Memory_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Memory"},
-					models.Include{Namespace: "Memory.v1_15_0"},
+					models.Include{Namespace: "Memory.v1_17_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MemoryCollection_v1.xml",
@@ -419,7 +419,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MessageRegistry_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "MessageRegistry"},
-					models.Include{Namespace: "MessageRegistry.v1_5_0"},
+					models.Include{Namespace: "MessageRegistry.v1_6_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MessageRegistryCollection_v1.xml",
@@ -463,19 +463,19 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/PCIeDevice_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "PCIeDevice"},
-					models.Include{Namespace: "PCIeDevice.v1_9_0"},
+					models.Include{Namespace: "PCIeDevice.v1_11_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/PCIeFunction_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "PCIeFunction"},
-					models.Include{Namespace: "PCIeFunction.v1_2_3"},
+					models.Include{Namespace: "PCIeFunction.v1_5_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Port_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Port"},
-					models.Include{Namespace: "Port.v1_6_1"},
+					models.Include{Namespace: "Port.v1_9_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/PortCollection_v1.xml",
@@ -498,7 +498,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Processor_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Processor"},
-					models.Include{Namespace: "Processor.v1_15_0"},
+					models.Include{Namespace: "Processor.v1_18_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ProcessorCollection_v1.xml",
@@ -519,7 +519,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ResourceBlock_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "ResourceBlock"},
-					models.Include{Namespace: "ResourceBlock.v1_4_0"},
+					models.Include{Namespace: "ResourceBlock.v1_4_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ResourceBlockCollection_v1.xml",
@@ -530,7 +530,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Resource_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Resource"},
-					models.Include{Namespace: "Resource.v1_14_0"},
+					models.Include{Namespace: "Resource.v1_16_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Role_v1.xml",
@@ -559,7 +559,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Session_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Session"},
-					models.Include{Namespace: "Session.v1_4_0"},
+					models.Include{Namespace: "Session.v1_6_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/SessionCollection_v1.xml",
@@ -576,7 +576,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Settings_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Settings"},
-					models.Include{Namespace: "Settings.v1_3_4"},
+					models.Include{Namespace: "Settings.v1_3_5"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/SoftwareInventoryCollection_v1.xml",
@@ -587,7 +587,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Storage_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Storage"},
-					models.Include{Namespace: "Storage.v1_13_0"},
+					models.Include{Namespace: "Storage.v1_15_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/StorageCollection_v1.xml",
@@ -598,7 +598,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/StorageController_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "StorageController"},
-					models.Include{Namespace: "StorageController.v1_6_0"},
+					models.Include{Namespace: "StorageController.v1_7_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/StorageControllerCollection_v1.xml",
@@ -609,7 +609,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Switch_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Switch"},
-					models.Include{Namespace: "Switch.v1_8_0"},
+					models.Include{Namespace: "Switch.v1_9_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/SwitchCollection_v1.xml",
@@ -620,7 +620,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Task_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Task"},
-					models.Include{Namespace: "Task.v1_6_0"},
+					models.Include{Namespace: "Task.v1_7_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/TaskCollection_v1.xml",
@@ -643,13 +643,13 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/UpdateService_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "UpdateService"},
-					models.Include{Namespace: "UpdateService.v1_11_0"},
+					models.Include{Namespace: "UpdateService.v1_11_3"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/VirtualMedia_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "VirtualMedia"},
-					models.Include{Namespace: "VirtualMedia.v1_5_1"},
+					models.Include{Namespace: "VirtualMedia.v1_6_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/VirtualMediaCollection_v1.xml",
@@ -670,7 +670,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Volume_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Volume"},
-					models.Include{Namespace: "Volume.v1_6_2"},
+					models.Include{Namespace: "Volume.v1_9_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Zone_v1.xml",
@@ -730,7 +730,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/TelemetryService_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "TelemetryService"},
-					models.Include{Namespace: "TelemetryService.v1_3_1"},
+					models.Include{Namespace: "TelemetryService.v1_3_2"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/TriggersCollection_v1.xml",
@@ -743,7 +743,7 @@ func GetMetadata(ctx iris.Context) {
 
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Triggers"},
-					models.Include{Namespace: "Triggers.v1_2_0"},
+					models.Include{Namespace: "Triggers.v1_3_1"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MetricDefinitionCollection_v1.xml",
@@ -754,7 +754,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MetricDefinition_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "MetricDefinition"},
-					models.Include{Namespace: "MetricDefinition.v1_2_0"},
+					models.Include{Namespace: "MetricDefinition.v1_3_2"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MetricReportDefinitionCollection_v1.xml",
@@ -765,7 +765,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MetricReportDefinition_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "MetricReportDefinition"},
-					models.Include{Namespace: "MetricReportDefinition.v1_4_1"},
+					models.Include{Namespace: "MetricReportDefinition.v1_4_3"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MetricReportCollection_v1.xml",
@@ -776,7 +776,7 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MetricReport_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "MetricReport"},
-					models.Include{Namespace: "MetricReport.v1_4_2"},
+					models.Include{Namespace: "MetricReport.v1_5_0"},
 				},
 			},
 			models.Reference{URI: "https://redfish.dmtf.org/schemas/v1/LicenseCollection_v1.xml",
@@ -787,13 +787,13 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "https://redfish.dmtf.org/schemas/v1/LicenseService_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "LicenseService"},
-					models.Include{Namespace: "LicenseService.v1_0_0"},
+					models.Include{Namespace: "LicenseService.v1_1_0"},
 				},
 			},
 			models.Reference{URI: "https://redfish.dmtf.org/schemas/v1/License_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "License"},
-					models.Include{Namespace: "License.v1_0_0"},
+					models.Include{Namespace: "License.v1_1_1"},
 				},
 			},
 		},

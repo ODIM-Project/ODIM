@@ -1078,7 +1078,7 @@ Topics covered in this section include:
    {
       "@odata.context":"/redfish/v1/$metadata#ServiceRoot.ServiceRoot",
         	   "@odata.id":"/redfish/v1/",
-        	   "@odata.type":"#ServiceRoot.v1_16_0.ServiceRoot",
+        	   "@odata.type":"#ServiceRoot.v1_11_0.ServiceRoot",
         	   "Id":"RootService",
         	   "Registries":{
         	   "@odata.id":"/redfish/v1/Registries"

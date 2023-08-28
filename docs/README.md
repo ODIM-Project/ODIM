@@ -700,7 +700,7 @@ Date":Fri,15 May 2022 13:55:53 GMT+5m 11s
 {
    "@odata.context": "/redfish/v1/$metadata#ServiceRoot.ServiceRoot",
    "@odata.id": "/redfish/v1/",
-   "@odata.type": "#ServiceRoot.v1_16_0.ServiceRoot",
+   "@odata.type": "#ServiceRoot.v1_11_0.ServiceRoot",
    "ID": "RootService",
    "Registries": {
       "@odata.id": "/redfish/v1/Registries"

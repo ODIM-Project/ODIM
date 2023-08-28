@@ -166,7 +166,9 @@ The following diagram is a logical representation of each controller node in a K
 
 ![Cluster node](docs/images/odim_cluster.png)
 
-The northbound management and orchestration systems access the Resource Aggregator for ODIM services through a virtual IP address \(VIP\) configured on the Kubernetes cluster using Keepalived. Communication between Resource Aggregator for ODIM and the southbound infrastructure happens through the same VIP.
+For one-node deployment, the northbound management and orchestration systems access the Resource Aggregator for ODIM services through the controller IP address. Communication between Resource Aggregator for ODIM and the southbound infrastructure happens through the same controller IP address.
+
+For three-node deployment, the northbound management and orchestration systems access the Resource Aggregator for ODIM services through a virtual IP address \(VIP\) configured on the Kubernetes cluster using Keepalived. Communication between Resource Aggregator for ODIM and the southbound infrastructure happens through the same VIP.
 
 Nginx acts as a reverse-proxy for the cluster nodes. Keepalived and Nginx together help in implementing high availability of the Resource Aggregator for ODIM services on the cluster nodes for both northbound management applications and southbound infrastructure.
 

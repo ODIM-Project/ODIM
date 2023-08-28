@@ -1,13 +1,13 @@
 {
-    "@Redfish.Copyright": "Copyright 2014-2021 DMTF. All rights reserved.",
+    "@Redfish.Copyright": "Copyright 2014-2023 DMTF. All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
     "@odata.type": "#MessageRegistry.v1_4_2.MessageRegistry",
-    "Id": "License.1.0.1",
+    "Id": "License.1.0.2",
     "Name": "License Message Registry",
     "Language": "en",
     "Description": "This registry defines the license status and error messages.",
     "RegistryPrefix": "License",
-    "RegistryVersion": "1.0.1",
+    "RegistryVersion": "1.0.2",
     "OwningEntity": "DMTF",
     "Messages": {
         "LicenseInstalled": {
@@ -18,7 +18,7 @@
             "MessageSeverity": "OK",
             "NumberOfArgs": 1,
             "ParamTypes": [
-                "String"
+                "string"
             ],
             "ArgDescriptions": [
                 "The name of the license."
@@ -96,7 +96,7 @@
             "MessageSeverity": "Critical",
             "NumberOfArgs": 1,
             "ParamTypes": [
-                "String"
+                "string"
             ],
             "ArgDescriptions": [
                 "The reason for the license installation failure."

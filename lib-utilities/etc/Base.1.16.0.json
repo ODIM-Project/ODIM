@@ -1,13 +1,13 @@
 {
-    "@Redfish.Copyright": "Copyright 2014-2022 DMTF. All rights reserved.",
+    "@Redfish.Copyright": "Copyright 2014-2023 DMTF. All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
     "@odata.type": "#MessageRegistry.v1_5_0.MessageRegistry",
-    "Id": "Base.1.13.0",
+    "Id": "Base.1.16.0",
     "Name": "Base Message Registry",
     "Language": "en",
     "Description": "This registry defines the base messages for Redfish",
     "RegistryPrefix": "Base",
-    "RegistryVersion": "1.13.0",
+    "RegistryVersion": "1.16.0",
     "OwningEntity": "DMTF",
     "Messages": {
         "Success": {
@@ -477,6 +477,50 @@
             ],
             "Resolution": "Remove the parameter supplied and resubmit the request if the operation failed."
         },
+        "ArraySizeTooLong": {
+            "Description": "Indicates that the size of the array exceeded the maximum number of elements.",
+            "LongDescription": "This message shall be used to indicate that the size of the array exceeded the maximum number of elements.",
+            "Message": "The array provided for property %1 exceeds the size limit %2.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "VersionAdded": "1.16.0",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "number"
+            ],
+            "ArgDescriptions": [
+                "The name of the property.",
+                "The maximum number of elements supported for the array."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the property.",
+                "This argument shall contain the maximum number of elements supported for the array for this property."
+            ],
+            "Resolution": "Resubmit the request with an appropriate array size."
+        },
+        "ArraySizeTooShort": {
+            "Description": "Indicates that the size of the array is under the minimum number of elements.",
+            "LongDescription": "This message shall be used to indicate that the size of the array is under the minimum number of elements.",
+            "Message": "The array provided for property %1 is under the minimum size limit %2.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "VersionAdded": "1.16.0",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "number"
+            ],
+            "ArgDescriptions": [
+                "The name of the property.",
+                "The minimum number of elements supported for the array."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the property.",
+                "This argument shall contain the minimum number of elements supported for the array for this property."
+            ],
+            "Resolution": "Resubmit the request with an appropriate array size."
+        },
         "QueryParameterValueTypeError": {
             "Description": "Indicates that a query parameter was given the wrong value type, such as when a number is supplied for a query parameter that requires a string.",
             "LongDescription": "This message shall be used to indicate that a query parameter was given the wrong value type, such as when a number is supplied for a query parameter that requires a string.",
@@ -599,6 +643,25 @@
             "VersionAdded": "1.6.0",
             "NumberOfArgs": 0,
             "Resolution": "Remove one or more of the query parameters and resubmit the request if the operation failed."
+        },
+        "QueryParameterUnsupported": {
+            "Description": "Indicates that a query parameter is not supported.",
+            "LongDescription": "This message shall be used to indicate that a query parameter is not supported by this service.",
+            "Message": "Query parameter '%1' is not supported.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "VersionAdded": "1.15.0",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The query parameter."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the query parameter."
+            ],
+            "Resolution": "Correct or remove the query parameter and resubmit the request."
         },
         "SessionLimitExceeded": {
             "Description": "Indicates that a session establishment has been requested but the operation failed due to the number of simultaneous sessions exceeding the limit of the implementation.",
@@ -747,6 +810,8 @@
             "ArgLongDescriptions": [
                 "This argument shall contain the name of the required property."
             ],
+            "Deprecated": "This message has been deprecated in favor of `PropertyMissing`.",
+            "VersionDeprecated": "1.14.0",
             "Resolution": "Correct the body to include the required property with a valid value and resubmit the request if the operation failed."
         },
         "CreateLimitReachedForResource": {
@@ -1085,6 +1150,28 @@
             "ArgLongDescriptions": [
                 "This argument shall contain the string value provided for this operation.",
                 "This argument shall contain the maximum supported string length for this property."
+            ],
+            "Resolution": "Resubmit the request with an appropriate string length."
+        },
+        "StringValueTooShort": {
+            "Description": "Indicates that a string value passed to the given resource was under its minimum required length.  An example is when a higher minimum length is imposed by an implementation than that allowed by the specification.",
+            "LongDescription": "This message shall be used to indicate that a string value passed to the given resource was under its minimum required length.",
+            "Message": "The string '%1' was under the minimum required length %2.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "VersionAdded": "1.16.0",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "number"
+            ],
+            "ArgDescriptions": [
+                "The string provided.",
+                "The minimum string length."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the string value provided for this operation.",
+                "This argument shall contain the minimum supported string length for this property."
             ],
             "Resolution": "Resubmit the request with an appropriate string length."
         },
@@ -1674,6 +1761,35 @@
             "VersionAdded": "1.13.0",
             "NumberOfArgs": 0,
             "Resolution": "None."
+        },
+        "AuthenticationTokenRequired": {
+            "Description": "Indicates that the request could not be performed because an authentication token was not provided.",
+            "LongDescription": "This message shall be used to indicate that the request could not be performed because the user provided in the request requires multifactor authentication and an authentication token was not provided.",
+            "Message": "The request could not be performed because an authentication token was not provided.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "VersionAdded": "1.15.0",
+            "NumberOfArgs": 0,
+            "Resolution": "Obtain an authentication token and resubmit the request."
+        },
+        "LicenseRequired": {
+            "Description": "Indicates that a license is required to perform the requested operation.",
+            "LongDescription": "This message shall be used to indicate that that a license is required to perform the requested operation.",
+            "Message": "A license is required for this operation: %1.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "VersionAdded": "1.16.0",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The vendor description of the license required to perform the operation."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the vendor description of the license required to perform the operation."
+            ],
+            "Resolution": "Install the requested license and resubmit the request."
         }
     }
 }

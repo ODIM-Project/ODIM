@@ -313,7 +313,7 @@ func TestGetMessageRegistryFileID(t *testing.T) {
 		Auth: authMock,
 	}
 	message := []byte("Just Testing")
-	err = ioutil.WriteFile("/tmp/Base.1.13.0.json", message, 0644)
+	err = ioutil.WriteFile("/tmp/Base.1.16.0.json", message, 0644)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -322,9 +322,9 @@ func TestGetMessageRegistryFileID(t *testing.T) {
 	redfishRoutes.Get("/Registries/{id}", r.GetMessageRegistryFileID)
 	test := httptest.New(t, router)
 	test.GET("/redfish/v1/Registries/UnknownID").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusNotFound)
-	test.GET("/redfish/v1/Registries/Base.1.13.0").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusOK)
-	test.GET("/redfish/v1/Registries/Base.1.13.0").Expect().Status(http.StatusUnauthorized)
-	test.GET("/redfish/v1/Registries/Base.1.13.0").WithHeader("X-Auth-Token", "invalidToken").Expect().Status(http.StatusUnauthorized)
+	test.GET("/redfish/v1/Registries/Base.1.16.0").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusOK)
+	test.GET("/redfish/v1/Registries/Base.1.16.0").Expect().Status(http.StatusUnauthorized)
+	test.GET("/redfish/v1/Registries/Base.1.16.0").WithHeader("X-Auth-Token", "invalidToken").Expect().Status(http.StatusUnauthorized)
 }
 func TestGetMessageRegistryFile(t *testing.T) {
 	err := common.SetUpMockConfig()
@@ -336,7 +336,7 @@ func TestGetMessageRegistryFile(t *testing.T) {
 		Auth: authMock,
 	}
 	message := []byte("Just Testing")
-	err = ioutil.WriteFile("/tmp/Base.1.13.0.json", message, 0644)
+	err = ioutil.WriteFile("/tmp/Base.1.16.0.json", message, 0644)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -345,9 +345,9 @@ func TestGetMessageRegistryFile(t *testing.T) {
 	redfishRoutes.Get("/registries/{id}", r.GetMessageRegistryFile)
 	test := httptest.New(t, router)
 	test.GET("/redfish/v1/registries/UnknownID").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusNotFound)
-	test.GET("/redfish/v1/registries/Base.1.13.0.json").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusOK)
-	test.GET("/redfish/v1/registries/Base.1.13.0.json").Expect().Status(http.StatusUnauthorized)
-	test.GET("/redfish/v1/registries/Base.1.13.0.json").WithHeader("X-Auth-Token", "invalidToken").Expect().Status(http.StatusUnauthorized)
+	test.GET("/redfish/v1/registries/Base.1.16.0.json").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusOK)
+	test.GET("/redfish/v1/registries/Base.1.16.0.json").Expect().Status(http.StatusUnauthorized)
+	test.GET("/redfish/v1/registries/Base.1.16.0.json").WithHeader("X-Auth-Token", "invalidToken").Expect().Status(http.StatusUnauthorized)
 }
 
 // TestTsMethodNotAllowed is unittest method for TsMethodNotAllowed func.
@@ -552,8 +552,8 @@ func TestRegMethodNotAllowed(t *testing.T) {
 	redfishRoutes.Any("/v1/registries/{id}", RegMethodNotAllowed)
 
 	e := httptest.New(t, router)
-	id := "Base.1.6.0"
-	file := "Base.1.6.0.json"
+	id := "Base.1.16.0"
+	file := "Base.1.16.0.json"
 
 	//Check for status code 405 for http methods which are not allowed on registry URLs
 	e.POST("/redfish/v1/Registries").Expect().Status(http.StatusMethodNotAllowed)

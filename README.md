@@ -559,10 +559,10 @@ While deploying Resource Aggregator for ODIM, verify the versions of the followi
 1. Enter the following command:
 
    ```
-   sudo apt-cache madison linux-headers-linux-headers-6.2.0-26-generic
+   sudo apt-cache madison linux-headers-6.2.0-26-generic
    ```
 
-   > **NOTE**: If the above command fails with the error message, `N: Unable to locate package linuxheaders-5.8.0-63-generic`, the package version has been updated. Proceed with further steps to find the latest version.
+   > **NOTE**: If the above command fails with the error message, `N: Unable to locate package linuxheaders-6.2.0-26-generic`, the package version has been updated. Proceed with further steps to find the latest version.
    
 2. Enter the following command:
 
@@ -576,7 +576,7 @@ While deploying Resource Aggregator for ODIM, verify the versions of the followi
    sudo apt-cache madison <package_name>
    ```
 
-   Example for `<package_name>` is `linux-headers-5.8.0-63-generic`
+   Example for `<package_name>` is `linux-headers-6.2.0-26-generic`
 
 4. In case of a version mismatch, update the latest version of `linux-header` package in:
 

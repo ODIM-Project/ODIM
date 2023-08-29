@@ -166,7 +166,9 @@ The following diagram is a logical representation of each controller node in a K
 
 ![Cluster node](docs/images/odim_cluster.png)
 
-The northbound management and orchestration systems access the Resource Aggregator for ODIM services through a virtual IP address \(VIP\) configured on the Kubernetes cluster using Keepalived. Communication between Resource Aggregator for ODIM and the southbound infrastructure happens through the same VIP.
+For one-node deployment, the northbound management and orchestration systems access the Resource Aggregator for ODIM services through the controller IP address. Communication between Resource Aggregator for ODIM and the southbound infrastructure happens through the same controller IP address.
+
+For three-node deployment, the northbound management and orchestration systems access the Resource Aggregator for ODIM services through a virtual IP address \(VIP\) configured on the Kubernetes cluster using Keepalived. Communication between Resource Aggregator for ODIM and the southbound infrastructure happens through the same VIP.
 
 Nginx acts as a reverse-proxy for the cluster nodes. Keepalived and Nginx together help in implementing high availability of the Resource Aggregator for ODIM services on the cluster nodes for both northbound management applications and southbound infrastructure.
 
@@ -271,7 +273,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
    ```
 
    ```
-   sudo apt-get install sshpass=1.06-1 -y
+   sudo apt-get install sshpass=1.09-1 -y
    ```
    
    ```
@@ -382,7 +384,7 @@ If you experience any issues while deploying Resource Aggregator for ODIM, pleas
         /bin/bash get_helm.sh
         ```
 
-10. Run the following command:
+10. Run the following command on deployment node and cluster nodes:
 
     ```
     sudo vi  /etc/needrestart/needrestart.conf
@@ -557,10 +559,10 @@ While deploying Resource Aggregator for ODIM, verify the versions of the followi
 1. Enter the following command:
 
    ```
-   sudo apt-cache madison linux-headers-linux-headers-6.2.0-26-generic
+   sudo apt-cache madison linux-headers-6.2.0-26-generic
    ```
 
-   > **NOTE**: If the above command fails with the error message, `N: Unable to locate package linuxheaders-5.8.0-63-generic`, the package version has been updated. Proceed with further steps to find the latest version.
+   > **NOTE**: If the above command fails with the error message, `N: Unable to locate package linuxheaders-6.2.0-26-generic`, the package version has been updated. Proceed with further steps to find the latest version.
    
 2. Enter the following command:
 
@@ -574,7 +576,7 @@ While deploying Resource Aggregator for ODIM, verify the versions of the followi
    sudo apt-cache madison <package_name>
    ```
 
-   Example for `<package_name>` is `linux-headers-5.8.0-63-generic`
+   Example for `<package_name>` is `linux-headers-6.2.0-26-generic`
 
 4. In case of a version mismatch, update the latest version of `linux-header` package in:
 
@@ -3165,7 +3167,7 @@ Run the following commands:
 1. Run the following commands:
    
    1. ```
-      sudo apt-get install -y apt-transport-https=2.4.9 ca-certificates=20230311ubuntu0.22.04.1 curl=7.81.0-1ubuntu1.13
+      sudo apt-get install -y apt-transport-https=2.4.10 ca-certificates=20230311ubuntu0.22.04.1 curl=7.81.0-1ubuntu1.13
       ```
 	  
    2. ```

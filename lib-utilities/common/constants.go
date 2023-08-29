@@ -498,7 +498,7 @@ var Actions = map[ActionKey]ActionType{
 	{"Managers", "VirtualMedia.InsertMedia", "POST"}: {"181", "VirtualMediaInsertMedia"},
 	{"Managers", "LogServices", "GET"}:               {"182", "GetAllLogServices"},
 	{"Managers", LogServicesID, "GET"}:               {"183", "GetLogServices"},
-	{"Managers", "Entries", "GET"}:                   {"184", "GetAllLogServiceEntries"},
+	{"Managers", "Entries", "GET"}:                   {"184", "GetAllEntries"},
 	{"Managers", EntriesID, "GET"}:                   {"185", "GetLogServiceEntries"},
 	{"Managers", "LogService.ClearLog", "POST"}:      {"186", "LogServiceClearLog"},
 	{"Managers", "RemoteAccountService", "GET"}:      {"187", "GetRemoteAccountService"},

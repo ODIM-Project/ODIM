@@ -24,8 +24,8 @@ Resource Aggregator for Open Distributed Infrastructure Management \(ODIM™\) i
 
 This document helps you troubleshoot any common issues you might experience while deploying or using Resource Aggregator for ODIM. Along with this document, Resource Aggregator for ODIM is shipped with the following comprehensive set of electronic documentation:
 
-- *[Resource Aggregator for ODIM Getting Started Readme](https://github.com/ODIM-Project/ODIM/blob/development/README.md)* — This document mainly provides instructions for deploying Resource Aggregator for ODIM and the supported plugins, and covers few typical product use cases.
-- *[Resource Aggregator for ODIM API Readme](https://github.com/ODIM-Project/ODIM/blob/development/docs/README.md)* — This document provides detailed information on all the supported APIs of Resource Aggregator for ODIM.
+- *[Resource Aggregator for ODIM Getting Started Readme](https://github.com/ODIM-Project/ODIM/blob/main/README.md)* — This document mainly provides instructions for deploying Resource Aggregator for ODIM and the supported plugins, and covers few typical product use cases.
+- *[Resource Aggregator for ODIM API Readme](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)* — This document provides detailed information on all the supported APIs of Resource Aggregator for ODIM.
 
 ## Conventions used in the document
 
@@ -53,8 +53,8 @@ You can also find answers to some of the Frequently Asked Questions related to R
    2. Reset and deploy Kubernetes again.
 
       Reference links to the issue:
-      https://docs.docker.com/config/daemon/#troubleshoot-conflicts-between-the-daemonjson-and-startup-scripts
-      https://docs.docker.com/config/daemon/#use-the-hosts-key-in-daemonjson-with-systemd
+      *https://docs.docker.com/config/daemon/#troubleshoot-conflicts-between-the-daemonjson-and-startup-scripts*
+      *https://docs.docker.com/config/daemon/#use-the-hosts-key-in-daemonjson-with-systemd*
 
 ------
 

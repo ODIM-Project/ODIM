@@ -110,7 +110,7 @@ Resource Aggregator for ODIM comprises the following two key components:
     -  Plugin for unmanaged racks (URP): This plugin acts as a resource manager for unmanaged racks
     -  Integration of additional third-party plugins
    
-   Resource Aggregator for ODIM allows third parties to easily develop and integrate their plugins into its framework. For more information, see *[Resource Aggregator for Open Distributed Infrastructure Management™ Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md)*.
+   Resource Aggregator for ODIM allows third parties to easily develop and integrate their plugins into its framework. For more information, see *[Resource Aggregator for Open Distributed Infrastructure Management™ Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/main/plugin-redfish/README.md)*.
    
    
 
@@ -224,7 +224,7 @@ The following table lists the software components and versions that are compatib
 
 # Troubleshooting information
 
-If you experience any issues while deploying Resource Aggregator for ODIM, please see the *Troubleshooting Readme* for solutions, workarounds, and FAQs at *https://github.com/ODIM-Project/ODIM/blob/development/docs/Troubleshooting.md*.
+If you experience any issues while deploying Resource Aggregator for ODIM, please see the *Troubleshooting Readme* for solutions, workarounds, and FAQs at *https://github.com/ODIM-Project/ODIM/blob/main/docs/Troubleshooting.md*.
 
 
 
@@ -1840,7 +1840,7 @@ The plugin you want to add is successfully deployed.
    
        /redfish/v1/Managers
    
-    For more information, see "*Adding a plugin as an aggregation source*" section in the *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
+    For more information, see "*Adding a plugin as an aggregation source*" section in the *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.
    
 2. To verify that the added plugin is active and running, do the following: 
     1. To get the list of all available managers, perform HTTP `GET` on: 
@@ -1883,7 +1883,7 @@ The plugin you want to add is successfully deployed.
     -    `State` is `Enabled` 
     
     
-    For more information, see "*Managers*" section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
+    For more information, see "*Managers*" section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.
     	
 
 # Resource Aggregator for ODIM post-deployment operations
@@ -2677,7 +2677,7 @@ This action discovers information about a server and performs a detailed invento
 
 After the server is successfully added as an aggregation source, it will also be available as a computer system resource at `/redfish/v1/Systems/` and a manager resource at `/redfish/v1/Managers/`.
 
-For more information such as curl command, sample request, and sample response, see *Adding a server as an aggregation source* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
+For more information such as curl command, sample request, and sample response, see *Adding a server as an aggregation source* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.
 
 
 ## Viewing the resource inventory
@@ -2687,7 +2687,7 @@ To view the collection of servers available in the resource inventory, perform H
 `/redfish/v1/Systems`
 
 
-For more information such as curl command, sample request, and sample response, see *Collection of computer systems* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
+For more information such as curl command, sample request, and sample response, see *Collection of computer systems* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.
 
 
 ## Configuring BIOS settings for a server
@@ -2698,7 +2698,7 @@ To configure BIOS settings for a specific server, perform HTTP `PATCH` on the fo
 `/redfish/v1/Systems/{ComputerSystemId}/Bios/Settings`
 
 
-For more information such as curl command, sample request, and sample response, see *Changing BIOS settings* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
+For more information such as curl command, sample request, and sample response, see *Changing BIOS settings* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.
 
 ## Resetting a server
 
@@ -2714,7 +2714,7 @@ To reset a group of servers, perform HTTP `POST` on the following URI with the r
 `/redfish/v1/AggregationService/Actions/AggregationService.Reset`
 
 
-For more information such as curl command, sample request, and sample response, see *Resetting servers* and *Resetting a computer system* sections in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
+For more information such as curl command, sample request, and sample response, see *Resetting servers* and *Resetting a computer system* sections in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.
 
 ## Setting one time boot path for a server
 
@@ -2724,7 +2724,7 @@ To set boot path of a server, perform HTTP `POST` on the following URI:
 `/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.SetDefaultBootOrder`
 
 
-For more information such as curl command, sample request, and sample response, see *Changing the boot order of a computer system to default settings* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
+For more information such as curl command, sample request, and sample response, see *Changing the boot order of a computer system to default settings* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.
 
 
 ## Searching the inventory for specific servers
@@ -2740,7 +2740,7 @@ Example: `redfish/v1/Systems?$filter=MemorySummary/TotalSystemMemoryGiB%20eq%203
 
 This URI searches the inventory for servers having total physical memory of 384 GB. On successful completion, it provides links to the filtered servers.
 
-For more information such as curl command, sample request, and sample response, see *Search and filter* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
+For more information such as curl command, sample request, and sample response, see *Search and filter* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.
 
 
 ## Updating software and firmware
@@ -2765,7 +2765,7 @@ To subscribe to events such as alerts and alarms from southbound resources and t
 ```
 
 
-For more information such as curl command, sample request, and sample response, see *Creating an event subscription* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
+For more information such as curl command, sample request, and sample response, see *Creating an event subscription* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.
 
 ## Viewing network fabrics
 
@@ -2792,7 +2792,7 @@ To view a collection of network fabrics and its switches, address pools, endpoin
 ```
 
 
-For more information such as curl command, sample request, and sample response, and for information on how to create fabric resources such as address pools, endpoints, and zones, see *Host to fabric networking* in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
+For more information such as curl command, sample request, and sample response, and for information on how to create fabric resources such as address pools, endpoints, and zones, see *Host to fabric networking* in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.
 
 ## Creating and deleting volumes
 
@@ -2810,7 +2810,7 @@ To remove an existing volume, perform HTTP DELETE on the following URI:
 ```
 
 
-For more information such as curl command, sample request, and sample response, see *Creating a volume* and *Deleting a volume* sections in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
+For more information such as curl command, sample request, and sample response, see *Creating a volume* and *Deleting a volume* sections in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.
 
 
 ## Removing a server from the resource inventory
@@ -2826,7 +2826,7 @@ This action erases the inventory of a specific server and also deletes all the e
 
 > **NOTE**: You can remove only one server at a time.
 
-For more information such as curl command, sample request, and sample response, see *Deleting a server* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs)*.
+For more information such as curl command, sample request, and sample response, see *Deleting a server* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.
 
 # Using odim-controller command-line interface
 
@@ -3381,7 +3381,7 @@ The following table lists all the configuration parameters required by odim-cont
 |nodes|List of hostnames, IP addresses, and usernames of the nodes that are part of the Kubernetes cluster you want to set up.<br>**NOTE**: For one-node cluster configuration, information of only the controller node is required.<br />|
 |Node<n>_Hostname|Hostname of a cluster node. To know the hostname, run `hostname` on each node.<br>|
 |ip|IPv4 address of cluster node(s).|
-|ipv6|IPv6 addresses of cluster node(s).<br />The parameter `ipv6` (for all nodes) is optional. It can be empty if you set the `nwPreference` parameter to its default value `ipv4`.<br />**NOTE**: For more information, see the *IPv6 support* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/development/docs/README.md)*.|
+|ipv6|IPv6 addresses of cluster node(s).<br />The parameter `ipv6` (for all nodes) is optional. It can be empty if you set the `nwPreference` parameter to its default value `ipv4`.<br />**NOTE**: For more information, see the *IPv6 support* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.|
 |username|Username of a cluster node.<br> **NOTE**: Ensure that the username is same for all the nodes.<br>|
 |priority|An integer indicating the priority to be assigned to the Keepalived instance on a particular cluster node. A cluster node having the highest number as the priority value becomes the leader node of the cluster and the Virtual IP gets attached to it.<br/>For example, if there are three cluster nodes having the priority numbers as one, two, and three, the cluster node with the priority value of three becomes the leader node.|
 |nwPreference|Default value is `ipv4`. If you specify `dualStack` for this parameter, the Resource Aggregator API service can be reached via both IPv4 and IPv6 addresses.|
@@ -3420,9 +3420,9 @@ The following table lists all the configuration parameters required by odim-cont
 |kafkaJKSPassword|The password of the Kafka keystore.|
 |redisOndiskDataPath|The path to persist on disk Redis data.|
 |redisInmemoryDataPath|The path to persist in-memory Redis data.|
-|resourceRateLimit|[Optional] Resources can be limited for a specific time (in milliseconds). These resources include the log service entries that take more retrieval time from the BMC servers. <br />**NOTE**: For more information, see *Rate limits* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/development/docs/README.md)*.|
-|requestLimitPerSession|[Optional] Number of concurrent API requests sent per login session can be limited. <br />**NOTE:** For more information, see *Rate limits* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/development/docs/README.md)*.|
-|sessionLimitPerUser|[Optional] Number of active sessions per user can be limited. <br />**NOTE:** For more information, see *Rate limits* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/development/docs/README.md)*.|
+|resourceRateLimit|[Optional] Resources can be limited for a specific time (in milliseconds). These resources include the log service entries that take more retrieval time from the BMC servers. <br />**NOTE**: For more information, see *Rate limits* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.|
+|requestLimitPerSession|[Optional] Number of concurrent API requests sent per login session can be limited. <br />**NOTE:** For more information, see *Rate limits* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.|
+|sessionLimitPerUser|[Optional] Number of active sessions per user can be limited. <br />**NOTE:** For more information, see *Rate limits* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/blob/main/docs/README.md)*.|
 |zookeeperConfPath|The path to store Zookeeper configuration data.|
 |zookeeperDataPath|The path to persist Zookeeper data.|
 |zookeeperJKSPassword|The password of the ZooKeeper keystore.|

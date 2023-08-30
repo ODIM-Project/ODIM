@@ -816,6 +816,30 @@ func (e *ExternalInterfaces) DeleteSubscriptions(ctx context.Context, originReso
 	return resp, nil
 }
 
+// DeleteSubscriptions will delete subscription from device
+func (e *ExternalInterfaces) GetSubscriptionLocation(ctx context.Context, target *common.Target) error {
+	var err error
+	var deviceSubscription *common.DeviceSubscription
+	addr, err := common.GetIPFromHostName(target.ManagerAddress)
+	if err != nil {
+		return err
+	}
+	searchKey := evcommon.GetSearchKey(addr, evmodel.DeviceSubscriptionIndex)
+	deviceSubscription, err = e.GetDeviceSubscriptions(searchKey)
+
+	if err != nil {
+		// if its first subscription then no need to check events subscribed
+		if strings.Contains(err.Error(), "No data found for the key") {
+			return nil
+		}
+		errorMessage := "Error while get subscription details: " + err.Error()
+
+		l.LogWithFields(ctx).Error(errorMessage)
+		return err
+	}
+	target.Location = deviceSubscription.Location
+	return nil
+}
 func (e *ExternalInterfaces) createEventSubscription(ctx context.Context, taskID string, subTaskID string, subTaskChan chan<- int32, reqSessionToken string,
 	targetURI string, request model.EventDestination, originResource string, result *evresponse.MutexLock,
 	wg *sync.WaitGroup, collectionFlag bool, collectionName string, aggregateResource string, isAggregateCollection bool) {

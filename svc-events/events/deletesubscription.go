@@ -112,7 +112,6 @@ func (e *ExternalInterfaces) DeleteEventSubscriptions(ctx context.Context, req *
 
 	// Delete Event Subscription from device also
 	err = e.deleteSubscription(ctx, target, originResource)
-
 	if err != nil {
 		l.LogWithFields(ctx).Error("error while deleting event subscription details : " + err.Error())
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
@@ -263,9 +262,9 @@ func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(ctx context.Context
 
 			return resp
 		}
-
 		if isStatusAccepted {
 			services.SaveEventSubscriptionID(ctx, taskId, evtSubscription.SubscriptionID)
+			resp.StatusCode = http.StatusAccepted
 			return resp
 		}
 
@@ -294,8 +293,8 @@ func (e *ExternalInterfaces) DeleteEventSubscriptionsDetails(ctx context.Context
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
 	resp.Body = commonResponse
-	e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.OK,
-		common.Completed, percentComplete, http.MethodDelete))
+	err = e.UpdateTask(ctx, fillTaskData(taskId, targetURI, string(req.EventSubscriptionID), resp, common.Completed,
+		common.OK, percentComplete, http.MethodDelete))
 
 	return resp
 }
@@ -378,8 +377,7 @@ func (e *ExternalInterfaces) deleteAndReSubscribeToEvents(ctx context.Context, e
 			Protocol:      protocol,
 			Destination:   destination,
 		}
-
-		isStatusAccepted, err = e.subscribe(ctx, subscriptionPost, origin.Oid, deleteFlag, sessionToken, sessionUserName, taskID)
+		isStatusAccepted, err = e.subscribe(ctx, subscriptionPost, origin.Oid, deleteFlag, sessionToken, sessionUserName, taskID, evtSubscription.SubscriptionID)
 		if err != nil {
 			return isStatusAccepted, err
 		}
@@ -417,17 +415,26 @@ func isCollectionOriginResourceURI(origin string) bool {
 
 // Subscribe to the Event Subscription
 func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost model.EventDestination, origin string,
-	deleteFlag bool, sessionToken string, sessionUserName string, taskId string) (bool, error) {
+	deleteFlag bool, sessionToken string, sessionUserName string, taskId, subscriptionId string) (bool, error) {
 	var isStatusAccepted bool
 	if strings.Contains(origin, "Fabrics") {
 		return isStatusAccepted, e.resubscribeFabricsSubscription(ctx, subscriptionPost, origin, sessionUserName, taskId, deleteFlag)
 	}
 	if strings.Contains(origin, "/redfish/v1/AggregationService/Aggregates") {
-		return isStatusAccepted, e.resubscribeAggregateSubscription(ctx, subscriptionPost, origin, deleteFlag, sessionToken, sessionUserName, taskId)
+		return isStatusAccepted, e.resubscribeAggregateSubscription(ctx, subscriptionPost, origin, deleteFlag, sessionToken, sessionUserName, taskId, subscriptionId)
 	}
 	originResource := origin
 	if isCollectionOriginResourceURI(originResource) {
+		isStatusAccepted = true
 		l.LogWithFields(ctx).Error("Collection of origin resource:" + originResource)
+		subtaskID := e.CreateSubTask(ctx, sessionUserName, taskId)
+		resp := response.RPC{}
+		resp.StatusCode = 200
+		resp.Body = subscriptionPost
+		services.SaveEventSubscriptionID(ctx, taskId, subscriptionId)
+
+		e.UpdateTask(ctx, fillTaskData(subtaskID, originResource, "", resp, common.Completed,
+			common.OK, 100, http.MethodDelete))
 		return isStatusAccepted, nil
 	}
 	target, _, err := e.getTargetDetails(originResource)
@@ -444,10 +451,10 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 		return isStatusAccepted, fmt.Errorf("error while marshalling subscription details: %s", err)
 	}
 	target.PostBody = postBody
-	// _, err = e.DeleteSubscriptions(ctx, origin, "", plugin, target)
-	// if err != nil {
-	// 	return err
-	// }
+	err = e.GetSubscriptionLocation(ctx, target)
+	if err != nil {
+		return isStatusAccepted, err
+	}
 
 	// if deleteFlag is true then only one document is there
 	// so don't re subscribe again
@@ -819,14 +826,14 @@ func getAggregateSystemList(origin string, sessionToken string) ([]model.Link, e
 // resubscribeAggregateSubscription method subscribe event for
 // aggregate system members
 func (e *ExternalInterfaces) resubscribeAggregateSubscription(ctx context.Context, subscriptionPost model.EventDestination,
-	origin string, deleteFlag bool, sessionToken string, sessionUserName string, taskId string) error {
+	origin string, deleteFlag bool, sessionToken string, sessionUserName string, taskId, subscriptionId string) error {
 	originResource := origin
 	systems, err := getAggregateSystemList(originResource, sessionToken)
 	if err != nil {
 		return nil
 	}
 	for _, system := range systems {
-		_, err = e.subscribe(ctx, subscriptionPost, system.Oid, deleteFlag, sessionToken, sessionUserName, taskId)
+		_, err = e.subscribe(ctx, subscriptionPost, system.Oid, deleteFlag, sessionToken, sessionUserName, taskId, subscriptionId)
 		if err != nil {
 			return err
 		}

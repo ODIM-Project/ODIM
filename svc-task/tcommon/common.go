@@ -131,6 +131,26 @@ func UpdateSubscriptionLocation(ctx context.Context, location, host string) {
 	l.LogWithFields(ctx).Debug("Location update status ", isUpdated)
 }
 
+// DeleteSubscription do the RPC call to events service to delete subscription
+// once a delete event subscription is completed
+func DeleteSubscription(ctx context.Context, subscriptionID string) {
+	conn, err := services.ODIMService.Client(services.Events)
+	if err != nil {
+		l.LogWithFields(ctx).Error("Error while Event ", err.Error())
+		return
+	}
+	defer conn.Close()
+	event := eventproto.NewEventsClient(conn)
+	_, err = event.DeleteSubscription(ctx, &eventproto.EventRequest{
+		EventSubscriptionID: subscriptionID,
+	})
+	if err != nil {
+		l.LogWithFields(ctx).Info("Error while delete subscription ", err)
+		return
+	}
+	l.LogWithFields(ctx).Debug("Subscription delete completed ", subscriptionID)
+}
+
 // UpdateAccount do the RPC call to events service to update account details
 func UpdateRemoteAccount(ctx context.Context, location, host string) {
 	conn, err := services.ODIMService.Client(services.Managers)

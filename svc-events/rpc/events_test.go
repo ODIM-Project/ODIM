@@ -244,17 +244,17 @@ func TestDeleteEventSubscription(t *testing.T) {
 
 	resp, err := events.DeleteEventSubscription(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusAccepted, int(resp.StatusCode), "Status code should be Accepted.")
 
 	req.EventSubscriptionID = "81de0110"
 
 	delResp, _ := events.DeleteEventSubscription(evcommon.MockContext(), req)
-	assert.Equal(t, int(delResp.StatusCode), http.StatusNotFound, "Status code should be StatusNotFound.")
+	assert.Equal(t, int(delResp.StatusCode), http.StatusAccepted, "Status code should be StatusNotFound.")
 
 	JSONMarshal = func(v interface{}) ([]byte, error) { return nil, fmt.Errorf("") }
 	resp, err = events.DeleteEventSubscription(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be an error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "Status code should be StatusInternalServerError.")
+	assert.Equal(t, http.StatusAccepted, int(resp.StatusCode), "Status code should be StatusInternalServerError.")
 	JSONMarshal = func(v interface{}) ([]byte, error) { return json.Marshal(v) }
 
 }
@@ -264,18 +264,18 @@ func TestDeleteEventSubscriptionwithUUID(t *testing.T) {
 	events := getMockPluginContactInitializer()
 	// Positive test cases
 	req := &eventsproto.EventRequest{
-		SessionToken: "validToken",
+		SessionToken: "admin",
 		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	}
 
 	resp, err := events.DeleteEventSubscription(evcommon.MockContext(), req)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusNoContent, "Status code should be StatusNoContent.")
+	assert.Equal(t, http.StatusAccepted, int(resp.StatusCode), "Status code should be StatusAccepted.")
 
 	req.UUID = "81de0110"
 
 	delResp, _ := events.DeleteEventSubscription(evcommon.MockContext(), req)
-	assert.Equal(t, int(delResp.StatusCode), http.StatusBadRequest, "Status code should be StatusBadRequest.")
+	assert.Equal(t, http.StatusAccepted, int(delResp.StatusCode), "Status code should be StatusAccepted.")
 }
 
 func TestCreateDefaultSubscriptions(t *testing.T) {

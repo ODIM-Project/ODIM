@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -302,20 +303,39 @@ func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.E
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.EventService, podName)
 	var (
-		taskID string
-		resp   eventsproto.EventSubResponse
+		// taskID string
+		resp eventsproto.EventSubResponse
 	)
-
-	sessionUserName, taskID, err := e.AuthorizeAndCreateTask(ctx, req.SessionToken, &resp)
-	if err != nil {
-		return &resp, err
-	}
 
 	if req.UUID == "" {
 		// Delete Event Subscription when admin requested
+		sessionUserName, taskID, err := e.AuthorizeAndCreateTask(ctx, req.SessionToken, &resp)
+		if err != nil {
+			return &resp, err
+		}
 		go e.Connector.DeleteEventSubscriptionsDetails(ctx, req, sessionUserName, taskID)
 	} else {
 		// Delete Event Subscription to Device when Server get Deleted
+		// Task Service using RPC and get the taskID
+		taskURI, err := e.Connector.CreateTask(ctx, req.SessionToken)
+		if err != nil {
+			resp = eventsproto.EventSubResponse{}
+			errMsg := "Unable to create task: " + err.Error()
+			// // generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
+			l.LogWithFields(ctx).Error(errMsg)
+			return &resp, nil
+		}
+		var taskID string
+		strArray := strings.Split(taskURI, "/")
+		if strings.HasSuffix(taskURI, "/") {
+			taskID = strArray[len(strArray)-2]
+		} else {
+			taskID = strArray[len(strArray)-1]
+		}
+		resp.StatusCode = http.StatusAccepted
+		resp.Header = map[string]string{
+			"Location": "/taskmon/" + taskID,
+		}
 		go e.Connector.DeleteEventSubscriptions(ctx, req, taskID)
 	}
 	return &resp, nil
@@ -408,4 +428,10 @@ func (e *Events) UpdateSubscriptionLocationRPC(ctx context.Context, in *eventspr
 	isUpdated := e.Connector.UpdateSubscriptionLocation(ctx, in.Location, in.Host)
 	resp.Status = isUpdated
 	return &resp, nil
+}
+
+func (e *Events) DeleteSubscription(ctx context.Context, in *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
+	err := e.Connector.DeleteEvtSubscription(in.EventSubscriptionID)
+	return &resp, err
 }

@@ -20,8 +20,6 @@ The API service under the plugin layer can use basic authentication or token-bas
 <blockquote>
 Note: Data flows from the plugin to the aggregator via the EMB. The plugin gets authenticated by the EMB using TLS certificates.
 </blockquote>
-
-
 The plugin currently uses credentials of the client for authenticating the same.
 
 Data on the wire is encrypted using TLS and is not sent out as clear text. For this, the plugin exposes a CA signed certificate for the clients to authenticate itself. The plugins communicate with the aggregator, if required, using the northbound aggregator API. This may be needed to gather resource information that are not directly managed by the particular plugin. 

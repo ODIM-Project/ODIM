@@ -286,7 +286,7 @@ This layer hosts a message broker which acts as a communication channel between 
 **Plugin layer**
 
 Plugins abstract vendor-specific access protocols to a common interface which the aggregator layers use to communicate with the resources. The plugin layer connects the actual managed resources to the aggregator layers and is decoupled from the upper layers. The layer uses REST-based communication to interact with the other layers. It collects events to be exposed to fault management systems and uses the event message bus to publish events. 
-The plugin layer allows developers to create plugins on the tool set of their choice without enforcing any strict language binding. To know how to develop plugins, see *[Resource Aggregator for Open Distributed Infrastructure Management Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md)*.
+The plugin layer allows developers to create plugins on the tool set of their choice without enforcing any strict language binding. To know how to develop plugins, see *[Resource Aggregator for Open Distributed Infrastructure Management Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/main/plugin-redfish/README.md)*.
 
 
 # API usage and access guidelines

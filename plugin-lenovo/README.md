@@ -13,5 +13,5 @@ This guide provides a set of guidelines for developing API and EMB functions to 
 
 ## Lenovo plugin deployment instructions
 
-For deploying the Lenovo plugin and adding the plugin to the Resource Aggregator for ODIM framework, see *Deploying the Lenovo plugin* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ Readme](https://github.com/ODIM-Project/ODIM/blob/development/README.md)*.
+For deploying the Lenovo plugin and adding the plugin to the Resource Aggregator for ODIM framework, see *Deploying the Lenovo plugin* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ Readme](https://github.com/ODIM-Project/ODIM/blob/main/README.md)*.
 

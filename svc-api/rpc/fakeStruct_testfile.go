@@ -240,6 +240,9 @@ func (fakeStruct) SubscribeEMB(ctx context.Context, in *eventsproto.SubscribeEMB
 func (fakeStruct) UpdateSubscriptionLocationRPC(ctx context.Context, in *eventsproto.UpdateSubscriptionLocation, opts ...grpc.CallOption) (*eventsproto.SubscribeEMBResponse, error) {
 	return nil, errors.New("fakeError")
 }
+func (fakeStruct) DeleteSubscription(ctx context.Context, in *eventsproto.EventRequest, opts ...grpc.CallOption) (*eventsproto.EventSubResponse, error) {
+	return nil, errors.New("fakeError")
+}
 
 //--------------------------------------FABRICS--------------------------------------
 

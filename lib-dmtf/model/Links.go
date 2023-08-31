@@ -43,6 +43,7 @@ type Links struct {
 	NetworkDeviceFunctions   []*Link     `json:"NetworkDeviceFunctions,omitempty"`
 	PowerOutlets             []*Link     `json:"PowerOutlets,omitempty"`
 	DedicatedSpareDrives     []*Link     `json:"DedicatedSpareDrives,omitempty"`
+	NVMeoDiscoverySubsystems []*Link     `json:"NVMeoDiscoverySubsystems,omitempty"`
 }
 
 // Link holds the odata id redfish links

@@ -62,6 +62,8 @@ type SMTPAuthentication string
 // SMTPConnectionProtocol - This property shall contain the connection type to the outgoing SMTP server.
 type SMTPConnectionProtocol string
 
+type DiagnosticDataType string
+
 const (
 	// EventTypeAlert - "Alert": "A condition requires attention."
 	EventTypeAlert EventType = "Alert"
@@ -297,7 +299,32 @@ const (
 
 	// SMTPConnectionProtocolTLSSSL - SMTPConnection Protocol type TLS_SSL
 	SMTPConnectionProtocolTLSSSL SMTPConnectionProtocol = "TLS_SSL"
+
+	//Manager diagnostic data.
+	DiagnosticDataTypeManager DiagnosticDataType = "Manager"
+
+	//Pre-OS diagnostic data.
+	DiagnosticDataTypePreOS DiagnosticDataType = "PreOS"
+
+	//Operating system (OS) diagnostic data.
+	DiagnosticDataTypeOS DiagnosticDataType = "OS"
+
+	//OEM diagnostic data.
+	DiagnosticDataTypeOEM DiagnosticDataType = "OEM"
+
+	//UEFI Common Platform Error Record.
+	DiagnosticDataTypeCPER DiagnosticDataType = "CPER"
+
+	// A Section of a UEFI Common Platform Error Record.
+	DiagnosticDataTypeCPERSection DiagnosticDataType = "CPERSection"
 )
+
+// Details for a CPER section or record associated with an event.
+type CPER struct {
+	NotificationType string      `json:"NotificationType,omitempty"`
+	Oem              interface{} `json:"Oem,omitempty"`
+	SectionType      string      `json:"SectionType,omitempty"`
+}
 
 // Event schema describes the JSON payload received by an event destination, which has
 // subscribed to event notification, when events occur. This resource contains data
@@ -323,7 +350,12 @@ type Event struct {
 // Refer to Event.v1_7_0.json of the redfish spec for more details
 type EventRecord struct {
 	Actions                    *OemActions `json:"Actions,omitempty"`
+	AdditionalDataSizeBytes    int         `json:"AdditionalDataSizeBytes,omitempty"`
+	AdditionalDataURI          string      `json:"AdditionalDataURI,omitempty"`
+	CPER                       CPER        `json:"CPER,omitempty"`
 	Context                    string      `json:"Context,omitempty"`
+	DiagnosticData             string      `json:"DiagnosticData,omitempty"`
+	DiagnosticDataType         string      `json:"DiagnosticDataType,omitempty"`
 	EventGroupID               int         `json:"EventGroupId,omitempty"`
 	EventID                    string      `json:"EventId,omitempty"`
 	EventTimestamp             string      `json:"EventTimestamp,omitempty"`

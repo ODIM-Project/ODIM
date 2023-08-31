@@ -133,7 +133,7 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		Description:  "Logs view",
 		Members: []*dmtf.Link{
 			&dmtf.Link{
-				Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL",
+				Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL/Entries",
 			},
 		},
 		MembersCount: 1,
@@ -149,7 +149,7 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 	//adding LogService Members
 	logEntrydata := dmtf.LogServices{
 		Ocontext:    "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
-		Oid:         "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL",
+		Oid:         "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL/Entries",
 		Otype:       "#LogService.v1_3_0.LogService",
 		Description: "Logs view",
 		Entries: &dmtf.Entries{
@@ -163,7 +163,7 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 	if err != nil {
 		return fmt.Errorf("unable to marshal manager data: %v", err)
 	}
-	key = "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL"
+	key = "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL/Entries"
 	mgrmodel.GenericSave([]byte(dbdata), "LogServices", key)
 
 	// adding empty logservice entry collection

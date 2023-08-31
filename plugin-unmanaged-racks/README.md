@@ -34,7 +34,7 @@ Please be aware this plugin is still under development, and some features might 
 
 ## URP deployment instructions
 
-For deploying the Unmanaged Racks plugin and adding the plugin to the Resource Aggregator for ODIM framework, refer to the "Deploying the Unmanaged Rack Plugin" section in the [Resource Aggregator for Open Distributed Infrastructure Management™ Readme](https://github.com/ODIM-Project/ODIM/blob/main/README.md).
+For deploying the Unmanaged Racks plugin and adding the plugin to the Resource Aggregator for ODIM framework, see *Deploying the Unmanaged Rack Plugin* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ Readme](https://github.com/ODIM-Project/ODIM/blob/main/README.md)*.
 
 
 

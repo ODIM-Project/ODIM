@@ -14,33 +14,6 @@
 
 package model
 
-type AutoVolumeCreate string 
-"enum": [
-	"Disabled",
-	"NonRAID",
-	"RAID0",
-	"RAID1"
-],
-"enumDescriptions": {
-	"Disabled": "Do not automatically create volumes.",
-	"NonRAID": "Automatically create non-RAID volumes.",
-	"RAID0": "Automatically create RAID0 volumes.",
-	"RAID1": "Automatically create RAID1 volumes."
-},
-const (
-	// Do not automatically create volumes.
-	AutoVolumeCreateDisabled AutoVolumeCreate ="Disabled"
-
-	// Automatically create non-RAID volumes.
-	AutoVolumeCreateNonRAID AutoVolumeCreate = "NonRAID"
-
-	// Automatically create RAID0 volumes.
-	AutoVolumeCreateRAID0 AutoVolumeCreate = "RAID0"
-
-	// Automatically create RAID1 volumes.
-	AutoVolumeCreateRAID1 AutoVolumeCreate = "RAID1"
-)
-
 // Storage redfish structure
 type Storage struct {
 	Oid                     string                `json:"@odata.id"`
@@ -68,10 +41,10 @@ type Storage struct {
 	RedundancyCount         int                   `json:"Redundancy@odata.count,omitempty"`
 	StorageControllersCount int                   `json:"StorageControllers@odata.count,omitempty"`
 	AutoVolumeCreate        string                `json:"AutoVolumeCreate,omitempty"`
-	Connections ConnectionCollection `JSON:"Connections,omitempty"`
+	Connections             ConnectionCollection  `json:"Connections,omitempty"`
 }
 
-// ConnectionCollection redfish structure 
+// ConnectionCollection redfish structure
 type ConnectionCollection struct {
 	ODataContext         string   `json:"@odata.context,omitempty"`
 	ODataID              string   `json:"@odata.id,omitempty"`

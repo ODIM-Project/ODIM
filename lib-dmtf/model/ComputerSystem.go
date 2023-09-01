@@ -1176,15 +1176,6 @@ type Processors struct {
 }
 
 // SystemInterface redfish structure
-type MemorySummary struct {
-	MemoryMirroring                string        `json:"MemoryMirroring,omitempty"`
-	Metrics                        MemoryMetrics `json:"Metrics,omitempty"`
-	Status                         Status        `json:"Status"`
-	TotalSystemMemoryGiB           int           `json:"TotalSystemMemoryGiB,omitempty"`
-	TotalSystemPersistentMemoryGiB int           `json:"TotalSystemPersistentMemoryGiB,omitempty"`
-}
-
-// SystemInterface redfish structure
 type MemoryMetrics struct {
 	Oid                           string         `json:"@odata.id"`
 	Ocontext                      string         `json:"@odata.context,omitempty"`
@@ -1204,29 +1195,6 @@ type MemoryMetrics struct {
 	Name                          string         `json:"Name"`
 	Oem                           Oem            `json:"Oem,omitempty"`
 	OperatingSpeedMHz             int            `json:"OperatingSpeedMHz,omitempty"`
-}
-
-// SystemInterface redfish structure
-type CurrentPeriod struct {
-	BlocksRead                           int `json:"BlocksRead,omitempty"`
-	BlocksWritten                        int `json:"BlocksWritten,omitempty"`
-	CorrectableECCErrorCount             int `json:"CorrectableECCErrorCount,omitempty"`
-	IndeterminateCorrectableErrorCount   int `json:"IndeterminateCorrectableErrorCount,omitempty"`
-	IndeterminateUncorrectableErrorCount int `json:"IndeterminateUncorrectableErrorCount,omitempty"`
-	UncorrectableECCErrorCount           int `json:"UncorrectableECCErrorCount,omitempty"`
-}
-
-// SystemInterface redfish structure
-type CXL struct {
-	AlertCapabilities *AlertCapabilities `json:"AlertCapabilities,omitempty"`
-}
-
-// SystemInterface redfish structure
-type AlertCapabilities struct {
-	CorrectableECCError   bool `json:"CorrectableECCError,omitempty"`
-	SpareBlock            bool `json:"SpareBlock,omitempty"`
-	Temperature           bool `json:"Temperature,omitempty"`
-	UncorrectableECCError bool `json:"UncorrectableECCError,omitempty"`
 }
 
 // SystemInterface redfish structure

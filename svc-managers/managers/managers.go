@@ -283,13 +283,15 @@ func (e *ExternalInterface) GetManagersResource(ctx context.Context, req *manage
 			tableName = urlData[len(urlData)-2]
 		}
 		data, err := e.DB.GetResource(tableName, req.URL)
+		l.LogWithFields(ctx).Error("Data>>>>>>>>>>>>>", data)
 		if err != nil {
 			if req.ManagerID != config.Data.RootServiceUUID {
 				return e.getPluginManagerResoure(ctx, requestData[0], req.URL)
 			}
 			errorMessage := "unable to get odimra managers details: " + err.Error()
 			l.LogWithFields(ctx).Error(errorMessage)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, []interface{}{}, nil)
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{}, nil)
+			// return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, []interface{}{}, nil)
 		}
 
 		json.Unmarshal([]byte(data), &resource)

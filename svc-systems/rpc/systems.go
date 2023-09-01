@@ -26,14 +26,15 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 )
 
 // Systems struct helps to register service
 type Systems struct {
-	IsAuthorizedRPC    func(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
-	GetSessionUserName func(string) (string, error)
+	IsAuthorizedRPC    func(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error)
+	GetSessionUserName func(context.Context, string) (string, error)
 	CreateTask         func(ctx context.Context, sessionUserName string) (string, error)
 	UpdateTask         func(ctx context.Context, task common.TaskData) error
 	EI                 *systems.ExternalInterface
@@ -49,10 +50,9 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	l.LogWithFields(ctx).Debugf("incoming GetSystemResource request with %s", req.URL)
-	l.LogWithFields(ctx).Info("Inside GetSystemResource function (RPC)")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -79,10 +79,9 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
 	ctx = context.WithValue(ctx, common.ThreadName, common.SystemService)
 	l.LogWithFields(ctx).Debugf("incoming GetSystemsCollection request with %s", req.URL)
-	l.LogWithFields(ctx).Info("Inside GetSystemsCollection function (RPC)")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -108,7 +107,7 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 	l.LogWithFields(ctx).Debugf("incoming GetSystems request with %s", req.URL)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -139,7 +138,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	l.LogWithFields(ctx).Debugln("incoming ComputerSystemReset request")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -147,7 +146,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
-	sessionUserName, err := s.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
@@ -201,7 +200,7 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 	l.LogWithFields(ctx).Debugf("incoming SetDefaultBootOrder request")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -210,8 +209,9 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 		return &resp, nil
 	}
 	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
+		ContactClient:      pmbhandle.ContactPlugin,
+		DevicePassword:     common.DecryptWithPrivateKey,
+		SavePluginTaskInfo: services.SavePluginTaskInfo,
 	}
 	data := pc.SetDefaultBootOrder(ctx, req.SystemID)
 	fillSystemProtoResponse(ctx, &resp, data)
@@ -231,7 +231,7 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 	l.LogWithFields(ctx).Debugf("incoming ChangeBiosSettings request")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -240,11 +240,38 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 		return &resp, nil
 	}
 	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
+		ContactClient:      pmbhandle.ContactPlugin,
+		DevicePassword:     common.DecryptWithPrivateKey,
+		UpdateTask:         s.UpdateTask,
+		SavePluginTaskInfo: services.SavePluginTaskInfo,
 	}
-	data := pc.ChangeBiosSettings(ctx, req)
-	fillSystemProtoResponse(ctx, &resp, data)
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+	// Task Service using RPC and get the taskID
+	taskURI, err := s.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	fillSystemProtoResponse(ctx, &resp, rpcResp)
+	go pc.ChangeBiosSettings(ctx, req, taskID)
 	l.LogWithFields(ctx).Debugf("outgoing response for ChangeBiosSettings : %s", string(resp.Body))
 	return &resp, nil
 }
@@ -258,10 +285,10 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.SystemService, podName)
-	l.LogWithFields(ctx).Debugf("incoming ChangeBootOrderSettings request")
+	l.LogWithFields(ctx).Debugf("incoming ChangeBootOrderSettings request for SystemID: %s", req.SystemID)
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -269,12 +296,47 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
-	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
 	}
-	data := pc.ChangeBootOrderSettings(ctx, req)
-	fillSystemProtoResponse(ctx, &resp, data)
+
+	// Task Service using RPC and get the taskID
+	taskURI, err := s.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	l.LogWithFields(ctx).Debugf("response from generateTaskRespone for id: %s , URI: %s , Is.. Response: %s ", string(taskID), string(taskURI), rpcResp.Body)
+	fillSystemProtoResponse(ctx, &resp, rpcResp)
+
+	var pc = systems.PluginContact{
+		ContactClient:      pmbhandle.ContactPlugin,
+		DevicePassword:     common.DecryptWithPrivateKey,
+		UpdateTask:         s.UpdateTask,
+		SavePluginTaskInfo: services.SavePluginTaskInfo,
+	}
+
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.ChangeBootOrderSettings)
+	ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go pc.ChangeBootOrderSettings(ctx, req, taskID)
+	threadID++
 	l.LogWithFields(ctx).Debugf("outgoing response for ChangeBootOrderSettings : %s", string(resp.Body))
 	return &resp, nil
 }
@@ -291,7 +353,7 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	l.LogWithFields(ctx).Debugf("incoming CreateVolume request")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -299,9 +361,45 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
 
-	data := s.EI.CreateVolume(ctx, req)
-	fillSystemProtoResponse(ctx, &resp, data)
+	// Task Service using RPC and get the taskID
+	taskURI, err := s.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	fillSystemProtoResponse(ctx, &resp, rpcResp)
+	var pc = systems.PluginContact{
+		ContactClient:      pmbhandle.ContactPlugin,
+		DevicePassword:     common.DecryptWithPrivateKey,
+		UpdateTask:         s.UpdateTask,
+		SavePluginTaskInfo: services.SavePluginTaskInfo,
+	}
+
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.CreateVolume)
+	ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go s.EI.CreateVolume(ctx, req, &pc, taskID)
+	threadID++
 	l.LogWithFields(ctx).Debugf("outgoing response for CreateVolume: %s", string(resp.Body))
 	return &resp, nil
 }
@@ -318,7 +416,7 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	l.LogWithFields(ctx).Debugf("incoming DeleteVolume request")
 	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
-	authResp, err := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
@@ -326,10 +424,170 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 		fillSystemProtoResponse(ctx, &resp, authResp)
 		return &resp, nil
 	}
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+	// Task Service using RPC and get the taskID
+	taskURI, err := s.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	fillSystemProtoResponse(ctx, &resp, rpcResp)
+	var pc = systems.PluginContact{
+		ContactClient:      pmbhandle.ContactPlugin,
+		DevicePassword:     common.DecryptWithPrivateKey,
+		UpdateTask:         s.UpdateTask,
+		SavePluginTaskInfo: services.SavePluginTaskInfo,
+	}
 
-	data := s.EI.DeleteVolume(ctx, req)
-	fillSystemProtoResponse(ctx, &resp, data)
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.DeleteVolume)
+	ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go s.EI.DeleteVolume(ctx, req, &pc, taskID)
+	threadID++
 	l.LogWithFields(ctx).Debugf("outgoing response DeleteVolume: %s", string(resp.Body))
+	return &resp, nil
+}
+
+// UpdateSecureBoot defines the operations which handles the RPC request response
+// for updating SecureBoot service of systems micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the lib-utilities package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (s *Systems) UpdateSecureBoot(ctx context.Context, req *systemsproto.SecureBootRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming request to update SecureBoot")
+	var resp systemsproto.SystemsResponse
+	sessionToken := req.SessionToken
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillSystemProtoResponse(ctx, &resp, authResp)
+		return &resp, nil
+	}
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+	// Task Service using RPC and get the taskID
+	taskURI, err := s.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	fillSystemProtoResponse(ctx, &resp, rpcResp)
+	var pc = systems.PluginContact{
+		ContactClient:      pmbhandle.ContactPlugin,
+		DevicePassword:     common.DecryptWithPrivateKey,
+		UpdateTask:         s.UpdateTask,
+		SavePluginTaskInfo: services.SavePluginTaskInfo,
+	}
+
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.UpdateSecureBoot)
+	ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go s.EI.UpdateSecureBoot(ctx, req, &pc, taskID)
+	threadID++
+	l.LogWithFields(ctx).Debugf("outgoing response for UpdateSecureBoot: %s", string(resp.Body))
+	return &resp, nil
+}
+
+// ResetSecureBoot defines the operations which handles the RPC request response
+// for resetting SecureBoot keys of systems.
+// The `ResetAllKeysToDefault` value shall reset all UEFI Secure Boot key databases to their default values.
+// The `DeleteAllKeys` value shall delete the content of all UEFI Secure Boot key databases.
+// The `DeletePK` value shall delete the content of the PK Secure Boot key database.
+// which is present in the request.
+func (s *Systems) ResetSecureBoot(ctx context.Context, req *systemsproto.SecureBootRequest) (*systemsproto.SystemsResponse, error) {
+	ctx = common.GetContextData(ctx)
+	ctx = common.ModifyContext(ctx, common.SystemService, podName)
+	l.LogWithFields(ctx).Debugf("incoming request to reset SecureBoot keys")
+	var resp systemsproto.SystemsResponse
+	sessionToken := req.SessionToken
+
+	authResp, err := s.IsAuthorizedRPC(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		if err != nil {
+			l.LogWithFields(ctx).Errorf("Error while authorizing the session token : %s", err.Error())
+		}
+		fillSystemProtoResponse(ctx, &resp, authResp)
+		return &resp, nil
+	}
+	sessionUserName, err := s.GetSessionUserName(ctx, req.SessionToken)
+	if err != nil {
+		errMsg := "Unable to get session username: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+
+	// Task Service using RPC and get the taskID
+	taskURI, err := s.CreateTask(ctx, sessionUserName)
+	if err != nil {
+		errMsg := "Unable to create task: " + err.Error()
+		fillSystemProtoResponse(ctx, &resp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil))
+		l.LogWithFields(ctx).Error(errMsg)
+		return &resp, nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Location": "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	fillSystemProtoResponse(ctx, &resp, rpcResp)
+	var pc = systems.PluginContact{
+		ContactClient:  pmbhandle.ContactPlugin,
+		DevicePassword: common.DecryptWithPrivateKey,
+		UpdateTask:     s.UpdateTask,
+	}
+
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.ResetSecureBoot)
+	ctx = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go s.EI.ResetSecureBoot(ctx, req, &pc, taskID)
+	threadID++
+	l.LogWithFields(ctx).Debugf("outgoing response ResetSecureBoot: %s", string(resp.Body))
 	return &resp, nil
 }
 

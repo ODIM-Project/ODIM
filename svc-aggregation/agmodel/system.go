@@ -157,6 +157,11 @@ type EventSubscriptionInfo struct {
 	Location   string
 }
 
+// DBPluginDataRead holds the db read client interface function
+type DBPluginDataRead struct {
+	DBReadclient func(string) (string, *errors.Error)
+}
+
 // TriggerInfo holds the metric trigger info of a device
 type TriggerInfo struct {
 }
@@ -173,7 +178,7 @@ type PluginContactRequest struct {
 }
 
 // GetResource fetches a resource from database using table and key
-func GetResource(Table, key string) (string, *errors.Error) {
+func GetResource(ctx context.Context, Table, key string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return "", errors.PackError(err.ErrNo(), err)
@@ -186,6 +191,7 @@ func GetResource(Table, key string) (string, *errors.Error) {
 	if errs := json.Unmarshal([]byte(resourceData), &resource); errs != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
 	}
+	l.LogWithFields(ctx).Debugf("resource details fetched by %s key in %s table: %s", key, Table, resource)
 	return resource, nil
 }
 
@@ -208,17 +214,11 @@ func (system *SaveSystem) Create(ctx context.Context, systemID string) *errors.E
 }
 
 // GetPluginData will fetch plugin details
-func GetPluginData(pluginID string) (Plugin, *errors.Error) {
+func GetPluginData(pluginID string, readPluginData DBPluginDataRead) (Plugin, *errors.Error) {
 	var plugin Plugin
-
-	conn, err := common.GetDBConnection(common.OnDisk)
+	plugindata, err := readPluginData.DBReadclient(pluginID)
 	if err != nil {
-		return plugin, errors.PackError(err.ErrNo(), "error while trying to connect to DB: ", err.Error())
-	}
-
-	plugindata, err := conn.Read("Plugin", pluginID)
-	if err != nil {
-		return plugin, errors.PackError(err.ErrNo(), "error while trying to fetch plugin data: ", err.Error())
+		return plugin, errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
 	}
 
 	if err := json.Unmarshal([]byte(plugindata), &plugin); err != nil {
@@ -232,6 +232,22 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	plugin.Password = bytepw
 
 	return plugin, nil
+}
+
+// GetPluginDBConnection creates db connection and reads plugin data
+func GetPluginDBConnection(PluginID string) (string, *errors.Error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return "", errors.PackError(err.ErrNo(), "error while trying to connect to DB: ", err.Error())
+	}
+
+	plugindata, err := conn.Read("Plugin", PluginID)
+	if err != nil {
+		return "", errors.PackError(err.ErrNo(), "error while trying to fetch plugin data: ", err.Error())
+	}
+
+	return plugindata, nil
+
 }
 
 // GetComputeSystem will fetch the compute resource details
@@ -348,19 +364,21 @@ func DeleteComputeSystem(index int, key string) *errors.Error {
 		return errors.PackError(err.ErrNo(), "error while trying to get ComputerSystem details: ", err.Error())
 	}
 	if len(computeData) == 1 {
+		var deleteItems []string
 		if inventoryData, err = connPool.GetAllMatchingDetails("FirmwareInventory", systemID); err != nil {
 			return errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
 		}
 		for _, value := range inventoryData {
-			if err = connPool.Delete("FirmwareInventory", value); err != nil {
-				return errors.PackError(err.ErrNo(), "error while trying to delete compute details: ", err.Error())
-			}
+			deleteItems = append(deleteItems, "FirmwareInventory:"+value)
 		}
 		if inventoryData, err = connPool.GetAllMatchingDetails("SoftwareInventory", systemID); err != nil {
 			return errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
 		}
 		for _, value := range inventoryData {
-			if err = connPool.Delete("SoftwareInventory", value); err != nil {
+			deleteItems = append(deleteItems, "SoftwareInventory:"+value)
+		}
+		if len(deleteItems) > 1 {
+			if err = connPool.DeleteMultipleKeys(deleteItems); err != nil {
 				return errors.PackError(err.ErrNo(), "error while trying to delete compute details: ", err.Error())
 			}
 		}
@@ -590,7 +608,7 @@ func UpdateComputeSystem(key string, computeData interface{}) error {
 }
 
 // GetResourceDetails fetches a resource from database using key
-func GetResourceDetails(key string) (string, *errors.Error) {
+func GetResourceDetails(ctx context.Context, key string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return "", errors.PackError(err.ErrNo(), err)
@@ -603,6 +621,26 @@ func GetResourceDetails(key string) (string, *errors.Error) {
 	if errs := json.Unmarshal([]byte(resourceData), &resource); errs != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
 	}
+	l.LogWithFields(ctx).Debugf("resource details: %s", resource)
+	return resource, nil
+}
+
+// GetResourceDetailsBytableName fetches a resource from database using key and table name
+
+func GetResourceDetailsBytableName(ctx context.Context, table, key string) (string, *errors.Error) {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return "", errors.PackError(err.ErrNo(), err)
+	}
+	resourceData, err := conn.Read(table, key)
+	if err != nil {
+		return "", errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
+	}
+	var resource string
+	if errs := json.Unmarshal([]byte(resourceData), &resource); errs != nil {
+		return "", errors.PackError(errors.UndefinedErrorType, errs)
+	}
+	l.LogWithFields(ctx).Debugf("resource details: %s", resource)
 	return resource, nil
 }
 
@@ -647,7 +685,7 @@ func (system *SystemOperation) AddSystemOperationInfo(systemID string) *errors.E
 /* Inputs:
 1.systemURI: computer system uri for which system operation is maintained
 */
-func GetSystemOperationInfo(systemURI string) (SystemOperation, *errors.Error) {
+func GetSystemOperationInfo(ctx context.Context, systemURI string) (SystemOperation, *errors.Error) {
 	var systemOperation SystemOperation
 
 	conn, err := common.GetDBConnection(common.InMemory)
@@ -663,6 +701,7 @@ func GetSystemOperationInfo(systemURI string) (SystemOperation, *errors.Error) {
 	if err := json.Unmarshal([]byte(plugindata), &systemOperation); err != nil {
 		return systemOperation, errors.PackError(errors.JSONUnmarshalFailed, err)
 	}
+	l.LogWithFields(ctx).Debug("system operation details: ", systemOperation)
 	return systemOperation, nil
 }
 
@@ -704,7 +743,7 @@ func AddSystemResetInfo(systemID, resetType string) *errors.Error {
 /* Inputs:
 1.systemURI: computer system uri for which system operation is maintained
 */
-func GetSystemResetInfo(systemURI string) (map[string]string, *errors.Error) {
+func GetSystemResetInfo(ctx context.Context, systemURI string) (map[string]string, *errors.Error) {
 	var resetInfo map[string]string
 
 	conn, err := common.GetDBConnection(common.InMemory)
@@ -720,6 +759,7 @@ func GetSystemResetInfo(systemURI string) (map[string]string, *errors.Error) {
 	if err := json.Unmarshal([]byte(plugindata), &resetInfo); err != nil {
 		return resetInfo, errors.PackError(errors.JSONUnmarshalFailed, err)
 	}
+	l.LogWithFields(ctx).Debug("system reset details: ", resetInfo)
 	return resetInfo, nil
 }
 
@@ -755,7 +795,7 @@ func AddAggregationSource(req AggregationSource, aggregationSourceURI string) *e
 }
 
 // GetAggregationSourceInfo fetches the AggregationSource info for the given aggregationSourceURI
-func GetAggregationSourceInfo(aggregationSourceURI string) (AggregationSource, *errors.Error) {
+func GetAggregationSourceInfo(ctx context.Context, aggregationSourceURI string) (AggregationSource, *errors.Error) {
 	var aggregationSource AggregationSource
 
 	conn, err := common.GetDBConnection(common.OnDisk)
@@ -771,6 +811,7 @@ func GetAggregationSourceInfo(aggregationSourceURI string) (AggregationSource, *
 	if err := json.Unmarshal([]byte(data), &aggregationSource); err != nil {
 		return aggregationSource, errors.PackError(errors.JSONUnmarshalFailed, err)
 	}
+	l.LogWithFields(ctx).Debugf("aggregation source name : %s", aggregationSource.Name)
 	return aggregationSource, nil
 }
 
@@ -851,7 +892,6 @@ func GetComputerSystem(systemid string) (string, *errors.Error) {
 
 // CreateAggregate will create aggregate on disk
 func CreateAggregate(aggregate Aggregate, aggregateURI string) *errors.Error {
-
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return err
@@ -898,7 +938,7 @@ func DeleteAggregate(key string) *errors.Error {
 }
 
 // GetAllKeysFromTable retrun all matching data give table name
-func GetAllKeysFromTable(table string) ([]string, error) {
+func GetAllKeysFromTable(ctx context.Context, table string) ([]string, error) {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -907,6 +947,7 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
 	}
+	l.LogWithFields(ctx).Debugf("all keys from %s table: %s", table, keysArray)
 	return keysArray, nil
 }
 
@@ -983,7 +1024,7 @@ func AddConnectionMethod(connectionMethod ConnectionMethod, connectionMethodURI 
 }
 
 // GetConnectionMethod fetches the connection method info for the given connection method uri
-func GetConnectionMethod(connectionMethodURI string) (ConnectionMethod, *errors.Error) {
+func GetConnectionMethod(ctx context.Context, connectionMethodURI string) (ConnectionMethod, *errors.Error) {
 	var connectionMethod ConnectionMethod
 
 	conn, err := common.GetDBConnection(common.OnDisk)
@@ -999,6 +1040,7 @@ func GetConnectionMethod(connectionMethodURI string) (ConnectionMethod, *errors.
 	if err := json.Unmarshal([]byte(data), &connectionMethod); err != nil {
 		return connectionMethod, errors.PackError(errors.JSONUnmarshalFailed, err)
 	}
+	l.LogWithFields(ctx).Debug("connection method details: ", connectionMethod)
 	return connectionMethod, nil
 }
 
@@ -1009,6 +1051,18 @@ func Delete(table, key string, dbtype common.DbType) *errors.Error {
 		return err
 	}
 	if err = conn.Delete(table, key); err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeleteMultipleKeys is used to delete multiple keys from DB using pipeline
+func DeleteMultipleKeys(keys []string, dbtype common.DbType) *errors.Error {
+	conn, err := common.GetDBConnection(dbtype)
+	if err != nil {
+		return err
+	}
+	if err = conn.DeleteMultipleKeys(keys); err != nil {
 		return err
 	}
 	return nil
@@ -1062,7 +1116,7 @@ func SavePluginManagerInfo(body []byte, table string, key string) error {
 
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
-		return fmt.Errorf("Unable to save the plugin data with SavePluginManagerInfo: %v", err.Error())
+		return fmt.Errorf("unable to save the plugin data with SavePluginManagerInfo: %v", err.Error())
 	}
 	if err := conn.Create(table, key, string(body)); err != nil {
 		return errors.PackError(err.ErrNo(), "Unable to save the plugin data with SavePluginManagerInfo:  duplicate UUID: ", err.Error())
@@ -1072,7 +1126,7 @@ func SavePluginManagerInfo(body []byte, table string, key string) error {
 }
 
 // GetDeviceSubscriptions is to get subscription details of device
-func GetDeviceSubscriptions(hostIP string) (*common.DeviceSubscription, error) {
+func GetDeviceSubscriptions(ctx context.Context, hostIP string) (*common.DeviceSubscription, error) {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return nil, err
@@ -1087,6 +1141,7 @@ func GetDeviceSubscriptions(hostIP string) (*common.DeviceSubscription, error) {
 		Location:        devSub[1],
 		OriginResources: getSliceFromString(devSub[2]),
 	}
+	l.LogWithFields(ctx).Debug("device subscription details :", deviceSubscription)
 	return deviceSubscription, nil
 }
 

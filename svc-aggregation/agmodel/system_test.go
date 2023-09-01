@@ -16,6 +16,7 @@ package agmodel
 
 import (
 	"context"
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -112,7 +113,7 @@ func TestGetResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := GetResource(tt.args.Table, tt.args.key)
+			got, got1 := GetResource(context.TODO(), tt.args.Table, tt.args.key)
 			if got != tt.want {
 				t.Errorf("GetResource() got = %v, want %v", got, tt.want)
 			}
@@ -161,78 +162,92 @@ func TestSaveSystem_Create(t *testing.T) {
 	}
 }
 
-func TestGetPluginData(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer func() {
-		common.TruncateDB(common.OnDisk)
-		common.TruncateDB(common.InMemory)
-	}()
-
-	validPassword := []byte("password")
-	invalidPassword := []byte("invalid")
+func newMock(pluginID string) (string, *errors.Error) {
+	var t *testing.T
 	validPasswordEnc := getEncryptedKey(t, []byte("password"))
 
-	pluginData := Plugin{
+	genricPluginData := Plugin{
+		ID:                pluginID,
 		IP:                "localhost",
 		Port:              "45001",
 		Username:          "admin",
 		Password:          validPasswordEnc,
-		ID:                "GRF",
 		PluginType:        "RF-GENERIC",
 		PreferredAuthType: "BasicAuth",
 	}
-	mockData(t, common.OnDisk, "Plugin", "validPlugin", pluginData)
-	pluginData.Password = invalidPassword
-	mockData(t, common.OnDisk, "Plugin", "invalidPassword", pluginData)
-	mockData(t, common.OnDisk, "Plugin", "invalidPluginData", "pluginData")
+	emptyPluginData := Plugin{}
 
-	type args struct {
-		pluginID string
+	mockData := map[string]Plugin{
+		"validPlugin":       genricPluginData,
+		"invalidPassword":   emptyPluginData,
+		"notFound":          emptyPluginData,
+		"invalidPluginData": emptyPluginData,
 	}
+
+	data, ok := mockData[pluginID]
+	if !ok {
+		return "", nil
+	}
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return "", nil
+
+	}
+	return string(jsonData), nil
+}
+
+func TestGetPluginData(t *testing.T) {
+	config.SetUpMockConfig(t)
+	validPassword := []byte("password")
+	dataReader := DBPluginDataRead{
+		DBReadclient: func(pluginID string) (string, *errors.Error) {
+			return newMock(pluginID)
+		},
+	}
+
 	tests := []struct {
-		name    string
-		args    args
-		exec    func(*Plugin)
-		want    Plugin
-		wantErr bool
+		name     string
+		pluginID string
+		want     Plugin
+		wantErr  bool
 	}{
 		{
-			name: "Positive Case",
-			args: args{pluginID: "validPlugin"},
-			exec: func(want *Plugin) {
-				want.Password = validPassword
+			name:     "Positive Case",
+			pluginID: "validPlugin",
+			want: Plugin{
+				IP:                "localhost",
+				Port:              "45001",
+				Username:          "admin",
+				Password:          validPassword,
+				ID:                "validPlugin",
+				PluginType:        "RF-GENERIC",
+				PreferredAuthType: "BasicAuth",
 			},
-			want:    pluginData,
 			wantErr: false,
 		},
 		{
-			name:    "Negative Case - Non-existent plugin",
-			args:    args{pluginID: "notFound"},
-			exec:    nil,
-			want:    Plugin{},
-			wantErr: true,
+			name:     "Negative Case - Non-existent plugin",
+			pluginID: "notFound",
+			want:     Plugin{},
+			wantErr:  true,
 		},
 		{
-			name:    "Negative Case - Invalid plugin data",
-			args:    args{pluginID: "invalidPluginData"},
-			exec:    nil,
-			want:    Plugin{},
-			wantErr: true,
+			name:     "Negative Case - Invalid plugin data",
+			pluginID: "invalidPluginData",
+			want:     Plugin{},
+			wantErr:  true,
 		},
 		{
-			name:    "Negative Case - Plugin with invalid password",
-			args:    args{pluginID: "invalidPassword"},
-			exec:    nil,
-			want:    Plugin{},
-			wantErr: true,
+			name:     "Negative Case - Plugin with invalid password",
+			pluginID: "invalidPassword",
+			want:     Plugin{},
+			wantErr:  true,
 		},
 	}
+
 	for _, tt := range tests {
-		if tt.exec != nil {
-			tt.exec(&tt.want)
-		}
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetPluginData(tt.args.pluginID)
+			got, err := GetPluginData(tt.pluginID, dataReader)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetPluginData() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -880,12 +895,12 @@ func TestGetResourceDetails(t *testing.T) {
 			name:  "not found",
 			args:  args{key: "someOtherKey"},
 			want:  "",
-			want1: errors.PackError(errors.DBKeyNotFound, "error while trying to get resource details: no data with the with key someOtherKey found"),
+			want1: errors.PackError(errors.DBKeyNotFound, "error while trying to get resource details: no data found for the key: someOtherKey"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := GetResourceDetails(tt.args.key)
+			got, got1 := GetResourceDetails(context.TODO(), tt.args.key)
 			if got != tt.want {
 				t.Errorf("GetResourceDetails() got = %v, want %v", got, tt.want)
 			}
@@ -957,11 +972,11 @@ func TestSystemOperation(t *testing.T) {
 	assert.Nil(t, err, "err should be nil")
 
 	// testing the get system operation
-	data, err := GetSystemOperationInfo(systemURI)
+	data, err := GetSystemOperationInfo(context.TODO(), systemURI)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, "Rediscovery", data.Operation)
 
-	_, err = GetSystemOperationInfo("systemURI")
+	_, err = GetSystemOperationInfo(context.TODO(), "systemURI")
 	assert.NotNil(t, err, "Error Should not be nil")
 
 	//testing the delete operation
@@ -990,11 +1005,11 @@ func TestSystemReset(t *testing.T) {
 	assert.Nil(t, err, "err should be nil")
 
 	// testing the get system operation
-	data, err := GetSystemResetInfo(systemURI)
+	data, err := GetSystemResetInfo(context.TODO(), systemURI)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, "ForceRestart", data["ResetType"])
 
-	_, err = GetSystemResetInfo("systemURI")
+	_, err = GetSystemResetInfo(context.TODO(), "systemURI")
 	assert.NotNil(t, err, "Error Should not be nil")
 
 	//testing the delete operation
@@ -1032,20 +1047,20 @@ func TestAggregationSource(t *testing.T) {
 	assert.Nil(t, err, "err should be nil")
 	err = AddAggregationSource(req, aggregationSourceURI)
 	assert.NotNil(t, err, "Error Should not be nil")
-	keys, dbErr := GetAllKeysFromTable("AggregationSource")
+	keys, dbErr := GetAllKeysFromTable(context.TODO(), "AggregationSource")
 	assert.Nil(t, dbErr, "err should be nil")
 	assert.Equal(t, 1, len(keys), "length should be matching")
-	data, err := GetAggregationSourceInfo(aggregationSourceURI)
+	data, err := GetAggregationSourceInfo(context.TODO(), aggregationSourceURI)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, data.HostName, req.HostName)
 	assert.Equal(t, data.UserName, req.UserName)
-	_, err = GetAggregationSourceInfo("/redfish/v1/AggregationService/AggregationSources/12345677651245-123433")
+	_, err = GetAggregationSourceInfo(context.TODO(), "/redfish/v1/AggregationService/AggregationSources/12345677651245-123433")
 	assert.NotNil(t, err, "Error Should not be nil")
 	err = UpdateAggregtionSource(req, aggregationSourceURI)
 	assert.Nil(t, err, "err should be nil")
 	err = UpdateAggregtionSource(req, "/redfish/v1/AggregationService/AggregationSources/12345677651245-123433")
 	assert.NotNil(t, err, "Error Should not be nil")
-	data, err = GetAggregationSourceInfo(aggregationSourceURI)
+	data, err = GetAggregationSourceInfo(context.TODO(), aggregationSourceURI)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, data.HostName, req.HostName)
 	assert.Equal(t, data.UserName, req.UserName)
@@ -1192,7 +1207,7 @@ func TestGetAllKeysFromTable(t *testing.T) {
 	key := "/redfish/v1/AggregationService/Aggregates/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"
 	mockSystemResourceData([]byte(reqData), table, key)
 
-	resp, err := GetAllKeysFromTable(table)
+	resp, err := GetAllKeysFromTable(context.TODO(), table)
 	assert.Nil(t, err, "Error Should be nil")
 	assert.Equal(t, 1, len(resp), "response should be same as reqData")
 }
@@ -1322,7 +1337,7 @@ func TestConnectionMethod(t *testing.T) {
 	assert.Nil(t, err, "err should be nil")
 	err = AddConnectionMethod(req, connectionMethodURI)
 	assert.NotNil(t, err, "Error Should not be nil")
-	got, err := GetConnectionMethod(connectionMethodURI)
+	got, err := GetConnectionMethod(context.TODO(), connectionMethodURI)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, 2, len(got.Links.AggregationSources), "there should be two element")
 	updateErr := UpdateConnectionMethod(req, "xyz")
@@ -1526,6 +1541,6 @@ func TestGetDeviceSubscriptions(t *testing.T) {
 	}()
 	hostIP := "10.24.0.0"
 	mockData(t, common.OnDisk, "ComputerSystem", hostIP, hostIP)
-	_, err := GetDeviceSubscriptions(hostIP)
+	_, err := GetDeviceSubscriptions(context.TODO(), hostIP)
 	assert.NotNil(t, err, "There should be error")
 }

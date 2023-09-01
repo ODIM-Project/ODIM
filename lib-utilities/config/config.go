@@ -63,6 +63,7 @@ type configModel struct {
 	ExecPriorityDelayConf          *ExecPriorityDelayConf   `json:"ExecPriorityDelayConf"`
 	TLSConf                        *TLSConf                 `json:"TLSConf"`
 	TaskQueueConf                  *TaskQueueConf           `json:"TaskQueueConf"`
+	PluginTasksConf                *PluginTasksConf         `json:"PluginTasksConf"`
 	SupportedPluginTypes           []string                 `json:"SupportedPluginTypes"`
 	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
 	EventConf                      *EventConf               `json:"EventConf"`
@@ -72,6 +73,9 @@ type configModel struct {
 	LogLevel                       log.Level                `json:"LogLevel"`
 	LogFormat                      lgr.LogFormat            `json:"LogFormat"`
 	ImageRegistryAddress           string                   `json:"ImageRegistryAddress,omitempty"`
+	KeyExpiryInterval              int                      `json:"KeyExpiryInterval"`
+	EventForwardingWorkerPoolCount int                      `json:"EventForwardingWorkerPoolCount"`
+	EventSaveWorkerPoolCount       int                      `json:"EventSaveWorkerPoolCount"`
 }
 
 // DBConf holds all DB related configurations
@@ -101,6 +105,7 @@ type MessageBusConf struct {
 	MessageBusConfigFilePath string `json:"MessageBusConfigFilePath"`
 	MessageBusType           string `json:"MessageBusType"`
 	OdimControlMessageQueue  string `json:"OdimControlMessageQueue"`
+	OdimTaskEventsQueue      string `json:"OdimTaskEventsQueue"`
 }
 
 // KeyCertConf is for holding all security oriented configuration
@@ -155,13 +160,13 @@ type URLTranslation struct {
 	SouthBoundURL map[string]string `json:"SouthBoundURL"` // holds value of SouthBound Translation
 }
 
-// PluginStatusPolling stores all inforamtion related to status polling
+// PluginStatusPolling stores all information related to status polling
 type PluginStatusPolling struct {
-	PollingFrequencyInMins  int `json:"PollingFrequencyInMins"` // holds value of  duration in which status polling to be intiated ,value will be in minutes
-	MaxRetryAttempt         int `json:"MaxRetryAttempt"`        // holds value number retry attempts
-	RetryIntervalInMins     int `json:"RetryIntervalInMins"`    // holds value of  duration in which retry of status polling to be intiated,value will be in minutes
-	ResponseTimeoutInSecs   int `json:"ResponseTimeoutInSecs"`  // holds value of duation in which it need wait for resposne ,value will be in seconds
-	StartUpResouceBatchSize int `json:"StartUpResouceBatchSize"`
+	PollingFrequencyInMins   int `json:"PollingFrequencyInMins"` // holds value of  duration in which status polling to be initiated ,value will be in minutes
+	MaxRetryAttempt          int `json:"MaxRetryAttempt"`        // holds value number retry attempts
+	RetryIntervalInMins      int `json:"RetryIntervalInMins"`    // holds value of  duration in which retry of status polling to be initiated,value will be in minutes
+	ResponseTimeoutInSecs    int `json:"ResponseTimeoutInSecs"`  // holds value of duration in which it need wait for response ,value will be in seconds
+	StartUpResourceBatchSize int `json:"StartUpResourceBatchSize"`
 }
 
 // ExecPriorityDelayConf holds priority and delay configurations for exec actions
@@ -171,7 +176,7 @@ type ExecPriorityDelayConf struct {
 	MaxResetDelayInSecs int `json:"MaxResetDelayInSecs"`
 }
 
-// TLSConf holds TLS confifurations used in https queries
+// TLSConf holds TLS configurations used in https queries
 type TLSConf struct {
 	VerifyPeer            bool     `json:"VerifyPeer"`
 	MinVersion            string   `json:"MinVersion"`
@@ -192,17 +197,24 @@ type ConnectionMethodConf struct {
 	ConnectionMethodVariant string `json:"ConnectionMethodVariant"`
 }
 
-// EventConf stores all inforamtion related to event delivery configurations
+// EventConf stores all information related to event delivery configurations
 type EventConf struct {
 	DeliveryRetryAttempts        int `json:"DeliveryRetryAttempts"`        // holds value of retrying event posting to destination
 	DeliveryRetryIntervalSeconds int `json:"DeliveryRetryIntervalSeconds"` // holds value of retrying events posting in interval
+}
+
+// PluginTasksConf stores the information related to plugin tasks
+// and queueing and prioritization of requests to plugin
+type PluginTasksConf struct {
+	// holds value of duration in which polling to be initiated for monitoring plugin tasks, value will be in minutes
+	MonitorPluginTasksFrequencyInMins int `json:"MonitorPluginTasksFrequencyInMins"`
 }
 
 // SetConfiguration will extract the config data from file
 func SetConfiguration() (WarningList, error) {
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
 	if configFilePath == "" {
-		return WarningList{}, fmt.Errorf("No value set to environment variable CONFIG_FILE_PATH")
+		return WarningList{}, fmt.Errorf("no value set to environment variable CONFIG_FILE_PATH")
 	}
 	configData, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
@@ -252,6 +264,9 @@ func ValidateConfiguration() (WarningList, error) {
 	if err = checkTaskQueueConfiguration(); err != nil {
 		return *warningList, err
 	}
+	if err = checkPluginTaskConfiguration(); err != nil {
+		return *warningList, err
+	}
 	checkAuthConf(warningList)
 	checkAddComputeSkipResources(warningList)
 	checkURLTranslation(warningList)
@@ -287,6 +302,14 @@ func checkMiscellaneousConf(wl *WarningList) error {
 	if len(Data.SupportedPluginTypes) == 0 {
 		return fmt.Errorf("error: no value set for SupportedPluginTypes")
 	}
+	if Data.EventForwardingWorkerPoolCount == 0 {
+		wl.add("No value configured for EventForwardingWorkerPoolCount, setting default value")
+		Data.EventForwardingWorkerPoolCount = DefaultEventForwardingWorkerPoolCount
+	}
+	if Data.EventSaveWorkerPoolCount == 0 {
+		wl.add("No value configured for EventSaveWorkerPoolCount, setting default value")
+		Data.EventSaveWorkerPoolCount = DefaultEventSaveWorkerPoolCount
+	}
 	return nil
 }
 
@@ -298,17 +321,16 @@ func checkDBConf(wl *WarningList) error {
 		wl.add("Incorrect value configured for DB Protocol, setting default value")
 		Data.DBConf.Protocol = DefaultDBProtocol
 	}
-	if Data.DBConf.InMemoryHost == "" {
-		return fmt.Errorf("error: no value configured for DB InMemoryHost")
+
+	fieldMap := map[string]string{
+		"InMemoryHost": Data.DBConf.InMemoryHost,
+		"InMemoryPort": Data.DBConf.InMemoryPort,
+		"OnDiskHost":   Data.DBConf.OnDiskHost,
+		"OnDiskPort":   Data.DBConf.OnDiskPort,
 	}
-	if Data.DBConf.InMemoryPort == "" {
-		return fmt.Errorf("error: no value configured for DB InMemoryPort")
-	}
-	if Data.DBConf.OnDiskHost == "" {
-		return fmt.Errorf("error: no value configured for DB OnDiskHost")
-	}
-	if Data.DBConf.OnDiskPort == "" {
-		return fmt.Errorf("error: no value configured for DB OnDiskPort")
+
+	if err := checkEmptyvalue(fieldMap); err != nil {
+		return err
 	}
 	if Data.DBConf.MaxActiveConns == 0 {
 		wl.add("No value configured for MaxActiveConns, setting default value")
@@ -337,6 +359,16 @@ func checkDBConf(wl *WarningList) error {
 	return nil
 }
 
+// checkEmptyvalue checks and returns error if any key in the map has empty value
+func checkEmptyvalue(fieldMap map[string]string) error {
+	for key, value := range fieldMap {
+		if value == "" {
+			return fmt.Errorf("error: no value configured for DB %s", key)
+		}
+	}
+	return nil
+}
+
 func decryptRSAOAEPEncryptedPasswords(passwordFilePath string) ([]byte, error) {
 	privateKeyStr, err := ioutil.ReadFile(Data.KeyCertConf.RSAPrivateKeyPath)
 	if err != nil {
@@ -349,10 +381,18 @@ func decryptRSAOAEPEncryptedPasswords(passwordFilePath string) ([]byte, error) {
 			Data.KeyCertConf.RSAPrivateKeyPath)
 	}
 
-	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	var privateKey *rsa.PrivateKey
+
+	pkcs1Key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse DER encoded public key for the RSAPrivateKeyPath:%s with %v",
-			Data.KeyCertConf.RSAPrivateKeyPath, err)
+		pkcs8Key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse DER encoded public key for the RSAPrivateKeyPath:%s with %v",
+				Data.KeyCertConf.RSAPrivateKeyPath, err)
+		}
+		privateKey = pkcs8Key.(*rsa.PrivateKey)
+	} else {
+		privateKey = pkcs1Key
 	}
 
 	cipherText, err := ioutil.ReadFile(passwordFilePath)
@@ -389,6 +429,10 @@ func checkMessageBusConf(wl *WarningList) error {
 		if len(Data.MessageBusConf.OdimControlMessageQueue) <= 0 {
 			wl.add("No value set for MessageBusQueue, setting default value")
 			Data.MessageBusConf.OdimControlMessageQueue = "ODIM-CONTROL-MESSAGES"
+		}
+		if Data.MessageBusConf.OdimTaskEventsQueue == "" {
+			wl.add("No value set for OdimTaskEventsQueue, setting default value")
+			Data.MessageBusConf.OdimTaskEventsQueue = "TASK-EVENTS-TOPIC"
 		}
 	}
 	if !AllowedMessageBusTypes[Data.MessageBusConf.MessageBusType] {
@@ -562,11 +606,11 @@ func checkPluginStatusPolling(wl *WarningList) {
 	if Data.PluginStatusPolling == nil {
 		wl.add("PluginStatusPolling not provided, setting default value")
 		Data.PluginStatusPolling = &PluginStatusPolling{
-			PollingFrequencyInMins:  DefaultPollingFrequencyInMins,
-			MaxRetryAttempt:         DefaultMaxRetryAttempt,
-			RetryIntervalInMins:     DefaultRetryIntervalInMins,
-			ResponseTimeoutInSecs:   DefaultResponseTimeoutInSecs,
-			StartUpResouceBatchSize: DefaultStartUpResouceBatchSize,
+			PollingFrequencyInMins:   DefaultPollingFrequencyInMins,
+			MaxRetryAttempt:          DefaultMaxRetryAttempt,
+			RetryIntervalInMins:      DefaultRetryIntervalInMins,
+			ResponseTimeoutInSecs:    DefaultResponseTimeoutInSecs,
+			StartUpResourceBatchSize: DefaultStartUpResourceBatchSize,
 		}
 		return
 	}
@@ -586,9 +630,9 @@ func checkPluginStatusPolling(wl *WarningList) {
 		wl.add("No value found for ResponseTimeoutInSecs, setting default value")
 		Data.PluginStatusPolling.ResponseTimeoutInSecs = DefaultResponseTimeoutInSecs
 	}
-	if Data.PluginStatusPolling.StartUpResouceBatchSize <= 0 {
-		wl.add("No value found for StartUpResouceBatchSize, setting default value")
-		Data.PluginStatusPolling.StartUpResouceBatchSize = DefaultStartUpResouceBatchSize
+	if Data.PluginStatusPolling.StartUpResourceBatchSize <= 0 {
+		wl.add("No value found for StartUpResourceBatchSize, setting default value")
+		Data.PluginStatusPolling.StartUpResourceBatchSize = DefaultStartUpResourceBatchSize
 	}
 }
 
@@ -642,7 +686,7 @@ func checkTLSConf(wl *WarningList) error {
 	return nil
 }
 
-//CheckRootServiceuuid function is used to validate format of Root Service UUID. The same function is used in plugin-redfish config.go
+// CheckRootServiceuuid function is used to validate format of Root Service UUID. The same function is used in plugin-redfish config.go
 func CheckRootServiceuuid(uid string) error {
 	_, err := uuid.Parse(uid)
 	return err
@@ -698,6 +742,13 @@ func checkTaskQueueConfiguration() error {
 	}
 	if Data.TaskQueueConf.RetryInterval <= 0 {
 		return fmt.Errorf("retry interval should be greater than 0")
+	}
+	return nil
+}
+
+func checkPluginTaskConfiguration() error {
+	if Data.PluginTasksConf.MonitorPluginTasksFrequencyInMins <= 0 {
+		return fmt.Errorf("MonitorPluginTasksFrequencyInMins should be greater than 0")
 	}
 	return nil
 }

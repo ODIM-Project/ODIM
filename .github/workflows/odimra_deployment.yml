@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     name: Deploy
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     continue-on-error: false
     steps:
     - uses: actions/checkout@v2
@@ -17,6 +17,10 @@ jobs:
         set +e
         echo "[$(date)] -- INFO  -- Start pre req conguration"
         echo
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
         
         sudo systemctl status docker.service
         
@@ -214,7 +218,13 @@ jobs:
         cd ${ODIM_CONTROLLER_PATH}/scripts/
         echo "[$(date)] -- INFO  -- install kubernetes using odim-controller"
         python3 odim-controller.py --deploy kubernetes --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml
-        echo
+        if [ $? -eq 0 ];
+        then 
+          echo "Kubernetes installation is successful"
+        else
+          echo "Kubernetes installation failed..."
+          exit 1
+        fi
         
         echo "[$(date)] -- INFO  -- configure docker and kubectl commands"
         sudo usermod -aG docker $USER
@@ -245,6 +255,13 @@ jobs:
 
         cd ${ODIM_CONTROLLER_PATH}/scripts/
         python3 odim-controller.py --deploy odimra --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml
+        if [ $? -eq 0 ];
+        then 
+          echo "Odimra installation is successful"
+        else
+          echo "Odimra installation failed..."
+          exit 1
+        fi
         echo 
         echo "[$(date)] -- INFO  -- list pods in odim namespace"
         count=0
@@ -531,7 +548,7 @@ jobs:
         
         
         if [[ $run2 -eq 201 ]];
-        then 
+        then
             echo "Account Created Sucessfully"
             echo "---------------------------"
         else
@@ -543,7 +560,7 @@ jobs:
         echo "========================Account Checked==================================="
         
         if [ $flag -eq 1 ];
-        then 
+        then
           echo "Sanity Tests Failed"
           #exit 1
         else

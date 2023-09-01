@@ -36,12 +36,12 @@ type ExternalInterface struct {
 // External struct holds the function pointers all outboud services
 type External struct {
 	ContactClient      func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth               func(string, []string, []string) (response.RPC, error)
+	Auth               func(context.Context, string, []string, []string) (response.RPC, error)
 	DevicePassword     func([]byte) ([]byte, error)
 	GetPluginData      func(string) (tmodel.Plugin, *errors.Error)
 	ContactPlugin      func(context.Context, tcommon.PluginContactRequest, string) ([]byte, string, tcommon.ResponseStatus, error)
-	GetTarget          func(string) (*tmodel.Target, *errors.Error)
-	GetSessionUserName func(string) (string, error)
+	GetTarget          func(context.Context, string) (*tmodel.Target, *errors.Error)
+	GetSessionUserName func(context.Context, string) (string, error)
 	GenericSave        func(context.Context, []byte, string, string) error
 	GetPluginStatus    func(context.Context, tmodel.Plugin) bool
 }
@@ -54,8 +54,8 @@ type responseStatus struct {
 
 // DB struct holds the function pointers to database operations
 type DB struct {
-	GetAllKeysFromTable func(string, common.DbType) ([]string, error)
-	GetResource         func(string, string, common.DbType) (string, *errors.Error)
+	GetAllKeysFromTable func(context.Context, string, common.DbType) ([]string, error)
+	GetResource         func(context.Context, string, string, common.DbType) (string, *errors.Error)
 }
 
 // GetExternalInterface retrieves all the external connections update package functions uses

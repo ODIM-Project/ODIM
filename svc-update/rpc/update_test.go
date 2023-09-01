@@ -29,7 +29,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+func mockIsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken == "invalidToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
@@ -40,7 +40,7 @@ func mockContactClient(ctx context.Context, url, method, token string, odataID s
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
-func mockGetResource(table, key string, dbType common.DbType) (string, *errors.Error) {
+func mockGetResource(ctx context.Context, table, key string, dbType common.DbType) (string, *errors.Error) {
 	if (key == "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") || (key == "/redfish/v1/UpdateService/SoftwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	}
@@ -58,7 +58,7 @@ func mockContext() context.Context {
 	return ctx
 }
 
-func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
+func mockGetAllKeysFromTable(ctx context.Context, table string, dbType common.DbType) ([]string, error) {
 	return []string{"/redfish/v1/UpdateService/FirmwareInentory/uuid.1"}, nil
 }
 
@@ -253,7 +253,7 @@ func TestGetSoftwareInventorywithValidtoken(t *testing.T) {
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
-func mockGetSessionUserNamefunc(sessionToken string) (string, error) {
+func mockGetSessionUserNamefunc(ctx context.Context, sessionToken string) (string, error) {
 	if sessionToken == "invalidSessionName" {
 		return "", fmt.Errorf("Invalid Error ")
 	}

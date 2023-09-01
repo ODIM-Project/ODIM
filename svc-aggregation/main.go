@@ -1,15 +1,15 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package main
 
@@ -20,14 +20,12 @@ import (
 	"github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
-	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
-	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/rpc"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/system"
@@ -46,8 +44,8 @@ func main() {
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
 	logs.Adorn(logrus.Fields{
-		"host":   hostName,
-		"procid": podName + fmt.Sprintf("_%d", pid),
+		"host":       hostName,
+		"process_id": podName + fmt.Sprintf("_%d", pid),
 	})
 
 	// log should be initialized after Adorn is invoked
@@ -98,17 +96,17 @@ func main() {
 
 	// Rediscover the Resources by looking in OnDisk DB, populate the resources in InMemory DB
 	//This happens only if the InMemory DB lost it contents due to DB reboot or host VM reboot.
-	p := system.ExternalInterface{
-		ContactClient:   pmbhandle.ContactPlugin,
-		Auth:            services.IsAuthorized,
-		PublishEventMB:  agmessagebus.Publish,
-		GetPluginStatus: agcommon.GetPluginStatus,
-		SubscribeToEMB:  services.SubscribeToEMB,
-		DecryptPassword: common.DecryptWithPrivateKey,
-		UpdateTask:      system.UpdateTaskData,
-	}
+	// p := system.ExternalInterface{
+	// 	ContactClient:   pmbhandle.ContactPlugin,
+	// 	Auth:            services.IsAuthorized,
+	// 	PublishEventMB:  agmessagebus.Publish,
+	// 	GetPluginStatus: agcommon.GetPluginStatus,
+	// 	SubscribeToEMB:  services.SubscribeToEMB,
+	// 	DecryptPassword: common.DecryptWithPrivateKey,
+	// 	UpdateTask:      system.UpdateTaskData,
+	// }
 
-	go p.RediscoverResources()
+	// go p.RediscoverResources()
 
 	agcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
 	if agcommon.ConfigFilePath == "" {

@@ -84,7 +84,7 @@ func mockDevice(username, password, url string, w http.ResponseWriter) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	return
+
 }
 
 func TestCreateVolume(t *testing.T) {
@@ -145,9 +145,17 @@ func TestCreateVolume(t *testing.T) {
 	}
 	//Unit Test for firmware version less than 4.40 scenario
 	e.POST("/redfish/v1/Systems/2/Storage/1/Volumes").WithJSON(requestBody).Expect().Status(http.StatusBadRequest)
+
+	requestBody1 := map[string]interface{}{
+		"ManagerAddress": fmt.Sprintf("%s:%s", deviceHost, devicePort),
+		"UserName":       "admin",
+		"Password":       []byte("P@$$w0rd"),
+	}
+	//Unit Test for firmware version less than 4.40 scenario
+	e.POST("/redfish/v1/Systems/2/Storage/1/Volumes").WithJSON(requestBody1).Expect().Status(http.StatusInternalServerError)
 }
 
-func TesDeleteVolume(t *testing.T) {
+func TestDeleteVolume(t *testing.T) {
 	config.SetUpMockConfig(t)
 	deviceHost := "localhost"
 	devicePort := "1234"
@@ -159,7 +167,7 @@ func TesDeleteVolume(t *testing.T) {
 	mockApp := iris.New()
 	redfishRoutes := mockApp.Party("/redfish/v1")
 
-	redfishRoutes.Delete("/Systems/{id}/Storage/{id2}/Volumes/rid", CreateVolume)
+	redfishRoutes.Delete("/Systems/1/Storage/1/Volumes/1", DeleteVolume)
 
 	dpresponse.PluginToken = "token"
 
@@ -176,4 +184,25 @@ func TesDeleteVolume(t *testing.T) {
 
 	//Case for invalid token
 	e.DELETE("/redfish/v1/Systems/1/Storage/1/Volumes/1").WithHeader("X-Auth-Token", "token").WithJSON(requestBody).Expect().Status(http.StatusUnauthorized)
+
+	//Invalid Device details
+	requestBody1 := "invalid"
+	e.DELETE("/redfish/v1/Systems/1/Storage/1/Volumes/1").WithHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=").WithJSON(requestBody1).
+		Expect().Status(http.StatusBadRequest)
+
+	config.Data.KeyCertConf.RootCACertificate = nil
+
+	e.DELETE("/redfish/v1/Systems/1/Storage/1/Volumes/1").WithHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=").WithJSON(requestBody).
+		Expect().Status(http.StatusInternalServerError)
+	config.SetUpMockConfig(t)
+
+	// Invalid host
+	requestBody = map[string]interface{}{
+		"ManagerAddress": fmt.Sprintf("%s:%s", "deviceHost", "devicePort"),
+		"UserName":       "admin",
+		"Password":       []byte("P@$$w0rd"),
+	}
+	e.DELETE("/redfish/v1/Systems/1/Storage/1/Volumes/1").WithHeader("Authorization", "Basic YWRtaW46cGFzc3dvcmQ=").WithJSON(requestBody).
+		Expect().Status(http.StatusInternalServerError)
+
 }

@@ -12,17 +12,17 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package models ...
+// Package models ...
 package models
 
-//Odata struct definition
+// Odata struct definition
 type Odata struct {
 	RedfishCopyright string   `json:"@Redfish.Copyright"`
 	OdataContext     string   `json:"@odata.context"`
 	Value            []*Value `json:"value"`
 }
 
-//Value struct definition
+// Value struct definition
 type Value struct {
 	Name string `json:"name"`
 	Kind string `json:"kind"`

@@ -26,7 +26,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rfputilities ...
+// Package rfputilities ...
 package rfputilities
 
 import (
@@ -52,6 +52,7 @@ func GetPlainText(password []byte) ([]byte, error) {
 	enc := x509.IsEncryptedPEMBlock(block)
 	b := block.Bytes
 	var err error
+	var key *rsa.PrivateKey
 	if enc {
 		log.Info("is encrypted pem block")
 		b, err = x509.DecryptPEMBlock(block, nil)
@@ -60,10 +61,16 @@ func GetPlainText(password []byte) ([]byte, error) {
 			return []byte{}, err
 		}
 	}
-	key, err := x509.ParsePKCS1PrivateKey(b)
+	pkcs1Key, err := x509.ParsePKCS1PrivateKey(b)
 	if err != nil {
-		log.Info(err.Error())
-		return []byte{}, err
+		pkcs8Key, err := x509.ParsePKCS8PrivateKey(b)
+		if err != nil {
+			log.Info(err.Error())
+			return []byte{}, err
+		}
+		key = pkcs8Key.(*rsa.PrivateKey)
+	} else {
+		key = pkcs1Key
 	}
 
 	hash := sha512.New()
@@ -77,7 +84,7 @@ func GetPlainText(password []byte) ([]byte, error) {
 	)
 }
 
-//Status holds the Status of plugin it will be intizaied during startup time
+// Status holds the Status of plugin it will be intizaied during startup time
 var Status rfpresponse.Status
 
 // PluginStartTime hold the time from which plugin started

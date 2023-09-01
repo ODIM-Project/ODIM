@@ -62,7 +62,7 @@ func GetRoleDetailsByID(roleID string) (Role, *errors.Error) {
 	return role, nil
 }
 
-//UpdateRoleDetails will modify the current details to given changes
+// UpdateRoleDetails will modify the current details to given changes
 func (r *Role) UpdateRoleDetails() *errors.Error {
 
 	conn, err := GetDBConnectionFunc(common.OnDisk)
@@ -75,7 +75,7 @@ func (r *Role) UpdateRoleDetails() *errors.Error {
 	return nil
 }
 
-//GetAllRoles gets all the roles from the db
+// GetAllRoles gets all the roles from the db
 func GetAllRoles() ([]Role, *errors.Error) {
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
@@ -102,7 +102,7 @@ func GetAllRoles() ([]Role, *errors.Error) {
 	return roles, nil
 }
 
-//Delete will delete the role entry from the database based on the uuid
+// Delete will delete the role entry from the database based on the uuid
 func (r *Role) Delete() *errors.Error {
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {

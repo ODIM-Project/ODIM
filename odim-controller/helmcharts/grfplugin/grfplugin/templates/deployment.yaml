@@ -66,9 +66,11 @@ spec:
               path: odimra_kafka_client.key
               mode: 0444
             {{- end }}
+        {{- if not .Values.grfplugin.logsOnConsole }}
         - name: grfplugin-log
           persistentVolumeClaim:
             claimName: grfplugin-log-claim
+        {{- end }}
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       containers:
@@ -90,7 +92,9 @@ spec:
               mountPath: /etc/grfplugin_config
             - name: configure-hosts
               mountPath: /tmp
+            {{- if not .Values.grfplugin.logsOnConsole }}
             - name: grfplugin-log
               mountPath: /var/log/grfplugin_logs
+            {{- end}}
             - name: odimra-secret
               mountPath: /etc/odimra_certs

@@ -12,27 +12,27 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 )
 
-//GetManagersCollection  Fetches details of the given resource from the device
+// GetManagersCollection  Fetches details of the given resource from the device
 func GetManagersCollection(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
 	uri := ctx.Request().RequestURI
@@ -40,7 +40,7 @@ func GetManagersCollection(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
+			l.LogWithFields(ctxt).Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -51,7 +51,7 @@ func GetManagersCollection(ctx iris.Context) {
 	ctx.ReadJSON(&deviceDetails)
 	if deviceDetails.Host == "" {
 		var members = []dpresponse.Link{
-			dpresponse.Link{
+			{
 				Oid: "/ODIM/v1/Managers/" + pluginConfig.Data.RootServiceUUID,
 			},
 		}
@@ -71,12 +71,13 @@ func GetManagersCollection(ctx iris.Context) {
 		return
 	}
 	getInfoFromDevice(uri, deviceDetails, ctx)
-	return
 
 }
 
-//GetManagersInfo Fetches details of the given resource from the device
+// GetManagersInfo Fetches details of the given resource from the device
 func GetManagersInfo(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
+
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
 	uri := ctx.Request().RequestURI
@@ -85,7 +86,7 @@ func GetManagersInfo(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
+			l.LogWithFields(ctxt).Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -119,6 +120,7 @@ func GetManagersInfo(ctx iris.Context) {
 }
 
 func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 	//replacing the request url with south bound translation URL
 	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
 		uri = strings.Replace(uri, key, value, -1)
@@ -131,7 +133,7 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
 		errMsg := "While trying to create the redfish client, got:" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -141,7 +143,7 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 	resp, err := redfishClient.GetWithBasicAuth(device, uri)
 	if err != nil {
 		errMsg := "Authentication failed: " + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errMsg)
@@ -150,22 +152,22 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := IoUtilReadAll(resp.Body)
 	if err != nil {
-		log.Error("While trying to read the response body, got: " + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to read the response body, got: " + err.Error())
 		return
 	}
 
 	if resp.StatusCode == 401 {
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("Authtication with the device failed")
+		ctx.WriteString("Authentication with the device failed")
 		return
 	}
 	if resp.StatusCode >= 300 {
-		log.Warn("Could not retreive generic resource for " + device.Host + ": " + string(body))
+		l.LogWithFields(ctxt).Warn("Could not retreive generic resource for " + device.Host + ": " + string(body))
 	}
 	respData := string(body)
-	//replacing the resposne with north bound translation URL
+	//replacing the response with north bound translation URL
 	for key, value := range pluginConfig.Data.URLTranslation.NorthBoundURL {
 		respData = strings.Replace(respData, key, value, -1)
 	}
@@ -173,15 +175,16 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 	ctx.Write([]byte(respData))
 }
 
-//VirtualMediaActions performs insert and eject virtual media operations on the device based on the request
+// VirtualMediaActions performs insert and eject virtual media operations on the device based on the request
 func VirtualMediaActions(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 	uri := ctx.Request().RequestURI
 	uri = replaceURI(uri)
 	var deviceDetails dpmodel.Device
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Error("While trying to collect data from request, got: " + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -198,50 +201,50 @@ func VirtualMediaActions(ctx iris.Context) {
 		payload := map[string]interface{}{}
 		device.PostBody, err = json.Marshal(payload)
 		if err != nil {
-			log.Error(err.Error())
+			l.LogWithFields(ctxt).Error(err.Error())
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(err.Error())
 			return
 		}
 	}
 
-	statusCode, _, body, err := queryDevice(uri, device, http.MethodPost)
+	statusCode, _, body, err := queryDevice(ctx, uri, device, http.MethodPost)
 	if err != nil {
 		errMsg := "while performing actions on virtual media, got: " + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(statusCode)
 		ctx.WriteString(errMsg)
 		return
 	}
 
 	if statusCode == http.StatusNoContent {
-		log.Info("VirtualMediaActions is successful for URI : " + uri)
+		l.LogWithFields(ctxt).Info("VirtualMediaActions is successful for URI : " + uri)
 		statusCode = http.StatusOK
-		body, err = createVirtMediaActionResponse()
+		body, err = createVirtualMediaActionResponse()
 		if err != nil {
 			errMsg := "while creating a response for virtual media actions" + err.Error()
-			log.Error(errMsg)
+			l.LogWithFields(ctxt).Error(errMsg)
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errMsg)
 			return
 		}
 	} else {
 		errResponse := string(body)
-		log.Errorf("VirtualMediaActions is failed for the URI %s, getting response %v ", uri, errResponse)
+		l.LogWithFields(ctxt).Errorf("VirtualMediaActions is failed for the URI %s, getting response %v ", uri, errResponse)
 	}
 
 	ctx.StatusCode(statusCode)
 	ctx.Write(body)
 }
 
-// createVirtMediaActionResponse is used for creating a final response for virtual media actions success scenario
-func createVirtMediaActionResponse() ([]byte, error) {
-	resp := dpresponse.ErrorResopnse{
+// createVirtualMediaActionResponse is used for creating a final response for virtual media actions success scenario
+func createVirtualMediaActionResponse() ([]byte, error) {
+	resp := dpresponse.ErrorResponse{
 		Error: dpresponse.Error{
 			Code:    response.Success,
 			Message: "See @Message.ExtendedInfo for more information.",
 			MessageExtendedInfo: []dpresponse.MsgExtendedInfo{
-				dpresponse.MsgExtendedInfo{
+				{
 					MessageID:   response.Success,
 					Message:     "Successfully performed virtual media actions",
 					MessageArgs: []string{},

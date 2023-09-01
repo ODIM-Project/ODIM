@@ -160,6 +160,12 @@ function launchredis() {
       # If I am able get master ip, then i will connect to the master, else i will asume the role of master
       if [[ -n ${master} ]]; then
         echo "Connected to Sentinel, this means it is not first time start, hence will start as a slave"
+        currenthost=$(hostname -f | cut -d ' ' -f 1)
+	      master=`echo $master |tr -d '"'`
+        if [[ "${currenthost}" == "${master}" ]]; then
+           launchmaster
+           exit 0
+	      fi    
         launchslave ${master}
         exit 0
       else
@@ -172,7 +178,7 @@ function launchredis() {
     if [[ -n ${master} ]]; then
       echo "Connected to Sentinel and Retrieved Master IP ${master}"
       launchslave ${master}
-      exit 0
+      exit 0   
     else
       echo "Connecting to sentinel failed, Waiting..."
       sleep 10

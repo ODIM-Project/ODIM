@@ -14,7 +14,9 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -23,6 +25,7 @@ import (
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dphandler"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmessagebus"
@@ -34,9 +37,8 @@ import (
 )
 
 var subscriptionInfo []dpmodel.Device
-var log = logrus.New()
 
-// TokenObject will contains the generated token and public key of odimra
+//TokenObject will contains the generated token and public key of odimra
 type TokenObject struct {
 	AuthToken string `json:"authToken"`
 	PublicKey []byte `json:"publicKey"`
@@ -44,16 +46,27 @@ type TokenObject struct {
 
 func main() {
 	// intializing the plugin start time
+	hostName := os.Getenv("HOST_NAME")
+	podName := os.Getenv("POD_NAME")
+	pid := os.Getpid()
 	dputilities.PluginStartTime = time.Now()
+	log := logs.Log
+	logs.Adorn(logrus.Fields{
+		"host":   hostName,
+		"procid": podName + fmt.Sprintf("_%d", pid),
+	})
+	if err := config.SetConfiguration(); err != nil {
+		log.Logger.SetFormatter(&logs.SysLogFormatter{})
+		logs.Log.Fatal("Error while trying set up configuration: " + err.Error())
+	}
+	logs.SetFormatter(config.Data.LogFormat)
+	log.Logger.SetOutput(os.Stdout)
+	log.Logger.SetLevel(config.Data.LogLevel)
 	log.Info("Plugin Start time:", dputilities.PluginStartTime.Format(time.RFC3339))
 
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Plugin Service should not be run as the root user")
-	}
-
-	if err := config.SetConfiguration(); err != nil {
-		log.Fatal("While reading from config, got: " + err.Error())
 	}
 
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
@@ -67,14 +80,20 @@ func main() {
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as Publish method after reading the data from the channel.
-	go common.RunReadWorkers(dphandler.Out, dpmessagebus.Publish, 5)
+
+	// should be removed when context from svc-api is passed to this function
+	ctx := context.TODO()
+	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
+	go common.RunReadWorkers(ctx, dphandler.Out, dpmessagebus.Publish, 5)
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
 	if configFilePath == "" {
 		log.Fatal("No value get the environment variable PLUGIN_CONFIG_FILE_PATH")
 	}
+	errChan := make(chan error)
+
 	// TrackConfigFileChanges monitors the dell config changes using fsnotfiy
-	go dputilities.TrackConfigFileChanges(configFilePath)
+	go dputilities.TrackIPConfigListener(configFilePath, errChan)
 
 	intializePluginStatus()
 	app()
@@ -94,7 +113,7 @@ func app() {
 	}
 	pluginServer, err := conf.GetHTTPServerObj()
 	if err != nil {
-		log.Fatal("While initializing plugin server: " + err.Error())
+		logs.Log.Fatal("While initializing plugin server: " + err.Error())
 	}
 	app.Run(iris.Server(pluginServer))
 }
@@ -102,6 +121,8 @@ func app() {
 func routers() *iris.Application {
 	app := iris.New()
 	app.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		ctx := getContextHeader(r)
+		r = r.WithContext(ctx)
 		path := r.URL.Path
 		if len(path) > 1 && path[len(path)-1] == '/' && path[len(path)-2] != '/' {
 			path = path[:len(path)-1]
@@ -249,12 +270,12 @@ func eventsrouters() {
 	}
 	evtServer, err := conf.GetHTTPServerObj()
 	if err != nil {
-		log.Fatalf("fatal: error while initializing event server: %v", err)
+		logs.Log.Fatalf("fatal: error while initializing event server: %v", err)
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc(config.Data.EventConf.DestURI, dphandler.RedfishEvents)
 	evtServer.Handler = mux
-	log.Fatal(evtServer.ListenAndServeTLS("", ""))
+	logs.Log.Fatal(evtServer.ListenAndServeTLS("", ""))
 }
 
 // intializePluginStatus sets plugin status
@@ -289,5 +310,19 @@ func sendStartupEvent() {
 	done := make(chan bool)
 	events := []interface{}{event}
 	go common.RunWriteWorkers(dphandler.In, events, 1, done)
-	log.Info("successfully sent startup event")
+	logs.Log.Info("successfully sent startup event")
+
+}
+
+// getContextHeader is used to get context details from header for logging
+func getContextHeader(r *http.Request) context.Context {
+	ctx := context.Background()
+	podName := os.Getenv("POD_NAME")
+	ctx = context.WithValue(ctx, common.TransactionID, r.Header.Get(common.TransactionID))
+	ctx = context.WithValue(ctx, common.ThreadID, r.Header.Get(common.ThreadID))
+	ctx = context.WithValue(ctx, common.ThreadName, r.Header.Get(common.ThreadName))
+	ctx = context.WithValue(ctx, common.ActionID, r.Header.Get(common.ActionID))
+	ctx = context.WithValue(ctx, common.ActionName, r.Header.Get(common.ActionName))
+	ctx = context.WithValue(ctx, common.ProcessName, r.Header.Get(podName))
+	return ctx
 }

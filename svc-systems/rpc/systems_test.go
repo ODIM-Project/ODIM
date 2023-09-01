@@ -516,6 +516,9 @@ func TestSystems_ChangeBiosSettings(t *testing.T) {
 	}()
 	sys := new(Systems)
 	sys.IsAuthorizedRPC = mockIsAuthorized
+	sys.GetSessionUserName = getSessionUserNameForTesting
+	sys.CreateTask = createTaskForTesting
+	sys.UpdateTask = mockUpdateTask
 
 	type args struct {
 		ctx  context.Context
@@ -577,6 +580,9 @@ func TestSystems_ChangeBootOrderSettings(t *testing.T) {
 	}()
 	sys := new(Systems)
 	sys.IsAuthorizedRPC = mockIsAuthorized
+	sys.GetSessionUserName = getSessionUserNameForTesting
+	sys.CreateTask = createTaskForTesting
+	sys.UpdateTask = mockUpdateTask
 
 	type args struct {
 		ctx  context.Context
@@ -628,6 +634,9 @@ func TestSystems_CreateVolume(t *testing.T) {
 	common.SetUpMockConfig()
 	sys := new(Systems)
 	sys.IsAuthorizedRPC = mockIsAuthorized
+	sys.GetSessionUserName = getSessionUserNameForTesting
+	sys.CreateTask = createTaskForTesting
+	sys.UpdateTask = mockUpdateTask
 	sys.EI = mockGetExternalInterface()
 
 	type args struct {
@@ -679,6 +688,9 @@ func TestSystems_CreateVolume(t *testing.T) {
 func TestSystems_DeleteVolume(t *testing.T) {
 	config.SetUpMockConfig(t)
 	sys := new(Systems)
+	sys.GetSessionUserName = getSessionUserNameForTesting
+	sys.CreateTask = createTaskForTesting
+	sys.UpdateTask = mockUpdateTask
 	sys.IsAuthorizedRPC = mockIsAuthorized
 	sys.EI = mockGetExternalInterface()
 
@@ -707,7 +719,7 @@ func TestSystems_DeleteVolume(t *testing.T) {
 				},
 				resp: &systemsproto.SystemsResponse{},
 			},
-			wantStatusCode: http.StatusNoContent,
+			wantStatusCode: http.StatusAccepted,
 		},
 		{
 			name: "Request with invalid token",
@@ -735,7 +747,8 @@ func TestSystems_DeleteVolume(t *testing.T) {
 		})
 	}
 }
-func getSessionUserNameForTesting(sessionToken string) (string, error) {
+
+func getSessionUserNameForTesting(ctx context.Context, sessionToken string) (string, error) {
 	if sessionToken == "noDetailsToken" {
 		return "", fmt.Errorf("no details")
 	} else if sessionToken == "noTaskToken" {

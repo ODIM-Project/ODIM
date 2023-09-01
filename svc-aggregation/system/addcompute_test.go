@@ -36,7 +36,7 @@ func PostEventFunctionForTesting(ctx context.Context, s []string, name string) {
 func GetPluginStatusForTesting(ctx context.Context, plugin agmodel.Plugin) bool {
 	return true
 }
-func mockSubscribeEMB(pluginID string, list []string) error {
+func mockSubscribeEMB(ctx context.Context, pluginID string, list []string) error {
 	return nil
 }
 
@@ -211,7 +211,8 @@ func mockContactClientForDuplicate(ctx context.Context, url, method, token strin
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 
-	} else if strings.Contains(url, "/ODIM/v1/validate") || url == "https://localhost:9091/ODIM/v1/Sessions" || url == host+"/ODIM/v1/Sessions" {
+	} else if strings.Contains(url, "/ODIM/v1/validate") || url == "https://localhost:9091/ODIM/v1/Sessions" ||
+		url == host+"/ODIM/v1/Sessions" || url == host+"/ODIM/v1/EventService" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		if bData.UserName == "incorrectusername" || bytes.Compare(bData.Password, []byte("incorrectPassword")) == 0 {
 			return &http.Response{

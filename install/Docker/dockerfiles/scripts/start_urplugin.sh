@@ -41,11 +41,22 @@ run_forever()
 start_urplugin()
 {
 	export PLUGIN_CONFIG_FILE_PATH=/etc/urplugin_config/config.yaml
+        logs_on_console=$(cat $PLUGIN_CONFIG_FILE_PATH | grep logsRedirectionToConsole| cut -d : -f2 | cut -d , -f1 | tr -d " " )
+        if [[ $logs_on_console == "true" ]]
+        then
+        /bin/plugin-unmanaged-racks 2>&1 &
+        else
 	nohup /bin/plugin-unmanaged-racks >> /var/log/urplugin_logs/urplugin.log 2>&1 &
-	PID=$!
+	fi
+        PID=$!
 	sleep 3
 
+        if [[ $logs_on_console == "true" ]]
+        then
+        /bin/add-hosts -file /tmp/host.append 
+        else
 	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/urplugin_logs/add-hosts.log 2>&1 &
+        fi
 }
 
 monitor_process()

@@ -12,30 +12,33 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dputilities ...
+// Package dputilities ...
 package dputilities
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/gofrs/uuid"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
 )
 
-//RedfishDeviceCollection struct definition
+// RedfishDeviceCollection struct definition
 type RedfishDeviceCollection struct {
 	RedfishDevices            []*RedfishDevice           `json:"targetHosts"`
 	UnreachableRedfishDevices []UnreachableRedfishDevice `json:"failedHosts,omitempty"`
 }
 
-//RedfishDevice struct definition
+// RedfishDevice struct definition
 type RedfishDevice struct {
 	Host            string               `json:"hostAddress"`
 	Username        string               `json:"username,omitempty"`
@@ -48,19 +51,19 @@ type RedfishDevice struct {
 	Location        string `json:"Location"`
 }
 
-//Identifier struct definition
+// Identifier struct definition
 type Identifier struct {
 	UUID uuid.UUID
 	URI  string
 }
 
-//UnreachableRedfishDevice struct definition
+// UnreachableRedfishDevice struct definition
 type UnreachableRedfishDevice struct {
 	Host         string `json:"hostAddress"`
 	ErrorMessage string `json:"errorMessage"`
 }
 
-//RedfishClient struct definition
+// RedfishClient struct definition
 type RedfishClient struct {
 	httpClient *http.Client
 }
@@ -139,9 +142,10 @@ func (client *RedfishClient) GetRootService(device *RedfishDevice) error {
 }
 
 // AuthWithDevice : Performs authentication with the given device and saves the token
-func (client *RedfishClient) AuthWithDevice(device *RedfishDevice) error {
+func (client *RedfishClient) AuthWithDevice(ctx context.Context, device *RedfishDevice) error {
+
 	if device.RootNode == nil {
-		return fmt.Errorf("No ServiceRoot found for device")
+		return fmt.Errorf("no ServiceRoot found for device")
 	}
 
 	// TODO auth (Issue #22)
@@ -162,13 +166,13 @@ func (client *RedfishClient) AuthWithDevice(device *RedfishDevice) error {
 
 	defer resp.Body.Close()
 	device.Token = resp.Header["X-Auth-Token"][0]
-	log.Debug("Token: " + device.Token)
+	l.LogWithFields(ctx).Debugf("Token: " + device.Token)
 
 	return nil
 }
 
 // BasicAuthWithDevice : Performs authentication with the given device and saves the token
-func (client *RedfishClient) BasicAuthWithDevice(device *RedfishDevice, requestURI string) (*http.Response, error) {
+func (client *RedfishClient) BasicAuthWithDevice(ctx context.Context, device *RedfishDevice, requestURI string) (*http.Response, error) {
 	// if device.RootNode == nil {
 	// 	return errors.New("no ServiceRoot found for device")
 	// }

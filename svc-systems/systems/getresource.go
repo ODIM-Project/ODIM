@@ -362,7 +362,6 @@ func SearchAndFilter(ctx context.Context, paramStr []string, resp response.RPC) 
 		for _, element := range submatchall {
 			element = strings.Trim(element, "(")
 			element = strings.Trim(element, ")")
-			fmt.Println(element)
 			if strings.Contains(element, " and ") || strings.Contains(element, " or ") {
 				var x []string
 				if strings.Contains(element, " and ") {
@@ -645,6 +644,19 @@ func (p *PluginContact) GetSystemResource(ctx context.Context, req *systemsproto
 		return resp
 
 	}
+	// Adding the mandatory parameter 'BootOptionReference' as null if there is no such key present in response
+	// for  URI   :  /redfish/v1/Systems<systemID>/BootOptions/<BootOptionID>
+	urlInfo := req.URL
+	res := strings.Split(urlInfo, "/")
+	//
+	if res[5] == "BootOptions" && len(res) == 7 {
+		_, ok := resource["BootOptionReference"]
+		if !ok {
+			resource["BootOptionReference"] = "null"
+		}
+
+	}
+
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
@@ -706,8 +718,9 @@ func rediscoverStorageInventory(ctx context.Context, systemID, systemURL string)
 	}
 	defer conn.Close()
 	aggregator := aggregatorproto.NewAggregatorClient(conn)
-
-	_, err = aggregator.RediscoverSystemInventory(ctx, &aggregatorproto.RediscoverSystemInventoryRequest{
+	reqCtx := common.CreateNewRequestContext(ctx)
+	reqCtx = common.CreateMetadata(reqCtx)
+	_, err = aggregator.RediscoverSystemInventory(reqCtx, &aggregatorproto.RediscoverSystemInventoryRequest{
 		SystemID:  systemID,
 		SystemURL: systemURL,
 	})
@@ -722,7 +735,6 @@ func rediscoverStorageInventory(ctx context.Context, systemID, systemURL string)
 // GetSystemsCollection is to fetch all the Systems uri's and retruns with created collection
 // of systems data from odimra
 func GetSystemsCollection(ctx context.Context, req *systemsproto.GetSystemsRequest) response.RPC {
-	l.LogWithFields(ctx).Info("Inside GetSystemsCollection function (GetResource)")
 	allowed := make(map[string]map[string]bool)
 	allowed["searchKeys"] = make(map[string]bool)
 	allowed["conditionKeys"] = make(map[string]bool)

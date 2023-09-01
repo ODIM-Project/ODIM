@@ -11,14 +11,14 @@ keepalived_pkgs:
 # - check if the first entry in the list is present in the cache using
 # `sudo apt-cache madison <package_name>`
 # package_name ex: linux-headers-5.8.0-63-generic
-  - linux-headers-5.8.0-63-generic
+  - linux-headers-6.2.0-26-generic
 # - check for the latest version of keepalived in cache using
 # `sudo apt-cache madison keepalived`
-  - keepalived=1:2.0.19-2
+  - keepalived=1:2.2.4-0.2build1
 nginx_pkgs:
 # - check for the latest version of nginx in cache using
 # `sudo apt-cache madison nginx`
-  - nginx=1.18.0-0ubuntu1.4
+  - nginx=1.18.0-6ubuntu14.4
   
 
 # Below packages should not altered/updated by user
@@ -32,7 +32,7 @@ docker_dep_pkgs:
 docker_pkgs:
         #  - docker-ce=5:20.10.12~3-0~ubuntu-focal
         #  - docker-ce-cli=5:20.10.12~3-0~ubuntu-focal
-  - containerd.io=1.4.12-1
+  - containerd.io=1.6.4-1
   - pigz
 docker_pkgs_wo_version:
   - docker-ce

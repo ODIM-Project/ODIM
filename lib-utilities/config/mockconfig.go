@@ -231,6 +231,8 @@ func SetUpMockConfig(t *testing.T) error {
 	} else {
 		basePath = path[0]
 	}
+	Data.EventForwardingWorkerPoolCount = 1
+	Data.EventSaveWorkerPoolCount = 1
 	Data.RegistryStorePath = basePath + "/lib-utilities/etc/"
 	Data.LocalhostFQDN = "odim.test.com"
 	Data.EnabledServices = []string{"SessionService", "AccountService", "EventService"}
@@ -249,6 +251,7 @@ func SetUpMockConfig(t *testing.T) error {
 		MessageBusType:          "Kafka",
 		OdimControlMessageQueue: "odim-control-messages",
 	}
+	Data.MessageBusConf.MessageBusConfigFilePath = "mockfilepath"
 	Data.KeyCertConf = &KeyCertConf{
 		RootCACertificate: hostCA,
 		RPCPrivateKey:     hostPrivKey,
@@ -303,11 +306,11 @@ func SetUpMockConfig(t *testing.T) error {
 		},
 	}
 	Data.PluginStatusPolling = &PluginStatusPolling{
-		MaxRetryAttempt:         1,
-		RetryIntervalInMins:     1,
-		ResponseTimeoutInSecs:   1,
-		StartUpResouceBatchSize: 1,
-		PollingFrequencyInMins:  1,
+		MaxRetryAttempt:          1,
+		RetryIntervalInMins:      1,
+		ResponseTimeoutInSecs:    1,
+		StartUpResourceBatchSize: 1,
+		PollingFrequencyInMins:   1,
 	}
 	Data.ExecPriorityDelayConf = &ExecPriorityDelayConf{
 		MinResetPriority:    1,
@@ -345,6 +348,9 @@ func SetUpMockConfig(t *testing.T) error {
 		QueueSize:        1000,
 		DBCommitInterval: 1000,
 		RetryInterval:    1000,
+	}
+	Data.PluginTasksConf = &PluginTasksConf{
+		MonitorPluginTasksFrequencyInMins: 60,
 	}
 	SetVerifyPeer(Data.TLSConf.VerifyPeer)
 	SetTLSMinVersion(Data.TLSConf.MinVersion, &WarningList{})

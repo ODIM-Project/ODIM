@@ -47,5 +47,7 @@
 		"SouthBoundURL": {
 			"ODIM": "redfish"
 		}
-	}
+	},
+	"LogLevel":"warn",
+	"LogFormat":"syslog"
 }

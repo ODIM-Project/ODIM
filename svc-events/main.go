@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -29,14 +30,19 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	processControlActionID   = "219"
+	processControlActionName = "ProcessControl"
+)
+
 func main() {
 	// setting up the logging framework
 	hostName := os.Getenv("HOST_NAME")
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
 	logs.Adorn(logrus.Fields{
-		"host":   hostName,
-		"procid": podName + fmt.Sprintf("_%d", pid),
+		"host":       hostName,
+		"process_id": podName + fmt.Sprintf("_%d", pid),
 	})
 
 	// log should be initialized after Adorn is invoked
@@ -73,22 +79,30 @@ func main() {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
 
-	// Intializing the TopicsList
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.ProcessName, podName)
+	ctx = context.WithValue(ctx, common.ThreadName, common.EventService)
+	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
+	// Initializing the TopicsList
 	evcommon.EMBTopics.TopicsList = make(map[string]bool)
-	// Intializing plugin token
+	// Initializing plugin token
 	evcommon.Token.Tokens = make(map[string]string)
 
 	// register handlers
 	events := rpc.GetPluginContactInitializer()
 	eventsproto.RegisterEventsServer(services.ODIMService.Server(), events)
 
+	// Load event cache
+	if err = events.Connector.LoadSubscriptionData(ctx); err != nil {
+		log.Fatal("fatal: error while trying to load cache : " + err.Error())
+	}
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
 	jobQueueSize := 10
 	consumer.In, consumer.Out = common.CreateJobQueue(jobQueueSize)
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as PublishEventsToDestination method after reading the data from the channel.
-	common.RunReadWorkers(consumer.Out, events.Connector.PublishEventsToDestination, 5)
+	common.RunReadWorkers(ctx, consumer.Out, events.Connector.PublishEventsToDestination, 5)
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
@@ -96,25 +110,26 @@ func main() {
 	consumer.CtrlMsgRecvQueue, consumer.CtrlMsgProcQueue = common.CreateJobQueue(ctrlMsgProcQueueSize)
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as ProcessCtrlMsg method after reading the data from the channel.
-	common.RunReadWorkers(consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 1)
+	ctx = context.WithValue(ctx, common.ActionName, processControlActionName)
+	ctx = context.WithValue(ctx, common.ActionID, processControlActionID)
+	common.RunReadWorkers(ctx, consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 1)
 
 	evcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
 	if evcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go evcommon.TrackConfigFileChanges(errChan)
+	go evcommon.TrackConfigFileChanges(ctx, errChan)
 
-	// Subscribe to intercomm messagebus queue
+	// Subscribe to inter communication message bus queue
 	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.OdimControlMessageQueue)
 
 	// Subscribe to EMBs of all the available plugins
-	startUPInterface := evcommon.StartUpInteraface{
+	startUPInterface := evcommon.StartUpInterface{
 		DecryptPassword: common.DecryptWithPrivateKey,
 		EMBConsume:      consumer.Consume,
 	}
-	go startUPInterface.SubscribePluginEMB()
+	go startUPInterface.SubscribePluginEMB(ctx)
 
 	// Run server
 	if err := services.ODIMService.Run(); err != nil {

@@ -233,7 +233,11 @@ func (fakeStruct) GetEventSubscriptionsCollection(ctx context.Context, in *event
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct) SubsribeEMB(ctx context.Context, in *eventsproto.SubscribeEMBRequest, opts ...grpc.CallOption) (*eventsproto.SubscribeEMBResponse, error) {
+func (fakeStruct) SubscribeEMB(ctx context.Context, in *eventsproto.SubscribeEMBRequest, opts ...grpc.CallOption) (*eventsproto.SubscribeEMBResponse, error) {
+	return nil, errors.New("fakeError")
+}
+
+func (fakeStruct) UpdateSubscriptionLocationRPC(ctx context.Context, in *eventsproto.UpdateSubscriptionLocation, opts ...grpc.CallOption) (*eventsproto.SubscribeEMBResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
@@ -293,6 +297,9 @@ func (fakeStruct) UpdateRemoteAccountService(ctx context.Context, in *managerspr
 }
 
 func (fakeStruct) DeleteRemoteAccountService(ctx context.Context, in *managersproto.ManagerRequest, opts ...grpc.CallOption) (*managersproto.ManagerResponse, error) {
+	return nil, errors.New("fakeError")
+}
+func (fakeStruct) UpdateRemoteAccountPassword(ctx context.Context, in *managersproto.ManagerRequest, opts ...grpc.CallOption) (*managersproto.ManagerResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
@@ -383,6 +390,14 @@ func (fakeStruct2) CreateVolume(ctx context.Context, in *systemsproto.VolumeRequ
 }
 
 func (fakeStruct2) DeleteVolume(ctx context.Context, in *systemsproto.VolumeRequest, opts ...grpc.CallOption) (*systemsproto.SystemsResponse, error) {
+	return nil, errors.New("fakeError")
+}
+
+func (fakeStruct2) UpdateSecureBoot(ctx context.Context, in *systemsproto.SecureBootRequest, opts ...grpc.CallOption) (*systemsproto.SystemsResponse, error) {
+	return nil, errors.New("fakeError")
+}
+
+func (fakeStruct2) ResetSecureBoot(ctx context.Context, in *systemsproto.SecureBootRequest, opts ...grpc.CallOption) (*systemsproto.SystemsResponse, error) {
 	return nil, errors.New("fakeError")
 }
 

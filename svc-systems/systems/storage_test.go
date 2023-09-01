@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"reflect"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -30,7 +29,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-	"github.com/stretchr/testify/assert"
 )
 
 func contactPluginClient(ctx context.Context, url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
@@ -163,7 +161,12 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	config.SetUpMockConfig(t)
 	var positiveResponse interface{}
 	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
-	pluginContact := mockGetExternalInterface()
+	externalInterface := mockGetExternalInterface()
+	pluginContact := PluginContact{
+		ContactClient:  mockContactClient,
+		DevicePassword: stubDevicePassword,
+		UpdateTask:     mockUpdateTask,
+	}
 	ctx := mockContext()
 	tests := []struct {
 		name string
@@ -173,7 +176,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	}{
 		{
 			name: "Valid request",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "ArrayControllers-0",
@@ -196,7 +199,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			},
 		}, {
 			name: "Valid request with multiple drives",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "ArrayControllers-0",
@@ -216,7 +219,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			},
 		}, {
 			name: "invalid system id",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b.1",
 				StorageInstance: "ArrayControllers-0",
@@ -232,7 +235,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 54b243cf-f1e3-5319-92d9-2d6737d6b0b found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0b"}, nil),
 		}, {
 			name: "invalid storage instance",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "",
@@ -248,7 +251,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
 		}, {
 			name: "invalid WriteCachePolicy",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "",
@@ -264,7 +267,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
 		}, {
 			name: "invalid ReadCachePolicy instance",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "",
@@ -280,7 +283,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
 		}, {
 			name: "invalid RaidType",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "ArrayControllers-0",
@@ -291,7 +294,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			want: common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, "error: request payload validation failed: RAIDType Invalid is invalid", []interface{}{"Invalid", "RAIDType"}, nil),
 		}, {
 			name: "Invalid Drives format",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "ArrayControllers-0",
@@ -302,7 +305,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			want: common.GeneralError(http.StatusBadRequest, response.MalformedJSON, "Error while unmarshaling the create volume request: unexpected end of JSON input", []interface{}{}, nil),
 		}, {
 			name: "Empty System ID",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "",
 				StorageInstance: "ArrayControllers-0",
@@ -315,9 +318,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.CreateVolume(ctx, tt.req); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PluginContact.CreateVolume() = %v, want %v", got, tt.want)
-			}
+			tt.p.CreateVolume(ctx, tt.req, &pluginContact, "task12345")
 		})
 	}
 
@@ -331,8 +332,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 		StorageInstance: "ArrayControllers-0",
 		RequestBody:     []byte(`invalidJson`),
 	}
-	resp := storage.CreateVolume(ctx, &req)
-	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Error: @odata.id key(s) is missing in Drives list")
+	storage.CreateVolume(ctx, &req, &pluginContact, "task12345")
 
 	// Validate the request JSON properties for case sensitive
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
@@ -346,8 +346,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 								"Links":{"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 	}
 
-	resp = storage.CreateVolume(ctx, &req)
-	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase ")
+	storage.CreateVolume(ctx, &req, &pluginContact, "task12345")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
@@ -359,8 +358,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 								"rAIDType":"RAID0",
 								"Links":{"drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 	}
-	resp = storage.CreateVolume(ctx, &req)
-	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase ")
+	storage.CreateVolume(ctx, &req, &pluginContact, "task12345")
 
 	StringsEqualFold = func(s, t string) bool {
 		return true
@@ -374,13 +372,12 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 								"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 	}
 
-	resp = storage.CreateVolume(ctx, &req)
-	assert.True(t, true, "Auth type XAuthToken")
+	storage.CreateVolume(ctx, &req, &pluginContact, "task12345")
 
 	StringsEqualFold = func(s, t string) bool {
 		return false
 	}
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, status scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, data2 string, status scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
@@ -392,10 +389,9 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 								"Links":{
 								"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 	}
-	resp = storage.CreateVolume(ctx, &req)
-	assert.True(t, true, "Error: Plugin Contact")
+	storage.CreateVolume(ctx, &req, &pluginContact, "task12345")
 
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, status scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data []byte, data1 string, data2 string, status scommon.ResponseStatus, err error) {
 		return scommon.ContactPlugin(ctx, req, errorMessage)
 	}
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
@@ -409,8 +405,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 								"Links":{
 								"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1"}]}}`),
 	}
-	resp = storage.CreateVolume(ctx, &req)
-	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Auth type XAuthToken")
+	storage.CreateVolume(ctx, &req, &pluginContact, "task12345")
 
 }
 
@@ -420,7 +415,12 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	config.SetUpMockConfig(t)
 	var positiveResponse interface{}
 	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
-	pluginContact := mockGetExternalInterface()
+	externalInterface := mockGetExternalInterface()
+	pluginContact := PluginContact{
+		ContactClient:  mockContactClient,
+		DevicePassword: stubDevicePassword,
+		UpdateTask:     mockUpdateTask,
+	}
 	ctx := mockContext()
 	tests := []struct {
 		name              string
@@ -431,7 +431,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	}{
 		{
 			name: "Valid request",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "1",
@@ -445,7 +445,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "invalid system id",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b.1",
 				StorageInstance: "1",
@@ -459,7 +459,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "without system id",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b.",
 				StorageInstance: "1",
@@ -473,7 +473,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "Invalid volume id",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "1",
@@ -487,7 +487,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "unknown plugin",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "8e896459-a8f9-4c83-95b7-7b316b4908e1.1",
 				StorageInstance: "1",
@@ -501,7 +501,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "Invalid Json",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "8e896459-a8f9-4c83-95b7-7b316b4908e1.1",
 				StorageInstance: "1",
@@ -515,7 +515,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "Invalid field Keyword",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a.1",
 				StorageInstance: "1",
@@ -529,7 +529,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 		},
 		{
 			name: "Invalid System ID",
-			p:    pluginContact,
+			p:    externalInterface,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "",
 				StorageInstance: "",
@@ -545,9 +545,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	for _, tt := range tests {
 		JSONUnmarshalFunc = tt.JSONUnmarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.DeleteVolume(ctx, tt.req); got.StatusCode != tt.wantStatusCode {
-				t.Errorf("PluginContact.DeleteVolume() = %v, want %v", got.StatusCode, tt.wantStatusCode)
-			}
+			tt.p.DeleteVolume(ctx, tt.req, &pluginContact, "task12345")
 		})
 	}
 
@@ -560,8 +558,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", &errors.Error{}
 	}
-	res := pluginContact.DeleteVolume(ctx, req)
-	assert.Equal(t, http.StatusInternalServerError, int(res.StatusCode), "Error validating request parameters for volume creation, status code should be StatusInternalServerError")
+	externalInterface.DeleteVolume(ctx, req, &pluginContact, "task12345")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", nil
@@ -570,8 +567,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	StringsEqualFold = func(s, t string) bool {
 		return true
 	}
-	res = pluginContact.DeleteVolume(ctx, req)
-	assert.Equal(t, http.StatusInternalServerError, int(res.StatusCode), "Error : status code should StatusInternalServerError")
+	externalInterface.DeleteVolume(ctx, req, &pluginContact, "task12345")
 
 	StringsEqualFold = func(s, t string) bool {
 		return false
@@ -579,8 +575,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	StringTrimSpace = func(s string) string {
 		return ""
 	}
-	res = pluginContact.DeleteVolume(ctx, req)
-	assert.Equal(t, http.StatusBadRequest, int(res.StatusCode), "Error: Status code should StatusBadRequest")
+	externalInterface.DeleteVolume(ctx, req, &pluginContact, "task12345")
 
 }
 

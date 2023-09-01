@@ -118,17 +118,7 @@ func (e *ExternalInterface) Update(ctx context.Context, req *accountproto.Update
 						errorMessage := errorLogPrefix + "Invalid RoleID " + requestUser.RoleID + " present"
 						resp.StatusCode = http.StatusBadRequest
 						resp.StatusMessage = response.PropertyValueNotInList
-						args := response.Args{
-							Code:    response.GeneralError,
-							Message: "",
-							ErrorArgs: []response.ErrArgs{
-								response.ErrArgs{
-									StatusMessage: resp.StatusMessage,
-									ErrorMessage:  errorMessage,
-									MessageArgs:   []interface{}{requestUser.RoleID, "RoleID"},
-								},
-							},
-						}
+						args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{requestUser.RoleID, "RoleID"})
 						resp.Body = args.CreateGenericErrorResponse()
 						l.LogWithFields(ctx).Error(errorMessage)
 						return resp
@@ -146,17 +136,7 @@ func (e *ExternalInterface) Update(ctx context.Context, req *accountproto.Update
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
-			args := response.Args{
-				Code:    response.GeneralError,
-				Message: "",
-				ErrorArgs: []response.ErrArgs{
-					response.ErrArgs{
-						StatusMessage: resp.StatusMessage,
-						ErrorMessage:  errorMessage,
-						MessageArgs:   []interface{}{"Account", id},
-					},
-				},
-			}
+			args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{"Account", id})
 			resp.Body = args.CreateGenericErrorResponse()
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
@@ -170,17 +150,7 @@ func (e *ExternalInterface) Update(ctx context.Context, req *accountproto.Update
 		errorMessage := errorLogPrefix + "User does not have the privilege of updating other accounts"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: "",
-			ErrorArgs: []response.ErrArgs{
-				response.ErrArgs{
-					StatusMessage: resp.StatusMessage,
-					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{},
-				},
-			},
-		}
+		args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{})
 		resp.Body = args.CreateGenericErrorResponse()
 		auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 		return resp
@@ -195,17 +165,7 @@ func (e *ExternalInterface) Update(ctx context.Context, req *accountproto.Update
 			errorMessage := errorLogPrefix + "User does not have the privilege of updating any account role, including his own account"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
-			args := response.Args{
-				Code:    response.GeneralError,
-				Message: "",
-				ErrorArgs: []response.ErrArgs{
-					response.ErrArgs{
-						StatusMessage: resp.StatusMessage,
-						ErrorMessage:  errorMessage,
-						MessageArgs:   []interface{}{},
-					},
-				},
-			}
+			args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{})
 			resp.Body = args.CreateGenericErrorResponse()
 			auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 			return resp
@@ -218,17 +178,7 @@ func (e *ExternalInterface) Update(ctx context.Context, req *accountproto.Update
 			errorMessage := errorLogPrefix + "Roles, user is associated with, doesn't allow changing own or other users password"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
-			args := response.Args{
-				Code:    response.GeneralError,
-				Message: "",
-				ErrorArgs: []response.ErrArgs{
-					response.ErrArgs{
-						StatusMessage: resp.StatusMessage,
-						ErrorMessage:  errorMessage,
-						MessageArgs:   []interface{}{},
-					},
-				},
-			}
+			args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{})
 			resp.Body = args.CreateGenericErrorResponse()
 			auth.CustomAuthLog(ctx, session.Token, errorMessage, resp.StatusCode)
 			return resp
@@ -239,17 +189,7 @@ func (e *ExternalInterface) Update(ctx context.Context, req *accountproto.Update
 			errorMessage := err.Error()
 			resp.StatusCode = http.StatusBadRequest
 			resp.StatusMessage = response.PropertyValueFormatError
-			args := response.Args{
-				Code:    response.GeneralError,
-				Message: "",
-				ErrorArgs: []response.ErrArgs{
-					response.ErrArgs{
-						StatusMessage: resp.StatusMessage,
-						ErrorMessage:  errorMessage,
-						MessageArgs:   []interface{}{requestUser.Password, "Password"},
-					},
-				},
-			}
+			args := GetResponseArgs(resp.StatusMessage, errorMessage, []interface{}{requestUser.Password, "Password"})
 			resp.Body = args.CreateGenericErrorResponse()
 			l.LogWithFields(ctx).Error(errorMessage)
 			return resp
@@ -302,4 +242,19 @@ func isEmptyRequest(requestBody []byte) bool {
 		return true
 	}
 	return false
+}
+
+// GetResponseArgs creates and return Args object with the values provided
+func GetResponseArgs(statusMessage string, errorMessage string, messageArgs []interface{}) response.Args {
+	return response.Args{
+		Code:    response.GeneralError,
+		Message: "",
+		ErrorArgs: []response.ErrArgs{
+			response.ErrArgs{
+				StatusMessage: statusMessage,
+				ErrorMessage:  errorMessage,
+				MessageArgs:   messageArgs,
+			},
+		},
+	}
 }

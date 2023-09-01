@@ -19,6 +19,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
 	"google.golang.org/grpc/metadata"
 )
@@ -82,11 +83,14 @@ func CreateMetadata(ctx context.Context) context.Context {
 	return ctx
 }
 
+// ModifyContext modify the values in the context
 func ModifyContext(ctx context.Context, threadName, podName string) context.Context {
 	ctx = context.WithValue(ctx, ThreadName, threadName)
 	ctx = context.WithValue(ctx, ProcessName, podName)
 	return ctx
 }
+
+// CreateNewRequestContext creates a new context with the values from a context passed
 func CreateNewRequestContext(ctx context.Context) context.Context {
 	reqCtx := context.Background()
 	processName, _ := ctx.Value(ProcessName).(string)
@@ -102,4 +106,43 @@ func CreateNewRequestContext(ctx context.Context) context.Context {
 	reqCtx = context.WithValue(reqCtx, ThreadID, threadID)
 	reqCtx = context.WithValue(reqCtx, ThreadName, threadName)
 	return reqCtx
+}
+
+// CreateContext will create and returns a new context with the values passed
+func CreateContext(transactionID, actionID, actionName, threadID, threadName, processName string) context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, TransactionID, transactionID)
+	ctx = context.WithValue(ctx, ActionID, actionID)
+	ctx = context.WithValue(ctx, ActionName, actionName)
+	ctx = context.WithValue(ctx, ThreadID, threadID)
+	ctx = context.WithValue(ctx, ThreadName, threadName)
+	ctx = context.WithValue(ctx, ProcessName, processName)
+	return ctx
+}
+
+// SendInvalidSessionResponse writes the response to client when no valid session is found
+func SendInvalidSessionResponse(ctx iris.Context, errorMessage string) {
+	response := GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+	SetResponseHeader(ctx, response.Header)
+	ctx.StatusCode(http.StatusUnauthorized)
+	ctx.JSON(&response.Body)
+	return
+}
+
+// SendFailedRPCCallResponse writes the response to client when a RPC call fails
+func SendFailedRPCCallResponse(ctx iris.Context, errorMessage string) {
+	response := GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	SetResponseHeader(ctx, response.Header)
+	ctx.StatusCode(http.StatusInternalServerError)
+	ctx.JSON(&response.Body)
+	return
+}
+
+// SendMalformedJSONRequestErrResponse writes the response to client when the request contains malformed JSON structure
+func SendMalformedJSONRequestErrResponse(ctx iris.Context, errorMessage string) {
+	response := GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+	SetResponseHeader(ctx, response.Header)
+	ctx.StatusCode(http.StatusBadRequest)
+	ctx.JSON(&response.Body)
+	return
 }

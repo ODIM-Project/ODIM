@@ -15,6 +15,8 @@
 // Package common ...
 package common
 
+import "time"
+
 // EventConst constant
 type EventConst int
 
@@ -150,10 +152,53 @@ const (
 	AggregationSourceType = "#AggregationSource.v1_2_0.AggregationSource"
 	//ChassisType has version to be returned with Chassis Service
 	ChassisType = "#Chassis.v1_20_0.Chassis"
+	//ManagerAccountServiceType has version to be returned with RemoteAccountService response
+	ManagerAccountServiceType = "#AccountService.v1_13_0.AccountService"
 	// AggregateSubscriptionIndex is a index name which required for indexing
 	// subscription of aggregate
 	AggregateSubscriptionIndex = "AggregateToHost"
-	// Below fields are Process Name for logging
+
+	// PluginEventHandlingActionName is an action name to be logged while processing events
+	PluginEventHandlingActionName = "EventHandling"
+
+	// PluginEventHandlingActionID is an action id to be logged while processing events
+	PluginEventHandlingActionID = "220"
+
+	// PluginEventPublishingActionName is an action name to be logged while publishing events
+	PluginEventPublishingActionName = "EventPublish"
+
+	// PluginEventPublishingActionID is an action id to be logged while publishing events
+	PluginEventPublishingActionID = "221"
+
+	// PluginTrackFileConfigActionName is an action name to be logged while tracking config changes
+	PluginTrackFileConfigActionName = "TrackConfigFIleChanges"
+	// PluginTrackFileConfigActionID is an action id to be logged while tracking config changes
+	PluginTrackFileConfigActionID = "000"
+
+	//LogServicesID is the URI for endpoints which operates on a specific log
+	LogServicesID = "LogServices/{id}"
+	//EntriesID is the URI for endpoints which operates on a specific entry
+	EntriesID = "Entries/{id}"
+	//RolesID is the URI for endpoints which performs operations on a specific user role
+	RolesID = "Roles/{id}"
+	//AccountsID is the URI for endpoints which performs operations on a specific user account
+	AccountsID = "Accounts/{id}"
+	//AggregationSourcesID is the URI for endpoints which performs operations on a specific aggregation source
+	AggregationSourcesID = "AggregationSources/{id}"
+	//ChassisID is the URI for endpoints which performs operations on a specific computer system chassis, rack group, or a rack.
+	ChassisID = "Chassis/{id}"
+	//AddressPoolsID is the URI for endpoints which performs operations on a specific address pool
+	AddressPoolsID = "AddressPools/{id}"
+	//PortsID is the URI for endpoints which performs operations on a specific switch port
+	PortsID = "Ports/{id}"
+	//ZonesID is the URI for endpoints which performs operations on a specific fabric zone
+	ZonesID = "Zones/{id}"
+	//EndpointsID is the URI for endpoints which performs operations on a specific fabric endpoint
+	EndpointsID = "Endpoints/{id}"
+)
+
+// Below fields are Process Name for logging
+const (
 	TransactionID = "transactionid"
 	ThreadID      = "threadid"
 	ThreadName    = "threadname"
@@ -161,24 +206,35 @@ const (
 	ActionID      = "actionid"
 	ProcessName   = "processname"
 	RequestBody   = "requestbody"
-	// Below fields define Service Name
+)
+
+// Below fields are service names for logging
+const (
 	ManagerService     = "svc-managers"
 	AccountService     = "svc-account"
 	SystemService      = "svc-systems"
 	SessionService     = "svc-account-session"
-	ApiService         = "svc-api"
+	APIService         = "svc-api"
 	UpdateService      = "svc-update"
 	TaskService        = "svc-task"
 	AggregationService = "svc-aggregation"
+	EventService       = "svc-event"
 	TelemetryService   = "svc-telemetry"
 	LicenseService     = "svc-licenses"
 	FabricService      = "svc-fabrics"
+)
+
+// Below fields are thread IDs for logging
+const (
 	// DefaultThreadID to be used for apis
 	DefaultThreadID = "0"
 	// Invalid Action
-	InvalidActionID   = "000"
-	InvalidActionName = "MethodNotAllowed"
-	// ThreadName
+	InvalidActionID = "000"
+)
+
+// Below fields are thread names for logging
+const (
+	InvalidActionName                      = "MethodNotAllowed"
 	CheckAuth                              = "Check-Authentication"
 	CheckSessionCreation                   = "CheckSessionCreationCredentials"
 	CheckSessionTimeout                    = "CheckSessionTimeOut"
@@ -200,15 +256,32 @@ const (
 	RediscoverSystemInventory              = "RediscoverSystemInventory"
 	CheckPluginStatus                      = "CheckPluginStatus"
 	GetTelemetryResource                   = "GetTelemetryResource"
-	// constants for log
-	SessionToken            = "sessiontoken"
-	SessionUserID           = "sessionuserid"
-	SessionRoleID           = "sessionroleid"
-	StatusCode              = "statuscode"
-	ComputerSystemReset     = "ComputerSystemReset"
-	GetFabricManagerChassis = "GetFabricManagerChassis"
-	CollectChassisResource  = "CollectChassisResource"
-	UpdateChassisResource   = "UpdateChassisResource"
+	PollPlugin                             = "PollPlugin"
+	CreateRemoteAccountService             = "CreateRemoteAccountService"
+	UpdateRemoteAccountService             = "UpdateRemoteAccountService"
+	DeleteRemoteAccountService             = "DeleteRemoteAccountService"
+	InstallLicenseService                  = "InstallLicenseService"
+	ProcessTaskEvents                      = "ProcessTaskEvents"
+	CreateVolume                           = "CreateVolume"
+	DeleteVolume                           = "DeleteVolume"
+	SessionToken                           = "sessiontoken"
+	SessionUserID                          = "sessionuserid"
+	SessionRoleID                          = "sessionroleid"
+	StatusCode                             = "statuscode"
+	ComputerSystemReset                    = "ComputerSystemReset"
+	ChangeBootOrderSettings                = "ChangeBootOrderSettings"
+	GetFabricManagerChassis                = "GetFabricManagerChassis"
+	CollectChassisResource                 = "CollectChassisResource"
+	UpdateChassisResource                  = "UpdateChassisResource"
+	UpdateSecureBoot                       = "UpdateSecureBoot"
+	ResetSecureBoot                        = "ResetSecureBoot"
+)
+
+const (
+	// Taskmon URI key
+	Taskmon = "taskmon"
+	// EnvPodName is a key name to get the pod name from environment
+	EnvPodName = "POD_NAME"
 )
 
 // ActionType defines type of action
@@ -217,39 +290,45 @@ type ActionType struct {
 	ActionName string
 }
 
-// ActionURL defines type of service, uri and its method
+// ActionKey defines type of service, uri and its method
 type ActionKey struct {
 	Service string
-	Uri     string
+	URI     string
 	Method  string
 }
 
 // Actions contain map of URI object and action related to request made by user
 var Actions = map[ActionKey]ActionType{
 	//Systems URI
-	{"Systems", "Systems", "GET"}:                 {"001", "GetSystemsCollection"},
-	{"Systems", "Systems/{id}", "GET"}:            {"002", "GetSystem"},
-	{"Systems", "Processors", "GET"}:              {"003", "GetProcessorCollection"},
-	{"Systems", "Processors/{id}", "GET"}:         {"004", "GetProcessor"},
-	{"Systems", "Memory", "GET"}:                  {"005", "GetMemoryCollection"},
-	{"Systems", "Memory/{id}", "GET"}:             {"006", "GetMemory"},
-	{"Systems", "NetworkInterfaces", "GET"}:       {"007", "GetNetworkInterfacesCollection"},
-	{"Systems", "NetworkInterfaces/{id}", "GET"}:  {"008", "GetNetworkInterfaces"},
-	{"Systems", "MemoryDomains", "GET"}:           {"009", "GetMemoryDomainsCollection"},
-	{"Systems", "EthernetInterfaces", "GET"}:      {"010", "GetEthernetInterfacesCollection"},
-	{"Systems", "EthernetInterfaces/{id}", "GET"}: {"011", "GetEthernetInterfaces"},
-	{"Systems", "VLANS", "GET"}:                   {"012", "GetVLANSCollection"},
-	{"Systems", "VLANS/{id}", "GET"}:              {"013", "GetVLANS"},
-	{"Systems", "SecureBoot", "GET"}:              {"014", "GetSecureBoot"},
-	{"Systems", "BootOptions", "GET"}:             {"015", "GetBootOptionsCollection"},
-	{"Systems", "BootOptions/{id}", "GET"}:        {"016", "GetBootOptions"},
-	{"Systems", "LogServices", "GET"}:             {"017", "GetLogServicesCollection"},
-	{"Systems", "LogServices/{id}", "GET"}:        {"018", "GetLogServices"},
-	{"Systems", "Entries", "GET"}:                 {"019", "GetEntriesCollection"},
-	{"Systems", "Entries/{id}", "GET"}:            {"020", "GetEntries"},
-	{"Systems", "LogService.ClearLog", "POST"}:    {"021", "ClearLog"},
-	{"Systems", "Systems/{id}", "PATCH"}:          {"022", "ChangeBootOrderSettings"},
-	{"Systems", "PCIeDevices/{id}", "GET"}:        {"023", "GetPCIeDevices"},
+	{"Systems", "Systems", "GET"}:                  {"001", "GetSystemsCollection"},
+	{"Systems", "Systems/{id}", "GET"}:             {"002", "GetSystem"},
+	{"Systems", "Processors", "GET"}:               {"003", "GetProcessorCollection"},
+	{"Systems", "Processors/{id}", "GET"}:          {"004", "GetProcessor"},
+	{"Systems", "Memory", "GET"}:                   {"005", "GetMemoryCollection"},
+	{"Systems", "Memory/{id}", "GET"}:              {"006", "GetMemory"},
+	{"Systems", "NetworkInterfaces", "GET"}:        {"007", "GetNetworkInterfacesCollection"},
+	{"Systems", "NetworkInterfaces/{id}", "GET"}:   {"008", "GetNetworkInterfaces"},
+	{"Systems", "MemoryDomains", "GET"}:            {"009", "GetMemoryDomainsCollection"},
+	{"Systems", "EthernetInterfaces", "GET"}:       {"010", "GetEthernetInterfacesCollection"},
+	{"Systems", "EthernetInterfaces/{id}", "GET"}:  {"011", "GetEthernetInterfaces"},
+	{"Systems", "VLANS", "GET"}:                    {"012", "GetVLANSCollection"},
+	{"Systems", "VLANS/{id}", "GET"}:               {"013", "GetVLANS"},
+	{"Systems", "SecureBoot", "GET"}:               {"014", "GetSecureBoot"},
+	{"Systems", "BootOptions", "GET"}:              {"015", "GetBootOptionsCollection"},
+	{"Systems", "BootOptions/{id}", "GET"}:         {"016", "GetBootOptions"},
+	{"Systems", "LogServices", "GET"}:              {"017", "GetLogServicesCollection"},
+	{"Systems", LogServicesID, "GET"}:              {"018", "GetLogServices"},
+	{"Systems", "Entries", "GET"}:                  {"019", "GetEntriesCollection"},
+	{"Systems", EntriesID, "GET"}:                  {"020", "GetEntries"},
+	{"Systems", "LogService.ClearLog", "POST"}:     {"021", "ClearLog"},
+	{"Systems", "Systems/{id}", "PATCH"}:           {"022", "ChangeBootOrderSettings"},
+	{"Systems", "PCIeDevices/{id}", "GET"}:         {"023", "GetPCIeDevices"},
+	{"Systems", "SecureBoot", "PATCH"}:             {"219", "UpdateSecureBoot"},
+	{"Systems", "SecureBoot.ResetKeys", "POST"}:    {"220", "ResetSecureBoot"},
+	{"Systems", "SecureBootDatabases", "GET"}:      {"221", "GetSecureDatabaseCollection"},
+	{"Systems", "SecureBootDatabases/{id}", "GET"}: {"222", "GetSecureDatabase"},
+	{"Systems", "Certificates", "GET"}:             {"223", "GetCertificateCollection"},
+	{"Systems", "Certificates/{id}", "GET"}:        {"224", "GetCertificate"},
 	//Task URI
 	{"TaskService", "TaskService", "GET"}:   {"024", "GetTaskService"},
 	{"TaskService", "Tasks", "GET"}:         {"025", "TaskCollection"},
@@ -258,17 +337,17 @@ var Actions = map[ActionKey]ActionType{
 	{"TaskService", "SubTasks/{id}", "GET"}: {"028", "GetSubTask"},
 	{"TaskService", "Tasks/{id}", "DELETE"}: {"029", "DeleteTask"},
 	// Roles URI
-	{"Roles", "Roles", "GET"}:         {"030", "GetAllRoles"},
-	{"Roles", "Roles/{id}", "GET"}:    {"031", "GetRole"},
-	{"Roles", "Roles/{id}", "PATCH"}:  {"032", "UpdateRole"},
-	{"Roles", "Roles/{id}", "DELETE"}: {"033", "DeleteRole"},
+	{"Roles", "Roles", "GET"}:    {"030", "GetAllRoles"},
+	{"Roles", RolesID, "GET"}:    {"031", "GetRole"},
+	{"Roles", RolesID, "PATCH"}:  {"032", "UpdateRole"},
+	{"Roles", RolesID, "DELETE"}: {"033", "DeleteRole"},
 	// Account Service URI
-	{"AccountService", "AccountService", "GET"}:   {"034", "GetAccountService"},
-	{"AccountService", "Accounts", "GET"}:         {"035", "GetAllAccounts"},
-	{"AccountService", "Accounts/{id}", "GET"}:    {"036", "GetAccount"},
-	{"AccountService", "Accounts", "POST"}:        {"037", "CreateAccount"},
-	{"AccountService", "Accounts/{id}", "PATCH"}:  {"038", "UpdateAccount"},
-	{"AccountService", "Accounts/{id}", "DELETE"}: {"039", "DeleteAccount"},
+	{"AccountService", "AccountService", "GET"}: {"034", "GetAccountService"},
+	{"AccountService", "Accounts", "GET"}:       {"035", "GetAllAccounts"},
+	{"AccountService", AccountsID, "GET"}:       {"036", "GetAccount"},
+	{"AccountService", "Accounts", "POST"}:      {"037", "CreateAccount"},
+	{"AccountService", AccountsID, "PATCH"}:     {"038", "UpdateAccount"},
+	{"AccountService", AccountsID, "DELETE"}:    {"039", "DeleteAccount"},
 	// Session Service URI
 	{"SessionService", "SessionService", "GET"}:   {"040", "GetSessionService"},
 	{"SessionService", "Sessions", "GET"}:         {"041", "GetAllActiveSessions"},
@@ -296,7 +375,7 @@ var Actions = map[ActionKey]ActionType{
 	{"Systems", "Controllers", "GET"}:           {"058", "GetControllersCollection"},
 	{"Systems", "Controllers/{id}", "GET"}:      {"059", "GetSystemController"},
 	{"Systems", "Ports", "GET"}:                 {"060", "GetPortsCollection"},
-	{"Systems", "Ports/{id}", "GET"}:            {"061", "GetSystemPort"},
+	{"Systems", PortsID, "GET"}:                 {"061", "GetSystemPort"},
 	{"Systems", "Volumes", "GET"}:               {"062", "GetVolumeCollection"},
 	{"Systems", "Volumes", "POST"}:              {"063", "CreateVolume"},
 	{"Systems", "Capabilities", "GET"}:          {"064", "GetVolumeCapabilities"},
@@ -320,11 +399,11 @@ var Actions = map[ActionKey]ActionType{
 	{"AggregationService", "AggregationService.Reset", "POST"}:               {"080", "AggregationServiceReset"},
 	{"AggregationService", "AggregationService.SetDefaultBootOrder", "POST"}: {"081", "SetDefaultBootOrder"},
 	//AggregationSources URI
-	{"AggregationService", "AggregationSources", "POST"}:        {"082", "AddAggregationSource"},
-	{"AggregationService", "AggregationSources", "GET"}:         {"083", "GetAllAggregationSource"},
-	{"AggregationService", "AggregationSources/{id}", "GET"}:    {"084", "GetAggregationSource"},
-	{"AggregationService", "AggregationSources/{id}", "PATCH"}:  {"085", "UpdateAggregationSource"},
-	{"AggregationService", "AggregationSources/{id}", "DELETE"}: {"086", "DeleteAggregationSource"},
+	{"AggregationService", "AggregationSources", "POST"}:   {"082", "AddAggregationSource"},
+	{"AggregationService", "AggregationSources", "GET"}:    {"083", "GetAllAggregationSource"},
+	{"AggregationService", AggregationSourcesID, "GET"}:    {"084", "GetAggregationSource"},
+	{"AggregationService", AggregationSourcesID, "PATCH"}:  {"085", "UpdateAggregationSource"},
+	{"AggregationService", AggregationSourcesID, "DELETE"}: {"086", "DeleteAggregationSource"},
 	// ConnectionMethods URI
 	{"AggregationService", "ConnectionMethods", "GET"}:      {"087", "GetAllConnectionMethods"},
 	{"AggregationService", "ConnectionMethods/{id}", "GET"}: {"088", "GetConnectionMethod"},
@@ -340,9 +419,9 @@ var Actions = map[ActionKey]ActionType{
 	// Chassis URI
 	{"Chassis", "Chassis", "GET"}:                     {"106", "GetChassisCollection"},
 	{"Chassis", "Chassis", "POST"}:                    {"107", "CreateChassis"},
-	{"Chassis", "Chassis/{id}", "GET"}:                {"108", "GetChassis"},
-	{"Chassis", "Chassis/{id}", "PATCH"}:              {"109", "UpdateChassis"},
-	{"Chassis", "Chassis/{id}", "DELETE"}:             {"110", "DeleteChassis"},
+	{"Chassis", ChassisID, "GET"}:                     {"108", "GetChassis"},
+	{"Chassis", ChassisID, "PATCH"}:                   {"109", "UpdateChassis"},
+	{"Chassis", ChassisID, "DELETE"}:                  {"110", "DeleteChassis"},
 	{"Chassis", "NetworkAdapters", "GET"}:             {"111", "GetAllNetworkAdapters"},
 	{"Chassis", "NetworkAdapters/{id}", "GET"}:        {"112", "GetNetworkAdapters"},
 	{"Chassis", "NetworkDeviceFunctions", "GET"}:      {"113", "GetAllNetworkDeviceFunctions"},
@@ -359,9 +438,9 @@ var Actions = map[ActionKey]ActionType{
 	{"Chassis", "Sensors", "GET"}:                     {"124", "GetAllSensors"},
 	{"Chassis", "Sensors/{id}", "GET"}:                {"125", "GetSensors"},
 	{"Chassis", "LogServices", "GET"}:                 {"126", "GetAllLogServices"},
-	{"Chassis", "LogServices/{id}", "GET"}:            {"127", "GetLogServices"},
+	{"Chassis", LogServicesID, "GET"}:                 {"127", "GetLogServices"},
 	{"Chassis", "Entries", "GET"}:                     {"128", "GetAllEntries"},
-	{"Chassis", "Entries/{id}", "GET"}:                {"129", "GetEntries"},
+	{"Chassis", EntriesID, "GET"}:                     {"129", "GetEntries"},
 	{"Chassis", "Power", "GET"}:                       {"130", "GetChassisPower"},
 	{"Chassis", "#PowerControl/{id}", "GET"}:          {"131", "GetPowerControl"},
 	{"Chassis", "#PowerSupplies/{id}", "GET"}:         {"132", "GetPowerSupplies"},
@@ -377,31 +456,31 @@ var Actions = map[ActionKey]ActionType{
 	{"EventService", "EventService.SubmitTestEvent", "GET"}: {"141", "SubmitTestEvent"},
 	{"EventService", "Subscriptions/{id}", "DELETE"}:        {"142", "DeleteEventSubscription"},
 	// Fabrics URI
-	{"Fabrics", "Fabrics", "GET"}:              {"143", "GetFabricCollection"},
-	{"Fabrics", "Fabrics/{id}", "GET"}:         {"144", "GetFabric"},
-	{"Fabrics", "Switches", "GET"}:             {"145", "GetFabricSwitchCollection"},
-	{"Fabrics", "Switches/{id}", "GET"}:        {"146", "GetFabricSwitch"},
-	{"Fabrics", "Ports", "GET"}:                {"147", "GetSwitchPortCollection"},
-	{"Fabrics", "Ports/{id}", "GET"}:           {"148", "GetSwitchPort"},
-	{"Fabrics", "Zones", "GET"}:                {"149", "GetFabricZoneCollection"},
-	{"Fabrics", "Endpoints", "GET"}:            {"150", "GetFabricEndPointCollection"},
-	{"Fabrics", "AddressPools", "GET"}:         {"151", "GetFabricAddressPoolCollection"},
-	{"Fabrics", "AddressPools/{id}", "GET"}:    {"152", "GetFabricAddressPool"},
-	{"Fabrics", "AddressPools/{id}", "PUT"}:    {"153", "VerifyAndUpdateFabricAddressPool"},
-	{"Fabrics", "AddressPools", "POST"}:        {"154", "CreateFabricAddressPool"},
-	{"Fabrics", "AddressPools/{id}", "PATCH"}:  {"155", "UpdateFabricAddressPool"},
-	{"Fabrics", "AddressPools/{id}", "DELETE"}: {"156", "DeleteFabricAddressPool"},
-	{"Fabrics", "Zones/{id}", "GET"}:           {"157", "GetFabricZone"},
-	{"Fabrics", "Zones/{id}", "PUT"}:           {"158", "VerifyAndUpdateFabricZone"},
-	{"Fabrics", "Zones", "POST"}:               {"159", "CreateFabricZone"},
-	{"Fabrics", "Zones/{id}", "PATCH"}:         {"160", "UpdateFabricZone"},
-	{"Fabrics", "Zones/{id}", "DELETE"}:        {"161", "DeleteFabricZone"},
-	{"Fabrics", "Endpoints/{id}", "GET"}:       {"162", "GetFabricEndPoints"},
-	{"Fabrics", "Endpoints/{id}", "PUT"}:       {"163", "VerifyAndUpdateFabricEndPoints"},
-	{"Fabrics", "Endpoints/{id}", "POST"}:      {"164", "CreateFabricEndPoints"},
-	{"Fabrics", "Endpoints/{id}", "PATCH"}:     {"165", "UpdateFabricEndPoints"},
-	{"Fabrics", "Endpoints/{id}", "DELETE"}:    {"166", "DeleteFabricEndPoints"},
-	{"Fabrics", "Ports/{id}", "Patch"}:         {"167", "UpdateFabricPorts"},
+	{"Fabrics", "Fabrics", "GET"}:         {"143", "GetFabricCollection"},
+	{"Fabrics", "Fabrics/{id}", "GET"}:    {"144", "GetFabric"},
+	{"Fabrics", "Switches", "GET"}:        {"145", "GetFabricSwitchCollection"},
+	{"Fabrics", "Switches/{id}", "GET"}:   {"146", "GetFabricSwitch"},
+	{"Fabrics", "Ports", "GET"}:           {"147", "GetSwitchPortCollection"},
+	{"Fabrics", PortsID, "GET"}:           {"148", "GetSwitchPort"},
+	{"Fabrics", "Zones", "GET"}:           {"149", "GetFabricZoneCollection"},
+	{"Fabrics", "Endpoints", "GET"}:       {"150", "GetFabricEndPointCollection"},
+	{"Fabrics", "AddressPools", "GET"}:    {"151", "GetFabricAddressPoolCollection"},
+	{"Fabrics", AddressPoolsID, "GET"}:    {"152", "GetFabricAddressPool"},
+	{"Fabrics", AddressPoolsID, "PUT"}:    {"153", "VerifyAndUpdateFabricAddressPool"},
+	{"Fabrics", "AddressPools", "POST"}:   {"154", "CreateFabricAddressPool"},
+	{"Fabrics", AddressPoolsID, "PATCH"}:  {"155", "UpdateFabricAddressPool"},
+	{"Fabrics", AddressPoolsID, "DELETE"}: {"156", "DeleteFabricAddressPool"},
+	{"Fabrics", ZonesID, "GET"}:           {"157", "GetFabricZone"},
+	{"Fabrics", ZonesID, "PUT"}:           {"158", "VerifyAndUpdateFabricZone"},
+	{"Fabrics", "Zones", "POST"}:          {"159", "CreateFabricZone"},
+	{"Fabrics", ZonesID, "PATCH"}:         {"160", "UpdateFabricZone"},
+	{"Fabrics", ZonesID, "DELETE"}:        {"161", "DeleteFabricZone"},
+	{"Fabrics", EndpointsID, "GET"}:       {"162", "GetFabricEndPoints"},
+	{"Fabrics", EndpointsID, "PUT"}:       {"163", "VerifyAndUpdateFabricEndPoints"},
+	{"Fabrics", EndpointsID, "POST"}:      {"164", "CreateFabricEndPoints"},
+	{"Fabrics", EndpointsID, "PATCH"}:     {"165", "UpdateFabricEndPoints"},
+	{"Fabrics", EndpointsID, "DELETE"}:    {"166", "DeleteFabricEndPoints"},
+	{"Fabrics", PortsID, "Patch"}:         {"167", "UpdateFabricPorts"},
 	// Managers URI
 	{"Managers", "Managers", "GET"}:                  {"168", "GetManagersCollection"},
 	{"Managers", "Managers/{id}", "GET"}:             {"169", "GetManager"},
@@ -418,18 +497,18 @@ var Actions = map[ActionKey]ActionType{
 	{"Managers", "VirtualMedia.EjectMedia", "POST"}:  {"180", "VirtualMediaEjectMedia"},
 	{"Managers", "VirtualMedia.InsertMedia", "POST"}: {"181", "VirtualMediaInsertMedia"},
 	{"Managers", "LogServices", "GET"}:               {"182", "GetAllLogServices"},
-	{"Managers", "LogServices/{id}", "GET"}:          {"183", "GetLogServices"},
+	{"Managers", LogServicesID, "GET"}:               {"183", "GetLogServices"},
 	{"Managers", "Entries", "GET"}:                   {"184", "GetAllLogServiceEntries"},
-	{"Managers", "Entries/{id}", "GET"}:              {"185", "GetLogServiceEntries"},
+	{"Managers", EntriesID, "GET"}:                   {"185", "GetLogServiceEntries"},
 	{"Managers", "LogService.ClearLog", "POST"}:      {"186", "LogServiceClearLog"},
 	{"Managers", "RemoteAccountService", "GET"}:      {"187", "GetRemoteAccountService"},
 	{"Managers", "Accounts", "GET"}:                  {"188", "GetAllManagerAccounts"},
-	{"Managers", "Accounts/{id}", "GET"}:             {"189", "GetManagerAccounts"},
+	{"Managers", AccountsID, "GET"}:                  {"189", "GetManagerAccounts"},
 	{"Managers", "Accounts", "POST"}:                 {"190", "CreateManagerAccounts"},
-	{"Managers", "Accounts/{id}", "PATCH"}:           {"191", "UpdateManagerAccounts"},
-	{"Managers", "Accounts/{id}", "DELETE"}:          {"192", "DeleteManagerAccounts"},
+	{"Managers", AccountsID, "PATCH"}:                {"191", "UpdateManagerAccounts"},
+	{"Managers", AccountsID, "DELETE"}:               {"192", "DeleteManagerAccounts"},
 	{"Managers", "Roles", "GET"}:                     {"193", "GetAllManagersRoles"},
-	{"Managers", "Roles/{id}", "GET"}:                {"194", "GetManagersRoles"},
+	{"Managers", RolesID, "GET"}:                     {"194", "GetManagersRoles"},
 	// Update Service URI
 	{"UpdateService", "UpdateService", "GET"}:               {"195", "GetUpdateService"},
 	{"UpdateService", "UpdateService.SimpleUpdate", "POST"}: {"196", "UpdateServiceSimpleUpdate"},
@@ -454,9 +533,11 @@ var Actions = map[ActionKey]ActionType{
 	{"LicenseService", "Licenses", "GET"}:       {"213", "GetLicenseCollection"},
 	{"LicenseService", "Licenses/{id}", "GET"}:  {"214", "GetLicenseResource"},
 	{"LicenseService", "Licenses", "POST"}:      {"215", "InstallLicenseService"},
-	// 216 and 217 operations are svc-aggregation internal operations pluginhealthcheck and RediscoverSystem
+	// 216 and 217 operations are svc-aggregation internal operations plugin health check and RediscoverSystem
+	// 218 is an internal operation in svc-task, assigned the values from 219 to 224 for SecureBoot and SecureBootDatabases APIs
 }
 
+// Types contains schema versions to be returned
 var Types = map[string]string{
 	"EthernetInterfaces": "#EthernetInterface.v1_8_0.EthernetInterface",
 }
@@ -592,6 +673,28 @@ type Events struct {
 	EventType string `json:"eventType"`
 }
 
+// TaskEvent contains the task progress data sent form plugin to PMB
+type TaskEvent struct {
+	TaskID          string    `json:"TaskID"`
+	TaskState       string    `json:"TaskState"`
+	TaskStatus      string    `json:"TaskStatus"`
+	PercentComplete int32     `json:"PercentComplete"`
+	StatusCode      int32     `json:"StatusCode"`
+	ResponseBody    []byte    `json:"ResponseBody"`
+	EndTime         time.Time `json:"EndTime"`
+}
+
+// PluginTask contains the IP of the plugin instance that returns plugin taskmon,
+// task id created in odim, and taskmon url sent by plugin
+// it is used to map the odim task to plugin task and to know the IP
+// of plugin instance that handle the task
+type PluginTask struct {
+	IP               string `json:"IP"`
+	PluginServerName string `json:"PluginServerName"`
+	OdimTaskID       string `json:"OdimTaskID"`
+	PluginTaskMonURL string `json:"PluginTaskMonURL"`
+}
+
 // MessageData contains information of Events and message details including arguments
 // it will be used to pass to gob encoding/decoding which will register the type.
 // it will be send as byte stream on the wire to/from kafka
@@ -627,6 +730,7 @@ type DeviceSubscription struct {
 	EventHostIP     string   `json:"EventHostIP,omitempty"`
 	OriginResources []string `json:"OriginResources"`
 	Location        string   `json:"location,omitempty"`
+	OriginResource  string   `json:"OriginResource"`
 }
 
 // URIWithNoAuth contains the list of URI's which does not require authentication
@@ -638,4 +742,36 @@ var URIWithNoAuth = []string{
 	"/redfish/v1/SessionService/Sessions",
 }
 
+// SessionURI is redfish URI for sessions
 var SessionURI = "/redfish/v1/SessionService/Sessions"
+
+// XForwardedFor holds the IP of plugin instance in response header
+var XForwardedFor = "X-Forwarded-For"
+
+// PluginTaskIndex is name for SET in redis to store plugin task IDs
+var PluginTaskIndex = "PluginTaskIndex"
+
+// ResetTaskIDPrefix is the prefix for the task id for a reset request
+const ResetTaskIDPrefix = "reset-"
+
+// Target is for sending the request to south bound/plugin
+type Target struct {
+	ManagerAddress string `json:"ManagerAddress"`
+	Password       []byte `json:"Password"`
+	UserName       string `json:"UserName"`
+	PostBody       []byte `json:"PostBody"`
+	DeviceUUID     string `json:"DeviceUUID"`
+	PluginID       string `json:"PluginID"`
+	Location       string `json:"Location"`
+}
+
+// Plugin is the model for plugin information
+type Plugin struct {
+	IP                string
+	Port              string
+	Username          string
+	Password          []byte
+	ID                string
+	PluginType        string
+	PreferredAuthType string
+}

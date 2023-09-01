@@ -12,18 +12,21 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rfphandler ...
+// Package rfphandler ...
 package rfphandler
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strings"
+
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
 // SimpleUpdate updates the BMC resources
@@ -43,6 +46,7 @@ func SimpleUpdate(ctx iris.Context) {
 	var deviceDetails rfpmodel.Device
 	uri := ctx.Request().RequestURI
 	//Get device details from request
+	reqPostBody := &model.SimpleUpdate{}
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
 		errMsg := "Unable to collect data from request: " + err.Error()
@@ -51,7 +55,19 @@ func SimpleUpdate(ctx iris.Context) {
 		ctx.WriteString(errMsg)
 		return
 	}
-
+	err = json.Unmarshal(deviceDetails.PostBody, reqPostBody)
+	if err != nil {
+		errMsg := "While trying to unmarshal request body, got:" + err.Error()
+		log.Error(errMsg)
+		return
+	}
+	reqPostBody.Targets = nil
+	deviceDetails.PostBody, err = json.Marshal(reqPostBody)
+	if err != nil {
+		errMsg := "While trying to marshal request body, got:" + err.Error()
+		log.Error(errMsg)
+		return
+	}
 	var reqData string
 	//replacing the request url with south bound translation URL
 	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
@@ -65,7 +81,6 @@ func SimpleUpdate(ctx iris.Context) {
 		Password: string(deviceDetails.Password),
 		PostBody: []byte(reqData),
 	}
-
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
 		errMsg := "While trying to create the redfish client, got:" + err.Error()
@@ -91,7 +106,6 @@ func SimpleUpdate(ctx iris.Context) {
 		body = []byte("While trying to read the response body, got: " + err.Error())
 		log.Error(string(body))
 	}
-
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write(body)
 }

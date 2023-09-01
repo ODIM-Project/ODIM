@@ -13,15 +13,13 @@ This guide provides a set of guidelines for developing API and EMB functions to 
 
 ## API accessibility
 
-The plugin layer uses JSON as the primary data format for communication. Standardizing on a well-known data-interchange format ensures consistency among plugins and simplifies the task for plugin developers. The API service uses [HATEOAS \(Hypermedia as the Engine of Application State\)](https://restfulapi.net/hateoas/) principles to link resources using the `href` key.
+The plugin layer uses JSON as the primary data format for communication. Standardizing on a well-known data-interchange format ensures consistency among plugins and simplifies the task for plugin developers. The API service uses *[HATEOAS \(Hypermedia as the Engine of Application State\)](https://restfulapi.net/hateoas/)* principles to link resources using the `href` key.
 
 The API service under the plugin layer can use basic authentication or token-based authentication for securing the platform. Token-based authentication is applicable to the authentication information flowing from the aggregator to the plugin where the aggregator is authenticated.
 
 <blockquote>
 Note: Data flows from the plugin to the aggregator via the EMB. The plugin gets authenticated by the EMB using TLS certificates.
 </blockquote>
-
-
 The plugin currently uses credentials of the client for authenticating the same.
 
 Data on the wire is encrypted using TLS and is not sent out as clear text. For this, the plugin exposes a CA signed certificate for the clients to authenticate itself. The plugins communicate with the aggregator, if required, using the northbound aggregator API. This may be needed to gather resource information that are not directly managed by the particular plugin. 

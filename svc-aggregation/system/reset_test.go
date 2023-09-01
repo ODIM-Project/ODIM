@@ -111,7 +111,7 @@ func mockDeviceData(uuid string, device agmodel.Target) error {
 	return nil
 }
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+func mockIsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken != "validToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil), nil
 	}
@@ -276,6 +276,13 @@ func mockContactClient(ctx context.Context, url, method, token string, odataID s
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
+	} else if url == host+"/ODIM/v1/EventService" {
+		body := `{"MessageId": "` + response.Success + `"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+
 	} else if strings.Contains(url, "/ODIM/v1/Registries") {
 		return &http.Response{
 			StatusCode: http.StatusNotFound,

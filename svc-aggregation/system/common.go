@@ -76,8 +76,8 @@ type Device struct {
 // ExternalInterface struct holds the function pointers all outboud services
 type ExternalInterface struct {
 	ContactClient            func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth                     func(string, []string, []string) (response.RPC, error)
-	GetSessionUserName       func(string) (string, error)
+	Auth                     func(context.Context, string, []string, []string) (response.RPC, error)
+	GetSessionUserName       func(context.Context, string) (string, error)
 	CreateChildTask          func(context.Context, string, string) (string, error)
 	CreateTask               func(context.Context, string) (string, error)
 	UpdateTask               func(context.Context, common.TaskData) error
@@ -85,25 +85,25 @@ type ExternalInterface struct {
 	PublishEvent             func(context.Context, []string, string)
 	PublishEventMB           func(context.Context, string, string, string)
 	GetPluginStatus          func(context.Context, agmodel.Plugin) bool
-	SubscribeToEMB           func(string, []string) error
+	SubscribeToEMB           func(context.Context, string, []string) error
 	EncryptPassword          func([]byte) ([]byte, error)
 	DecryptPassword          func([]byte) ([]byte, error)
 	DeleteComputeSystem      func(int, string) *errors.Error
 	DeleteSystem             func(string) *errors.Error
-	DeleteEventSubscription  func(string) (*eventsproto.EventSubResponse, error)
-	EventNotification        func(context.Context, string, string, string)
-	GetAllKeysFromTable      func(string) ([]string, error)
-	GetConnectionMethod      func(string) (agmodel.ConnectionMethod, *errors.Error)
+	DeleteEventSubscription  func(context.Context, string) (*eventsproto.EventSubResponse, error)
+	EventNotification        func(context.Context, string, string, string, agmessagebus.MQBusCommunicator) error
+	GetAllKeysFromTable      func(context.Context, string) ([]string, error)
+	GetConnectionMethod      func(context.Context, string) (agmodel.ConnectionMethod, *errors.Error)
 	UpdateConnectionMethod   func(agmodel.ConnectionMethod, string) *errors.Error
-	GetPluginMgrAddr         func(string) (agmodel.Plugin, *errors.Error)
-	GetAggregationSourceInfo func(string) (agmodel.AggregationSource, *errors.Error)
+	GetPluginMgrAddr         func(string, agmodel.DBPluginDataRead) (agmodel.Plugin, *errors.Error)
+	GetAggregationSourceInfo func(context.Context, string) (agmodel.AggregationSource, *errors.Error)
 	GenericSave              func([]byte, string, string) error
 	CheckActiveRequest       func(string) (bool, *errors.Error)
 	DeleteActiveRequest      func(string) *errors.Error
 	GetAllMatchingDetails    func(string, string, common.DbType) ([]string, *errors.Error)
 	CheckMetricRequest       func(string) (bool, *errors.Error)
 	DeleteMetricRequest      func(string) *errors.Error
-	GetResource              func(string, string) (string, *errors.Error)
+	GetResource              func(context.Context, string, string) (string, *errors.Error)
 	Delete                   func(string, string, common.DbType) *errors.Error
 }
 
@@ -339,6 +339,7 @@ func contactPlugin(ctx context.Context, req getResourceRequest, errorMessage str
 	}
 
 	data := string(body)
+	resp.StatusCode = int32(pluginResp.StatusCode)
 	//replacing the resposne with north bound translation URL
 	for key, value := range getTranslationURL(northBoundURL) {
 		data = strings.Replace(data, key, value, -1)
@@ -348,7 +349,6 @@ func contactPlugin(ctx context.Context, req getResourceRequest, errorMessage str
 		return []byte(data), pluginResp.Header.Get("Location"), resp, nil
 	}
 
-	resp.StatusCode = int32(pluginResp.StatusCode)
 	return []byte(data), pluginResp.Header.Get("X-Auth-Token"), resp, nil
 }
 
@@ -499,7 +499,7 @@ func (h *respHolder) getRegistriesInfo(ctx context.Context, taskID string, progr
 		return progress
 	}
 	uri := ""
-	/* '#' charactor in the begining of the registryfile name is giving some issue
+	/* '#' character in the beginning of the registry file name is giving some issue
 	* during api routing. So getting Id instead of Registry name if it has '#' char as a
 	* prefix.
 	 */
@@ -551,7 +551,7 @@ func (h *respHolder) getRegistriesInfo(ctx context.Context, taskID string, progr
 	}
 	req.OID = uri
 	h.getRegistryFile(ctx, registryName, req)
-	// File already exist retrun progress here
+	// File already exist return progress here
 	return progress + allotedWork
 
 }
@@ -622,7 +622,7 @@ func (h *respHolder) getAllRootInfo(ctx context.Context, taskID string, progress
 			oDataID := object.(map[string]interface{})["@odata.id"].(string)
 			oDataID = strings.TrimSuffix(oDataID, "/")
 			req.OID = oDataID
-			progress = h.getIndivdualInfo(ctx, taskID, progress, estimatedWork, req, resourceList)
+			progress = h.getIndividualInfo(ctx, taskID, progress, estimatedWork, req, resourceList)
 		}
 	}
 	return progress
@@ -646,6 +646,7 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 
 	var computeSystem map[string]interface{}
 	err = json.Unmarshal(body, &computeSystem)
+
 	if err != nil {
 		h.lock.Lock()
 		h.ErrorMessage = "error while trying unmarshal response body: " + err.Error()
@@ -653,12 +654,13 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
 		return computeSystemID, oidKey, progress, err
-	}
 
+	}
 	oid := computeSystem["@odata.id"].(string)
 	computeSystemID = computeSystem["Id"].(string)
 	computeSystemUUID := computeSystem["UUID"].(string)
 	oidKey = keyFormation(oid, computeSystemID, req.DeviceUUID)
+
 	if !req.UpdateFlag {
 		indexList, err := agmodel.GetString("UUID", computeSystemUUID)
 		if err != nil {
@@ -686,11 +688,12 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
 	var retrievalLinks = make(map[string]bool)
-
 	getLinks(computeSystem, retrievalLinks, false)
 	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SkipResourceListUnderSystem, h.TraversedLinks)
+
 	req.SystemID = computeSystemID
 	req.ParentOID = oid
+
 	for resourceOID, oemFlag := range retrievalLinks {
 		estimatedWork := alottedWork / int32(len(retrievalLinks))
 		resourceOID = strings.TrimSuffix(resourceOID, "/")
@@ -700,6 +703,7 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 	}
 	json.Unmarshal([]byte(updatedResourceData), &computeSystem)
 	err = agmodel.SaveBMCInventory(h.InventoryData)
+
 	if err != nil {
 		h.lock.Lock()
 		h.ErrorMessage = "error while trying to save data: " + err.Error()
@@ -708,14 +712,16 @@ func (h *respHolder) getSystemInfo(ctx context.Context, taskID string, progress 
 		h.lock.Unlock()
 		return computeSystemID, oidKey, progress, err
 	}
-
 	searchForm := createServerSearchIndex(ctx, computeSystem, oidKey, req.DeviceUUID)
-	//save the final search form here
+
+	//save the   search form here
+
 	if req.UpdateFlag {
 		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID, req.BMCAddress)
 	} else {
 		err = agmodel.SaveIndex(searchForm, oidKey, computeSystemUUID, req.BMCAddress)
 	}
+
 	if err != nil {
 		h.ErrorMessage = "error while trying save index values: " + err.Error()
 		h.StatusMessage = response.InternalError
@@ -755,7 +761,7 @@ func (h *respHolder) getStorageInfo(ctx context.Context, progress int32, alotted
 	// Read system data from DB
 	systemURI := strings.Replace(req.OID, "/Storage", "", -1)
 	systemURI = strings.Replace(systemURI, "/Systems/", "/Systems/"+req.DeviceUUID+".", -1)
-	data, dbErr := agmodel.GetResource("ComputerSystem", systemURI)
+	data, dbErr := agmodel.GetResource(ctx, "ComputerSystem", systemURI)
 	if dbErr != nil {
 		errMsg := fmt.Errorf("error while getting the systems data %v", dbErr.Error())
 		return "", progress, errMsg
@@ -816,7 +822,6 @@ func (h *respHolder) getStorageInfo(ctx context.Context, progress int32, alotted
 
 func createServerSearchIndex(ctx context.Context, computeSystem map[string]interface{}, oidKey, deviceUUID string) map[string]interface{} {
 	var searchForm = make(map[string]interface{})
-
 	if val, ok := computeSystem["MemorySummary"]; ok {
 		memSum := val.(map[string]interface{})
 		searchForm["MemorySummary/TotalSystemMemoryGiB"] = memSum["TotalSystemMemoryGiB"].(float64)
@@ -836,10 +841,9 @@ func createServerSearchIndex(ctx context.Context, computeSystem map[string]inter
 	if _, ok := computeSystem["PowerState"]; ok {
 		searchForm["PowerState"] = computeSystem["PowerState"].(string)
 	}
-
 	// saving the firmware version
 	if !strings.Contains(oidKey, "/Storage") {
-		firmwareVersion, _ := getFirmwareVersion(oidKey, deviceUUID)
+		firmwareVersion, _ := getFirmwareVersion(ctx, oidKey, deviceUUID)
 		searchForm["FirmwareVersion"] = firmwareVersion
 	}
 
@@ -852,7 +856,7 @@ func createServerSearchIndex(ctx context.Context, computeSystem map[string]inter
 			storage := val.(map[string]interface{})
 			storageCollectionOdataID = storage["@odata.id"].(string)
 		}
-		storageCollection := agcommon.GetStorageResources(ctx, strings.TrimSuffix(storageCollectionOdataID, "/"))
+		storageCollection := agcommon.GetStorageResourcesBytableName(ctx, "StorageCollection", strings.TrimSuffix(storageCollectionOdataID, "/"))
 		storageMembers := storageCollection["Members"]
 		if storageMembers != nil {
 			var capacity []float64
@@ -861,13 +865,13 @@ func createServerSearchIndex(ctx context.Context, computeSystem map[string]inter
 			// Loop through all the storage members collection and discover all of them
 			for _, object := range storageMembers.([]interface{}) {
 				storageODataID := object.(map[string]interface{})["@odata.id"].(string)
-				storageRes := agcommon.GetStorageResources(ctx, strings.TrimSuffix(storageODataID, "/"))
+				storageRes := agcommon.GetStorageResourcesBytableName(ctx, "Storage", strings.TrimSuffix(storageODataID, "/"))
 				drives := storageRes["Drives"]
 				if drives != nil {
 					quantity += len(drives.([]interface{}))
 					for _, drive := range drives.([]interface{}) {
 						driveODataID := drive.(map[string]interface{})["@odata.id"].(string)
-						driveRes := agcommon.GetStorageResources(ctx, strings.TrimSuffix(driveODataID, "/"))
+						driveRes := agcommon.GetStorageResourcesBytableName(ctx, "Drives", strings.TrimSuffix(driveODataID, "/"))
 						capInBytes := driveRes["CapacityBytes"]
 						// convert bytes to gb in decimal format
 						if capInBytes != nil {
@@ -888,7 +892,7 @@ func createServerSearchIndex(ctx context.Context, computeSystem map[string]inter
 	}
 	return searchForm
 }
-func (h *respHolder) getIndivdualInfo(ctx context.Context, taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
+func (h *respHolder) getIndividualInfo(ctx context.Context, taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
 	resourceName := getResourceName(req.OID, false)
 	body, _, getResponse, err := contactPlugin(ctx, req, "error while trying to get "+resourceName+" details: ")
 	if err != nil {
@@ -974,7 +978,7 @@ func (h *respHolder) getResourceDetails(ctx context.Context, taskID string, prog
 		CollectionCapabilities := dmtf.CollectionCapabilities{
 			OdataType: "#CollectionCapabilities.v1_4_0.CollectionCapabilities",
 			Capabilities: []*dmtf.Capabilities{
-				&dmtf.Capabilities{
+				{
 					CapabilitiesObject: &dmtf.Link{
 						Oid: req.OID + "/Capabilities",
 					},
@@ -1058,18 +1062,18 @@ func getLinks(data map[string]interface{}, retrievalLinks map[string]bool, oemFl
 	}
 }
 
-func checkRetrieval(oid, parentoid string, traversedLinks map[string]bool) bool {
+func checkRetrieval(oid, parentId string, traversedLinks map[string]bool) bool {
 	if _, ok := traversedLinks[oid]; ok {
 		return false
 	}
-	//skiping the Retrieval if oid mathches the parent oid
-	if strings.EqualFold(parentoid, oid) || strings.EqualFold(parentoid+"/", oid) {
+	//skipping the Retrieval if oid matches the parent oid
+	if strings.EqualFold(parentId, oid) || strings.EqualFold(parentId+"/", oid) {
 		return false
 	}
-	//skiping the Retrieval if parent oid contains links in other resource of config
-	// TODO : beyond second level Retrieval need to be taken from config it will be implemented in RUCE-1239
+	//skipping the Retrieval if parent oid contains links in other resource of config
+	// TODO : beyond second level Retrieval need to be taken from config it will be implemented in BRUCE-1239
 	for _, resourceName := range config.Data.AddComputeSkipResources.SkipResourceListUnderOthers {
-		if strings.Contains(parentoid, resourceName) {
+		if strings.Contains(parentId, resourceName) {
 			return false
 		}
 	}
@@ -1119,7 +1123,7 @@ func updateManagerName(data []byte, pluginID string) []byte {
 	return data
 }
 
-func getFirmwareVersion(oid, deviceUUID string) (string, error) {
+func getFirmwareVersion(ctx context.Context, oid, deviceUUID string) (string, error) {
 	strArray := strings.Split(oid, "/")
 	id := strArray[len(strArray)-1]
 	key := strings.Replace(oid, "/"+id, "/"+deviceUUID+".", -1)
@@ -1128,17 +1132,17 @@ func getFirmwareVersion(oid, deviceUUID string) (string, error) {
 	if dberr != nil {
 		return "", fmt.Errorf("while getting the managers data %v", dberr.Error())
 	} else if len(keys) == 0 {
-		return "", fmt.Errorf("Manager data is not available")
+		return "", fmt.Errorf("manager data is not available")
 	}
-	data, dberr := agmodel.GetResource("Managers", keys[0])
+	data, dberr := agmodel.GetResource(ctx, "Managers", keys[0])
 	if dberr != nil {
 		return "", fmt.Errorf("while getting the managers data: %v", dberr.Error())
 	}
-	// unmarshall the managers data
+	// unmarshal the managers data
 	var managersData map[string]interface{}
 	err := json.Unmarshal([]byte(data), &managersData)
 	if err != nil {
-		return "", fmt.Errorf("Error while unmarshaling  the data %v", err.Error())
+		return "", fmt.Errorf("error while unmarshal the data %v", err.Error())
 	}
 	var firmwareVersion string
 	var ok bool
@@ -1178,7 +1182,8 @@ func CreateDefaultEventSubscription(ctx context.Context, systemID []string) {
 // PublishEvent will publish default events
 func PublishEvent(ctx context.Context, systemIDs []string, collectionName string) {
 	for i := 0; i < len(systemIDs); i++ {
-		agmessagebus.Publish(ctx, systemIDs[i], "ResourceAdded", collectionName)
+		MQ := agmessagebus.InitMQSCom()
+		agmessagebus.Publish(ctx, systemIDs[i], "ResourceAdded", collectionName, MQ)
 	}
 }
 
@@ -1189,7 +1194,8 @@ func PublishPluginStatusOKEvent(ctx context.Context, plugin string, msgQueues []
 		PluginID:  plugin,
 		EMBQueues: msgQueues,
 	}
-	if err := agmessagebus.PublishCtrlMsg(common.SubscribeEMB, data); err != nil {
+	MQ := agmessagebus.InitMQSCom()
+	if err := agmessagebus.PublishCtrlMsg(common.SubscribeEMB, data, MQ); err != nil {
 		l.LogWithFields(ctx).Error("failed to publish resubscribe to " + plugin + " EMB event: " + err.Error())
 		return
 	}
@@ -1303,7 +1309,7 @@ func checkStatus(ctx context.Context, pluginContactRequest getResourceRequest, r
 		}
 	}
 
-	// Verfiying the plugin Status
+	// Verifying the plugin Status
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 	pluginContactRequest.OID = "/ODIM/v1/Status"
 	body, _, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
@@ -1340,17 +1346,19 @@ func checkStatus(ctx context.Context, pluginContactRequest getResourceRequest, r
 	return response.RPC{}, getResponse.StatusCode, queueList
 }
 
-func getConnectionMethodVariants(connectionMethodVariant string) connectionMethodVariants {
-	// Split the connectionmethodvariant and get the PluginType, PreferredAuthType, PluginID and FirmwareVersion.
+func getConnectionMethodVariants(ctx context.Context, connectionMethodVariant string) connectionMethodVariants {
+	// Split the connection method variant and get the PluginType, PreferredAuthType, PluginID and FirmwareVersion.
 	// Example: Compute:BasicAuth:GRF_v1.0.0
 	cm := strings.Split(connectionMethodVariant, ":")
 	firmwareVersion := strings.Split(cm[2], "_")
-	return connectionMethodVariants{
+	cmv := connectionMethodVariants{
 		PluginType:        cm[0],
 		PreferredAuthType: cm[1],
 		PluginID:          cm[2],
 		FirmwareVersion:   firmwareVersion[1],
 	}
+	l.LogWithFields(ctx).Debug("connection method variants:", cmv)
+	return cmv
 }
 
 func (e *ExternalInterface) getTelemetryService(ctx context.Context, taskID, targetURI string, percentComplete int32, pluginContactRequest getResourceRequest, resp response.RPC, saveSystem agmodel.SaveSystem) int32 {
@@ -1412,7 +1420,7 @@ func (e *ExternalInterface) storeTelemetryCollectionInfo(ctx context.Context, re
 		return progress, err
 	}
 
-	data, dbErr := e.GetResource(resourceName, req.OID)
+	data, dbErr := e.GetResource(context.TODO(), resourceName, req.OID)
 	if dbErr != nil {
 		// if no resource found then save the metric data into db.
 		if err = e.GenericSave(body, resourceName, req.OID); err != nil {
@@ -1527,7 +1535,7 @@ func (e *ExternalInterface) createWildCard(resourceData, resourceName, oid strin
 	if err != nil {
 		return "", err
 	}
-	data, _ := e.GetResource(resourceName, oid)
+	data, _ := e.GetResource(context.TODO(), resourceName, oid)
 	return formWildCard(data, resourceDataMap)
 }
 
@@ -1537,7 +1545,7 @@ func (e *ExternalInterface) createWildCard(resourceData, resourceName, oid strin
 func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string, error) {
 	var systemID, chassisID string
 	var wildCards []WildCard
-	var dbMetricProperities []interface{}
+	var dbMetricProperties []interface{}
 
 	if len(dbData) < 1 {
 		wildCards = getEmptyWildCard()
@@ -1551,29 +1559,31 @@ func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string
 			return "", fmt.Errorf("wild card map is empty")
 		}
 		wildCards = getWildCard(dbDataMap["Wildcards"].([]interface{}))
-		dbMetricProperities = dbDataMap["MetricProperties"].([]interface{})
+		dbMetricProperties = dbDataMap["MetricProperties"].([]interface{})
 	}
-	metricProperties := resourceDataMap["MetricProperties"].([]interface{})
-	for _, mProperty := range metricProperties {
-		property := mProperty.(string)
-		for i, wCard := range wildCards {
-			if wCard.Name == SystemUUID && strings.Contains(property, "/Systems/") {
-				property, systemID = getUpdatedProperty(property, SystemUUID)
-				if !checkWildCardPresent(systemID, wildCards[i].Values) {
-					wildCards[i].Values = append(wildCards[i].Values, systemID)
+	metricProperties, isExists := resourceDataMap["MetricProperties"].([]interface{})
+	if isExists {
+		for _, mProperty := range metricProperties {
+			property := mProperty.(string)
+			for i, wCard := range wildCards {
+				if wCard.Name == SystemUUID && strings.Contains(property, "/Systems/") {
+					property, systemID = getUpdatedProperty(property, SystemUUID)
+					if !checkWildCardPresent(systemID, wildCards[i].Values) {
+						wildCards[i].Values = append(wildCards[i].Values, systemID)
+					}
+					break
 				}
-				break
-			}
-			if wCard.Name == ChassisUUID && strings.Contains(property, "/Chassis/") {
-				property, chassisID = getUpdatedProperty(property, ChassisUUID)
-				if !checkWildCardPresent(chassisID, wCard.Values) {
-					wildCards[i].Values = append(wildCards[i].Values, chassisID)
+				if wCard.Name == ChassisUUID && strings.Contains(property, "/Chassis/") {
+					property, chassisID = getUpdatedProperty(property, ChassisUUID)
+					if !checkWildCardPresent(chassisID, wCard.Values) {
+						wildCards[i].Values = append(wildCards[i].Values, chassisID)
+					}
+					break
 				}
-				break
 			}
-		}
-		if !checkMetricPropertyPresent(property, dbMetricProperities) {
-			dbMetricProperities = append(dbMetricProperities, property)
+			if !checkMetricPropertyPresent(property, dbMetricProperties) {
+				dbMetricProperties = append(dbMetricProperties, property)
+			}
 		}
 	}
 	var wCards []WildCard
@@ -1584,7 +1594,7 @@ func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string
 	}
 	if len(wCards) > 0 {
 		resourceDataMap["Wildcards"] = wCards
-		resourceDataMap["MetricProperties"] = dbMetricProperities
+		resourceDataMap["MetricProperties"] = dbMetricProperties
 	}
 	resourceDataByte, err := json.Marshal(resourceDataMap)
 	if err != nil {

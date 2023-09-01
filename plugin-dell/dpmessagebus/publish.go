@@ -12,11 +12,13 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dpmessagebus ...
+// Package dpmessagebus ...
 package dpmessagebus
 
 import (
+	"context"
 	"encoding/json"
+
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
@@ -24,7 +26,7 @@ import (
 )
 
 // Publish ...
-func Publish(data interface{}) bool {
+func Publish(ctx context.Context, data interface{}) bool {
 	if data == nil {
 		log.Error("Invalid data on publishing events")
 		return false
@@ -38,7 +40,7 @@ func Publish(data interface{}) bool {
 		return false
 	}
 
-	// Since we are deleting the first event from the eventlist,
+	// Since we are deleting the first event from the event list,
 	// processing the first event
 	var message common.MessageData
 	err = json.Unmarshal(event.Request, &message)

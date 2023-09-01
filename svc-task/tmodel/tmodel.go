@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package tmodel ...
+// Package tmodel ...
 package tmodel
 
 import (
@@ -37,7 +37,7 @@ const (
 	CompletedTaskTable = "CompletedTask"
 )
 
-//CompletedTask is used to build index for redis
+// CompletedTask is used to build index for redis
 type CompletedTask struct {
 	UserName string
 	ID       string
@@ -59,15 +59,16 @@ type Task struct {
 	the task, reported in percent of completion.
 	If the task has not been started, the value shall be zero.
 	*/
-	PercentComplete int32
-	TaskMonitor     string
-	TaskState       string
-	TaskStatus      string
-	StatusCode      int32
-	TaskResponse    []byte
-	Messages        []*Message // Its there in the spec, how are we going to use it
-	StartTime       time.Time
-	EndTime         time.Time
+	PercentComplete   int32
+	TaskMonitor       string
+	TaskState         string
+	TaskStatus        string
+	StatusCode        int32
+	TaskResponse      []byte
+	Messages          []*Message // Its there in the spec, how are we going to use it
+	StartTime         time.Time
+	EndTime           time.Time
+	TaskFinalResponse []byte
 }
 
 // Tick struct is used to help the goroutines that process the task queue to communicate effectively
@@ -91,8 +92,8 @@ type Tick struct {
 }
 
 // Payload contain information detailing the HTTP and JSON payload
-//information for executing the task.
-//This object shall not be included in the response if the HidePayload property
+// information for executing the task.
+// This object shall not be included in the response if the HidePayload property
 // is set to True.
 type Payload struct {
 	HTTPHeaders   map[string]string `json:"HttpHeaders"`
@@ -142,6 +143,7 @@ type Oem struct {
 
 // PersistTask is to store the task data in db
 // Takes:
+//
 //	t pointer to Task to be stored.
 //	db of type common.DbType(int32)
 func PersistTask(ctx context.Context, t *Task, db common.DbType) error {
@@ -157,11 +159,14 @@ func PersistTask(ctx context.Context, t *Task, db common.DbType) error {
 
 // DeleteTaskFromDB is to delete the task from db
 // Takes:
-// 	t of type pointer to Task object
+//
+//	t of type pointer to Task object
+//
 // Returns:
-//      err of type error
-//      On Success - return nil value
-//      On Failure - return non nill value
+//
+//	err of type error
+//	On Success - return nil value
+//	On Failure - return non nill value
 func DeleteTaskFromDB(ctx context.Context, t *Task) error {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -173,11 +178,26 @@ func DeleteTaskFromDB(ctx context.Context, t *Task) error {
 	return nil
 }
 
+// DeleteMultipleTaskFromDB is used to delete multiple tasks from DB using pipeline
+func DeleteMultipleTaskFromDB(ctx context.Context, t []string) error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.DeleteMultipleKeys(t); err != nil {
+		return fmt.Errorf("error while trying to delete the task: %v", err.Error())
+	}
+	return nil
+}
+
 // GetTaskStatus is to retrieve the task data already present in db
 // Takes:
+//
 //	taskID of type string contains the task ID of the task to be retrieved from the db
 //	db of type common.DbType(int32)
+//
 // Returns:
+//
 //	err of type error
 //		On Success - return nil value
 //		On Failure - return non nill value
@@ -201,10 +221,40 @@ func GetTaskStatus(ctx context.Context, taskID string, db common.DbType) (*Task,
 	return task, nil
 }
 
+// GetMultipleTaskKeys is used to get multiple keys
+func GetMultipleTaskKeys(ctx context.Context, taskIDs []interface{}, db common.DbType) (*[]Task, error) {
+	var task []Task
+	var taskList []string
+	subtask := new(Task)
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		l.LogWithFields(ctx).Error("GetTaskStatus : error while trying to get DB Connection : " + err.Error())
+		return &task, fmt.Errorf("error while trying to connnect to DB: %v", err.Error())
+	}
+	for _, value := range taskIDs {
+		taskList = append(taskList, value.(string))
+	}
+	taskData, err := connPool.ReadMultipleKeys(taskList)
+	if err != nil {
+		l.LogWithFields(ctx).Error("GetTaskStatus : Unable to read taskdata from DB: " + err.Error())
+		return &task, fmt.Errorf("error while trying to read from DB: %v", err.Error())
+	}
+	for _, data := range taskData {
+		if errs := json.Unmarshal([]byte(data), subtask); errs != nil {
+			return &task, fmt.Errorf("error while trying to unmarshal task data: %v", errs)
+		}
+		task = append(task, *subtask)
+	}
+	return &task, nil
+}
+
 // GetAllTaskKeys will collect all task keys available in the DB
-//Takes:
+// Takes:
+//
 //	None
-//Returns:
+//
+// Returns:
+//
 //	Slice of type strings and error
 //	On Success - error is set to nil and returns slice of tasks
 //	On Failure - error is set to appropriate reason why it got failed
@@ -221,7 +271,30 @@ func GetAllTaskKeys(ctx context.Context) ([]string, error) {
 	return taskKeys, nil
 }
 
-//Transaction - is for performing atomic oprations using optimitic locking
+// GetPluginTaskInfo receives the plugin task ID and
+// get the plugin task information  from DB
+func GetPluginTaskInfo(taskID string) (*common.PluginTask, error) {
+	errPrefix := "error while trying to get plugin task info"
+	pluginTask := new(common.PluginTask)
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return nil, fmt.Errorf(errPrefix+
+			": error while trying to get DB connection: %v", err.Error())
+	}
+
+	taskData, err := connPool.Read("PluginTask", taskID)
+	if err != nil {
+		return nil, fmt.Errorf(errPrefix+
+			": error while trying to read from DB: %v", err.Error())
+	}
+
+	if errs := json.Unmarshal([]byte(taskData), pluginTask); errs != nil {
+		return nil, fmt.Errorf(errPrefix+": %v", errs)
+	}
+	return pluginTask, nil
+}
+
+// Transaction - is for performing atomic oprations using optimitic locking
 func Transaction(ctx context.Context, key string, cb func(context.Context, string) error) error {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -230,6 +303,51 @@ func Transaction(ctx context.Context, key string, cb func(context.Context, strin
 	if err = connPool.Transaction(ctx, key, cb); err != nil {
 		return fmt.Errorf("error while performing transaction: %v", err.Error())
 	}
+	return nil
+}
+
+// GetAllActivePluginTaskIDs get all plugin task IDs from DB those are not completed
+func GetAllActivePluginTaskIDs(ctx context.Context) ([]string, error) {
+	var pluginTaskIDs []string
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return pluginTaskIDs, fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	pluginTaskIDs, err = connPool.GetAllMembersInSet(common.PluginTaskIndex)
+	if err != nil {
+		return pluginTaskIDs, fmt.Errorf("error while getting plugin tasks from DB: %v", err.Error())
+	}
+	return pluginTaskIDs, nil
+}
+
+// GetAllKeysFromTable return all data from table
+func GetAllKeysFromTable(table string) ([]string, error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	keysArray, err := conn.GetAllDetails(table)
+	if err != nil {
+		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
+	}
+	return keysArray, nil
+}
+
+// RemovePluginTaskID will remove the plugin task from set
+func RemovePluginTaskID(ctx context.Context, pluginTaskID string) error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	err = connPool.RemoveMemberFromSet(common.PluginTaskIndex, pluginTaskID)
+	if err != nil {
+		return fmt.Errorf("error while trying to remove the plugin task from set - %v", err.Error())
+	}
+	err = connPool.Delete("PluginTask", pluginTaskID)
+	if err != nil {
+		return fmt.Errorf("error while trying to remove the plugin task data from DB - %v", err.Error())
+	}
+
 	return nil
 }
 
@@ -256,7 +374,6 @@ func ValidateTaskUserName(ctx context.Context, userName string) error {
 2."conn" is an instance of Conn struct in persistence manager library
 */
 func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
-
 	defer func() {
 		tick.M.Lock()
 		tick.Commit = false
@@ -279,10 +396,6 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	tasks := make(map[string]interface{}, maxSize)
 	completedTasks := make(map[string]int64, maxSize)
 
-	if len(*queue) <= 0 {
-		return
-	}
-
 	tick.M.Lock()
 	tick.Executing = true
 	tick.M.Unlock()
@@ -294,7 +407,15 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 
 		if task != nil {
 			saveID := Table + ":" + task.ID
-			tasks[saveID] = task
+			if data, ok := tasks[saveID]; ok {
+				t := data.(*Task)
+				if t.PercentComplete < task.PercentComplete {
+					tasks[saveID] = task
+				}
+			} else {
+				tasks[saveID] = task
+			}
+
 			if (task.TaskState == "Completed" || task.TaskState == "Exception") && task.ParentID == "" {
 				completedTasks[saveID] = 1
 			}
@@ -332,7 +453,7 @@ func (tick *Tick) ProcessTaskQueue(queue *chan *Task, conn *db.Conn) {
 	if len(completedTasks) > 0 {
 		i = 0
 		for i < MaxRetry {
-			if err := conn.SetExpiryTimeForKeys(completedTasks); err != nil {
+			if err := conn.SetExpiryTimeForKeys(completedTasks, config.Data.KeyExpiryInterval); err != nil {
 				if err.ErrNo() == errors.TimeoutError || db.IsRetriable(err) {
 					time.Sleep(retryInterval)
 					conn = validateDBConnection(conn)
@@ -358,4 +479,19 @@ func dequeueTask(queue *chan *Task) *Task {
 		return nil
 	}
 	return <-*queue
+}
+
+// SubscriptionCreate holds the location, host and response body
+// from device for event subscription
+type SubscriptionCreate struct {
+	Location string      `json:"location"`
+	Host     string      `json:"host"`
+	Body     interface{} `json:"body"`
+}
+
+type UpdateAccount struct {
+	Location string      `json:"location"`
+	Host     string      `json:"host"`
+	Body     interface{} `json:"body"`
+	Action   string      `json:"action"`
 }

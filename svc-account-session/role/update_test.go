@@ -20,6 +20,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 
 	"net/http"
@@ -58,54 +59,16 @@ func TestUpdate(t *testing.T) {
 		AssignedPrivileges: []string{common.PrivilegeLogin, common.PrivilegeLogin},
 		OEMPrivileges:      []string{},
 	})
-	errArg := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "User does not have the privilege of updating the role",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArgs := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "failed to update role : Requested Redfish predefined privilege is not correct",
-				MessageArgs:   []interface{}{"Configue", "AssignedPrivileges"},
-			},
-		},
-	}
-	errArgu := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "failed to update role : error while trying to get role details: no data with the with key NonExistentRole found",
-				MessageArgs:   []interface{}{"Role", "NonExistentRole"},
-			},
-		},
-	}
+	errArg := account.GetResponseArgs(response.InsufficientPrivilege, "User does not have the privilege of updating the role", []interface{}{})
+
+	errArgs := account.GetResponseArgs(response.PropertyValueNotInList, "failed to update role : Requested Redfish predefined privilege is not correct", []interface{}{"Configue", "AssignedPrivileges"})
+
+	errArgu := account.GetResponseArgs(response.ResourceNotFound, "failed to update role : error while trying to get role details: no data with the with key NonExistentRole found", []interface{}{"Role", "NonExistentRole"})
 	errArgGen := response.Args{
 		Code:    response.GeneralError,
 		Message: "Updating predefined role is restricted",
 	}
-	errArgGen1 := response.Args{
-		Code:    response.GeneralError,
-		Message: "failed to update role : Duplicate privileges can not be updated",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.PropertyValueConflict,
-				ErrorMessage:  "failed to update role : Duplicate privileges can not be updated",
-				MessageArgs:   []interface{}{common.PrivilegeLogin, common.PrivilegeLogin},
-			},
-		},
-	}
+	errArgGen1 := account.GetResponseArgs(response.PropertyValueConflict, "failed to update role : Duplicate privileges can not be updated", []interface{}{common.PrivilegeLogin, common.PrivilegeLogin})
 	ctx := mockContext()
 	type args struct {
 		req     *roleproto.UpdateRoleRequest

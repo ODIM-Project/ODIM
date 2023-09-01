@@ -21,12 +21,13 @@ import (
 	"net/http"
 	"strings"
 
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
-//UpdateSystemState is used for updating ComputerSystem table
-//and also the server search index, if required.
+// UpdateSystemState is used for updating ComputerSystem table
+// and also the server search index, if required.
 func (e *ExternalInterface) UpdateSystemState(ctx context.Context, updateReq *aggregatorproto.UpdateSystemStateRequest) error {
 
 	key := fmt.Sprintf("%s/%s.%s", strings.TrimSuffix(updateReq.SystemURI, "/"), updateReq.SystemUUID, updateReq.SystemID)
@@ -44,7 +45,10 @@ func (e *ExternalInterface) UpdateSystemState(ctx context.Context, updateReq *ag
 	target.Password = decryptedPasswordByte
 
 	// get the plugin information
-	plugin, errs := agmodel.GetPluginData(target.PluginID)
+	dbPluginConn := agmodel.DBPluginDataRead{
+		DBReadclient: agmodel.GetPluginDBConnection,
+	}
+	plugin, errs := agmodel.GetPluginData(target.PluginID, dbPluginConn)
 	if errs != nil {
 		return errs
 	}
@@ -62,6 +66,7 @@ func (e *ExternalInterface) UpdateSystemState(ctx context.Context, updateReq *ag
 			"Password": string(plugin.Password),
 		}
 		req.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("resource request data for %s: %s", req.OID, string(req.Data))
 		_, token, _, err := contactPlugin(ctx, req, "error while getting the details "+req.OID+": ")
 		if err != nil {
 			return err
@@ -78,13 +83,14 @@ func (e *ExternalInterface) UpdateSystemState(ctx context.Context, updateReq *ag
 	req.DeviceUUID = updateReq.SystemUUID
 	req.DeviceInfo = target
 	req.OID = fmt.Sprintf("%s/%s", strings.TrimSuffix(updateReq.SystemURI, "/"), updateReq.SystemID)
-
+	l.LogWithFields(ctx).Debugf("resource request data for %s: %s", req.OID, string(req.Data))
 	rawData, _, getResponse, err := contactPlugin(ctx, req, "error while trying to get system details ")
 	if err != nil || getResponse.StatusCode != http.StatusOK {
 		return fmt.Errorf("error: while trying to get system details ")
 	}
 
 	//replacing the uuid while saving the data
+	l.LogWithFields(ctx).Debugf("update resource data request for UUID %s: %s", req.DeviceUUID, string(rawData))
 	updatedResourceData := updateResourceDataWithUUID(string(rawData), req.DeviceUUID)
 	var systemInfo map[string]interface{}
 

@@ -31,6 +31,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrresponse"
@@ -38,8 +39,8 @@ import (
 )
 
 var (
-	JsonUnMarshalFunc              = json.Unmarshal
-	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
+	jsonUnMarshalFunc              = json.Unmarshal
+	requestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
 )
 
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
@@ -159,6 +160,7 @@ func (e *ExternalInterface) GetManagers(ctx context.Context, req *managersproto.
 					return resp
 				}
 			}
+			managerData["Id"] = req.ManagerID
 			err = e.DB.UpdateData(req.URL, managerData, "Managers")
 			if err != nil {
 				errorMessage := "error while saving manager details: " + err.Error()
@@ -196,7 +198,7 @@ func (e *ExternalInterface) getManagerDetails(ctx context.Context, id string) (m
 		return mgr, fmt.Errorf("unable to retrieve manager information: %v", err)
 	}
 
-	if err := JsonUnMarshalFunc([]byte(data), &mgrData); err != nil {
+	if err := jsonUnMarshalFunc([]byte(data), &mgrData); err != nil {
 		return mgr, fmt.Errorf("unable to marshal manager information: %v", err)
 	}
 
@@ -264,7 +266,7 @@ func (e *ExternalInterface) getManagerDetails(ctx context.Context, id string) (m
 // For getting system resource information,  parameters need to be passed GetSystemsRequest .
 // GetManagersResource holds the  Uuid,Url and Resourceid ,
 // Url will be parsed from that search key will created
-// There will be two return values for the fuction. One is the RPC response, which contains the
+// There will be two return values for the function. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (e *ExternalInterface) GetManagersResource(ctx context.Context, req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
@@ -338,10 +340,15 @@ func (e *ExternalInterface) GetManagersResource(ctx context.Context, req *manage
 	return resp
 }
 
-// VirtualMediaActions is used to perform action on VirtualMedia. For insert and eject of virtual media this function is used
-func (e *ExternalInterface) VirtualMediaActions(ctx context.Context, req *managersproto.ManagerRequest) response.RPC {
+// VirtualMediaActions is used to perform action on VirtualMedia.
+// For insert and eject of virtual media this function is used
+func (e *ExternalInterface) VirtualMediaActions(ctx context.Context, req *managersproto.ManagerRequest, taskID string) {
 	var resp response.RPC
 	var requestBody = req.RequestBody
+	targetURI := req.GetURL()
+	//create task
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI,
+		UpdateTask: e.RPC.UpdateTask, TaskRequest: string(req.RequestBody)}
 	//InsertMedia payload validation
 	if strings.Contains(req.URL, "VirtualMedia.InsertMedia") {
 		var vmiReq mgrmodel.VirtualMediaInsert
@@ -350,23 +357,24 @@ func (e *ExternalInterface) VirtualMediaActions(ctx context.Context, req *manage
 		vmiReq.WriteProtected = true
 		err := json.Unmarshal(req.RequestBody, &vmiReq)
 		if err != nil {
-			errorMessage := "while unmarshaling the virtual media insert request: " + err.Error()
+			errorMessage := "while unmarshal the virtual media insert request: " + err.Error()
 			l.LogWithFields(ctx).Error(errorMessage)
-			resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
-			return resp
+			common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, taskInfo)
+			return
 		}
 
 		// Validating the request JSON properties for case sensitive
-		invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, vmiReq)
+		invalidProperties, err := requestParamsCaseValidatorFunc(req.RequestBody, vmiReq)
 		if err != nil {
 			errMsg := "while validating request parameters for virtual media insert: " + err.Error()
 			l.LogWithFields(ctx).Error(errMsg)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+			return
 		} else if invalidProperties != "" {
 			errorMessage := "one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 			l.LogWithFields(ctx).Error(errorMessage)
-			response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
-			return response
+			common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
+			return
 		}
 
 		// Check mandatory fields
@@ -374,44 +382,51 @@ func (e *ExternalInterface) VirtualMediaActions(ctx context.Context, req *manage
 		if err != nil {
 			errorMessage := "request payload validation failed: " + err.Error()
 			l.LogWithFields(ctx).Error(errorMessage)
-			resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
-			return resp
+			common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, taskInfo)
+			return
 		}
 		requestBody, err = json.Marshal(vmiReq)
 		if err != nil {
 			l.LogWithFields(ctx).Error("while marshalling the virtual media insert request: " + err.Error())
-			resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-			return resp
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
+			return
 		}
 	}
 	// splitting managerID to get uuid
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
-	resp = e.deviceCommunication(ctx, req.URL, uuid, requestData[1], http.MethodPost, requestBody)
+	plugin, resp := e.deviceCommunication(ctx, req.URL, uuid, requestData[1], http.MethodPost, requestBody)
 
 	// If the virtualmedia action is success then updating DB
-	if resp.StatusCode == http.StatusOK {
-		vmURI := strings.Replace(req.URL, "/Actions/VirtualMedia.InsertMedia", "", -1)
-		vmURI = strings.Replace(vmURI, "/Actions/VirtualMedia.EjectMedia", "", -1)
-		deviceData, err := e.getResourceInfoFromDevice(ctx, vmURI, uuid, requestData[1], nil)
-		if err != nil {
-			l.LogWithFields(ctx).Error("while trying get on URI " + vmURI + " : " + err.Error())
+	if resp.StatusCode == http.StatusAccepted {
+		services.SavePluginTaskInfo(ctx, plugin.PluginIP, plugin.PluginServerName, taskID, plugin.Location)
+	}
+	e.saveMediaDetails(ctx, req)
+	respBody := fmt.Sprintf("%v", resp.Body)
+	l.LogWithFields(ctx).Debugf("Outgoing virtual media response to northbound: %s", string(respBody))
+}
+
+// saveMediaDetails is used to save virtual media data in DB
+func (e *ExternalInterface) saveMediaDetails(ctx context.Context, req *managersproto.ManagerRequest) {
+	vmURI := strings.Replace(req.URL, "/Actions/VirtualMedia.InsertMedia", "", -1)
+	vmURI = strings.Replace(vmURI, "/Actions/VirtualMedia.EjectMedia", "", -1)
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
+	uuid := requestData[0]
+	deviceData, err := e.getResourceInfoFromDevice(ctx, vmURI, uuid, requestData[1], nil)
+	if err != nil {
+		l.LogWithFields(ctx).Error("while trying get on URI " + vmURI + " : " + err.Error())
+	} else {
+		var vmData map[string]interface{}
+		jerr := json.Unmarshal([]byte(deviceData), &vmData)
+		if jerr != nil {
+			l.LogWithFields(ctx).Error("while unmarshaling virtual media details: " + jerr.Error())
 		} else {
-			var vmData map[string]interface{}
-			jerr := json.Unmarshal([]byte(deviceData), &vmData)
-			if jerr != nil {
-				l.LogWithFields(ctx).Error("while unmarshaling virtual media details: " + jerr.Error())
-			} else {
-				err = e.DB.UpdateData(vmURI, vmData, "VirtualMedia")
-				if err != nil {
-					l.LogWithFields(ctx).Error("while saving virtual media details: " + err.Error())
-				}
+			err = e.DB.UpdateData(vmURI, vmData, "VirtualMedia")
+			if err != nil {
+				l.LogWithFields(ctx).Error("while saving virtual media details: " + err.Error())
 			}
 		}
 	}
-	respBody := fmt.Sprintf("%v", resp.Body)
-	l.LogWithFields(ctx).Debugf("Outgoing virtual media response to northbound: %s", string(respBody))
-	return resp
 }
 
 // validateFields will validate the request payload, if any mandatory fields are missing then it will generate an error
@@ -480,10 +495,10 @@ func (e *ExternalInterface) getPluginManagerResoure(ctx context.Context, manager
 
 	req.OID = reqURI
 	var errorMessage = "unable to get the details " + reqURI + ": "
-	body, _, getResponse, err := mgrcommon.ContactPlugin(ctx, req, errorMessage)
+	body, _, _, getResponse, err := mgrcommon.ContactPlugin(ctx, req, errorMessage)
 	if err != nil {
 		if getResponse.StatusCode == http.StatusUnauthorized && strings.EqualFold(req.Plugin.PreferredAuthType, "XAuthToken") {
-			if body, _, getResponse, err = mgrcommon.RetryManagersOperation(ctx, req, errorMessage); err != nil {
+			if body, _, _, getResponse, err = mgrcommon.RetryManagersOperation(ctx, req, errorMessage); err != nil {
 				resp.StatusCode = getResponse.StatusCode
 				json.Unmarshal(body, &resp.Body)
 				respBody := fmt.Sprintf("%v", resp.Body)
@@ -547,7 +562,8 @@ func (e *ExternalInterface) getResourceInfoFromDevice(ctx context.Context, reqUR
 
 }
 
-func (e *ExternalInterface) deviceCommunication(ctx context.Context, reqURL, uuid, systemID, httpMethod string, requestBody []byte) response.RPC {
+func (e *ExternalInterface) deviceCommunication(ctx context.Context, reqURL, uuid, systemID, httpMethod string,
+	requestBody []byte) (mgrcommon.PluginTaskInfo, response.RPC) {
 	var deviceInfoRequest = mgrcommon.ResourceInfoRequest{
 		URL:                   reqURL,
 		UUID:                  uuid,
@@ -610,6 +626,7 @@ func convertToRedfishModel(ctx context.Context, uri, data string) interface{} {
 	if URIRegexRemAcc.MatchString(uri) {
 		var resource dmtf.AccountService
 		json.Unmarshal([]byte(data), &resource)
+		resource.ODataType = common.ManagerAccountServiceType
 		return resource
 	} else if URIRegexAcc.MatchString(uri) {
 		var resource dmtf.ManagerAccount
@@ -626,30 +643,36 @@ func convertToRedfishModel(ctx context.Context, uri, data string) interface{} {
 }
 
 // CreateRemoteAccountService is used to create BMC account user
-func (e *ExternalInterface) CreateRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) response.RPC {
-	var resp response.RPC
+func (e *ExternalInterface) CreateRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest,
+	taskID string) {
 	var requestBody = req.RequestBody
 	var bmcAccReq mgrmodel.CreateBMCAccount
+	uri := replaceBMCAccReq(req.URL, req.ManagerID)
+
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: uri,
+		UpdateTask: e.RPC.UpdateTask, TaskRequest: string(req.RequestBody)}
+
 	// Updating the default values
 	err := json.Unmarshal(req.RequestBody, &bmcAccReq)
 	if err != nil {
 		errorMessage := "error while unmarshaling the create remote account service request: " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
-		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
-		return resp
+		common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, taskInfo)
+		return
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, bmcAccReq)
+	invalidProperties, err := requestParamsCaseValidatorFunc(req.RequestBody, bmcAccReq)
 	if err != nil {
 		errMsg := "error while validating request parameters for creating BMC account: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return
 	} else if invalidProperties != "" {
 		errorMessage := "error in one or more properties given in the request body,they are not valid, ensure properties are listed in uppercamelcase "
 		l.LogWithFields(ctx).Error(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
-		return response
+		common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
+		return
 	}
 
 	// Check mandatory fields
@@ -657,21 +680,26 @@ func (e *ExternalInterface) CreateRemoteAccountService(ctx context.Context, req 
 	if err != nil {
 		errorMessage := "error in request payload validation : " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
-		resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
-		return resp
+		common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, taskInfo)
+		return
 	}
 	requestBody, err = json.Marshal(bmcAccReq)
 	if err != nil {
 		l.LogWithFields(ctx).Error("error while marshalling the create BMC account request: " + err.Error())
-		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		return resp
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
+		return
 	}
 	// splitting managerID to get uuid
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
 
-	uri := replaceBMCAccReq(req.URL, req.ManagerID)
-	resp = e.deviceCommunication(ctx, uri, uuid, requestData[1], http.MethodPost, requestBody)
+	plugin, resp := e.deviceCommunication(ctx, uri, uuid, requestData[1], http.MethodPost, requestBody)
+
+	if resp.StatusCode == http.StatusAccepted {
+		e.DB.SavePluginTaskInfo(ctx, plugin.PluginIP, plugin.PluginServerName,
+			taskID, plugin.Location)
+		return
+	}
 
 	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
 		body, _ := json.Marshal(resp.Body)
@@ -680,10 +708,16 @@ func (e *ExternalInterface) CreateRemoteAccountService(ctx context.Context, req 
 		json.Unmarshal([]byte(respBody), &managerAcc)
 		resp.Body = managerAcc
 		resp.StatusCode = http.StatusCreated
+		task := fillTaskData(taskID, uri, string(req.RequestBody), resp,
+			common.Completed, common.OK, 100, http.MethodPost)
+		e.RPC.UpdateTask(ctx, task)
+	} else {
+		task := fillTaskData(taskID, uri, string(req.RequestBody), resp,
+			common.Completed, common.Warning, 100, http.MethodPost)
+		e.RPC.UpdateTask(ctx, task)
 	}
 	respBody := fmt.Sprintf("%v", resp.Body)
 	l.LogWithFields(ctx).Debugf("Outgoing remote account service response to northbound: %s", string(respBody))
-	return resp
 }
 
 // validateFields will validate the request payload, if any mandatory fields are missing then it will generate an error
@@ -710,45 +744,50 @@ func replaceBMCAccResp(data, managerID string) string {
 }
 
 // UpdateRemoteAccountService is used to update BMC account
-func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) response.RPC {
-	var resp response.RPC
+func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest,
+	taskID string) {
 	var bmcAccReq mgrmodel.UpdateBMCAccount
+
+	uri := replaceBMCAccReq(req.URL, req.ManagerID)
+	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: uri,
+		UpdateTask: e.RPC.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	// Updating the default values
 	err := json.Unmarshal(req.RequestBody, &bmcAccReq)
 	if err != nil {
-		errorMessage := "error while unmarshaling the update remote account service request: " + err.Error()
+		errorMessage := "error while unmarshal the update remote account service request: " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
-		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
-		return resp
+		common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage,
+			[]interface{}{}, taskInfo)
+		return
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, bmcAccReq)
+	invalidProperties, err := requestParamsCaseValidatorFunc(req.RequestBody, bmcAccReq)
 	if err != nil {
 		errMsg := "error while validating request parameters for updating BMC account: " + err.Error()
 		l.LogWithFields(ctx).Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return
 	} else if invalidProperties != "" {
 		errorMessage := "error in one or more properties given in the request body,they are not valid, ensure properties are listed in uppercamelcase "
 		l.LogWithFields(ctx).Error(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
-		return response
+		common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage,
+			[]interface{}{invalidProperties}, taskInfo)
+		return
 	}
 
 	// splitting managerID to get uuid
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
-
-	uri := replaceBMCAccReq(req.URL, req.ManagerID)
-
 	//do get call with
 	data, err := e.getResourceInfoFromDevice(ctx, uri, uuid, requestData[1], nil)
 	if err != nil {
 		errorMessage := "error while trying to get resource details from device: " + err.Error()
 		l.LogWithFields(ctx).Error(errorMessage)
 		errArgs := []interface{}{"RemoteAccounts", requestData[1]}
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, taskInfo)
+		return
 	}
 	var dataMap map[string]interface{}
 	err = json.Unmarshal([]byte(data), &dataMap)
@@ -764,10 +803,17 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 	requestBody, err := json.Marshal(bmcAccReq)
 	if err != nil {
 		l.LogWithFields(ctx).Error("error while marshalling the update BMC account request: " + err.Error())
-		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		return resp
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
+		return
 	}
-	resp = e.deviceCommunication(ctx, uri, uuid, requestData[1], http.MethodPatch, requestBody)
+
+	plugin, resp := e.deviceCommunication(ctx, uri, uuid, requestData[1], http.MethodPatch, requestBody)
+	if resp.StatusCode == http.StatusAccepted {
+		e.DB.SavePluginTaskInfo(ctx, plugin.PluginIP, plugin.PluginServerName,
+			taskID, plugin.Location)
+		e.UpdatePassword(ctx, uuid, bmcAccReq.Password, username, resp.StatusCode)
+		return
+	}
 
 	if resp.StatusCode == http.StatusOK {
 		data, err := e.getResourceInfoFromDevice(ctx, uri, uuid, requestData[1], &bmcCreds)
@@ -775,35 +821,103 @@ func (e *ExternalInterface) UpdateRemoteAccountService(ctx context.Context, req 
 			errorMessage := "error while trying to get resource details from device: " + err.Error()
 			l.LogWithFields(ctx).Error(errorMessage)
 			errArgs := []interface{}{}
-			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+			common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, taskInfo)
+			return
 		}
+		e.UpdatePassword(ctx, uuid, bmcAccReq.Password, username, resp.StatusCode)
 		// Replace response body to BMC manager
 		data = replaceBMCAccResp(data, req.ManagerID)
 		resource := convertToRedfishModel(ctx, req.URL, data)
 		resp.Body = resource
 		resp.StatusCode = http.StatusOK
 		resp.StatusMessage = response.Success
-		//return resp
-
+		task := fillTaskData(taskID, uri, string(req.RequestBody), resp,
+			common.Completed, common.OK, 100, http.MethodPatch)
+		e.RPC.UpdateTask(ctx, task)
+	} else {
+		task := fillTaskData(taskID, uri, string(req.RequestBody), resp,
+			common.Completed, common.Warning, 100, http.MethodPatch)
+		e.RPC.UpdateTask(ctx, task)
 	}
 	respBody := fmt.Sprintf("%v", resp.Body)
 	l.LogWithFields(ctx).Debugf("Outgoing update remote account service response to northbound: %s", string(respBody))
-	return resp
-
 }
 
 // DeleteRemoteAccountService is used to delete the BMC account user
-func (e *ExternalInterface) DeleteRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) response.RPC {
-	var resp response.RPC
+func (e *ExternalInterface) DeleteRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest,
+	taskID string) {
 	// splitting managerID to get uuid
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
 	uri := replaceBMCAccReq(req.URL, req.ManagerID)
-	resp = e.deviceCommunication(ctx, uri, uuid, requestData[1], http.MethodDelete, nil)
+
+	plugin, resp := e.deviceCommunication(ctx, uri, uuid, requestData[1], http.MethodDelete, nil)
+	if resp.StatusCode == http.StatusAccepted {
+		e.DB.SavePluginTaskInfo(ctx, plugin.PluginIP, plugin.PluginServerName,
+			taskID, plugin.Location)
+		return
+	}
+
 	if resp.StatusCode == http.StatusOK {
 		resp.StatusCode = http.StatusNoContent
 	}
+	task := fillTaskData(taskID, uri, string(req.RequestBody), resp,
+		common.Completed, common.OK, 100, http.MethodDelete)
+	e.RPC.UpdateTask(ctx, task)
 	respBody := fmt.Sprintf("%v", resp.Body)
 	l.LogWithFields(ctx).Debugf("Outgoing delete remote account service response to northbound: %s", string(respBody))
-	return resp
+}
+
+// UpdatePassword method used to update system password
+func (e ExternalInterface) UpdatePassword(ctx context.Context, uuid, password string, userName string, statusCode int32) {
+	target, gerr := mgrmodel.GetTarget(uuid)
+	if gerr != nil {
+		l.LogWithFields(ctx).Error("error while getting device details :" + gerr.Error())
+		return
+	}
+	if userName != target.UserName {
+		return
+	}
+	newPassword, err := e.Device.EncryptDevicePassword([]byte(password))
+	if err != nil {
+		errMsg := "error while trying to encrypt: " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		return
+	}
+	target.Password = newPassword
+	if statusCode == http.StatusOK {
+		err1 := mgrmodel.UpdateSystem(target.ManagerAddress, target)
+		if err1 != nil {
+			errMsg := "error while update password : " + err.Error()
+			l.LogWithFields(ctx).Error(errMsg)
+		}
+		return
+	}
+	err1 := mgrmodel.AddTempPassword(uuid, target)
+	if err1 != nil {
+		errMsg := "error while update password : " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		return
+	}
+}
+
+// UpdateRemoteAccountService is used to update BMC account
+func (e *ExternalInterface) UpdateRemoteAccountPasswordService(ctx context.Context, req *managersproto.ManagerRequest) {
+	target, err := mgrmodel.GetTempPassword(req.ManagerID)
+	if err != nil {
+		errMsg := "no password found: " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		return
+	}
+	if err := mgrmodel.UpdateSystem(target.DeviceUUID, target); err != nil {
+		errMsg := "error while update password : " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		return
+	}
+	if err := mgrmodel.DeleteTempPassword(req.ManagerID); err != nil {
+		errMsg := "error while delete temp password : " + err.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+		return
+	}
+	l.LogWithFields(ctx).Info("Password updated successfully for device " + target.DeviceUUID)
 }

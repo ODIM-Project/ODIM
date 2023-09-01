@@ -1,15 +1,15 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package thandle
 
@@ -84,6 +84,11 @@ func mockCreateTaskUtil(ctx context.Context, userName string) (string, error) {
 }
 
 func mockDeleteTaskFromDBModel(ctx context.Context, task *tmodel.Task) error {
+
+	return nil
+}
+
+func mockDeleteMultipleTaskFromDBModel(ctx context.Context, task []string) error {
 
 	return nil
 }
@@ -1599,9 +1604,11 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 		{
 			name: "Positive case: All is well",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				UpdateTaskQueue:       mockUpdateTaskStatusModel,
-				DeleteTaskFromDBModel: mockDeleteTaskFromDBModel,
+				GetTaskStatusModel:            mockGetTaskStatusModel,
+				UpdateTaskQueue:               mockUpdateTaskStatusModel,
+				DeleteTaskFromDBModel:         mockDeleteTaskFromDBModel,
+				GetMultipleTaskKeysModel:      mockGetMultipleTaskKeysModel,
+				DeleteMultipleTaskFromDBModel: mockDeleteMultipleTaskFromDBModel,
 			},
 			args: args{
 				taskID: "validTaskID",
@@ -1611,9 +1618,11 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 		{
 			name: "Positive case: All is well, But task state is Completed",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				UpdateTaskQueue:       mockUpdateTaskStatusModel,
-				DeleteTaskFromDBModel: mockDeleteTaskFromDBModel,
+				GetTaskStatusModel:            mockGetTaskStatusModel,
+				UpdateTaskQueue:               mockUpdateTaskStatusModel,
+				DeleteTaskFromDBModel:         mockDeleteTaskFromDBModel,
+				GetMultipleTaskKeysModel:      mockGetMultipleTaskKeysModel,
+				DeleteMultipleTaskFromDBModel: mockDeleteMultipleTaskFromDBModel,
 			},
 			args: args{
 				taskID: "CompletedTaskID",
@@ -1623,9 +1632,11 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 		{
 			name: "Positive case: All is well, But task state is Running",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				UpdateTaskQueue:       mockUpdateTaskStatusModel,
-				DeleteTaskFromDBModel: mockDeleteTaskFromDBModel,
+				GetTaskStatusModel:            mockGetTaskStatusModel,
+				UpdateTaskQueue:               mockUpdateTaskStatusModel,
+				DeleteTaskFromDBModel:         mockDeleteTaskFromDBModel,
+				GetMultipleTaskKeysModel:      mockGetMultipleTaskKeysModel,
+				DeleteMultipleTaskFromDBModel: mockDeleteMultipleTaskFromDBModel,
 			},
 			args: args{
 				taskID: "RunningTaskID",
@@ -1635,9 +1646,11 @@ func TestTasksRPC_taskCancelCallBack(t *testing.T) {
 		{
 			name: "Negative case: InvalidTaskID",
 			ts: &TasksRPC{
-				GetTaskStatusModel:    mockGetTaskStatusModel,
-				UpdateTaskQueue:       mockUpdateTaskStatusModel,
-				DeleteTaskFromDBModel: mockDeleteTaskFromDBModel,
+				GetTaskStatusModel:            mockGetTaskStatusModel,
+				UpdateTaskQueue:               mockUpdateTaskStatusModel,
+				DeleteTaskFromDBModel:         mockDeleteTaskFromDBModel,
+				GetMultipleTaskKeysModel:      mockGetMultipleTaskKeysModel,
+				DeleteMultipleTaskFromDBModel: mockDeleteMultipleTaskFromDBModel,
 			},
 			args: args{
 				taskID: "InvalidTaskID",

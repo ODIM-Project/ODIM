@@ -14,13 +14,15 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-telemetry/tmodel"
 )
 
-func MockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+// MockIsAuthorized mocks IsAuthorized function
+func MockIsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken == "InvalidToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
 	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
+// MockContactClient mocks ContactClient function
 func MockContactClient(ctx context.Context, url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Sessions" {
 		body := `{"Token": "12345"}`
@@ -48,20 +50,23 @@ func MockContactClient(ctx context.Context, url, method, token string, odataID s
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
-func MockGetResource(table, key string, dbType common.DbType) (string, *errors.Error) {
+// MockGetResource mocks GetResource function
+func MockGetResource(ctx context.Context, table, key string, dbType common.DbType) (string, *errors.Error) {
 	if key == "error" {
 		return "", &errors.Error{}
 	}
 	return "body", nil
 }
 
-func MockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
+// MockGetAllKeysFromTable mocks GetAllKeysFromTable function
+func MockGetAllKeysFromTable(ctx context.Context, table string, dbType common.DbType) ([]string, error) {
 	if table == "Plugin" {
 		return []string{"ILO", "GRF"}, nil
 	}
 	return []string{"/redfish/v1/TelemetryService/Triggers/uuid.1"}, nil
 }
 
+// GetEncryptedKey is used to encrypt device password using odimra public key for unit test
 func GetEncryptedKey(t *testing.T, key []byte) []byte {
 	cryptedKey, err := common.EncryptWithPublicKey(key)
 	if err != nil {
@@ -70,6 +75,7 @@ func GetEncryptedKey(t *testing.T, key []byte) []byte {
 	return cryptedKey
 }
 
+// MockGetPluginData mocks GetPluginData function
 func MockGetPluginData(pluginID string) (tmodel.Plugin, *errors.Error) {
 	var t *testing.T
 	password := GetEncryptedKey(t, []byte("$2a$10$OgSUYvuYdI/7dLL5KkYNp.RCXISefftdj.MjbBTr6vWyNwAvht6ci"))
@@ -85,6 +91,7 @@ func MockGetPluginData(pluginID string) (tmodel.Plugin, *errors.Error) {
 	return plugin, nil
 }
 
+// MockGetExternalInterface mocks ExternalInterface for unit test
 func MockGetExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
 		External: External{

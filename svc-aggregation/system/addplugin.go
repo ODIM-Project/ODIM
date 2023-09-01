@@ -32,6 +32,17 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 )
 
+type Plugin struct {
+	IP                string
+	Port              string
+	Username          string
+	Password          []byte
+	ID                string
+	PluginType        string
+	PreferredAuthType string
+	ManagerUUID       string
+}
+
 func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRequest, taskID, targetURI string, pluginContactRequest getResourceRequest, queueList []string, cmVariants connectionMethodVariants) (response.RPC, string, []byte) {
 	var resp response.RPC
 	taskInfo := &common.TaskUpdateInfo{Context: ctx, TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
@@ -59,7 +70,10 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	// error is not nil, DB query failed, can't say for sure if queried plugin exists,
 	// except when read fails with plugin data not found, and will continue with add process,
 	// and any other errors, will fail add plugin operation.
-	_, errs := agmodel.GetPluginData(cmVariants.PluginID)
+	a := agmodel.DBPluginDataRead{
+		DBReadclient: agmodel.GetPluginDBConnection,
+	}
+	_, errs := agmodel.GetPluginData(cmVariants.PluginID, a)
 	if errs == nil || (errs != nil && (errs.ErrNo() == errors.JSONUnmarshalFailed || errs.ErrNo() == errors.DecryptionFailed)) {
 		errMsg := "error:plugin with name " + cmVariants.PluginID + " already exists"
 		l.LogWithFields(ctx).Error(errMsg)
@@ -75,11 +89,14 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, []interface{}{}, taskInfo), "", nil
 	}
 
-	pluginNameArray, err := agmodel.GetAllKeysFromTable("Plugin")
+	pluginNameArray, err := agmodel.GetAllKeysFromTable(ctx, "Plugin")
 	if err == nil {
 		for _, ID := range pluginNameArray {
+			dbPluginConn := agmodel.DBPluginDataRead{
+				DBReadclient: agmodel.GetPluginDBConnection,
+			}
 
-			plugin, err := e.GetPluginMgrAddr(ID)
+			plugin, err := e.GetPluginMgrAddr(ID, dbPluginConn)
 
 			if err != nil && err.ErrNo() == errors.JSONUnmarshalFailed {
 				continue
@@ -125,6 +142,7 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 			"Password": string(plugin.Password),
 		}
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 		_, token, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while creating the session: ")
 		if err != nil {
 			errMsg := err.Error()
@@ -141,6 +159,7 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	// Getting all managers info from plugin
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 	pluginContactRequest.OID = "/ODIM/v1/Managers"
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 	body, _, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err != nil {
 		errMsg := err.Error()
@@ -161,6 +180,7 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	// Getting the indivitual managers response
 	for _, object := range managerMembers.([]interface{}) {
 		pluginContactRequest.OID = object.(map[string]interface{})["@odata.id"].(string)
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 		body, _, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 		if err != nil {
 			errMsg := err.Error()
@@ -263,25 +283,26 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
 	}
+	mapData := make(map[string]interface{})
 	// saving all plugin manager data
 	var listMembers = make([]agresponse.ListMember, 0)
 	for oid, data := range managersData {
-
-		dbErr := agmodel.SavePluginManagerInfo(updateManagerName(data, plugin.ID), "Managers", oid)
-		if dbErr != nil {
-			errMsg := dbErr.Error()
-			l.LogWithFields(ctx).Error(errMsg)
-
-			return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
-		}
+		mapData["Managers:"+oid] = string(updateManagerName(data, plugin.ID))
 		listMembers = append(listMembers, agresponse.ListMember{
 			OdataID: oid,
 		})
 
 	}
+	dbEr = agmodel.SaveBMCInventory(mapData)
+	if dbEr != nil {
+		errMsg := dbEr.Error()
+		l.LogWithFields(ctx).Error(errMsg)
+
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
+	}
 
 	l.LogWithFields(ctx).Info("subscribing to EMB for plugin " + plugin.ID)
-	err = e.SubscribeToEMB(plugin.ID, queueList)
+	err = e.SubscribeToEMB(ctx, plugin.ID, queueList)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err)
 	}
@@ -313,6 +334,6 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	phc.DupPluginConf()
 	_, topics := phc.GetPluginStatus(ctx, plugin)
 	PublishPluginStatusOKEvent(ctx, plugin.ID, topics)
-
+	l.LogWithFields(ctx).Debugf("final response code for add plugin data request: %d", resp.StatusCode)
 	return resp, managerUUID, ciphertext
 }

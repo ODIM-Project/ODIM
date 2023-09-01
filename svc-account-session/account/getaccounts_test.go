@@ -38,35 +38,16 @@ func TestGetAllAccounts(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	successResponse := response.Response{
-		OdataType:    "#ManagerAccountCollection.ManagerAccountCollection",
-		OdataID:      "/redfish/v1/AccountService/Accounts",
-		OdataContext: "/redfish/v1/$metadata#ManagerAccountCollection.ManagerAccountCollection",
-		ID:           "Accounts",
-		Name:         "Account Service",
-	}
-	successResponse.CreateGenericResponse(response.Success)
-	successResponse.Message = ""
+
+	successResponse := createMockResponseObject("#ManagerAccountCollection.ManagerAccountCollection", "/redfish/v1/AccountService/Accounts", "/redfish/v1/$metadata#ManagerAccountCollection.ManagerAccountCollection", "Accounts")
 	successResponse.ID = ""
-	successResponse.MessageID = ""
-	successResponse.Severity = ""
 
 	err := createMockUser("testUser1", common.RoleAdmin)
 	if err != nil {
 		t.Fatalf("Error in creating mock admin user %v", err)
 	}
 
-	errArgs := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to fetch accounts : User SomeOne does not have the privilege to view all users",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
+	errArgs := GetResponseArgs(response.InsufficientPrivilege, "failed to fetch accounts : User SomeOne does not have the privilege to view all users", []interface{}{})
 	ctx := mockContext()
 	type args struct {
 		session *asmodel.Session
@@ -130,17 +111,7 @@ func TestGetAllAccounts(t *testing.T) {
 }
 
 func TestGetAccount(t *testing.T) {
-	successResponse := response.Response{
-		OdataType:    common.ManagerAccountType,
-		OdataID:      "/redfish/v1/AccountService/Accounts/testUser1",
-		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-		ID:           "testUser1",
-		Name:         "Account Service",
-	}
-	successResponse.CreateGenericResponse(response.Success)
-	successResponse.Message = ""
-	successResponse.MessageID = ""
-	successResponse.Severity = ""
+	successResponse := createMockResponseObject(common.ManagerAccountType, "/redfish/v1/AccountService/Accounts/testUser1", "/redfish/v1/$metadata#ManagerAccount.ManagerAccount", "testUser1")
 	config.SetUpMockConfig(t)
 	err := createMockUser("testUser1", common.RoleAdmin)
 	if err != nil {
@@ -152,28 +123,9 @@ func TestGetAccount(t *testing.T) {
 		accountID string
 	}
 
-	errArg := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "failed to fetch the account testUser1: testUser2 does not have the privilege to view other user's details",
-				MessageArgs:   []interface{}{},
-			},
-		},
-	}
-	errArg1 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "failed to fetch the account testUser4: error while trying to get user: no data with the with key testUser4 found",
-				MessageArgs:   []interface{}{"Account", "testUser4"},
-			},
-		},
-	}
+	errArg := GetResponseArgs(response.InsufficientPrivilege, "failed to fetch the account testUser1: testUser2 does not have the privilege to view other user's details", []interface{}{})
+
+	errArg1 := GetResponseArgs(response.ResourceNotFound, "failed to fetch the account testUser4: error while trying to get user: no data with the with key testUser4 found", []interface{}{"Account", "testUser4"})
 
 	tests := []struct {
 		name string
@@ -302,17 +254,7 @@ func TestGetAccount(t *testing.T) {
 }
 
 func TestGetAccountService(t *testing.T) {
-	successResponse := response.Response{
-		OdataType:    common.AccountServiceType,
-		OdataID:      "/redfish/v1/AccountService",
-		OdataContext: "/redfish/v1/$metadata#AccountService.AccountService",
-		ID:           "AccountService",
-		Name:         "Account Service",
-	}
-	successResponse.CreateGenericResponse(response.Success)
-	successResponse.Message = ""
-	successResponse.MessageID = ""
-	successResponse.Severity = ""
+	successResponse := createMockResponseObject(common.AccountServiceType, "/redfish/v1/AccountService", "/redfish/v1/$metadata#AccountService.AccountService", "AccountService")
 	common.SetUpMockConfig()
 	tests := []struct {
 		name string
@@ -379,4 +321,19 @@ func TestGetAccountService(t *testing.T) {
 		})
 		config.Data.EnabledServices = []string{"XXXX"}
 	}
+}
+
+func createMockResponseObject(odataType, odataID, odataContext, ID string) response.Response {
+	successResponse := response.Response{
+		OdataType:    odataType,
+		OdataID:      odataID,
+		OdataContext: odataContext,
+		ID:           ID,
+		Name:         "Account Service",
+	}
+	successResponse.CreateGenericResponse(response.Success)
+	successResponse.Message = ""
+	successResponse.MessageID = ""
+	successResponse.Severity = ""
+	return successResponse
 }

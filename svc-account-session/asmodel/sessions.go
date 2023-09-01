@@ -37,7 +37,7 @@ type Session struct {
 	LastUsedTime time.Time
 }
 
-//CreateSession will hold input request for creating a session
+// CreateSession will hold input request for creating a session
 type CreateSession struct {
 	UserName string `json:"UserName"`
 	Password string `json:"Password"`

@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package handle
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -26,7 +27,7 @@ import (
 	"github.com/kataras/iris/v12/httptest"
 )
 
-//TestGetVersion is unittest method for GetVersion func.
+// TestGetVersion is unittest method for GetVersion func.
 func TestGetVersion(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
@@ -34,7 +35,7 @@ func TestGetVersion(t *testing.T) {
 	e := httptest.New(t, router)
 
 	//Expected reponse body decalration and initilaization to string
-	expectedBody := "{\n  \"v1\": \"/redfish/v1/\"\n}\n"
+	expectedBody := "{\"v1\":\"/redfish/v1/\"}\n"
 
 	//Check for status code 200 which is StatusOK
 	e.GET("/redfish").Expect().Status(http.StatusOK)
@@ -47,7 +48,7 @@ func mockGetService(a []string, b string) models.ServiceRoot {
 	return models.ServiceRoot{}
 }
 
-//TestGetServiceRoot is unittest method for GetServiceRoot func.
+// TestGetServiceRoot is unittest method for GetServiceRoot func.
 func TestGetServiceRoot(t *testing.T) {
 	s := ServiceRoot{getService: mockGetService}
 
@@ -61,7 +62,7 @@ func TestGetServiceRoot(t *testing.T) {
 	e.GET("/redfish/v1").Expect().Status(http.StatusOK)
 }
 
-//TestGetOdata is unittest method for GetOdata func.
+// TestGetOdata is unittest method for GetOdata func.
 func TestGetOdata(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
@@ -80,7 +81,7 @@ func TestGetOdata(t *testing.T) {
 
 }
 
-//TestGetMetadata is unittest method for GetOdata func.
+// TestGetMetadata is unittest method for GetOdata func.
 func TestGetMetadata(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
@@ -99,7 +100,7 @@ func TestGetMetadata(t *testing.T) {
 
 }
 
-//TestAsMethodNotAllowed is unittest method for AsMethodNotAllowed func.
+// TestAsMethodNotAllowed is unittest method for AsMethodNotAllowed func.
 func TestAsMethodNotAllowed(t *testing.T) {
 	header["Allow"] = []string{"GET"}
 	defer delete(header, "Allow")
@@ -114,7 +115,7 @@ func TestAsMethodNotAllowed(t *testing.T) {
 	e.DELETE("/redfish/v1/AccountService").Expect().Status(http.StatusMethodNotAllowed)
 }
 
-//TestSsMethodNotAllowed is unittest method for SsMethodNotAllowed func.
+// TestSsMethodNotAllowed is unittest method for SsMethodNotAllowed func.
 func TestSsMethodNotAllowed(t *testing.T) {
 	header["Allow"] = []string{"GET"}
 	defer delete(header, "Allow")
@@ -129,7 +130,7 @@ func TestSsMethodNotAllowed(t *testing.T) {
 	e.DELETE("/redfish/v1/SessionService").Expect().Status(http.StatusMethodNotAllowed)
 }
 
-//TestSystemsMethodNotAllowed is unittest method for SystemsMethodNotAllowed func.
+// TestSystemsMethodNotAllowed is unittest method for SystemsMethodNotAllowed func.
 func TestSystemsMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
@@ -209,8 +210,8 @@ func TestSystemsMethodNotAllowed(t *testing.T) {
 	e.DELETE("/redfish/v1/Systems/" + systemID + "/Processors/{rid}").Expect().Status(http.StatusMethodNotAllowed)
 }
 
-//TestMethodNotAllowedForLogServices is unit test method for
-//LogService path in ManagersMethodNotAllowed and SystemsMethodNotAllowed funcs.
+// TestMethodNotAllowedForLogServices is unit test method for
+// LogService path in ManagersMethodNotAllowed and SystemsMethodNotAllowed funcs.
 func TestMethodNotAllowedForLogServices(t *testing.T) {
 	logServicesURI := "{id}/LogServices/{rID}"
 	entriesURI := logServicesURI + "/Entries"
@@ -277,7 +278,7 @@ func TestMethodNotAllowedForLogServices(t *testing.T) {
 		}(uri)
 	}
 }
-func authMock(token string, b []string, c []string) (response.RPC, error) {
+func authMock(ctx context.Context, token string, b []string, c []string) (response.RPC, error) {
 	if token == "invalidToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil), nil
 	}
@@ -349,7 +350,7 @@ func TestGetMessageRegistryFile(t *testing.T) {
 	test.GET("/redfish/v1/registries/Base.1.13.0.json").WithHeader("X-Auth-Token", "invalidToken").Expect().Status(http.StatusUnauthorized)
 }
 
-//TestTsMethodNotAllowed is unittest method for TsMethodNotAllowed func.
+// TestTsMethodNotAllowed is unittest method for TsMethodNotAllowed func.
 func TestTsMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish/v1")
@@ -371,7 +372,7 @@ func TestTsMethodNotAllowed(t *testing.T) {
 	e.PUT("/redfish/v1/TaskService/Tasks/{TaskID}").Expect().Status(http.StatusMethodNotAllowed)
 }
 
-//TestEvtMethodNotAllowed is unittest method for EvtMethodNotAllowed func.
+// TestEvtMethodNotAllowed is unittest method for EvtMethodNotAllowed func.
 func TestEvtMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish/v1")
@@ -395,7 +396,7 @@ func TestEvtMethodNotAllowed(t *testing.T) {
 	e.PATCH("/redfish/v1/EventService/Subscriptions").Expect().Status(http.StatusMethodNotAllowed)
 }
 
-//TestAggMethodNotAllowed is unittest method for AggMethodNotAllowed func.
+// TestAggMethodNotAllowed is unittest method for AggMethodNotAllowed func.
 func TestAggMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish/v1")
@@ -421,7 +422,7 @@ func TestAggMethodNotAllowed(t *testing.T) {
 	e.DELETE("/redfish/v1/AggregationService/ConnectionMethods/" + connMethodID).Expect().Status(http.StatusMethodNotAllowed)
 }
 
-//TestFabricsMethodNotAllowed is unittest method for FabricsMethodNotAllowed func.
+// TestFabricsMethodNotAllowed is unittest method for FabricsMethodNotAllowed func.
 func TestFabricsMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish/v1")
@@ -434,7 +435,7 @@ func TestFabricsMethodNotAllowed(t *testing.T) {
 	e.DELETE("/redfish/v1/Fabrics").Expect().Status(http.StatusMethodNotAllowed)
 }
 
-//TestChassisMethodNotAllowed is unittest method for ChassisMethodNotAllowed func.
+// TestChassisMethodNotAllowed is unittest method for ChassisMethodNotAllowed func.
 func TestChassisMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
@@ -593,7 +594,7 @@ func TestManagersMethodNotAllowed(t *testing.T) {
 	e.DELETE("/redfish/v1/Managers/{id}").Expect().Status(http.StatusMethodNotAllowed)
 }
 
-//TestAggregateMethodNotAllowed is unittest method for AggregateMethodNotAllowed func.
+// TestAggregateMethodNotAllowed is unittest method for AggregateMethodNotAllowed func.
 func TestAggregateMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish/v1/AggregationService/Aggregates")

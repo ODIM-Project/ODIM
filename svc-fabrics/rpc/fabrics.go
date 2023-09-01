@@ -33,7 +33,7 @@ var podName = os.Getenv("POD_NAME")
 
 // Fabrics struct helps to register service
 type Fabrics struct {
-	IsAuthorizedRPC  func(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error)
+	IsAuthorizedRPC  func(ctx context.Context, sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error)
 	ContactClientRPC func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 
@@ -52,6 +52,7 @@ func (f *Fabrics) GetFabricResource(ctx context.Context, req *fabricsproto.Fabri
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("final response for get fabric resource request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -70,7 +71,7 @@ func (f *Fabrics) UpdateFabricResource(ctx context.Context, req *fabricsproto.Fa
 	resp.StatusCode = data.StatusCode
 	resp.Body = generateResponse(ctx, data.Body)
 	resp.StatusMessage = data.StatusMessage
-
+	l.LogWithFields(ctx).Debugf("final response for update fabric resource request: %s", string(resp.Body))
 	return resp, nil
 
 }
@@ -85,6 +86,7 @@ func (f *Fabrics) AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequ
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("final response for add fabric request: %s", string(resp.Body))
 	return resp, nil
 
 }
@@ -99,6 +101,7 @@ func (f *Fabrics) RemoveFabric(ctx context.Context, req *fabricsproto.AddFabricR
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("final response for remove fabric request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -117,6 +120,7 @@ func (f *Fabrics) DeleteFabricResource(ctx context.Context, req *fabricsproto.Fa
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(ctx, data.Body)
+	l.LogWithFields(ctx).Debugf("final response for delete fabric resource request: %s", string(resp.Body))
 	return resp, nil
 }
 

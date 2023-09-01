@@ -17,12 +17,10 @@ package handle
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	telemetryproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
 )
 
@@ -40,32 +38,30 @@ type TelemetryRPCs struct {
 	UpdateTriggerRPC                       func(context.Context, telemetryproto.TelemetryRequest) (*telemetryproto.TelemetryResponse, error)
 }
 
+const (
+	rpcCallFailedErrorMsg    = "error: something went wrong with the RPC calls: "
+	invalidAuthTokenErrorMsg = "error: no X-Auth-Token found in request header"
+)
+
 // GetTelemetryService is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetTelemetryService(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
+	l.LogWithFields(ctxt).Debug("Incoming request received for getting telemetry service details")
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.GetTelemetryServiceRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting telemetry service is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -78,28 +74,21 @@ func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting metric definition collection details with request URI %s", req.URL)
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.GetMetricDefinitionCollectionRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting metric definition collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -112,28 +101,21 @@ func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting metric report definition collection details with request URI %s", req.URL)
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.GetMetricReportDefinitionCollectionRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting metric report definition collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -146,28 +128,21 @@ func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting metric report collection details with request URI %s", req.URL)
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.GetMetricReportCollectionRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting metric report collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -180,28 +155,21 @@ func (a *TelemetryRPCs) GetTriggerCollection(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting trigger collection details with request URI %s", req.URL)
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.GetTriggerCollectionRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting trigger collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -214,27 +182,21 @@ func (a *TelemetryRPCs) GetMetricDefinition(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting metric definition details with request URI %s", req.URL)
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.GetMetricDefinitionRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting metric definition is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -247,27 +209,21 @@ func (a *TelemetryRPCs) GetMetricReportDefinition(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting metric report definition details with request URI %s", req.URL)
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.GetMetricReportDefinitionRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting metric report definition is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -280,27 +236,21 @@ func (a *TelemetryRPCs) GetMetricReport(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		URL:          ctx.Request().RequestURI,
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting metric report details with request URI %s", req.URL)
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.GetMetricReportRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting metric definition collection is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -313,27 +263,21 @@ func (a *TelemetryRPCs) GetTrigger(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 		URL:          ctx.Request().RequestURI,
 	}
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting trigger details with request URI %s", req.URL)
 	resp, err := a.GetTriggerRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting trigger details is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -346,27 +290,20 @@ func (a *TelemetryRPCs) UpdateTrigger(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	req := telemetryproto.TelemetryRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
+	l.LogWithFields(ctxt).Debug("Incoming request received for updating trigger")
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrorMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := a.UpdateTriggerRPC(ctxt, req)
 	if err != nil {
-		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		errorMessage := rpcCallFailedErrorMsg + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, errorMessage)
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for updating trigger is %s with status code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

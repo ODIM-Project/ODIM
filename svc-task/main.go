@@ -1,19 +1,20 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020] Hewlett Packard Enterprise Development LP
 //
-//Licensed under the Apache License, Version 2.0 (the "License"); you may
-//not use this file except in compliance with the License. You may obtain
-//a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-//License for the specific language governing permissions and limitations
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
 // under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"sync"
@@ -30,7 +31,7 @@ import (
 	auth "github.com/ODIM-Project/ODIM/svc-task/tauth"
 	"github.com/ODIM-Project/ODIM/svc-task/tcommon"
 	"github.com/ODIM-Project/ODIM/svc-task/thandle"
-	"github.com/ODIM-Project/ODIM/svc-task/tmessagebus"
+	tmb "github.com/ODIM-Project/ODIM/svc-task/tmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 	"github.com/ODIM-Project/ODIM/svc-task/tqueue"
 )
@@ -41,8 +42,8 @@ func main() {
 	podName := os.Getenv("POD_NAME")
 	pid := os.Getpid()
 	logs.Adorn(logrus.Fields{
-		"host":   hostName,
-		"procid": podName + fmt.Sprintf("_%d", pid),
+		"host":       hostName,
+		"process_id": podName + fmt.Sprintf("_%d", pid),
 	})
 
 	// log should be initialized after Adorn is invoked
@@ -61,7 +62,6 @@ func main() {
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Task Service should not be run as the root user")
 	}
-
 	config.CollectCLArgs(&configWarnings)
 	for _, warning := range configWarnings {
 		log.Warn(warning)
@@ -77,7 +77,6 @@ func main() {
 	if tcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-
 	errChan := make(chan error)
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go tcommon.TrackConfigFileChanges(errChan)
@@ -93,22 +92,37 @@ func main() {
 	task.GetSessionUserNameRPC = auth.GetSessionUserName
 	task.GetTaskStatusModel = tmodel.GetTaskStatus
 	task.GetAllTaskKeysModel = tmodel.GetAllTaskKeys
+	task.GetMultipleTaskKeysModel = tmodel.GetMultipleTaskKeys
 	task.TransactionModel = tmodel.Transaction
 	task.CreateTaskUtilHelper = task.CreateTaskUtil
 	task.DeleteTaskFromDBModel = tmodel.DeleteTaskFromDB
+	task.DeleteMultipleTaskFromDBModel = tmodel.DeleteMultipleTaskFromDB
 	task.UpdateTaskQueue = tqueue.EnqueueTask
 	task.PersistTaskModel = tmodel.PersistTask
 	task.ValidateTaskUserNameModel = tmodel.ValidateTaskUserName
-	task.PublishToMessageBus = tmessagebus.Publish
+	task.PublishToMessageBus = tmb.Publish
 	thandle.TaskCollection = thandle.TaskCollectionData{
 		TaskCollection: make(map[string]int32),
 		Lock:           sync.Mutex{},
 	}
 	taskproto.RegisterGetTaskServiceServer(services.ODIMService.Server(), task)
 
+	go task.MonitorPluginTasks()
+
+	// TODO: configure the job queue size
+	jobQueueSize := 10
+	tmb.TaskEventRecvQueue, tmb.TaskEventProcQueue = common.CreateJobQueue(jobQueueSize)
+
+	ctx := context.TODO()
+	ctx = context.WithValue(ctx, common.ThreadID, common.DefaultThreadID)
+	ctx = context.WithValue(ctx, common.ThreadName, common.ProcessTaskEvents)
+	common.RunReadWorkers(ctx, tmb.TaskEventProcQueue, task.ProcessTaskEvents, 5)
+	go tmb.SubscribeTaskEventsQueue(config.Data.MessageBusConf.OdimTaskEventsQueue)
+
 	tick := &tmodel.Tick{
 		Ticker: time.NewTicker(time.Duration(config.Data.TaskQueueConf.DBCommitInterval) * time.Microsecond),
 	}
+
 	go tqueue.UpdateTasksWorker(tick)
 
 	// Run server

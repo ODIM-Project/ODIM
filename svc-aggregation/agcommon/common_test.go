@@ -44,6 +44,9 @@ func mockContext() context.Context {
 	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
 	return ctx
 }
+
+var mockCtx = mockContext()
+
 func TestAddConnectionMethods(t *testing.T) {
 	var e = DBInterface{
 		GetAllKeysFromTableInterface: stubGetAllkeys,
@@ -126,15 +129,15 @@ var connectionMethod = []string{"/redfish/v1/AggregationService/ConnectionMethod
 	"/redfish/v1/AggregationService/ConnectionMethods/1234567545691234g",
 	"/redfish/v1/AggregationService/ConnectionMethods/1234567545691234h"}
 
-func stubGetAllkeys(tableName string) ([]string, error) {
+func stubGetAllkeys(ctx context.Context, tableName string) ([]string, error) {
 	return connectionMethod, nil
 }
 
-func invalidGetAllkeys(tableName string) ([]string, error) {
+func invalidGetAllkeys(ctx context.Context, tableName string) ([]string, error) {
 	return nil, errors.PackError(0, "error while trying to connecting to DB: ")
 }
 
-func invalidGetConnectionMethod(key string) (agmodel.ConnectionMethod, *errors.Error) {
+func invalidGetConnectionMethod(ctx context.Context, key string) (agmodel.ConnectionMethod, *errors.Error) {
 	return agmodel.ConnectionMethod{}, errors.PackError(0, "error while trying to connecting to DB: ")
 }
 
@@ -146,7 +149,7 @@ func invalidDeleteConnectionMethod(table, key string, dbtype common.DbType) *err
 	return errors.PackError(0, "error while trying to connecting to DB: ")
 }
 
-func stubGetConnectionMethod(key string) (agmodel.ConnectionMethod, *errors.Error) {
+func stubGetConnectionMethod(ctx context.Context, key string) (agmodel.ConnectionMethod, *errors.Error) {
 	if key == "/redfish/v1/AggregationService/ConnectionMethods/1234567545691234f" {
 		return agmodel.ConnectionMethod{
 			ConnectionMethodType:    "Redfish",
@@ -217,13 +220,13 @@ func mockData(t *testing.T, dbType common.DbType, table, id string, data interfa
 func TestGetStorageResources(t *testing.T) {
 	config.SetUpMockConfig(t)
 	storageURI := "/redfish/v1/Systems/12345677651245-12341/Storage"
-	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
+	GetResourceDetailsFunc = func(ctx context.Context, key string) (string, *errors.Error) {
 		return "", errors.PackError(0, "error while trying to connecting to DB: ")
 	}
 	ctx := mockContext()
 	resp := GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "There should be an error ")
-	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
+	GetResourceDetailsFunc = func(ctx context.Context, key string) (string, *errors.Error) {
 		return string([]byte(`{"user":"name"}`)), nil
 	}
 	resp = GetStorageResources(ctx, storageURI)
@@ -233,13 +236,13 @@ func TestGetStorageResources(t *testing.T) {
 func TestGetStorageResources_invalidJson(t *testing.T) {
 	config.SetUpMockConfig(t)
 	storageURI := "/redfish/v1/Systems/12345677651245-12341/Storage"
-	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
+	GetResourceDetailsFunc = func(ctx context.Context, key string) (string, *errors.Error) {
 		return "", errors.PackError(0, "error while trying to connecting to DB: ")
 	}
 	ctx := mockContext()
 	resp := GetStorageResources(ctx, storageURI)
 	assert.NotNil(t, resp, "There should be an error ")
-	GetResourceDetailsFunc = func(key string) (string, *errors.Error) {
+	GetResourceDetailsFunc = func(ctx context.Context, key string) (string, *errors.Error) {
 		return string([]byte(`{"user":"name"}`)), nil
 	}
 	JSONUnMarshalFunc = func(data []byte, v interface{}) error {
@@ -421,7 +424,7 @@ func TestLookupPlugin(t *testing.T) {
 func TestGetDeviceSubscriptionDetails(t *testing.T) {
 	config.SetUpMockConfig(t)
 	var data = ""
-	res, _, _ := GetDeviceSubscriptionDetails("10.0.0.0")
+	res, _, _ := GetDeviceSubscriptionDetails(mockCtx, "10.0.0.0")
 	assert.Equal(t, res, data, "It should be same")
 
 }
@@ -451,7 +454,7 @@ func TestGetSearchKey(t *testing.T) {
 
 func TestGetSubscribedEvtTypes(t *testing.T) {
 	config.SetUpMockConfig(t)
-	res, _ := GetSubscribedEvtTypes("100.100.100.100")
+	res, _ := GetSubscribedEvtTypes(mockCtx, "100.100.100.100")
 	assert.Equal(t, []string([]string{}), res, "It should be same")
 
 }
@@ -469,7 +472,7 @@ func TestGetSubscribedEvtTypes_fail(t *testing.T) {
 		}
 	}()
 	mockGetEventSubscriptionsFunc("*" + "100.100.100.100" + "*")
-	res, _ := GetSubscribedEvtTypes("100.100.100.100")
+	res, _ := GetSubscribedEvtTypes(mockCtx, "100.100.100.100")
 	assert.Equal(t, []string([]string{}), res, "It should be same")
 
 }
@@ -503,25 +506,6 @@ func mockGetPluginStatus(plugin agmodel.Plugin) bool {
 	return true
 }
 
-func TestGetAllPlugins(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	mockPlugins(t)
-	ctx := mockContext()
-	plugins, err := GetAllPlugins(ctx)
-	assert.Nil(t, err, "Error Should be nil")
-	assert.Equal(t, 3, len(plugins), "should be only 3 plugins")
-}
-
 func getEncryptedKey(t *testing.T, key []byte) []byte {
 	cryptedKey, err := common.EncryptWithPublicKey(key)
 	if err != nil {
@@ -530,13 +514,14 @@ func getEncryptedKey(t *testing.T, key []byte) []byte {
 	return cryptedKey
 }
 
-func mockPlugins(t *testing.T) {
-	connPool, err := common.GetDBConnection(common.OnDisk)
-	if err != nil {
-		t.Errorf("error while trying to connecting to DB: %v", err.Error())
-	}
+type RedisDB interface {
+	Create(table, key string, data interface{}) error
+	GetAllKeysFromTableFunc(ctx context.Context, table string) ([]string, error)
+}
 
+func mockRedis(t *testing.T, db RedisDB) {
 	password := getEncryptedKey(t, []byte("Password"))
+
 	pluginArr := []agmodel.Plugin{
 		{
 			IP:                "localhost",
@@ -567,12 +552,64 @@ func mockPlugins(t *testing.T) {
 		},
 	}
 	for _, plugin := range pluginArr {
-		pl := "Plugin"
 		//Save data into Database
-		if err := connPool.Create(pl, plugin.ID, &plugin); err != nil {
+		if err := db.Create("Plugin", plugin.ID, &plugin); err != nil {
 			t.Fatalf("error: %v", err)
 		}
 	}
+}
+
+func TestGetAllPlugins(t *testing.T) {
+	config.SetUpMockConfig(t)
+	DB2 := DBDataInterface{
+		GetAllKeysFromTableFunc: mockGetAllKeys,
+		GetPluginData:           mockGetPlugins,
+	}
+	ctx := mockContext()
+	plugins, err := GetAllPlugins(ctx, DB2)
+	assert.Nil(t, err, "Error should be nil")
+	assert.Equal(t, 3, len(plugins), "There should be only 3 plugins")
+}
+
+func mockGetPlugins(string, agmodel.DBPluginDataRead) (agmodel.Plugin, *errors.Error) {
+	var t *testing.T
+	password := getEncryptedKey(t, []byte("Password"))
+	pluginArr := []agmodel.Plugin{
+		{
+			IP:                "localhost",
+			Port:              "1234",
+			Password:          password,
+			Username:          "admin",
+			ID:                "GRF",
+			PreferredAuthType: "BasicAuth",
+			PluginType:        "GRF",
+		},
+		{
+			IP:                "localhost",
+			Port:              "1234",
+			Password:          password,
+			Username:          "admin",
+			ID:                "ILO",
+			PreferredAuthType: "XAuthToken",
+			PluginType:        "ILO",
+		},
+		{
+			IP:                "localhost",
+			Port:              "1234",
+			Password:          password,
+			Username:          "admin",
+			ID:                "CFM",
+			PreferredAuthType: "XAuthToken",
+			PluginType:        "CFM",
+		},
+	}
+	return pluginArr[1], nil
+
+}
+
+func mockGetAllKeys(context.Context, string) ([]string, error) {
+	return []string{"GRF", "ILO", "CFM"}, nil
+
 }
 
 func TestContactPlugin(t *testing.T) {
@@ -597,7 +634,7 @@ func TestContactPlugin(t *testing.T) {
 
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
-	_, err = ContactPlugin(context.TODO(), contactRequest, "")
+	_, err = ContactPlugin(mockCtx, contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }
 
@@ -622,7 +659,7 @@ func TestContactPlugin_XAuth(t *testing.T) {
 
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
-	_, err = ContactPlugin(context.TODO(), contactRequest, "")
+	_, err = ContactPlugin(mockCtx, contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }
 

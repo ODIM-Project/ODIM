@@ -31,7 +31,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+func mockIsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken != "validToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 	}
@@ -42,20 +42,20 @@ func mockContactClient(ctx context.Context, url, method, token string, odataID s
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
-func mockGetResource(table, key string, dbType common.DbType) (string, *errors.Error) {
+func mockGetResource(ctx context.Context, table, key string, dbType common.DbType) (string, *errors.Error) {
 	if (key == "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") || (key == "/redfish/v1/UpdateService/SoftwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	}
 	return "body", nil
 }
-func mockGetResourceError(table, key string, dbType common.DbType) (string, *errors.Error) {
+func mockGetResourceError(ctx context.Context, table, key string, dbType common.DbType) (string, *errors.Error) {
 	if (key == "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") || (key == "/redfish/v1/UpdateService/SoftwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	}
 	return "body", &errors.Error{}
 }
 
-func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
+func mockGetAllKeysFromTable(ctx context.Context, table string, dbType common.DbType) ([]string, error) {
 	return []string{"/redfish/v1/UpdateService/FirmwareInentory/uuid.1"}, nil
 }
 func mockGetTarget(id string) (*umodel.Target, *errors.Error) {
@@ -98,7 +98,7 @@ func mockContext() context.Context {
 	return ctx
 }
 
-func mockContactPlugin(ctx context.Context, req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, ucommon.ResponseStatus, error) {
+func mockContactPlugin(ctx context.Context, req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, string, ucommon.ResponseStatus, error) {
 	var responseStatus ucommon.ResponseStatus
 	if req.OID == "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate" {
 		encodedTaskData, _ := JSONMarshalFunc(common.TaskData{
@@ -108,7 +108,7 @@ func mockContactPlugin(ctx context.Context, req ucommon.PluginContactRequest, er
 			TaskStatus:      common.OK,
 		})
 		responseStatus.StatusCode = http.StatusAccepted
-		return encodedTaskData, "/taskmon/1234145125", responseStatus, nil
+		return encodedTaskData, "/taskmon/1234145125", "", responseStatus, nil
 	} else if req.OID == "ODIM/v1/UpdateService/Actions/UpdateService.StartUpdate" {
 		encodedTaskData, _ := JSONMarshalFunc(common.TaskData{
 			TaskID:          "1234145126",
@@ -117,19 +117,19 @@ func mockContactPlugin(ctx context.Context, req ucommon.PluginContactRequest, er
 			TaskStatus:      common.OK,
 		})
 		responseStatus.StatusCode = http.StatusAccepted
-		return encodedTaskData, "/taskmon/1234145126", responseStatus, nil
+		return encodedTaskData, "/taskmon/1234145126", "", responseStatus, nil
 	} else if req.OID == "/taskmon/1234145126" || req.OID == "/taskmon/1234145125" {
 		responseStatus.StatusCode = http.StatusOK
-		return []byte(`{"Attributes":"sample"}`), "token", responseStatus, nil
+		return []byte(`{"Attributes":"sample"}`), "token", "", responseStatus, nil
 	}
 
-	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, nil
+	return []byte(`{"Attributes":"sample"}`), "token", "", responseStatus, nil
 }
 
-func mockContactPluginError(ctx context.Context, req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, ucommon.ResponseStatus, error) {
+func mockContactPluginError(ctx context.Context, req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, string, ucommon.ResponseStatus, error) {
 	var responseStatus ucommon.ResponseStatus
 
-	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, &errors.Error{}
+	return []byte(`{"Attributes":"sample"}`), "token", "", responseStatus, &errors.Error{}
 }
 
 func stubDevicePassword(password []byte) ([]byte, error) {

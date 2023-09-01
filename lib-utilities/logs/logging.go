@@ -26,8 +26,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Logging contains method signatures of helper functions for logging
 type Logging struct {
-	GetUserDetails func(string) (string, string, error)
+	GetUserDetails func(context.Context, string) (string, string, error)
 }
 
 // AuthLog is used for generating security logs in syslog format for each request
@@ -117,7 +118,7 @@ func AuditLog(l *Logging, ctx iris.Context, reqBody map[string]interface{}) *log
 func (l *Logging) auditLogEntry(ctx iris.Context, reqBody, fields map[string]interface{}) (logrus.Fields, error) {
 	// getting the request URI, host and method from context
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
-	sessionUserName, sessionRoleID, err := l.GetUserDetails(sessionToken)
+	sessionUserName, sessionRoleID, err := l.GetUserDetails(ctx, sessionToken)
 	// Replace is done to avoid the security vulnerabilty to avoid direct usage of the input parameters
 	sessionRoleID = strings.Replace(sessionRoleID, "\n", "", -1)
 	sessionUserName = strings.Replace(sessionUserName, "\n", "", -1)

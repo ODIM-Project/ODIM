@@ -30,7 +30,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 )
 
-func mockIsAuthorized(sessionToken string, privileges []string) (response.RPC, error) {
+func mockIsAuthorized(ctx context.Context, sessionToken string, privileges []string) (response.RPC, error) {
 	switch sessionToken {
 	case "validToken":
 		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
@@ -38,11 +38,9 @@ func mockIsAuthorized(sessionToken string, privileges []string) (response.RPC, e
 		// this session user does not have ConfigureUses Privilege
 		for _, privilege := range privileges {
 			if privilege == common.PrivilegeConfigureUsers {
-				fmt.Printf("UnAuthorized %v", privileges)
 				return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil), nil
 			}
 		}
-		fmt.Printf("Autherized %v", privileges)
 		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 	case "NotTaskUserButAdminToken":
 		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
@@ -51,7 +49,7 @@ func mockIsAuthorized(sessionToken string, privileges []string) (response.RPC, e
 
 	}
 }
-func mockGetSessionUserName(sessionToken string) (string, error) {
+func mockGetSessionUserName(ctx context.Context, sessionToken string) (string, error) {
 	var user string
 	switch sessionToken {
 	case "validToken":
@@ -115,6 +113,61 @@ func mockGetTaskStatusModel(ctx context.Context, taskID string, db common.DbType
 		return nil, fmt.Errorf("Resource not found")
 	}
 	return &task, nil
+
+}
+
+func mockGetMultipleTaskKeysModel(ctx context.Context, taskID []interface{}, db common.DbType) (*[]tmodel.Task, error) {
+	if db != common.InMemory {
+		return nil, fmt.Errorf("Resource not found")
+	}
+	var result []tmodel.Task
+	task := tmodel.Task{
+		UserName:     "validUser",
+		ParentID:     "",
+		ChildTaskIDs: nil,
+		ID:           "validTaskID",
+		TaskState:    "New",
+		TaskStatus:   "OK",
+		StartTime:    time.Now(),
+		EndTime:      time.Time{},
+	}
+	switch taskID[0] {
+	case "validTaskID":
+		task.TaskState = "New"
+	case "RunningTaskID":
+		task.TaskState = "Running"
+		task.TaskStatus = "OK"
+		task.ChildTaskIDs = []string{"task:CompletedSubTaskID", "task:RunningSubTaskID"}
+	case "task:CompletedTaskID":
+		task.TaskState = "Completed"
+		task.TaskStatus = "OK"
+		task.ChildTaskIDs = []string{"task:CompletedSubTaskID"}
+		task.StatusCode = http.StatusOK
+		task.EndTime = time.Now()
+	case "ExceptionTaskID":
+		task.TaskState = "Exception"
+		task.TaskStatus = "Critical"
+		task.ChildTaskIDs = []string{"ExceptionSubTaskID"}
+		task.StatusCode = http.StatusOK
+		task.EndTime = time.Now()
+	case "RunningSubTaskID":
+		task.TaskState = "Running"
+		task.TaskStatus = "OK"
+	case "task:CompletedSubTaskID":
+		task.TaskState = "Completed"
+		task.TaskStatus = "OK"
+		task.StatusCode = http.StatusOK
+		task.EndTime = time.Now()
+	case "ExceptionSubTaskID":
+		task.TaskState = "Exception"
+		task.TaskStatus = "Critical"
+		task.StatusCode = http.StatusOK
+		task.EndTime = time.Now()
+	default:
+		return nil, fmt.Errorf("Resource not found")
+	}
+	result = append(result, task)
+	return &result, nil
 
 }
 func mockTransactionModel(ctx context.Context, taskID string, cb func(context.Context, string) error) error {

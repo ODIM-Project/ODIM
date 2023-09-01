@@ -32,6 +32,7 @@ type TaskData struct {
 	TaskStatus      string
 	PercentComplete int32
 	HTTPMethod      string
+	FinalResponse   response.RPC
 }
 
 // TaskUpdateInfo holds the info for updating a task during error response
@@ -55,12 +56,16 @@ func GeneralError(statusCode int32, statusMsg, errMsg string, msgArgs []interfac
 		Code:    response.GeneralError,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
+			{
 				StatusMessage: resp.StatusMessage,
 				ErrorMessage:  errMsg,
 				MessageArgs:   msgArgs,
 			},
 		},
+	}
+	if statusCode < 300 {
+		args.Code = response.ExtendedInfo
+		args.Message = "See @Message.ExtendedInfo for more information."
 	}
 	resp.Body = args.CreateGenericErrorResponse()
 	if t != nil && t.TaskID != "" && t.TargetURI != "" && t.UpdateTask != nil {

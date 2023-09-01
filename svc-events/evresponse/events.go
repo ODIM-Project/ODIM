@@ -17,26 +17,29 @@
 package evresponse
 
 import (
+	"net/http"
 	"strings"
 	"sync"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // SubscriptionResponse is used to return response to end user
 type SubscriptionResponse struct {
 	response.Response
-	Destination             string       `json:"Destination,omitempty"`
-	Context                 string       `json:"Context,omitempty"`
-	Protocol                string       `json:"Protocol,omitempty"`
-	EventTypes              []string     `json:"EventTypes,omitempty"`
-	SubscriptionType        string       `json:"SubscriptionType,omitempty"`
-	MessageIds              []string     `json:"MessageIds,omitempty"`
-	ResourceTypes           []string     `json:"ResourceTypes,omitempty"`
-	OriginResources         []ListMember `json:"OriginResources,omitempty"`
-	ExcludeMessageIds       []string     `json:"ExcludeMessageIds,omitempty"`
-	ExcludeRegistryPrefixes []string     `json:"ExcludeRegistryPrefixes,omitempty"`
-	DeliveryRetryPolicy     string       `json:"DeliveryRetryPolicy,omitempty"`
+	Destination             string                   `json:"Destination,omitempty"`
+	Context                 string                   `json:"Context,omitempty"`
+	Protocol                string                   `json:"Protocol,omitempty"`
+	EventTypes              []string                 `json:"EventTypes,omitempty"`
+	SubscriptionType        dmtf.SubscriptionType    `json:"SubscriptionType,omitempty"`
+	MessageIds              []string                 `json:"MessageIds,omitempty"`
+	ResourceTypes           []string                 `json:"ResourceTypes,omitempty"`
+	OriginResources         []model.Link             `json:"OriginResources,omitempty"`
+	ExcludeMessageIds       []string                 `json:"ExcludeMessageIds,omitempty"`
+	ExcludeRegistryPrefixes []string                 `json:"ExcludeRegistryPrefixes,omitempty"`
+	DeliveryRetryPolicy     dmtf.DeliveryRetryPolicy `json:"DeliveryRetryPolicy,omitempty"`
 }
 
 // ListResponse define list for odimra
@@ -48,12 +51,7 @@ type ListResponse struct {
 	Name         string       `json:"Name,omitempty"`
 	Description  string       `json:"Description,omitempty"`
 	MembersCount int          `json:"Members@odata.count"`
-	Members      []ListMember `json:"Members"`
-}
-
-// ListMember containes link to a resource
-type ListMember struct {
-	OdataID string `json:"@odata.id"`
+	Members      []model.Link `json:"Members"`
 }
 
 // EventServiceResponse is struct for event service response
@@ -97,8 +95,8 @@ type SMTP struct {
 	Username           string `json:"Username,omitempty"`
 }
 
-//SSEFilterPropertiesSupported defines set propertis that are supported in the
-//$filter query parameter for the ServerSentEventUri
+// SSEFilterPropertiesSupported defines set propertis that are supported in the
+// $filter query parameter for the ServerSentEventUri
 type SSEFilterPropertiesSupported struct {
 	EventFormatType        bool `json:"EventFormatType"`
 	EventType              bool `json:"EventType"` //Deprecated v1.3
@@ -110,31 +108,31 @@ type SSEFilterPropertiesSupported struct {
 	SubordinateResources   bool `json:"SubordinateResources"`
 }
 
-//Subscriptions containes link to a resource
+// Subscriptions containes link to a resource
 type Subscriptions struct {
 	OdataID string `json:"@odata.id"`
 }
 
-//Status struct definition
+// Status struct definition
 type Status struct {
 	Health       string `json:"Health"`
 	HealthRollup string `json:"HealthRollup"`
 	State        string `json:"State"`
 }
 
-//Actions struct definition
+// Actions struct definition
 type Actions struct {
 	SubmitTestEvent Action `json:"#EventService.SubmitTestEvent"`
 	Oem             Oem    `json:"Oem"`
 }
 
-//Action struct definition
+// Action struct definition
 type Action struct {
 	Target          string   `json:"target"`
 	AllowableValues []string `json:"EventType@Redfish.AllowableValues"`
 }
 
-//Oem struct definition placeholder.
+// Oem struct definition placeholder.
 type Oem struct {
 }
 
@@ -150,7 +148,7 @@ func (r *MutexLock) AddResponse(origin, host string, response EventResponse) {
 	r.Lock.Lock()
 	defer r.Lock.Unlock()
 	r.Response[origin] = response
-	if response.StatusCode == 201 {
+	if response.StatusCode == http.StatusAccepted || response.StatusCode == http.StatusCreated {
 		r.Hosts[host] = origin
 	}
 }
@@ -161,7 +159,7 @@ func (r *MutexLock) ReadResponse(subscriptionID string) (response.RPC, []string)
 	r.Lock.Lock()
 	defer r.Lock.Unlock()
 	for _, resp := range r.Response {
-		// Sucessfully created subscription
+		// Successful created subscription
 		rpcResponse.StatusCode = int32(resp.StatusCode)
 		rpcResponse.Header = map[string]string{
 			"Location": "/redfish/v1/EventService/Subscriptions/" + subscriptionID, // TODO make it dynamic

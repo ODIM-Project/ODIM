@@ -34,16 +34,16 @@ import (
 )
 
 const (
+	// RediscoverResourcesActionID action id
 	RediscoverResourcesActionID = "217"
-
+	// RediscoverResourcesActionName action name
 	RediscoverResourcesActionName = "RediscoverResources"
 )
 
 // RediscoverSystemInventory  is the handler for redicovering system whenever the restrat event detected in event service
-//It deletes old data and  Discovers Computersystem & Chassis and its top level odata.ID links and store them in inmemory db.
+// It deletes old data and  Discovers Computersystem & Chassis and its top level odata.ID links and store them in inmemory db.
 func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, deviceUUID, systemURL string, updateFlag bool) {
 	l.LogWithFields(ctx).Info("Rediscovery of the BMC with ID " + deviceUUID + " is started.")
-
 	var resp response.RPC
 	systemURL = strings.TrimSuffix(systemURL, "/")
 	data := strings.Split(systemURL, "/")
@@ -75,7 +75,10 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 	target.Password = decryptedPasswordByte
 
 	// get the plugin information
-	plugin, errs := agmodel.GetPluginData(target.PluginID)
+	dbPluginConn := agmodel.DBPluginDataRead{
+		DBReadclient: agmodel.GetPluginDBConnection,
+	}
+	plugin, errs := agmodel.GetPluginData(target.PluginID, dbPluginConn)
 	if errs != nil {
 		genError(ctx, errs.Error(), &resp, http.StatusBadRequest, errors.ResourceNotFound, map[string]string{
 			"Content-type": "application/json; charset=utf-8",
@@ -98,6 +101,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 			"Password": string(plugin.Password),
 		}
 		req.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", req.OID, string(req.Data))
 		_, token, _, err := contactPlugin(ctx, req, "error while getting the details "+req.OID+": ")
 		if err != nil {
 			l.LogWithFields(ctx).Error(err.Error())
@@ -115,7 +119,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 	if strings.Contains(systemURL, "/Storage") {
 		systemURL = strings.Replace(systemURL, "/Storage", "", -1)
 	}
-	systemOperation, dbErr := agmodel.GetSystemOperationInfo(systemURL)
+	systemOperation, dbErr := agmodel.GetSystemOperationInfo(ctx, systemURL)
 	if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
 		l.LogWithFields(ctx).Error("Rediscovery for system: " + systemURL + " can't be processed " + dbErr.Error())
 		return
@@ -153,20 +157,27 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 	progress := int32(100)
 	systemsEstimatedWork := int32(75)
 	if strings.Contains(systemURL, "/Storage") {
+		l.LogWithFields(ctx).Debugf("get storage info request data for %s: %s", req.OID, string(req.Data))
 		_, progress, _ = h.getStorageInfo(ctx, progress, systemsEstimatedWork, req)
+
 	} else {
+		l.LogWithFields(ctx).Debugf("get system info request data for %s: %s", req.OID, string(req.Data))
 		_, _, progress, _ = h.getSystemInfo(ctx, "", progress, systemsEstimatedWork, req)
 		h.InventoryData = make(map[string]interface{})
 		//rediscovering the Chassis Information
 		req.OID = "/redfish/v1/Chassis"
 		chassisEstimatedWork := int32(15)
 		progress = h.getAllRootInfo(ctx, "", progress, chassisEstimatedWork, req, config.Data.AddComputeSkipResources.SkipResourceListUnderChassis)
-
 		//rediscovering the Manager Information
 		req.OID = "/redfish/v1/Managers"
 		managerEstimatedWork := int32(15)
 		progress = h.getAllRootInfo(ctx, "", progress, managerEstimatedWork, req, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
+		// rediscovering the regisrty info
+		req.OID = "/redfish/v1/Registries"
+		registriesEstimatedWork := int32(5)
+		progress = h.getAllRegistries(ctx, "", progress, registriesEstimatedWork, req)
 		agmodel.SaveBMCInventory(h.InventoryData)
+
 	}
 
 	var responseBody = map[string]string{
@@ -175,18 +186,17 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 
 	resp.StatusCode = http.StatusCreated
 	resp.Body = responseBody
-
 	l.LogWithFields(ctx).Info("Rediscovery of the BMC with ID " + deviceUUID + " is now complete.")
 }
 
-//RediscoverResources is a function to rediscover the server inventory,
+// RediscoverResources is a function to rediscover the server inventory,
 // in the event of InMemory DB crashed and/or rebooted all of the content/inventory
 // in the Inmemory DB is gone. So to repopulate the inventory of all the added server,
 // this function can be used.
-//Takes: None
-//Returns: error
+// Takes: None
+// Returns: error
 // On success nil
-//On Failure Non nil
+// On Failure Non nil
 func (e *ExternalInterface) RediscoverResources() error {
 	// First check if the redicovery requires.
 	// InMemory DB is just fine most of the times.
@@ -254,7 +264,10 @@ func (e *ExternalInterface) getTargetSystemCollection(ctx context.Context, targe
 	}
 	target.Password = decryptedPasswordByte
 	// get the plugin information
-	plugin, errs := agmodel.GetPluginData(target.PluginID)
+	dbPluginConn := agmodel.DBPluginDataRead{
+		DBReadclient: agmodel.GetPluginDBConnection,
+	}
+	plugin, errs := agmodel.GetPluginData(target.PluginID, dbPluginConn)
 	if errs != nil {
 		l.LogWithFields(ctx).Error(errs.Error())
 		return nil, errs
@@ -273,6 +286,7 @@ func (e *ExternalInterface) getTargetSystemCollection(ctx context.Context, targe
 			"Password": string(plugin.Password),
 		}
 		req.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", req.OID, string(req.Data))
 		_, token, _, err := contactPlugin(ctx, req, "error while getting the details "+req.OID+": ")
 		if err != nil {
 			return nil, err
@@ -291,6 +305,7 @@ func (e *ExternalInterface) getTargetSystemCollection(ctx context.Context, targe
 	req.OID = "/redfish/v1/Systems"
 
 	// Make the call to Plugin with above request
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s: %s", req.OID, string(req.Data))
 	body, _, _, err := contactPlugin(ctx, req, "error while trying to get the system collection details: ")
 	if err != nil {
 		return nil, fmt.Errorf("error while trying to get the system collection details")
@@ -301,14 +316,13 @@ func (e *ExternalInterface) getTargetSystemCollection(ctx context.Context, targe
 func (e *ExternalInterface) isServerRediscoveryRequired(ctx context.Context, deviceUUID string, systemKey string) bool {
 	systemKey = strings.TrimSuffix(systemKey, "/")
 	key := strings.Replace(systemKey, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+deviceUUID+".", -1)
-	_, err := agmodel.GetResource("ComputerSystem", key)
+	_, err := agmodel.GetResource(ctx, "ComputerSystem", key)
 	if err != nil {
 		l.LogWithFields(ctx).Error(err.Error())
 		l.LogWithFields(ctx).Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		return true
 
 	}
-
 	key = strings.Replace(systemKey, "Systems", "Chassis", -1)
 	keys, err := agmodel.GetAllMatchingDetails("Chassis", key, common.InMemory)
 	if err != nil || len(keys) == 0 {
@@ -316,7 +330,7 @@ func (e *ExternalInterface) isServerRediscoveryRequired(ctx context.Context, dev
 		return true
 	}
 	for _, chassiskey := range keys {
-		if _, err = agmodel.GetResource("Chassis", chassiskey); err != nil {
+		if _, err = agmodel.GetResource(ctx, "Chassis", chassiskey); err != nil {
 			l.LogWithFields(ctx).Error(err.Error())
 			l.LogWithFields(ctx).Info("Rediscovery required for the server with UUID: " + deviceUUID)
 			return true
@@ -330,7 +344,7 @@ func (e *ExternalInterface) isServerRediscoveryRequired(ctx context.Context, dev
 		return true
 	}
 	for _, managerKey := range keys {
-		if _, err = agmodel.GetResource("Managers", managerKey); err != nil {
+		if _, err = agmodel.GetResource(ctx, "Managers", managerKey); err != nil {
 			l.LogWithFields(ctx).Error(err.Error())
 			l.LogWithFields(ctx).Info("Rediscovery required for the server with UUID: " + deviceUUID)
 			return true
@@ -348,17 +362,22 @@ func (e *ExternalInterface) publishResourceUpdatedEvent(ctx context.Context, sys
 }
 
 func deleteResourceResetInfo(ctx context.Context, pattern string) {
+	var deleteKeys []string
 	keys, err := agmodel.GetAllMatchingDetails("SystemReset", pattern, common.InMemory)
 	if err != nil {
 		l.LogWithFields(ctx).Error("Unable to fetch all matching keys from system reset table: " + err.Error())
 	}
 	for _, key := range keys {
-		agmodel.DeleteSystemResetInfo(key)
+		deleteKeys = append(deleteKeys, "SystemReset:"+key)
+	}
+	if len(deleteKeys) >= 1 {
+		agmodel.DeleteMultipleKeys(deleteKeys, common.InMemory)
 	}
 }
 
 // deleteSubordinateResource will delete all the subordinate resources assosiated with the pattern
 func deleteSubordinateResource(ctx context.Context, deviceUUID string) {
+	var deleteKeys []string
 	l.LogWithFields(ctx).Info("Initiated removal of subordinate resource for the BMC with ID " +
 		deviceUUID + " from the in-memory DB")
 	keys, err := agmodel.GetAllMatchingDetails("*", deviceUUID, common.InMemory)
@@ -372,10 +391,14 @@ func deleteSubordinateResource(ctx context.Context, deviceUUID string) {
 		case "ComputerSystem", "SystemReset", "SystemOperation", "Chassis", "Managers", "FirmwareInventory", "SoftwareInventory":
 			continue
 		default:
-			if err = agmodel.Delete(resourceDetails[0], resourceDetails[1], common.InMemory); err != nil {
-				l.LogWithFields(ctx).Error("Delete of " + resourceDetails[1] + " from " + resourceDetails[0] + " in " +
-					string(common.InMemory) + " DB failed due to the error: " + err.Error())
-			}
+			key := resourceDetails[0] + ":" + resourceDetails[1]
+			deleteKeys = append(deleteKeys, key)
+		}
+	}
+	if len(deleteKeys) >= 1 {
+		if err = agmodel.DeleteMultipleKeys(deleteKeys, common.InMemory); err != nil {
+			l.LogWithFields(ctx).Error("error while deleting keys : " + err.Error())
+			return
 		}
 	}
 	l.LogWithFields(ctx).Info("Removal of subordinate resources for the BMC with ID " + deviceUUID + " from the in-memory DB is now complete.")

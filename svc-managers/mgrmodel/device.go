@@ -21,7 +21,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
-//DeviceTarget is for sending the requst to south bound/plugin
+// DeviceTarget is for sending the requst to south bound/plugin
 type DeviceTarget struct {
 	ManagerAddress string `json:"ManagerAddress"`
 	Password       []byte `json:"Password"`
@@ -42,7 +42,7 @@ type Plugin struct {
 	PreferredAuthType string
 }
 
-//GetSystemByUUID fetches computer system details by UUID from database
+// GetSystemByUUID fetches computer system details by UUID from database
 func GetSystemByUUID(systemUUID string) (string, *errors.Error) {
 	var system string
 	conn, err := common.GetDBConnection(common.InMemory)
@@ -60,7 +60,7 @@ func GetSystemByUUID(systemUUID string) (string, *errors.Error) {
 	return system, nil
 }
 
-//GetPluginData will fetch plugin details
+// GetPluginData will fetch plugin details
 func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	var plugin Plugin
 
@@ -87,7 +87,7 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	return plugin, nil
 }
 
-//GetTarget fetches the System(Target Device Credentials) table details
+// GetTarget fetches the System(Target Device Credentials) table details
 func GetTarget(deviceUUID string) (*DeviceTarget, *errors.Error) {
 	var target DeviceTarget
 	conn, err := common.GetDBConnection(common.OnDisk)
@@ -102,4 +102,57 @@ func GetTarget(deviceUUID string) (*DeviceTarget, *errors.Error) {
 		return nil, errors.PackError(errors.UndefinedErrorType, errs)
 	}
 	return &target, nil
+}
+
+// UpdateSystem fetches the System(Target Device Credentials) table details
+func UpdateSystem(deviceUUID string, device *DeviceTarget) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	_, err = conn.Update("System", deviceUUID, device)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateSystem fetches the System(Target Device Credentials) table details
+func AddTempPassword(uuid string, device *DeviceTarget) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	err = conn.Create("tempBmcPassword", uuid, device)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func GetTempPassword(deviceUUID string) (*DeviceTarget, *errors.Error) {
+	var target DeviceTarget
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	data, err := conn.Read("tempBmcPassword", deviceUUID)
+	if err != nil {
+		return nil, errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
+	}
+	if errs := json.Unmarshal([]byte(data), &target); errs != nil {
+		return nil, errors.PackError(errors.UndefinedErrorType, errs)
+	}
+	return &target, nil
+}
+func DeleteTempPassword(deviceUUID string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	err = conn.Delete("tempBmcPassword", deviceUUID)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
+	}
+
+	return nil
 }

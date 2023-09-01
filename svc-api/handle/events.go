@@ -18,12 +18,10 @@ package handle
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
 )
 
@@ -41,27 +39,20 @@ type EventsRPCs struct {
 func (e *EventsRPCs) GetEventService(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
+	l.LogWithFields(ctxt).Debug("Incoming request received for the Get Event service")
 	req := eventsproto.EventSubRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: ctx.Request().Header.Get(AuthTokenHeader),
 	}
 	if req.SessionToken == "" {
-		errorMessage := "no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	resp, err := e.GetEventServiceRPC(ctxt, req)
 	if err != nil {
 		l.LogWithFields(ctxt).Error(err.Error())
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, err.Error())
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for Getting Event service is %s and response status %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -79,35 +70,22 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the event subscription request body: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(&response.Body)
-		return
+		common.SendMalformedJSONRequestErrResponse(ctx, errorMessage)
 	}
-
-	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
+	req.SessionToken = ctx.Request().Header.Get(AuthTokenHeader)
 
 	if req.SessionToken == "" {
-		errorMessage := "no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	req.PostBody, _ = json.Marshal(&SubscriptionReq)
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for creating event subscription with request body %s", string(req.PostBody))
 	resp, err := e.CreateEventSubscriptionRPC(ctxt, req)
 	if err != nil {
 		l.LogWithFields(ctxt).Error(err.Error())
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, err.Error())
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for creating event subscription is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -124,35 +102,23 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the SubmitTestEvent request body: " + err.Error()
 		l.LogWithFields(ctxt).Error(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(&response.Body)
-		return
+		common.SendMalformedJSONRequestErrResponse(ctx, errorMessage)
 	}
 
-	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
+	req.SessionToken = ctx.Request().Header.Get(AuthTokenHeader)
 
 	if req.SessionToken == "" {
-		errorMessage := "no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 	req.PostBody, _ = json.Marshal(&SubmitTestEventReq)
-
+	l.LogWithFields(ctxt).Debugf("Incoming request received for submit test event with request body %s", string(req.PostBody))
 	resp, err := e.SubmitTestEventRPC(ctxt, req)
 	if err != nil {
 		l.LogWithFields(ctxt).Error(err.Error())
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, err.Error())
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for submit test event is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -164,26 +130,19 @@ func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
 	ctxt := ctx.Request().Context()
 	var req eventsproto.EventRequest
 	req.EventSubscriptionID = ctx.Params().Get("id")
-	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
-
+	req.SessionToken = ctx.Request().Header.Get(AuthTokenHeader)
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting event subscription with id %s", req.EventSubscriptionID)
 	if req.SessionToken == "" {
-		errorMessage := "no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 
 	resp, err := e.GetEventSubscriptionRPC(ctxt, req)
 	if err != nil {
 		l.LogWithFields(ctxt).Error(err.Error())
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response)
-		return
+		common.SendFailedRPCCallResponse(ctx, err.Error())
 	}
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting event subscription is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -196,27 +155,19 @@ func (e *EventsRPCs) DeleteEventSubscription(ctx iris.Context) {
 	ctxt := ctx.Request().Context()
 	var req eventsproto.EventRequest
 	req.EventSubscriptionID = ctx.Params().Get("id")
-	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
-
+	req.SessionToken = ctx.Request().Header.Get(AuthTokenHeader)
+	l.LogWithFields(ctxt).Debugf("Incoming request received for deleting event subscription with id %s", req.EventSubscriptionID)
 	if req.SessionToken == "" {
-		errorMessage := "no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 
 	resp, err := e.DeleteEventSubscriptionRPC(ctxt, req)
 	if err != nil {
 		l.LogWithFields(ctxt).Error(err.Error())
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, err.Error())
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for deleting event subscription is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -227,27 +178,19 @@ func (e *EventsRPCs) GetEventSubscriptionsCollection(ctx iris.Context) {
 	defer ctx.Next()
 	ctxt := ctx.Request().Context()
 	var req eventsproto.EventRequest
-	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
-
+	req.SessionToken = ctx.Request().Header.Get(AuthTokenHeader)
+	l.LogWithFields(ctxt).Debugf("Incoming request received for getting all the  event subscription collections")
 	if req.SessionToken == "" {
-		errorMessage := "no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
+		errorMessage := invalidAuthTokenErrMsg
+		common.SendInvalidSessionResponse(ctx, errorMessage)
 	}
 
 	resp, err := e.GetEventSubscriptionsCollectionRPC(ctxt, req)
 	if err != nil {
 		l.LogWithFields(ctxt).Error(err.Error())
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		common.SendFailedRPCCallResponse(ctx, err.Error())
 	}
-
+	l.LogWithFields(ctxt).Debugf("Outgoing response for getting event subscription collections is %s with response code %d", string(resp.Body), int(resp.StatusCode))
 	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))

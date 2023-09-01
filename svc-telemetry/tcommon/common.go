@@ -59,9 +59,9 @@ type ResourceInfoRequest struct {
 	DevicePassword      func([]byte) ([]byte, error)
 	GetPluginStatus     func(context.Context, tmodel.Plugin) bool
 	ResourceName        string
-	GetAllKeysFromTable func(string, common.DbType) ([]string, error)
+	GetAllKeysFromTable func(context.Context, string, common.DbType) ([]string, error)
 	GetPluginData       func(string) (tmodel.Plugin, *errors.Error)
-	GetResource         func(string, string, common.DbType) (string, *errors.Error)
+	GetResource         func(context.Context, string, string, common.DbType) (string, *errors.Error)
 	GenericSave         func(context.Context, []byte, string, string) error
 }
 
@@ -70,10 +70,10 @@ var (
 	ConfigFilePath string
 )
 
-// GetResourceInfoFromDevice will contact to the southbound client and gets the Particual resource info from device
+// GetResourceInfoFromDevice will contact to the southbound client and gets the Particular resource info from device
 func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) ([]byte, error) {
 	var metricReportData dmtf.MetricReports
-	plugins, err := req.GetAllKeysFromTable("Plugin", common.OnDisk)
+	plugins, err := req.GetAllKeysFromTable(ctx, "Plugin", common.OnDisk)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -90,12 +90,13 @@ func GetResourceInfoFromDevice(ctx context.Context, req ResourceInfoRequest) ([]
 	wg.Wait()
 	if reflect.DeepEqual(metricReportData, dmtf.MetricReports{}) {
 		removeNonExistingID(ctx, req)
-		return []byte{}, fmt.Errorf("Metric report not found")
+		return []byte{}, fmt.Errorf("metric report not found")
 	}
 	data, err := json.Marshal(metricReportData)
 	if err != nil {
 		return []byte{}, err
 	}
+	l.LogWithFields(ctx).Debugf("resource info from device: %s", string(data))
 	return data, nil
 }
 
@@ -138,20 +139,19 @@ func getResourceInfo(ctx context.Context, pluginID string, metricReportData *dmt
 	}
 	lock.Lock()
 	defer lock.Unlock()
-	var metrictData dmtf.MetricReports
-	if err := json.Unmarshal(body, &metrictData); err != nil {
+	var metricsData dmtf.MetricReports
+	if err := json.Unmarshal(body, &metricsData); err != nil {
 		return
 	}
-	metricReportData.ODataID = metrictData.ODataID
-	metricReportData.ODataType = metrictData.ODataType
-	metricReportData.ODataContext = metrictData.ODataContext
-	metricReportData.ID = metrictData.ID
-	metricReportData.Name = metrictData.Name
-	metricReportData.Description = metrictData.Description
-	metricReportData.MetricReportDefinition = metrictData.MetricReportDefinition
-	metricReportData.Context = metrictData.Context
-	metricReportData.MetricValues = append(metricReportData.MetricValues, metrictData.MetricValues...)
-	return
+	metricReportData.ODataID = metricsData.ODataID
+	metricReportData.ODataType = metricsData.ODataType
+	metricReportData.ODataContext = metricsData.ODataContext
+	metricReportData.ID = metricsData.ID
+	metricReportData.Name = metricsData.Name
+	metricReportData.Description = metricsData.Description
+	metricReportData.MetricReportDefinition = metricsData.MetricReportDefinition
+	metricReportData.Context = metricsData.Context
+	metricReportData.MetricValues = append(metricReportData.MetricValues, metricsData.MetricValues...)
 }
 
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
@@ -189,10 +189,11 @@ func ContactPlugin(ctx context.Context, req PluginContactRequest, errorMessage s
 	}
 
 	data := string(body)
-	//replacing the resposne with north bound translation URL
+	//replacing the response with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}
+	l.LogWithFields(ctx).Debugf("response from contact plugin : %s", data)
 	return []byte(data), response.Header.Get("X-Auth-Token"), resp, nil
 }
 
@@ -210,7 +211,7 @@ func GetPluginStatus(ctx context.Context, plugin tmodel.Plugin) bool {
 		PluginPort:              plugin.Port,
 		PluginUsername:          plugin.Username,
 		PluginUserPassword:      string(plugin.Password),
-		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		PluginPreferredAuthType: plugin.PreferredAuthType,
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
@@ -236,7 +237,7 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 
 func removeNonExistingID(ctx context.Context, req ResourceInfoRequest) {
 	collectionURL := "/redfish/v1/TelemetryService/MetricReports"
-	data, err := req.GetResource("MetricReportsCollection", collectionURL, common.InMemory)
+	data, err := req.GetResource(ctx, "MetricReportsCollection", collectionURL, common.InMemory)
 	if err != nil {
 		return
 	}
@@ -264,6 +265,7 @@ func removeNonExistingID(ctx context.Context, req ResourceInfoRequest) {
 	}
 }
 
+// TrackConfigFileChanges monitors the host file using fsnotfiy
 func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat

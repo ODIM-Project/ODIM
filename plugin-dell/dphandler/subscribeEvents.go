@@ -12,10 +12,11 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -25,22 +26,23 @@ import (
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	evtConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 )
 
-//CreateEventSubscription : Subscribes for events
+// CreateEventSubscription : Subscribes for events
 func CreateEventSubscription(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 
 	device, deviceDetails, err := getDeviceDetails(ctx)
 	if err != nil {
 		return
 	}
 	//First delete existing matching subscription(our subscription) from device
-	deleteMatchingSubscriptions(device)
+	deleteMatchingSubscriptions(ctxt, device)
 
 	var reqPostBody dpmodel.EvtSubPost
 	var reqData string
@@ -76,7 +78,7 @@ func CreateEventSubscription(ctx iris.Context) {
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
 		errMsg := "While trying to create the redfish client, got:" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -86,7 +88,7 @@ func CreateEventSubscription(ctx iris.Context) {
 	//Subscribe to Events
 	resp, err = redfishClient.SubscribeForEvents(device)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(err.Error())
 		return
@@ -98,81 +100,81 @@ func CreateEventSubscription(ctx iris.Context) {
 }
 
 // Delete match subscription from device
-func deleteMatchingSubscriptions(device *dputilities.RedfishDevice) {
+func deleteMatchingSubscriptions(ctxt context.Context, device *dputilities.RedfishDevice) {
 	// get all subscriptions
 	device.Location = "https://" + device.Host + "/redfish/v1/EventService/Subscriptions"
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
-		log.Error("While trying to create the redfish client, got:" + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to create the redfish client, got:" + err.Error())
 		return
 	}
 
 	//Get Subscription details to check if it is really ours
 	resp, err := redfishClient.GetSubscriptionDetail(device)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		return
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		errorMessage := fmt.Sprintf("error: while getting subscription details for URI: %v got %v", device.Location, resp.StatusCode)
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		return
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		return
 	}
 	var subscriptionCollectionBody interface{}
 	err = json.Unmarshal(body, &subscriptionCollectionBody)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		return
 	}
+
 	members := subscriptionCollectionBody.(map[string]interface{})["Members"]
 	for _, member := range members.([]interface{}) {
 		device.Location = member.(map[string]interface{})["@odata.id"].(string)
 		device.Location = "https://" + device.Host + device.Location
-		if isOurSubscription(device) {
+		if isOurSubscription(ctxt, device) {
 			resp, err = redfishClient.DeleteSubscriptionDetail(device)
 			if err != nil {
-				log.Error(err.Error())
+				l.LogWithFields(ctxt).Error(err.Error())
 				return
 			}
 			resp.Body.Close()
 		}
 	}
-	return
 }
-func isOurSubscription(device *dputilities.RedfishDevice) bool {
+func isOurSubscription(ctxt context.Context, device *dputilities.RedfishDevice) bool {
 
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
-		log.Error("While trying to create the redfish client, got:" + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to create the redfish client, got:" + err.Error())
 		return false
 	}
 	//Get Subscription details to check if it is really ours
 	resp, err := redfishClient.GetSubscriptionDetail(device)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		return false
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		errorMessage := fmt.Sprintf("While getting subscription details for URI: " + device.Location + " got: " + strconv.Itoa(resp.StatusCode))
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		return false
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		return false
 	}
 	var subscriptionBody interface{}
 	err = json.Unmarshal(body, &subscriptionBody)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		return false
 	}
 	subscriptionDestinationFromDevice := subscriptionBody.(map[string]interface{})["Destination"].(string)
@@ -184,8 +186,9 @@ func isOurSubscription(device *dputilities.RedfishDevice) bool {
 	return true
 }
 
-//DeleteEventSubscription : Delete subscription
+// DeleteEventSubscription : Delete subscription
 func DeleteEventSubscription(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 	device, _, err := getDeviceDetails(ctx)
 	if err != nil {
 		return
@@ -193,7 +196,7 @@ func DeleteEventSubscription(ctx iris.Context) {
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
 		errMsg := "While trying to create the redfish client, got:" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -202,7 +205,7 @@ func DeleteEventSubscription(ctx iris.Context) {
 	//Delete Subscription details
 	resp, err := redfishClient.DeleteSubscriptionDetail(device)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(err.Error())
 		return
@@ -217,13 +220,15 @@ func DeleteEventSubscription(ctx iris.Context) {
 // getDeviceDetails will accepts iris context and it will extract device details from context
 // then decrypt the password and return device details
 func getDeviceDetails(ctx iris.Context) (*dputilities.RedfishDevice, *dpmodel.Device, error) {
+	ctxt := ctx.Request().Context()
+
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
 	//Validating the token
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
+			l.LogWithFields(ctxt).Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return nil, nil, fmt.Errorf("Invalid/Expired X-Auth-Token")
@@ -235,7 +240,7 @@ func getDeviceDetails(ctx iris.Context) (*dputilities.RedfishDevice, *dpmodel.De
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Error("While trying to collect data from request, got: " + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return nil, nil, err
@@ -262,15 +267,16 @@ func getDeviceDetails(ctx iris.Context) (*dputilities.RedfishDevice, *dpmodel.De
 	return device, &deviceDetails, nil
 }
 
-// validateResponse will accepts iris context to write status code and resopnse
+// validateResponse will accepts iris context to write status code and response
 // method is to return status created incase of create subscription
-// otherwise return statusok
+// otherwise return status ok
 func validateResponse(ctx iris.Context, device *dputilities.RedfishDevice, resp *http.Response, method string) error {
+	ctxt := ctx.Request().Context()
 	var body []byte
 	var err error
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(err.Error())
 		return err
@@ -285,7 +291,7 @@ func validateResponse(ctx iris.Context, device *dputilities.RedfishDevice, resp 
 			redfishClient, err := dputilities.GetRedfishClient()
 			if err != nil {
 				errMsg := "While trying to create the redfish client, got:" + err.Error()
-				log.Error(errMsg)
+				l.LogWithFields(ctxt).Error(errMsg)
 				ctx.StatusCode(http.StatusInternalServerError)
 				ctx.WriteString(errMsg)
 				return err
@@ -293,7 +299,7 @@ func validateResponse(ctx iris.Context, device *dputilities.RedfishDevice, resp 
 
 			resp, err = redfishClient.SubscribeForEvents(device)
 			if err != nil {
-				log.Error(err.Error())
+				l.LogWithFields(ctxt).Error(err.Error())
 				ctx.StatusCode(http.StatusInternalServerError)
 				ctx.WriteString(err.Error())
 				return err
@@ -301,7 +307,7 @@ func validateResponse(ctx iris.Context, device *dputilities.RedfishDevice, resp 
 			defer resp.Body.Close()
 			body, err = ioutil.ReadAll(resp.Body)
 			if err != nil {
-				log.Error(err.Error())
+				l.LogWithFields(ctxt).Error(err.Error())
 				ctx.StatusCode(http.StatusInternalServerError)
 				ctx.WriteString(err.Error())
 				return err
@@ -323,7 +329,7 @@ func validateResponse(ctx iris.Context, device *dputilities.RedfishDevice, resp 
 		return errors.New("Authtication with the device failed")
 	}
 	if resp.StatusCode >= 300 {
-		log.Info("Subscription operation failed: ", string(body))
+		l.LogWithFields(ctxt).Warn("Subscription operation failed: ", string(body))
 	}
 	common.SetResponseHeader(ctx, header)
 	ctx.StatusCode(resp.StatusCode)
@@ -346,5 +352,4 @@ func removeMessageID(ctx iris.Context, device *dputilities.RedfishDevice) {
 		ctx.WriteString(err.Error())
 		return
 	}
-	return
 }

@@ -47,7 +47,7 @@ var (
 
 // Fabrics struct helps to hold the behaviours
 type Fabrics struct {
-	Auth          func(sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error)
+	Auth          func(ctx context.Context, sessionToken string, privileges []string, oemPrivileges []string) (response.RPC, error)
 	ContactClient func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 
@@ -147,6 +147,7 @@ func contactPlugin(ctx context.Context, req pluginContactRequest, errorMessage s
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 	resp.Location = pluginResponse.Header.Get("Location")
+	l.LogWithFields(ctx).Debug("Plugin response: ", string(body))
 	return body, pluginResponse.Header.Get("X-Auth-Token"), resp, nil
 }
 
@@ -233,7 +234,7 @@ func (f *Fabrics) parseFabricsRequest(ctx context.Context, req *fabricsproto.Fab
 	var contactRequest pluginContactRequest
 	var resp response.RPC
 	sessionToken := req.SessionToken
-	authResp, err := f.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp, err := f.Auth(ctx, sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := "error while trying to authenticate session"
 		if err != nil {
@@ -244,13 +245,13 @@ func (f *Fabrics) parseFabricsRequest(ctx context.Context, req *fabricsproto.Fab
 	}
 
 	if req.URL == "/redfish/v1/Fabrics" {
-		resp = getFabricCollection()
+		resp = getFabricCollection(ctx)
 		return contactRequest, resp, nil
 	}
-	l.LogWithFields(ctx).Info("Request url" + req.URL)
+	l.LogWithFields(ctx).Info("Request url: " + req.URL)
 	fabID := getFabricID(req.URL)
-	l.LogWithFields(ctx).Info("Fabric UUID" + fabID)
-	fabric, err := fabmodel.GetManagingPluginIDForFabricID(fabID)
+	l.LogWithFields(ctx).Info("Fabric UUID: " + fabID)
+	fabric, err := fabmodel.GetManagingPluginIDForFabricID(ctx, fabID)
 	if err != nil {
 		errMsg := fmt.Sprintf("error while trying to get fabric Data: %v", err.Error())
 		l.LogWithFields(ctx).Error(errMsg)
@@ -316,6 +317,7 @@ func (f *Fabrics) parseFabricsRequest(ctx context.Context, req *fabricsproto.Fab
 			return contactRequest, resp, fmt.Errorf("error while trying to get JSON request body: %v", err)
 		}
 	}
+	l.LogWithFields(ctx).Debugf("response from parse fabric request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return contactRequest, resp, nil
 }
 
@@ -378,6 +380,7 @@ func fillResponse(ctx context.Context, body []byte, location string, method stri
 
 	resp.StatusCode = statusCode
 	resp.StatusMessage = response.Success
+
 	return resp
 
 }
@@ -391,11 +394,11 @@ func getFabricID(url string) string {
 	return ""
 }
 
-func getFabricCollection() response.RPC {
+func getFabricCollection(ctx context.Context) response.RPC {
 	var resp response.RPC
 	// ignoring error since we are trying to get collection of fabrics
 	// So even its errored out we have to return empty collection
-	fabrics, _ := fabmodel.GetAllTheFabrics()
+	fabrics, _ := fabmodel.GetAllTheFabrics(ctx)
 	fabricCollection := fabresponse.FabricCollection{
 		OdataContext: "/redfish/v1/$metadata#FabricCollection.FabricCollection",
 		OdataID:      "/redfish/v1/Fabrics",
@@ -415,6 +418,7 @@ func getFabricCollection() response.RPC {
 	resp.Body = fabricCollection
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
+	l.LogWithFields(ctx).Debugf("final response for get fabric collection request: %s", string(fmt.Sprintf("%v", resp.Body)))
 	return resp
 }
 
@@ -451,10 +455,10 @@ func validateReqParamsCase(ctx context.Context, req *fabricsproto.FabricRequest)
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response, fmt.Errorf(errorMessage)
 	}
-
 	return resp, nil
 }
 
+// TrackConfigFileChanges to dynamically track the config file changes
 func TrackConfigFileChanges(errChan chan error) {
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat

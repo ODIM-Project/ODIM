@@ -38,6 +38,7 @@ type User struct {
 }
 
 var (
+	// GetDBConnectionFunc is for maintaining and supplying DB connection pool for InMemory and OnDisk DB's
 	GetDBConnectionFunc = common.GetDBConnection
 )
 
@@ -54,7 +55,7 @@ func CreateUser(user User) *errors.Error {
 	return conn.Create(table, user.UserName, user)
 }
 
-//GetAllUsers gets all the accounts from the db
+// GetAllUsers gets all the accounts from the db
 func GetAllUsers() ([]User, *errors.Error) {
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
@@ -100,7 +101,7 @@ func GetUserDetails(userName string) (User, *errors.Error) {
 
 }
 
-//DeleteUser will delete the user entry from the database based on the uuid
+// DeleteUser will delete the user entry from the database based on the uuid
 func DeleteUser(key string) *errors.Error {
 	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {

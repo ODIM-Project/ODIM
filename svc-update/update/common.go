@@ -65,15 +65,15 @@ type Plugin struct {
 // External struct holds the function pointers all outboud services
 type External struct {
 	ContactClient      func(context.Context, string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth               func(string, []string, []string) (response.RPC, error)
+	Auth               func(context.Context, string, []string, []string) (response.RPC, error)
 	DevicePassword     func([]byte) ([]byte, error)
 	GetPluginData      func(string) (umodel.Plugin, *errors.Error)
-	ContactPlugin      func(context.Context, ucommon.PluginContactRequest, string) ([]byte, string, ucommon.ResponseStatus, error)
+	ContactPlugin      func(context.Context, ucommon.PluginContactRequest, string) ([]byte, string, string, ucommon.ResponseStatus, error)
 	GetTarget          func(string) (*umodel.Target, *errors.Error)
 	CreateChildTask    func(context.Context, string, string) (string, error)
 	CreateTask         func(context.Context, string) (string, error)
 	UpdateTask         func(context.Context, common.TaskData) error
-	GetSessionUserName func(string) (string, error)
+	GetSessionUserName func(context.Context, string) (string, error)
 	GenericSave        func(context.Context, []byte, string, string) error
 }
 
@@ -85,8 +85,8 @@ type responseStatus struct {
 
 // DB struct holds the function pointers to database operations
 type DB struct {
-	GetAllKeysFromTable func(string, common.DbType) ([]string, error)
-	GetResource         func(string, string, common.DbType) (string, *errors.Error)
+	GetAllKeysFromTable func(context.Context, string, common.DbType) ([]string, error)
+	GetResource         func(context.Context, string, string, common.DbType) (string, *errors.Error)
 }
 
 // SimpleUpdateRequest struct defines the request body for update action
@@ -175,7 +175,6 @@ func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskStat
 
 func (e *ExternalInterface) monitorPluginTask(ctx context.Context, subTaskChannel chan<- int32, monitorTaskData *monitorTaskRequest) (ucommon.ResponseStatus, error) {
 	for {
-
 		var task common.TaskData
 		if err := json.Unmarshal(monitorTaskData.respBody, &task); err != nil {
 			subTaskChannel <- http.StatusInternalServerError
@@ -195,7 +194,8 @@ func (e *ExternalInterface) monitorPluginTask(ctx context.Context, subTaskChanne
 		time.Sleep(time.Second * 5)
 		monitorTaskData.pluginRequest.OID = monitorTaskData.location
 		monitorTaskData.pluginRequest.HTTPMethodType = http.MethodGet
-		monitorTaskData.respBody, _, monitorTaskData.getResponse, err = e.External.ContactPlugin(ctx, monitorTaskData.pluginRequest, "error while performing simple update action: ")
+		l.LogWithFields(ctx).Debugf("monitor task data payload: %s", string(monitorTaskData.respBody))
+		monitorTaskData.respBody, _, _, monitorTaskData.getResponse, err = e.External.ContactPlugin(ctx, monitorTaskData.pluginRequest, "error while performing simple update action: ")
 		if err != nil {
 			subTaskChannel <- monitorTaskData.getResponse.StatusCode
 			errMsg := err.Error()

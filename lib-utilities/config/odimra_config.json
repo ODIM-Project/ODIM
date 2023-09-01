@@ -56,6 +56,9 @@
 		"DBCommitInterval": 1000,
 		"RetryInterval": 5000
 	},
+	"PluginTasksConf" : {
+        "MonitorPluginTasksFrequencyInMins": 60
+    },
 	"FirmwareVersion": "1.0",
 	"SouthBoundRequestTimeoutInSecs": 300,
 	"ServerRediscoveryBatchSize": 30,
@@ -106,7 +109,7 @@
 	   "MaxRetryAttempt": 3,
 	   "RetryIntervalInMins": 2,
 	   "ResponseTimeoutInSecs": 30,
-	   "StartUpResouceBatchSize": 10
+	   "StartUpResourceBatchSize": 10
 	},
 	"ExecPriorityDelayConf": {
 	   "MinResetPriority": 1,
@@ -150,5 +153,8 @@
   "RequestLimitPerSession":0,
   "SessionLimitPerUser":0,
   "LogLevel":"warn",
-  "ImageRegistryAddress":""
+  "ImageRegistryAddress":"",
+  "KeyExpiryInterval":86400,
+  "EventForwardingWorkerPoolCount":1000,
+  "EventSaveWorkerPoolCount":10
 }

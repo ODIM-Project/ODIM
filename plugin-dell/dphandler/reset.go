@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
@@ -24,16 +24,20 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 )
 
-//ResetComputerSystem : reset computer system
+// QueryDevice alias queryDevice
+var QueryDevice = queryDevice
+
+// ResetComputerSystem : reset computer system
 func ResetComputerSystem(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
@@ -41,7 +45,7 @@ func ResetComputerSystem(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
+			l.LogWithFields(ctxt).Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -56,7 +60,7 @@ func ResetComputerSystem(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Error("While trying to collect data from request, got: " + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -70,31 +74,31 @@ func ResetComputerSystem(ctx iris.Context) {
 	var request map[string]interface{}
 	err = json.Unmarshal(deviceDetails.PostBody, &request)
 	if err != nil {
-		log.Error("While trying to unmarshall data : " + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to unmarshall data : " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
 	}
 	resetType := request["ResetType"].(string)
 	systemURI := strings.Split(uri, "Actions")[0]
-	statusCode, _, body, err := queryDevice(systemURI, device, http.MethodGet)
+	statusCode, _, body, err := QueryDevice(ctxt, systemURI, device, http.MethodGet)
 	if err != nil {
 		errMsg := "error while getting system data, got: " + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(int(statusCode))
 		ctx.WriteString(errMsg)
 		return
 	}
 	var respData model.ComputerSystem
 	if err := json.Unmarshal(body, &respData); err != nil {
-		log.Warn("While unmarshaling the bios settings response from device, got: " + err.Error())
+		l.LogWithFields(ctxt).Warn("While unmarshaling the bios settings response from device, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
 	}
 	respBody, statuscode, err := checkPowerState(resetType, respData.PowerState)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error(err.Error())
 		ctx.StatusCode(int(statuscode))
 		ctx.Write(respBody)
 		return
@@ -105,7 +109,7 @@ func ResetComputerSystem(ctx iris.Context) {
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
 		errMsg := "While trying to create the redfish client, got:" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -114,7 +118,7 @@ func ResetComputerSystem(ctx iris.Context) {
 	resp, err := redfishClient.ResetComputerSystem(device, uri)
 	if err != nil {
 		errorMessage := "While trying to reset the computer system, got: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		if resp == nil {
 			ctx.WriteString(errorMessage)
 			ctx.StatusCode(http.StatusInternalServerError)
@@ -125,7 +129,7 @@ func ResetComputerSystem(ctx iris.Context) {
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		errorMessage := "While trying to read the response body, got: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		ctx.WriteString(errorMessage)
 	}
 	if resp.StatusCode == http.StatusNoContent {
@@ -152,7 +156,7 @@ func checkPowerState(resetType, powerState string) ([]byte, int32, error) {
 		Code:    response.NoOperation,
 		Message: "",
 		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
+			{
 				StatusMessage: response.NoOperation,
 			},
 		},

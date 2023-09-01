@@ -87,6 +87,7 @@ func (e *ExternalInterface) CreateAggregate(ctx context.Context, req *aggregator
 	aggregateUUID := uuid.NewV4().String()
 	var aggregateURI = fmt.Sprintf("%s/%s", targetURI, aggregateUUID)
 
+	l.LogWithFields(ctx).Debug("list of elements to create the aggregate: ", createRequest.Elements)
 	dbErr := agmodel.CreateAggregate(createRequest, aggregateURI)
 	if dbErr != nil {
 		errMsg := dbErr.Error()
@@ -148,7 +149,7 @@ func checkDuplicateElements(elelments []agmodel.OdataID) bool {
 
 // GetAllAggregates is the handler for getting collection of aggregates
 func (e *ExternalInterface) GetAllAggregates(ctx context.Context, req *aggregatorproto.AggregatorRequest) response.RPC {
-	aggregateKeys, err := agmodel.GetAllKeysFromTable("Aggregate")
+	aggregateKeys, err := agmodel.GetAllKeysFromTable(ctx, "Aggregate")
 	if err != nil {
 		l.LogWithFields(ctx).Error("error getting aggregate : " + err.Error())
 		errorMessage := err.Error()
@@ -380,6 +381,7 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(ctx context.Context, req
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
+	l.LogWithFields(ctx).Debug("elements to be removed from aggregate:", removeRequest.Elements)
 	if !checkRemovingElementsPresent(removeRequest.Elements, aggregate.Elements) {
 		errMsg := "Elements not present in aggregate"
 		l.LogWithFields(ctx).Error(errMsg)
@@ -646,7 +648,10 @@ func (e *ExternalInterface) resetSystem(ctx context.Context, taskID, reqBody str
 	}
 	target.Password = decryptedPasswordByte
 	// Get the Plugin info
-	plugin, errs := agmodel.GetPluginData(target.PluginID)
+	dbPluginConn := agmodel.DBPluginDataRead{
+		DBReadclient: agmodel.GetPluginDBConnection,
+	}
+	plugin, errs := agmodel.GetPluginData(target.PluginID, dbPluginConn)
 	if errs != nil {
 		subTaskChan <- http.StatusNotFound
 		errMsg := errs.Error()
@@ -669,6 +674,7 @@ func (e *ExternalInterface) resetSystem(ctx context.Context, taskID, reqBody str
 			"Password": string(plugin.Password),
 		}
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
+		l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 		_, token, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while logging in to plugin: ")
 		if err != nil {
 			subTaskChan <- getResponse.StatusCode
@@ -693,6 +699,7 @@ func (e *ExternalInterface) resetSystem(ctx context.Context, taskID, reqBody str
 	pluginContactRequest.DeviceInfo = target
 	pluginContactRequest.OID = "/ODIM/v1/Systems/" + sysID + "/Actions/ComputerSystem.Reset"
 	pluginContactRequest.HTTPMethodType = http.MethodPost
+	l.LogWithFields(ctx).Debugf("plugin contact request data for %s : %s", pluginContactRequest.OID, string(pluginContactRequest.Data))
 	respBody, location, getResponse, err := contactPlugin(ctx, pluginContactRequest, "error while reseting the computer system: ")
 
 	if err != nil {

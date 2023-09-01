@@ -106,33 +106,49 @@ func SetConfiguration(filePath string) error {
 		return fmt.Errorf("Configuration File - %v Read Error: %v", filePath, err)
 	}
 	if MQ.KafkaF != nil {
-		if len(MQ.KafkaF.KServersInfo) <= 0 {
-			return fmt.Errorf("no value found for KServersInfo in messagebus config file")
-		}
-		if MQ.KafkaF.KTimeout == 0 {
-			MQ.KafkaF.KTimeout = 10
-		}
-		if MQ.KafkaF.KAFKACertFile == "" {
-			return fmt.Errorf("no value found for KAFKACertFile in messagebus config file")
-		}
-		if MQ.KafkaF.KAFKAKeyFile == "" {
-			return fmt.Errorf("no value found for KAFKAKeyFile in messagebus config file")
-		}
-		if MQ.KafkaF.KAFKACAFile == "" {
-			return fmt.Errorf("no value found for KAFKACAFile in messagebus config file")
+		if err := checkKafkaFConfiguration(); err != nil {
+			return err
 		}
 	}
 	if MQ.RedisStreams != nil {
-		var err error
-		if MQ.RedisStreams.RedisInMemoryEncryptedPassword == "" {
-			return fmt.Errorf("error: no value configured for Redis In memory Encrypted Password")
+		if err := checkRedisStreamsConfiguration(); err != nil {
+			return err
 		}
-		if MQ.RedisStreams.RSAPrivateKey, err = ioutil.ReadFile(MQ.RedisStreams.RSAPrivateKeyPath); err != nil {
-			return fmt.Errorf("error: value check failed for RSAPrivateKeyPath:%s with %v", MQ.RedisStreams.RSAPrivateKeyPath, err)
-		}
-		if MQ.RedisStreams.RedisInMemoryPassword, err = decryptRSAOAEPEncryptedPasswords(MQ.RedisStreams.RedisInMemoryEncryptedPassword); err != nil {
-			return fmt.Errorf("error: while decrypting In Memory DB password: %v", err)
-		}
+	}
+	return nil
+}
+
+// checkKafkaFConfiguration checks the validity of KafkaPacket object fields
+func checkKafkaFConfiguration() error {
+	if len(MQ.KafkaF.KServersInfo) <= 0 {
+		return fmt.Errorf("no value found for KServersInfo in messagebus config file")
+	}
+	if MQ.KafkaF.KTimeout == 0 {
+		MQ.KafkaF.KTimeout = 10
+	}
+	if MQ.KafkaF.KAFKACertFile == "" {
+		return fmt.Errorf("no value found for KAFKACertFile in messagebus config file")
+	}
+	if MQ.KafkaF.KAFKAKeyFile == "" {
+		return fmt.Errorf("no value found for KAFKAKeyFile in messagebus config file")
+	}
+	if MQ.KafkaF.KAFKACAFile == "" {
+		return fmt.Errorf("no value found for KAFKACAFile in messagebus config file")
+	}
+	return nil
+}
+
+// checkRedisStreamsConfiguration checks the validity of RedisStream object fields
+func checkRedisStreamsConfiguration() error {
+	var err error
+	if MQ.RedisStreams.RedisInMemoryEncryptedPassword == "" {
+		return fmt.Errorf("error: no value configured for Redis In memory Encrypted Password")
+	}
+	if MQ.RedisStreams.RSAPrivateKey, err = ioutil.ReadFile(MQ.RedisStreams.RSAPrivateKeyPath); err != nil {
+		return fmt.Errorf("error: value check failed for RSAPrivateKeyPath:%s with %v", MQ.RedisStreams.RSAPrivateKeyPath, err)
+	}
+	if MQ.RedisStreams.RedisInMemoryPassword, err = decryptRSAOAEPEncryptedPasswords(MQ.RedisStreams.RedisInMemoryEncryptedPassword); err != nil {
+		return fmt.Errorf("error: while decrypting In Memory DB password: %v", err)
 	}
 	return nil
 }
@@ -155,16 +171,23 @@ func decryptRSAOAEPEncryptedPasswords(encryptedPassword string) ([]byte, error) 
 }
 
 func bytesToPrivateKey(privateKey []byte) (*rsa.PrivateKey, error) {
+	var key *rsa.PrivateKey
 	block, _ := pem.Decode(privateKey)
 	if block == nil {
 		return nil, fmt.Errorf("failed to parse PEM block containing the public key for the RSAPrivateKeyPath:%s",
 			MQ.RedisStreams.RSAPrivateKeyPath)
 	}
 
-	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	pkcs1Key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse DER encoded public key for the RSAPrivateKeyPath:%s with %v",
-			MQ.RedisStreams.RSAPrivateKeyPath, err)
+		pkcs8Key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse DER encoded public key for the RSAPrivateKeyPath:%s with %v",
+				MQ.RedisStreams.RSAPrivateKeyPath, err)
+		}
+		key = pkcs8Key.(*rsa.PrivateKey)
+	} else {
+		key = pkcs1Key
 	}
 	return key, nil
 }

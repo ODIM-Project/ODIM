@@ -28,6 +28,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/system"
 	uuid "github.com/satori/go.uuid"
@@ -59,7 +60,7 @@ var connector = &system.ExternalInterface{
 	DeleteActiveRequest:      mockDeleteActiveRequest,
 }
 
-func mockGetAggregationSourceInfo(reqURI string) (agmodel.AggregationSource, *errors.Error) {
+func mockGetAggregationSourceInfo(ctx context.Context, reqURI string) (agmodel.AggregationSource, *errors.Error) {
 	var aggSource agmodel.AggregationSource
 	if reqURI == "/redfish/v1/AggregationService/AggregationSources/36474ba4-a201-46aa-badf-d8104da418e8" {
 		aggSource = agmodel.AggregationSource{
@@ -77,7 +78,7 @@ func mockGetAggregationSourceInfo(reqURI string) (agmodel.AggregationSource, *er
 	return aggSource, errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+reqURI+" found")
 }
 
-func mockGetAllKeysFromTable(table string) ([]string, error) {
+func mockGetAllKeysFromTable(ctx context.Context, table string) ([]string, error) {
 	if table == "ConnectionMethod" {
 		return []string{"/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}, nil
 	}
@@ -87,7 +88,7 @@ func mockGetAllKeysFromTable(table string) ([]string, error) {
 func mockUpdateConnectionMethod(connectionMethod agmodel.ConnectionMethod, cmURI string) *errors.Error {
 	return nil
 }
-func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMethod, *errors.Error) {
+func mockGetConnectionMethod(ctx context.Context, ConnectionMethodURI string) (agmodel.ConnectionMethod, *errors.Error) {
 	var connMethod agmodel.ConnectionMethod
 	if ConnectionMethodURI == "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73" {
 		connMethod.ConnectionMethodType = "Redfish"
@@ -118,7 +119,7 @@ func deleteSystemforTest(key string) *errors.Error {
 	return nil
 }
 
-func mockDeleteSubscription(uuid string) (*eventsproto.EventSubResponse, error) {
+func mockDeleteSubscription(ctx context.Context, uuid string) (*eventsproto.EventSubResponse, error) {
 	if uuid == "/redfish/v1/systems/delete-subscription-error.1" {
 		return nil, fmt.Errorf("error while trying to delete event subcription")
 	} else if uuid == "/redfish/v1/systems/unexpected-statuscode.1" {
@@ -131,8 +132,8 @@ func mockDeleteSubscription(uuid string) (*eventsproto.EventSubResponse, error) 
 	}, nil
 }
 
-func mockEventNotification(ctx context.Context, systemID, eventType, collectionType string) {
-	return
+func mockEventNotification(ctx context.Context, systemID, eventType, collectionType string, MQ agmessagebus.MQBusCommunicator) error {
+	return nil
 }
 
 func mockManagersData(id string, data map[string]interface{}) error {
@@ -167,14 +168,14 @@ func GetPluginStatusForTesting(ctx context.Context, plugin agmodel.Plugin) bool 
 	return true
 }
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
+func mockIsAuthorized(ctx context.Context, sessionToken string, privileges, oemPrivileges []string) (response.RPC, error) {
 	if sessionToken == "invalidToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil), nil
 	}
 	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil), nil
 }
 
-func getSessionUserNameForTesting(sessionToken string) (string, error) {
+func getSessionUserNameForTesting(ctx context.Context, sessionToken string) (string, error) {
 	if sessionToken == "noDetailsToken" {
 		return "", fmt.Errorf("no details")
 	} else if sessionToken == "noTaskToken" {
@@ -194,7 +195,7 @@ func createTaskForTesting(ctx context.Context, sessionUserName string) (string, 
 	return "some/Task", nil
 }
 
-func mockSubscribeEMB(pluginID string, list []string) error {
+func mockSubscribeEMB(ctx context.Context, pluginID string, list []string) error {
 	return nil
 }
 

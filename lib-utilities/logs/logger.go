@@ -26,9 +26,9 @@ import (
 
 var priorityLogFields = []string{
 	"host",
-	"threadname",
-	"procid",
-	"messageid",
+	"thread_name",
+	"process_id",
+	"message_id",
 }
 
 var syslogPriorityNumerics = map[string]int8{
@@ -60,30 +60,35 @@ var logFields = map[string][]string{
 // SysLogFormatter implements logrus Format interface. It provides a formatter for odim in syslog format
 type SysLogFormatter struct{}
 
+// Log is an instance of logrus.Entry.
+// This instance should be initialized at the start of the each service
+// and will be used for logging
 var Log *logrus.Entry
 
+// LogFormat is custom type created for the log formats supported by ODIM
 type LogFormat uint32
 
+// log formats supported by ODIM
 const (
 	SyslogFormat LogFormat = iota
-	JsonFormat
+	JSONFormat
 )
 
 func getProcessLogDetails(ctx context.Context) logrus.Fields {
 	var fields = make(map[string]interface{})
-	TransactionId := strings.Replace(fmt.Sprintf("%v", ctx.Value("transactionid")), "\n", "", -1)
+	TransactionID := strings.Replace(fmt.Sprintf("%v", ctx.Value("transactionid")), "\n", "", -1)
 	ProcessName := strings.Replace(fmt.Sprintf("%v", ctx.Value("processname")), "\n", "", -1)
 	ThreadID := strings.Replace(fmt.Sprintf("%v", ctx.Value("threadid")), "\n", "", -1)
 	ActionName := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionname")), "\n", "", -1)
 	ThreadName := strings.Replace(fmt.Sprintf("%v", ctx.Value("threadname")), "\n", "", -1)
 	ActionID := strings.Replace(fmt.Sprintf("%v", ctx.Value("actionid")), "\n", "", -1)
-	fields["transactionid"] = TransactionId
-	fields["processname"] = ProcessName
-	fields["threadid"] = ThreadID
-	fields["actionname"] = ActionName
-	fields["messageid"] = ActionName
-	fields["threadname"] = ThreadName
-	fields["actionid"] = ActionID
+	fields["transaction_id"] = TransactionID
+	fields["process_name"] = ProcessName
+	fields["thread_id"] = ThreadID
+	fields["action_name"] = ActionName
+	fields["message_id"] = ActionName
+	fields["thread_name"] = ThreadName
+	fields["action_id"] = ActionID
 
 	return fields
 }
@@ -147,16 +152,12 @@ func findSysLogPriorityNumeric(entry *logrus.Entry, level string) int8 {
 }
 
 func formatPriorityFields(entry *logrus.Entry, msg string) string {
-	present := true
 	for _, v := range priorityLogFields {
 		if val, ok := entry.Data[v]; ok {
-			present = false
-			msg = fmt.Sprintf("%s %v ", msg, val)
+			msg = fmt.Sprintf("%s %v", msg, val)
 		}
 	}
-	if !present {
-		msg = msg[:len(msg)-1]
-	}
+
 	return msg
 }
 
@@ -194,34 +195,26 @@ func formatAuthStructFields(entry *logrus.Entry, msg string, priorityNo int8) st
 // formatStructuredFields is used to create structured fields for log
 func formatStructuredFields(entry *logrus.Entry, msg string) string {
 	var transID, processName, actionID, actionName, threadID, threadName string
-	if val, ok := entry.Data["processname"]; ok {
-		if val != nil {
-			processName = val.(string)
-		}
-	}
-	if val, ok := entry.Data["transactionid"]; ok {
-		if val != nil {
-			transID = val.(string)
-		}
-	}
-	if val, ok := entry.Data["actionid"]; ok {
-		if val != nil {
-			actionID = val.(string)
-		}
-	}
-	if val, ok := entry.Data["actionname"]; ok {
-		if val != nil {
-			actionName = val.(string)
-		}
-	}
-	if val, ok := entry.Data["threadid"]; ok {
-		if val != nil {
-			threadID = val.(string)
-		}
-	}
-	if val, ok := entry.Data["threadname"]; ok {
-		if val != nil {
-			threadName = val.(string)
+	fields := []string{"process_name", "transaction_id", "action_id", "action_name", "thread_id", "thread_name"}
+
+	for _, value := range fields {
+		if val, ok := entry.Data[value]; ok {
+			if val != nil {
+				switch value {
+				case "process_name":
+					processName = val.(string)
+				case "transaction_id":
+					transID = val.(string)
+				case "action_id":
+					actionID = val.(string)
+				case "action_name":
+					actionName = val.(string)
+				case "thread_id":
+					threadID = val.(string)
+				case "thread_name":
+					threadName = val.(string)
+				}
+			}
 		}
 	}
 	if transID != "" {
@@ -257,7 +250,7 @@ func ParseLogFormat(format string) (LogFormat, error) {
 	case "syslog":
 		return SyslogFormat, nil
 	case "json":
-		return JsonFormat, nil
+		return JSONFormat, nil
 	}
 
 	var lf LogFormat
@@ -280,7 +273,7 @@ func (format LogFormat) MarshalText() ([]byte, error) {
 	switch format {
 	case SyslogFormat:
 		return []byte("syslog"), nil
-	case JsonFormat:
+	case JSONFormat:
 		return []byte("json"), nil
 	}
 
@@ -292,8 +285,12 @@ func SetFormatter(format LogFormat) {
 	switch format {
 	case SyslogFormat:
 		Log.Logger.SetFormatter(&SysLogFormatter{})
-	case JsonFormat:
-		Log.Logger.SetFormatter(&logrus.JSONFormatter{})
+	case JSONFormat:
+		Log.Logger.SetFormatter(&logrus.JSONFormatter{FieldMap: logrus.FieldMap{
+			logrus.FieldKeyTime:  "log_timestamp",
+			logrus.FieldKeyLevel: "log_level",
+			logrus.FieldKeyMsg:   "log_message",
+		}})
 	default:
 		Log.Logger.SetFormatter(&SysLogFormatter{})
 		Log.Info("Something went wrong! Setting the default format Syslog for logging")

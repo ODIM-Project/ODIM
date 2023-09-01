@@ -12,22 +12,23 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
+	"io/ioutil"
+	"net/http"
+	"time"
+
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"time"
 )
 
-//TokenValidation validates sent token with the list of plugin generated tokens
+// TokenValidation validates sent token with the list of plugin generated tokens
 func TokenValidation(token string) bool {
 	var flag bool
 	flag = false
@@ -42,12 +43,15 @@ func TokenValidation(token string) bool {
 	return flag
 }
 
-//Validate does Basic authentication with device and returns UUID of device in response
+var IoUtilReadAll = ioutil.ReadAll
+
+// Validate does Basic authentication with device and returns UUID of device in response
 func Validate(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 	//Get token from Request
 	if ctx.GetHeader("X-Auth-Token") == "" && ctx.GetHeader("Authorization") == "" {
 		ctx.StatusCode(http.StatusUnauthorized)
-		log.Error("No valid authorization")
+		l.LogWithFields(ctxt).Error("No valid authorization")
 		ctx.WriteString("No valid authorization")
 		return
 	}
@@ -56,17 +60,18 @@ func Validate(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
+			l.LogWithFields(ctxt).Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
 		}
 	}
+	l.LogWithFields(ctxt).Debugf("incoming request received for the URI %s method %s", ctx.Request().RequestURI, ctx.Request().Method)
 	var deviceDetails dpmodel.Device
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Error("While trying to collect data from request, got: " + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -76,44 +81,44 @@ func Validate(ctx iris.Context) {
 		Username: deviceDetails.Username,
 		Password: string(deviceDetails.Password),
 	}
-
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error("error while trying to create the redfish client to connect to device " + err.Error())
 		dpresponse.SetErrorResponse(ctx, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	//Get ServiceRoot of the device
 	err = redfishClient.GetRootService(device)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error("error while trying to get RootService data of the device " + err.Error())
 		dpresponse.SetErrorResponse(ctx, err.Error(), http.StatusBadRequest)
 		return
 	}
 	//Doing Get on device using basic Authentication
-	resp, err := redfishClient.BasicAuthWithDevice(device, device.RootNode.Systems.Oid)
+	resp, err := redfishClient.BasicAuthWithDevice(ctxt, device, device.RootNode.Systems.Oid)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error("error while trying to authenticate device with basic auth " + err.Error())
 		dpresponse.SetErrorResponse(ctx, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := IoUtilReadAll(resp.Body)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctxt).Error("error while trying to read the response body from the device" + err.Error())
 		dpresponse.SetErrorResponse(ctx, err.Error(), http.StatusBadRequest)
 		return
 	}
 	defer resp.Body.Close()
+	l.LogWithFields(ctxt).Debugf("received response code %d for the URI %s with the response body %s from the southbound", resp.StatusCode, resp.Request.URL, string(body))
 
 	if resp.StatusCode == http.StatusUnauthorized {
+		l.LogWithFields(ctxt).Warn("received unauthorized error from the device while requesting for device data")
 		ctx.StatusCode(resp.StatusCode)
 		ctx.JSON(string(body))
 		return
 	}
 	if resp.StatusCode >= 300 {
-		log.Warn("Could not retreive ComputerSystems for " + device.Host + ": " + string(body))
+		l.LogWithFields(ctxt).Warn("Could not retrieve ComputerSystems for " + device.Host + ": " + string(body))
 	}
 
 	response := dpresponse.Device{

@@ -27,9 +27,9 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	loggingService "github.com/ODIM-Project/ODIM/lib-utilities/logService"
 	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	loggingService "github.com/ODIM-Project/ODIM/lib-utilities/logservice"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
@@ -109,6 +109,8 @@ func Router() *iris.Application {
 		ChangeBootOrderSettingsRPC: rpc.ChangeBootOrderSettings,
 		CreateVolumeRPC:            rpc.CreateVolume,
 		DeleteVolumeRPC:            rpc.DeleteVolume,
+		UpdateSecureBootRPC:        rpc.UpdateSecureBoot,
+		ResetSecureBootRPC:         rpc.ResetSecureBoot,
 	}
 
 	cha := handle.ChassisRPCs{
@@ -216,7 +218,6 @@ func Router() *iris.Application {
 	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		ctx := r.Context()
-		l.LogWithFields(ctx).Info("Inside router function")
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {
@@ -337,15 +338,12 @@ func Router() *iris.Application {
 	account.Any("/", handle.AsMethodNotAllowed)
 	account.Any("/Accounts", handle.AsMethodNotAllowed)
 	account.Any("/Accounts/{id}", handle.AsMethodNotAllowed)
-
-	role := account.Party("/Roles", middleware.SessionDelMiddleware)
-	role.SetRegisterRule(iris.RouteSkip)
-	role.Get("/", r.GetAllRoles)
-	role.Get("/{id}", r.GetRole)
-	role.Patch("/{id}", r.UpdateRole)
-	role.Delete("/{id}", r.DeleteRole)
-	role.Any("/", handle.RoleMethodNotAllowed)
-	role.Any("/{id}", handle.RoleMethodNotAllowed)
+	account.Get("/Roles/", r.GetAllRoles)
+	account.Get("/Roles/{id}", r.GetRole)
+	account.Patch("/Roles/{id}", r.UpdateRole)
+	account.Delete("/Roles/{id}", r.DeleteRole)
+	account.Any("/Roles", handle.RoleMethodNotAllowed)
+	account.Any("Roles/{id}", handle.RoleMethodNotAllowed)
 
 	task := v1.Party("/TaskService", middleware.SessionDelMiddleware)
 	task.SetRegisterRule(iris.RouteSkip)
@@ -377,6 +375,14 @@ func Router() *iris.Application {
 	systems.Get("/{id}/EthernetInterfaces/{id2}/VLANS", system.GetSystemResource)
 	systems.Get("/{id}/EthernetInterfaces/{id2}/VLANS/{rid}", system.GetSystemResource)
 	systems.Get("/{id}/SecureBoot", system.GetSystemResource)
+	systems.Patch("/{id}/SecureBoot", system.UpdateSecureBoot)
+	systems.Post("/{id}/SecureBoot/Actions/SecureBoot.ResetKeys", system.ResetSecureBoot)
+	systems.Get("/{id}/SecureBoot/SecureBootDatabases", system.GetSystemResource)
+	systems.Get("/{id}/SecureBoot/SecureBootDatabases/{rid}", system.GetSystemResource)
+	systems.Get("/{id}/SecureBoot/SecureBootDatabases/{rid}/Certificates", system.GetSystemResource)
+	systems.Get("/{id}/SecureBoot/SecureBootDatabases/{rid}/Certificates/{rid2}", system.GetSystemResource)
+	systems.Get("/{id}/SecureBoot/SecureBootDatabases/{rid}/Signatures", system.GetSystemResource)
+	systems.Get("/{id}/SecureBoot/SecureBootDatabases/{rid}/Signatures/{rid2}", system.GetSystemResource)
 	systems.Get("/{id}/BootOptions", system.GetSystemResource)
 	systems.Get("/{id}/BootOptions/{rid}", system.GetSystemResource)
 	systems.Get("/{id}/LogServices", system.GetSystemResource)
@@ -393,6 +399,12 @@ func Router() *iris.Application {
 	systems.Any("/{id}/EthernetInterfaces/{rid}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/SecureBoot", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/SecureBoot/Actions/SecureBoot.ResetKeys", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/SecureBoot/SecureBootDatabases", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/SecureBoot/SecureBootDatabases/{rid}", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/SecureBoot/SecureBootDatabases/{rid}/Certificates", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/SecureBoot/SecureBootDatabases/{rid}/Certificates/{rid2}", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/SecureBoot/SecureBootDatabases/{rid}/Signatures", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/SecureBoot/SecureBootDatabases/{rid}/Signatures/{rid2}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/MemoryDomains", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/NetworkInterfaces", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Memory", handle.SystemsMethodNotAllowed)
@@ -414,6 +426,8 @@ func Router() *iris.Application {
 	systems.Any("{id}/Bios/Settings/Actions/Bios.ChangePasswords", handle.SystemsMethodNotAllowed)
 	systems.Any("{id}/Bios/Settings/Actions/Bios.ResetBios/", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Memory/{rid}", handle.SystemsMethodNotAllowed)
+	systems.Post("/{id}/Actions/ComputerSystem.Reset", system.ComputerSystemReset)
+	systems.Post("/{id}/Actions/ComputerSystem.SetDefaultBootOrder", system.SetDefaultBootOrder)
 
 	storage := v1.Party("/Systems/{id}/Storage", middleware.SessionDelMiddleware)
 	storage.SetRegisterRule(iris.RouteSkip)
@@ -450,11 +464,6 @@ func Router() *iris.Application {
 	storage.Get("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingDrives", system.GetSystemResource)
 	storage.Any("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingDrives", handle.SystemsMethodNotAllowed)
 
-	systemsAction := systems.Party("/{id}/Actions", middleware.SessionDelMiddleware)
-	systemsAction.SetRegisterRule(iris.RouteSkip)
-	systemsAction.Post("/ComputerSystem.Reset", system.ComputerSystemReset)
-	systemsAction.Post("/ComputerSystem.SetDefaultBootOrder", system.SetDefaultBootOrder)
-
 	aggregation := v1.Party("/AggregationService", middleware.SessionDelMiddleware)
 	aggregation.SetRegisterRule(iris.RouteSkip)
 	aggregation.Get("/", pc.GetAggregationService)
@@ -464,38 +473,32 @@ func Router() *iris.Application {
 	aggregation.Any("/Actions/AggregationService.Reset/", handle.AggMethodNotAllowed)
 	aggregation.Post("/Actions/AggregationService.SetDefaultBootOrder/", pc.SetDefaultBootOrder)
 	aggregation.Any("/Actions/AggregationService.SetDefaultBootOrder/", handle.AggMethodNotAllowed)
+	aggregation.Post("/AggregationSources/", pc.AddAggregationSource)
+	aggregation.Get("/AggregationSources", pc.GetAllAggregationSource)
+	aggregation.Any("/AggregationSources", handle.AggMethodNotAllowed)
+	aggregation.Get("/AggregationSources/{id}", pc.GetAggregationSource)
+	aggregation.Patch("/AggregationSources/{id}", pc.UpdateAggregationSource)
+	aggregation.Delete("/AggregationSources/{id}", pc.DeleteAggregationSource)
+	aggregation.Any("/AggregationSources/{id}", handle.AggMethodNotAllowed)
+	aggregation.Get("/ConnectionMethods/", pc.GetAllConnectionMethods)
+	aggregation.Get("/ConnectionMethods/{id}", pc.GetConnectionMethod)
+	aggregation.Any("/ConnectionMethods/", handle.AggMethodNotAllowed)
+	aggregation.Any("/ConnectionMethods/{id}", handle.AggMethodNotAllowed)
+	aggregation.Post("/Aggregates/", pc.CreateAggregate)
+	aggregation.Get("/Aggregates/", pc.GetAggregateCollection)
+	aggregation.Any("/Aggregates/", handle.AggregateMethodNotAllowed)
+	aggregation.Get("/Aggregates//{id}", pc.GetAggregate)
+	aggregation.Delete("/Aggregates//{id}", pc.DeleteAggregate)
+	aggregation.Any("/Aggregates/{id}", handle.AggregateMethodNotAllowed)
+	aggregation.Post("/Aggregates/{id}/Actions/Aggregate.AddElements/", pc.AddElementsToAggregate)
+	aggregation.Any("/Aggregates/{id}/Actions/Aggregate.AddElements/", handle.AggregateMethodNotAllowed)
+	aggregation.Post("/Aggregates/{id}/Actions/Aggregate.RemoveElements/", pc.RemoveElementsFromAggregate)
+	aggregation.Any("/Aggregates/{id}/Actions/Aggregate.RemoveElements/", handle.AggregateMethodNotAllowed)
+	aggregation.Post("/Aggregates/{id}/Actions/Aggregate.Reset/", pc.ResetAggregateElements)
+	aggregation.Any("/Aggregates/{id}/Actions/Aggregate.Reset/", handle.AggregateMethodNotAllowed)
+	aggregation.Post("/Aggregates/{id}/Actions/Aggregate.SetDefaultBootOrder/", pc.SetDefaultBootOrderAggregateElements)
+	aggregation.Any("/Aggregates/{id}/Actions/Aggregate.SetDefaultBootOrder/", handle.AggregateMethodNotAllowed)
 	aggregation.Any("/", handle.AggMethodNotAllowed)
-
-	aggregationSource := aggregation.Party("/AggregationSources", middleware.SessionDelMiddleware)
-	aggregationSource.Post("/", pc.AddAggregationSource)
-	aggregationSource.Get("/", pc.GetAllAggregationSource)
-	aggregationSource.Any("/", handle.AggMethodNotAllowed)
-	aggregationSource.Get("/{id}", pc.GetAggregationSource)
-	aggregationSource.Patch("/{id}", pc.UpdateAggregationSource)
-	aggregationSource.Delete("/{id}", pc.DeleteAggregationSource)
-	aggregationSource.Any("/{id}", handle.AggMethodNotAllowed)
-
-	connectionMethods := aggregation.Party("/ConnectionMethods", middleware.SessionDelMiddleware)
-	connectionMethods.Get("/", pc.GetAllConnectionMethods)
-	connectionMethods.Get("/{id}", pc.GetConnectionMethod)
-	connectionMethods.Any("/", handle.AggMethodNotAllowed)
-	connectionMethods.Any("/{id}", handle.AggMethodNotAllowed)
-
-	aggregates := aggregation.Party("/Aggregates", middleware.SessionDelMiddleware)
-	aggregates.Post("/", pc.CreateAggregate)
-	aggregates.Get("/", pc.GetAggregateCollection)
-	aggregates.Any("/", handle.AggregateMethodNotAllowed)
-	aggregates.Get("/{id}", pc.GetAggregate)
-	aggregates.Delete("/{id}", pc.DeleteAggregate)
-	aggregates.Any("/{id}", handle.AggregateMethodNotAllowed)
-	aggregates.Post("/{id}/Actions/Aggregate.AddElements/", pc.AddElementsToAggregate)
-	aggregates.Any("/{id}/Actions/Aggregate.AddElements/", handle.AggregateMethodNotAllowed)
-	aggregates.Post("/{id}/Actions/Aggregate.RemoveElements/", pc.RemoveElementsFromAggregate)
-	aggregates.Any("/{id}/Actions/Aggregate.RemoveElements/", handle.AggregateMethodNotAllowed)
-	aggregates.Post("/{id}/Actions/Aggregate.Reset/", pc.ResetAggregateElements)
-	aggregates.Any("/{id}/Actions/Aggregate.Reset/", handle.AggregateMethodNotAllowed)
-	aggregates.Post("/{id}/Actions/Aggregate.SetDefaultBootOrder/", pc.SetDefaultBootOrderAggregateElements)
-	aggregates.Any("/{id}/Actions/Aggregate.SetDefaultBootOrder/", handle.AggregateMethodNotAllowed)
 
 	chassis := v1.Party("/Chassis", middleware.SessionDelMiddleware)
 	chassis.SetRegisterRule(iris.RouteSkip)
@@ -510,6 +513,8 @@ func Router() *iris.Application {
 	chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkPorts", cha.GetChassisResource)
 	chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkDeviceFunctions/{rid}", cha.GetChassisResource)
 	chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkPorts/{rid}", cha.GetChassisResource)
+	chassis.Get("/{id}/NetworkAdapters/{id2}/Ports", cha.GetChassisResource)
+	chassis.Get("/{id}/NetworkAdapters/{id2}/Ports/{rid}", cha.GetChassisResource)
 	chassis.Any("/", handle.ChassisMethodNotAllowed)
 	chassis.Any("/{id}", handle.ChassisMethodNotAllowed)
 	chassis.Any("/{id}/NetworkAdapters", handle.ChassisMethodNotAllowed)
@@ -540,6 +545,20 @@ func Router() *iris.Application {
 	chassis.Get("/{id}/LogServices/{rid}", cha.GetChassisResource)
 	chassis.Get("/{id}/LogServices/{rid}/Entries", ratelimiter.ResourceRateLimiter, cha.GetChassisResource)
 	chassis.Get("/{id}/LogServices/{rid}/Entries/{rid2}", ratelimiter.ResourceRateLimiter, cha.GetChassisResource)
+	chassis.Get("/{id}/Power/", cha.GetChassisResource)
+	chassis.Get("/{id}/Power/#PowerControl/{id1}", cha.GetChassisResource)
+	chassis.Get("/{id}/Power/#PowerSupplies/{id1}", cha.GetChassisResource)
+	chassis.Get("/{id}/Power/#Redundancy/{id1}", cha.GetChassisResource)
+	chassis.Any("/{id}/Power/", handle.ChassisMethodNotAllowed)
+	chassis.Any("/{id}/Power/#PowerControl/{id1}", handle.ChassisMethodNotAllowed)
+	chassis.Any("/{id}/Power/#PowerSupplies/{id1}", handle.ChassisMethodNotAllowed)
+	chassis.Any("/{id}/Power/#Redundancy/{id1}", handle.ChassisMethodNotAllowed)
+	chassis.Get("/{id}/Thermal/", cha.GetChassisResource)
+	chassis.Get("/{id}/Thermal/#Fans/{id1}", cha.GetChassisResource)
+	chassis.Get("/{id}/Thermal/#Temperatures/{id1}", cha.GetChassisResource)
+	chassis.Any("/{id}/Thermal/", handle.ChassisMethodNotAllowed)
+	chassis.Any("/{id}/Thermal/#Fans/{id1}", handle.ChassisMethodNotAllowed)
+	chassis.Any("/{id}/Thermal/#Temperatures/{id1}", handle.ChassisMethodNotAllowed)
 	// TODO
 	// chassis.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", cha.GetChassisResource)
 	chassis.Any("/{id}/LogServices", handle.ChassisMethodNotAllowed)
@@ -547,26 +566,6 @@ func Router() *iris.Application {
 	chassis.Any("/{id}/LogServices/{rid}/Entries", handle.ChassisMethodNotAllowed)
 	chassis.Any("/{id}/LogServices/{rid}/Entries/{rid2}", handle.ChassisMethodNotAllowed)
 	chassis.Any("/{id}/LogServices/{rid}/Actions", handle.ChassisMethodNotAllowed)
-
-	chassisPower := chassis.Party("/{id}/Power")
-	chassisPower.SetRegisterRule(iris.RouteSkip)
-	chassisPower.Get("/", cha.GetChassisResource)
-	chassisPower.Get("#PowerControl/{id1}", cha.GetChassisResource)
-	chassisPower.Get("#PowerSupplies/{id1}", cha.GetChassisResource)
-	chassisPower.Get("#Redundancy/{id1}", cha.GetChassisResource)
-	chassisPower.Any("/", handle.ChassisMethodNotAllowed)
-	chassisPower.Any("#PowerControl/{id1}", handle.ChassisMethodNotAllowed)
-	chassisPower.Any("#PowerSupplies/{id1}", handle.ChassisMethodNotAllowed)
-	chassisPower.Any("#Redundancy/{id1}", handle.ChassisMethodNotAllowed)
-
-	chassisThermal := chassis.Party("/{id}/Thermal")
-	chassisThermal.SetRegisterRule(iris.RouteSkip)
-	chassisThermal.Get("/", cha.GetChassisResource)
-	chassisThermal.Get("#Fans/{id1}", cha.GetChassisResource)
-	chassisThermal.Get("#Temperatures/{id1}", cha.GetChassisResource)
-	chassisThermal.Any("/", handle.ChassisMethodNotAllowed)
-	chassisThermal.Any("#Fans/{id1}", handle.ChassisMethodNotAllowed)
-	chassisThermal.Any("#Temperatures/{id1}", handle.ChassisMethodNotAllowed)
 
 	events := v1.Party("/EventService", middleware.SessionDelMiddleware)
 	events.SetRegisterRule(iris.RouteSkip)
@@ -647,8 +646,8 @@ func Router() *iris.Application {
 	managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.InsertMedia", manager.VirtualMediaInsert)
 	managers.Get("/{id}/LogServices", manager.GetManagersResource)
 	managers.Get("/{id}/LogServices/{rid}", manager.GetManagersResource)
-	managers.Get("/{id}/LogServices/{id2}/Entries", ratelimiter.ResourceRateLimiter, manager.GetManagersResource)
-	managers.Get("/{id}/LogServices/{id2}/Entries/{rid}", ratelimiter.ResourceRateLimiter, manager.GetManagersResource)
+	managers.Get("/{id}/LogServices/{rid}/Entries", ratelimiter.ResourceRateLimiter, manager.GetManagersResource)
+	managers.Get("/{id}/LogServices/{rid}/Entries/{rid2}", ratelimiter.ResourceRateLimiter, manager.GetManagersResource)
 	managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", manager.GetManagersResource)
 	managers.Get("/{id}/RemoteAccountService", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)

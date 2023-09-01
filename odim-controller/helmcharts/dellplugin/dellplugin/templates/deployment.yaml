@@ -66,9 +66,11 @@ spec:
               path: odimra_kafka_client.key
               mode: 0444
             {{- end }}
+        {{- if not .Values.dellplugin.logsOnConsole }}
         - name: dellplugin-log
           persistentVolumeClaim:
             claimName: dellplugin-log-claim
+        {{- end }}
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       containers:
@@ -80,6 +82,14 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: HOST_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name                  
           image: dellplugin:{{ .Values.dellplugin.imageTag }}
           imagePullPolicy: IfNotPresent
           ports:
@@ -90,7 +100,9 @@ spec:
               mountPath: /etc/dellplugin_config
             - name: configure-hosts
               mountPath: /tmp
+            {{- if not .Values.dellplugin.logsOnConsole }}
             - name: dellplugin-log
               mountPath: /var/log/dellplugin_logs
+            {{- end }}
             - name: odimra-secret
               mountPath: /etc/odimra_certs

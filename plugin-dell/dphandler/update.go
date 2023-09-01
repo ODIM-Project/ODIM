@@ -12,68 +12,60 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 )
-
-// SimpleUpdatePostBody struct defines the received request body for update action
-type SimpleUpdatePostBody struct {
-	ImageURI                  string   `json:"ImageURI"`
-	Password                  string   `json:"Password,omitempty"`
-	Targets                   []string `json:"Targets,omitempty"`
-	TransferProtocol          string   `json:"TransferProtocol,omitempty"`
-	Username                  string   `json:"Username,omitempty"`
-	RedfishOperationApplyTime string   `json:"@Redfish.OperationApplyTime,omitempty"`
-}
 
 // SimpleUpdate updates the BMC resources
 func SimpleUpdate(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
+
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
 	//Validating the token
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
+			l.LogWithFields(ctxt).Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
 		}
 	}
 	var deviceDetails dpmodel.Device
-	reqPostBody := &SimpleUpdatePostBody{}
+	reqPostBody := &model.SimpleUpdate{}
 	uri := ctx.Request().RequestURI
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Error("While trying to collect data from request, got: " + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
 	}
-	err = json.Unmarshal(deviceDetails.PostBody,reqPostBody)
-	if err!= nil{
+	err = json.Unmarshal(deviceDetails.PostBody, reqPostBody)
+	if err != nil {
 		errMsg := "While trying to unmarshal request body, got:" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		return
 	}
 	reqPostBody.Targets = nil
-	deviceDetails.PostBody,err = json.Marshal(reqPostBody)
-	if err!= nil{
+	deviceDetails.PostBody, err = json.Marshal(reqPostBody)
+	if err != nil {
 		errMsg := "While trying to marshal request body, got:" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		return
 	}
 	var reqData string
@@ -93,7 +85,7 @@ func SimpleUpdate(ctx iris.Context) {
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
 		errMsg := "While trying to create the redfish client, got:" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -102,7 +94,7 @@ func SimpleUpdate(ctx iris.Context) {
 	resp, err := redfishClient.DeviceCall(device, uri, http.MethodPost)
 	if err != nil {
 		errorMessage := "While trying to update BMC resource: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errorMessage)
@@ -110,10 +102,10 @@ func SimpleUpdate(ctx iris.Context) {
 		}
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := IoUtilReadAll(resp.Body)
 	if err != nil {
 		errorMessage := "While trying to read the response body, got: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		ctx.WriteString(errorMessage)
 	}
 
@@ -123,13 +115,15 @@ func SimpleUpdate(ctx iris.Context) {
 
 // StartUpdate updates the BMC resources
 func StartUpdate(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
+
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
 	//Validating the token
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
+			l.LogWithFields(ctxt).Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -140,7 +134,7 @@ func StartUpdate(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Error("While trying to collect data from request, got: " + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -155,7 +149,7 @@ func StartUpdate(ctx iris.Context) {
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
 		errMsg := "While trying to create the redfish client, got:" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctxt).Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -164,7 +158,7 @@ func StartUpdate(ctx iris.Context) {
 	resp, err := redfishClient.DeviceCall(device, uri, http.MethodPost)
 	if err != nil {
 		errorMessage := "While trying to update BMC resource: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errorMessage)
@@ -172,10 +166,10 @@ func StartUpdate(ctx iris.Context) {
 		}
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := IoUtilReadAll(resp.Body)
 	if err != nil {
 		errorMessage := "While trying to read response body, got: " + err.Error()
-		log.Error(errorMessage)
+		l.LogWithFields(ctxt).Error(errorMessage)
 		ctx.WriteString(errorMessage)
 	}
 

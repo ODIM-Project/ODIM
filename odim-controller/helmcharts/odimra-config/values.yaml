@@ -7,3 +7,7 @@ odimra:
   haDeploymentEnabled:
   logLevel:
   logFormat:
+  keyExpiryInterval:
+  eventForwardingWorkerPoolCount:
+  eventSaveWorkerPoolCount:
+  logsOnConsole:

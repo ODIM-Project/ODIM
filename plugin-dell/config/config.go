@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package config ...
+// Package config ...
 package config
 
 import (
@@ -22,6 +22,7 @@ import (
 	"os"
 
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
+	lgr "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,9 +41,11 @@ type configModel struct {
 	KeyCertConf             *KeyCertConf      `json:"KeyCertConf"`
 	URLTranslation          *URLTranslation   `json:"URLTranslation"`
 	TLSConf                 *TLSConf          `json:"TLSConf"`
+	LogLevel                log.Level         `json:"LogLevel"`
+	LogFormat               lgr.LogFormat     `json:"LogFormat"`
 }
 
-//PluginConf is for holding all the plugin related configurations
+// PluginConf is for holding all the plugin related configurations
 type PluginConf struct {
 	ID       string `json:"ID"` // PluginID hold the id of the plugin
 	Host     string `json:"Host"`
@@ -51,13 +54,13 @@ type PluginConf struct {
 	Password string `json:"Password"`
 }
 
-//LoadBalancerConf is for holding all load balancer related configurations
+// LoadBalancerConf is for holding all load balancer related configurations
 type LoadBalancerConf struct {
 	Host string `json:"LBHost"`
 	Port string `json:"LBPort"`
 }
 
-//EventConf is for holding all events related configuration
+// EventConf is for holding all events related configuration
 type EventConf struct {
 	DestURI      string `json:"DestinationURI"`
 	ListenerHost string `json:"ListenerHost"`
@@ -74,7 +77,7 @@ type MessageBusConf struct {
 	EmbQueue                 []string `json:"MessageBusQueue"`
 }
 
-//KeyCertConf is for holding all security oriented configuration
+// KeyCertConf is for holding all security oriented configuration
 type KeyCertConf struct {
 	RootCACertificatePath string `json:"RootCACertificatePath"` // RootCACertificate will be added to truststore
 	PrivateKeyPath        string `json:"PrivateKeyPath"`        // plugin private key
@@ -126,7 +129,7 @@ func ValidateConfiguration() error {
 		Data.FirmwareVersion = "1.0"
 	}
 	if Data.RootServiceUUID == "" {
-		return fmt.Errorf("No value set for RootServiceUUID")
+		return fmt.Errorf("no value set for RootServiceUUID")
 	}
 	if Data.SessionTimeoutInMinutes == 0 {
 		log.Warn("No value set for SessionTimeoutInMinutes, setting default value")
@@ -154,28 +157,28 @@ func ValidateConfiguration() error {
 
 func checkPluginConf() error {
 	if Data.PluginConf == nil {
-		return fmt.Errorf("No value found for PluginConf")
+		return fmt.Errorf("no value found for PluginConf")
 	}
 	if Data.PluginConf.ID == "" {
 		log.Warn("No value set for plugin ID, setting default value")
 		Data.PluginConf.ID = "GRF"
 	}
 	if Data.PluginConf.Host == "" {
-		return fmt.Errorf("No value set for plugin Host")
+		return fmt.Errorf("no value set for plugin Host")
 	}
 	if Data.PluginConf.Port == "" {
-		return fmt.Errorf("No value set for plugin Port")
+		return fmt.Errorf("no value set for plugin Port")
 	}
 	if Data.PluginConf.UserName == "" {
-		return fmt.Errorf("No value set for plugin Username")
+		return fmt.Errorf("no value set for plugin Username")
 	}
 	if Data.PluginConf.Password == "" {
-		return fmt.Errorf("No value set for plugin Password")
+		return fmt.Errorf("no value set for plugin Password")
 	}
 	return nil
 }
 
-//check load balancer configuration
+// check load balancer configuration
 func checkLBConf() {
 	if Data.LoadBalancerConf == nil {
 		log.Warn("No value set for LoadBalancerConf, setting default value")
@@ -194,34 +197,31 @@ func checkLBConf() {
 
 func checkEventConf() error {
 	if Data.EventConf == nil {
-		return fmt.Errorf("No value found for EventConf")
+		return fmt.Errorf("no value found for EventConf")
 	}
 	if Data.EventConf.DestURI == "" {
-		return fmt.Errorf("No value set for EventURI")
+		return fmt.Errorf("no value set for EventURI")
 	}
 	if Data.EventConf.ListenerHost == "" {
-		return fmt.Errorf("No value set for ListenerHost")
+		return fmt.Errorf("no value set for ListenerHost")
 	}
 	if Data.EventConf.ListenerPort == "" {
-		return fmt.Errorf("No value set for ListenerPort")
+		return fmt.Errorf("no value set for ListenerPort")
 	}
 	return nil
 }
 
-//Check or apply default values for message bus to be used by this plugin
+// Check or apply default values for message bus to be used by this plugin
 func checkMessageBusConf() error {
-	log.Info("Data.MessageBusConf.EmbType", Data.MessageBusConf.EmbType)
-	log.Info("Data.MessageBusConf.EmbQueue", Data.MessageBusConf.EmbQueue)
-
 	if Data.MessageBusConf == nil {
-		return fmt.Errorf("No value found for MessageBusConf")
+		return fmt.Errorf("no value found for MessageBusConf")
 	}
 	if Data.MessageBusConf.EmbType == "" {
 		log.Warn("No value set for MessageBusType, setting default value")
 		Data.MessageBusConf.EmbType = "Kafka"
 	}
 	if _, err := os.Stat(Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
-		return fmt.Errorf("Value check failed for MessageBusConfigFilePath:%s with %v", Data.MessageBusConf.MessageBusConfigFilePath, err)
+		return fmt.Errorf("value check failed for MessageBusConfigFilePath:%s with %v", Data.MessageBusConf.MessageBusConfigFilePath, err)
 	}
 	if len(Data.MessageBusConf.EmbQueue) <= 0 {
 		log.Warn("No value set for MessageBusQueue, setting default value")
@@ -234,25 +234,25 @@ func checkMessageBusConf() error {
 	return nil
 }
 
-//Check or apply default values for certs/keys used by this plugin
+// Check or apply default values for certs/keys used by this plugin
 func checkCertsAndKeysConf() error {
 	var err error
 	if Data.KeyCertConf == nil {
-		return fmt.Errorf("No value found for KeyCertConf")
+		return fmt.Errorf("no value found for KeyCertConf")
 	}
 	if Data.KeyCertConf.Certificate, err = ioutil.ReadFile(Data.KeyCertConf.CertificatePath); err != nil {
-		return fmt.Errorf("Value check failed for CertificatePath:%s with %v", Data.KeyCertConf.CertificatePath, err)
+		return fmt.Errorf("value check failed for CertificatePath:%s with %v", Data.KeyCertConf.CertificatePath, err)
 	}
 	if Data.KeyCertConf.PrivateKey, err = ioutil.ReadFile(Data.KeyCertConf.PrivateKeyPath); err != nil {
-		return fmt.Errorf("Value check failed for PrivateKeyPath:%s with %v", Data.KeyCertConf.PrivateKeyPath, err)
+		return fmt.Errorf("value check failed for PrivateKeyPath:%s with %v", Data.KeyCertConf.PrivateKeyPath, err)
 	}
 	if Data.KeyCertConf.RootCACertificate, err = ioutil.ReadFile(Data.KeyCertConf.RootCACertificatePath); err != nil {
-		return fmt.Errorf("Value check failed for RootCACertificatePath:%s with %v", Data.KeyCertConf.RootCACertificatePath, err)
+		return fmt.Errorf("value check failed for RootCACertificatePath:%s with %v", Data.KeyCertConf.RootCACertificatePath, err)
 	}
 	return nil
 }
 
-//Check or apply default values for URL translation from ODIM <=> redfish
+// Check or apply default values for URL translation from ODIM <=> redfish
 func checkURLTranslationConf() {
 	if Data.URLTranslation == nil {
 		log.Warn("URL translation not provided, setting default value")

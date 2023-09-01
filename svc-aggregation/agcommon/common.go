@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -30,15 +31,23 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
+	uu "github.com/satori/go.uuid"
 )
 
 // DBInterface hold interface for db functions
 type DBInterface struct {
-	GetAllKeysFromTableInterface func(string) ([]string, error)
-	GetConnectionMethodInterface func(string) (agmodel.ConnectionMethod, *errors.Error)
+	GetAllKeysFromTableInterface func(context.Context, string) ([]string, error)
+	GetConnectionMethodInterface func(context.Context, string) (agmodel.ConnectionMethod, *errors.Error)
 	AddConnectionMethodInterface func(agmodel.ConnectionMethod, string) *errors.Error
 	DeleteInterface              func(string, string, common.DbType) *errors.Error
+}
+
+// DBDataInterface holds interface for plugin and all db data functions
+type DBDataInterface struct {
+	GetAllKeysFromTableFunc func(context.Context, string) ([]string, error)
+	GetPluginData           func(string, agmodel.DBPluginDataRead) (agmodel.Plugin, *errors.Error)
+	GetDatabaseConnection   func(PluginID string) (string, *errors.Error)
 }
 
 // PluginHealthCheckInterface holds the methods required for plugin healthcheck
@@ -67,6 +76,8 @@ var SupportedConnectionMethodTypes = map[string]bool{
 var (
 	//GetResourceDetailsFunc function pointer for the agmodel.GetResourceDetails
 	GetResourceDetailsFunc = agmodel.GetResourceDetails
+	//GetResourceDetailsBytableNameFunc function pointer for the agmodel.GetResourceDetailsBytableName
+	GetResourceDetailsBytableNameFunc = agmodel.GetResourceDetailsBytableName
 	// GetAllKeysFromTableFunc function pointer for the agmodel.GetAllKeysFromTable
 	GetAllKeysFromTableFunc = agmodel.GetAllKeysFromTable
 	//GetAllSystemsFunc function pointer for the agmodel.GetAllSystems
@@ -102,7 +113,25 @@ func init() {
 // GetStorageResources will get the resource details from the database for the given odata id
 func GetStorageResources(ctx context.Context, oid string) map[string]interface{} {
 	resourceData := make(map[string]interface{})
-	data, dbErr := GetResourceDetailsFunc(oid)
+	data, dbErr := GetResourceDetailsFunc(ctx, oid)
+	if dbErr != nil {
+		l.LogWithFields(ctx).Error("Unable to get system data : " + dbErr.Error())
+		return resourceData
+	}
+	// unmarshal the resourceData
+	err := JSONUnMarshalFunc([]byte(data), &resourceData)
+	if err != nil {
+		l.LogWithFields(ctx).Error("Unable to unmarshal  the data: " + err.Error())
+		return resourceData
+	}
+
+	return resourceData
+}
+
+// GetStorageResourcesBytableName will get the resource details from the database for the given odata id and table name
+func GetStorageResourcesBytableName(ctx context.Context, table, oid string) map[string]interface{} {
+	resourceData := make(map[string]interface{})
+	data, dbErr := GetResourceDetailsBytableNameFunc(ctx, table, oid)
 	if dbErr != nil {
 		l.LogWithFields(ctx).Error("Unable to get system data : " + dbErr.Error())
 		return resourceData
@@ -119,16 +148,21 @@ func GetStorageResources(ctx context.Context, oid string) map[string]interface{}
 
 // AddConnectionMethods will add the connection method type and variant into DB
 func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) error {
-	connectionMethodsKeys, err := e.GetAllKeysFromTableInterface("ConnectionMethod")
+	aggTransactionID := uuid.New()
+	podName := os.Getenv("POD_NAME")
+	actionID := common.Actions[common.ActionKey{Service: "AddConnectionMethods", URI: "ConnectionMethod", Method: "POST-TO-DB"}].ActionID
+	actionName := common.Actions[common.ActionKey{Service: "AddConnectionMethods", URI: "ConnectionMethod", Method: "POST-TO-DB"}].ActionName
+	ctx := CreateContext(aggTransactionID.String(), actionID, actionName, "1", common.AggregationService, podName)
+	connectionMethodsKeys, err := e.GetAllKeysFromTableInterface(ctx, "ConnectionMethod")
 	if err != nil {
 		l.Log.Error("Unable to get connection methods : " + err.Error())
 		return err
 	}
 	var connectionMethodInfo = make(map[string]agmodel.ConnectionMethod)
 	var connectionMehtodIDMap = make(map[string]string)
-	// Get all existing connectionmethod info store it in above two map
+	// Get all existing connection method info store it in above two map
 	for i := 0; i < len(connectionMethodsKeys); i++ {
-		connectionmethod, err := e.GetConnectionMethodInterface(connectionMethodsKeys[i])
+		connectionmethod, err := e.GetConnectionMethodInterface(ctx, connectionMethodsKeys[i])
 		if err != nil {
 			l.Log.Error("Unable to get connection method : " + err.Error())
 			return err
@@ -149,7 +183,7 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 				connectionMethodConf[i].ConnectionMethodType+":"+connectionMethodConf[i].ConnectionMethodVariant)
 			delete(connectionMethodInfo, connectionMethodID)
 		} else {
-			connectionMethodURI := "/redfish/v1/AggregationService/ConnectionMethods/" + uuid.NewV4().String()
+			connectionMethodURI := "/redfish/v1/AggregationService/ConnectionMethods/" + uu.NewV4().String()
 			connectionMethod := agmodel.ConnectionMethod{
 				ConnectionMethodType:    connectionMethodConf[i].ConnectionMethodType,
 				ConnectionMethodVariant: connectionMethodConf[i].ConnectionMethodVariant,
@@ -162,7 +196,7 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 				l.Log.Error("Unable to add connection method : " + err.Error())
 				return err
 			}
-			l.Log.Info(
+			l.LogWithFields(ctx).Info(
 				"Connection method info with connection method type " + connectionMethodConf[i].ConnectionMethodType +
 					" and connection method variant " + connectionMethodConf[i].ConnectionMethodVariant + " added to ODIM")
 		}
@@ -177,7 +211,7 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 				string(rune(len(connectionMethodData.Links.AggregationSources))) + " aggregation sources it can't be removed")
 
 		} else {
-			l.Log.Info("Removing connection method id "+connectionMethodID+
+			l.LogWithFields(ctx).Info("Removing connection method id "+connectionMethodID+
 				" with Connection Method Type"+connectionMethodData.ConnectionMethodType+
 				" and Connection Method Variant", connectionMethodData.ConnectionMethodVariant)
 			err := e.DeleteInterface("ConnectionMethod", connectionMethodID, common.OnDisk)
@@ -193,29 +227,34 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 // Whenever  any config file changes and events  will be  and  reload the configuration and verify the existing connection methods
 func TrackConfigFileChanges(dbInterface DBInterface, errChan chan error) {
+	trackTransactionID := uuid.New()
+	podName := os.Getenv("POD_NAME")
+	actionID := common.Actions[common.ActionKey{Service: "TrackConfigFileChanges", URI: "TrackFile", Method: "GET"}].ActionID
+	actionName := common.Actions[common.ActionKey{Service: "TrackConfigFileChanges", URI: "TrackFile", Method: "GET"}].ActionName
+	ctx := CreateContext(trackTransactionID.String(), actionID, actionName, "1", common.AggregationService, podName)
 	eventChan := make(chan interface{})
 	format := config.Data.LogFormat
 	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, errChan)
 	for {
 		select {
 		case info := <-eventChan:
-			l.Log.Info(info) // new data arrives through eventChan channel
+			l.LogWithFields(ctx).Info(info) // new data arrives through eventChan channel
 			config.TLSConfMutex.RLock()
-			l.Log.Info("Updating connection method ")
+			l.LogWithFields(ctx).Info("Updating connection method ")
 			err := dbInterface.AddConnectionMethods(config.Data.ConnectionMethodConf)
 			if err != nil {
 				l.Log.Error("error while trying to Add connection methods:" + err.Error())
 			}
 			config.TLSConfMutex.RUnlock()
-			l.Log.Info("Update connection method completed")
+			l.LogWithFields(ctx).Info("Update connection method completed")
 			if l.Log.Level != config.Data.LogLevel {
-				l.Log.Info("Log level is updated, new log level is ", config.Data.LogLevel)
+				l.LogWithFields(ctx).Info("Log level is updated, new log level is ", config.Data.LogLevel)
 				l.Log.Logger.SetLevel(config.Data.LogLevel)
 			}
 			if format != config.Data.LogFormat {
 				l.SetFormatter(config.Data.LogFormat)
 				format = config.Data.LogFormat
-				l.Log.Info("Log format is updated, new log format is ", config.Data.LogFormat)
+				l.LogWithFields(ctx).Info("Log format is updated, new log format is ", config.Data.LogFormat)
 			}
 		case err := <-errChan:
 			l.Log.Error(err)
@@ -232,10 +271,9 @@ func (phc *PluginHealthCheckInterface) DupPluginConf() {
 	phc.PluginConfig.MaxRetryAttempt = config.Data.PluginStatusPolling.MaxRetryAttempt
 	phc.PluginConfig.RetryIntervalInMins = config.Data.PluginStatusPolling.RetryIntervalInMins
 	phc.PluginConfig.ResponseTimeoutInSecs = config.Data.PluginStatusPolling.ResponseTimeoutInSecs
-	phc.PluginConfig.StartUpResouceBatchSize = config.Data.PluginStatusPolling.StartUpResouceBatchSize
+	phc.PluginConfig.StartUpResourceBatchSize = config.Data.PluginStatusPolling.StartUpResourceBatchSize
 	phc.RootCA = make([]byte, len(config.Data.KeyCertConf.RootCACertificate))
 	copy(phc.RootCA, config.Data.KeyCertConf.RootCACertificate)
-	return
 }
 
 // GetPluginStatus checks the status of given plugin
@@ -243,6 +281,7 @@ func GetPluginStatus(ctx context.Context, plugin agmodel.Plugin) bool {
 	phc := &PluginHealthCheckInterface{}
 	phc.DupPluginConf()
 	status, _ := phc.GetPluginStatus(ctx, plugin)
+	l.LogWithFields(ctx).Debug("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -271,7 +310,12 @@ func LookupHost(addr string) (ip, host, port string, err error) {
 func LookupPlugin(ctx context.Context, addr string) (agmodel.Plugin, error) {
 	phc := &PluginHealthCheckInterface{}
 	phc.DupPluginConf()
-	plugins, errs := GetAllPlugins(ctx)
+	DatabaseInterface := DBDataInterface{
+		GetAllKeysFromTableFunc: GetAllKeysFromTableFunc,
+		GetPluginData:           agmodel.GetPluginData,
+		GetDatabaseConnection:   agmodel.GetPluginDBConnection,
+	}
+	plugins, errs := GetAllPlugins(ctx, DatabaseInterface)
 	if errs != nil {
 		return agmodel.Plugin{}, errs
 	}
@@ -283,6 +327,7 @@ func LookupPlugin(ctx context.Context, addr string) (agmodel.Plugin, error) {
 
 	for _, plugin := range plugins {
 		if (plugin.IP == host || plugin.IP == resolvedAddr) && (plugin.Port == port) {
+			l.LogWithFields(ctx).Debug("lookup plugin IP" + plugin.ID)
 			return plugin, nil
 		}
 	}
@@ -290,14 +335,17 @@ func LookupPlugin(ctx context.Context, addr string) (agmodel.Plugin, error) {
 }
 
 // GetAllPlugins is for fetching all the plugins added andn stored in db.
-func GetAllPlugins(ctx context.Context) ([]agmodel.Plugin, error) {
-	keys, err := GetAllKeysFromTableFunc("Plugin")
+func GetAllPlugins(ctx context.Context, dbData DBDataInterface) ([]agmodel.Plugin, error) {
+	keys, err := dbData.GetAllKeysFromTableFunc(ctx, "Plugin")
 	if err != nil {
 		return nil, err
 	}
 	var plugins []agmodel.Plugin
 	for _, key := range keys {
-		plugin, err := agmodel.GetPluginData(key)
+		readPlugin := agmodel.DBPluginDataRead{
+			DBReadclient: agmodel.GetPluginDBConnection,
+		}
+		plugin, err := dbData.GetPluginData(key, readPlugin)
 		if err != nil {
 			l.LogWithFields(ctx).Error("failed to get details of " + key + " plugin: " + err.Error())
 			continue
@@ -321,7 +369,7 @@ func (phc *PluginHealthCheckInterface) GetPluginStatus(ctx context.Context, plug
 		PluginPort:              plugin.Port,
 		PluginUsername:          plugin.Username,
 		PluginUserPassword:      string(plugin.Password),
-		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		PluginPreferredAuthType: plugin.PreferredAuthType,
 		CACertificate:           &phc.RootCA,
 	}
 	status, _, topics, err := pluginStatus.CheckStatus()
@@ -390,20 +438,20 @@ func ContactPlugin(ctx context.Context, req agmodel.PluginContactRequest, server
 }
 
 // GetDeviceSubscriptionDetails is for getting device event susbcription details
-func GetDeviceSubscriptionDetails(serverAddress string) (string, []string, error) {
+func GetDeviceSubscriptionDetails(ctx context.Context, serverAddress string) (string, []string, error) {
 	deviceIPAddress, _, _, err := LookupHost(serverAddress)
 	if err != nil {
 		return "", nil, err
 	}
 
 	searchKey := GetSearchKey(deviceIPAddress, common.DeviceSubscriptionIndex)
-	deviceSubscription, err := agmodel.GetDeviceSubscriptions(searchKey)
+	deviceSubscription, err := agmodel.GetDeviceSubscriptions(ctx, searchKey)
 	if err != nil {
 		return "", nil, err
 	}
 
 	searchKey = GetSearchKey(deviceIPAddress, common.SubscriptionIndex)
-	eventTypes, err := GetSubscribedEvtTypes(searchKey)
+	eventTypes, err := GetSubscribedEvtTypes(ctx, searchKey)
 	if err != nil {
 		return "", nil, err
 	}
@@ -436,7 +484,7 @@ func GetSearchKey(key, index string) string {
 }
 
 // GetSubscribedEvtTypes is to get event subscription details
-func GetSubscribedEvtTypes(searchKey string) ([]string, error) {
+func GetSubscribedEvtTypes(ctx context.Context, searchKey string) ([]string, error) {
 	subscriptions, err := GetEventSubscriptionsFunc("*" + searchKey + "*")
 	if err != nil {
 		return nil, err
@@ -452,6 +500,7 @@ func GetSubscribedEvtTypes(searchKey string) ([]string, error) {
 		}
 	}
 	eventTypes = removeDuplicates(eventTypes)
+	l.LogWithFields(ctx).Debug("subscribed event types:", eventTypes)
 	return eventTypes, nil
 }
 
@@ -464,7 +513,7 @@ func UpdateDeviceSubscriptionDetails(ctx context.Context, subsData map[string]st
 				continue
 			}
 			searchKey := GetSearchKey(deviceIPAddress, common.DeviceSubscriptionIndex)
-			deviceSubscription, err := GetDeviceSubscriptionsFunc(searchKey)
+			deviceSubscription, err := GetDeviceSubscriptionsFunc(ctx, searchKey)
 			if err != nil {
 				l.LogWithFields(ctx).Error("Error getting the device event subscription from DB " +
 					" for server address : " + serverAddress + err.Error())
@@ -478,7 +527,6 @@ func UpdateDeviceSubscriptionDetails(ctx context.Context, subsData map[string]st
 			}
 		}
 	}
-	return
 }
 
 // GetPluginStatusRecord is for getting the status record of a plugin
@@ -494,15 +542,15 @@ func SetPluginStatusRecord(plugin string, count int) {
 	PSRecord.Lock.Lock()
 	PSRecord.InactiveCount[plugin] = count
 	PSRecord.Lock.Unlock()
-	return
 }
 
-func CreateContext(transactionId, actionId, actionName, threadId, threadName, ProcessName string) context.Context {
+// CreateContext creates a new context based on transactionId, actionId, actionName, threadId, threadName, ProcessName
+func CreateContext(transactionID, actionID, actionName, threadID, threadName, ProcessName string) context.Context {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, common.TransactionID, transactionId)
-	ctx = context.WithValue(ctx, common.ActionID, actionId)
+	ctx = context.WithValue(ctx, common.TransactionID, transactionID)
+	ctx = context.WithValue(ctx, common.ActionID, actionID)
 	ctx = context.WithValue(ctx, common.ActionName, actionName)
-	ctx = context.WithValue(ctx, common.ThreadID, threadId)
+	ctx = context.WithValue(ctx, common.ThreadID, threadID)
 	ctx = context.WithValue(ctx, common.ThreadName, threadName)
 	ctx = context.WithValue(ctx, common.ProcessName, ProcessName)
 	return ctx

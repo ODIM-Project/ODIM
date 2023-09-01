@@ -16,8 +16,10 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	lgr "github.com/ODIM-Project/ODIM/lib-utilities/logs"
@@ -31,7 +33,7 @@ func (l *Licenses) GetLicenseService(ctx context.Context, req *licenseproto.GetL
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.LicenseService, podName)
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
@@ -40,6 +42,7 @@ func (l *Licenses) GetLicenseService(ctx context.Context, req *licenseproto.GetL
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, l.connector.GetLicenseService(req))
+	lgr.LogWithFields(ctx).Debugf("final response of get license service request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -48,7 +51,7 @@ func (l *Licenses) GetLicenseCollection(ctx context.Context, req *licenseproto.G
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.LicenseService, podName)
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
@@ -57,6 +60,7 @@ func (l *Licenses) GetLicenseCollection(ctx context.Context, req *licenseproto.G
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, l.connector.GetLicenseCollection(ctx, req))
+	lgr.LogWithFields(ctx).Debugf("final response for get license collection request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -65,7 +69,7 @@ func (l *Licenses) GetLicenseResource(ctx context.Context, req *licenseproto.Get
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.LicenseService, podName)
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
@@ -74,6 +78,7 @@ func (l *Licenses) GetLicenseResource(ctx context.Context, req *licenseproto.Get
 		return resp, nil
 	}
 	fillProtoResponse(ctx, resp, l.connector.GetLicenseResource(ctx, req))
+	lgr.LogWithFields(ctx).Debugf("final response for get license resource request: %s", string(resp.Body))
 	return resp, nil
 }
 
@@ -82,14 +87,25 @@ func (l *Licenses) InstallLicenseService(ctx context.Context, req *licenseproto.
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.LicenseService, podName)
 	resp := &licenseproto.GetLicenseResponse{}
-	authResp, err := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
+	authResp, err := l.connector.External.Auth(ctx, req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		if err != nil {
 			lgr.Log.Errorf("Error while authorizing the session token : %s", err.Error())
 		}
 		fillProtoResponse(ctx, resp, authResp)
+		lgr.LogWithFields(ctx).Debugf("final response for install license service request: %s", string(fmt.Sprintf("%v", resp.Body)))
 		return resp, nil
 	}
-	fillProtoResponse(ctx, resp, l.connector.InstallLicenseService(ctx, req))
+	sessionUserName, taskID, err := CreateTaskAndResponse(ctx, l, req.SessionToken, resp)
+	if err != nil {
+		lgr.LogWithFields(ctx).Error(err)
+		return resp, nil
+	}
+
+	var threadID int = 1
+	ctxt := context.WithValue(ctx, common.ThreadName, common.InstallLicenseService)
+	ctxt = context.WithValue(ctxt, common.ThreadID, strconv.Itoa(threadID))
+	go l.connector.InstallLicenseService(ctx, req, sessionUserName, taskID)
+	lgr.LogWithFields(ctx).Debugf("final response for install license service request: %s", string(resp.Body))
 	return resp, nil
 }

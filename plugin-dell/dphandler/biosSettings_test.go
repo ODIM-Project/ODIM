@@ -17,23 +17,28 @@ package dphandler
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/ODIM-Project/ODIM/plugin-dell/config"
-	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
-	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
-	iris "github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/httptest"
-	log "github.com/sirupsen/logrus"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
 	testhttp "net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/plugin-dell/config"
+	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
+	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
+	iris "github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/httptest"
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -222,7 +227,6 @@ func mockDeviceHandler(username, password, url string, w http.ResponseWriter) {
 		log.Error(err.Error())
 	}
 	w.Write(respBody)
-	return
 }
 
 func mockChangeBiosSettings(username, url string) (*http.Response, error) {
@@ -297,6 +301,33 @@ func TestChangeBootOrderSettings(t *testing.T) {
 	//Unit Test for success scenario
 	e.PATCH("/redfish/v1/Systems/1").WithJSON(requestBody).Expect().Status(http.StatusOK)
 
+	//Invalid Read
+	IoUtilReadAll = func(r io.Reader) ([]byte, error) {
+		return nil, fmt.Errorf("fake error")
+	}
+	//Unit Test for success scenario
+	e.PATCH("/redfish/v1/Systems/1").WithJSON(requestBody).Expect().Status(http.StatusOK)
+
+	IoUtilReadAll = func(r io.Reader) ([]byte, error) {
+		return ioutil.ReadAll(r)
+	}
+
+	//Invalid Client
+	config.Data.KeyCertConf.RootCACertificate = nil
+
+	e.PATCH("/redfish/v1/Systems/1").WithJSON(requestBody).Expect().Status(http.StatusInternalServerError)
+
+	//
+	config.SetUpMockConfig(t)
+
+	// Invalid device details
+	requestBody2 := map[string]interface{}{
+		"ManagerAddress": fmt.Sprintf("%s:%s", "deviceHost", "devicePort"),
+		"UserName":       "admin",
+		"Password":       "password",
+	}
+	e.PATCH("/redfish/v1/Systems/1").WithJSON(requestBody2).Expect().Status(http.StatusInternalServerError)
+
 	//Case for invalid token
 	e.PATCH("/redfish/v1/Systems/1").WithHeader("X-Auth-Token", "token").WithJSON(requestBody).Expect().Status(http.StatusUnauthorized)
 
@@ -338,4 +369,25 @@ func TestChangeBiosSettings(t *testing.T) {
 	//unittest for bad request scenario: given device details are wrong
 	requestBody1 := "requestbody"
 	e.PATCH("/redfish/v1/Systems/1/Bios/Settings").WithJSON(requestBody1).Expect().Status(http.StatusBadRequest)
+}
+
+func Test_changeBiosSettings(t *testing.T) {
+	ctxt := mockContext()
+	config.SetUpMockConfig(t)
+	config.Data.KeyCertConf.RootCACertificate = nil
+	status, _, err := changeBiosSettings(ctxt, "/invalidURL", nil)
+
+	assert.NotNil(t, err)
+	assert.Equal(t, status, http.StatusInternalServerError)
+}
+
+func mockContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, common.TransactionID, "xyz")
+	ctx = context.WithValue(ctx, common.ActionID, "001")
+	ctx = context.WithValue(ctx, common.ActionName, "xyz")
+	ctx = context.WithValue(ctx, common.ThreadID, "0")
+	ctx = context.WithValue(ctx, common.ThreadName, "xyz")
+	ctx = context.WithValue(ctx, common.ProcessName, "xyz")
+	return ctx
 }

@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package tresponse ...
+// Package tresponse ...
 package tresponse
 
 import (
@@ -21,7 +21,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
-//SubTask struct is used to display to the user
+// SubTask struct is used to display to the user
 type SubTask struct {
 	response.Response
 	MembersCount    int          `json:"Members@odata.count"`
@@ -37,7 +37,7 @@ type SubTask struct {
 	Messages        []Messages   `json:"Messages"`
 }
 
-//Task struct is used to display to the user
+// Task struct is used to display to the user
 type Task struct {
 	response.Response
 	TaskState         string      `json:"TaskState"`
@@ -55,7 +55,7 @@ type Task struct {
 	EstimatedDuration string      `json:"EstimatedDuration,omitempty"`
 }
 
-//Messages struct is used to display to the user
+// Messages struct is used to display to the user
 type Messages struct {
 	Message           string   `json:"Message"`
 	MessageID         string   `json:"MessageId"`
@@ -79,14 +79,14 @@ type Payload struct {
 	TargetURI     string   `json:"TargetUri"`
 }
 
-//TaskCollectionResponse is used to give back the response
+// TaskCollectionResponse is used to give back the response
 type TaskCollectionResponse struct {
 	response.Response
 	MembersCount int          `json:"Members@odata.count"`
 	Members      []ListMember `json:"Members"`
 }
 
-//TaskServiceResponse is used to give baxk the response
+// TaskServiceResponse is used to give baxk the response
 type TaskServiceResponse struct {
 	response.Response
 	CompletedTaskOverWritePolicy    string      `json:"CompletedTaskOverWritePolicy,omitempty"`
@@ -100,17 +100,17 @@ type TaskServiceResponse struct {
 	Oem                             Oem         `json:"Oem,omitempty"`
 }
 
-//OemActions struct for oem actions
+// OemActions struct for oem actions
 type OemActions struct {
 	Oem *Oem `json:"Oem,omitempty"`
 }
 
-//Tasks struct for response
+// Tasks struct for response
 type Tasks struct {
 	OdataID string `json:"@odata.id"`
 }
 
-//Status struct definition
+// Status struct definition
 type Status struct {
 	Health       string `json:"Health"`
 	HealthRollup string `json:"HealthRollup"`

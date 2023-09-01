@@ -17,6 +17,7 @@
 package smodel
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -600,7 +601,7 @@ func TestFindAll(t *testing.T) {
 	assert.NotNil(t, err, "should be an error ")
 
 	scanFunc = func(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {
-		return []interface{}{"dummy"}, nil
+		return []interface{}{}, nil
 	}
 	_, err = FindAll("Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1")
 	assert.Nil(t, err, "should be no error ")
@@ -641,4 +642,42 @@ func TestGetAllKeysFromTable(t *testing.T) {
 		return common.GetDBConnection(dbFlag)
 	}
 
+}
+
+func TestCreatePluginTask(t *testing.T) {
+	config.SetUpMockConfig(t)
+	odimTaskID := "task3b7a2fc0-40aa-4788-961f-d201ee6ced4d"
+	pluginTaskID := "task3a7a2fc0-40aa-4788-961f-d201ee6ced4c"
+	type args struct {
+		ctx   context.Context
+		key   string
+		value interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "insert plugin task info in DB",
+			args: args{
+				ctx: context.TODO(),
+				key: pluginTaskID,
+				value: common.PluginTask{
+					IP:               "127.0.0.1",
+					OdimTaskID:       odimTaskID,
+					PluginTaskMonURL: pluginTaskID,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := PersistPluginTaskInfoForResetRequest(tt.args.ctx, tt.args.key, tt.args.value)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CreatePluginTask()  error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
 }

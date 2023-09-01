@@ -1,4 +1,5 @@
 ---
+{{- if not .Values.grfplugin.logsOnConsole }}
 kind: PersistentVolume
 apiVersion: v1
 metadata:
@@ -17,3 +18,4 @@ spec:
     name: grfplugin-log-claim
   hostPath:
     path: {{ .Values.grfplugin.logPath }}
+{{- end }}

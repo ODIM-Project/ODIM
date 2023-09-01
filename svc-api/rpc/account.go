@@ -24,6 +24,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
+// helper functions
 var (
 	ClientFunc           = services.ODIMService.Client
 	NewAccountClientFunc = accountproto.NewAccountClient
@@ -55,6 +56,7 @@ func DoAccountCreationRequest(ctx context.Context, req accountproto.CreateAccoun
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
+
 	account := NewAccountClientFunc(conn)
 
 	resp, err := account.Create(ctx, &req)
@@ -73,6 +75,7 @@ func DoGetAllAccountRequest(ctx context.Context, req accountproto.AccountRequest
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
+
 	account := NewAccountClientFunc(conn)
 
 	resp, err := account.GetAllAccounts(ctx, &req)
@@ -128,6 +131,7 @@ func DoAccountDeleteRequest(ctx context.Context, req accountproto.DeleteAccountR
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
+
 	account := NewAccountClientFunc(conn)
 
 	resp, err := account.Delete(ctx, &req)

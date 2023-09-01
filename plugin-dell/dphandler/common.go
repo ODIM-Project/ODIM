@@ -16,12 +16,13 @@
 package dphandler
 
 import (
+	"context"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 )
@@ -43,16 +44,16 @@ func convertToSouthBoundURI(req string, storageInstance string) string {
 }
 
 // queryDevice is for querying a Dell server
-func queryDevice(uri string, device *dputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
+func queryDevice(ctx context.Context, uri string, device *dputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
 		errMsg := "While trying to create the redfish client, got:" + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return http.StatusInternalServerError, nil, nil, fmt.Errorf(errMsg)
 	}
 	resp, err := redfishClient.DeviceCall(device, uri, method)
 	if err != nil {
-		log.Error(err.Error())
+		l.LogWithFields(ctx).Error(err.Error())
 		if resp == nil {
 			return http.StatusBadRequest, nil, nil, err
 		}
@@ -62,7 +63,7 @@ func queryDevice(uri string, device *dputilities.RedfishDevice, method string) (
 	defer resp.Body.Close()
 	if err != nil {
 		errMsg := "While trying to read the response body, got: " + err.Error()
-		log.Error(errMsg)
+		l.LogWithFields(ctx).Error(errMsg)
 		return http.StatusInternalServerError, nil, nil, fmt.Errorf(errMsg)
 	}
 	return resp.StatusCode, resp.Header, body, nil

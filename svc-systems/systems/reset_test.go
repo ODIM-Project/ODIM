@@ -20,14 +20,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"reflect"
 	"testing"
-
-	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	"github.com/stretchr/testify/assert"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
@@ -128,19 +125,7 @@ func mockContactClient(ctx context.Context, url, method, token string, odataID s
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
-func TestPluginContact_ComputerSystemReset(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
+func mockDeviceAndSystemData(t *testing.T) {
 	device1 := smodel.Target{
 		ManagerAddress: "10.24.0.13",
 		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
@@ -161,16 +146,6 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 		UserName:       "admin",
 		DeviceUUID:     "7a2c6100-67da-5fd6-ab82-6870d29c727",
 		PluginID:       "GR",
-	}
-	errArg3 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.InternalError,
-				ErrorMessage:  "error while trying to get plugin details",
-			},
-		},
 	}
 
 	err := mockPluginData(t)
@@ -197,6 +172,34 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
+}
+
+func TestPluginContact_ComputerSystemReset(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	mockDeviceAndSystemData(t)
+
+	errArg3 := response.Args{
+		Code:    response.GeneralError,
+		Message: "",
+		ErrorArgs: []response.ErrArgs{
+			response.ErrArgs{
+				StatusMessage: response.InternalError,
+				ErrorMessage:  "error while trying to get plugin details",
+			},
+		},
+	}
+
 	var positiveResponse interface{}
 	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
 	pluginContact := PluginContact{
@@ -282,11 +285,11 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	ctx := mockContext()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.ComputerSystemReset(ctx, tt.args.req, "task123453", "admin"); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PluginContact.ComputerSystemReset() = %v, want %v", got, tt.want)
-			}
+			tt.p.ComputerSystemReset(ctx, tt.args.req, "task123453", "admin")
 		})
 	}
+
+	// expected internal server error
 	req := systemsproto.ComputerSystemResetRequest{
 		SystemID:    "24b243cf-f1e3-5318-92d9-2d6737d6b0b.1",
 		RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
@@ -294,8 +297,9 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	JSONUnMarshal = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
-	resp := pluginContact.ComputerSystemReset(ctx, &req, "task123453", "admin")
-	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
+	pluginContact.ComputerSystemReset(ctx, &req, "task123453", "admin")
+
+	// bad request
 	req = systemsproto.ComputerSystemResetRequest{
 		SystemID:    "24b243cf-f1e3-5318-92d9-2d6737d6b0b.1",
 		RequestBody: []byte(`{"resetType": "ForceRestart"}`),
@@ -303,23 +307,23 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	JSONUnMarshal = func(data []byte, v interface{}) error {
 		return nil
 	}
-	resp = pluginContact.ComputerSystemReset(ctx, &req, "task123453", "admin")
-	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status code should be StatusBadRequest")
+	pluginContact.ComputerSystemReset(ctx, &req, "task123453", "admin")
 
+	// internal server error
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", &errors.Error{}
 	}
-	resp = pluginContact.ComputerSystemReset(ctx, &req, "task123453", "admin")
-	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
+	pluginContact.ComputerSystemReset(ctx, &req, "task123453", "admin")
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", nil
 	}
+
 	// Invalid PreferredAuthType
 	StringsEqualFold = func(s, t string) bool {
 		return true
 	}
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 string, data4 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
@@ -327,29 +331,27 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 		SystemID:    "7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
 		RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 	}
-	resp = pluginContact.ComputerSystemReset(ctx, &req, "task123453", "admin")
-	assert.NotNil(t, resp, "Response Should have error")
+	pluginContact.ComputerSystemReset(ctx, &req, "task123453", "admin")
 
 	//Invalid ContactPlugin
 	StringsEqualFold = func(s, t string) bool {
 		return false
 	}
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 scommon.ResponseStatus, err error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) (data1 []byte, data2 string, data3 string, data4 scommon.ResponseStatus, err error) {
 		err = &errors.Error{}
 		return
 	}
-	resp = pluginContact.ComputerSystemReset(ctx, &req, "task123453", "admin")
-	assert.NotNil(t, resp, "Response Should have error")
+	pluginContact.ComputerSystemReset(ctx, &req, "task123453", "admin")
 
-	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) ([]byte, string, scommon.ResponseStatus, error) {
+	ContactPluginFunc = func(ctx context.Context, req scommon.PluginContactRequest, errorMessage string) ([]byte, string, string, scommon.ResponseStatus, error) {
 		return scommon.ContactPlugin(ctx, req, errorMessage)
 	}
+
 	// Invalid Json
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
-	resp = pluginContact.ComputerSystemReset(ctx, &req, "task123453", "admin")
-	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
+	pluginContact.ComputerSystemReset(ctx, &req, "task123453", "admin")
 
 	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)

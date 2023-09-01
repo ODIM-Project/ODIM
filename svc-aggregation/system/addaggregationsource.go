@@ -89,6 +89,7 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 		l.LogWithFields(ctx).Errorln(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
+
 	if len(indexList) > 0 {
 		errMsg := fmt.Sprintf("Manager address already exist %v", ipAddr)
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"ComputerSystem", "HostName", ipAddr}, taskInfo)
@@ -128,13 +129,13 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 		}
 	}()
 
-	connectionMethod, err1 := e.GetConnectionMethod(addResourceRequest.ConnectionMethod.OdataID)
+	connectionMethod, err1 := e.GetConnectionMethod(ctx, addResourceRequest.ConnectionMethod.OdataID)
 	if err1 != nil {
 		errMsg := "Unable to get connection method id: " + err1.Error()
 		l.LogWithFields(ctx).Error(errMsg)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"connectionmethod id", addResourceRequest.ConnectionMethod.OdataID}, taskInfo)
 	}
-	cmVariants := getConnectionMethodVariants(connectionMethod.ConnectionMethodVariant)
+	cmVariants := getConnectionMethodVariants(ctx, connectionMethod.ConnectionMethodVariant)
 	var pluginContactRequest getResourceRequest
 	pluginContactRequest.ContactClient = e.ContactClient
 	pluginContactRequest.GetPluginStatus = e.GetPluginStatus
@@ -147,6 +148,7 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 	// check status will do call on the URI /ODIM/v1/Status to the requested manager address
 	// if its success then add the plugin, else if its not found then add BMC
 	// else return the response
+	l.LogWithFields(ctx).Debugf("request data to check status of requested manager: %s", string(pluginContactRequest.Data))
 	statusResp, statusCode, queueList := checkStatus(ctx, pluginContactRequest, addResourceRequest, cmVariants, taskInfo)
 	if statusCode == http.StatusOK {
 
@@ -162,7 +164,14 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 	} else {
 		return statusResp
 	}
+
+	// TODO: verify if this block is needed and remove if not
 	if resp.StatusMessage != "" {
+		l.LogWithFields(ctx).Debugf("response got while adding compute :- StatusCode: %d, StatusMessage: %s, Body : %v",
+			resp.StatusCode, resp.StatusMessage, resp.Body)
+		percentComplete = 100
+		task := fillTaskData(taskID, targetURI, reqBody, resp, common.Completed, common.Warning, percentComplete, http.MethodPost)
+		e.UpdateTask(ctx, task)
 		return resp
 	}
 	// Adding Aggregation Source to db
@@ -212,5 +221,15 @@ func (e *ExternalInterface) addAggregationSource(ctx context.Context, taskID, ta
 	percentComplete = 100
 	task := fillTaskData(taskID, targetURI, reqBody, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(ctx, task)
+	finalresp := generateResponse(ctx, resp.Body)
+	l.LogWithFields(ctx).Debugf("final response for add aggregation source request: %s", string(finalresp))
 	return resp
+}
+
+func generateResponse(ctx context.Context, input interface{}) []byte {
+	bytes, err := json.Marshal(input)
+	if err != nil {
+		l.LogWithFields(ctx).Error("error in unmarshalling response object " + err.Error())
+	}
+	return bytes
 }

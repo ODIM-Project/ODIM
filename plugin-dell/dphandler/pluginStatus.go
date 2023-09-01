@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dphandler ...
+// Package dphandler ...
 package dphandler
 
 import (
@@ -24,9 +24,9 @@ import (
 	"time"
 
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 
 	//"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
@@ -36,13 +36,14 @@ import (
 // GetPluginStatus defines the GetPluginStatus iris handler.
 // and returns status
 func GetPluginStatus(ctx iris.Context) {
-	//Get token from Request
+	ctxt := ctx.Request().Context()
+	// Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
 	//Validating the token
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
+			l.LogWithFields(ctxt).Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -77,13 +78,14 @@ func GetPluginStatus(ctx iris.Context) {
 
 // GetPluginStartup ...
 func GetPluginStartup(ctx iris.Context) {
+	ctxt := ctx.Request().Context()
 	//Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
 	//Validating the token
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
+			l.LogWithFields(ctxt).Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -93,18 +95,18 @@ func GetPluginStartup(ctx iris.Context) {
 	var startup dpmodel.StartUpData
 	err := ctx.ReadJSON(&startup)
 	if err != nil {
-		log.Error("While trying to collect data from request, got: " + err.Error())
+		l.LogWithFields(ctxt).Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
 	}
 
 	if len(startup.Devices) <= 0 {
-		log.Info("startup devices list is empty")
+		l.LogWithFields(ctxt).Debug("startup devices list is empty")
 		ctx.StatusCode(http.StatusOK)
 		return
 	}
-	log.Infof("inventory update request received for %d devices", len(startup.Devices))
+	l.LogWithFields(ctxt).Debugf("inventory update request received for %d devices", len(startup.Devices))
 
 	errorCh := make(chan error)
 	startUpResponse := make(chan map[string]string)
@@ -140,15 +142,15 @@ func GetPluginStartup(ctx iris.Context) {
 	for uuid, device := range startup.Devices {
 		if device.Operation == "add" {
 			dpmodel.AddDeviceToInventory(uuid, device)
-			log.Info("device " + uuid + " added to the inventory")
+			l.LogWithFields(ctxt).Debug("device " + uuid + " added to the inventory")
 		}
 		if device.Operation == "del" {
 			dpmodel.DeleteDeviceInInventory(uuid)
-			log.Info("device " + uuid + " removed from the inventory")
+			l.LogWithFields(ctxt).Debug("device " + uuid + " removed from the inventory")
 		}
 		if startup.ResyncEvtSubscription && startup.RequestType == "full" {
 			writeWG.Add(1)
-			log.Info("performing event subscription check for all the devices in the inventory")
+			l.LogWithFields(ctxt).Debug("performing event subscription check for all the devices in the inventory")
 			go checkCreateSub(device, startUpResponse, errorCh, &writeWG)
 		}
 	}
@@ -157,12 +159,10 @@ func GetPluginStartup(ctx iris.Context) {
 	quit <- true
 	ctx.StatusCode(http.StatusOK)
 	ctx.JSON(respBody)
-	return
 }
 
 func checkCreateSub(server dpmodel.DeviceData, startUpResponse chan map[string]string, errorCh chan error, writeWG *sync.WaitGroup) {
 	var respBody = make(map[string]string)
-
 	device := &dputilities.RedfishDevice{
 		Host:     server.Address,
 		Username: server.UserName,
@@ -174,7 +174,6 @@ func checkCreateSub(server dpmodel.DeviceData, startUpResponse chan map[string]s
 		errorCh <- err
 		return
 	}
-
 	//Get Subscription details
 	resp, err := redfishClient.GetSubscriptionDetail(device)
 	if err != nil {
@@ -253,5 +252,4 @@ func checkCreateSub(server dpmodel.DeviceData, startUpResponse chan map[string]s
 
 	respBody[device.Host] = resp.Header.Get("location")
 	startUpResponse <- respBody
-	return
 }

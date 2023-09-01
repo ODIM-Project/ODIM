@@ -24,6 +24,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
+// helper functions
 var (
 	NewAggregatorClientFunc = aggregatorproto.NewAggregatorClient
 )
@@ -55,7 +56,6 @@ func DoResetRequest(ctx context.Context, req aggregatorproto.AggregatorRequest) 
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-
 	aggregator := NewAggregatorClientFunc(conn)
 
 	resp, err := aggregator.Reset(ctx, &req)

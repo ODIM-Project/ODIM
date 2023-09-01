@@ -19,7 +19,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
-//Privileges strcut definition used to build response
+// Privileges strcut definition used to build response
 type Privileges struct {
 	response.Response
 	PrivilegesUsed []string `json:"PrivilegesUsed"`

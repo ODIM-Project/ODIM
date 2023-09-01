@@ -669,7 +669,7 @@ func fillCapabilitiesResponse(respMap map[string]interface{}, oid string) (body 
 	}
 	collectionCapabilitiesObject := make(map[string]interface{})
 	collectionCapabilitiesObject["@odata.id"] = oid
-	collectionCapabilitiesObject["@odata.type"] = "#Volume.v1_6_2.Volume"
+	collectionCapabilitiesObject["@odata.type"] = "#Volume.v1_9_0.Volume"
 	collectionCapabilitiesObject["Id"] = "Capabilities"
 	collectionCapabilitiesObject["Name"] = "Capabilities for the volume collection"
 	collectionCapabilitiesObject["RAIDType@Redfish.RequiredOnCreate"] = true

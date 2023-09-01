@@ -29,7 +29,7 @@ import (
 var licenseServiceResponse = dmtf.LicenseService{
 	OdataContext:   "/redfish/v1/$metadata#LicenseService.LicenseService",
 	OdataID:        "/redfish/v1/LicenseService",
-	OdataType:      "#LicenseService.v1_0_0.LicenseService",
+	OdataType:      "#LicenseService.v1_1_0.LicenseService",
 	Description:    "License Service",
 	Name:           "License Service",
 	ServiceEnabled: true,
@@ -57,7 +57,7 @@ var licenseCollectionResponse = dmtf.LicenseCollection{
 var licenseResourceResponse = dmtf.License{
 	OdataContext: "/redfish/v1/$metadata#License.License",
 	OdataID:      "/redfish/v1/LicenseService/Licenses/uuid.1.1",
-	OdataType:    "#License.v1_0_0.License",
+	OdataType:    "#License.v1_1_1.License",
 	ID:           "uuid.1.1",
 	Name:         "iLO License",
 	LicenseType:  "Perpetual",

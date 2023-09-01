@@ -79,9 +79,9 @@ func (e *ExternalInterface) GetConnectionMethodInfo(ctx context.Context, req *ag
 	}
 	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/ConnectionMethods/")
 	commonResponse := response.Response{
-		OdataType:    "#ConnectionMethod.v1_0_0.ConnectionMethod",
+		OdataType:    "#ConnectionMethod.v1_1_0.ConnectionMethod",
 		OdataID:      req.URL,
-		OdataContext: "/redfish/v1/$metadata#ConnectionMethod.v1_0_0.ConnectionMethod",
+		OdataContext: "/redfish/v1/$metadata#ConnectionMethod.v1_1_0.ConnectionMethod",
 		ID:           data[1],
 		Name:         "Connection Method",
 	}

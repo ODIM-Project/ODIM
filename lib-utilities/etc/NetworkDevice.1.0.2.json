@@ -1,13 +1,13 @@
 {
-    "@Redfish.Copyright": "Copyright 2019-2020 DMTF. All rights reserved.",
+    "@Redfish.Copyright": "Copyright 2019-2022 DMTF. All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
-    "@odata.type": "#MessageRegistry.v1_4_0.MessageRegistry",
-    "Id": "NetworkDevice.1.0.1",
+    "@odata.type": "#MessageRegistry.v1_6_0.MessageRegistry",
+    "Id": "NetworkDevice.1.0.2",
     "Name": "Network Device Message Registry",
     "Language": "en",
     "Description": "This registry defines the messages for networking devices",
     "RegistryPrefix": "NetworkDevice",
-    "RegistryVersion": "1.0.1",
+    "RegistryVersion": "1.0.2",
     "OwningEntity": "DMTF",
     "Messages": {
         "CableInserted": {
@@ -22,12 +22,12 @@
                 "string"
             ],
             "ArgDescriptions": [
-                "The `Id` of the network adapter.",
-                "The `Id` of the network port."
+                "The name or identifier of the network adapter.",
+                "The name or identifier of the network port."
             ],
             "ArgLongDescriptions": [
-                "The value of this argument shall be a string containing the value of the `Id` property of network adapter into which a cable has been plugged.",
-                "The value of this argument shall be a string containing the value of the `Id` property of network port into which a cable has been plugged."
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network adapter into which a cable has been plugged.",
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network port into which a cable has been plugged."
             ],
             "Resolution": "Refresh your cached version of the network port to get the updated information from the service.",
             "ClearingLogic": {
@@ -49,12 +49,12 @@
                 "string"
             ],
             "ArgDescriptions": [
-                "The `Id` of the network adapter.",
-                "The `Id` of the network port."
+                "The name or identifier of the network adapter.",
+                "The name or identifier of the network port."
             ],
             "ArgLongDescriptions": [
-                "The value of this argument shall be a string containing the value of the `Id` property of network adapter from which a cable has been unplugged.",
-                "The value of this argument shall be a string containing the value of the `Id` property of network port from which a cable has been unplugged."
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network adapter from which a cable has been unplugged.",
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network port from which a cable has been unplugged."
             ],
             "Resolution": "Refresh your cached version of the network port to get the updated information from the service."
         },
@@ -71,14 +71,14 @@
                 "string"
             ],
             "ArgDescriptions": [
-                "The `Id` of the network adapter.",
-                "The `Id` of the network port.",
-                "The `Id` of the network function."
+                "The name or identifier of network adapter.",
+                "The name or identifier of network port.",
+                "The name or identifier of network function."
             ],
             "ArgLongDescriptions": [
-                "The value of this argument shall be a string containing the value of the `Id` property of network adapter from which a connection has dropped.",
-                "The value of this argument shall be a string containing the value of the `Id` property of network port from which a connection has dropped.",
-                "The value of this argument shall be a string containing the value of the `Id` property of network device function from which a connection has dropped."
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network adapter from which a connection has dropped.",
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network port from which a connection has dropped.",
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network device function from which a connection has dropped."
             ],
             "Resolution": "Refresh your cached version of the network port to get the updated information from the service."
         },
@@ -95,14 +95,14 @@
                 "string"
             ],
             "ArgDescriptions": [
-                "The `Id` of the network adapter.",
-                "The `Id` of the network port.",
-                "The `Id` of the network function."
+                "The name or identifier of network adapter.",
+                "The name or identifier of network port.",
+                "The name or identifier of network function."
             ],
             "ArgLongDescriptions": [
-                "The value of this argument shall be a string containing the value of the `Id` property of network adapter to which a connection has been established.",
-                "The value of this argument shall be a string containing the value of the `Id` property of network port to which a connection has been established.",
-                "The value of this argument shall be a string containing the value of the `Id` property of network device function to which a connection has been established."
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network adapter to which a connection has been established.",
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network port to which a connection has been established.",
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network device function to which a connection has been established."
             ],
             "Resolution": "Refresh your cached version of the network port to get the updated information from the service.",
             "ClearingLogic": {
@@ -125,14 +125,14 @@
                 "string"
             ],
             "ArgDescriptions": [
-                "The `Id` of the network adapter.",
-                "The `Id` of the network port.",
-                "The `Id` of the network function."
+                "The name or identifier of network adapter.",
+                "The name or identifier of network port.",
+                "The name or identifier of network function."
             ],
             "ArgLongDescriptions": [
-                "The value of this argument shall be a string containing the value of the `Id` property of network adapter to which a connection has been established.",
-                "The value of this argument shall be a string containing the value of the `Id` property of network port to which a connection has been established.",
-                "The value of this argument shall be a string containing the value of the `Id` property of network device function to which a connection has been established."
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network adapter to which a connection has been established.",
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network port to which a connection has been established.",
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network device function to which a connection has been established."
             ],
             "Resolution": "Refresh your cached version of the network port to get the updated information from the service.",
             "ClearingLogic": {
@@ -157,16 +157,16 @@
                 "number"
             ],
             "ArgDescriptions": [
-                "The `Id` of the network adapter.",
-                "The `Id` of the network port.",
-                "The `Id` of the network function.",
+                "The name or identifier of network adapter.",
+                "The name or identifier of network port.",
+                "The name or identifier of network function.",
                 "The number of times the link has flapped.",
                 "The number of minutes over which the link has flapped."
             ],
             "ArgLongDescriptions": [
-                "The value of this argument shall be a string containing the value of the `Id` property of network adapter to which a connection has been established.",
-                "The value of this argument shall be a string containing the value of the `Id` property of network port to which a connection has been established.",
-                "The value of this argument shall be a string containing the value of the `Id` property of network device function to which a connection has been established.",
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network adapter to which a connection has been established.",
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network port to which a connection has been established.",
+                "The value of this argument shall contain a string that identifies or describes the location or physical context of the network device function to which a connection has been established.",
                 "The value of this argument shall be a number representing the count of link establishment/disconnection cycles.",
                 "The value of this argument shall be a number representing the number of minutes over which link flapping activity has been detected."
             ],

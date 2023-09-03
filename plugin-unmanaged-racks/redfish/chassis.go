@@ -49,7 +49,7 @@ type Chassis struct {
 
 // ShapeChassis function initializes given struct(ch) with values for ids, odata related fields
 func ShapeChassis(ch *Chassis) *Chassis {
-	ch.Otype = "#Chassis.v1_20_0.Chassis"
+	ch.Otype = "#Chassis.v1_23_0.Chassis"
 	ch.Ocontext = "/redfish/v1/$metadata#Chassis.Chassis"
 	ch.ID = generateChassisID(ch.Name)
 	ch.Oid = "/ODIM/v1/Chassis/" + ch.ID

@@ -2,7 +2,7 @@
     "@Redfish.Copyright": "Copyright 2015-2022 DMTF. All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
     "@odata.type": "#PrivilegeRegistry.v1_1_4.PrivilegeRegistry",
-    "Id": "Redfish_1.3.0_PrivilegeRegistry",
+    "Id": "Redfish_1.4.0_PrivilegeRegistry",
     "Name": "Privilege Mapping array collection",
     "PrivilegesUsed": [
         "Login",
@@ -706,6 +706,53 @@
                     {
                         "Privilege": [
                             "ConfigureComponents"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "AttributeRegistry",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
                         ]
                     }
                 ]
@@ -1560,6 +1607,100 @@
                     {
                         "Privilege": [
                             "ConfigureComponents"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "ComponentIntegrity",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "ComponentIntegrityCollection",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
                         ]
                     }
                 ]
@@ -4858,6 +4999,13 @@
                         ]
                     }
                 ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
                 "PUT": [
                     {
                         "Privilege": [
@@ -5332,6 +5480,53 @@
                     {
                         "Privilege": [
                             "ConfigureComponents"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "MessageRegistry",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
                         ]
                     }
                 ]
@@ -7350,6 +7545,53 @@
                     }
                 ],
                 "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "Entity": "PrivilegeRegistry",
+            "OperationMap": {
+                "GET": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "HEAD": [
+                    {
+                        "Privilege": [
+                            "Login"
+                        ]
+                    }
+                ],
+                "PATCH": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "POST": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "PUT": [
+                    {
+                        "Privilege": [
+                            "ConfigureManager"
+                        ]
+                    }
+                ],
+                "DELETE": [
                     {
                         "Privilege": [
                             "ConfigureManager"

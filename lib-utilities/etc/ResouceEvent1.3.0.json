@@ -1,13 +1,13 @@
 {
-    "@Redfish.Copyright": "Copyright 2014-2021 DMTF in cooperation with the Storage Networking Industry Association (SNIA). All rights reserved.",
+    "@Redfish.Copyright": "Copyright 2014-2023 DMTF in cooperation with the Storage Networking Industry Association (SNIA). All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
-    "@odata.type": "#MessageRegistry.v1_5_0.MessageRegistry",
-    "Id": "ResourceEvent.1.2.1",
+    "@odata.type": "#MessageRegistry.v1_6_0.MessageRegistry",
+    "Id": "ResourceEvent.1.3.0",
     "Name": "Resource Event Message Registry",
     "Language": "en",
     "Description": "This registry defines the messages to use for resource events.",
     "RegistryPrefix": "ResourceEvent",
-    "RegistryVersion": "1.2.1",
+    "RegistryVersion": "1.3.0",
     "OwningEntity": "DMTF",
     "Messages": {
         "ResourceCreated": {
@@ -431,6 +431,15 @@
                     "ResourceSelfTestFailed"
                 ]
             }
+        },
+        "TestMessage": {
+            "Description": "A test message used to validate event delivery mechanisms.",
+            "LongDescription": "This message shall be used to indicate a test of a event delivery mechanism, such as the creation of a LogEntry resource or an event transmission.",
+            "Message": "Test message.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 0,
+            "Resolution": "None."
         },
         "AggregationSourceDiscovered": {
             "Description": "Indicates that a new aggregation source has been discovered.",

@@ -134,8 +134,9 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			"/redfish/v1/TaskService/Tasks",
 		}
 	}
+	uniqueOriginResource := removeDuplicateSystems(originResources)
 	var collectionList = make([]string, 0)
-	subTaskChan := make(chan int32, len(originResources))
+	subTaskChan := make(chan int32, len(uniqueOriginResource))
 	taskCollectionWG.Add(1)
 	bubbleUpStatusCode := int32(http.StatusCreated)
 	go func() {
@@ -149,8 +150,8 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			if statusCode > bubbleUpStatusCode {
 				bubbleUpStatusCode = statusCode
 			}
-			if i <= len(originResources) && statusCode != http.StatusAccepted {
-				percentComplete = int32((i / len(originResources)) * 100)
+			if i <= len(uniqueOriginResource) && statusCode != http.StatusAccepted {
+				percentComplete = int32((i / len(uniqueOriginResource)) * 100)
 				if resp.StatusCode == 0 {
 					resp.StatusCode = http.StatusAccepted
 				}
@@ -159,7 +160,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 		}
 	}()
 	var isServerAdded = false
-	for _, origin := range originResources {
+	for _, origin := range uniqueOriginResource {
 		_, err := getUUID(origin)
 		if err != nil {
 			collection, collectionName, collectionFlag, aggregateResource, isAggregate, _ := e.checkCollection(origin)
@@ -236,7 +237,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			hosts = []string{}
 		}
 		statusCode, statusMessage, messageArgs, err = e.SaveSubscription(ctx, sessionUserName, subscriptionID,
-			hosts, successfulSubscriptionList, postRequest)
+			hosts, addOdataIDfromOriginResources(originResources), postRequest)
 		if err != nil {
 			l.LogWithFields(ctx).Error(err.Error())
 			evcommon.GenErrorResponse(err.Error(), statusMessage, statusCode,

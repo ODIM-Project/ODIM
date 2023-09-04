@@ -343,7 +343,7 @@ func (e *ExternalInterfaces) reAttemptEvents(eventMessage evmodel.EventPost) {
 		// if undelivered event already published then ignore retrying
 		eventString, err := e.GetUndeliveredEvents(eventMessage.UndeliveredEventID)
 		if err != nil || len(eventString) < 1 {
-			l.Log.Debug("Event is forwarded to destination")
+			l.Log.Debug("No catch event found for destination " + eventMessage.UndeliveredEventID)
 			return
 		}
 		resp, err = SendEventFunc(eventMessage.Destination, eventMessage.Message)

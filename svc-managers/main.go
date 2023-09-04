@@ -150,7 +150,7 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 	logEntrydata := dmtf.LogServices{
 		Ocontext:    "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
 		Oid:         "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL",
-		Otype:       "#LogService.v1_3_0.LogService",
+		Otype:       "#LogService.v1_4_0.LogService",
 		Description: "Logs view",
 		Entries: &dmtf.Entries{
 			Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL/Entries",

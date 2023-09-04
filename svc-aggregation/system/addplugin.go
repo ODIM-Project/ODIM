@@ -233,7 +233,7 @@ func (e *ExternalInterface) addPluginData(ctx context.Context, req AddResourceRe
 	logEntrydata := model.LogServices{
 		Ocontext:    "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
 		Oid:         "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL",
-		Otype:       "#LogService.v1_3_0.LogService",
+		Otype:       "#LogService.v1_4_0.LogService",
 		Description: "Logs view",
 		Entries: &model.Entries{
 			Oid: "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries",

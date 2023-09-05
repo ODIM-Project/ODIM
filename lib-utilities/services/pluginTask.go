@@ -47,6 +47,43 @@ func SavePluginTaskInfo(ctx context.Context, pluginIP, pluginServerName,
 	return nil
 }
 
+// SaveEventSubscriptionID saves the event subscription id in db
+// it receives taskID and subscription ID. taskID is the key.
+func SaveEventSubscriptionID(ctx context.Context, taskID, subscriptionID string) error {
+
+	table := "EventSubscriptionID"
+	connPool, err := redis.GetDBConnection(redis.InMemory)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to connecting"+
+			" to DB: ", err.Error())
+	}
+
+	if err = connPool.Create(table, taskID, subscriptionID); err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to insert"+
+			" plugin task: ", err.Error())
+	}
+	return nil
+}
+
+// SaveEventSubscriptionID saves the event subscription id in db
+// it receives taskID and subscription ID. taskID is the key.
+func GetEventSubscriptionID(ctx context.Context, taskID string) (string, error) {
+
+	table := "EventSubscriptionID"
+	connPool, err := redis.GetDBConnection(redis.InMemory)
+	if err != nil {
+		return "", errors.PackError(err.ErrNo(), "error while trying to connecting"+
+			" to DB: ", err.Error())
+	}
+
+	value, err := connPool.Read(table, taskID)
+	if err != nil {
+		return "", errors.PackError(err.ErrNo(), "error while trying to insert"+
+			" plugin task: ", err.Error())
+	}
+	return value, nil
+}
+
 // createPluginTask will insert plugin task info in DB
 func createPluginTask(ctx context.Context, key string,
 	value interface{}) *errors.Error {

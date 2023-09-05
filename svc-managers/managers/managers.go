@@ -289,7 +289,9 @@ func (e *ExternalInterface) GetManagersResource(ctx context.Context, req *manage
 			}
 			errorMessage := "unable to get odimra managers details: " + err.Error()
 			l.LogWithFields(ctx).Error(errorMessage)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, []interface{}{}, nil)
+			errArgs := []interface{}{tableName, req.ManagerID}
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+
 		}
 
 		json.Unmarshal([]byte(data), &resource)

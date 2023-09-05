@@ -32,6 +32,7 @@ import (
 	l "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-task/tcommon"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 	"github.com/ODIM-Project/ODIM/svc-task/tresponse"
@@ -1252,6 +1253,9 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 			parentTask.TaskFinalResponse = nil
 			parentTask.StatusCode = http.StatusCreated
 		}
+		if value, err := services.GetEventSubscriptionID(ctx, parentTask.ID); err == nil {
+			tcommon.DeleteSubscription(ctx, value)
+		}
 		ts.updateTaskToCompleted(parentTask)
 		return nil
 	}
@@ -1298,6 +1302,9 @@ func (ts *TasksRPC) validateChildTasksAndUpdateParentTask(ctx context.Context, c
 			parentTask.Payload.HTTPHeaders = resp.Header
 			parentTask.TaskFinalResponse = nil
 			parentTask.StatusCode = http.StatusCreated
+		}
+		if value, err := services.GetEventSubscriptionID(ctx, parentTask.ID); err == nil {
+			tcommon.DeleteSubscription(ctx, value)
 		}
 		ts.updateTaskToCompleted(parentTask)
 	}

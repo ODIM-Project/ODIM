@@ -1164,7 +1164,7 @@ func GetEventSubscriptions(key string) ([]string, error) {
 	}
 	subscriptions, gerr := conn.GetEvtSubscriptions(common.SubscriptionIndex, "*"+key+"*")
 	if gerr != nil {
-		return nil, fmt.Errorf("error while trying to get event subsciption details: %v", gerr.Error())
+		return nil, fmt.Errorf("error while trying to get event subscription details: %v", gerr.Error())
 	}
 	return subscriptions, nil
 }

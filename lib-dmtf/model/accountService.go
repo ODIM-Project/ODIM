@@ -292,9 +292,11 @@ type ExternalAccountProvider struct {
 	PasswordSet         bool               `json:"PasswordSet,omitempty"`
 	Priority            int                `json:"Priority,omitempty"`
 	RemoteRoleMapping   []*RoleMapping     `json:"RemoteRoleMapping,omitempty"`
+	Retries             int                `json:"Retries,omitempty"`
 	ServiceAddresses    []string           `json:"ServiceAddresses,omitempty"`
 	ServiceEnabled      bool               `json:"ServiceEnabled,omitempty"`
 	TACACSplusService   *TACACSplusService `json:"TACACSplusService,omitempty"`
+	TimeoutSeconds      int                `json:"TimeoutSeconds,omitempty"`
 }
 
 // GoogleAuthenticator redfish structure
@@ -359,6 +361,7 @@ type OAuth2Service struct {
 	Issuer                  string   `json:"Issuer,omitempty"`
 	Mode                    string   `json:"Mode,omitempty"` //enum
 	OAuthServiceSigningKeys string   `json:"OAuthServiceSigningKeys,omitempty"`
+	Oem                     *Oem     `json:"Oem,omitempty"`
 }
 
 // SecurID redfish structure
@@ -390,6 +393,7 @@ type RoleMapping struct {
 // Various settings to parse a TACACS+ service
 // This type shall contain settings for parsing a TACACS+ service
 type TACACSplusService struct {
+	AuthorizationService      string `json:"AuthorizationService,omitempty"`
 	PasswordExchangeProtocols string `json:"PasswordExchangeProtocols,omitempty"` //enum
 	PrivilegeLevelArgument    string `json:"PrivilegeLevelArgument,omitempty"`
 }

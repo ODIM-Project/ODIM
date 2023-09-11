@@ -136,10 +136,10 @@ func GetStorageResourcesBytableName(ctx context.Context, table, oid string) map[
 		l.LogWithFields(ctx).Error("Unable to get system data : " + dbErr.Error())
 		return resourceData
 	}
-	// unmarshall the resourceData
+	// unmarshal the resourceData
 	err := JSONUnMarshalFunc([]byte(data), &resourceData)
 	if err != nil {
-		l.LogWithFields(ctx).Error("Unable to unmarshall  the data: " + err.Error())
+		l.LogWithFields(ctx).Error("Unable to unmarshal the data: " + err.Error())
 		return resourceData
 	}
 

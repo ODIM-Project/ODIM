@@ -81,6 +81,8 @@ type IndicatorLED string
 // BootProgressTypes - The last boot progress state
 type BootProgressTypes string
 
+type ConnectedTypesSupported string
+
 const (
 
 	// BootSourceNone - Boot from the normal boot device
@@ -369,6 +371,10 @@ const (
 
 	//IndicatorLEDOff - The indicator LED is off
 	IndicatorLEDOff IndicatorLED = "Off"
+
+	ConnectedTypesSupportedKVMIP ConnectedTypesSupported = "KVMIP"
+
+	ConnectedTypesSupportedOEM ConnectedTypesSupported = "OEM"
 )
 
 // AddResourceBlock redfish structure
@@ -457,6 +463,20 @@ type ComputerSystem struct {
 	LastBootTimeSeconds             int                    `json:"LastBootTimeSeconds,omitempty"`
 	ManufacturingMode               bool                   `json:"ManufacturingMode,omitempty"`
 	Composition                     *Composition           `json:"Composition,omitempty"`
+}
+
+type HostGraphicalConsole struct {
+	ConnectedTypesSupported []string `json:"ConnectedTypesSupported,omitempty"` //enum
+	MaxConcurrentSessions   int      `json:"MaxConcurrentSessions,omitempty"`
+	Port                    int      `json:"Port,omitempty"`
+	ServiceEnabled          bool     `json:"ServiceEnabled,omitempty"`
+}
+
+type HostSerialConsole struct {
+	IPMI                  *SerialConsoleProtocol `json:"IPMI,omitempty"`
+	MaxConcurrentSessions int                    `json:"MaxConcurrentSessions,omitempty"`
+	SSH                   *SerialConsoleProtocol `json:"SSH,omitempty"`
+	Telnet                *SerialConsoleProtocol `json:"Telnet,omitempty"`
 }
 
 // ComputerSystemActions redfish structure
@@ -1140,7 +1160,7 @@ type Processors struct {
 	HighSpeedCoreIDs           []int                       `json:"HighSpeedCoreIDs,omitempty"`
 	LocationIndicatorActive    bool                        `json:"LocationIndicatorActive,omitempty"`
 	Measurements               []*Link                     `json:"Measurements,omitempty"`
-	MemorySummary              *MemorySummaryDetails       `json:"MemorySummary,omitempty"`
+	MemorySummary              *MemorySummary              `json:"MemorySummary,omitempty"`
 	MinSpeedMHz                int                         `json:"MinSpeedMHz,omitempty"`
 	OperatingConfigs           *Link                       `json:"OperatingConfigs,omitempty"`
 	OperatingSpeedMHz          int                         `json:"OperatingSpeedMHz,omitempty"`
@@ -1153,6 +1173,28 @@ type Processors struct {
 	TurboState                 string                      `json:"TurboState,omitempty"`
 	Version                    string                      `json:"Version,omitempty"`
 	AdditionalFirmwareVersions *AdditionalFirmwareVersions `json:"AdditionalFirmwareVersions,omitempty"`
+}
+
+// SystemInterface redfish structure
+type MemoryMetrics struct {
+	Oid                           string         `json:"@odata.id"`
+	Ocontext                      string         `json:"@odata.context,omitempty"`
+	Oetag                         string         `json:"@odata.etag,omitempty"`
+	Otype                         string         `json:"@odata.type"`
+	Actions                       *OemActions    `json:"Actions,omitempty"`
+	BandwidthPercent              int            `json:"BandwidthPercent,omitempty"`
+	BlockSizeBytes                int            `json:"BlockSizeBytes,omitempty"`
+	CXL                           CXL            `json:"CXL,omitempty"`
+	CapacityUtilizationPercent    int            `json:"CapacityUtilizationPercent,omitempty"`
+	CorrectedPersistentErrorCount int            `json:"CorrectedPersistentErrorCount,omitempty"`
+	CorrectedVolatileErrorCount   int            `json:"CorrectedVolatileErrorCount,omitempty"`
+	CurrentPeriod                 *CurrentPeriod `json:"CurrentPeriod,omitempty"`
+	Description                   string         `json:"description,omitempty"`
+	DirtyShutdownCount            int            `json:"DirtyShutdownCount,omitempty"`
+	ID                            string         `json:"ID"`
+	Name                          string         `json:"Name"`
+	Oem                           Oem            `json:"Oem,omitempty"`
+	OperatingSpeedMHz             int            `json:"OperatingSpeedMHz,omitempty"`
 }
 
 // SystemInterface redfish structure

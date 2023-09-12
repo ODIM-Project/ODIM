@@ -134,7 +134,6 @@ func TestPublish(t *testing.T) {
 				assert.NotEqual(t, nil, err, "Error should not be Nil for this scenario")
 
 			} else {
-				fmt.Println(err)
 				assert.Equal(t, nil, err, "Error should be Nil for this scenario")
 
 			}

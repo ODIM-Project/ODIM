@@ -133,16 +133,16 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 				flag = true
 			}
 		}
-		if strings.EqualFold("Alert", inEvent.EventType) {
-			if strings.Contains(inEvent.MessageID, "ServerPostDiscoveryComplete") || strings.Contains(inEvent.MessageID, "ServerPostComplete") {
-				go rediscoverSystemInventory(ctx, deviceUUID, inEvent.OriginOfCondition.Oid)
-				flag = true
-			}
-			if strings.Contains(inEvent.MessageID, "ServerPoweredOn") || strings.Contains(inEvent.MessageID, "ServerPoweredOff") {
-				go updateSystemPowerState(ctx, deviceUUID, rawMessage.Events[index].OriginOfCondition.Oid, inEvent.MessageID)
-				flag = true
-			}
-		} else if strings.EqualFold("ResourceAdded", message.Events[0].EventType) || strings.EqualFold("ResourceRemoved", message.Events[0].EventType) {
+		//if strings.EqualFold("Alert", inEvent.EventType) {
+		if strings.Contains(inEvent.MessageID, "ServerPostDiscoveryComplete") || strings.Contains(inEvent.MessageID, "ServerPostComplete") {
+			go rediscoverSystemInventory(ctx, deviceUUID, inEvent.OriginOfCondition.Oid)
+			flag = true
+		}
+		if strings.Contains(inEvent.MessageID, "ServerPoweredOn") || strings.Contains(inEvent.MessageID, "ServerPoweredOff") {
+			go updateSystemPowerState(ctx, deviceUUID, rawMessage.Events[index].OriginOfCondition.Oid, inEvent.MessageID)
+			flag = true
+		}
+		if strings.EqualFold("ResourceAdded", message.Events[0].EventType) || strings.EqualFold("ResourceRemoved", message.Events[0].EventType) {
 			if strings.Contains(message.Events[0].OriginOfCondition.Oid, "Volumes") {
 				s := strings.Split(message.Events[0].OriginOfCondition.Oid, "/")
 				storageURI := fmt.Sprintf("/%s/%s/%s/%s/%s/", s[1], s[2], s[3], s[4], s[5])

@@ -100,6 +100,8 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 	logging.Info("After splitting host address, IP is: ", host)
 
 	var requestData = string(event.Request)
+	logging.Info("Received event is ", requestData)
+
 	//replacing the response with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		requestData = strings.Replace(requestData, key, value, -1)
@@ -126,6 +128,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 	eventMap := make(map[string][]common.Event)
 
 	for index, inEvent := range message.Events {
+
 		subscriptions := getSubscriptions(inEvent.OriginOfCondition.Oid, systemID, host)
 		for _, sub := range subscriptions {
 			if filterEventsToBeForwarded(ctx, sub, inEvent, sub.OriginResources) {
@@ -343,7 +346,7 @@ func (e *ExternalInterfaces) reAttemptEvents(eventMessage evmodel.EventPost) {
 		// if undelivered event already published then ignore retrying
 		eventString, err := e.GetUndeliveredEvents(eventMessage.UndeliveredEventID)
 		if err != nil || len(eventString) < 1 {
-			l.Log.Debug("No catch event found for destination " + eventMessage.UndeliveredEventID)
+			l.Log.Debug("Event is forwarded to destination")
 			return
 		}
 		resp, err = SendEventFunc(eventMessage.Destination, eventMessage.Message)

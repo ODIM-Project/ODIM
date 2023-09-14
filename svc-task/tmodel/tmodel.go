@@ -208,7 +208,7 @@ func GetTaskStatus(ctx context.Context, taskID string, db common.DbType) (*Task,
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		l.LogWithFields(ctx).Error("GetTaskStatus : error while trying to get DB Connection : " + err.Error())
-		return task, fmt.Errorf("error while trying to connnect to DB: %v", err.Error())
+		return task, fmt.Errorf("error while trying to connect to DB: %v", err.Error())
 	}
 	taskData, err = connPool.Read("task", taskID)
 	if err != nil {
@@ -229,14 +229,14 @@ func GetMultipleTaskKeys(ctx context.Context, taskIDs []interface{}, db common.D
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		l.LogWithFields(ctx).Error("GetTaskStatus : error while trying to get DB Connection : " + err.Error())
-		return &task, fmt.Errorf("error while trying to connnect to DB: %v", err.Error())
+		return &task, fmt.Errorf("error while trying to connect to DB: %v", err.Error())
 	}
 	for _, value := range taskIDs {
 		taskList = append(taskList, value.(string))
 	}
 	taskData, err := connPool.ReadMultipleKeys(taskList)
 	if err != nil {
-		l.LogWithFields(ctx).Error("GetTaskStatus : Unable to read taskdata from DB: " + err.Error())
+		l.LogWithFields(ctx).Error("GetTaskStatus : Unable to read task data from DB: " + err.Error())
 		return &task, fmt.Errorf("error while trying to read from DB: %v", err.Error())
 	}
 	for _, data := range taskData {

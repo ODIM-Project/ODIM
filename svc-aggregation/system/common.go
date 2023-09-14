@@ -1559,7 +1559,12 @@ func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string
 			return "", fmt.Errorf("wild card map is empty")
 		}
 		wildCards = getWildCard(dbDataMap["Wildcards"].([]interface{}))
-		dbMetricProperties = dbDataMap["MetricProperties"].([]interface{})
+		if len(wildCards) == 0 {
+			return "", fmt.Errorf("wild card map is empty")
+		}
+		if _, isExist := dbDataMap["MetricProperties"].([]interface{}); isExist {
+			dbMetricProperties = dbDataMap["MetricProperties"].([]interface{})
+		}
 	}
 	metricProperties, isExists := resourceDataMap["MetricProperties"].([]interface{})
 	if isExists {

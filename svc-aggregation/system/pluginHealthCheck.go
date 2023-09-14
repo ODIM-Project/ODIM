@@ -66,7 +66,7 @@ func (e *ExternalInterface) SendStartUpData(ctx context.Context, startUpReq *agg
 	l.LogWithFields(ctx).Infof("received plugin start up event from %s(%s)", plugin.ID, plugin.PluginType)
 
 	// for plugins managing resources of non Compute type, at present
-	// there is no usecase to share inventory, so subscribing to
+	// there is no use case to share inventory, so subscribing to
 	// EMB topic of the plugin should be enough
 	if plugin.PluginType != "Compute" {
 		phc := agcommon.PluginHealthCheckInterface{

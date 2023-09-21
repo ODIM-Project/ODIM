@@ -136,10 +136,10 @@ func GetStorageResourcesBytableName(ctx context.Context, table, oid string) map[
 		l.LogWithFields(ctx).Error("Unable to get system data : " + dbErr.Error())
 		return resourceData
 	}
-	// unmarshall the resourceData
+	// unmarshal the resourceData
 	err := JSONUnMarshalFunc([]byte(data), &resourceData)
 	if err != nil {
-		l.LogWithFields(ctx).Error("Unable to unmarshall  the data: " + err.Error())
+		l.LogWithFields(ctx).Error("Unable to unmarshal the data: " + err.Error())
 		return resourceData
 	}
 
@@ -437,7 +437,7 @@ func ContactPlugin(ctx context.Context, req agmodel.PluginContactRequest, server
 	return pmbhandle.ContactPlugin(ctx, reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, req.LoginCredential)
 }
 
-// GetDeviceSubscriptionDetails is for getting device event susbcription details
+// GetDeviceSubscriptionDetails is for getting device event subscription details
 func GetDeviceSubscriptionDetails(ctx context.Context, serverAddress string) (string, []string, error) {
 	deviceIPAddress, _, _, err := LookupHost(serverAddress)
 	if err != nil {
@@ -491,12 +491,13 @@ func GetSubscribedEvtTypes(ctx context.Context, searchKey string) ([]string, err
 	}
 	var eventTypes []string
 	for _, sub := range subscriptions {
-		var subscription map[string]interface{}
-		if err := JSONUnMarshalFunc([]byte(sub), &subscription); err != nil {
-			return nil, fmt.Errorf("error while unmarshalling event subscription: %v", err.Error())
+		var eventDestination map[string]interface{}
+		if err := JSONUnMarshalFunc([]byte(sub), &eventDestination); err != nil {
+			return nil, fmt.Errorf("error while unmarshal event subscription: %v", err.Error())
 		}
-		for _, evtTyps := range subscription["EventTypes"].([]interface{}) {
-			eventTypes = append(eventTypes, evtTyps.(string))
+		subscription := eventDestination["EventDestination"].(map[string]interface{})
+		for _, evtType := range subscription["EventTypes"].([]interface{}) {
+			eventTypes = append(eventTypes, evtType.(string))
 		}
 	}
 	eventTypes = removeDuplicates(eventTypes)

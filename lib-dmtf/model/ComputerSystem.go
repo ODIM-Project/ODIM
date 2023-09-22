@@ -1023,7 +1023,7 @@ type PCIeDevice struct {
 	Oetag              string         `json:"@odata.etag,omitempty"`
 	Otype              string         `json:"@odata.type"`
 	Description        string         `json:"description,omitempty"`
-	ID                 string         `json:"ID"`
+	Id                 string         `json:"Id"`
 	Name               string         `json:"Name"`
 	Oem                Oem            `json:"Oem,omitempty"`
 	Assembly           *Assembly      `json:"Assembly,omitempty"`

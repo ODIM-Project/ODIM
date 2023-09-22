@@ -490,8 +490,8 @@ type SubscriptionCreate struct {
 }
 
 type UpdateAccount struct {
-	Location string      `json:"location"`
-	Host     string      `json:"host"`
-	Body     interface{} `json:"body"`
-	Action   string      `json:"action"`
+	Location string `json:"location"`
+	Host     string `json:"host"`
+	Body     string `json:"body"`
+	Action   string `json:"action"`
 }

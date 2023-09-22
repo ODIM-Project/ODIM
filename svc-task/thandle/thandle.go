@@ -1104,7 +1104,6 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 		// Construct the appropriate messageID for task status change notification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		taskMessage = fmt.Sprintf("Work on the task with Id %v has been halted prior to completion due to an explicit request.", taskID)
-		// TODO
 	case "Interrupted":
 		/* This state shall represent that the operation has been interrupted but is
 		expected to restart and is therefore not complete.
@@ -1117,7 +1116,6 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 		// Construct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors..", taskID)
-		// TODO
 	case "New":
 		/* This state shall represent that this task is newly created but the
 		operation has not yet started.
@@ -1127,7 +1125,6 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 		// Construct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		taskMessage = fmt.Sprintf("The task with Id %v has started.", taskID)
-		// TODO
 	case "Pending":
 		/*This state shall represent that the operation is pending some condition and
 		has not yet begun to execute.
@@ -1136,7 +1133,6 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 		// Construct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors.", taskID)
-		// TODO
 	case "Running":
 		// This state shall represent that the operation is executing.
 		if payLoad != nil && payLoad.FinalResponseBody != nil {
@@ -1147,7 +1143,6 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 		// Construct the appropriate messageID for task status change notification
 		taskEvenMessageID = common.TaskEventType + ".TaskProgressChanged"
 		taskMessage = fmt.Sprintf("The task with Id %v has changed to progress %v percent complete.", taskID, percentComplete)
-		// TODO
 	case "Service":
 		/* This state shall represent that the operation is now running as a service
 		and expected to continue operation until stopped or killed.
@@ -1156,14 +1151,12 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 		// Construct the appropriate messageID for task status change notification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		taskMessage = fmt.Sprintf("The task with Id %v has started.", taskID)
-		// TODO
 	case "Starting":
 		// This state shall represent that the operation is starting.
 		task.TaskState = taskState
 		// Construct the appropriate messageID for task status change notification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		taskMessage = fmt.Sprintf("The task with Id %v has started.", taskID)
-		// TODO
 	case "Stopping":
 		/* This state shall represent that the operation is stopping but is not yet
 		complete.
@@ -1172,7 +1165,6 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 		// Construct the appropriate messageID for task status change notification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		taskMessage = fmt.Sprintf("The task with Id %v has been paused.", taskID)
-		// TODO
 	case "Suspended":
 		/*This state shall represent that the operation has been suspended but is
 		expected to restart and is therefore not complete.
@@ -1182,7 +1174,7 @@ func (ts *TasksRPC) updateTaskUtil(ctx context.Context, taskID string, taskState
 		// Construct the appropriate messageID for task status change notification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors.", taskID)
-		// TODO
+
 	default:
 		return fmt.Errorf("error invalid input argument for taskState")
 	}
@@ -1243,23 +1235,28 @@ func (ts *TasksRPC) updateParentTask(ctx context.Context, taskID, taskStatus, ta
 		return err
 	}
 	l.LogWithFields(ctx).Debugf("Child ID's associated with parent task %s: %v", task.ParentID, childIDs)
-	if len(childIDs) < 1 || (len(childIDs) == 1 && taskState == common.Completed && payLoad.StatusCode < http.StatusAccepted) {
+	if len(childIDs) < 1 || (len(childIDs) == 1 && taskState == common.Completed) {
+		if payLoad.StatusCode < http.StatusAccepted {
+			parentTask.StatusCode = http.StatusOK
+			if parentTask.TaskFinalResponse != nil {
+				var resp response.RPC
+				json.Unmarshal(parentTask.TaskFinalResponse, &resp)
+				parentTask.Payload.HTTPHeaders = resp.Header
+				parentTask.TaskFinalResponse = nil
+				parentTask.StatusCode = http.StatusCreated
+			}
+			if value, err := services.GetEventSubscriptionID(ctx, parentTask.ID); err == nil {
+				tcommon.DeleteSubscription(ctx, value)
+			}
+			ts.updateTaskToCompleted(parentTask)
+
+		} else {
+			parentTask.StatusCode = payLoad.StatusCode
+			ts.updateTaskToError(parentTask)
+		}
 		l.LogWithFields(ctx).Debugf("All tasks are completed ! Updating Parent task %s to completed state", parentTask.ID)
-		parentTask.StatusCode = http.StatusOK
-		if parentTask.TaskFinalResponse != nil {
-			var resp response.RPC
-			json.Unmarshal(parentTask.TaskFinalResponse, &resp)
-			parentTask.Payload.HTTPHeaders = resp.Header
-			parentTask.TaskFinalResponse = nil
-			parentTask.StatusCode = http.StatusCreated
-		}
-		if value, err := services.GetEventSubscriptionID(ctx, parentTask.ID); err == nil {
-			tcommon.DeleteSubscription(ctx, value)
-		}
-		ts.updateTaskToCompleted(parentTask)
 		return nil
 	}
-
 	return ts.validateChildTasksAndUpdateParentTask(ctx, childIDs, taskID, parentTask)
 }
 
@@ -1270,7 +1267,6 @@ func (ts *TasksRPC) validateChildTasksAndUpdateParentTask(ctx context.Context, c
 			s = append(s, "task:"+v)
 		}
 	}
-
 	data, _ := ts.GetMultipleTaskKeysModel(ctx, s, common.InMemory)
 	var isSuccess bool = true
 	for _, subtask := range *data {
@@ -1318,6 +1314,17 @@ func (ts *TasksRPC) updateTaskToCompleted(task *tmodel.Task) {
 	task.TaskStatus = common.OK
 	task.PercentComplete = 100
 	resp := tcommon.GetTaskResponse(task.StatusCode, response.Success)
+	body, _ := json.Marshal(resp.Body)
+	task.TaskResponse = body
+	ts.UpdateTaskQueue(task)
+}
+
+// updateTaskToCompleted update the task to completed state with success response
+func (ts *TasksRPC) updateTaskToError(task *tmodel.Task) {
+	task.TaskState = common.Completed
+	task.TaskStatus = common.OK
+	task.PercentComplete = 100
+	resp := tcommon.GetTaskResponse(task.StatusCode, response.Failure)
 	body, _ := json.Marshal(resp.Body)
 	task.TaskResponse = body
 	ts.UpdateTaskQueue(task)

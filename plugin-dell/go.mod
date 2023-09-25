@@ -2,7 +2,6 @@ module github.com/ODIM-Project/ODIM/plugin-dell
 
 go 1.19
 
-
 require (
 	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20230329075134-e5327c1b94d8
 	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20230329075134-e5327c1b94d8
@@ -22,7 +21,7 @@ require (
 	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
 	github.com/CloudyKit/jet/v6 v6.2.0 // indirect
 	github.com/Joker/jade v1.1.3 // indirect
-	github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20220214074518-c500db3ba816 // indirect
+	github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20230719110936-f43048b6407a // indirect
 	github.com/Shopify/goreferrer v0.0.0-20220729165902-8cddb4f5de06 // indirect
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
@@ -42,7 +41,6 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/gnostic v0.4.1 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
@@ -103,7 +101,6 @@ require (
 	moul.io/http2curl/v2 v2.3.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 
 )
 

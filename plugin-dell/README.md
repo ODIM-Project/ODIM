@@ -12,5 +12,5 @@ This guide provides a set of guidelines for developing API and EMB functions to 
 
 ## Dell plugin deployment instructions
 
-For deploying the Dell plugin and adding the plugin to the Resource Aggregator for ODIM framework, see the *Deploying the Dell plugin* section in the *[Resource Aggregator for Open Distributed Infrastructure Management™ Readme](https://github.com/ODIM-Project/ODIM/blob/development/README.md)*.
+For deploying the Dell plugin and adding the plugin to the Resource Aggregator for ODIM framework, see *Deploying the Dell plugin* section in *[Resource Aggregator for Open Distributed Infrastructure Management™ Readme](https://github.com/ODIM-Project/ODIM/blob/development/README.md)*.
 

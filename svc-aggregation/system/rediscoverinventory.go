@@ -47,6 +47,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 	var resp response.RPC
 	systemURL = strings.TrimSuffix(systemURL, "/")
 	data := strings.Split(systemURL, "/")
+	storageUrl := systemURL
 	// Getting the SystemID from system url
 	if len(data) <= 0 {
 		genError(ctx, "invalid data ", &resp, http.StatusInternalServerError, errors.InternalError, map[string]string{
@@ -115,6 +116,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 		}
 
 	}
+
 	// check whether delete operation for the system is initiated
 	if strings.Contains(systemURL, "/Storage") {
 		systemURL = strings.Replace(systemURL, "/Storage", "", -1)
@@ -156,10 +158,10 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 	h.InventoryData = make(map[string]interface{})
 	progress := int32(100)
 	systemsEstimatedWork := int32(75)
-	if strings.Contains(systemURL, "/Storage") {
+
+	if strings.Contains(storageUrl, "/Storage") {
 		l.LogWithFields(ctx).Debugf("get storage info request data for %s: %s", req.OID, string(req.Data))
 		_, progress, _ = h.getStorageInfo(ctx, progress, systemsEstimatedWork, req)
-
 	} else {
 		l.LogWithFields(ctx).Debugf("get system info request data for %s: %s", req.OID, string(req.Data))
 		_, _, progress, _ = h.getSystemInfo(ctx, "", progress, systemsEstimatedWork, req)
@@ -172,7 +174,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(ctx context.Context, devic
 		req.OID = "/redfish/v1/Managers"
 		managerEstimatedWork := int32(15)
 		progress = h.getAllRootInfo(ctx, "", progress, managerEstimatedWork, req, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
-		// rediscovering the regisrty info
+		// rediscovering the registry info
 		req.OID = "/redfish/v1/Registries"
 		registriesEstimatedWork := int32(5)
 		progress = h.getAllRegistries(ctx, "", progress, registriesEstimatedWork, req)

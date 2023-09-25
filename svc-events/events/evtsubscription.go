@@ -134,8 +134,9 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			"/redfish/v1/TaskService/Tasks",
 		}
 	}
+	uniqueOriginResource := removeDuplicateSystems(originResources)
 	var collectionList = make([]string, 0)
-	subTaskChan := make(chan int32, len(originResources))
+	subTaskChan := make(chan int32, len(uniqueOriginResource))
 	taskCollectionWG.Add(1)
 	bubbleUpStatusCode := int32(http.StatusCreated)
 	go func() {
@@ -149,8 +150,8 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			if statusCode > bubbleUpStatusCode {
 				bubbleUpStatusCode = statusCode
 			}
-			if i <= len(originResources) && statusCode != http.StatusAccepted {
-				percentComplete = int32((i / len(originResources)) * 100)
+			if i <= len(uniqueOriginResource) && statusCode != http.StatusAccepted {
+				percentComplete = int32((i / len(uniqueOriginResource)) * 100)
 				if resp.StatusCode == 0 {
 					resp.StatusCode = http.StatusAccepted
 				}
@@ -159,7 +160,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 		}
 	}()
 	var isServerAdded = false
-	for _, origin := range originResources {
+	for _, origin := range uniqueOriginResource {
 		_, err := getUUID(origin)
 		if err != nil {
 			collection, collectionName, collectionFlag, aggregateResource, isAggregate, _ := e.checkCollection(origin)
@@ -236,7 +237,7 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			hosts = []string{}
 		}
 		statusCode, statusMessage, messageArgs, err = e.SaveSubscription(ctx, sessionUserName, subscriptionID,
-			hosts, successfulSubscriptionList, postRequest)
+			hosts, addOdataIDfromOriginResources(originResources), postRequest)
 		if err != nil {
 			l.LogWithFields(ctx).Error(err.Error())
 			evcommon.GenErrorResponse(err.Error(), statusMessage, statusCode,
@@ -816,6 +817,30 @@ func (e *ExternalInterfaces) DeleteSubscriptions(ctx context.Context, originReso
 	return resp, nil
 }
 
+// DeleteSubscriptions will delete subscription from device
+func (e *ExternalInterfaces) GetSubscriptionLocation(ctx context.Context, target *common.Target) error {
+	var err error
+	var deviceSubscription *common.DeviceSubscription
+	addr, err := common.GetIPFromHostName(target.ManagerAddress)
+	if err != nil {
+		return err
+	}
+	searchKey := evcommon.GetSearchKey(addr, evmodel.DeviceSubscriptionIndex)
+	deviceSubscription, err = e.GetDeviceSubscriptions(searchKey)
+
+	if err != nil {
+		// if its first subscription then no need to check events subscribed
+		if strings.Contains(err.Error(), "No data found for the key") {
+			return nil
+		}
+		errorMessage := "Error while get subscription details: " + err.Error()
+
+		l.LogWithFields(ctx).Error(errorMessage)
+		return err
+	}
+	target.Location = deviceSubscription.Location
+	return nil
+}
 func (e *ExternalInterfaces) createEventSubscription(ctx context.Context, taskID string, subTaskID string, subTaskChan chan<- int32, reqSessionToken string,
 	targetURI string, request model.EventDestination, originResource string, result *evresponse.MutexLock,
 	wg *sync.WaitGroup, collectionFlag bool, collectionName string, aggregateResource string, isAggregateCollection bool) {
@@ -869,8 +894,8 @@ func (e *ExternalInterfaces) createEventSubscription(ctx context.Context, taskID
 }
 
 // CreateSubTask creates a child task for a task calling RPC to task service and returns the subtask ID
-func (e *ExternalInterfaces) CreateSubTask(ctx context.Context, reqSessionToken string, parentTask string) string {
-	subTaskURI, err := e.CreateChildTask(ctx, reqSessionToken, parentTask)
+func (e *ExternalInterfaces) CreateSubTask(ctx context.Context, sessionUserName string, parentTask string) string {
+	subTaskURI, err := e.CreateChildTask(ctx, sessionUserName, parentTask)
 	if err != nil {
 		l.LogWithFields(ctx).Error("Error while creating the SubTask")
 	}

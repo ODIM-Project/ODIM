@@ -66,7 +66,7 @@ func deleteSystemforTest(key string) *errors.Error {
 	return nil
 }
 
-func mockDeleteSubscription(ctx context.Context, uuid string) (*eventsproto.EventSubResponse, error) {
+func mockDeleteSubscription(ctx context.Context, uuid, sessionId string) (*eventsproto.EventSubResponse, error) {
 	if uuid == "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832.1" {
 		return nil, fmt.Errorf("error while trying to delete event subcription")
 	} else if uuid == "/redfish/v1/Systems/unexpected-statuscode.1" {
@@ -153,7 +153,8 @@ func mockLogServicesCollectionData(id string, data map[string]interface{}) error
 func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 	d := getMockExternalInterface()
 	type args struct {
-		req *aggregatorproto.AggregatorRequest
+		req         *aggregatorproto.AggregatorRequest
+		sessionName string
 	}
 	config.SetUpMockConfig(t)
 	defer func() {
@@ -227,13 +228,14 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 					SessionToken: "SessionToken",
 					URL:          "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831",
 				},
+				sessionName: "dummy",
 			},
 			want: http.StatusNotAcceptable,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := d.DeleteAggregationSource(ctx, tt.args.req)
+			got := d.DeleteAggregationSource(ctx, tt.args.req, tt.args.sessionName)
 			if got.StatusCode != tt.want {
 				t.Errorf("DeleteAggregationSource() = %v, want %v", got, tt.want)
 			}
@@ -338,7 +340,8 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 	type args struct {
-		req *aggregatorproto.AggregatorRequest
+		req         *aggregatorproto.AggregatorRequest
+		sessionName string
 	}
 	tests := []struct {
 		name string
@@ -352,6 +355,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 					SessionToken: "SessionToken",
 					URL:          "/redfish/v1/AggregationService/AggregationSources/123456",
 				},
+				sessionName: "dummy",
 			},
 			want: http.StatusNoContent,
 		},
@@ -362,6 +366,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 					SessionToken: "SessionToken",
 					URL:          "/redfish/v1/AggregationService/AggregationSources/123455",
 				},
+				sessionName: "dummy",
 			},
 			want: http.StatusNotAcceptable,
 		},
@@ -372,6 +377,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 					SessionToken: "SessionToken",
 					URL:          "/redfish/v1/AggregationService/AggregationSources/123434",
 				},
+				sessionName: "dummy",
 			},
 			want: http.StatusNotFound,
 		},
@@ -382,13 +388,14 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 					SessionToken: "SessionToken",
 					URL:          "/redfish/v1/AggregationService/AggregationSources/123457",
 				},
+				sessionName: "dummy",
 			},
 			want: http.StatusNotAcceptable,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := d.DeleteAggregationSource(ctx, tt.args.req)
+			got := d.DeleteAggregationSource(ctx, tt.args.req, tt.args.sessionName)
 			if got.StatusCode != tt.want {
 				t.Errorf("DeleteAggregationSource() = %v, want %v", got, tt.want)
 			}
@@ -478,7 +485,8 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 	type args struct {
-		req *aggregatorproto.AggregatorRequest
+		req         *aggregatorproto.AggregatorRequest
+		sessionName string
 	}
 	tests := []struct {
 		name string
@@ -492,6 +500,7 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 					SessionToken: "SessionToken",
 					URL:          "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831",
 				},
+				sessionName: "dummy",
 			},
 			want: http.StatusNoContent,
 		},
@@ -502,13 +511,14 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 					SessionToken: "SessionToken",
 					URL:          "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db832",
 				},
+				sessionName: "dummy",
 			},
 			want: http.StatusInternalServerError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := d.DeleteAggregationSource(ctx, tt.args.req)
+			got := d.DeleteAggregationSource(ctx, tt.args.req, tt.args.sessionName)
 			if got.StatusCode != tt.want {
 				t.Errorf("DeleteAggregationSource() = %v, want %v", got, tt.want)
 			}

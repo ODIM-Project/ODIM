@@ -100,6 +100,8 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 	logging.Info("After splitting host address, IP is: ", host)
 
 	var requestData = string(event.Request)
+	logging.Info("Received event is ", requestData)
+
 	//replacing the response with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		requestData = strings.Replace(requestData, key, value, -1)
@@ -126,6 +128,7 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 	eventMap := make(map[string][]common.Event)
 
 	for index, inEvent := range message.Events {
+
 		subscriptions := getSubscriptions(inEvent.OriginOfCondition.Oid, systemID, host)
 		for _, sub := range subscriptions {
 			if filterEventsToBeForwarded(ctx, sub, inEvent, sub.OriginResources) {
@@ -133,16 +136,16 @@ func (e *ExternalInterfaces) PublishEventsToDestination(ctx context.Context, dat
 				flag = true
 			}
 		}
-		if strings.EqualFold("Alert", inEvent.EventType) {
-			if strings.Contains(inEvent.MessageID, "ServerPostDiscoveryComplete") || strings.Contains(inEvent.MessageID, "ServerPostComplete") {
-				go rediscoverSystemInventory(ctx, deviceUUID, inEvent.OriginOfCondition.Oid)
-				flag = true
-			}
-			if strings.Contains(inEvent.MessageID, "ServerPoweredOn") || strings.Contains(inEvent.MessageID, "ServerPoweredOff") {
-				go updateSystemPowerState(ctx, deviceUUID, rawMessage.Events[index].OriginOfCondition.Oid, inEvent.MessageID)
-				flag = true
-			}
-		} else if strings.EqualFold("ResourceAdded", message.Events[0].EventType) || strings.EqualFold("ResourceRemoved", message.Events[0].EventType) {
+		//if strings.EqualFold("Alert", inEvent.EventType) {
+		if strings.Contains(inEvent.MessageID, "ServerPostDiscoveryComplete") || strings.Contains(inEvent.MessageID, "ServerPostComplete") {
+			go rediscoverSystemInventory(ctx, deviceUUID, inEvent.OriginOfCondition.Oid)
+			flag = true
+		}
+		if strings.Contains(inEvent.MessageID, "ServerPoweredOn") || strings.Contains(inEvent.MessageID, "ServerPoweredOff") {
+			go updateSystemPowerState(ctx, deviceUUID, rawMessage.Events[index].OriginOfCondition.Oid, inEvent.MessageID)
+			flag = true
+		}
+		if strings.EqualFold("ResourceAdded", message.Events[0].EventType) || strings.EqualFold("ResourceRemoved", message.Events[0].EventType) {
 			if strings.Contains(message.Events[0].OriginOfCondition.Oid, "Volumes") {
 				s := strings.Split(message.Events[0].OriginOfCondition.Oid, "/")
 				storageURI := fmt.Sprintf("/%s/%s/%s/%s/%s/", s[1], s[2], s[3], s[4], s[5])

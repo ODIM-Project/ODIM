@@ -77,7 +77,7 @@ func TestDeleteEventSubscription(t *testing.T) {
 		SessionToken:        "validToken",
 		EventSubscriptionID: "71de0110-c35a-4859-984c-072d6c5a3211",
 	}
-	resp = pc.DeleteEventSubscriptionsDetails(evcommon.MockContext(), req)
+	resp = pc.DeleteEventSubscriptionsDetails(evcommon.MockContext(), req, "admin", "1225122")
 	assert.Equal(t, http.StatusAccepted, int(resp.StatusCode), "Status Code should be StatusOK")
 
 	// Negative test cases

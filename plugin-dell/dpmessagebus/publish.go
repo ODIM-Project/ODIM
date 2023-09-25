@@ -18,6 +18,7 @@ package dpmessagebus
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -48,6 +49,10 @@ func Publish(ctx context.Context, data interface{}) bool {
 		log.Error("Failed to unmarshal the event, got: " + err.Error())
 		return false
 	}
+	if message.OdataType != "" && !strings.Contains(message.OdataType, "MetricReport") {
+		event.Request, err = formatEventRequest(ctx, message)
+	}
+
 	if err := K.Distribute(event); err != nil {
 		log.Error("Unable Publish events to kafka: " + err.Error())
 		return false
@@ -56,4 +61,15 @@ func Publish(ctx context.Context, data interface{}) bool {
 		log.Info(eventMessage.EventType + " Event Published")
 	}
 	return true
+}
+func formatEventRequest(ctx context.Context, eventData common.MessageData) ([]byte, error) {
+	for _, event := range eventData.Events {
+		if event.OriginOfCondition == nil {
+			event.OriginOfCondition = &common.Link{
+				Oid: "",
+			}
+		}
+	}
+	data1, _ := json.Marshal(eventData)
+	return data1, nil
 }

@@ -212,61 +212,14 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 // The functionality is to create the subscription with Resource provided in origin resources.
 func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
 	var resp eventsproto.EventSubResponse
-	var err error
-	var taskID string
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.EventService, podName)
-
-	// Athorize the request here
-	authResp, err := e.Connector.Auth(ctx, req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
-	if authResp.StatusCode != http.StatusOK {
-		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v",
-			authResp.StatusCode, authResp.StatusMessage)
-		if err != nil {
-			errMsg = errMsg + ": " + err.Error()
-		}
-		l.LogWithFields(ctx).Error(errMsg)
-		resp.Body = generateResponse(ctx, authResp.Body)
-		resp.StatusCode = authResp.StatusCode
-		return &resp, nil
-	}
-	sessionUserName, err := e.Connector.GetSessionUserName(ctx, req.SessionToken)
+	sessionUserName, taskID, err := e.AuthorizeAndCreateTask(ctx, req.SessionToken, &resp)
 	if err != nil {
-		errorMessage := "error while trying to get the session username: " + err.Error()
-		resp.Body = generateResponse(ctx, common.GeneralError(http.StatusUnauthorized,
-			response.NoValidSession, errorMessage, nil, nil))
-		resp.StatusCode = http.StatusUnauthorized
-		l.LogWithFields(ctx).Error(errorMessage)
 		return &resp, err
-	}
-	// Create the task and get the taskID
-	// Contact Task Service using RPC and get the taskID
-	taskURI, err := e.Connector.CreateTask(ctx, sessionUserName)
-	if err != nil {
-		// print err here as we are unbale to contact svc-task service
-		errorMessage := "error while trying to create the task: " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError,
-			response.InternalError, errorMessage, nil, nil).Body)
-		l.LogWithFields(ctx).Error(errorMessage)
-		return &resp, fmt.Errorf(resp.StatusMessage)
-	}
-	strArray := strings.Split(taskURI, "/")
-	if strings.HasSuffix(taskURI, "/") {
-		taskID = strArray[len(strArray)-2]
-	} else {
-		taskID = strArray[len(strArray)-1]
 	}
 	//Spawn the thread to process the action asynchronously
 	go e.Connector.CreateEventSubscription(ctx, taskID, sessionUserName, req)
-	// Return 202 accepted
-	resp.StatusCode = http.StatusAccepted
-	resp.Header = map[string]string{
-		"Location": "/taskmon/" + taskID,
-	}
-	resp.StatusMessage = response.TaskStarted
-	generateTaskResponse(ctx, taskID, taskURI, &resp)
 	return &resp, nil
 }
 
@@ -349,28 +302,42 @@ func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.Even
 func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
 	ctx = common.GetContextData(ctx)
 	ctx = common.ModifyContext(ctx, common.EventService, podName)
-	var resp eventsproto.EventSubResponse
-	var err error
-	var data response.RPC
+	var (
+		// taskID string
+		resp eventsproto.EventSubResponse
+	)
+
 	if req.UUID == "" {
 		// Delete Event Subscription when admin requested
-		data = e.Connector.DeleteEventSubscriptionsDetails(ctx, req)
+		sessionUserName, taskID, err := e.AuthorizeAndCreateTask(ctx, req.SessionToken, &resp)
+		if err != nil {
+			return &resp, err
+		}
+		go e.Connector.DeleteEventSubscriptionsDetails(ctx, req, sessionUserName, taskID)
 	} else {
 		// Delete Event Subscription to Device when Server get Deleted
-		data = e.Connector.DeleteEventSubscriptions(ctx, req)
+		// Task Service using RPC and get the taskID
+		taskURI, err := e.Connector.CreateTask(ctx, req.SessionToken)
+		if err != nil {
+			resp = eventsproto.EventSubResponse{}
+			errMsg := "Unable to create task: " + err.Error()
+			// // generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
+			l.LogWithFields(ctx).Error(errMsg)
+			return &resp, nil
+		}
+		var taskID string
+		strArray := strings.Split(taskURI, "/")
+		if strings.HasSuffix(taskURI, "/") {
+			taskID = strArray[len(strArray)-2]
+		} else {
+			taskID = strArray[len(strArray)-1]
+		}
+		resp.StatusCode = http.StatusAccepted
+		resp.Header = map[string]string{
+			"Location": "/taskmon/" + taskID,
+		}
+		go e.Connector.DeleteEventSubscriptions(ctx, req, taskID)
 	}
-	resp.Body, err = JSONMarshal(data.Body)
-	if err != nil {
-		errorMessage := "error while trying marshal the response body for delete event subsciption : " + err.Error()
-		resp.StatusCode = http.StatusInternalServerError
-		resp.StatusMessage = response.InternalError
-		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		l.LogWithFields(ctx).Error(resp.StatusMessage)
-		return &resp, nil
-	}
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Header = data.Header
 	return &resp, nil
 }
 
@@ -461,4 +428,10 @@ func (e *Events) UpdateSubscriptionLocationRPC(ctx context.Context, in *eventspr
 	isUpdated := e.Connector.UpdateSubscriptionLocation(ctx, in.Location, in.Host)
 	resp.Status = isUpdated
 	return &resp, nil
+}
+
+func (e *Events) DeleteSubscription(ctx context.Context, in *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
+	err := e.Connector.DeleteEvtSubscription(in.EventSubscriptionID)
+	return &resp, err
 }

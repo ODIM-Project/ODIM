@@ -86,6 +86,12 @@ type PciID struct {
 	VendorID          string `json:"VendorId,omitempty"`
 }
 
+// GCID for Endpoint
+type GCID struct {
+	CID string `json:"GCID,omitempty"`
+	SID string `json:"SID,omitemoty"`
+}
+
 // EndpointLinks is the struct to links under a AddressPool
 type EndpointLinks struct {
 	AddressPools                    []Link      `json:"AddressPools,omitempty"`

@@ -117,7 +117,7 @@ func (e *ExternalInterface) GetManagers(ctx context.Context, req *managersproto.
 		var managerData map[string]interface{}
 		jerr := json.Unmarshal([]byte(data), &managerData)
 		if jerr != nil {
-			errorMessage := "error unmarshalling manager details: " + jerr.Error()
+			errorMessage := "error unmarshal manager details: " + jerr.Error()
 			l.LogWithFields(ctx).Error(errorMessage)
 			resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 				nil, nil)
@@ -289,7 +289,9 @@ func (e *ExternalInterface) GetManagersResource(ctx context.Context, req *manage
 			}
 			errorMessage := "unable to get odimra managers details: " + err.Error()
 			l.LogWithFields(ctx).Error(errorMessage)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, []interface{}{}, nil)
+			errArgs := []interface{}{tableName, req.ManagerID}
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+
 		}
 
 		json.Unmarshal([]byte(data), &resource)

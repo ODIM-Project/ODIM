@@ -40,6 +40,22 @@ type Storage struct {
 	DrivesCount             int                   `json:"Drives@odata.count,omitempty"`
 	RedundancyCount         int                   `json:"Redundancy@odata.count,omitempty"`
 	StorageControllersCount int                   `json:"StorageControllers@odata.count,omitempty"`
+	AutoVolumeCreate        string                `json:"AutoVolumeCreate,omitempty"`
+	Connections             ConnectionCollection  `json:"Connections,omitempty"`
+}
+
+// ConnectionCollection redfish structure
+type ConnectionCollection struct {
+	ODataContext         string   `json:"@odata.context,omitempty"`
+	ODataID              string   `json:"@odata.id,omitempty"`
+	ODataEtag            string   `json:"@odata.etag,omitempty"`
+	ODataType            string   `json:"@odata.type,omitempty"`
+	Description          string   `json:"Description,omitempty"`
+	Name                 string   `json:"Name"`
+	OEM                  *Oem     `json:"Oem,omitempty"`
+	Members              []string `json:"Members"`
+	MembersODataCount    int      `json:"Members@odata.count"`
+	MembersODataNextLink string   `json:"Members@odata.nextLink,omitempty"`
 }
 
 // StorageControllers redfish structure
@@ -355,7 +371,7 @@ type Volume struct {
 	ReplicaInfo                      *ReplicaInfo             `json:"ReplicaInfo,omitempty"`
 	ReplicaTargets                   []*Link                  `json:"ReplicaTargets,omitempty"`
 	Status                           *StorageStatus           `json:"Status,omitempty"`
-	StorageGroups                    *Link                    `json:"StorageGroups,omitempty"`
+	StorageGroups                    *Link                    `json:"StorageGroups,omitempty"` //deprecated
 	StripSizeBytes                   int                      `json:"StripSizeBytes,omitempty"`
 	VolumeType                       string                   `json:"VolumeType,omitempty"`
 	VolumeUsage                      string                   `json:"VolumeUsage,omitempty"`

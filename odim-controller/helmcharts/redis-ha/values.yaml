@@ -5,7 +5,7 @@ odimra:
   redisOndiskDataPath:
   redisInmemoryDataPath:
   redisSecondayReplicaCount: 2
-  redisMasterSet: primaryset
+  redisPrimarySet: primaryset
   redisQuorum: 2
   redisDownAfterMilliseconds: 1000
   redisFailoverTimeout: 3000

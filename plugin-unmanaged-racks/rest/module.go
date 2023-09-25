@@ -49,7 +49,7 @@ func InitializeAndRun(pluginConfiguration *config.PluginConfig) {
 		redfish.BasicAuth(pluginConfiguration.OdimUserName, enigma.Decrypt(pluginConfiguration.OdimPassword)),
 	)
 
-	dao := db.CreateDAO(pluginConfiguration, pluginConfiguration.SentinelMasterName, db.GetTLSConfig)
+	dao := db.CreateDAO(pluginConfiguration, pluginConfiguration.SentinelPrimaryName, db.GetTLSConfig)
 
 	createApplication(pluginConfiguration, dao, odimraHTTPClient).Run(
 		func(app *iris.Application) error {

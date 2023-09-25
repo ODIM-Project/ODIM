@@ -25,16 +25,16 @@ RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then \
 
 RUN apt-get -y update
 RUN apt-get -y install openssl bash sed
-RUN mkdir /redis-master /redis-slave
+RUN mkdir /redis-primary /redis-secondary
 
-COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/redis-master.conf /redis-master/redis.conf
-COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/redis-slave.conf /redis-slave/redis.conf
+COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/redis-primary.conf /redis-primary/redis.conf
+COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/redis-secondary.conf /redis-secondary/redis.conf
 COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/redis-createschema.sh /createschema.sh
 COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/redis-checkdb.sh /checkdb.sh
 COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/redis-entrypointsetup.sh /entrypointsetup.sh
 
-RUN chmod 0700 /entrypointsetup.sh /redis-master /redis-slave
-RUN chown -R odimra:odimra /data /redis-master /redis-slave
+RUN chmod 0700 /entrypointsetup.sh /redis-primary /redis-secondary
+RUN chown -R odimra:odimra /data /redis-primary /redis-secondary
 
 USER odimra:odimra
 

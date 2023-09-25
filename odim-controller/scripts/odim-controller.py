@@ -90,8 +90,8 @@ def write_node_details():
 		temp_dict = {node : {'ansible_host': attrs['ip'], 'ip':attrs['ip'], 'access_ip':attrs['ip']}}
 		node_details['all']['hosts'].update(temp_dict)
 		temp_dict = {node: None}
-		if attrs["isMaster"]:
-			logger.debug("%s(%s) is marked as master node", node, attrs['ip'])
+		if attrs["isPrimary"]:
+			logger.debug("%s(%s) is marked as primary node", node, attrs['ip'])
 			node_details['all']['children']['kube_control_plane']['hosts'].update(temp_dict)
 			node_details['all']['children']['kube_node']['hosts'].update(temp_dict)
 			node_details['all']['children']['etcd']['hosts'].update(temp_dict)
@@ -408,7 +408,7 @@ def helper_msg():
 def check_time_sync():
 	logger.info("Checking if time on all nodes provided are in sync")
 	host_time_map = {}
-	# fetch date and time from any one of the master node, if not new deployment
+	# fetch date and time from any one of the primary node, if not new deployment
 	if K8S_INVENTORY_DATA != None:
 		for node, attrs in K8S_INVENTORY_DATA['all']['hosts'].items():
 			cmd = '/usr/bin/ssh {username}@{ipaddr} date'.format(username=os.getenv('USER'), ipaddr=attrs['ip'])
@@ -478,7 +478,7 @@ def scale_in_k8s():
 	nodes_list = ""
 	for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
 		if node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts']:
-			logger.warn("%s is master node, removing of which is not allowed, skipping!!!", node)
+			logger.warn("%s is primary node, removing of which is not allowed, skipping!!!", node)
 			continue
 		if node in K8S_INVENTORY_DATA['all']['hosts'].keys():
 			no_nodes_to_remove = False
@@ -994,12 +994,12 @@ def operation_odimra(operation):
 		shutil.copyfile(CONTROLLER_CONF_FILE, odimra_config_file)
 
 		# as rollback of failed operation is not handled yet
-		# will try on first master node and exit on failure
-		master_node = list(K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].keys())[0]
-		logger.info("Starting odimra %s on master node %s", operation, master_node)
+		# will try on first primary node and exit on failure
+		primary_node = list(K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].keys())[0]
+		logger.info("Starting odimra %s on primary node %s", operation, primary_node)
 		odimra_deploy_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
-				    --extra-vars "host={master_node} helm_config_file={helm_config_file} ignore_err={ignore_err}" \
-{operation_conf_file}.yaml'.format(host_conf_file=host_file, master_node=master_node, helm_config_file=CONTROLLER_CONF_FILE, \
+				    --extra-vars "host={primary_node} helm_config_file={helm_config_file} ignore_err={ignore_err}" \
+{operation_conf_file}.yaml'.format(host_conf_file=host_file, primary_node=primary_node, helm_config_file=CONTROLLER_CONF_FILE, \
 		operation_conf_file=operation,ignore_err=IGNORE_ERRORS_SET)
 
 		ret = exec(odimra_deploy_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
@@ -1008,7 +1008,7 @@ def operation_odimra(operation):
 		os.remove(odimra_config_file)
 
 		if ret != 0:
-			logger.critical("ODIMRA %s failed on master node %s", operation, master_node)
+			logger.critical("ODIMRA %s failed on primary node %s", operation, primary_node)
 			os.chdir(cur_dir)
 			exit(1)
 
@@ -1472,27 +1472,27 @@ def update_helm_charts(config_map_name):
 					logger.info("ODIMRA %s success copy docker image %s", operationName, dockerImageName)
 
 
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
-			logger.info("Starting upgrade of  %s on master node %s", fullHelmChartName, master_node[0])
+		for primary_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
+			logger.info("Starting upgrade of  %s on primary node %s", fullHelmChartName, primary_node[0])
 			odimra_upgrade_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
-					     --extra-vars "host={master_node} helm_chart_name={helm_chart_name} helm_chart_name_version={helm_chart_name_version} helm_config_file={helm_config_file} ignore_err={ignore_err}" {operation_conf_file}.yaml'.format( \
-							     host_conf_file=host_file, master_node=master_node[0], \
+					     --extra-vars "host={primary_node} helm_chart_name={helm_chart_name} helm_chart_name_version={helm_chart_name_version} helm_config_file={helm_config_file} ignore_err={ignore_err}" {operation_conf_file}.yaml'.format( \
+							     host_conf_file=host_file, primary_node=primary_node[0], \
 							     helm_chart_name=config_map_name, \
 							     helm_chart_name_version=fullHelmChartName, \
 							     helm_config_file=CONTROLLER_CONF_FILE, \
 							     operation_conf_file=operationName,ignore_err=IGNORE_ERRORS_SET)
 			ret = exec(odimra_upgrade_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
 			if ret != 0:
-				logger.critical("ODIMRA %s failed when tried on master node %s", operationName, master_node[0])
+				logger.critical("ODIMRA %s failed when tried on primary node %s", operationName, primary_node[0])
 			else:
-				logger.info("ODIMRA %s success on master node %s", operationName, master_node[0])
+				logger.info("ODIMRA %s success on primary node %s", operationName, primary_node[0])
 				upgrade_flag=True
 				break
 
 		if upgrade_flag:
 			logger.info("Completed ODIMRA %s operation", operationName)
 		else:
-			logger.info("Could not %s ODIMRA on any master nodes", operationName)
+			logger.info("Could not %s ODIMRA on any primary nodes", operationName)
 			os.chdir(cur_dir)
 			exit(1)
 
@@ -1515,8 +1515,8 @@ def list_deployments():
 	load_k8s_host_conf()
 
 	list_flag = False
-	for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
-		ip = K8S_INVENTORY_DATA['all']['hosts'][master_node[0]]['ip']
+	for primary_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
+		ip = K8S_INVENTORY_DATA['all']['hosts'][primary_node[0]]['ip']
 		list_deps_cmd = '/usr/bin/ssh {ip} helm list -n {namespace}'.format( \
 				namespace=CONTROLLER_CONF_DATA['odimra']['namespace'], ip=ip)
 		ret = exec(list_deps_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
@@ -1544,8 +1544,8 @@ def list_deployment_history(depName):
 	load_k8s_host_conf()
 
 	list_flag = False
-	for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
-		ip = K8S_INVENTORY_DATA['all']['hosts'][master_node[0]]['ip']
+	for primary_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
+		ip = K8S_INVENTORY_DATA['all']['hosts'][primary_node[0]]['ip']
 		list_history_cmd = '/usr/bin/ssh {ip} helm history {deployment} -n {namespace}'.format( \
 				ip=ip, deployment=depName, \
 				namespace=CONTROLLER_CONF_DATA['odimra']['namespace'])
@@ -1578,15 +1578,15 @@ def rollback_deployment(depName, revision):
 		rollback_flag = False
 
 		host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
-			logger.info("Starting rollback of %s deployment on master node %s", depName, master_node[0])
+		for primary_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
+			logger.info("Starting rollback of %s deployment on primary node %s", depName, primary_node[0])
 			rollback_dep_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
-					   --extra-vars "host={master_node} release={depName} revision={revision}" rollback.yaml'.format( \
-							   host_conf_file=host_file, master_node=master_node[0], \
+					   --extra-vars "host={primary_node} release={depName} revision={revision}" rollback.yaml'.format( \
+							   host_conf_file=host_file, primary_node=primary_node[0], \
 							   depName=depName, revision=revision)
 			ret = exec(rollback_dep_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
 			if ret != 0:
-				logger.critical("rollback of %s deployment failed on master node %s", depName, master_node[0])
+				logger.critical("rollback of %s deployment failed on primary node %s", depName, primary_node[0])
 			else:
 				rollback_flag=True
 				break
@@ -1626,16 +1626,16 @@ def scale_plugin(plugin_name, replica_count):
 			exit(1)
 
 		host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
-			logger.info("Starting scaling of %s plugin on master node %s", plugin_name, master_node[0])
+		for primary_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
+			logger.info("Starting scaling of %s plugin on primary node %s", plugin_name, primary_node[0])
 			scale_plugin_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
-					   --extra-vars "host={master_node} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file} replicas={replicas}" scale_plugin.yaml'.format( \
-							   host_conf_file=host_file, master_node=master_node[0], \
+					   --extra-vars "host={primary_node} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file} replicas={replicas}" scale_plugin.yaml'.format( \
+							   host_conf_file=host_file, primary_node=primary_node[0], \
 							   helm_chart_name=plugin_name, helm_config_file=CONTROLLER_CONF_FILE, \
 							   replicas=replica_count)
 			ret = exec(scale_plugin_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
 			if ret != 0:
-				logger.critical("scaling %s plugin failed on master node %s", plugin_name, master_node[0])
+				logger.critical("scaling %s plugin failed on primary node %s", plugin_name, primary_node[0])
 			else:
 				scaling_flag=True
 				break
@@ -1687,11 +1687,11 @@ def scale_svc_helm_chart(svc_uservice_name,replica_count,helmchartData):
 	if not DRY_RUN_SET:
 		load_password_from_vault(cur_dir)
 		scale_flag = False
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
-			logger.info("Starting scaling of  %s on master node %s", fullHelmChartName, master_node[0])
+		for primary_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
+			logger.info("Starting scaling of  %s on primary node %s", fullHelmChartName, primary_node[0])
 			odimra_upgrade_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
-					     --extra-vars "host={master_node} helm_chart_name={helm_chart_name} helm_chart_name_version={helm_chart_name_version} helm_config_file={helm_config_file} replicas={replicas} ignore_err={ignore_err}" {operation_conf_file}.yaml'.format( \
-							     host_conf_file=host_file, master_node=master_node[0], \
+					     --extra-vars "host={primary_node} helm_chart_name={helm_chart_name} helm_chart_name_version={helm_chart_name_version} helm_config_file={helm_config_file} replicas={replicas} ignore_err={ignore_err}" {operation_conf_file}.yaml'.format( \
+							     host_conf_file=host_file, primary_node=primary_node[0], \
 							     helm_chart_name=svc_uservice_name, \
 							     helm_chart_name_version=fullHelmChartName, \
 							     helm_config_file=CONTROLLER_CONF_FILE, \
@@ -1699,16 +1699,16 @@ def scale_svc_helm_chart(svc_uservice_name,replica_count,helmchartData):
 							     operation_conf_file=operationName,ignore_err=IGNORE_ERRORS_SET)
 			ret = exec(odimra_upgrade_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
 			if ret != 0:
-				logger.critical("ODIMRA %s failed when tried on master node %s", operationName, master_node[0])
+				logger.critical("ODIMRA %s failed when tried on primary node %s", operationName, primary_node[0])
 			else:
-				logger.info("ODIMRA %s success on master node %s", operationName, master_node[0])
+				logger.info("ODIMRA %s success on primary node %s", operationName, primary_node[0])
 				scale_flag=True
 				break
 
 		if scale_flag:
 			logger.info("Completed ODIMRA %s operation", operationName)
 		else:
-			logger.info("Could not %s ODIMRA on any master nodes", operationName)
+			logger.info("Could not %s ODIMRA on any primary nodes", operationName)
 			os.chdir(cur_dir)
 			exit(1)
 
@@ -1793,16 +1793,16 @@ def deploy_plugin(plugin_name):
 		plugin_count = 0
 
 		for plugin in plugin_list:
-			for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
-				logger.info("Starting deployment of %s on master node %s", plugin, master_node[0])
+			for primary_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
+				logger.info("Starting deployment of %s on primary node %s", plugin, primary_node[0])
 				deploy_plugin_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
-						    --extra-vars "host={master_node} release_name={plugin_name} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file}" deploy_plugin.yaml'.format( \
-								    host_conf_file=host_file, master_node=master_node[0], \
+						    --extra-vars "host={primary_node} release_name={plugin_name} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file}" deploy_plugin.yaml'.format( \
+								    host_conf_file=host_file, primary_node=primary_node[0], \
 								    plugin_name=plugin, helm_chart_name=plugin, \
 								    helm_config_file=CONTROLLER_CONF_FILE)
 				ret = exec(deploy_plugin_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
 				if ret != 0:
-					logger.critical("deploying %s failed on master node %s", plugin, master_node)
+					logger.critical("deploying %s failed on primary node %s", plugin, primary_node)
 				else:
 					plugin_count += 1
 					break
@@ -1843,16 +1843,16 @@ def remove_plugin(plugin_name):
 		load_password_from_vault(cur_dir) 
 		upgrade_flag = False
 
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
-			logger.info("Starting removal of %s plugin on master node %s", plugin_name, master_node[0])
+		for primary_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
+			logger.info("Starting removal of %s plugin on primary node %s", plugin_name, primary_node[0])
 			remove_plugin_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
-					   --extra-vars "host={master_node} release_name={plugin_name} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file}" remove_plugin.yaml'.format( \
-							   host_conf_file=host_file, master_node=master_node[0], \
+					   --extra-vars "host={primary_node} release_name={plugin_name} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file}" remove_plugin.yaml'.format( \
+							   host_conf_file=host_file, primary_node=primary_node[0], \
 							   plugin_name=plugin_name, helm_chart_name=plugin_name, \
 							   helm_config_file=CONTROLLER_CONF_FILE)
 			ret = exec(remove_plugin_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
 			if ret != 0:
-				logger.critical("removal of %s plugin failed on master node %s", plugin_name, master_node[0])
+				logger.critical("removal of %s plugin failed on primary node %s", plugin_name, primary_node[0])
 			else:
 				upgrade_flag=True
 				break

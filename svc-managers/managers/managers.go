@@ -117,7 +117,7 @@ func (e *ExternalInterface) GetManagers(ctx context.Context, req *managersproto.
 		var managerData map[string]interface{}
 		jerr := json.Unmarshal([]byte(data), &managerData)
 		if jerr != nil {
-			errorMessage := "error unmarshalling manager details: " + jerr.Error()
+			errorMessage := "error unmarshal manager details: " + jerr.Error()
 			l.LogWithFields(ctx).Error(errorMessage)
 			resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 				nil, nil)

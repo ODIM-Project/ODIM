@@ -1420,7 +1420,15 @@ func (ts *TasksRPC) ProcessTaskEvents(ctx context.Context, data interface{}) boo
 		err := json.Unmarshal([]byte(responseMessage), &data)
 		if err == nil {
 			go tcommon.UpdateRemoteAccount(ctx, data.Location, data.Host)
-			body, _ = json.Marshal(data.Body)
+			payLoad.ResponseBody = []byte(data.Body)
+		}
+	}
+
+	if strings.Contains(responseMessage, "AddRemoteAccount") && strings.Contains(responseMessage, "host") {
+		var data tmodel.UpdateAccount
+		err := json.Unmarshal([]byte(responseMessage), &data)
+		if err == nil {
+			payLoad.ResponseBody = replaceBMCAccResp(data.Body, data.Host)
 		}
 	}
 
@@ -1444,4 +1452,9 @@ func (ts *TasksRPC) ProcessTaskEvents(ctx context.Context, data interface{}) boo
 	}
 
 	return false
+}
+func replaceBMCAccResp(input string, managerID string) []byte {
+	resp := strings.Replace(input,
+		"v1/AccountService", "v1/Managers/"+managerID+"/RemoteAccountService", -1)
+	return []byte(resp)
 }

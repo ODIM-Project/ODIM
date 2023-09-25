@@ -56,12 +56,12 @@ var GetTLSConfig TLSConfig = func(c *config.PluginConfig) (*tls.Config, error) {
 }
 
 // CreateDAO creates new instance of DAO
-func CreateDAO(c *config.PluginConfig, sentinelMasterName string, getTLSConfig TLSConfig) *DAO {
+func CreateDAO(c *config.PluginConfig, sentinelPrimaryName string, getTLSConfig TLSConfig) *DAO {
 	tlsConfig, err := getTLSConfig(c)
 	if err != nil {
 		logging.Fatalf("error while getting tls configuration: %s", err.Error())
 	}
-	if sentinelMasterName == "" {
+	if sentinelPrimaryName == "" {
 		return &DAO{
 			redis.NewClient(&redis.Options{
 				Addr:      c.RedisAddress,
@@ -73,7 +73,7 @@ func CreateDAO(c *config.PluginConfig, sentinelMasterName string, getTLSConfig T
 
 	return &DAO{
 		redis.NewFailoverClient(&redis.FailoverOptions{
-			MasterName:       sentinelMasterName,
+			MasterName:       sentinelPrimaryName,
 			SentinelAddrs:    []string{c.RedisAddress},
 			TLSConfig:        tlsConfig,
 			SentinelPassword: string(c.RedisOnDiskPassword),

@@ -96,7 +96,7 @@ spec:
         env:
         - name: SENTINEL
           value: "true"
-        - name: MASTER_HOST_NAME
+        - name: PRIMARY_HOST_NAME
           value: "redis-ha-ondisk-primary-0.redis-ha-ondisk-headless.odim.svc.cluster.local"
         - name: TLS_CERT_FILE
           value: "/etc/odimra_certs/odimra_server.crt"
@@ -116,8 +116,8 @@ spec:
           value: "26379"
         - name: REDIS_HA_SENTINEL_SERVICE_HOST
           value: "redis-ha-ondisk-sentinel.{{ .Values.odimra.namespace }}.svc.cluster.local"
-        - name: REDIS_MASTER_SET
-          value: {{ .Values.odimra.redisMasterSet | quote }} 
+        - name: REDIS_PRIMARY_SET
+          value: {{ .Values.odimra.redisPrimarySet | quote }} 
         - name: DOWN_AFTER_MILLISECONDS
           value: {{ .Values.odimra.redisDownAfterMilliseconds | quote }} 
         - name: FAILOVER_TIMEOUT

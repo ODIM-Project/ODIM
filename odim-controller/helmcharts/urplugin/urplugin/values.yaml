@@ -10,6 +10,6 @@ urplugin:
   host: urplugin
   odimUsername:
   odimPassword:
-  sentinelMasterName: primaryset
+  sentinelPrimaryName: primaryset
   logPath:
   logsOnConsole: true

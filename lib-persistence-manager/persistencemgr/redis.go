@@ -76,7 +76,7 @@ type Conn struct {
 // RedisExternalCalls containes the methods to make calls to external client libraries of Redis DB
 type RedisExternalCalls interface {
 	newSentinelClient(opt *redis.Options) *redis.SentinelClient
-	getMasterAddrByName(mset string, snlClient *redis.SentinelClient) []string
+	getPrimaryAddrByName(mset string, snlClient *redis.SentinelClient) []string
 }
 
 type redisExtCallsImp struct{}
@@ -85,8 +85,8 @@ func (r redisExtCallsImp) newSentinelClient(opt *redis.Options) *redis.SentinelC
 	return redis.NewSentinelClient(opt)
 }
 
-func (r redisExtCallsImp) getMasterAddrByName(masterSet string, snlClient *redis.SentinelClient) []string {
-	return snlClient.GetMasterAddrByName(masterSet).Val()
+func (r redisExtCallsImp) getPrimaryAddrByName(primarySet string, snlClient *redis.SentinelClient) []string {
+	return snlClient.GetMasterAddrByName(primarySet).Val()
 }
 
 // NewRedisExternalCalls is Constructor for RedisExternalCalls
@@ -118,24 +118,24 @@ var (
 	goroutineCreated uint32
 )
 
-// GetCurrentMasterHostPort is to get the current Redis Master IP and Port from Sentinel.
-func GetCurrentMasterHostPort(dbConfig *Config) (string, string, error) {
+// GetCurrentPrimaryHostPort is to get the current Redis Primary IP and Port from Sentinel.
+func GetCurrentPrimaryHostPort(dbConfig *Config) (string, string, error) {
 	sentinelClient, err := sentinelNewClient(dbConfig)
 	if err != nil {
 		return "", "", err
 	}
-	stringSlice := redisExtCalls.getMasterAddrByName(dbConfig.MasterSet, sentinelClient)
-	var masterIP string
-	var masterPort string
+	stringSlice := redisExtCalls.getPrimaryAddrByName(dbConfig.PrimarySet, sentinelClient)
+	var primaryIP string
+	var primaryPort string
 	if len(stringSlice) == 2 {
-		masterIP = stringSlice[0]
-		masterPort = stringSlice[1]
+		primaryIP = stringSlice[0]
+		primaryPort = stringSlice[1]
 	}
 	if atomic.CompareAndSwapUint32(&goroutineCreated, 0, 1) {
 		go monitorFailureOver(sentinelClient)
 	}
 
-	return masterIP, masterPort, nil
+	return primaryIP, primaryPort, nil
 }
 
 // monitorFailureOver will monitor the failover and reset the connection
@@ -198,28 +198,28 @@ func resetDBWriteConnection(dbFlag DbType) error {
 }
 
 func (p *ConnPool) setWritePool(c *Config) error {
-	currentMasterIP := c.Host
-	currentMasterPort := c.Port
+	currentPrimaryIP := c.Host
+	currentPrimaryPort := c.Port
 	if config.Data.DBConf.RedisHAEnabled {
-		currentMasterIP, currentMasterPort = retryForMasterIP(p, c)
+		currentPrimaryIP, currentPrimaryPort = retryForPrimaryIP(p, c)
 	}
-	if currentMasterIP == "" {
-		return fmt.Errorf("unable to retrieve master ip from sentinel master election")
+	if currentPrimaryIP == "" {
+		return fmt.Errorf("unable to retrieve primary ip from sentinel primary election")
 	}
 
-	writePool, _ := goRedisNewClient(c, currentMasterIP, currentMasterPort)
+	writePool, _ := goRedisNewClient(c, currentPrimaryIP, currentPrimaryPort)
 	if writePool == nil {
 		return fmt.Errorf("write pool creation failed")
 	}
 	p.WritePool = writePool
-	p.MasterIP = currentMasterIP
+	p.PrimaryIP = currentPrimaryIP
 	return nil
 }
 
-func retryForMasterIP(pool *ConnPool, config *Config) (currentMasterIP, currentMasterPort string) {
+func retryForPrimaryIP(pool *ConnPool, config *Config) (currentPrimaryIP, currentPrimaryPort string) {
 	for i := 0; i < 120; i++ {
-		currentMasterIP, currentMasterPort, _ = GetCurrentMasterHostPort(config)
-		if currentMasterIP != "" {
+		currentPrimaryIP, currentPrimaryPort, _ = GetCurrentPrimaryHostPort(config)
+		if currentPrimaryIP != "" {
 			break
 		}
 		time.Sleep(1 * time.Second)
@@ -234,7 +234,7 @@ func getInMemoryDBConfig() *Config {
 		Host:         config.Data.DBConf.InMemoryHost,
 		SentinelHost: config.Data.DBConf.InMemorySentinelHost,
 		SentinelPort: config.Data.DBConf.InMemorySentinelPort,
-		MasterSet:    config.Data.DBConf.InMemoryPrimarySet,
+		PrimarySet:   config.Data.DBConf.InMemoryPrimarySet,
 		Password:     string(config.Data.DBConf.RedisInMemoryPassword),
 	}
 }
@@ -246,7 +246,7 @@ func getOnDiskDBConfig() *Config {
 		Host:         config.Data.DBConf.OnDiskHost,
 		SentinelHost: config.Data.DBConf.OnDiskSentinelHost,
 		SentinelPort: config.Data.DBConf.OnDiskSentinelPort,
-		MasterSet:    config.Data.DBConf.OnDiskPrimarySet,
+		PrimarySet:   config.Data.DBConf.OnDiskPrimarySet,
 		Password:     string(config.Data.DBConf.RedisOnDiskPassword),
 	}
 }
@@ -358,12 +358,12 @@ func getTLSConfig() (*tls.Config, error) {
 // Connection does not take any input and returns a connection object used to interact with the DB
 func (c *Config) Connection() (*ConnPool, *errors.Error) {
 	var err error
-	var masterIP, masterPort string
+	var primaryIP, primaryPort string
 	connPools := &ConnPool{}
-	masterIP = c.Host
-	masterPort = c.Port
+	primaryIP = c.Host
+	primaryPort = c.Port
 	if config.Data.DBConf.RedisHAEnabled {
-		masterIP, masterPort, err = GetCurrentMasterHostPort(c)
+		primaryIP, primaryPort, err = GetCurrentPrimaryHostPort(c)
 		if err != nil {
 			return nil, errors.PackError(errors.UndefinedErrorType, err.Error())
 		}
@@ -372,11 +372,11 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 	if err != nil {
 		return nil, errors.PackError(errors.DBConnFailed, err.Error())
 	}
-	connPools.WritePool, err = goRedisNewClient(c, masterIP, masterPort)
+	connPools.WritePool, err = goRedisNewClient(c, primaryIP, primaryPort)
 	if err != nil {
 		return nil, errors.PackError(errors.DBConnFailed, err.Error())
 	}
-	connPools.MasterIP = masterIP
+	connPools.PrimaryIP = primaryIP
 
 	return connPools, nil
 }

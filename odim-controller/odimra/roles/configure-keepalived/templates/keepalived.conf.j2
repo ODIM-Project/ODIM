@@ -7,7 +7,7 @@ global_defs {
 }
  
 vrrp_instance ODIM_VI {
-        state MASTER
+        state PRIMARY
         interface {{ item.interfaceName }}
         virtual_router_id {{ item.virtualRouterID }}
         priority {{ item.priority }}

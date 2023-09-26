@@ -18,7 +18,7 @@
 declare TYPE
 ## name of the instance or group
 declare NAME
-## transitioned to state, "MASTER", "BACKUP" or "FAULT"
+## transitioned to state, "PRIMARY", "BACKUP" or "FAULT"
 declare STATE
 ## priority of the instance as set in conf file
 declare PRIO
@@ -82,7 +82,7 @@ PRIO=$4
 echo "[$(date)] -- INFO  -- Notification recieved with TYPE=${TYPE} NAME=${NAME} STATE=${STATE} PRIORITY=${PRIO}"
  
 case "${STATE}" in
-        MASTER)
+        PRIMARY)
                 start_nginx
                 ;;
         BACKUP|FAULT)

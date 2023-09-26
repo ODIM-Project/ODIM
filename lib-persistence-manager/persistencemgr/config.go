@@ -33,7 +33,7 @@ type Config struct {
 	Host         string
 	SentinelHost string
 	SentinelPort string
-	MasterSet    string
+	PrimarySet   string
 	Password     string
 }
 
@@ -41,6 +41,6 @@ type Config struct {
 type ConnPool struct {
 	ReadPool  *redis.Client
 	WritePool *redis.Client
-	MasterIP  string
+	PrimaryIP string
 	Mux       sync.Mutex
 }

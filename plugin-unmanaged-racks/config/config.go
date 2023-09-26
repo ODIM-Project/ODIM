@@ -54,7 +54,7 @@ type PluginConfig struct {
 	PKICertificatePath          string   `yaml:"PKICertificatePath" envconfig:"PKI_CERTIFICATE_PATH_PATH"`
 	LogLevel                    string   `yaml:"LogLevel" envconfig:"LOG_LEVEL"`
 	RedisAddress                string   `yaml:"RedisAddress" envconfig:"REDIS_ADDRESS"`
-	SentinelMasterName          string   `yaml:"SentinelMasterName" envconfig:"SENTINEL_MASTER_NAME"`
+	SentinelPrimaryName         string   `yaml:"SentinelPrimaryName" envconfig:"SENTINEL_PRIMARY_NAME"`
 	RedisOnDiskPasswordFilePath string   `yaml:"RedisOnDiskPasswordFilePath" envconfig:"REDIS_ONDISK_PASSWORD_FILE_PATH"`
 	RedisOnDiskPassword         []byte
 }

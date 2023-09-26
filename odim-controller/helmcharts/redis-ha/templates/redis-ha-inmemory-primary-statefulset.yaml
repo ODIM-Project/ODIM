@@ -94,9 +94,9 @@ spec:
             mountPath: /etc/odimra_certs
 
         env:
-        - name: MASTER
+        - name: PRIMARY
           value: "true"
-        - name: MASTER_HOST_NAME
+        - name: PRIMARY_HOST_NAME
           value: "redis-ha-inmemory-primary-0.redis-ha-inmemory-headless.odim.svc.cluster.local"
         - name: REDIS_ONDISK_DB 
           value: "false"
@@ -118,5 +118,5 @@ spec:
           value: "26379"
         - name: REDIS_HA_SENTINEL_SERVICE_HOST
           value: "redis-ha-inmemory-sentinel.{{ .Values.odimra.namespace }}.svc.cluster.local"
-        - name: REDIS_MASTER_SET
-          value: {{ .Values.odimra.redisMasterSet | quote }}
+        - name: REDIS_PRIMARY_SET
+          value: {{ .Values.odimra.redisPrimarySet | quote }}

@@ -1101,18 +1101,18 @@ func newSentinelClientMock(opt *redis.Options) *redis.SentinelClient {
 	}
 	return nil
 }
-func (r redisExtCallsImpMock) getMasterAddrByName(masterSet string, snlClient *redis.SentinelClient) []string {
-	return getMasterAddbyNameMock(masterSet, snlClient)
+func (r redisExtCallsImpMock) getPrimaryAddrByName(primarySet string, snlClient *redis.SentinelClient) []string {
+	return getPrimaryAddbyNameMock(primarySet, snlClient)
 }
 
-func getMasterAddbyNameMock(masterSet string, snlClient *redis.SentinelClient) []string {
-	if masterSet == "ValidMasterSet" && snlClient != nil {
-		return []string{"ValidMasterIP", "ValidMasterPort"}
+func getPrimaryAddbyNameMock(primarySet string, snlClient *redis.SentinelClient) []string {
+	if primarySet == "ValidPrimarySet" && snlClient != nil {
+		return []string{"ValidPrimaryIP", "ValidPrimaryPort"}
 	}
 	return []string{"", ""}
 }
 
-func TestGetCurrentMasterHostPort(t *testing.T) {
+func TestGetCurrentPrimaryHostPort(t *testing.T) {
 	redisExtCalls = redisExtCallsImpMock{}
 	type args struct {
 		dbConfig *Config
@@ -1129,11 +1129,11 @@ func TestGetCurrentMasterHostPort(t *testing.T) {
 				dbConfig: &Config{
 					Host:         "ValidHost",
 					SentinelPort: "ValidSentinelPort",
-					MasterSet:    "ValidMasterSet",
+					PrimarySet:   "ValidPrimarySet",
 				},
 			},
-			want:  "ValidMasterIP",
-			want1: "ValidMasterPort",
+			want:  "ValidPrimaryIP",
+			want1: "ValidPrimaryPort",
 		},
 		{
 			name: "Negative Case: Invalid sentinel Host",
@@ -1141,7 +1141,7 @@ func TestGetCurrentMasterHostPort(t *testing.T) {
 				dbConfig: &Config{
 					Host:         "InvalidHost",
 					SentinelPort: "ValidSentinelPort",
-					MasterSet:    "ValidMasterSet",
+					PrimarySet:   "ValidPrimarySet",
 				},
 			},
 			want:  "",
@@ -1153,19 +1153,19 @@ func TestGetCurrentMasterHostPort(t *testing.T) {
 				dbConfig: &Config{
 					Host:         "ValidHost",
 					SentinelPort: "InvalidSentinelPort",
-					MasterSet:    "ValidMasterSet",
+					PrimarySet:   "ValidPrimarySet",
 				},
 			},
 			want:  "",
 			want1: "",
 		},
 		{
-			name: "Negative Case: Invalid MasterSet",
+			name: "Negative Case: Invalid PrimarySet",
 			args: args{
 				dbConfig: &Config{
 					Host:         "ValidHost",
 					SentinelPort: "ValidSentinelPort",
-					MasterSet:    "InvalidMasterSet",
+					PrimarySet:   "InvalidPrimarySet",
 				},
 			},
 			want:  "",
@@ -1177,19 +1177,19 @@ func TestGetCurrentMasterHostPort(t *testing.T) {
 				dbConfig: &Config{
 					Host:         "",
 					SentinelPort: "ValidSentinelPort",
-					MasterSet:    "ValidMasterSet",
+					PrimarySet:   "ValidPrimarySet",
 				},
 			},
 			want:  "",
 			want1: "",
 		},
 		{
-			name: "Negative Case: empty MasterSet",
+			name: "Negative Case: empty PrimarySet",
 			args: args{
 				dbConfig: &Config{
 					Host:         "ValidHost",
 					SentinelPort: "ValidSentinelPort",
-					MasterSet:    "",
+					PrimarySet:   "",
 				},
 			},
 			want:  "",
@@ -1198,12 +1198,12 @@ func TestGetCurrentMasterHostPort(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, _ := GetCurrentMasterHostPort(tt.args.dbConfig)
+			got, got1, _ := GetCurrentPrimaryHostPort(tt.args.dbConfig)
 			if got != tt.want {
-				t.Errorf("GetCurrentMasterHostPort() got = %v, want %v", got, tt.want)
+				t.Errorf("GetCurrentPrimaryHostPort() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("GetCurrentMasterHostPort() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("GetCurrentPrimaryHostPort() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -1268,12 +1268,12 @@ func TestGetDBConnectionHAEnabled(t *testing.T) {
 	config.Data.DBConf.RedisHAEnabled = true
 
 	inMemDBConnPool = &ConnPool{
-		ReadPool: &redis.Client{},
-		MasterIP: "NotValid",
+		ReadPool:  &redis.Client{},
+		PrimaryIP: "NotValid",
 	}
 	onDiskDBConnPool = &ConnPool{
-		ReadPool: &redis.Client{},
-		MasterIP: "NotValid",
+		ReadPool:  &redis.Client{},
+		PrimaryIP: "NotValid",
 	}
 	redisExtCalls = redisExtCallsImpMock{}
 	type args struct {

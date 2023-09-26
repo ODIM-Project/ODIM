@@ -427,7 +427,7 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 	if isCollectionOriginResourceURI(originResource) {
 		isStatusAccepted = true
 		l.LogWithFields(ctx).Error("Collection of origin resource:" + originResource)
-		subtaskID := e.CreateSubTask(ctx, sessionUserName, taskId)
+		subtaskID, _ := e.CreateSubTask(ctx, sessionUserName, taskId)
 		resp := response.RPC{}
 		resp.StatusCode = 200
 		resp.Body = subscriptionPost
@@ -481,7 +481,7 @@ func (e *ExternalInterfaces) subscribe(ctx context.Context, subscriptionPost mod
 	// Note: commenting delete subscription API call and calling patch API instead
 	// a subtask is created for each patch call
 
-	subtaskID := e.CreateSubTask(ctx, sessionUserName, taskId)
+	subtaskID, _ := e.CreateSubTask(ctx, sessionUserName, taskId)
 	contactRequest.URL = "/ODIM/v1/Subscriptions"
 	contactRequest.HTTPMethodType = http.MethodPatch
 	contactRequest.PostBody = target
@@ -657,7 +657,7 @@ func (e *ExternalInterfaces) resubscribeFabricsSubscription(ctx context.Context,
 			reqData = strings.Replace(string(postBody), key, value, -1)
 		}
 
-		subtaskID := e.CreateSubTask(ctx, sessionUserName, taskId)
+		subtaskID, _ := e.CreateSubTask(ctx, sessionUserName, taskId)
 		// recreating the subscription
 		contactRequest.URL = "/ODIM/v1/Subscriptions"
 		contactRequest.HTTPMethodType = http.MethodPost

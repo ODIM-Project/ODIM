@@ -31,6 +31,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -166,7 +167,18 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 			collection, collectionName, collectionFlag, aggregateResource, isAggregate, _ := e.checkCollection(origin)
 			wg.Add(1)
 			// for origin is collection
-			subTaskID := e.CreateSubTask(ctx, sessionUserName, taskID)
+			subTaskID, err := e.CreateSubTask(ctx, sessionUserName, taskID)
+			if err != nil {
+				l.LogWithFields(ctx).Error("failed to create subtask, attempting retries ", taskID, err)
+				time.Sleep(1 * time.Second)
+				subTaskID, err = e.CreateSubTask(ctx, sessionUserName, taskID)
+				if err != nil {
+					l.LogWithFields(ctx).Error("failed to create subtask, after retries ", taskID, err)
+					resp.StatusCode = http.StatusInternalServerError
+					e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Running, common.OK, percentComplete, http.MethodPost))
+					break
+				}
+			}
 			if len(collection) > 0 {
 				// This means we are handling a collection. For collections we are creating event subscriptions synchronously
 				// as the task status for collections is updated in event services but the task status for resources under collection is updated
@@ -185,7 +197,18 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 				isServerAdded = true
 				wg.Add(1)
 				// for subordinate origin
-				subTaskID = e.CreateSubTask(ctx, sessionUserName, taskID)
+				subTaskID, err := e.CreateSubTask(ctx, sessionUserName, taskID)
+				if err != nil {
+					l.LogWithFields(ctx).Error("failed to create subtask, attempting retries ", taskID, err)
+					time.Sleep(1 * time.Second)
+					subTaskID, err = e.CreateSubTask(ctx, sessionUserName, taskID)
+					if err != nil {
+						l.LogWithFields(ctx).Error("failed to create subtask, after retries ", taskID, err)
+						resp.StatusCode = http.StatusInternalServerError
+						e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Running, common.OK, percentComplete, http.MethodPost))
+						break
+					}
+				}
 				go e.createEventSubscription(ctx, taskID, subTaskID, subTaskChan, sessionUserName, targetURI, postRequest, collection[i],
 					result, &wg, false, "", aggregateResource, isAggregate)
 			}
@@ -195,7 +218,18 @@ func (e *ExternalInterfaces) CreateEventSubscription(ctx context.Context, taskID
 		} else {
 			isServerAdded = true
 			wg.Add(1)
-			subTaskID := e.CreateSubTask(ctx, sessionUserName, taskID)
+			subTaskID, err := e.CreateSubTask(ctx, sessionUserName, taskID)
+			if err != nil {
+				l.LogWithFields(ctx).Error("failed to create subtask, attempting retries ", taskID, err)
+				time.Sleep(1 * time.Second)
+				subTaskID, err = e.CreateSubTask(ctx, sessionUserName, taskID)
+				if err != nil {
+					l.LogWithFields(ctx).Error("failed to create subtask, after retries ", taskID, err)
+					resp.StatusCode = http.StatusInternalServerError
+					e.UpdateTask(ctx, fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Running, common.OK, percentComplete, http.MethodPost))
+					break
+				}
+			}
 			go e.createEventSubscription(ctx, taskID, subTaskID, subTaskChan, sessionUserName, targetURI,
 				postRequest, origin, result, &wg, false, "", "", false)
 		}
@@ -894,14 +928,15 @@ func (e *ExternalInterfaces) createEventSubscription(ctx context.Context, taskID
 }
 
 // CreateSubTask creates a child task for a task calling RPC to task service and returns the subtask ID
-func (e *ExternalInterfaces) CreateSubTask(ctx context.Context, sessionUserName string, parentTask string) string {
+func (e *ExternalInterfaces) CreateSubTask(ctx context.Context, sessionUserName string, parentTask string) (string, error) {
 	subTaskURI, err := e.CreateChildTask(ctx, sessionUserName, parentTask)
 	if err != nil {
-		l.LogWithFields(ctx).Error("Error while creating the SubTask")
+		l.LogWithFields(ctx).Error("Error while creating the SubTask", err)
+		return "", err
 	}
 	trimmedURI := strings.TrimSuffix(subTaskURI, "/")
 	subTaskID := trimmedURI[strings.LastIndex(trimmedURI, "/")+1:]
-	return subTaskID
+	return subTaskID, nil
 }
 
 // checkCollectionSubscription checks if any collection based subscription exists

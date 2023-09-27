@@ -71,7 +71,7 @@ spec:
           - name: odimra-secret
             mountPath: /etc/odimra_certs
         env:
-        - name: MASTER
+        - name: PRIMARY
           value: "true"
         - name: REDIS_ONDISK_DB 
           value: "false"

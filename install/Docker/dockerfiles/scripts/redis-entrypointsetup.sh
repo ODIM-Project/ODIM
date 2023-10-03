@@ -49,7 +49,7 @@ function launchsentinel() {
   x=1
   while [ $x -le 5 ]
   do
-    primary=$(redis-cli -a ${redis_password} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-primary-addr-by-name ${REDIS_PRIMARY_SET} | tr ',' ' ' | cut -d' ' -f1)
+    primary=$(redis-cli -a ${redis_password} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_PRIMARY_SET} | tr ',' ' ' | cut -d' ' -f1)
     if [[ -n ${primary} ]]; then
       echo "Connected to Sentinel Service and retrieved Redis Primary hostname as ${primary}"
       primary="${primary//\"}"
@@ -101,14 +101,14 @@ function launchsentinel() {
   redis-sentinel ${sentinel_conf} --protected-mode no
 }
 
-#  This method launches secondry instances
-function launchsecondry() {
+#  This method launches secondary instances
+function launchsecondary() {
   echo "Starting Redis instance as Secondry , Primary IP $1"
 
   redis_password=$(openssl pkeyutl -decrypt -in cipher -inkey ${ODIMRA_RSA_PRIVATE_FILE} -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512)
   while true; do
     echo "Trying to retrieve the Primary IP again, in case of failover primary ip would have changed."
-    Primary=$(redis-cli -a ${redis_password} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-primary-addr-by-name ${REDIS_PRIMARY_SET} | tr ',' ' ' | cut -d' ' -f1)
+    primary=$(redis-cli -a ${redis_password} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_PRIMARY_SET} | tr ',' ' ' | cut -d' ' -f1)
 
     if [[ -n ${primary} ]]; then
       primary="${primary//\"}"
@@ -126,17 +126,17 @@ function launchsecondry() {
   done
 
   hostname=$(hostname -f)
-  sed -i "s/%primary-ip%/${primary}/" /redis-secondry/redis.conf
-  sed -i "s/%primary-port%/${REDIS_HA_REDIS_SERVICE_PORT}/" /redis-secondry/redis.conf
-  sed -i "s/REDIS_DEFAULT_PASSWORD/${redis_password}/" /redis-secondry/redis.conf
-  sed -i "s/%replica-announce-ip%/${hostname}/" /redis-secondry/redis.conf
-  sed -i "s/%replicaof%/${primary}/" /redis-secondry/redis.conf
+  sed -i "s/%primary-ip%/${primary}/" /redis-secondary/redis.conf
+  sed -i "s/%primary-port%/${REDIS_HA_REDIS_SERVICE_PORT}/" /redis-secondary/redis.conf
+  sed -i "s/REDIS_DEFAULT_PASSWORD/${redis_password}/" /redis-secondary/redis.conf
+  sed -i "s/%replica-announce-ip%/${hostname}/" /redis-secondary/redis.conf
+  sed -i "s/%replicaof%/${primary}/" /redis-secondary/redis.conf
 
-  redis-server /redis-secondry/redis.conf --protected-mode no
+  redis-server /redis-secondary/redis.conf --protected-mode no
 }
 
 
-#  This method launches either secondry or primary based on some parameters
+#  This method launches either secondary or primary based on some parameters
 function launchredis() {
   echo "Launching Redis instance"
 
@@ -148,24 +148,24 @@ function launchredis() {
   sentinel_down_time=10
   sleep ${sentinel_down_time}
 
-  # Loop till I am able to launch secondry or primary
+  # Loop till I am able to launch secondary or primary
   while true; do
     # I will check if sentinel is up or not by connecting to it.
     echo "Trying to connect to sentinel, to retireve primary's ip"
-      primary=$(redis-cli -a ${redis_password} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-primary-addr-by-name ${REDIS_PRIMARY_SET} | tr ',' ' ' | cut -d' ' -f1)
+      primary=$(redis-cli -a ${redis_password} -h ${REDIS_HA_SENTINEL_SERVICE_HOST} -p ${REDIS_HA_SENTINEL_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} --csv SENTINEL get-master-addr-by-name ${REDIS_PRIMARY_SET} | tr ',' ' ' | cut -d' ' -f1)
     # Is this instance marked as PRIMARY, it will matter only when the cluster is starting up for first time.
     if [[ "${PRIMARY}" == "true" ]]; then
       echo "PRIMARY is set to true"
       # If I am able get primary ip, then i will connect to the primary, else i will asume the role of primary
       if [[ -n ${primary} ]]; then
-        echo "Connected to Sentinel, this means it is not first time start, hence will start as a secondry"
+        echo "Connected to Sentinel, this means it is not first time start, hence will start as a secondary"
         currenthost=$(hostname -f | cut -d ' ' -f 1)
 	      primary=`echo $primary |tr -d '"'`
         if [[ "${currenthost}" == "${primary}" ]]; then
            launchprimary
            exit 0
 	      fi    
-        launchsecondry ${primary}
+        launchsecondary ${primary}
         exit 0
       else
         launchprimary
@@ -173,10 +173,10 @@ function launchredis() {
       fi
     fi
 
-    # If I am not primary, then i am definitely secondry.
+    # If I am not primary, then i am definitely secondary.
     if [[ -n ${primary} ]]; then
       echo "Connected to Sentinel and Retrieved Primary IP ${primary}"
-      launchsecondry ${primary}
+      launchsecondary ${primary}
       exit 0   
     else
       echo "Connecting to sentinel failed, Waiting..."
